@@ -76,6 +76,7 @@
         <module>legend-engine-xts-functionActivator</module>
         <module>legend-engine-xts-snowflakeApp</module>
         <module>legend-engine-xts-bigqueryFunction</module>
+        <module>legend-engine-xts-memsqlFunction</module>
         <module>legend-engine-xts-service</module>
         <module>legend-engine-xts-persistence</module>
         <module>legend-engine-xts-hostedService</module>
@@ -100,6 +101,7 @@
         <!-- Application -->
         <module>legend-engine-xts-mastery</module>
         <module>legend-engine-application-query</module>
+        <!--        <module>legend-engine-xts-data-push</module>-->
     </modules>
 
     <properties>
@@ -700,6 +702,37 @@
                 <artifactId>legend-engine-xt-bigqueryFunction-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-memsqlFunction-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-memsqlFunction-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-memsqlFunction-compiler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-memsqlFunction-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-memsqlFunction-generator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-memsqlFunction-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 <!--            <dependency>-->
 <!--                <groupId>org.finos.legend.engine</groupId>-->
 <!--                <artifactId>legend-engine-xt-snowflakeApp-generator</artifactId>-->
@@ -906,6 +939,16 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-memsql-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-memsql-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-memsql-grammar</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
