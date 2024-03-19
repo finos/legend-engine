@@ -24,7 +24,7 @@
 
     <artifactId>legend-engine-xts-analytics-class</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - XTS - Analytics</name>
+    <name>Legend Engine - XTS - Analytics - Class</name>
 
     <modules>
         <module>legend-engine-xt-analytics-class-pure</module>

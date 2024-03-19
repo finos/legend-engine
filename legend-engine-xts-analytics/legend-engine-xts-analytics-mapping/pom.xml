@@ -24,7 +24,7 @@
 
     <artifactId>legend-engine-xts-analytics-mapping</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - XTS - Analytics</name>
+    <name>Legend Engine - XTS - Analytics - Mapping</name>
 
     <modules>
         <module>legend-engine-xt-analytics-mapping-api</module>
