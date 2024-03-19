@@ -37,9 +37,6 @@ import org.slf4j.Logger;
 
 import java.util.List;
 
-//import static com.sun.tools.javac.tree.TreeInfo.fullName;
-
-
 public class HostedServiceArtifactGenerationExtension implements ArtifactGenerationExtension
 {
     private static  final ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
@@ -66,8 +63,7 @@ public class HostedServiceArtifactGenerationExtension implements ArtifactGenerat
     @Override
     public boolean canGenerate(PackageableElement element)
     {
-        return false;
-       // return element instanceof Root_meta_external_function_activator_hostedService_HostedService;
+       return element instanceof Root_meta_external_function_activator_hostedService_HostedService;
     }
 
     @Override
