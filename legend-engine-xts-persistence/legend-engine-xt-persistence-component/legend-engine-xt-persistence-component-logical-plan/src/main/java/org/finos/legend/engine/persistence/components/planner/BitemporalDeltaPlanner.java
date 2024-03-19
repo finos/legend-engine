@@ -462,7 +462,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     ------------------
     INSERT INTO stage_without_duplicates (ALL_FIELDS_FROM_STAGE)
         SELECT ALL_FIELDS_FROM_STAGE FROM stage WHERE NOT EXISTS
-            (SELECT * FROM main WHERE stage.digest = main.digest AND openRecordCondition)
+            (SELECT * FROM \"main\" WHERE stage.digest = main.digest AND openRecordCondition)
     */
     private Insert getStageToStageWithoutDuplicates()
     {
@@ -491,7 +491,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
          FROM
                 (SELECT PK_FIELDS, FROM_FIELD FROM stage) x
                 LEFT JOIN
-                (SELECT PK_FIELDS, FROM_FIELD FROM main WHERE openRecordCondition) y
+                (SELECT PK_FIELDS, FROM_FIELD FROM \"main\" WHERE openRecordCondition) y
                 ON PKS_MATCH AND x.start_date < y.start_date GROUP BY PK_FIELDS, FROM_FIELD
           ) x
           ----------------------------------------END OF FIRST JOIN--------------------------------------------------
@@ -634,7 +634,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     SELECT PK_FIELDS, DATA_FIELDS, DIGEST, FROM_FIELD, y.end_date as THRU_FIELD, <batch_id> as BATCH_IN, INF as BATCH_OUT
     FROM
     -------------------------------------------------- THIRD JOIN ------------------------------------------------------
-    (SELECT PK_FIELDS, DATA_FIELDS, DIGEST, FROM_FIELD FROM main WHERE batch_id_out = INF) x
+    (SELECT PK_FIELDS, DATA_FIELDS, DIGEST, FROM_FIELD FROM \"main\" WHERE batch_id_out = INF) x
     JOIN
       -------------------------------------------------- SECOND JOIN ---------------------------------------------------
       (SELECT PK_FIELDS, FROM_FIELD, THRU_FIELD
@@ -642,7 +642,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
          -------------------------------------------------- FIRST JOIN -------------------------------------------------
           (SELECT PK_FIELDS, FROM_FIELD, MIN(y.start_date) as THRU_FIELD
           FROM
-          (SELECT PK_FIELDS, FROM_FIELD, THRU_FIELD FROM main WHERE batch_id_out = INF) x
+          (SELECT PK_FIELDS, FROM_FIELD, THRU_FIELD FROM \"main\" WHERE batch_id_out = INF) x
           JOIN
           (SELECT PK_FIELDS, FROM_FIELD FROM stage) y
           ON PKS_MATCH AND y.start_date > x.start_date  AND y.start_date < x.end_date GROUP BY PK_FIELDS, FROM_FIELD
@@ -792,7 +792,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     INSERT INTO tempWithDeleteIndicator (PK_FIELDS, DATA_FIELDS, DIGEST, FROM_FIELD, THRU_FIELD, BATCH_IN, BATCH_OUT, DELETE_INDICATOR)
     SELECT PK_FIELDS, DATA_FIELDS, DIGEST, FROM_FIELD, x.end_date as THRU_FIELD, <batch_id> as BATCH_IN, INF as BATCH_OUT, CASE WHEN y.delete_indicator IS NULL THEN 0 ELSE 1 END
     FROM
-    (SELECT * FROM main WHERE BATCH_OUT = INF
+    (SELECT * FROM \"main\" WHERE BATCH_OUT = INF
     AND EXISTS
         (SELECT * FROM stage WHERE PKS_MATCH AND (main.start_date = start_date OR main.end_date = start_date) AND stage.delete_indicator = 1) x
         LEFT JOIN

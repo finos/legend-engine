@@ -35,7 +35,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
     String rowsUpdated = "SELECT 0 as `rowsUpdated`";
     String rowsTerminated = "SELECT 0 as `rowsTerminated`";
     String rowsDeleted = "SELECT 0 as `rowsDeleted`";
-    String rowsInserted = "SELECT COUNT(*) as `rowsInserted` FROM `mydb`.`main` as sink WHERE sink.`batch_id` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')";
+    String rowsInserted = "SELECT COUNT(*) as `rowsInserted` FROM `mydb`.`main` as sink WHERE sink.`batch_id` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')";
 
     @Override
     public RelationalSink getRelationalSink()
@@ -51,7 +51,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
 
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`, `batch_id`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
-                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
+                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
                 "FROM `mydb`.`staging` as stage)";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableCreateQueryWithNoPKs, preActionsSqlList.get(0));
@@ -73,7 +73,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         String insertSql  = "INSERT INTO `mydb`.`main` " +
             "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`, `batch_id`) " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
-            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
+            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
             "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
             "WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
 
@@ -111,7 +111,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
 
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`, `batch_id`) " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
-            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
+            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
             "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
             "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE ((sink.`id` = stage.`id`) AND " +
             "(sink.`name` = stage.`name`)) AND (sink.`digest` = stage.`digest`))))";
@@ -146,7 +146,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         String insertSql = "INSERT INTO `mydb`.`main` " +
             "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`, `batch_number`) " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
-            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
+            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
             "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
             "WHERE ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) AND " +
             "(NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
@@ -169,7 +169,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         // Stats
         String incomingRecordCount = "SELECT COALESCE(SUM(stage.`legend_persistence_count`),0) as `incomingRecordCount` FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
             "WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
-        String rowsInserted = "SELECT COUNT(*) as `rowsInserted` FROM `mydb`.`main` as sink WHERE sink.`batch_number` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')";
+        String rowsInserted = "SELECT COUNT(*) as `rowsInserted` FROM `mydb`.`main` as sink WHERE sink.`batch_number` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')";
         Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCount, dataSplitRanges.get(0)), operations.get(0).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
         Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCount, dataSplitRanges.get(1)), operations.get(1).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
         Assertions.assertEquals(rowsUpdated, operations.get(0).postIngestStatisticsSql().get(StatisticName.ROWS_UPDATED));
@@ -187,7 +187,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         String insertSql = "INSERT INTO `MYDB`.`MAIN` " +
             "(`ID`, `NAME`, `AMOUNT`, `BIZ_DATE`, `DIGEST`, `BATCH_UPDATE_TIME`, `BATCH_ID`) " +
             "(SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`BIZ_DATE`,stage.`DIGEST`,PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
-            "(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN') " +
+            "(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM `BATCH_METADATA` as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN') " +
             "FROM `MYDB`.`STAGING_TEMP_STAGING_LP_YOSULF` as stage " +
             "WHERE NOT (EXISTS " +
             "(SELECT * FROM `MYDB`.`MAIN` as sink WHERE ((sink.`ID` = stage.`ID`) AND (sink.`NAME` = stage.`NAME`)) AND (sink.`DIGEST` = stage.`DIGEST`))))";
@@ -204,7 +204,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
 
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `digest`, `batch_update_time`, `batch_id`) " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`digest`,PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
-            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
+            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
             "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
             "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE ((sink.`id` = stage.`id`) AND " +
             "(sink.`name` = stage.`name`)) AND (sink.`digest` = stage.`digest`))))";
@@ -223,7 +223,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
 
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`, `batch_id`) " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
-            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
+            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
             "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
             "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE ((sink.`id` = stage.`id`) AND " +
             "(sink.`name` = stage.`name`)) AND (sink.`digest` = stage.`digest`))))";
@@ -258,7 +258,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         String insertSql = "INSERT INTO `mydb`.`main` " +
             "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`, `batch_id`) " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
-            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
+            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
             "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage)";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, preActionsSqlList.get(0));
@@ -304,7 +304,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
 
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`, `batch_id`) " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,LAKEHOUSE_MD5(TO_JSON(STRUCT(stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`)))," +
-            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
+            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
             "FROM `mydb`.`staging` as stage)";
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableCreateQueryWithNoPKs, preActionsSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
@@ -340,7 +340,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         String insertSql  = "INSERT INTO `mydb`.`main` " +
             "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`, `batch_id`) " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,LAKEHOUSE_MD5(TO_JSON(STRUCT(stage.`name`,stage.`biz_date`))),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
-            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
+            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
             "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
             "WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
 

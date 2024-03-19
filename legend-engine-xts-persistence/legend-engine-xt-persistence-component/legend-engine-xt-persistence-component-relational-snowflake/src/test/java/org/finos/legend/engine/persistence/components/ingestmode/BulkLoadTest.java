@@ -160,7 +160,7 @@ public class BulkLoadTest
                 "FILE_FORMAT = (FIELD_DELIMITER = ',', TYPE = 'CSV')" +
                 " ON_ERROR = 'ABORT_STATEMENT'";
 
-        String expectedMetadataIngestSql = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\") " +
+        String expectedMetadataIngestSql = "INSERT INTO \"batch_metadata\" (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\") " +
                 "(SELECT 'my_name',{NEXT_BATCH_ID},'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"event_id\":\"task123\",\"file_patterns\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
         String expectedDryRunPreActionsSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name_validation_lp_yosulf\"" +
@@ -233,13 +233,13 @@ public class BulkLoadTest
         String expectedIngestSql = "COPY INTO \"my_db\".\"my_name\" " +
                 "(\"col_bigint\", \"col_variant\", \"batch_id\") " +
                 "FROM " +
-                "(SELECT t.$4 as \"col_bigint\",TO_VARIANT(PARSE_JSON(t.$5)) as \"col_variant\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME') " +
+                "(SELECT t.$4 as \"col_bigint\",TO_VARIANT(PARSE_JSON(t.$5)) as \"col_variant\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME') " +
                 "FROM my_location as t) " +
                 "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') " +
                 "FILE_FORMAT = (TYPE = 'AVRO') " +
                 "ON_ERROR = 'ABORT_STATEMENT'";
-        String expectedMetaIngestSql = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\", \"additional_metadata\") " +
-                "(SELECT 'my_name',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME')," +
+        String expectedMetaIngestSql = "INSERT INTO \"batch_metadata\" (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\", \"additional_metadata\") " +
+                "(SELECT 'my_name',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME')," +
                 "'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}'," +
                 "PARSE_JSON('{\"event_id\":\"task123\",\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}')," +
                 "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
@@ -334,14 +334,14 @@ public class BulkLoadTest
                 "FROM " +
                 "(SELECT legend_persistence_stage.$1 as \"COL_INT\",legend_persistence_stage.$2 as \"COL_INTEGER\"," +
                 "LAKEHOUSE_MD5(OBJECT_CONSTRUCT('COL_INT',legend_persistence_stage.$1,'COL_INTEGER',legend_persistence_stage.$2))," +
-                "(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
+                "(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM \"BATCH_METADATA\" as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
                 "FROM my_location as legend_persistence_stage) " +
                 "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') " +
                 "FILE_FORMAT = (FORMAT_NAME = 'my_file_format') " +
                 "ON_ERROR = 'ABORT_STATEMENT'";
 
-        String expectedMetadataIngestSql = "INSERT INTO BATCH_METADATA (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\", \"BATCH_SOURCE_INFO\") " +
-            "(SELECT 'MY_NAME',(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MY_NAME')," +
+        String expectedMetadataIngestSql = "INSERT INTO \"BATCH_METADATA\" (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\", \"BATCH_SOURCE_INFO\") " +
+            "(SELECT 'MY_NAME',(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM \"BATCH_METADATA\" as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MY_NAME')," +
             "'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
@@ -352,7 +352,7 @@ public class BulkLoadTest
         Assertions.assertNull(statsSql.get(ROWS_DELETED));
         Assertions.assertNull(statsSql.get(ROWS_TERMINATED));
         Assertions.assertNull(statsSql.get(ROWS_UPDATED));
-        Assertions.assertEquals("SELECT COUNT(*) as \"ROWSINSERTED\" FROM \"MY_DB\".\"MY_NAME\" as my_alias WHERE my_alias.\"BATCH_ID\" = (SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MY_NAME')", statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"ROWSINSERTED\" FROM \"MY_DB\".\"MY_NAME\" as my_alias WHERE my_alias.\"BATCH_ID\" = (SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM \"BATCH_METADATA\" as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MY_NAME')", statsSql.get(ROWS_INSERTED));
 
         // Checking dry run
         String expectedDryRunPreActionSql = "CREATE TABLE IF NOT EXISTS \"MY_DB\".\"MY_NAME_VALIDATION_LP_YOSULF\"" +
@@ -511,7 +511,7 @@ public class BulkLoadTest
                 "FROM " +
                 "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\"," +
                 "LAKEHOUSE_UDF(OBJECT_CONSTRUCT('col_int',legend_persistence_stage.$1,'col_integer',legend_persistence_stage.$2))," +
-                "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
+                "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
                 "FROM my_location as legend_persistence_stage) " +
                 "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') " +
                 "FILE_FORMAT = (FORMAT_NAME = 'my_file_format') " +
@@ -524,7 +524,7 @@ public class BulkLoadTest
         Assertions.assertNull(statsSql.get(ROWS_DELETED));
         Assertions.assertNull(statsSql.get(ROWS_TERMINATED));
         Assertions.assertNull(statsSql.get(ROWS_UPDATED));
-        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"my_db\".\"my_name\" as my_alias WHERE my_alias.\"batch_id\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME')", statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"my_db\".\"my_name\" as my_alias WHERE my_alias.\"batch_id\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME')", statsSql.get(ROWS_INSERTED));
     }
 
     @Test
@@ -574,15 +574,15 @@ public class BulkLoadTest
             "FROM " +
             "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\"," +
             "LAKEHOUSE_UDF(OBJECT_CONSTRUCT('col_int',legend_persistence_stage.$1,'col_integer',legend_persistence_stage.$2))," +
-            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
+            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
             "FROM my_location as legend_persistence_stage) " +
             "PATTERN = '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)' " +
             "FILE_FORMAT = (FORMAT_NAME = 'my_file_format') " +
             "FORCE = true, ON_ERROR = 'ABORT_STATEMENT'";
 
-        String expectedMetaIngestSql = "INSERT INTO batch_metadata " +
+        String expectedMetaIngestSql = "INSERT INTO \"batch_metadata\" " +
             "(\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\", \"additional_metadata\") " +
-            "(SELECT 'my_name',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME')," +
+            "(SELECT 'my_name',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME')," +
             "'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}'," +
             "PARSE_JSON('{\"file_patterns\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}')," +
             "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
@@ -595,7 +595,7 @@ public class BulkLoadTest
         Assertions.assertNull(statsSql.get(ROWS_DELETED));
         Assertions.assertNull(statsSql.get(ROWS_TERMINATED));
         Assertions.assertNull(statsSql.get(ROWS_UPDATED));
-        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"my_db\".\"my_name\" as my_alias WHERE my_alias.\"batch_id\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME')", statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"my_db\".\"my_name\" as my_alias WHERE my_alias.\"batch_id\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME')", statsSql.get(ROWS_INSERTED));
     }
 
     @Test
@@ -644,7 +644,7 @@ public class BulkLoadTest
             "FROM " +
             "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\"," +
             "LAKEHOUSE_UDF(OBJECT_CONSTRUCT('col_integer',legend_persistence_stage.$2))," +
-            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
+            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
             "FROM my_location as legend_persistence_stage) " +
             "PATTERN = '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)' " +
             "FILE_FORMAT = (FORMAT_NAME = 'my_file_format') " +
@@ -657,7 +657,7 @@ public class BulkLoadTest
         Assertions.assertNull(statsSql.get(ROWS_DELETED));
         Assertions.assertNull(statsSql.get(ROWS_TERMINATED));
         Assertions.assertNull(statsSql.get(ROWS_UPDATED));
-        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"my_db\".\"my_name\" as my_alias WHERE my_alias.\"batch_id\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME')", statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"my_db\".\"my_name\" as my_alias WHERE my_alias.\"batch_id\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME')", statsSql.get(ROWS_INSERTED));
     }
 
     @Test
@@ -709,7 +709,7 @@ public class BulkLoadTest
             "FROM " +
             "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\"," +
             "LAKEHOUSE_UDF(OBJECT_CONSTRUCT('col_int',legend_persistence_stage.$1,'col_integer',legend_persistence_stage.$2))," +
-            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
+            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
             "FROM my_location as legend_persistence_stage) " +
             "PATTERN = '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)' " +
             "FILE_FORMAT = (FIELD_DELIMITER = ',', TYPE = 'CSV') " +
@@ -735,6 +735,6 @@ public class BulkLoadTest
         Assertions.assertNull(statsSql.get(ROWS_DELETED));
         Assertions.assertNull(statsSql.get(ROWS_TERMINATED));
         Assertions.assertNull(statsSql.get(ROWS_UPDATED));
-        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"my_db\".\"my_name\" as my_alias WHERE my_alias.\"batch_id\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME')", statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"my_db\".\"my_name\" as my_alias WHERE my_alias.\"batch_id\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME')", statsSql.get(ROWS_INSERTED));
     }
 }

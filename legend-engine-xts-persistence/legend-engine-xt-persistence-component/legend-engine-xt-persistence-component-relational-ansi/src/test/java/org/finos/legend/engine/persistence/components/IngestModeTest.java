@@ -387,27 +387,27 @@ public class IngestModeTest
             .addFields(digest)
             .build();
 
-    protected String expectedMetadataTableCreateQuery = "CREATE TABLE IF NOT EXISTS batch_metadata" +
+    protected String expectedMetadataTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"batch_metadata\"" +
             "(\"table_name\" VARCHAR(255)," +
             "\"batch_start_ts_utc\" DATETIME," +
             "\"batch_end_ts_utc\" DATETIME," +
             "\"batch_status\" VARCHAR(32)," +
             "\"table_batch_id\" INTEGER)";
 
-    protected String expectedMetadataTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS BATCH_METADATA" +
+    protected String expectedMetadataTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS \"BATCH_METADATA\"" +
             "(\"TABLE_NAME\" VARCHAR(255)," +
             "\"BATCH_START_TS_UTC\" DATETIME," +
             "\"BATCH_END_TS_UTC\" DATETIME," +
             "\"BATCH_STATUS\" VARCHAR(32)," +
             "\"TABLE_BATCH_ID\" INTEGER)";
 
-    protected String expectedMetadataTableIngestQuery = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\")" +
-            " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'DONE')";
+    protected String expectedMetadataTableIngestQuery = "INSERT INTO \"batch_metadata\" (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\")" +
+            " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'DONE')";
 
-    protected String expectedMetadataTableIngestQueryWithUpperCase = "INSERT INTO BATCH_METADATA (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\")" +
-            " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as batch_metadata WHERE batch_metadata.\"TABLE_NAME\" = 'main'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'DONE')";
+    protected String expectedMetadataTableIngestQueryWithUpperCase = "INSERT INTO \"BATCH_METADATA\" (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\")" +
+            " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"TABLE_BATCH_ID\"),0)+1 FROM \"BATCH_METADATA\" as batch_metadata WHERE batch_metadata.\"TABLE_NAME\" = 'main'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'DONE')";
 
-    protected String expectedMetadataTableIngestQueryWithPlaceHolders = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\") (SELECT 'main',{BATCH_ID_PATTERN},'{BATCH_START_TS_PATTERN}','{BATCH_END_TS_PATTERN}','DONE')";
+    protected String expectedMetadataTableIngestQueryWithPlaceHolders = "INSERT INTO \"batch_metadata\" (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\") (SELECT 'main',{BATCH_ID_PATTERN},'{BATCH_START_TS_PATTERN}','{BATCH_END_TS_PATTERN}','DONE')";
 
     protected String expectedStagingCleanupQuery = "DELETE FROM \"mydb\".\"staging\" as stage";
 

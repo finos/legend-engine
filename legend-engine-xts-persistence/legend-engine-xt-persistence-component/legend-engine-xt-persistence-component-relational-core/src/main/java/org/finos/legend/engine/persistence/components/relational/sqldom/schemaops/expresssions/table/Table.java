@@ -85,7 +85,7 @@ public class Table extends TableLike
          Case 1: db and schema both present: "<db>"."<schema>"."<table>"
          Case 2: If only db present: "<db>"."<table>"
          Case 3: If only schema present: "<schema>"."<table>"
-         Case 4: If only table present: <table>
+         Case 4: If only table present: "<table>"
          */
 
         if (StringUtils.notEmpty(db) || StringUtils.notEmpty(schema))
@@ -102,7 +102,7 @@ public class Table extends TableLike
         }
         else
         {
-            builder.append(table);
+            builder.append(SqlGenUtils.getQuotedField(table, quoteIdentifier));
         }
     }
 

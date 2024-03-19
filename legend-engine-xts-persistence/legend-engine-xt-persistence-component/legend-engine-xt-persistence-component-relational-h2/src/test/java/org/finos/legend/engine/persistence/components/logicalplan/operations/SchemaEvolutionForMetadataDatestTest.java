@@ -67,7 +67,7 @@ public class SchemaEvolutionForMetadataDatestTest extends BaseTest
 
         // Perform Schema Evolution
         List<String> schemaEvolutionSql = performSchemaEvolutionOfMetadataDataset(datasets, ingestor);
-        String expectedSql = "ALTER TABLE batch_metadata ADD COLUMN \"batch_source_info\" JSON";
+        String expectedSql = "ALTER TABLE \"batch_metadata\" ADD COLUMN \"batch_source_info\" JSON";
         Assertions.assertEquals(1, schemaEvolutionSql.size());
         Assertions.assertEquals(expectedSql, schemaEvolutionSql.get(0));
 
@@ -91,8 +91,8 @@ public class SchemaEvolutionForMetadataDatestTest extends BaseTest
 
         // Perform Schema Evolution
         List<String> schemaEvolutionSql = performSchemaEvolutionOfMetadataDataset(datasets, ingestor);
-        String expectedSql1 = "ALTER TABLE BATCH_METADATA ADD COLUMN \"BATCH_SOURCE_INFO\" JSON";
-        String expectedSql2 = "ALTER TABLE BATCH_METADATA ADD COLUMN \"ADDITIONAL_METADATA\" JSON";
+        String expectedSql1 = "ALTER TABLE \"BATCH_METADATA\" ADD COLUMN \"BATCH_SOURCE_INFO\" JSON";
+        String expectedSql2 = "ALTER TABLE \"BATCH_METADATA\" ADD COLUMN \"ADDITIONAL_METADATA\" JSON";
         Assertions.assertEquals(2, schemaEvolutionSql.size());
         Assertions.assertEquals(expectedSql1, schemaEvolutionSql.get(0));
         Assertions.assertEquals(expectedSql2, schemaEvolutionSql.get(1));
