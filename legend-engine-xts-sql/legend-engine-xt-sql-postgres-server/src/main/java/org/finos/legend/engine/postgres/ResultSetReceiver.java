@@ -41,7 +41,7 @@ import org.slf4j.Logger;
 
 class ResultSetReceiver
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(Messages.class);
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ResultSetReceiver.class);
 
 
     private final String query;
@@ -53,7 +53,7 @@ class ResultSetReceiver
 
     private CompletableFuture<Void> completionFuture = new CompletableFuture<>();
 
-    private final long rowCount = 0;
+    private long rowCount = 0;
 
     ResultSetReceiver(String query, DelayableWriteChannel channel, DelayedWrites delayedWrites,
                       boolean isSimpleQuery, FormatCodes.FormatCode[] formatCodes)
@@ -73,7 +73,6 @@ class ResultSetReceiver
         Span span = tracer.spanBuilder("ResultSet Receiver Send ResultSet").startSpan();
         try (Scope scope = span.makeCurrent())
         {
-            long rowCount = 0;
             if (rs != null)
             {
                 if (isSimpleQuery)
@@ -83,10 +82,10 @@ class ResultSetReceiver
                     Messages.sendRowDescription(directChannel, rs.getMetaData(), formatCodes);
                 }
                 PostgresResultSetMetaData metaData = rs.getMetaData();
-                List<PGType> columnTypes = new ArrayList<>(metaData.getColumnCount());
+                List<PGType<?>> columnTypes = new ArrayList<>(metaData.getColumnCount());
                 for (int i = 0; i < metaData.getColumnCount(); i++)
                 {
-                    PGType pgType = PGTypes.get(metaData.getColumnType(i + 1), metaData.getScale(i + 1));
+                    PGType<?> pgType = PGTypes.get(metaData.getColumnType(i + 1), metaData.getScale(i + 1));
                     columnTypes.add(pgType);
                 }
                 //TODO add column types to the span

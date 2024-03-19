@@ -14,34 +14,29 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
+import org.eclipse.collections.impl.utility.internal.IterableIterate;
+import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.eclipse.collections.impl.utility.internal.IterableIterate;
-import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class LegendExecutionService
 {
+    public static final String TDS_COLUMNS = "columns";
     private final LegendClient executionClient;
 
     private static final ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(LegendExecutionService.class);
 
     public LegendExecutionService(LegendClient executionClient)
     {
@@ -56,11 +51,11 @@ public class LegendExecutionService
         {
             span.setAttribute("query", query);
             JsonNode jsonNode = mapper.readTree(inputStream);
-            if (jsonNode.get("columns") != null)
+            if (jsonNode.get(TDS_COLUMNS) != null)
             {
-                ArrayNode columns = (ArrayNode) jsonNode.get("columns");
+                ArrayNode columns = (ArrayNode) jsonNode.get(TDS_COLUMNS);
                 List<LegendColumn> legendColumns = Collections.unmodifiableList(IterableIterate.collect(columns, c -> new LegendColumn(c.get("name").textValue(), c.get("type").textValue())));
-                span.setAttribute(AttributeKey.stringArrayKey("columns"), legendColumns.stream().map(legendColumn -> legendColumn.toString()).collect(Collectors.toList()));
+                span.setAttribute(AttributeKey.stringArrayKey(TDS_COLUMNS), legendColumns.stream().map(LegendColumn::toString).collect(Collectors.toList()));
                 return legendColumns;
             }
             return Collections.emptyList();
@@ -142,17 +137,4 @@ public class LegendExecutionService
             span.end();
         }
     }
-
-
-    private List<LegendColumn> getSchemaFromExecutionResponse(JsonNode jsonNode) throws JsonProcessingException
-    {
-        if (jsonNode.get("builder") != null)
-        {
-            ArrayNode columns = (ArrayNode) jsonNode.get("builder").get("columns");
-            return IterableIterate.collect(columns, c -> new LegendColumn(c.get("name").asText(), c.get("type").asText()));
-        }
-        return Collections.emptyList();
-    }
-
-
 }

@@ -17,6 +17,7 @@ package org.finos.legend.engine.postgres;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
+import java.io.IOException;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -39,14 +40,14 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 public class PostgresServerLauncher
 {
-    private String configPath;
+    private final String configPath;
 
     public PostgresServerLauncher(String configPath)
     {
         this.configPath = configPath;
     }
 
-    public void launch() throws Exception
+    public void launch() throws IOException
     {
         //TODO ADD CLI
 
@@ -76,7 +77,7 @@ public class PostgresServerLauncher
         SessionsFactory sessionFactory = serverConfig.buildSessionFactory();
         AuthenticationMethod authenticationMethod = serverConfig.buildAuthenticationMethod();
 
-        logger.info("Starting server in port: " + serverConfig.getPort());
+        logger.info("Starting server in port: {}", serverConfig.getPort());
 
         new PostgresServer(serverConfig, sessionFactory, (user, connectionProperties) -> authenticationMethod).run();
     }
@@ -112,9 +113,10 @@ public class PostgresServerLauncher
         Runtime.getRuntime().addShutdownHook(new Thread(openTelemetrySdk::close));
     }
 
-    public static void main(String[] args) throws Exception
+    public static void main(String[] args) throws IOException
     {
         String configPath = args[0];
         new PostgresServerLauncher(configPath).launch();
     }
 }
+

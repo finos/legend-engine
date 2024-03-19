@@ -78,10 +78,6 @@ public class ServerConfig
         return otelConfig;
     }
 
-    public ServerConfig()
-    {
-    }
-
     public AuthenticationMethod buildAuthenticationMethod()
     {
         IdentityProvider identityProvider;

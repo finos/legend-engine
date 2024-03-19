@@ -16,22 +16,12 @@ package org.finos.legend.engine.postgres.handler.legend;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapSetter;
-import java.io.IOException;
-import java.io.InputStream;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-import java.util.Objects;
-import java.util.concurrent.Callable;
-import java.util.function.Supplier;
-
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
-
-import javax.annotation.Nullable;
+import io.opentelemetry.semconv.SemanticAttributes;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -46,6 +36,14 @@ import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.function.IntSupplier;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 
 public class LegendHttpClient implements LegendClient
 {
@@ -67,7 +65,7 @@ public class LegendHttpClient implements LegendClient
 
     public InputStream executeQueryApi(String query)
     {
-        LOGGER.info("executing query " + query);
+        LOGGER.info("executing query {}", query);
         String apiPath = "/api/sql/v1/execution/executeQueryString";
         return executeApi(query, apiPath);
     }
@@ -75,7 +73,7 @@ public class LegendHttpClient implements LegendClient
 
     public InputStream executeSchemaApi(String query)
     {
-        LOGGER.info("executing schema query " + query);
+        LOGGER.info("executing schema query {}", query);
         String apiPath = "/api/sql/v1/execution/getSchemaFromQueryString";
         return executeApi(query, apiPath);
     }
@@ -90,9 +88,13 @@ public class LegendHttpClient implements LegendClient
         req.setEntity(stringEntity);
 
         Tracer tracer = OpenTelemetryUtil.getTracer();
-        Span span = tracer.spanBuilder("LegendHttpClient Execute Query").startSpan();
-        try (Scope scope = span.makeCurrent();)
+        Span span = tracer.spanBuilder("LegendHttpClient Execute Query")
+                .setSpanKind(SpanKind.CLIENT)
+                .startSpan();
+        try (Scope ignored = span.makeCurrent())
         {
+            span.setAttribute(SemanticAttributes.HTTP_REQUEST_METHOD, "POST");
+            span.setAttribute(SemanticAttributes.URL_FULL, uri);
             OpenTelemetryUtil.getPropagators().inject(Context.current(), req, TEXT_MAP_SETTER);
             HttpClient client = HttpClientBuilder.getHttpClient(new BasicCookieStore());
             HttpResponse res = client.execute(req);
@@ -110,13 +112,13 @@ public class LegendHttpClient implements LegendClient
     }
 
 
-    protected static InputStream handleResponse(String query, Callable<InputStream> responseContentSupplier, Supplier<Integer> responseStatusCodeSupplier)
+    protected static InputStream handleResponse(String query, Callable<InputStream> responseContentSupplier, IntSupplier responseStatusCodeSupplier)
     {
         String errorResponse = null;
         try
         {
             InputStream in = responseContentSupplier.call();
-            if (responseStatusCodeSupplier.get() == 200)
+            if (responseStatusCodeSupplier.getAsInt() == 200)
             {
                 return in;
             }
@@ -137,22 +139,18 @@ public class LegendHttpClient implements LegendClient
                 throw new LegendTdsClientException(errorMessage);
             }
         }
+        catch (LegendTdsClientException e)
+        {
+            throw e;
+        }
         catch (Exception e)
         {
-            if (e instanceof LegendTdsClientException)
+            String message = String.format("Unable to parse json. Execution API response status[%s]", responseStatusCodeSupplier.getAsInt());
+            if (responseStatusCodeSupplier.getAsInt() != 200)
             {
-                throw (LegendTdsClientException) e;
+                message = String.format("%s, response: [%s]", message, errorResponse);
             }
-            else
-            {
-                String message = String.format("Unable to parse json. Execution API response status[%s]", responseStatusCodeSupplier.get());
-                if (responseStatusCodeSupplier.get() != 200)
-                {
-                    message = String.format("%s, response: [%s]", message, errorResponse);
-                }
-                throw new LegendTdsClientException(message);
-            }
-
+            throw new LegendTdsClientException(message);
         }
     }
 
