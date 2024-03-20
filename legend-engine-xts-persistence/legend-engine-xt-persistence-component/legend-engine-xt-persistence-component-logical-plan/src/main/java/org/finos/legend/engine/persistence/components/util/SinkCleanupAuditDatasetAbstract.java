@@ -43,6 +43,12 @@ public interface SinkCleanupAuditDatasetAbstract
     }
 
     @Default
+    default String idField()
+    {
+        return "id";
+    }
+
+    @Default
     default String tableNameField()
     {
         return "table_name";
@@ -75,6 +81,7 @@ public interface SinkCleanupAuditDatasetAbstract
             .group(auditDatasetGroupName())
             .name(auditDatasetName())
             .schema(SchemaDefinition.builder()
+                .addFields(Field.builder().name(idField()).type(FieldType.of(DataType.VARCHAR, 255, null)).build())
                 .addFields(Field.builder().name(tableNameField()).type(FieldType.of(DataType.VARCHAR, 255, null)).build())
                 .addFields(Field.builder().name(executionTimeField()).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build())
                 .addFields(Field.builder().name(statusField()).type(FieldType.of(DataType.VARCHAR, 32, null)).build())

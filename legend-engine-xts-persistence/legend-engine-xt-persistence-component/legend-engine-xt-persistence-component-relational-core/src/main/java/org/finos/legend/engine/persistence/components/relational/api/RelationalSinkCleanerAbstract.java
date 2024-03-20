@@ -60,6 +60,8 @@ public abstract class RelationalSinkCleanerAbstract
 
     public abstract String requestedBy();
 
+    public abstract String id();
+
     @Default
     public SinkCleanupAuditDataset auditDataset()
     {
@@ -182,18 +184,21 @@ public abstract class RelationalSinkCleanerAbstract
     private Operation buildInsertCondition(AuditTableStatus status)
     {
         DatasetReference auditTableRef = this.auditDataset().get().datasetReference();
+        FieldValue id = FieldValue.builder().datasetRef(auditTableRef).fieldName(auditDataset().idField()).build();
         FieldValue tableName = FieldValue.builder().datasetRef(auditTableRef).fieldName(auditDataset().tableNameField()).build();
         FieldValue executionTs = FieldValue.builder().datasetRef(auditTableRef).fieldName(auditDataset().executionTimeField()).build();
         FieldValue auditStatus = FieldValue.builder().datasetRef(auditTableRef).fieldName(auditDataset().statusField()).build();
         FieldValue requestedBy = FieldValue.builder().datasetRef(auditTableRef).fieldName(auditDataset().requestedBy()).build();
 
         List<org.finos.legend.engine.persistence.components.logicalplan.values.Value> fieldsToInsert = new ArrayList<>();
+        fieldsToInsert.add(id);
         fieldsToInsert.add(tableName);
         fieldsToInsert.add(executionTs);
         fieldsToInsert.add(auditStatus);
         fieldsToInsert.add(requestedBy);
 
         List<org.finos.legend.engine.persistence.components.logicalplan.values.Value> selectFields = new ArrayList<>();
+        selectFields.add(StringValue.of(id()));
         selectFields.add(getMainTable());
         selectFields.add(BatchStartTimestamp.INSTANCE);
         selectFields.add(StringValue.of(status.name()));

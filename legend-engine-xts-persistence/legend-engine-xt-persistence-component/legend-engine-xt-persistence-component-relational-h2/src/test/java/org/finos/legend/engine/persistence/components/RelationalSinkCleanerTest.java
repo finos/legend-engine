@@ -44,6 +44,7 @@ public class RelationalSinkCleanerTest extends BaseTest
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .requestedBy("lh_dev")
                 .metadataDataset(metadata)
+                .id("ae5d-gt34-uyt5-bdf68")
                 .build();
 
         //Table counts before sink cleanup
@@ -73,6 +74,7 @@ public class RelationalSinkCleanerTest extends BaseTest
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .requestedBy("lh_dev")
                 .metadataDataset(metadata.withMetadataDatasetName("batch_metadata2"))
+                .id("ae5d-gt34-uyt5-bdf68")
                 .build();
 
         SinkCleanupIngestorResult result = sinkCleaner.executeOperationsForSinkCleanup(JdbcConnection.of(h2Sink.connection()));
