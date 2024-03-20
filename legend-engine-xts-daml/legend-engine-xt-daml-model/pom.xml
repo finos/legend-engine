@@ -18,7 +18,7 @@
     <parent>
         <artifactId>legend-engine-xts-daml</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.39.0</version>
+        <version>4.41.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -108,7 +108,16 @@
         </dependency>
          <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-shared-format-model</artifactId>
+            <artifactId>legend-engine-external-format-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-external-format-generation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-external-format-compiler</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -142,7 +151,7 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-shared-format-model</artifactId>
+            <artifactId>legend-engine-external-format-example</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>

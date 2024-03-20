@@ -36,6 +36,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_external_format_flatdata_externalFormatContract;
 import org.finos.legend.pure.generated.core_external_format_flatdata_java_platform_binding_legendJavaPlatformBinding_descriptor;
@@ -82,7 +84,7 @@ public class ServiceStoreTestUtils
     public static SingleExecutionPlan buildPlanForQuery(String grammar, String mapping, String runtime)
     {
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(grammar);
-        PureModel pureModel = Compiler.compile(contextData, null, null);
+        PureModel pureModel = Compiler.compile(contextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         MutableList<Root_meta_pure_extension_Extension> extensions = Lists.mutable.empty();
         extensions.addAllIterable(
@@ -125,8 +127,8 @@ public class ServiceStoreTestUtils
 
         Map<String, Result> vars = org.eclipse.collections.impl.factory.Maps.mutable.ofInitialCapacity(params.size());
         params.forEach((key, value) -> vars.put(key, new ConstantResult(value)));
-
-        JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(singleExecutionPlan, vars, (String) null, Lists.mutable.with(new KerberosProfile(LocalCredentials.INSTANCE)), null);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(Lists.mutable.with(new KerberosProfile(LocalCredentials.INSTANCE)));
+        JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(singleExecutionPlan, vars, (String) null, identity, null);
         return result.flush(new JsonStreamToJsonDefaultSerializer(result));
     }
 }

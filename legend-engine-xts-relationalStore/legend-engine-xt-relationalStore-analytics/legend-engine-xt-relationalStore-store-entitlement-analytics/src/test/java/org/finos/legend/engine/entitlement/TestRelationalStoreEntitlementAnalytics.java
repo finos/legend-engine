@@ -26,6 +26,8 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
@@ -65,7 +67,7 @@ public class TestRelationalStoreEntitlementAnalytics
     {
         String pureModelString = getResourceAsString(modelFilePath);
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString, false);
-        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
+        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
         Mapping mapping = pureModel.getMapping(mappingPath);
         Root_meta_core_runtime_Runtime runtime = pureModel.getRuntime(runtimePath);
         RelationalDatabaseEntitlementServiceExtension extension = new RelationalDatabaseEntitlementServiceExtension();
@@ -129,7 +131,7 @@ public class TestRelationalStoreEntitlementAnalytics
     {
         String pureModelString = getResourceAsString("models/relationalModel.pure");
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString, false);
-        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
+        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
         Store store = pureModel.getStore("store::CovidDataStoreA");
         Assert.assertEquals(core_relational_store_entitlement_utility_relationalTableAnalyzer.Root_meta_analytics_store_entitlements_getTablesFromDatabase_Database_1__Table_MANY_((Database) store, pureModel.getExecutionSupport()).size(), 2);
     }

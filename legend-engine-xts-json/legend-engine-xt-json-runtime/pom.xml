@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-json</artifactId>
-        <version>4.39.0</version>
+        <version>4.41.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -106,6 +106,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-shared-javaCompiler</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-core</artifactId>
+        </dependency>
         <!-- ENGINE -->
 
         <dependency>
@@ -127,13 +131,6 @@
             <artifactId>eclipse-collections</artifactId>
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
-
-        <!-- PAC4J -->
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- PAC4J -->
 
         <!-- TEST -->
         <dependency>
@@ -168,7 +165,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-shared-format-model</artifactId>
+            <artifactId>legend-engine-external-format-example</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
@@ -189,7 +186,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-shared-format-model</artifactId>
+            <artifactId>legend-engine-external-format-core</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -219,7 +216,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-store-relational</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-store-relational</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->

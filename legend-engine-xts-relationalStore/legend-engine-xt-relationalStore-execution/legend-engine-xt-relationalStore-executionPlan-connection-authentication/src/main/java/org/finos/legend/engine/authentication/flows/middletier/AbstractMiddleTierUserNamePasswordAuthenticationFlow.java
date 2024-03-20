@@ -62,7 +62,7 @@ public abstract class AbstractMiddleTierUserNamePasswordAuthenticationFlow imple
     public Credential makeCredential(Identity identity, StaticDatasourceSpecification datasourceSpecification, MiddleTierUserNamePasswordAuthenticationStrategy authenticationStrategy, RuntimeContext credentialAcquisitionContext) throws Exception
     {
         String logMessage = String.format("Acquiring middle tier credential. Context params ={}", credentialAcquisitionContext.getContextParams());
-        LOGGER.info(new LogInfo(LoggingEventType.MIDDLETIER_CREDENTIAL_ACQUISITION, logMessage).toString());
+        LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.MIDDLETIER_CREDENTIAL_ACQUISITION, logMessage).toString());
 
         this.parseUsageContext(credentialAcquisitionContext);
         this.parseResourceContext(credentialAcquisitionContext);

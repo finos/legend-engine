@@ -34,6 +34,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -75,17 +77,18 @@ public class StoreEntitlementAnalytics
     public Response generateDatasetSpecifications(StoreEntitlementAnalyticsInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        PureModel pureModel = modelManager.loadModel(input.model, input.clientVersion == null ? PureClientVersions.production : input.clientVersion, profiles, null);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        PureModel pureModel = modelManager.loadModel(input.model, input.clientVersion == null ? PureClientVersions.production : input.clientVersion, identity, null);
         Mapping mapping = pureModel.getMapping(input.mappingPath);
         Root_meta_core_runtime_Runtime runtime = pureModel.getRuntime(input.runtimePath);
         try (Scope scope = GlobalTracer.get().buildSpan("generate dataset specifications").startActive(true))
         {
             List<DatasetSpecification> datasets = LazyIterate.flatCollect(this.entitlementServiceExtensions, extension -> extension.generateDatasetSpecifications(input.query, input.runtimePath, runtime, input.mappingPath, mapping, input.model, pureModel)).toList();
-            return ManageConstantResult.manageResult(profiles, new SurveyDatasetsResult(datasets), objectMapper);
+            return ManageConstantResult.manageResult(identity.getName(), new SurveyDatasetsResult(datasets), objectMapper);
         }
         catch (Exception e)
         {
-            return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, profiles);
+            return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, identity.getName());
         }
     }
 
@@ -97,18 +100,19 @@ public class StoreEntitlementAnalytics
     public Response generateEntitlementReports(EntitlementReportAnalyticsInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         StoreEntitlementAnalyticsInput storeEntitlementAnalyticsInput = input.getStoreEntitlementAnalyticsInput();
-        PureModel pureModel = modelManager.loadModel(storeEntitlementAnalyticsInput.model, storeEntitlementAnalyticsInput.clientVersion == null ? PureClientVersions.production : storeEntitlementAnalyticsInput.clientVersion, profiles, null);
+        PureModel pureModel = modelManager.loadModel(storeEntitlementAnalyticsInput.model, storeEntitlementAnalyticsInput.clientVersion == null ? PureClientVersions.production : storeEntitlementAnalyticsInput.clientVersion, identity, null);
         Mapping mapping = pureModel.getMapping(storeEntitlementAnalyticsInput.mappingPath);
         Root_meta_core_runtime_Runtime runtime = pureModel.getRuntime(storeEntitlementAnalyticsInput.runtimePath);
         try (Scope scope = GlobalTracer.get().buildSpan("check entitlements").startActive(true))
         {
-            List<DatasetEntitlementReport> reports = LazyIterate.flatCollect(this.entitlementServiceExtensions, extension -> extension.generateDatasetEntitlementReports(input.getReports(), storeEntitlementAnalyticsInput.query, storeEntitlementAnalyticsInput.runtimePath, runtime, storeEntitlementAnalyticsInput.mappingPath, mapping, storeEntitlementAnalyticsInput.model, pureModel, profiles)).toList();
-            return ManageConstantResult.manageResult(profiles, new CheckEntitlementsResult(reports), objectMapper);
+            List<DatasetEntitlementReport> reports = LazyIterate.flatCollect(this.entitlementServiceExtensions, extension -> extension.generateDatasetEntitlementReports(input.getReports(), storeEntitlementAnalyticsInput.query, storeEntitlementAnalyticsInput.runtimePath, runtime, storeEntitlementAnalyticsInput.mappingPath, mapping, storeEntitlementAnalyticsInput.model, pureModel, identity)).toList();
+            return ManageConstantResult.manageResult(identity.getName(), new CheckEntitlementsResult(reports), objectMapper);
         }
         catch (Exception e)
         {
-            return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, profiles);
+            return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, identity.getName());
         }
     }
 }

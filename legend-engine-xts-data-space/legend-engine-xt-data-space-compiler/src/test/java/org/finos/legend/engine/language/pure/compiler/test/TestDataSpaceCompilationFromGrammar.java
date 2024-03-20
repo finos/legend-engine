@@ -19,7 +19,7 @@ import org.junit.Test;
 public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
     @Test
-    public void testSuccessfulMappingIncludeDataspace()
+    public void testFailedRuntimeConnectionStoreDataspace()
     {
         String models = "Class test::A extends test::B {\n" +
                 "  prop1: String[1];\n" +
@@ -56,6 +56,164 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  [\n" +
                 "    model::dummyMapping\n" +
                 "  ];\n" +
+                "   connectionStores:\n" +
+                "   [\n" +
+                "       model::connection:\n" +
+                "       [\n" +
+                "           (dataspace) model::nonExistantDataspace\n" +
+                "       ]\n" +
+                "   ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection model::connection\n" +
+                "{\n" +
+                "  class: test::B;\n" +
+                "  url: 'executor:default';\n" +
+                "}\n", "COMPILATION error at [39:12-50]: Dataspace model::nonExistantDataspace cannot be found.");
+    }
+
+    @Test
+    public void testSuccessfulMappingIncludeDataspace()
+    {
+        String models = "Class test::A extends test::B {\n" +
+                "  prop1: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::S_A {\n" +
+                "  prop1: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "  currency: String[*];\n" +
+                "}\n" +
+                "\n";
+        test(models +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "Mapping test::M1 (\n" +
+                "   test::A[1]: Pure {\n" +
+                "      ~src test::S_A\n" +
+                "      prop1: $src.prop1\n" +
+                "   }\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    test::M1\n" +
+                "  ];\n" +
+                "   connectionStores:\n" +
+                "   [\n" +
+                "       model::connection:\n" +
+                "       [\n" +
+                "           (dataspace) model::dataSpace\n" +
+                "       ]\n" +
+                "   ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection model::connection\n" +
+                "{\n" +
+                "  class: test::B;\n" +
+                "  url: 'executor:default';\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Data\n" +
+                "Data com::model::someDataElement\n" +
+                "{\n" +
+                "  ExternalFormat\n" +
+                "  #{\n" +
+                "    contentType: 'test';\n" +
+                "    data: 'test';\n" +
+                "  }#\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: test::M1;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "      testData:\n" +
+                "        Reference\n" +
+                "        #{\n" +
+                "          com::model::someDataElement\n" +
+                "        }#;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testRuntimeIncludeDataspace()
+    {
+        String models = "Class test::A extends test::B {\n" +
+                "  prop1: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::S_A {\n" +
+                "  prop1: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "  currency: String[*];\n" +
+                "}\n" +
+                "\n";
+        test(models +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "Mapping test::M1 (\n" +
+                "   include dataspace model::dataSpace\n" +
+                "   test::A[1]: Pure {\n" +
+                "      ~src test::S_A\n" +
+                "      prop1: $src.prop1\n" +
+                "   }\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "   connectionStores:\n" +
+                "   [\n" +
+                "       model::connection:\n" +
+                "       [\n" +
+                "           ModelStore\n" +
+                "       ]\n" +
+                "   ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection model::connection\n" +
+                "{\n" +
+                "  class: test::B;\n" +
+                "  url: 'executor:default';\n" +
                 "}\n" +
                 "\n" +
                 "\n" +
@@ -590,6 +748,199 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
     }
 
     @Test
+    public void testDataSpaceWithTemplateExecutable()
+    {
+        test("Class model::element {}\n" +
+                "Class model::sub::element {}\n" +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  elements: [model::element, model, -model::sub];\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      title: 'Template 1';\n" +
+                "      query: src: model::sub::element[1]|$src;\n" +
+                "      executionContextKey: 'Context 1';\n" +
+                "    },\n" +
+                "    {\n" +
+                "      title: 'Template 2';\n" +
+                "      query: src: model::sub::element[1]|$src;\n" +
+                "    },\n" +
+                "    {\n" +
+                "      title: 'Template 3';\n" +
+                "      description: 'an example of a template query';\n" +
+                "      query: src: model::sub::element[1]|$src;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+
+        test("Class model::element {}\n" +
+                "Class model::sub::element {}\n" +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  elements: [model::element, model, -model::sub];\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      title: 'Template 1';\n" +
+                "      query: src: model::sub::element[1]|$src;\n" +
+                "      executionContextKey: 'Context 1';\n" +
+                "    },\n" +
+                "    {\n" +
+                "      title: 'Template 2';\n" +
+                "      query: src: model::sub::element[1]|$srssc;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n", "COMPILATION error at [41:42-47]: Can't find variable class for variable 'srssc' in the graph");
+
+        test("Class model::element {}\n" +
+                "Class model::sub::element {}\n" +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  elements: [model::element, model, -model::sub];\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      title: 'Template 1';\n" +
+                "      query: src: model::sub::element[1]|$src;\n" +
+                "      executionContextKey: 'Context 1';\n" +
+                "    },\n" +
+                "    {\n" +
+                "      title: 'Template 1';\n" +
+                "      query: src: model::sub::element[1]|$srssc;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n", "COMPILATION error at [20:1-44:1]: Data space executable title, Template 1, is not unique");
+
+        test("Class model::element {}\n" +
+                "Class model::sub::element {}\n" +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  elements: [model::element, model, -model::sub];\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      title: 'Template 1';\n" +
+                "      query: src: model::sub::element[1]|$src;\n" +
+                "      executionContextKey: 'random 1';\n" +
+                "    },\n" +
+                "    {\n" +
+                "      title: 'Template 2';\n" +
+                "      query: src: model::sub::element[1]|$srssc;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n", "COMPILATION error at [20:1-44:1]: Data space template executable's executionContextKey, random 1, is not valid. Please specify one from [Context 1]");
+    }
+
+    @Test
     public void testDataSpaceWithUnsupportedElement()
     {
         test("Class model::element {}\n" +
@@ -840,7 +1191,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "  executables: [{ title: 'MyExec'; executable: model::MyService; }, { title: 'MyExec'; executable: model::Mine; }];\n" +
-                "}\n", "COMPILATION error at [53:88-111]: Can't find the packageable element 'model::Mine'");
+                "  executables: [{ title: 'MyExec'; executable: model::MyService; }, { title: 'MyExec1'; executable: model::Mine; }];\n" +
+                "}\n", "COMPILATION error at [53:89-112]: Can't find the packageable element 'model::Mine'");
     }
 }

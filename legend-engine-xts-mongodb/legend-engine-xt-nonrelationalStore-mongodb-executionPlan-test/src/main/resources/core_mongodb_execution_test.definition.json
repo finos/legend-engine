@@ -6,6 +6,7 @@
     "platform_functions",
     "platform_functions_json",
     "platform_dsl_mapping",
+    "platform_dsl_store",
     "platform_dsl_graph",
     "core",
     "core_external_compiler",

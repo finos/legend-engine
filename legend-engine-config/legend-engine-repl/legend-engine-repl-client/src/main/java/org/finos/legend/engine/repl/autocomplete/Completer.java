@@ -35,18 +35,17 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.*;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.RelationStoreAccessor;
 import org.finos.legend.engine.repl.autocomplete.handlers.*;
 import org.finos.legend.engine.repl.autocomplete.parser.ParserFixer;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 
@@ -60,8 +59,16 @@ public class Completer
     private final int lineOffset;
     private final MutableMap<String, FunctionHandler> handlers;
 
+    private MutableList<CompleterExtension> extensions;
+
     public Completer(String buildCodeContext)
     {
+        this(buildCodeContext, Lists.mutable.empty());
+    }
+
+    public Completer(String buildCodeContext, MutableList<CompleterExtension> extensions)
+    {
+        this.extensions = extensions;
         this.buildCodeContext = buildCodeContext;
         this.header =
                 buildCodeContext +
@@ -107,7 +114,7 @@ public class Completer
             ValueSpecification currentExpression = findPartiallyWrittenExpression(vs, lineOffset, value.length());
 
             PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(buildCodeContext);
-            PureModel pureModel = Compiler.compile(pureModelContextData, null, null);
+            PureModel pureModel = Compiler.compile(pureModelContextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
             ProcessingContext processingContext = new ProcessingContext("");
 
@@ -180,30 +187,10 @@ public class Completer
     private CompletionResult processClassInstance(ClassInstance topExpression, PureModel pureModel)
     {
         Object islandExpr = topExpression.value;
-        if (islandExpr instanceof RelationStoreAccessor)
+        CompletionResult result = this.extensions.collect(x -> x.extraClassInstanceProcessor(islandExpr, pureModel)).getFirst();
+        if (result != null)
         {
-            MutableList<String> path = Lists.mutable.withAll(((RelationStoreAccessor) islandExpr).path);
-            String writtenPath = path.makeString("::").replace(ParserFixer.magicToken, "");
-            MutableList<Store> elements = pureModel.getAllStores().select(c -> nameMatch(c, writtenPath)).toList();
-            if (elements.size() == 1 &&
-                    writtenPath.startsWith(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(elements.get(0))) &&
-                    !writtenPath.equals(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(elements.get(0)))
-            )
-            {
-                org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database db = (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database) elements.get(0);
-                String writtenTableName = writtenPath.replace(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(db), "").replace("::", "");
-                MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table> tables = db._schemas().isEmpty() ? Lists.mutable.empty() : db._schemas().getFirst()._tables().toList();
-                MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table> foundTables = tables.select(c -> c._name().startsWith(writtenTableName));
-                if ((foundTables.size() == 1 && foundTables.get(0)._name().equals(path.getLast())))
-                {
-                    return new CompletionResult(Lists.mutable.empty());
-                }
-                else
-                {
-                    return new CompletionResult(foundTables.collect(c -> new CompletionItem(c._name(), c._name() + "}")));
-                }
-            }
-            return new CompletionResult(ListIterate.collect(elements, c -> new CompletionItem(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(c), ">{" + org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(c))).toList());
+            return result;
         }
         return new CompletionResult(Lists.mutable.empty());
     }
@@ -238,19 +225,6 @@ public class Completer
     }
     //--------------------------------------------------------------------
 
-
-    private static boolean nameMatch(PackageableElement c, String writtenPath)
-    {
-        String path = org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(c);
-        if (path.length() > writtenPath.length())
-        {
-            return path.startsWith(writtenPath);
-        }
-        else
-        {
-            return writtenPath.startsWith(path);
-        }
-    }
 
     private ValueSpecification parseValueSpecification(String value)
     {

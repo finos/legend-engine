@@ -1,0 +1,73 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::transformation::queryToPure::tests::*;
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDateDiff():Boolean[1]
+{
+  test(
+    'SELECT core_date_diff(\'day\', StrictDate, DateTime) as DateDiff FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->project([
+          col(row:TDSRow[1] | dateDiff($row.getStrictDate('StrictDate'), $row.getDateTime('DateTime'), DurationUnit.DAYS), 'DateDiff')
+        ])
+      }
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMostRecentDayOfWeek():Boolean[1]
+{
+  test(
+    'SELECT core_most_recent_day_of_week(\'monday\', StrictDate) as MostRecentDayOfWeek FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->project([
+          col(row:TDSRow[1] | mostRecentDayOfWeek($row.getStrictDate('StrictDate'), DayOfWeek.Monday), 'MostRecentDayOfWeek')
+        ])
+      }
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testPreviousDayOfWeek():Boolean[1]
+{
+  test(
+    'SELECT core_previous_day_of_week(\'monday\', StrictDate) as PreviousDayOfWeek FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->project([
+          col(row:TDSRow[1] | previousDayOfWeek($row.getStrictDate('StrictDate'), DayOfWeek.Monday), 'PreviousDayOfWeek')
+        ])
+      }
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testUniqueValueOnly():Boolean[1]
+{
+  test(
+    'SELECT StrictDate, core_unique_value_only(String) as Unique FROM service."/service/service1" group by StrictDate',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->groupBy([
+          'StrictDate'
+        ], [
+          agg('Unique', row | $row.getString('String'), y | $y->uniqueValueOnly())
+        ])
+      }, false
+  )
+}

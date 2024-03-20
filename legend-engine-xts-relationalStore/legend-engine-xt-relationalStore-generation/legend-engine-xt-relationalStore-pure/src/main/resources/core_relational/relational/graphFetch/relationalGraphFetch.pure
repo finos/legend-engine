@@ -158,10 +158,10 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::dbsUsin
    dbsUsingLoadFromSubQueryTempTableStrategyForComplexProperty()->concatenate(dbsUsingLoadFromResultSetAsValueTuplesTempTableStrategyForNonPrimitiveChildNode());
 }
 
-function meta::relational::graphFetch::executionPlan::createTable(tempTableName: String[1], columns: SQLResultColumn[*], tempTableSchemaName: String[0..1], dbConfig: DbConfig[1]): Table[1]
+function meta::relational::graphFetch::executionPlan::createTable(tempTableName: String[1], dc: meta::external::store::relational::runtime::DatabaseConnection[1], columns: SQLResultColumn[*], tempTableSchemaName: String[0..1], dbConfig: DbConfig[1]): Table[1]
 {
   let tempTableColumns = $columns->map(x|^Column(name = $x.label, type = $x.dataType->toOne()));
-  ^Table( name = $dbConfig.procesTempTableName($tempTableName),
+  ^Table( name = $dbConfig.procesTempTableName($tempTableName, $dc),
           schema = ^Schema(name = if($tempTableSchemaName->isNotEmpty(),|$tempTableSchemaName->toOne(),|'default') , database = ^Database(name='TempTableDb')),
           columns = $tempTableColumns,
           temporaryTable = true
@@ -402,7 +402,7 @@ function meta::relational::graphFetch::executionPlan::planRootGraphFetchExecutio
    let dbConfig = $dbType->createDbConfig();
    let tempTableName = tempTableName(0);
    let tempTableStrategy = if(($hasChildren && useTempTableStrategy($dbType)),
-                            | let table = createTable($tempTableName,$columns,[],$dbConfig);
+                            | let table = createTable($tempTableName,$dbConnection,$columns,[],$dbConfig);
                               let createTempTableNode = meta::relational::graphFetch::executionPlan::getCreateTempTableNode($dbType,$table,$dbConnection,$extensions);
                               let loadTempTableNode = meta::relational::graphFetch::executionPlan::getLoadTempTableNodeForRoot($dbType,$table,$dbConnection,$extensions);
                               let dropTempTableNode = meta::relational::graphFetch::executionPlan::getDropTempTableNode($dbType,$table,$dbConnection,$extensions);
@@ -416,7 +416,7 @@ function meta::relational::graphFetch::executionPlan::planRootGraphFetchExecutio
       graphFetchTree = $rootTree,
       batchSize      = $batchSize,
       tempTableName  = $tempTableName,
-      processedTempTableName = $dbConfig.procesTempTableName($tempTableName),
+      processedTempTableName = $dbConfig.procesTempTableName($tempTableName, $dbConnection),
       columns        = $columns,
       children       = $children,
       executionNodes = $wrappedNode,
@@ -529,7 +529,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::planGra
    let tempTableName = tempTableName($currentIdx);
 
    let tempTableStrategy = if(($hasChildren && useTempTableStrategy($dbType)),
-                            | let table = createTable($tempTableName,$columns,[],$dbConfig);
+                            | let table = createTable($tempTableName,$dbConnection,$columns,[],$dbConfig);
                               let createTempTableNode = meta::relational::graphFetch::executionPlan::getCreateTempTableNode($dbType,$table,$dbConnection,$extensions);
                               let loadTempTableNode = meta::relational::graphFetch::executionPlan::getLoadTempTableNodeForNonPrimitiveChild($dbType,$table,$dbConnection,$extensions,$sqlNode.sqlQuery);
                               let dropTempTableNode = meta::relational::graphFetch::executionPlan::getDropTempTableNode($dbType,$table,$dbConnection,$extensions);
@@ -544,7 +544,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::planGra
       parentIndex    = $parentIdx,
       graphFetchTree = $currentTree,
       tempTableName  = $tempTableName,
-      processedTempTableName = $dbConfig.procesTempTableName($tempTableName),
+      processedTempTableName = $dbConfig.procesTempTableName($tempTableName, $dbConnection),
       columns        = $columns,
       children       = $children,
       executionNodes = $wrappedNode
@@ -634,7 +634,7 @@ function meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExe
    let parentTempTableName = crossTempTableName($parentIdx);
 
    let tempTableStrategy = if(($hasChildren && useTempTableStrategy($dbType)),
-                            | let table = createTable($tempTableName,$columns,[],$dbConfig);
+                            | let table = createTable($tempTableName,$dbConnection,$columns,[],$dbConfig);
                               let createTempTableNode = meta::relational::graphFetch::executionPlan::getCreateTempTableNode($dbType,$table,$dbConnection,$extensions);
                               let loadTempTableNode = meta::relational::graphFetch::executionPlan::getLoadTempTableNodeForRoot($dbType,$table,$dbConnection,$extensions);
                               let dropTempTableNode = meta::relational::graphFetch::executionPlan::getDropTempTableNode($dbType,$table,$dbConnection,$extensions);
@@ -642,7 +642,7 @@ function meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExe
                             | []);
 
    let parentTempTableColumns = $srcProperties->map(x | ^SQLResultColumn(label = $x.name->toOne(), dataType = $x->crossKeyRelationalType()));
-   let parentTable = createTable($parentTempTableName,$parentTempTableColumns,[],$dbConfig);
+   let parentTable = createTable($parentTempTableName,$dbConnection,$parentTempTableColumns,[],$dbConfig);
    let parentCreateTempTableNode = meta::relational::graphFetch::executionPlan::getCreateTempTableNode($dbType,$parentTable,$dbConnection,$extensions);
    let parentLoadTempTableNode = meta::relational::graphFetch::executionPlan::getLoadTempTableNodeForRoot($dbType,$parentTable,$dbConnection,$extensions);
    let parentDropTempTableNode = meta::relational::graphFetch::executionPlan::getDropTempTableNode($dbType,$parentTable,$dbConnection,$extensions);
@@ -656,10 +656,10 @@ function meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExe
       parentIndex             = $parentIdx,
       graphFetchTree          = $rootTree,
       tempTableName           = $tempTableName,
-      processedTempTableName  = $dbConfig.procesTempTableName($tempTableName),
+      processedTempTableName  = $dbConfig.procesTempTableName($tempTableName,$dbConnection),
       columns                 = $columns,
       parentTempTableName     = $parentTempTableName,
-      processedParentTempTableName = $dbConfig.procesTempTableName($parentTempTableName),
+      processedParentTempTableName = $dbConfig.procesTempTableName($parentTempTableName,$dbConnection),
       parentTempTableColumns  = $parentTempTableColumns,
       children                = $children,
       executionNodes          = $wrappedNode

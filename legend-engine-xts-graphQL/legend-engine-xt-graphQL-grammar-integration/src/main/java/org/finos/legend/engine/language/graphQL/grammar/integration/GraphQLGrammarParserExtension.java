@@ -15,11 +15,18 @@
 package org.finos.legend.engine.language.graphQL.grammar.integration;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.grammar.from.extension.EmbeddedPureParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 
 public class GraphQLGrammarParserExtension implements PureGrammarParserExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Query", "GraphQL");
+    }
+
     @Override
     public Iterable<? extends EmbeddedPureParser> getExtraEmbeddedPureParsers()
     {

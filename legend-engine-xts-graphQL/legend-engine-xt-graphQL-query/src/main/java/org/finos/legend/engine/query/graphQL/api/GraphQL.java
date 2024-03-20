@@ -18,7 +18,6 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
@@ -28,8 +27,9 @@ import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.WorkspaceSDLC;
-import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
+
 
 public abstract class GraphQL
 {
@@ -45,7 +45,7 @@ public abstract class GraphQL
         return new ProtocolToMetamodelTranslator().translate(document, pureModel);
     }
 
-    protected PureModel loadSDLCProjectModel(MutableList<CommonProfile> profiles, HttpServletRequest request, String projectId, String workspaceId, boolean isGroupWorkspace) throws PrivilegedActionException
+    protected PureModel loadSDLCProjectModel(Identity identity, HttpServletRequest request, String projectId, String workspaceId, boolean isGroupWorkspace) throws PrivilegedActionException
     {
         WorkspaceSDLC sdlcInfo = new WorkspaceSDLC();
         sdlcInfo.project = projectId;
@@ -55,15 +55,15 @@ public abstract class GraphQL
         PureModelContextPointer pointer = new PureModelContextPointer();
         pointer.sdlcInfo = sdlcInfo;
 
-        Subject subject = ProfileManagerHelper.extractSubject(profiles);
+        Subject subject = identity.getSubjectFromIdentity();
         return subject == null ?
-                this.modelManager.loadModel(pointer, PureClientVersions.production, profiles, "") :
-                Subject.doAs(subject, (PrivilegedExceptionAction<PureModel>) () -> this.modelManager.loadModel(pointer, PureClientVersions.production, profiles, ""));
+                this.modelManager.loadModel(pointer, PureClientVersions.production, identity, "") :
+                Subject.doAs(subject, (PrivilegedExceptionAction<PureModel>) () -> this.modelManager.loadModel(pointer, PureClientVersions.production, identity, ""));
     }
 
-    protected PureModel loadProjectModel(MutableList<CommonProfile> profiles, String groupId, String artifactId, String versionId) throws PrivilegedActionException
+    protected PureModel loadProjectModel(Identity identity, String groupId, String artifactId, String versionId) throws PrivilegedActionException
     {
-        Subject subject = ProfileManagerHelper.extractSubject(profiles);
+        Subject subject = identity.getSubjectFromIdentity();
         PureModelContextPointer pointer = new PureModelContextPointer();
         AlloySDLC sdlcInfo = new AlloySDLC();
         sdlcInfo.groupId = groupId;
@@ -71,7 +71,7 @@ public abstract class GraphQL
         sdlcInfo.version = versionId;
         pointer.sdlcInfo = sdlcInfo;
         return subject == null ?
-                this.modelManager.loadModel(pointer, PureClientVersions.production, profiles, "") :
-                Subject.doAs(subject, (PrivilegedExceptionAction<PureModel>) () -> this.modelManager.loadModel(pointer, PureClientVersions.production, profiles, ""));
+                this.modelManager.loadModel(pointer, PureClientVersions.production, identity, "") :
+                Subject.doAs(subject, (PrivilegedExceptionAction<PureModel>) () -> this.modelManager.loadModel(pointer, PureClientVersions.production, identity, ""));
     }
 }

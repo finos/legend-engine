@@ -39,10 +39,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecut
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_external_format_flatdata_externalFormatContract;
 import org.finos.legend.pure.generated.core_external_format_flatdata_java_platform_binding_legendJavaPlatformBinding_descriptor;
-import org.finos.legend.pure.generated.core_java_platform_binding_legendJavaPlatformBinding_binding_bindingLegendJavaPlatformBindingExtension;
+import org.finos.legend.pure.generated.core_java_platform_binding_external_format_legendJavaPlatformBinding_externalFormat_bindingLegendJavaPlatformBindingExtension;
 import org.finos.legend.pure.generated.core_pure_binding_extension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
@@ -60,7 +62,7 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
     @BeforeClass
     public static void setup()
     {
-        ExecutionSupport executionSupport = Compiler.compile(PureModelContextData.newPureModelContextData(), null, null).getExecutionSupport();
+        ExecutionSupport executionSupport = Compiler.compile(PureModelContextData.newPureModelContextData(), null, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName()).getExecutionSupport();
         formatExtensions = Collections.singletonList(core_external_format_flatdata_externalFormatContract.Root_meta_external_format_flatdata_extension_flatDataFormatExtension__Extension_1_(executionSupport));
         formatDescriptors = Collections.singletonList(core_external_format_flatdata_java_platform_binding_legendJavaPlatformBinding_descriptor.Root_meta_external_format_flatdata_executionPlan_platformBinding_legendJava_flatDataJavaBindingDescriptor__ExternalFormatLegendJavaPlatformBindingDescriptor_1_(executionSupport));
     }
@@ -147,14 +149,14 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
         PureModelContextData generated = SchemaToModelGenerationTest.generateModel(schemaCode, config, true, "test::gen::TestBinding");
         PureModelContextData schemaData = PureGrammarParser.newInstance().parseModel(schemaCode);
 
-        PureModel model = Compiler.compile(generated.combine(schemaData), DeploymentMode.TEST, null);
+        PureModel model = Compiler.compile(generated.combine(schemaData), DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
         PureGrammarParser parser = PureGrammarParser.newInstance();
         Lambda lambdaProtocol = parser.parseLambda("data:String[1]|test::gen::PricesRecord->internalize(test::gen::TestBinding, $data)->graphFetchChecked(" + tree + ")->serialize(" + tree + ")");
         LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(lambdaProtocol.body, lambdaProtocol.parameters, model.getContext());
 
         MutableList<Root_meta_pure_extension_Extension> extensions = Lists.mutable.with(core_pure_binding_extension.Root_meta_external_format_shared_externalFormatExtension__Extension_1_(model.getExecutionSupport()));
         extensions.addAll(formatExtensions);
-        extensions.addAllIterable(core_java_platform_binding_legendJavaPlatformBinding_binding_bindingLegendJavaPlatformBindingExtension.Root_meta_external_format_shared_executionPlan_platformBinding_legendJava_bindingExtensionsWithLegendJavaPlatformBinding_ExternalFormatLegendJavaPlatformBindingDescriptor_MANY__Extension_MANY_(Lists.mutable.withAll(formatDescriptors), model.getExecutionSupport()));
+        extensions.addAllIterable(core_java_platform_binding_external_format_legendJavaPlatformBinding_externalFormat_bindingLegendJavaPlatformBindingExtension.Root_meta_external_format_shared_executionPlan_platformBinding_legendJava_bindingExtensionsWithLegendJavaPlatformBinding_ExternalFormatLegendJavaPlatformBindingDescriptor_MANY__Extension_MANY_(Lists.mutable.withAll(formatDescriptors), model.getExecutionSupport()));
 
         SingleExecutionPlan plan = PlanGenerator.generateExecutionPlan(lambda, null, null, null, model, "vX_X_X", PlanPlatform.JAVA, "test", extensions, LegendPlanTransformers.transformers);
 

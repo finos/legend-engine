@@ -37,11 +37,16 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
 public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "DataSpace");
+    }
+
     private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = org.eclipse.collections.impl.factory.Lists.mutable.with((element, context) ->
     {
         if (element instanceof DataSpace)
@@ -129,12 +134,35 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
                 getTabString(2) + "}";
     }
 
-    private static String renderDataSpaceExecutable(DataSpaceExecutable executable)
+    private static String renderDataSpaceExecutable(DataSpaceExecutable executable, PureGrammarComposerContext context)
+    {
+        if (executable instanceof DataSpacePackageableElementExecutable)
+        {
+            return renderDataspacePackageableElementExecutable((DataSpacePackageableElementExecutable) executable, context);
+        }
+        else if (executable instanceof DataSpaceTemplateExecutable)
+        {
+            return renderDataspaceTemplateExecutable((DataSpaceTemplateExecutable) executable, context);
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    private static String renderDataspacePackageableElementExecutable(DataSpacePackageableElementExecutable executable, PureGrammarComposerContext context)
     {
         return getTabString(2) + "{\n" +
                 (getTabString(3) + "title: " + convertString(executable.title, true) + ";\n") +
                 (executable.description != null ? (getTabString(3) + "description: " + convertString(executable.description, true) + ";\n") : "") +
                 getTabString(3) + "executable: " + PureGrammarComposerUtility.convertPath(executable.executable.path) + ";\n" +
+                getTabString(2) + "}";
+    }
+
+    private static String renderDataspaceTemplateExecutable(DataSpaceTemplateExecutable executable, PureGrammarComposerContext context)
+    {
+        return getTabString(2) + "{\n" +
+                (getTabString(3) + "title: " + convertString(executable.title, true) + ";\n") +
+                (executable.description != null ? (getTabString(3) + "description: " + convertString(executable.description, true) + ";\n") : "") +
+                getTabString(3) + "query: " + executable.query.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).withIndentation(getTabSize(2)).build()) + ";\n" +
+                getTabString(3) + "executionContextKey: " +  convertString(executable.executionContextKey, true) + ";\n" +
                 getTabString(2) + "}";
     }
 
@@ -166,7 +194,7 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
                 (dataSpace.description != null ? (getTabString() + "description: " + convertString(dataSpace.description, true) + ";\n") : "") +
                 (dataSpace.diagrams != null ? (getTabString() + "diagrams:" + (dataSpace.diagrams.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + ListIterate.collect(dataSpace.diagrams, DataSpaceGrammarComposerExtension::renderDataSpaceDiagram).makeString(",\n") + "\n" + getTabString() + "]") + ";\n") : "") +
                 (dataSpace.elements != null ? (getTabString() + "elements:" + (dataSpace.elements.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + getTabString(2) + ListIterate.collect(dataSpace.elements, element -> (element.exclude != null && element.exclude ? "-" : "") + element.path).makeString(",\n" + getTabString(2)) + "\n" + getTabString() + "]") + ";\n") : "") +
-                (dataSpace.executables != null ? (getTabString() + "executables:" + (dataSpace.executables.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + ListIterate.collect(dataSpace.executables, DataSpaceGrammarComposerExtension::renderDataSpaceExecutable).makeString(",\n") + "\n" + getTabString() + "]") + ";\n") : "") +
+                (dataSpace.executables != null ? (getTabString() + "executables:" + (dataSpace.executables.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + ListIterate.collect(dataSpace.executables, executable -> DataSpaceGrammarComposerExtension.renderDataSpaceExecutable(executable, context)).makeString(",\n") + "\n" + getTabString() + "]") + ";\n") : "") +
                 (dataSpace.supportInfo != null ? (getTabString() + "supportInfo: " + renderDataSpaceSupportInfo(dataSpace.supportInfo) + ";\n") : "") +
                 "}";
     }

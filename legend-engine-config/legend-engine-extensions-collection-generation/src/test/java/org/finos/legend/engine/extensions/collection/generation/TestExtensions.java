@@ -81,6 +81,7 @@ import org.finos.legend.engine.language.sql.grammar.integration.SQLGrammarParser
 import org.finos.legend.engine.language.sql.grammar.integration.SQLPureGrammarComposerExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.from.ElasticsearchGrammarParserExtension;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionProtocolExtension;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.code.core.ElasticsearchLegendPureCoreExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.to.ElasticsearchGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
@@ -221,7 +222,7 @@ public class TestExtensions
     @Test
     public void testPureModel()
     {
-        PureModel pureModel = new PureModel(PureModelContextData.newPureModelContextData(), Lists.immutable.empty(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(PureModelContextData.newPureModelContextData(), IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), DeploymentMode.PROD);
         MutableSet<String> expectedClassifiers = Iterate.flatCollect(PureProtocolExtensionLoader.extensions(), ext -> ext.getExtraProtocolToClassifierPathMap().values(), Sets.mutable.empty());
         Assert.assertEquals(
                 Lists.fixedSize.empty(),
@@ -302,7 +303,6 @@ public class TestExtensions
                 .with(org.finos.legend.engine.external.format.protobuf.deprecated.generation.ProtobufGenerationExtension.class)
                 .with(org.finos.legend.engine.external.format.avro.extension.AvroGenerationExtension.class)
                 .with(org.finos.legend.engine.external.format.jsonSchema.extension.JSONSchemaGenerationExtension.class)
-                .with(org.finos.legend.engine.external.format.rosetta.extension.RosettaGenerationExtension.class)
                 .with(org.finos.legend.engine.external.language.morphir.extension.MorphirGenerationExtension.class)
                 .with(org.finos.legend.engine.query.graphQL.api.format.generation.GraphQLGenerationExtension.class)
                 .with(org.finos.legend.engine.external.format.daml.generation.DAMLGenerationExtension.class);
@@ -413,7 +413,7 @@ public class TestExtensions
                 .with(CoreLegendPureCoreExtension.class)
                 .with(JSONLegendPureCoreExtension.class)
                 .with(RelationalLegendPureCoreExtension.class)
-                .with(BindingJavaBindingLegendPureCoreExtension.class)
+                .with(ExternalFormatJavaBindingLegendPureCoreExtension.class)
                 .with(M2MJavaBindingLegendPureCoreExtension.class)
                 .with(ServiceStoreJavaBindingLegendPureCoreExtension.class)
                 .with(ServiceStoreLegendPureCoreExtension.class)
@@ -490,7 +490,6 @@ public class TestExtensions
                 .with("core_diagram")
                 .with("core_diagram_metamodel")
                 .with("core_external_format_avro")
-                .with("core_external_format_rosetta")
                 .with("core_external_language_morphir")
                 .with("core_external_format_flatdata")
                 .with("core_external_format_json")
@@ -530,6 +529,7 @@ public class TestExtensions
                 .with("core_text_metamodel")
                 .with("core_external_language_java")
                 .with("core_java_platform_binding")
+                .with("core_java_platform_binding_external_format")
                 .with("core_relational_java_platform_binding")
                 .with("core_servicestore_java_platform_binding")
                 .with("core_external_format_flatdata_java_platform_binding")

@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-flatdata</artifactId>
-        <version>4.39.0</version>
+        <version>4.41.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -177,7 +177,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
+            <artifactId>legend-engine-pure-platform-dsl-store-java</artifactId>
         </dependency>
         <!-- ENGINE -->
 

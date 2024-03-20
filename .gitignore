@@ -6,6 +6,7 @@
 **/dependency-reduced-pom.xml
 **/*.tokens
 **/*.patch
+**/*.DS_Store
 
 # VS Code ignores
 .vscode

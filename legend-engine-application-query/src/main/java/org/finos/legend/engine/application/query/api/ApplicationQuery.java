@@ -20,9 +20,12 @@ import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.application.query.model.Query;
 import org.finos.legend.engine.application.query.model.QueryEvent;
 import org.finos.legend.engine.application.query.model.QuerySearchSpecification;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -146,6 +149,8 @@ public class ApplicationQuery
     @Consumes({MediaType.APPLICATION_JSON})
     public Response createQuery(Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
     {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("Query: Create Query").startActive(true))
         {
             return Response.ok().entity(this.queryStoreManager.createQuery(query, getCurrentUser(profileManager))).build();
@@ -156,7 +161,7 @@ public class ApplicationQuery
             {
                 return ((ApplicationQueryException) e).toResponse();
             }
-            return ExceptionTool.exceptionManager(e, LoggingEventType.CREATE_QUERY_ERROR, ProfileManagerHelper.extractProfiles(profileManager));
+            return ExceptionTool.exceptionManager(e, LoggingEventType.CREATE_QUERY_ERROR, identity.getName());
         }
     }
 
@@ -166,6 +171,8 @@ public class ApplicationQuery
     @Consumes({MediaType.APPLICATION_JSON})
     public Response updateQuery(@PathParam("queryId") String queryId, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
     {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("Query: Update Query").startActive(true))
         {
             return Response.ok().entity(this.queryStoreManager.updateQuery(queryId, query, getCurrentUser(profileManager))).build();
@@ -176,7 +183,29 @@ public class ApplicationQuery
             {
                 return ((ApplicationQueryException) e).toResponse();
             }
-            return ExceptionTool.exceptionManager(e, LoggingEventType.UPDATE_QUERY_ERROR, ProfileManagerHelper.extractProfiles(profileManager));
+            return ExceptionTool.exceptionManager(e, LoggingEventType.UPDATE_QUERY_ERROR, identity.getName());
+        }
+    }
+
+    @PUT
+    @Path("{queryId}/patchQuery")
+    @ApiOperation(value = "Patch Query - update selected query fields")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response patchQuery(@PathParam("queryId") String queryId, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        try (Scope scope = GlobalTracer.get().buildSpan("Patch Query - update selected query fields").startActive(true))
+        {
+            return Response.ok().entity(this.queryStoreManager.patchQuery(queryId, query, getCurrentUser(profileManager))).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.UPDATE_QUERY_ERROR, identity.getName());
         }
     }
 
@@ -186,6 +215,8 @@ public class ApplicationQuery
     @Consumes({MediaType.APPLICATION_JSON})
     public Response deleteQuery(@PathParam("queryId") String queryId, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
     {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("Query: Delete Query").startActive(true))
         {
             this.queryStoreManager.deleteQuery(queryId, getCurrentUser(profileManager));
@@ -197,7 +228,7 @@ public class ApplicationQuery
             {
                 return ((ApplicationQueryException) e).toResponse();
             }
-            return ExceptionTool.exceptionManager(e, LoggingEventType.DELETE_QUERY_ERROR, ProfileManagerHelper.extractProfiles(profileManager));
+            return ExceptionTool.exceptionManager(e, LoggingEventType.DELETE_QUERY_ERROR, identity.getName());
         }
     }
 

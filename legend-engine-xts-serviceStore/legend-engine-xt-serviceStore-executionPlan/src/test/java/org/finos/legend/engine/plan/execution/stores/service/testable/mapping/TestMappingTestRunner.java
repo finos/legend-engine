@@ -22,6 +22,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.testable.mapping.extension.MappingTestableRunnerExtension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.junit.Assert;
@@ -233,7 +235,7 @@ public class TestMappingTestRunner
                 ")\n";
 
         PureModelContextData modelDataWithReferenceData = PureGrammarParser.newInstance().parseModel(grammar);
-        PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, null);
+        PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
         Mapping mappingToTest = (Mapping) pureModelWithReferenceData.getPackageableElement("testServiceStoreTestSuites::ServiceStoreMapping");
         List<TestResult> mappingTestResults = mappingTestableRunnerExtension.executeAllTest(mappingToTest, pureModelWithReferenceData, modelDataWithReferenceData);
         Assert.assertEquals(2, mappingTestResults.size());
