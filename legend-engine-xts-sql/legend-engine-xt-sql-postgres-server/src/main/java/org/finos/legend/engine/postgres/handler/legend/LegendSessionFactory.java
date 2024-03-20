@@ -60,7 +60,7 @@ public class LegendSessionFactory implements SessionsFactory
     @Override
     public Session createSession(String defaultSchema, Identity identity)
     {
-        return new Session(new LegendSessionHandler(legendExecutionClient, identity), metadataSessionHandler, executorService);
+        return new Session(new LegendSessionHandler(legendExecutionClient, identity), metadataSessionHandler, executorService, identity);
     }
 
     private static class LegendSessionHandler implements SessionHandler
