@@ -57,6 +57,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
+import java.util.Optional;
 
 import static org.finos.legend.engine.plan.execution.api.result.ResultManager.manageResult;
 
@@ -89,9 +90,10 @@ public class SqlExecute
     @Deprecated
     @Consumes({MediaType.TEXT_PLAIN})
     public Response executeSql(@Context HttpServletRequest request, String sql, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat")SerializationFormat format,
+                               @QueryParam("externalizeContentType") Optional<String> contentType,
                                @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
-        return execute(request, new SQLQueryInput(null, sql, null), format, pm, uriInfo);
+        return execute(request, new SQLQueryInput(null, sql, null), format, contentType, pm, uriInfo);
     }
 
     @POST
@@ -100,9 +102,10 @@ public class SqlExecute
     @Deprecated
     @Consumes({MediaType.APPLICATION_JSON})
     public Response executeSql(@Context HttpServletRequest request, Query query, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format,
+                               @QueryParam("externalizeContentType") Optional<String> contentType,
                                @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
-        return execute(request, new SQLQueryInput(query, null, null), format, pm, uriInfo);
+        return execute(request, new SQLQueryInput(query, null, null), format, contentType, pm, uriInfo);
     }
 
     @POST
@@ -110,6 +113,7 @@ public class SqlExecute
     @Path("execute")
     @Consumes({MediaType.APPLICATION_JSON})
     public Response execute(@Context HttpServletRequest request, SQLQueryInput query, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format,
+                            @QueryParam("externalizeContentType") Optional<String> contentType,
                             @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
@@ -117,7 +121,7 @@ public class SqlExecute
         Query q = extractQuery(query);
         SQLContext context = new SQLContext(q, query.getPositionalArguments());
 
-        Result result = this.executor.execute(q, query.getPositionalArguments(), request.getRemoteUser(), context, identity);
+        Result result = this.executor.execute(q, query.getPositionalArguments(), request.getRemoteUser(), context, identity, contentType);
 
         try (Scope ignored = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
         {
@@ -130,9 +134,10 @@ public class SqlExecute
     @Path("execute")
     @Consumes({MediaType.TEXT_PLAIN})
     public Response execute(@Context HttpServletRequest request, String sql, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format,
+                            @QueryParam("externalizeContentType") Optional<String> contentType,
                             @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
-        return execute(request, new SQLQueryInput(null, sql, null), format, pm, uriInfo);
+        return execute(request, new SQLQueryInput(null, sql, null), format, contentType, pm, uriInfo);
     }
 
     @POST
