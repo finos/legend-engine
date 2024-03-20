@@ -41,13 +41,6 @@ public class ServerConfig
 
     private Integer metricsPort;
 
-    public Integer getMetricsPort()
-    {
-        return metricsPort;
-    }
-
-    private Integer metricsPort;
-
     public String getLogConfigFile()
     {
         return logConfigFile;
