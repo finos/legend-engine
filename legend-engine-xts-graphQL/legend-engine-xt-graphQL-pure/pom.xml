@@ -66,6 +66,11 @@
                         <artifactId>legend-pure-m2-dsl-graph-grammar</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-dsl-path-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
 
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
@@ -84,7 +89,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-compiler</artifactId>
+                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -125,6 +130,11 @@
                         <artifactId>legend-pure-m2-dsl-graph-grammar</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-dsl-path-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
 
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
@@ -143,7 +153,12 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-compiler</artifactId>
+                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -217,7 +232,7 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-compiler</artifactId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</artifactId>
         </dependency>
 
 
@@ -282,6 +297,17 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-graphQL-grammar-integration</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-legendCompiler</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-legendCompiler</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->
