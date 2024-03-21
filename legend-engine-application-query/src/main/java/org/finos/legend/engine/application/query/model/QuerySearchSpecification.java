@@ -21,13 +21,12 @@ import java.util.List;
 
 public class QuerySearchSpecification
 {
-    public String searchTerm;
+    public QuerySearchTermSpecification searchTermSpecification;
     public List<QueryProjectCoordinates> projectCoordinates;
     public List<TaggedValue> taggedValues;
     public List<StereotypePtr> stereotypes;
     public Integer limit;
     public Boolean showCurrentUserQueriesOnly;
-    public Boolean exactMatchName;
     // This boolean flag helps to perform And condition on filter we apply for tagged values
     // so that we can search if a query contains all the taggedValues specified in the
     // search specification

@@ -19,15 +19,13 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-java</artifactId>
-        <version>4.40.4-SNAPSHOT</version>
+        <version>4.42.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-xt-javaPlatformBinding-pure</artifactId>
     <packaging>jar</packaging>
     <name>Legend Engine - XT - Java Platform Binding - PAR/JAVA</name>
-
-
 
     <build>
         <plugins>
@@ -38,9 +36,6 @@
                     <sourceDirectory>${project.basedir}/src/main/resources</sourceDirectory>
                     <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
                     <repositories>
-                        <repository>platform</repository>
-                        <repository>core</repository>
-                        <repository>core_external_language_java</repository>
                         <repository>core_java_platform_binding</repository>
                     </repositories>
                     <extraRepositories>
@@ -173,7 +168,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-dsl-graph</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-dsl-graph</artifactId>
         </dependency>
 
         <!-- PURE -->
@@ -202,6 +197,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-dsl-store-java</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

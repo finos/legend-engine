@@ -57,7 +57,7 @@ import static org.finos.legend.engine.shared.core.operational.http.InflateInterc
 @Deprecated
 public class DAMLGenerationService
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(org.finos.legend.engine.external.format.daml.generation.DAMLGenerationService.class);
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(org.finos.legend.engine.external.format.daml.generation.api.DAMLGenerationService.class);
     private final ModelManager modelManager;
 
     public DAMLGenerationService(ModelManager modelManager)

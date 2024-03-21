@@ -14,18 +14,18 @@
 
 package org.finos.legend.engine.repl.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.block.predicate.checked.CheckedPredicate;
-import org.finos.legend.engine.plan.execution.stores.StoreType;
-import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
-import org.finos.legend.engine.repl.client.commands.*;
+import org.finos.legend.engine.repl.autocomplete.CompleterExtension;
+import org.finos.legend.engine.repl.core.Command;
+import org.finos.legend.engine.repl.core.ReplExtension;
+import org.finos.legend.engine.repl.core.commands.*;
 import org.finos.legend.engine.repl.client.jline3.JLine3Completer;
 import org.finos.legend.engine.repl.client.jline3.JLine3Highlighter;
-import org.finos.legend.engine.repl.REPLInterface;
+import org.finos.legend.engine.repl.core.legend.LegendInterface;
 import org.finos.legend.engine.repl.client.jline3.JLine3Parser;
-import org.finos.legend.engine.repl.LocalREPL;
+import org.finos.legend.engine.repl.core.legend.LocalLegendInterface;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
@@ -34,58 +34,46 @@ import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 
-import java.sql.*;
-
-import static org.finos.legend.engine.repl.database.MetadataReader.getTables;
-
 public class Client
 {
-    public static final REPLInterface replInterface = new LocalREPL();
-
-    public static MutableList<String> state = Lists.mutable.empty();
-
-    public static Terminal terminal;
-
-    public static boolean debug = false;
-
-    public static ObjectMapper objectMapper = new ObjectMapper();
-
-    static
-    {
-        System.setProperty("legend.test.h2.port", "1975");
-    }
+    private final LegendInterface legendInterface = new LocalLegendInterface();
+    private final Terminal terminal;
+    private final LineReader reader;
+    private boolean debug = false;
+    private MutableList<ReplExtension> replExtensions = Lists.mutable.empty();
+    private MutableList<CompleterExtension> completerExtensions = Lists.mutable.empty();
 
     public static void main(String[] args) throws Exception
     {
-        new Client().loop();
+        new Client(Lists.mutable.empty(), Lists.mutable.empty()).loop();
     }
-
-    public LineReader reader;
 
     public MutableList<Command> commands;
 
-    public Client() throws Exception
+    public Client(MutableList<ReplExtension> replExtensions, MutableList<CompleterExtension> completerExtensions) throws Exception
     {
-        terminal = TerminalBuilder.terminal();
+        replExtensions.forEach(c -> c.setClient(this));
+        this.replExtensions = replExtensions;
+        this.completerExtensions = completerExtensions;
 
-        terminal.writer().println("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
+        this.terminal = TerminalBuilder.terminal();
 
-        this.commands = Lists.mutable.with(new DB(this), new Ext(this), new Debug(this), new Graph(this), new Load(this), new Execute(this));
+        this.terminal.writer().println("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
+
+        this.commands = replExtensions.flatCollect(ReplExtension::getExtraCommands).withAll(Lists.mutable.with(new Ext(this), new Debug(this), new Graph(this), new Execute(this)));
         this.commands.add(0, new Help(this, this.commands));
 
-        reader = LineReaderBuilder.builder()
+        this.reader = LineReaderBuilder.builder()
                 .terminal(terminal)
                 .highlighter(new JLine3Highlighter())
                 .parser(new JLine3Parser())//new DefaultParser().quoteChars(new char[]{'"'}))
                 .completer(new JLine3Completer(this.commands))
                 .build();
 
-        terminal.writer().println("Warming up...");
-        terminal.flush();
+        this.terminal.writer().println("Warming up...");
+        this.terminal.flush();
         ((Execute) this.commands.getLast()).execute("1+1");
-        terminal.writer().println("Ready!\n");
-
-
+        this.terminal.writer().println("Ready!\n");
     }
 
     public void loop()
@@ -102,7 +90,7 @@ public class Client
 
             try
             {
-                commands.detect(new CheckedPredicate<Command>()
+                this.commands.detect(new CheckedPredicate<Command>()
                 {
                     @Override
                     public boolean safeAccept(Command c) throws Exception
@@ -117,8 +105,8 @@ public class Client
             }
             catch (Exception ee)
             {
-                terminal.writer().println(ee.getMessage());
-                if (debug)
+                this.terminal.writer().println(ee.getMessage());
+                if (this.debug)
                 {
                     ee.printStackTrace();
                 }
@@ -126,7 +114,7 @@ public class Client
         }
     }
 
-    public static void printError(EngineException e, String line)
+    public void printError(EngineException e, String line)
     {
         int e_start = e.getSourceInformation().startColumn;
         int e_end = e.getSourceInformation().endColumn;
@@ -142,53 +130,52 @@ public class Client
             ab.append(mid);
             ab.style(new AttributedStyle().underlineOff().boldOff().foreground(0, 200, 0));
             ab.append(end);
-            terminal.writer().println("");
-            terminal.writer().println(ab.toAnsi());
+            this.terminal.writer().println("");
+            this.terminal.writer().println(ab.toAnsi());
         }
-        terminal.writer().println(e.getMessage());
-        if (debug)
+        this.terminal.writer().println(e.getMessage());
+        if (this.debug)
         {
             e.printStackTrace();
         }
     }
 
-    public Connection getConnection()
+    public Terminal getTerminal()
     {
-        RelationalStoreExecutor r = (RelationalStoreExecutor) ((Execute) this.commands.getLast()).planExecutor.getExecutorsOfType(StoreType.Relational).getFirst();
-        return r.getStoreState().getRelationalExecutor().getConnectionManager().getTestDatabaseConnection();
+        return this.terminal;
+    }
+
+    public LegendInterface getLegendInterface()
+    {
+        return this.legendInterface;
+    }
+
+    public boolean isDebug()
+    {
+        return this.debug;
+    }
+
+    public void setDebug(boolean debug)
+    {
+        this.debug = debug;
+    }
+
+    public MutableList<ReplExtension> getReplExtensions()
+    {
+        return this.replExtensions;
+    }
+
+    public MutableList<CompleterExtension> getCompleterExtensions()
+    {
+        return this.completerExtensions;
     }
 
     public MutableList<String> buildState()
     {
-        MutableList<String> res = Lists.mutable.withAll(state);
+        MutableList<String> res = Lists.mutable.empty();
 
-        res.add("###Relational\n" +
-                "Database test::TestDatabase" +
-                "(" +
-                getTables(getConnection()).collect(table -> "Table " + table.name + "(" + table.columns.collect(c -> (c.name.contains(" ") ? "\"" + c.name + "\"" : c.name) + " " + c.type).makeString(",") + ")").makeString("\n") +
-                ")\n");
-
-        res.add("###Connection\n" +
-                "RelationalDatabaseConnection test::TestConnection\n" +
-                "{\n" +
-                "   store: test::TestDatabase;" +
-                "   specification: LocalH2{};" +
-                "   type: H2;" +
-                "   auth: DefaultH2;" +
-                "}\n");
-
-        res.add("###Runtime\n" +
-                "Runtime test::TestRuntime\n" +
-                "{\n" +
-                "   mappings : [];" +
-                "   connections:\n" +
-                "   [\n" +
-                "       test::TestDatabase : [connection: test::TestConnection]\n" +
-                "   ];\n" +
-                "}\n");
+        res.addAll(this.replExtensions.flatCollect(ReplExtension::getExtraState));
 
         return res;
     }
-
-
 }

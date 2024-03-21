@@ -51,7 +51,7 @@ public class JDBCSessionFactory implements SessionsFactory
     @Override
     public Session createSession(String defaultSchema, Identity identity)
     {
-        return new Session(new JDBCSessionHandler(connectionString, user, password), null, Executors.newCachedThreadPool());
+        return new Session(new JDBCSessionHandler(connectionString, user, password), null, Executors.newCachedThreadPool(), identity);
     }
 
     private static class JDBCPostgresStatement implements PostgresStatement

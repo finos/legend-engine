@@ -32,10 +32,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.sorted.MutableSortedSet;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.application.query.model.Query;
-import org.finos.legend.engine.application.query.model.QueryEvent;
-import org.finos.legend.engine.application.query.model.QuerySearchSpecification;
-import org.finos.legend.engine.application.query.model.QueryStoreStats;
+import org.finos.legend.engine.application.query.model.*;
 import org.finos.legend.engine.shared.core.vault.Vault;
 
 import javax.lang.model.SourceVersion;
@@ -180,15 +177,32 @@ public class QueryStoreManager
     public List<Query> searchQueries(QuerySearchSpecification searchSpecification, String currentUser)
     {
         List<Bson> filters = new ArrayList<>();
-        if (searchSpecification.searchTerm != null)
+        if (searchSpecification.searchTermSpecification != null)
         {
-            if (searchSpecification.exactMatchName != null && searchSpecification.exactMatchName)
+            QuerySearchTermSpecification querySearchTermSpecification = searchSpecification.searchTermSpecification;
+            if (querySearchTermSpecification.searchTerm == null)
             {
-                filters.add(Filters.eq("name", searchSpecification.searchTerm));
+                throw new ApplicationQueryException("Query search spec expecting a search term", Response.Status.INTERNAL_SERVER_ERROR);
+            }
+            if (querySearchTermSpecification.exactMatchName != null && querySearchTermSpecification.exactMatchName)
+            {
+                Bson filter = Filters.eq("name", querySearchTermSpecification.searchTerm);
+                if (querySearchTermSpecification.includeOwner != null && querySearchTermSpecification.includeOwner)
+                {
+                    filter = Filters.or(filter,Filters.eq("owner", querySearchTermSpecification.searchTerm));
+                }
+                filters.add(filter);
             }
             else
             {
-                filters.add(Filters.or(Filters.regex("name", Pattern.quote(searchSpecification.searchTerm), "i"), Filters.eq("id", searchSpecification.searchTerm)));
+                Bson idFilter  = Filters.eq("id", querySearchTermSpecification.searchTerm);
+                Bson nameFilter = Filters.regex("name", Pattern.quote(querySearchTermSpecification.searchTerm), "i");
+                Bson filter = Filters.or(idFilter, nameFilter);
+                if (querySearchTermSpecification.includeOwner != null && querySearchTermSpecification.includeOwner)
+                {
+                    filter = Filters.or(idFilter, nameFilter, Filters.regex("owner", Pattern.quote(querySearchTermSpecification.searchTerm), "i"));
+                }
+                filters.add(filter);
             }
         }
         if (searchSpecification.showCurrentUserQueriesOnly != null && searchSpecification.showCurrentUserQueriesOnly)
@@ -266,7 +280,7 @@ public class QueryStoreManager
         }
         if (notFoundQueries.size() != 0)
         {
-            throw new ApplicationQueryException(notFoundQueries.makeString("Can't find queries for the following ID(s):\\n", "\\n", ""), Response.Status.NOT_FOUND);
+            throw new ApplicationQueryException(notFoundQueries.makeString("Can't find queries for the following ID(s):\\n", "\\n", ""), Response.Status.INTERNAL_SERVER_ERROR);
         }
         return matchingQueries;
     }
