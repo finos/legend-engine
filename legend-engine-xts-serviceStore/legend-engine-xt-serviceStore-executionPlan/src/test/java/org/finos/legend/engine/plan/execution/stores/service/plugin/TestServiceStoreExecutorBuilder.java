@@ -45,7 +45,7 @@ public class TestServiceStoreExecutorBuilder
     {
         List<StoreExecutorBuilder> builders = new ArrayList<>();
         ServiceLoader.load(StoreExecutorBuilder.class).forEach(builders::add);
-        Assert.assertEquals(2, builders.size());
+        Assert.assertEquals(3, builders.size());
         StoreExecutorBuilder builder = builders.get(0);
         Assert.assertTrue(builder instanceof ServiceStoreExecutorBuilder);
         ServiceStoreExecutor executor = ((ServiceStoreExecutorBuilder) builder).build();
@@ -56,7 +56,7 @@ public class TestServiceStoreExecutorBuilder
     public void testPlanExecutorLoader()
     {
         List<StoreExecutorBuilder> builders = PlanExecutor.loadStoreExecutorBuilders();
-        Assert.assertEquals(2, builders.size());
+        Assert.assertEquals(3, builders.size());
         StoreExecutorBuilder builder = builders.get(0);
         Assert.assertTrue(builder instanceof ServiceStoreExecutorBuilder);
         ServiceStoreExecutor executor = ((ServiceStoreExecutorBuilder) builder).build();
