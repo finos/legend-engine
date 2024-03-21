@@ -16,9 +16,14 @@ package org.finos.legend.engine.language.graphQL.grammar.integration.compiled.na
 
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.graphQL.grammar.integration.test.TestGraphQLEmbedded;
-import org.finos.legend.engine.pure.runtime.compiler.Tools;
+import org.finos.legend.engine.pure.runtime.compiler.test.Tools;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntime;
+import org.finos.legend.pure.m3.serialization.runtime.PureRuntimeBuilder;
+import org.finos.legend.pure.m3.serialization.runtime.VoidPureRuntimeStatus;
+import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiled;
+import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
+import org.finos.legend.pure.runtime.java.compiled.factory.JavaModelFactoryRegistryLoader;
 import org.junit.BeforeClass;
 
 public class TestGraphQLEmbeddedCompiled extends TestGraphQLEmbedded
@@ -26,8 +31,24 @@ public class TestGraphQLEmbeddedCompiled extends TestGraphQLEmbedded
     @BeforeClass
     public static void setUp()
     {
-        Pair<FunctionExecution, PureRuntime> res = Tools.setUpCompiled();
+        Pair<FunctionExecution, PureRuntime> res = setUpCompiled();
         functionExecution = res.getOne();
         runtime = res.getTwo();
+    }
+
+    public static Pair<FunctionExecution, PureRuntime> setUpCompiled()
+    {
+        return Tools.initialize(
+                codeStorage -> new PureRuntimeBuilder(codeStorage)
+                        .withRuntimeStatus(VoidPureRuntimeStatus.VOID_PURE_RUNTIME_STATUS)
+                        .withFactoryRegistryOverride(JavaModelFactoryRegistryLoader.loader())
+                        .setTransactionalByDefault(true)
+                        .build(),
+                (runtime, message) ->
+                {
+                    FunctionExecutionCompiled functionExecution = new FunctionExecutionCompiledBuilder().build();
+                    functionExecution.init(runtime, message);
+                    return functionExecution;
+                });
     }
 }

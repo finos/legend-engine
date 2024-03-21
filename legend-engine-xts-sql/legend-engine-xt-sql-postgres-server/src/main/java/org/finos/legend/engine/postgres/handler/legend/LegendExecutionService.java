@@ -14,26 +14,29 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
+import org.eclipse.collections.impl.utility.internal.IterableIterate;
+import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
-import org.eclipse.collections.impl.utility.internal.IterableIterate;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.stream.Collectors;
 
 public class LegendExecutionService
 {
+    public static final String TDS_COLUMNS = "columns";
     private final LegendClient executionClient;
 
     private static final ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(LegendExecutionService.class);
 
     public LegendExecutionService(LegendClient executionClient)
     {
@@ -42,13 +45,18 @@ public class LegendExecutionService
 
     public List<LegendColumn> getSchema(String query)
     {
-        try (InputStream inputStream = executionClient.executeSchemaApi(query);)
+        Tracer tracer = OpenTelemetryUtil.getTracer();
+        Span span = tracer.spanBuilder("Legend ExecutionService Get Schema").startSpan();
+        try (Scope scope = span.makeCurrent(); InputStream inputStream = executionClient.executeSchemaApi(query);)
         {
+            span.setAttribute("query", query);
             JsonNode jsonNode = mapper.readTree(inputStream);
-            if (jsonNode.get("columns") != null)
+            if (jsonNode.get(TDS_COLUMNS) != null)
             {
-                ArrayNode columns = (ArrayNode) jsonNode.get("columns");
-                return IterableIterate.collect(columns, c -> new LegendColumn(c.get("name").textValue(), c.get("type").textValue()));
+                ArrayNode columns = (ArrayNode) jsonNode.get(TDS_COLUMNS);
+                List<LegendColumn> legendColumns = Collections.unmodifiableList(IterableIterate.collect(columns, c -> new LegendColumn(c.get("name").textValue(), c.get("type").textValue())));
+                span.setAttribute(AttributeKey.stringArrayKey(TDS_COLUMNS), legendColumns.stream().map(LegendColumn::toString).collect(Collectors.toList()));
+                return legendColumns;
             }
             return Collections.emptyList();
         }
@@ -56,14 +64,22 @@ public class LegendExecutionService
         {
             throw new LegendTdsClientException("Failed to parse result", e);
         }
+        finally
+        {
+            span.end();
+        }
 
     }
 
     public LegendExecutionResult executeQuery(String query)
     {
-        try
+        Tracer tracer = OpenTelemetryUtil.getTracer();
+        Span span = tracer.spanBuilder("LegendExecutionService ExecuteQuery").startSpan();
+        try (Scope scope = span.makeCurrent();)
         {
+            span.setAttribute("query", query);
             InputStream inputStream = executionClient.executeQueryApi(query);
+            span.addEvent("receivedResponse");
             LegendTdsResultParser parser = new LegendTdsResultParser(inputStream);
 
             return new LegendExecutionResult()
@@ -116,18 +132,9 @@ public class LegendExecutionService
         {
             throw new LegendTdsClientException("Error while parsing response", e);
         }
-    }
-
-
-    private List<LegendColumn> getSchemaFromExecutionResponse(JsonNode jsonNode) throws JsonProcessingException
-    {
-        if (jsonNode.get("builder") != null)
+        finally
         {
-            ArrayNode columns = (ArrayNode) jsonNode.get("builder").get("columns");
-            return IterableIterate.collect(columns, c -> new LegendColumn(c.get("name").asText(), c.get("type").asText()));
+            span.end();
         }
-        return Collections.emptyList();
     }
-
-
 }

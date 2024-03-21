@@ -32,6 +32,14 @@ public class ServerConfig
     private AuthenticationMethodType authenticationMethod;
     private IdentityType identityType;
     private GSSConfig gss;
+    private OpenTelemetryConfig otelConfig;
+
+    public Integer getMetricsPort()
+    {
+        return metricsPort;
+    }
+
+    private Integer metricsPort;
 
     public String getLogConfigFile()
     {
@@ -65,8 +73,9 @@ public class ServerConfig
         return gss;
     }
 
-    public ServerConfig()
+    public OpenTelemetryConfig getOtelConfig()
     {
+        return otelConfig;
     }
 
     public AuthenticationMethod buildAuthenticationMethod()
