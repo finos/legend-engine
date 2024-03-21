@@ -19,8 +19,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.*;
 import org.finos.legend.engine.persistence.components.logicalplan.values.*;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
@@ -31,7 +29,6 @@ import org.finos.legend.engine.persistence.components.relational.transformer.Rel
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
-import org.finos.legend.engine.persistence.components.util.SinkCleanupAuditDataset;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Default;
 import org.slf4j.Logger;
@@ -60,14 +57,6 @@ public abstract class RelationalSinkCleanerAbstract
 
     public abstract String requestedBy();
 
-    public abstract String id();
-
-    @Default
-    public SinkCleanupAuditDataset auditDataset()
-    {
-        return SinkCleanupAuditDataset.builder().build();
-    }
-
     public abstract MetadataDataset metadataDataset();
 
     @Default
@@ -91,17 +80,13 @@ public abstract class RelationalSinkCleanerAbstract
     {
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
 
-        // Pre-action SQL
-        LogicalPlan preActionsLogicalPlan = buildLogicalPlanForPreActions();
-        SqlPlan preActionsSqlPlan = transformer.generatePhysicalPlan(preActionsLogicalPlan);
 
         //Sink clean-up SQL's
         LogicalPlan dropLogicalPlan = buildLogicalPlanForDropActions();
         SqlPlan dropSqlPlan = transformer.generatePhysicalPlan(dropLogicalPlan);
-        LogicalPlan cleanupLogicalPlan = buildLogicalPlanForCleanupAndAuditActions();
+        LogicalPlan cleanupLogicalPlan = buildLogicalPlanForMetadataCleanup();
         SqlPlan cleanupSqlPlan = transformer.generatePhysicalPlan(cleanupLogicalPlan);
         return SinkCleanupGeneratorResult.builder()
-                .preActionsSqlPlan(preActionsSqlPlan)
                 .cleanupSqlPlan(cleanupSqlPlan)
                 .dropSqlPlan(dropSqlPlan)
                 .build();
@@ -115,10 +100,6 @@ public abstract class RelationalSinkCleanerAbstract
         // 2. Generate sink cleanup Operations
         LOGGER.info("Generating SQL's for sink cleanup");
         SinkCleanupGeneratorResult result = generateOperationsForSinkCleanup();
-
-        //3. Create datasets
-        LOGGER.info("Creating the datasets");
-        executor.executePhysicalPlan(result.preActionsSqlPlan());
 
         //4. Execute sink cleanup operations
         return executeSinkCleanup(result);
@@ -147,13 +128,6 @@ public abstract class RelationalSinkCleanerAbstract
 
     // ---------- UTILITY METHODS ----------
 
-    private LogicalPlan buildLogicalPlanForPreActions()
-    {
-        List<Operation> operations = new ArrayList<>();
-        operations.add(Create.of(true, auditDataset().get()));
-        return LogicalPlan.of(operations);
-    }
-
     private LogicalPlan buildLogicalPlanForDropActions()
     {
         List<Operation> operations = new ArrayList<>();
@@ -161,11 +135,10 @@ public abstract class RelationalSinkCleanerAbstract
         return LogicalPlan.of(operations);
     }
 
-    private LogicalPlan buildLogicalPlanForCleanupAndAuditActions()
+    private LogicalPlan buildLogicalPlanForMetadataCleanup()
     {
         List<Operation> operations = new ArrayList<>();
         operations.add(buildDeleteCondition());
-        operations.add(buildInsertCondition(AuditTableStatus.SUCCEEDED));
         return LogicalPlan.of(operations);
     }
 
@@ -179,32 +152,6 @@ public abstract class RelationalSinkCleanerAbstract
                 .alias(mainTableName.alias()).build();
         Condition whereCondition = Equals.of(tableNameInUpperCase, mainTableNameInUpperCase);
         return Delete.of(metadataDataset().get(), whereCondition);
-    }
-
-    private Operation buildInsertCondition(AuditTableStatus status)
-    {
-        DatasetReference auditTableRef = this.auditDataset().get().datasetReference();
-        FieldValue id = FieldValue.builder().datasetRef(auditTableRef).fieldName(auditDataset().idField()).build();
-        FieldValue tableName = FieldValue.builder().datasetRef(auditTableRef).fieldName(auditDataset().tableNameField()).build();
-        FieldValue executionTs = FieldValue.builder().datasetRef(auditTableRef).fieldName(auditDataset().executionTimeField()).build();
-        FieldValue auditStatus = FieldValue.builder().datasetRef(auditTableRef).fieldName(auditDataset().statusField()).build();
-        FieldValue requestedBy = FieldValue.builder().datasetRef(auditTableRef).fieldName(auditDataset().requestedBy()).build();
-
-        List<org.finos.legend.engine.persistence.components.logicalplan.values.Value> fieldsToInsert = new ArrayList<>();
-        fieldsToInsert.add(id);
-        fieldsToInsert.add(tableName);
-        fieldsToInsert.add(executionTs);
-        fieldsToInsert.add(auditStatus);
-        fieldsToInsert.add(requestedBy);
-
-        List<org.finos.legend.engine.persistence.components.logicalplan.values.Value> selectFields = new ArrayList<>();
-        selectFields.add(StringValue.of(id()));
-        selectFields.add(getMainTable());
-        selectFields.add(BatchStartTimestamp.INSTANCE);
-        selectFields.add(StringValue.of(status.name()));
-        selectFields.add(StringValue.of(requestedBy()));
-
-        return Insert.of(auditDataset().get(), Selection.builder().addAllFields(selectFields).build(), fieldsToInsert);
     }
 
     private StringValue getMainTable()

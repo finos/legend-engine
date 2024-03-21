@@ -37,10 +37,8 @@ public class RelationalSinkCleanerTest extends IngestModeTest
             .addFields(batchIdOut)
             .build();
     private final MetadataDataset metadata = MetadataDataset.builder().metadataDatasetName("batch_metadata").build();
-    private final String auditTableCreationQuery = "CREATE TABLE IF NOT EXISTS sink_cleanup_audit(\"id\" VARCHAR(255),\"table_name\" VARCHAR(255),\"execution_ts_utc\" DATETIME,\"status\" VARCHAR(32),\"requested_by\" VARCHAR(64))";
     private final String dropMainTableQuery = "DROP TABLE IF EXISTS \"mydb\".\"main\"";
     private final String deleteFromMetadataTableQuery = "DELETE FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'";
-    private final String insertToAuditTableQuery = "INSERT INTO sink_cleanup_audit (\"id\", \"table_name\", \"execution_ts_utc\", \"status\", \"requested_by\") (SELECT 'ae5d-gt34-uyt5-bdf68','main','2000-01-01 00:00:00.000000','SUCCEEDED','lh_dev')";
 
 
     @BeforeEach
@@ -61,17 +59,11 @@ public class RelationalSinkCleanerTest extends IngestModeTest
                 .metadataDataset(metadata)
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .requestedBy("lh_dev")
-                .id("ae5d-gt34-uyt5-bdf68")
                 .build();
         SinkCleanupGeneratorResult result = sinkCleaner.generateOperationsForSinkCleanup();
-
-        List<String> preActionsSql = result.preActionsSql();
-
-        Assertions.assertEquals(auditTableCreationQuery, preActionsSql.get(0));
 
         List<String> cleanupSql = result.cleanupSql();
         Assertions.assertEquals(dropMainTableQuery, result.dropSql().get(0));
         Assertions.assertEquals(deleteFromMetadataTableQuery, cleanupSql.get(0));
-        Assertions.assertEquals(insertToAuditTableQuery, cleanupSql.get(1));
     }
 }
