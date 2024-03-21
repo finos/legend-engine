@@ -22,7 +22,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 
 import java.util.List;
 
-public class MemSqlFunctionArtifactGenerationExtension implements ArtifactGenerationExtension
+public class MemSQLFunctionArtifactGenerationExtension  implements ArtifactGenerationExtension
 {
     private static final String ROOT_PATH = "memSqlFunction";
 

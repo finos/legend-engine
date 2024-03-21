@@ -34,10 +34,10 @@ import org.slf4j.Logger;
 
 import java.util.List;
 
-public class MemSqlFunctionArtifactGenerationExtension implements ArtifactGenerationExtension
+public class MemSQLFunctionArtifactGenerationExtension  implements ArtifactGenerationExtension
 {
     private static  final ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(MemSqlFunctionArtifactGenerationExtension.class);
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(MemSQLFunctionArtifactGenerationExtension .class);
     private static final String ROOT_PATH = "memSqlFunction";
     private static final String FILE_NAME = "memSqlFunctionArtifact.json";
 
