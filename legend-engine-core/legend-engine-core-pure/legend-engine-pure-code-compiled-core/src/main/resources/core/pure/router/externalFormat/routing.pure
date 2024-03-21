@@ -168,7 +168,6 @@ function meta::pure::router::externalFormat::routing::enrichExternalFormatRouted
                                                                                                       ]));
                                                        ^$i(values = $updatedValues);,
                v:VariableExpression[1]               | $v,
-               f: FunctionRoutedValueSpecification[1]| $f,
                e:ExtendedRoutedValueSpecification[1] | $e->enrichExpressionWithStrategyBasedEnrichment($exeCtx, $extensions, $debug)
       ]
    );
@@ -226,7 +225,6 @@ function meta::pure::router::externalFormat::clustering::cluster(v:ValueSpecific
                                                             $res;
                                                        );,
                v:VariableExpression[1]               | $v,
-               f: FunctionRoutedValueSpecification[1]| $f,
                e:ExtendedRoutedValueSpecification[1] | $e->clusterFunctionExpressions($openVariables, $exeCtx, $extensions, $debug),
                c:ClusteredValueSpecification[1]      | $c
       ]
