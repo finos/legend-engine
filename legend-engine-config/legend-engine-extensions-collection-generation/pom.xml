@@ -179,14 +179,6 @@
         <!-- ENGINE -->
 
 
-        <!-- Morphir -->
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-morphir</artifactId>
-        </dependency>
-        <!-- Morphir -->
-
-
         <!-- XML -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -246,10 +238,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-json-pure</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-format-jsonSchema</artifactId>
         </dependency>
         <!-- JSON -->
 
