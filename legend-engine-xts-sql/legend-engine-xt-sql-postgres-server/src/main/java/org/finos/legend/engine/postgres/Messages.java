@@ -52,6 +52,10 @@ import org.slf4j.Logger;
 public class Messages
 {
 
+    private Messages()
+    {
+    }
+
     //private static final Logger LOGGER = LogManager.getLogger(Messages.class);
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(Messages.class);
 
@@ -326,7 +330,7 @@ public class Messages
      * above length.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    static void sendDataRow(Channel channel, PostgresResultSet rs, List<PGType> columnTypes,
+    static void sendDataRow(Channel channel, PostgresResultSet rs, List<PGType<?>> columnTypes,
                             FormatCodes.FormatCode[] formatCodes) throws Exception
     {
         int length = 4 + 2;
@@ -608,14 +612,14 @@ public class Messages
     static void sendAuthenticationKerberos(Channel channel)
     {
         int integerLength = 8;
-        int AUTH_REQ_GSS = 7;
+        int authReqGss = 7;
         int nullStopByteLength = 1;
         int length = integerLength + nullStopByteLength;
 
         ByteBuf buffer = channel.alloc().buffer(length);
         buffer.writeByte('R');
         buffer.writeInt(integerLength);
-        buffer.writeInt(AUTH_REQ_GSS);
+        buffer.writeInt(authReqGss);
 
         ChannelFuture channelFuture = channel.writeAndFlush(buffer);
         if (LOGGER.isTraceEnabled())

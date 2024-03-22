@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.language.graphQL.grammar.integration.test;
 
-import org.finos.legend.engine.pure.runtime.compiler.Tools;
+import org.finos.legend.engine.pure.runtime.compiler.test.Tools;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntime;
 import org.junit.Test;

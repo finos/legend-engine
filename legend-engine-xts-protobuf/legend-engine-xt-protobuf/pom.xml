@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-protobuf</artifactId>
-        <version>4.41.1-SNAPSHOT</version>
+        <version>4.42.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -57,7 +57,7 @@
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-protocol-generation</artifactId>
-                        <version>4.41.1-SNAPSHOT</version>
+                        <version>4.42.1-SNAPSHOT</version>
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
@@ -121,10 +121,6 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-modelManager</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-compiler</artifactId>
         </dependency>
         <dependency>
@@ -148,17 +144,6 @@
             <artifactId>legend-engine-xt-protobuf-grammar</artifactId>
         </dependency>
         <!-- ENGINE -->
-
-        <!-- ANNOTATIONS -->
-        <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-annotations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-        </dependency>
-        <!-- ANNOTATIONS -->
 
         <!-- JACKSON -->
         <dependency>
@@ -193,35 +178,6 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
-        <!-- OPEN TRACING -->
-        <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-util</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-api</artifactId>
-        </dependency>
-        <!-- OPEN TRACING -->
-
-        <!-- LOG -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <!-- LOG -->
-
-        <!-- PAC4J -->
-        <dependency>
-            <groupId>org.pac4j.jax-rs</groupId>
-            <artifactId>core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- PAC4J -->
-
         <!-- TEST -->
         <dependency>
             <groupId>junit</groupId>
@@ -248,6 +204,16 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-external-format-example</artifactId>
             <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-modelManager</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->
