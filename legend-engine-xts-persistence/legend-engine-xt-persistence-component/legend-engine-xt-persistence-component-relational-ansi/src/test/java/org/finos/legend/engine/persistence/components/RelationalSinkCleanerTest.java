@@ -38,6 +38,7 @@ public class RelationalSinkCleanerTest extends IngestModeTest
             .build();
     private final MetadataDataset metadata = MetadataDataset.builder().metadataDatasetName("batch_metadata").build();
     private final String dropMainTableQuery = "DROP TABLE IF EXISTS \"mydb\".\"main\"";
+    private final String dropLockTableQuery = "DROP TABLE IF EXISTS \"mydb\".\"main_legend_persistence_lock\"";
     private final String deleteFromMetadataTableQuery = "DELETE FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'";
 
 
@@ -63,7 +64,29 @@ public class RelationalSinkCleanerTest extends IngestModeTest
         SinkCleanupGeneratorResult result = sinkCleaner.generateOperationsForSinkCleanup();
 
         List<String> cleanupSql = result.cleanupSql();
+        Assertions.assertEquals(2, result.dropSql().size());
         Assertions.assertEquals(dropMainTableQuery, result.dropSql().get(0));
+        Assertions.assertEquals(dropLockTableQuery, result.dropSql().get(1));
+        Assertions.assertEquals(deleteFromMetadataTableQuery, cleanupSql.get(0));
+    }
+
+    @Test
+    void testGenerateOperationsForSinkCleanupWithLockTable()
+    {
+        RelationalSinkCleaner sinkCleaner = RelationalSinkCleaner.builder()
+                .relationalSink(AnsiSqlSink.get())
+                .mainDataset(mainTable)
+                .metadataDataset(metadata)
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .requestedBy("lh_dev")
+                .lockDataset(LockInfoDataset.builder().name("lock_table").group("mydb").build())
+                .build();
+        SinkCleanupGeneratorResult result = sinkCleaner.generateOperationsForSinkCleanup();
+
+        List<String> cleanupSql = result.cleanupSql();
+        Assertions.assertEquals(2, result.dropSql().size());
+        Assertions.assertEquals(dropMainTableQuery, result.dropSql().get(0));
+        Assertions.assertEquals("DROP TABLE IF EXISTS \"mydb\".\"lock_table\"", result.dropSql().get(1));
         Assertions.assertEquals(deleteFromMetadataTableQuery, cleanupSql.get(0));
     }
 }

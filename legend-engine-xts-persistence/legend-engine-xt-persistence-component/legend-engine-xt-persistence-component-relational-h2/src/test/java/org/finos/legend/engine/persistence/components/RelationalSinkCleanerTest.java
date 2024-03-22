@@ -16,11 +16,13 @@
 package org.finos.legend.engine.persistence.components;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.relational.api.ApiUtils;
 import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalSinkCleaner;
 import org.finos.legend.engine.persistence.components.relational.api.SinkCleanupIngestorResult;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
+import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -37,6 +39,14 @@ public class RelationalSinkCleanerTest extends BaseTest
         MetadataDataset metadata = MetadataDataset.builder().metadataDatasetName("batch_metadata").build();
         DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         createSampleMainTableWithData(mainTable.name());
+        String lockTable = mainTable.name()+ ApiUtils.LOCK_INFO_DATASET_SUFFIX;
+        createLockTable(lockTable);
+        LockInfoDataset lockDataset = LockInfoDataset.builder()
+                .database(mainTable.datasetReference().database())
+                .group(mainTable.datasetReference().group())
+                .name(lockTable)
+                .build();
+
         createBatchMetadataTableWithData(metadata.metadataDatasetName(), mainTable.name());
         RelationalSinkCleaner sinkCleaner = RelationalSinkCleaner.builder()
                 .relationalSink(H2Sink.get())
@@ -49,12 +59,62 @@ public class RelationalSinkCleanerTest extends BaseTest
         //Table counts before sink cleanup
         List<Map<String, Object>> tableBeforeSinkCleanup = h2Sink.executeQuery("select count(*) as batch_metadata_count from \"batch_metadata\" where table_name = 'main'");
         Assertions.assertEquals(tableBeforeSinkCleanup.get(0).get("batch_metadata_count"), 1L);
+        Assertions.assertTrue(h2Sink.doesTableExist(mainTable));
+        Assertions.assertTrue(h2Sink.doesTableExist(lockDataset.get()));
 
         SinkCleanupIngestorResult result = sinkCleaner.executeOperationsForSinkCleanup(JdbcConnection.of(h2Sink.connection()));
         Assertions.assertEquals(result.status(), IngestStatus.SUCCEEDED);
 
         List<Map<String, Object>> tableAfterSinkCleanup = h2Sink.executeQuery("select count(*) as batch_metadata_count from \"batch_metadata\" where table_name = 'main'");
         Assertions.assertEquals(tableAfterSinkCleanup.get(0).get("batch_metadata_count"), 0L);
+
+        Assertions.assertFalse(h2Sink.doesTableExist(mainTable));
+        Assertions.assertFalse(h2Sink.doesTableExist(lockDataset.get()));
+    }
+
+    @Test
+    void testExecuteSinkCleanupWithLockTable()
+    {
+        MetadataDataset metadata = MetadataDataset.builder().metadataDatasetName("batch_metadata").build();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        createSampleMainTableWithData(mainTable.name());
+        String lockTable = "lock_table";
+        createLockTable(lockTable);
+        LockInfoDataset lockDataset = LockInfoDataset.builder()
+                .database(mainTable.datasetReference().database())
+                .group(mainTable.datasetReference().group())
+                .name(lockTable)
+                .build();
+
+        createBatchMetadataTableWithData(metadata.metadataDatasetName(), mainTable.name());
+        RelationalSinkCleaner sinkCleaner = RelationalSinkCleaner.builder()
+                .relationalSink(H2Sink.get())
+                .mainDataset(mainTable)
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .requestedBy("lh_dev")
+                .metadataDataset(metadata)
+                .lockDataset(lockDataset)
+                .build();
+
+        //Table counts before sink cleanup
+        List<Map<String, Object>> tableBeforeSinkCleanup = h2Sink.executeQuery("select count(*) as batch_metadata_count from \"batch_metadata\" where table_name = 'main'");
+        Assertions.assertEquals(tableBeforeSinkCleanup.get(0).get("batch_metadata_count"), 1L);
+        Assertions.assertTrue(h2Sink.doesTableExist(mainTable));
+        Assertions.assertTrue(h2Sink.doesTableExist(lockDataset.get()));
+
+        SinkCleanupIngestorResult result = sinkCleaner.executeOperationsForSinkCleanup(JdbcConnection.of(h2Sink.connection()));
+        Assertions.assertEquals(result.status(), IngestStatus.SUCCEEDED);
+
+        List<Map<String, Object>> tableAfterSinkCleanup = h2Sink.executeQuery("select count(*) as batch_metadata_count from \"batch_metadata\" where table_name = 'main'");
+        Assertions.assertEquals(tableAfterSinkCleanup.get(0).get("batch_metadata_count"), 0L);
+
+        Assertions.assertFalse(h2Sink.doesTableExist(mainTable));
+        Assertions.assertFalse(h2Sink.doesTableExist(lockDataset.get()));
+    }
+
+    private void createLockTable(String lockTable)
+    {
+        h2Sink.executeStatement("CREATE TABLE TEST."+ lockTable +" (ID INT PRIMARY KEY, NAME VARCHAR(255), BIRTH DATETIME)");
     }
 
     @Test

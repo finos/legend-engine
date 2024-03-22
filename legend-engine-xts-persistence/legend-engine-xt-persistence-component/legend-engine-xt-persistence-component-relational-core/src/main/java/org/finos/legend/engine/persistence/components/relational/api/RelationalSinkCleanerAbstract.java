@@ -28,6 +28,7 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
+import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Default;
@@ -37,6 +38,9 @@ import org.slf4j.LoggerFactory;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
+import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.LOCK_INFO_DATASET_SUFFIX;
 
 @Value.Immutable
 @Value.Style(
@@ -59,6 +63,8 @@ public abstract class RelationalSinkCleanerAbstract
 
     public abstract MetadataDataset metadataDataset();
 
+    public abstract Optional<LockInfoDataset> lockDataset();
+
     @Default
     public Clock executionTimestampClock()
     {
@@ -80,7 +86,6 @@ public abstract class RelationalSinkCleanerAbstract
     {
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
 
-
         //Sink clean-up SQL's
         LogicalPlan dropLogicalPlan = buildLogicalPlanForDropActions();
         SqlPlan dropSqlPlan = transformer.generatePhysicalPlan(dropLogicalPlan);
@@ -101,7 +106,7 @@ public abstract class RelationalSinkCleanerAbstract
         LOGGER.info("Generating SQL's for sink cleanup");
         SinkCleanupGeneratorResult result = generateOperationsForSinkCleanup();
 
-        //4. Execute sink cleanup operations
+        //3. Execute sink cleanup operations
         return executeSinkCleanup(result);
     }
 
@@ -132,7 +137,28 @@ public abstract class RelationalSinkCleanerAbstract
     {
         List<Operation> operations = new ArrayList<>();
         operations.add(Drop.of(true, mainDataset(), false));
+        operations.add(buildDropPlanForLockTable());
         return LogicalPlan.of(operations);
+    }
+
+    private Operation buildDropPlanForLockTable()
+    {
+        LockInfoDataset lockInfoDataset;
+        if (lockDataset().isPresent())
+        {
+            lockInfoDataset = lockDataset().get();
+        }
+        else
+        {
+            String datasetName = mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new);
+            String lockDatasetName = datasetName + LOCK_INFO_DATASET_SUFFIX;
+            lockInfoDataset = LockInfoDataset.builder()
+                    .database(mainDataset().datasetReference().database())
+                    .group(mainDataset().datasetReference().group())
+                    .name(lockDatasetName)
+                    .build();
+        }
+        return Drop.of(true, lockInfoDataset.get(), false);
     }
 
     private LogicalPlan buildLogicalPlanForMetadataCleanup()
