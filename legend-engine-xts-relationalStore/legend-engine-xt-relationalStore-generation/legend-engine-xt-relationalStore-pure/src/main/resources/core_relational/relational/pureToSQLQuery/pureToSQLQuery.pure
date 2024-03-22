@@ -2464,6 +2464,40 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   processValueSpecificationReturnPropertyMapping($expression->toOne(),$propMapping, $query, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne();
 }
 
+function <<access.private>> meta::relational::functions::pureToSqlQuery::canProcessTypeName(f:FunctionExpression[1]):Boolean[1]
+{
+   // Can process 'typeName' in the context of semi structured mappings (which are not routed).
+   let params = $f.parametersValues->evaluateAndDeactivate();
+   ($params->size() == 1) && (!$params->at(0)->instanceOf(RoutedValueSpecification) || $params->at(0)->instanceOf(NoSetRoutedValueSpecification));
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processTypeName(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   let processedLeftSide = processValueSpecificationReturnPropertyMapping($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne();
+   let leftSideSWC = $processedLeftSide.element->cast(@SelectWithCursor);
+   let leftSideSelect = $leftSideSWC.select;
+   let propertyMappings = $processedLeftSide.currentPropertyMapping;
+
+   assert(($propertyMappings->size() >= 1) && $propertyMappings->forAll(pm | $pm->instanceOf(SemiStructuredRelationalPropertyMapping)),
+          | 'Expected semi structured property mappings. Got: ' + $propertyMappings->map(x | $x->genericType().rawType->toOne()->elementToPath())->joinStrings('[', ', ', ']'));
+
+   let typeNameBuilder = {r:RelationalOperationElement[*] |
+      assert($r->size() == 1, | 'Expected one relational operation element when processing \'typeName\'. Found: ' + $r->size()->toString());
+      // TODO: Hardcoding to @type. Schema/Binding information needs to be used
+      ^SemiStructuredPropertyAccess(operand = $r->toOne(), property = ^Literal(value = '@type'), returnType = String);
+   };
+
+   let newSelect = if ($state.inFilter,
+                       | ^$leftSideSelect(filteringOperation = $typeNameBuilder->eval($leftSideSelect.filteringOperation)),
+                       | ^$leftSideSelect(columns = $typeNameBuilder->eval($leftSideSelect.columns))
+                   );
+   $newSelect->validate($extensions);
+   ^$leftSideSWC
+   (
+      select = $newSelect
+   );
+}
+
 function meta::relational::functions::pureToSqlQuery::processNot(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
    processUnary($f, $currentPropertyMapping, $operation, {a|^DynaFunction(name = 'not', parameters = $a)}, $vars, $state, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor)->moveExtraFilterToFilter($extensions)
@@ -7837,6 +7871,13 @@ function meta::relational::functions::pureToSqlQuery::getContextBasedSupportedFu
          second = pair(
             meta::relational::functions::pureToSqlQuery::canProcessMatch_FunctionExpression_1__Boolean_1_,
             meta::relational::functions::pureToSqlQuery::processMatch_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
+         )
+      ),
+      ^Pair<meta::pure::metamodel::function::Function<Any>, Pair<meta::pure::metamodel::function::Function<{FunctionExpression[1]->Boolean[1]}>, meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], Extension[*]->RelationalOperationElement[1]}>>>(
+         first = meta::pure::functions::meta::typeName_Any_1__String_1_,
+         second = pair(
+            meta::relational::functions::pureToSqlQuery::canProcessTypeName_FunctionExpression_1__Boolean_1_,
+            meta::relational::functions::pureToSqlQuery::processTypeName_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
          )
       )
    ])
