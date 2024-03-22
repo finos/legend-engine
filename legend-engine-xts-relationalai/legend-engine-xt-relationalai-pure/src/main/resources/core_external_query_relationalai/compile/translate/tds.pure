@@ -9,7 +9,7 @@ import meta::external::store::rel::trace::*;
 import meta::external::store::rel::utils::*;
 
 function meta::external::store::rel::compile::tds::compile(
-  join: Join[1], 
+  join: Join[1],
   substitution: VariableSubstitution[1],
   mapping: ColumnAccessRewrite[1],
   state: CompilationState[1],
@@ -25,7 +25,7 @@ function meta::external::store::rel::compile::tds::compile(
         ->compile($substitution, $mapping, $leftState, $newTrace)
         ->andThen({rightState: CompilationState[1] |
           let right = $rightState.current->toOne();
-          
+
           let leftVar = $join.condition->variables()->at(0);
           let rightVar = $join.condition->variables()->at(1);
 
@@ -60,7 +60,7 @@ function meta::external::store::rel::compile::tds::compile(
                 )
               );
 
-              let projections = 
+              let projections =
                 $leftState.cols.names
                   ->map({col: String[1] |
                     def(
@@ -115,7 +115,7 @@ function meta::external::store::rel::compile::tds::compile(
     ->andThen({parentState: CompilationState[1] |
       let parent = $parentState.current->toOne();
       let vx = var('x');
-      
+
       $filter.predicate
         ->compile(
           $substitution,
@@ -140,7 +140,7 @@ function meta::external::store::rel::compile::tds::compile(
           let vc = var('c');
 
           let head = rel($table);
-          let rule = 
+          let rule =
             $head
               ->appl([$vc, $vx])
               ->def([

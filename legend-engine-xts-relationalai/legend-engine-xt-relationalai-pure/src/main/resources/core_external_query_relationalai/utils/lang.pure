@@ -1,5 +1,5 @@
-import meta::external::store::rel::utils::lang::*;
 import meta::external::store::rel::utils::*;
+import meta::external::store::rel::utils::lang::*;
 
 Class meta::external::store::rel::utils::lang::CaseExpr<T|m> {
   cond: Boolean[1];
@@ -13,18 +13,18 @@ function meta::external::store::rel::utils::lang::case<T|m>(
 }
 
 function <<access.private>> meta::external::store::rel::utils::lang::switch<T|m>(
-  from: Integer[1], 
+  from: Integer[1],
   cases: CaseExpr<T|m>[*],
   default: FunctionDefinition<{->T[m]}>[1]
 ): T[m]  {
-  if ($from >= $cases->size(), 
-    | $default->eval(), 
+  if ($from >= $cases->size(),
+    | $default->eval(),
     {|
       let eval =
         $cases
           ->at($from)
           ->map(case | if($case.cond, | $case.logic->eval(), | []));
-      if ($eval->isEmpty(), | switch($from + 1, $cases, $default), | $eval); 
+      if ($eval->isEmpty(), | switch($from + 1, $cases, $default), | $eval);
     }
   );
 }

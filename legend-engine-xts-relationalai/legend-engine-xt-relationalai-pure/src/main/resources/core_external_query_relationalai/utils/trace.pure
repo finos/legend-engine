@@ -4,7 +4,12 @@ import meta::external::store::rel::trace::*;
   * A traced computation.
   */
 Class meta::external::store::rel::trace::Trace {
-  <<equality.Key>> stages: String[*];
+  <<equality.Key>> stages: Stage[*];
+}
+
+Class meta::external::store::rel::trace::Stage {
+  <<equality.Key>> stageName: String[1];
+  messages: String[*];
 }
 
 function meta::external::store::rel::trace::emptyTrace(): Trace[1] {
@@ -12,18 +17,53 @@ function meta::external::store::rel::trace::emptyTrace(): Trace[1] {
 }
 
 /**
-  * Append a named staged to the traced computation. 
+  * Append a named staged to the traced computation.
   */
-function meta::external::store::rel::utils::stage(trace: Trace[1], stageName: String[1]): Trace[1] {
-  ^$trace(stages=$trace.stages->add($stageName))
+function meta::external::store::rel::trace::stage(trace: Trace[1], stageName: String[1]): Trace[1] {
+  ^$trace(stages=$trace.stages->add(0, ^Stage(stageName=$stageName)))
 }
 
-function meta::external::store::rel::utils::traceLog(trace: Trace[0..1]): String[*] {
+/**
+  * Append a message to the current stage.
+  */
+function meta::external::store::rel::trace::detail(trace: Trace[1], label: String[1], message: String[0..1]): Trace[1] {
+  let headStage = $trace.stages->at(0);
+  let headStageMessages = $headStage.messages;
+  let headMessage =
+    if ( $message->isEmpty(),
+       | $label + ': (none)',
+       | $label + ': ' + $message->toOne()
+       );
+  ^$trace(stages=$trace.stages->tail()->add(0, ^$headStage(messages=$headStageMessages->add($headMessage))));
+}
+
+/**
+  * Append a message to the current stage.
+  */
+function meta::external::store::rel::trace::detail(trace: Trace[1], label: String[1], elem: Any[0..1]): Trace[1] {
+  detail($trace, $label, $elem->map(e: Any[1] | $e->toString()));
+}
+
+function meta::external::store::rel::trace::traceLog(trace: Trace[0..1]): String[*] {
   if($trace->isEmpty(),
     | ['(no trace)'],
     | if($trace.stages->isEmpty(),
         | ['(empty trace)'],
-        {| $trace.stages->reverse()->toNumbered()->map(p: Pair<Integer,String>[1] | format('stage %s: %s', [$p.first, $p.second])) }
+        {|
+          $trace.stages
+            ->reverse()
+            ->toNumbered()
+            ->map(p: Pair<Integer,Stage>[1] |
+              let stage = $p.second;
+              let messages = $stage.messages;
+              let line = format('stage %s: %s', [$p.first, $stage.stageName]);
+              if ( $messages->isEmpty(),
+                | $line,
+                | $line + $messages->makeString('\n    ', '\n    ', '');
+                );
+            )
+            ->reverse()
+        }
       )
   )
 }

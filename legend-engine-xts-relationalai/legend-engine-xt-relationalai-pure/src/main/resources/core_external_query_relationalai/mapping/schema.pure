@@ -1,0 +1,165 @@
+import meta::external::store::rel::compile::utils::*;
+import meta::external::store::rel::execute::*;
+import meta::external::store::rel::mapping::*;
+import meta::external::store::rel::mapping::schema::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::metamodel::store::*;
+import meta::external::store::rel::runtime::*;
+import meta::external::store::rel::utils::*;
+import meta::external::store::rel::utils::collection::*;
+import meta::external::store::rel::utils::lang::*;
+import meta::external::store::rel::utils::meta::*;
+import meta::external::store::rel::utils::visitor::*;
+import meta::pure::mapping::*;
+import meta::pure::store::*;
+
+Class meta::external::store::rel::mapping::schema::RAISchema {
+  mapping: Mapping[1];
+  store: RAIDatabase[1];
+}
+
+function meta::external::store::rel::mapping::schema::RAISchema(name: String[1], config: RAITranspilerConfig[1]): RAISchema[1] {
+  ^RAISchema(
+    mapping=^Mapping(),
+    store=RAIDatabase([], $config, $name)
+  )
+}
+
+function meta::external::store::rel::mapping::schema::RAISchema(name: String[1]): RAISchema[1] {
+  RAISchema($name, ^RAITranspilerConfig(configNoIndent=false))
+}
+
+function meta::external::store::rel::mapping::schema::schema(class: Class<Any>[1]): RelationDeclaration[1] {
+  $class.name
+    ->toOne()
+    ->relation([entityType($class)])
+}
+
+function meta::external::store::rel::mapping::schema::schema(property: Property<Nil,Any|*>[1]): RelationDeclaration[1] {
+  $property->schema(
+    $property
+      .owner
+      ->cast(@Class<Any>)
+  )
+}
+
+function meta::external::store::rel::mapping::schema::schema(property: Property<Nil,Any|*>[1], parent: Class<Any>[0..1]): RelationDeclaration[1] {
+  let name = $property.name->toOne();
+  let rawType = $property->type();
+
+  let type = switch([
+    case($rawType == String,          | stringType()),
+    case($rawType == Integer,         | integerType()),
+    case($rawType == Float,           | floatType()),
+    case($rawType->instanceOf(Class), | entityType($rawType->cast(@Class<Any>)))
+  ], {|
+    fail(format('Unknown type for property %s', $name));
+    entityType(Any);
+  });
+
+  $parent
+    ->map({class: Class<Any>[1] |
+      format('%s:%s', [$class.name->toOne(), $name])
+      ->relation([entityType($class), $type])
+    })
+    ->orElse($name->relation([hashValueType(), $type]));
+}
+
+function <<access.private>> meta::external::store::rel::mapping::schema::includeClass(schema: RAISchema[1], class: Class<Any>[1], navigateTypeHierarchy: Boolean[1]): RAISchema[1] {
+  /*
+   * If the schema already includes a mapping for the given class then this function does nothing.
+   */
+  if (!$schema.mapping->_classMappingByClass($class)->isEmpty(), | $schema, {|
+    let classRelation = $class->schema();
+
+    let properties = $class
+      ->meta::pure::functions::meta::hierarchicalProperties()
+      ->concatenate(
+        $class->meta::pure::functions::meta::hierarchicalPropertiesFromAssociations()
+      )
+      ->map({p |
+        let owner =
+          if($p.owner->instanceOf(Association), {|
+            let assoc = $p.owner->cast(@Association);
+            let left = $assoc.properties->at(0);
+            let right = $assoc.properties->at(1);
+
+            let ref = if ($p == $left, | $right, | $left );
+            $ref.genericType.rawType->toOne()->cast(@Class<Any>);
+          }, | $p.owner->cast(@Class<Any>));
+
+        let relation = $p->schema($owner);
+        pair($p->cast(@Property<Nil, Any|*>), $relation);
+      });
+
+    let augmentedStore =
+      $properties.second
+        ->fold({decl, accum |
+          $accum->with($decl);
+        }, $schema.store)
+      ->with($classRelation);
+
+    /*
+     * The Rel expression that corresponds to the Pure class.
+     */
+    let classExpr = $classRelation->name()->rel();
+
+    let instanceSetInitial = $schema.mapping->relInstanceSet($class, $classExpr);
+
+    let instanceSetComplete =
+      $properties
+        ->fold({property: Pair<Property<Nil, Any|*>, RelationDeclaration>[1], accum: RelSetImplementation[1] |
+          $accum->withPropertyMapping($property.first, $property.second->name()->rel(), $augmentedStore);
+        }, $instanceSetInitial);
+
+    let augmentedMapping =
+      $schema.mapping
+        ->addSetImplementation($instanceSetComplete);
+
+    let augmentedSchema =
+      ^$schema(
+        mapping=$augmentedMapping,
+        store=$augmentedStore
+      );
+
+    /*
+     * Collect each property which refers to a class type (i.e., not a primitive type).
+     */
+    let referencedClasses =
+      $class.properties
+        ->filter(property: Property<Nil, Any|*>[1] | !$property->isPrimitiveValueProperty() )
+        ->map(property: Property<Nil, Any|*>[1] |
+          $property.genericType.rawType
+        );
+
+    /*
+     * Include all refereneced classes in the RAI schema.
+     */
+    $referencedClasses
+      ->map(c: Class<Any>[1] | $c->typeRelatedClasses($navigateTypeHierarchy))
+      ->fold({referencedClass: Class<Any>[1], accum: RAISchema[1] |
+        $accum->includeClass($referencedClass, $navigateTypeHierarchy)
+      }, $augmentedSchema);
+  });
+}
+
+function <<access.private>> meta::external::store::rel::mapping::schema::typeRelatedClasses(class: Class<Any>[1], navigateTypeHierarchy: Boolean[1]): Class<Any>[*] {
+  if ($navigateTypeHierarchy,
+    {|
+      let subclasses = meta::pure::functions::meta::findAllSpecializations($class);
+      let superclasses = meta::pure::functions::meta::hierarchicalAllGeneralizations($class);
+      $subclasses->concatenate($superclasses)->concatenate($class);
+    },
+    {|
+      $class;
+    }
+    )
+}
+
+function meta::external::store::rel::mapping::schema::includeClass(schema: RAISchema[1], class: Class<Any>[1]): RAISchema[1] {
+  includeClass($schema, $class, false)
+}
+
+function meta::external::store::rel::mapping::schema::includeAllRelatedClasses(schema: RAISchema[1], class: Class<Any>[1]): RAISchema[1] {
+  includeClass($schema, $class, true)
+}

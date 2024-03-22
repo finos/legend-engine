@@ -28,7 +28,7 @@ Class meta::external::store::rel::metamodel::ExprGroup extends Expr {
 
 /**
   * Expression type directly represented via code.
-  */ 
+  */
 Class meta::external::store::rel::metamodel::Fragment extends Expr {
   code: String[1];
 }
@@ -49,7 +49,7 @@ Class <<typemodifiers.abstract>> meta::external::store::rel::metamodel::Binding 
 Class <<typemodifiers.abstract>> meta::external::store::rel::metamodel::Constant extends Expr { }
 
 /**
-  * Type representing variables. A variables is both an expression 
+  * Type representing variables. A variables is both an expression
   * and a binding.
   */
 Class meta::external::store::rel::metamodel::Variable extends Expr, Binding {
@@ -92,7 +92,7 @@ Class meta::external::store::rel::metamodel::Tuple extends Expr {
 }
 
 /**
-  * Type representing a relation's constructor, i.e., expressions that 
+  * Type representing a relation's constructor, i.e., expressions that
   * denote relations, for instance `{(1, 2); (3, 4)}`.
   */
 Class meta::external::store::rel::metamodel::RelationCons extends Expr {
@@ -116,8 +116,7 @@ Class meta::external::store::rel::metamodel::InBinding extends Binding {
 }
 
 /**
-  * Denotes an intersection of expressions. We declare that such 
-  * sequences are expressions as well.
+  * Denotes a product of expressions.
   */
 Class meta::external::store::rel::metamodel::Product extends Expr {
   exprs: Expr[1..*];
@@ -129,6 +128,21 @@ Class meta::external::store::rel::metamodel::Product extends Expr {
   }: Variable[*];
 }
 
+/**
+  * Denotes an intersection of two expressions.
+  */
+Class meta::external::store::rel::metamodel::Intersection extends Expr {
+  left: Expr[1];
+  right: Expr[1];
+
+  variables() {
+    $this.left.variables()->concatenate($this.right.variables())
+  }: Variable[*];
+}
+
+/**
+  * Denotes a union of expressions.
+  */
 Class meta::external::store::rel::metamodel::Union extends Expr {
   exprs: Expr[1..*];
 
@@ -167,11 +181,18 @@ Class meta::external::store::rel::metamodel::Not extends Expr {
 }
 
 /**
+  * Tests whether an expression is the emtpy relation.
+  */
+Class meta::external::store::rel::metamodel::Empty extends Expr {
+  inner: Expr[1];
+}
+
+/**
   * Formula stating that one formula implies the other.
   */
 Class meta::external::store::rel::metamodel::Implies extends Expr {
   antecedence: Expr[1];
-  consequence: Expr[1]; 
+  consequence: Expr[1];
 }
 
 /**
@@ -216,7 +237,7 @@ Class meta::external::store::rel::metamodel::NamedApplication extends HeadExpr {
 }
 
 /**
-  * Denotes the name of a relation. 
+  * Denotes the name of a relation.
   */
 Class meta::external::store::rel::metamodel::RelationName extends HeadExpr {
   identifier: String[1];
@@ -273,11 +294,7 @@ Class meta::external::store::rel::metamodel::For extends Expr {
 /**
   * Abstract type representing elements or a program (rules and comments).
   */
-Class <<typemodifiers.abstract>> meta::external::store::rel::metamodel::ProgramElement extends Annotated {
-  code() {
-    $this->render()
-  }: String[1];
-}
+Class <<typemodifiers.abstract>> meta::external::store::rel::metamodel::ProgramElement extends Annotated { }
 
 Class meta::external::store::rel::metamodel::Comment extends ProgramElement { }
 
@@ -315,10 +332,6 @@ Class meta::external::store::rel::metamodel::Module {
 Class meta::external::store::rel::metamodel::Program {
   identifier: String[0..1];
   elements: ProgramElement[*];
-
-  code() {
-    $this->render()
-  }: String[1];
 
   output() {
     $this.elements
@@ -548,6 +561,10 @@ function meta::external::store::rel::metamodel::not(inner: Expr[1]): Not[1] {
   ^Not(inner=$inner)
 }
 
+function meta::external::store::rel::metamodel::empty(inner: Expr[1]): Empty[1] {
+  ^Empty(inner=$inner)
+}
+
 function meta::external::store::rel::metamodel::implies(antecedence: Expr[1], consequence: Expr[1]): Implies[1] {
   ^Implies(antecedence=$antecedence, consequence=$consequence)
 }
@@ -594,6 +611,10 @@ function meta::external::store::rel::metamodel::ifThenElse(condition: Expr[1], t
 
 function meta::external::store::rel::metamodel::product(exprs: Expr[1..*]): Product[1] {
   ^Product(exprs=$exprs)
+}
+
+function meta::external::store::rel::metamodel::intersection(left: Expr[1], right: Expr[1]): Intersection[1] {
+  ^Intersection(left=$left,right=$right)
 }
 
 function meta::external::store::rel::metamodel::union(exprs: Expr[1..*]): Union[1] {

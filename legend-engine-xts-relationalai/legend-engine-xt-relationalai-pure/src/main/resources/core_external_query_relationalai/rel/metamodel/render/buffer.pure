@@ -33,14 +33,25 @@ function meta::external::store::rel::metamodel::render::buffer::indent(buffer: R
   ^$buffer(indentLevel=$buffer.indentLevel+1);
 }
 
+function meta::external::store::rel::metamodel::render::buffer::unindent(buffer: RelQueryBuffer[1]): RelQueryBuffer[1] {
+  ^$buffer(indentLevel=max($buffer.indentLevel-1,0));
+}
+
+/**
+  * Set the buffer so that the next string appended (if any) will begin on a newline.
+  * Repeated `newline()` applications result in a single newline.
+  */
 function meta::external::store::rel::metamodel::render::buffer::newline(buffer: RelQueryBuffer[1]): RelQueryBuffer[1] {
-  ^$buffer(startNewLine=!$buffer.configNoIndent);
+  ^$buffer(startNewLine=true);
 }
 
 function meta::external::store::rel::metamodel::render::buffer::append(buffer: RelQueryBuffer[1], string: String[1]): RelQueryBuffer[1] {
   let newContents =
     if ($buffer.startNewLine,
-      | format('%s\n%s%s ', [$buffer.contents, $buffer.configIndentString->repeat($buffer.indentLevel)->joinStrings(), $string]),
+      | if ( $buffer.configNoIndent,
+           | format('%s %s', [$buffer.contents, $string]),
+           | format('%s\n%s%s', [$buffer.contents, $buffer.configIndentString->repeat($buffer.indentLevel)->joinStrings(), $string])
+           ),
       | $buffer.contents + $string
       );
   ^$buffer(contents=$newContents,startNewLine=false);

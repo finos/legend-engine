@@ -1,8 +1,8 @@
-import meta::external::store::rel::utils::collection::*;
 import meta::external::store::rel::compile::*;
-import meta::external::store::rel::metamodel::*;
 import meta::external::store::rel::compile::utils::*;
+import meta::external::store::rel::metamodel::*;
 import meta::external::store::rel::utils::*;
+import meta::external::store::rel::utils::collection::*;
 
 
 /**
@@ -13,7 +13,7 @@ Class meta::external::store::rel::compile::CompilationState {
   program: Program[1];
   // The current expression. This expression is used to
   // indicate the output of the subsequent step. This is a
-  // convenient helper attribute so that steps do not have to 
+  // convenient helper attribute so that steps do not have to
   // manually inspect `program` to retrieve the relevant result
   // of the previous compilation step.
   current: Expr[0..1];

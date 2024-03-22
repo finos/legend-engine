@@ -1,7 +1,7 @@
-import meta::pure::functions::collection::*;
 import meta::external::store::rel::metamodel::*;
 import meta::external::store::rel::metamodel::render::constant::*;
 import meta::external::store::rel::utils::*;
+import meta::pure::functions::collection::*;
 
 
 /////////////////////////

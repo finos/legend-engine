@@ -1,14 +1,16 @@
-import meta::external::store::rel::compile::ir::utils::*;
-import meta::pure::router::store::metamodel::*;
 import meta::external::store::rel::compile::ir::*;
+import meta::external::store::rel::compile::ir::typeinfo::*;
+import meta::external::store::rel::compile::ir::utils::*;
 import meta::external::store::rel::mapping::*;
+import meta::external::store::rel::trace::*;
 import meta::external::store::rel::utils::*;
 import meta::external::store::rel::utils::lang::*;
-import meta::external::store::rel::trace::*;
 import meta::pure::router::metamodel::*;
+import meta::pure::router::store::metamodel::*;
 
 function <<access.private>> meta::external::store::rel::compile::ir::handleCaseProject1(
   func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
   trace: Trace[1]
 ): Result<PExpr|0..1>[1] {
   assert($func.func == project_T_MANY__Path_MANY__TabularDataSet_1_);
@@ -20,10 +22,10 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseP
   let param1 = $func.parametersValues->at(1);
 
   $param0
-    ->valueSpecToPExpr($trace)
+    ->valueSpecToPExpr($typeInfo, $trace)
     ->andThen({parent: PExpr[1] |
       switch([
-        case($param1->instanceOf(ExtendedRoutedValueSpecification), 
+        case($param1->instanceOf(ExtendedRoutedValueSpecification),
           | $param1
               ->cast(@ExtendedRoutedValueSpecification)
               .value
@@ -31,7 +33,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseP
               .values
               ->cast(@meta::pure::metamodel::path::Path<Nil,Any|1>)
         ),
-        case($param1->instanceOf(InstanceValue), | 
+        case($param1->instanceOf(InstanceValue), |
           $param1
             ->cast(@InstanceValue)
             .values
@@ -53,29 +55,29 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseP
                         $element
                           ->tryCast(@meta::pure::metamodel::path::PropertyPathElement, $newTrace)
                           ->andThen(p: meta::pure::metamodel::path::PropertyPathElement[1] | $p.property->tryCast(@Property<Nil,Any|*>, $newTrace))
-                          ->andThen({property: Property<Nil,Any|*>[1] | 
+                          ->andThen({property: Property<Nil,Any|*>[1] |
                             $property
                               .genericType
                               .rawType
                               ->okOr(| errorTrace(format('No type information for property `%s`.', $property.name), $newTrace))
                               ->then({type: Type[1] |
-                                let next = 
-                                  $set
-                                    .parent
-                                    ->meta::pure::mapping::classMappingById($type->elementToPath('_'))
-                                    ->map(set | $set->cast(@RelSetImplementation));
-                                
-                                $expr->propertyAccess($property, $next);
+                                $set.parent
+                                  ->meta::pure::mapping::classMappingById($type->elementToPath('_'))
+                                  ->map(next | $next->cast(@RelSetImplementation))
+                                  ->okOr(| errorTrace('No set available.', $newTrace))
+                                  ->then(next: RelSetImplementation[1] |
+                                    $expr->propertyAccess($property, $next)
+                                  )
                               })
                           });
                       });
                   }, ok(setAccess($set, 'x')))
-                  ->then(expr: PExpr[1] | 
-                    let name = 
-                      if ($path.name->isEmpty() || $path.name == '', {| 
+                  ->then(expr: PExpr[1] |
+                    let name =
+                      if ($path.name->isEmpty() || $path.name == '', {|
                         $path.path
                           ->last()
-                          ->map({last | 
+                          ->map({last |
                             if ($last->instanceOf(meta::pure::metamodel::path::PropertyPathElement), {|
                               $last
                                 ->cast(@meta::pure::metamodel::path::PropertyPathElement)
@@ -102,6 +104,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseP
 
 function <<access.private>> meta::external::store::rel::compile::ir::handleCaseProject2(
   func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
   trace: Trace[1]
 ): Result<PExpr|0..1>[1] {
   assert($func.func == project_T_MANY__ColumnSpecification_MANY__TabularDataSet_1_ ||
@@ -114,15 +117,15 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseP
   let param1 = $func.parametersValues->at(1);
 
   $param0
-    ->valueSpecToPExpr($trace)
+    ->valueSpecToPExpr($typeInfo, $trace)
     ->andThen({parent: PExpr[1] |
       $param1
         ->tryCast(@InstanceValue, $newTrace)
         ->andThen({params: InstanceValue[1] |
           $params.values
-            ->map({v | 
+            ->map({v |
               $v->tryCast(@InstanceValue, $newTrace)
-                ->then(i: InstanceValue[1] | 
+                ->then(i: InstanceValue[1] |
                   // Values guaranteed by function signature
                   $i.values
                     ->toOne()
@@ -132,9 +135,9 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseP
             ->collect()
             ->andThem({columns: BasicColumnSpecification<Any>[*] |
               $columns.func
-                ->map(f | 
+                ->map(f |
                   $f->tryCast(@FunctionDefinition<Any>, $newTrace)
-                    ->andThen(fexpr: FunctionDefinition<Any>[1] | $fexpr->functionDefToUntypedScoped($parent, $trace))
+                    ->andThen(fexpr: FunctionDefinition<Any>[1] | $fexpr->functionDefToUntypedScoped($typeInfo, $parent, $trace))
                 )
                 ->collect()
                 ->them(fexprs: PExprScope[*] | $parent->project($columns.name->zip($fexprs)));
@@ -145,6 +148,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseP
 
 function <<access.private>> meta::external::store::rel::compile::ir::handleCaseProject3(
   func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
   tracex: Trace[1]
 ): Result<PExpr|0..1>[1] {
   assert($func.func == project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_);
@@ -158,13 +162,12 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseP
   let param2 = $func.parametersValues->at(2);
 
   $param0
-    ->valueSpecToPExpr($newTrace)
+    ->valueSpecToPExpr($typeInfo, $newTrace)
     ->andThen({parent: PExpr[1] |
-      switch([
-          case($param1->instanceOf(InstanceValue), |
-            $param1
-              ->cast(@InstanceValue)
-              .values
+      $param1->match([
+        {
+          v: InstanceValue[1] |
+            $v.values
               ->map( v |
                 $v->tryCast(@FunctionRoutedValueSpecification, $newTrace)
                   ->then(s: FunctionRoutedValueSpecification[1] |
@@ -172,24 +175,37 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseP
                     $s.value->cast(@InstanceValue)
                   )
               )
-              ->collect();
-          ),
-          case($param1->instanceOf(StoreMappingRoutedValueSpecification), | 
-            $param1
-              ->cast(@StoreMappingRoutedValueSpecification)
-              .value
+              ->collect()
+        },
+        {
+          v: StoreMappingRoutedValueSpecification[1] |
+            $v.value
               ->cast(@FunctionRoutedValueSpecification)
               .value
               ->tryCast(@InstanceValue, $newTrace)
-          )
-        ], {| error('Match error: Unexpected type', $newTrace) }
-      )
+        },
+        {
+          v: FunctionRoutedValueSpecification[1] |
+            $v.value->tryCast(@InstanceValue, $newTrace)
+        },
+        {
+          a: Any[1] |
+            let message =
+              'Encountered unknown type: ' +
+                $a
+                  ->type()
+                  ->elementToPath()
+                  ->else(| '<<unknown>>')
+                  ->quote();
+            error($message, $newTrace);
+        }
+      ])
       ->andThem({i: InstanceValue[*] |
         $i.values
           ->map(v |
             // Type Result<Project>
             $v->tryCast(@FunctionDefinition<Any>, $newTrace)
-              ->andThen(fexpr: FunctionDefinition<Any>[1] | $fexpr->functionDefToUntypedScoped($parent, $newTrace))
+              ->andThen(fexpr: FunctionDefinition<Any>[1] | $fexpr->functionDefToUntypedScoped($typeInfo, $parent, $newTrace))
           )
           ->collect()
           ->andThem(fexprs: PExprScope[*] |

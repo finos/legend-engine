@@ -45,8 +45,8 @@ function meta::external::store::rel::compile::substitution::addBinding(
    * Add the mapping `key -> value` to the callback function.
    */
   ^VariableSubstitution(function={var: String[1], trace: Trace[1] |
-    if ($var == $key, 
-      | ok($value), 
+    if ($var == $key,
+      | ok($value),
       | $substitution.function->eval($var, $trace)
     )
   })
@@ -64,7 +64,7 @@ function meta::external::store::rel::compile::substitution::addBinding(
    * Add the mapping `key -> value` to the substitution function.
    */
   ^VariableSubstitution(function={var: String[1], trace: Trace[1] |
-    if ($var == $key, 
+    if ($var == $key,
       | $expr->eval(),
       | $substitution.function->eval($var, $trace)
     )
