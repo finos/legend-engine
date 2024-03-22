@@ -7661,7 +7661,8 @@ function meta::relational::functions::pureToSqlQuery::findTableForColumnInAlias(
     r:RelationalOperationElementWithJoin[1] | let tac = $r.relationalOperationElement->extractTableAliasColumns()->toOne(); $tac->findTableForColumnInAlias($columnName);,
     tac:TableAliasColumn[1] | $tac.alias.relationalElement->findTableForColumnInAlias($tac.column.name);, // ignore passed columnName
     v:View[1] | let rop = $v.columnMappings->filter(c|$c.columnName == $columnName->toOne())->toOne(); $rop.relationalOperationElement->findTableForColumnInAlias([]);,
-    t:Table[1] | assert($t.columns->cast(@Column).name->contains($columnName->toOne()), 'can\'t find ' + $columnName->toOne() + ' in Table: ' + $t.schema.name + '.' + $t.name); pair($t, $columnName->toOne());
+    t:Table[1] | assert($t.columns->cast(@Column).name->contains($columnName->toOne()), 'can\'t find ' + $columnName->toOne() + ' in Table: ' + $t.schema.name + '.' + $t.name); pair($t, $columnName->toOne());,
+    r:RelationalOperationElement[1] | $r->extractTableAliasColumns()->toOne('Expected one table alias column in operation')->findTableForColumnInAlias($columnName)
   ]);
 }
 
