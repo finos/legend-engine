@@ -479,7 +479,7 @@ class AppendOnlyTest extends BaseTest
             "(\"NAME\", \"INCOME\", \"EXPIRY_DATE\", \"DIGEST\", \"BATCH_ID\") " +
             "(SELECT staging.\"NAME\" as \"NAME\",staging.\"INCOME\" as \"INCOME\",staging.\"EXPIRY_DATE\" as \"EXPIRY_DATE\"," +
             "LAKEHOUSE_MD5(ARRAY['NAME','INCOME','EXPIRY_DATE'],ARRAY[CONVERT(staging.\"NAME\",VARCHAR),CONVERT(staging.\"INCOME\",VARCHAR),CONVERT(staging.\"EXPIRY_DATE\",VARCHAR)])," +
-            "(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN') " +
+            "(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM \"BATCH_METADATA\" as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN') " +
             "FROM \"TEST\".\"STAGING\" as staging)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
@@ -568,7 +568,7 @@ class AppendOnlyTest extends BaseTest
             "(SELECT staging.\"id\" as \"id\",staging.\"name\" as \"name\",staging.\"income\" as \"income\",staging.\"start_time\" as \"start_time\",staging.\"expiry_date\" as \"expiry_date\",staging.\"version\" as \"version\"," +
             "LAKEHOUSE_MD5(ARRAY['id','name','income','start_time','expiry_date'],ARRAY[CONVERT(staging.\"id\",VARCHAR),CONVERT(staging.\"name\",VARCHAR),CONVERT(staging.\"income\",VARCHAR),CONVERT(staging.\"start_time\",VARCHAR),CONVERT(staging.\"expiry_date\",VARCHAR)])," +
             "'2000-01-01 00:00:00.000000'," +
-            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN') " +
+            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN') " +
             "FROM \"TEST\".\"staging_temp_staging_lp_yosulf\" as staging WHERE (staging.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (staging.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));

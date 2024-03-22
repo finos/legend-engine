@@ -42,7 +42,7 @@ public class PlaceholderTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
 
-        String expectedSql = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\") (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),'{BATCH_START_TIMESTAMP_PLACEHOLDER}','{BATCH_END_TIMESTAMP_PLACEHOLDER}','DONE')";
+        String expectedSql = "INSERT INTO \"batch_metadata\" (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\") (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),'{BATCH_START_TIMESTAMP_PLACEHOLDER}','{BATCH_END_TIMESTAMP_PLACEHOLDER}','DONE')";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 
@@ -56,7 +56,7 @@ public class PlaceholderTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
 
-        String expectedSql = "INSERT INTO BATCH_METADATA (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\") (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as batch_metadata WHERE UPPER(batch_metadata.\"TABLE_NAME\") = 'MAIN'),'{BATCH_START_TIMESTAMP_PLACEHOLDER}','{BATCH_END_TIMESTAMP_PLACEHOLDER}','DONE')";
+        String expectedSql = "INSERT INTO \"BATCH_METADATA\" (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\") (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"TABLE_BATCH_ID\"),0)+1 FROM \"BATCH_METADATA\" as batch_metadata WHERE UPPER(batch_metadata.\"TABLE_NAME\") = 'MAIN'),'{BATCH_START_TIMESTAMP_PLACEHOLDER}','{BATCH_END_TIMESTAMP_PLACEHOLDER}','DONE')";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 
@@ -70,7 +70,7 @@ public class PlaceholderTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
 
-        String expectedSql = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\") (SELECT 'main',{BATCH_ID_PATTERN},'{BATCH_START_TIMESTAMP_PLACEHOLDER}','{BATCH_END_TIMESTAMP_PLACEHOLDER}','DONE')";
+        String expectedSql = "INSERT INTO \"batch_metadata\" (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\") (SELECT 'main',{BATCH_ID_PATTERN},'{BATCH_START_TIMESTAMP_PLACEHOLDER}','{BATCH_END_TIMESTAMP_PLACEHOLDER}','DONE')";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 

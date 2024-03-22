@@ -33,7 +33,7 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink " +
-                "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1 " +
+                "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1 " +
                 "WHERE (sink.`batch_id_out` = 999999999) AND " +
                 "(EXISTS (SELECT * FROM `mydb`.`staging` as stage " +
                 "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`validity_from_target` = stage.`validity_from_reference`) " +
@@ -42,7 +42,7 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
         String expectedUpsertQuery = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `validity_from_target`, `validity_through_target`, `digest`, `batch_id_in`, `batch_id_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`,stage.`validity_through_reference`,stage.`digest`," +
-                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
+                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
                 "999999999 " +
                 "FROM `mydb`.`staging` as stage " +
                 "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
@@ -58,9 +58,9 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
 
         String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage";
-        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1";
+        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1";
         String rowsDeleted = "SELECT 0 as `rowsDeleted`";
-        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_id_in` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'))-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1) as `rowsInserted`";
+        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_id_in` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'))-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1) as `rowsInserted`";
         String rowsTerminated = "SELECT 0 as `rowsTerminated`";
 
         verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
@@ -70,7 +70,7 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
     public void verifyBitemporalDeltaBatchIdDateTimeBasedNoDeleteIndWithDataSplits(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink SET sink.`batch_id_out` = " +
-                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata " +
+                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata " +
                 "WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1,sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') " +
                 "WHERE (sink.`batch_id_out` = 999999999) AND (EXISTS (SELECT * FROM `mydb`.`staging` as stage WHERE " +
                 "((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) AND " +
@@ -80,7 +80,7 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
         String expectedUpsertQuery = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `validity_from_target`, " +
                 "`validity_through_target`, `digest`, `version`, `batch_id_in`, `batch_id_out`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`,stage.`validity_through_reference`," +
-                "stage.`digest`,stage.`version`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata " +
+                "stage.`digest`,stage.`version`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata " +
                 "WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999,PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','9999-12-31 23:59:59') " +
                 "FROM `mydb`.`staging` as stage WHERE (NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE " +
                 "(sink.`batch_id_out` = 999999999) AND (sink.`digest` = stage.`digest`) " +
@@ -100,9 +100,9 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
         Assertions.assertEquals(2, operations.size());
 
         String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE (stage.`data_split` >= 1) AND (stage.`data_split` <= 1)";
-        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1";
+        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1";
         String rowsDeleted = "SELECT 0 as `rowsDeleted`";
-        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_id_in` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'))-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1) as `rowsInserted`";
+        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_id_in` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'))-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1) as `rowsInserted`";
         String rowsTerminated = "SELECT 0 as `rowsTerminated`";
 
         verifyStats(operations.get(0), incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
@@ -116,7 +116,7 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink " +
-                "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1 " +
+                "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1 " +
                 "WHERE (sink.`batch_id_out` = 999999999) AND " +
                 "(EXISTS (SELECT * FROM `mydb`.`staging` as stage " +
                 "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`validity_from_target` = stage.`validity_from_reference`) " +
@@ -125,7 +125,7 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
         String expectedUpsertQuery = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `validity_from_target`, `validity_through_target`, `digest`, `batch_id_in`, `batch_id_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`,stage.`validity_through_reference`,stage.`digest`," +
-                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
+                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
                 "999999999 " +
                 "FROM `mydb`.`staging` as stage " +
                 "WHERE (NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
@@ -141,10 +141,10 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
 
         String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage";
-        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE (sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1) AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`) AND (sink2.`validity_from_target` = sink.`validity_from_target`)) AND (sink2.`batch_id_in` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'))))";
+        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE (sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1) AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`) AND (sink2.`validity_from_target` = sink.`validity_from_target`)) AND (sink2.`batch_id_in` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'))))";
         String rowsDeleted = "SELECT 0 as `rowsDeleted`";
-        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_id_in` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'))-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE (sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1) AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`) AND (sink2.`validity_from_target` = sink.`validity_from_target`)) AND (sink2.`batch_id_in` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'))))) as `rowsInserted`";
-        String rowsTerminated = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1)-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE (sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1) AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`) AND (sink2.`validity_from_target` = sink.`validity_from_target`)) AND (sink2.`batch_id_in` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'))))) as `rowsTerminated`";
+        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_id_in` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'))-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE (sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1) AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`) AND (sink2.`validity_from_target` = sink.`validity_from_target`)) AND (sink2.`batch_id_in` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'))))) as `rowsInserted`";
+        String rowsTerminated = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1)-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE (sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1) AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`) AND (sink2.`validity_from_target` = sink.`validity_from_target`)) AND (sink2.`batch_id_in` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'))))) as `rowsTerminated`";
 
         verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
     }
@@ -201,7 +201,7 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
 
         String expectedMilestoneQuery = "UPDATE `MYDB`.`MAIN` as sink " +
                 "SET sink.`BATCH_ID_OUT` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 " +
-                "FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN')-1 " +
+                "FROM `BATCH_METADATA` as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN')-1 " +
                 "WHERE (sink.`BATCH_ID_OUT` = 999999999) AND (EXISTS (SELECT * FROM `MYDB`.`STAGING` as stage " +
                 "WHERE ((sink.`ID` = stage.`ID`) AND (sink.`NAME` = stage.`NAME`)) " +
                 "AND (sink.`VALIDITY_FROM_TARGET` = stage.`VALIDITY_FROM_REFERENCE`) " +
@@ -211,7 +211,7 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
                 "(`ID`, `NAME`, `AMOUNT`, `VALIDITY_FROM_TARGET`, `VALIDITY_THROUGH_TARGET`, `DIGEST`, `BATCH_ID_IN`, " +
                 "`BATCH_ID_OUT`) " +
                 "(SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`VALIDITY_FROM_REFERENCE`,stage.`VALIDITY_THROUGH_REFERENCE`," +
-                "stage.`DIGEST`,(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN')" +
+                "stage.`DIGEST`,(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM `BATCH_METADATA` as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN')" +
                 ",999999999 " +
                 "FROM `MYDB`.`STAGING` as stage WHERE NOT (EXISTS " +
                 "(SELECT * FROM `MYDB`.`MAIN` as sink " +
@@ -229,9 +229,9 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
         Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithUpperCase(), metadataIngestSql.get(0));
 
         String incomingRecordCount = "SELECT COUNT(*) as `INCOMINGRECORDCOUNT` FROM `MYDB`.`STAGING` as stage";
-        String rowsUpdated = "SELECT COUNT(*) as `ROWSUPDATED` FROM `MYDB`.`MAIN` as sink WHERE sink.`BATCH_ID_OUT` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN')-1";
+        String rowsUpdated = "SELECT COUNT(*) as `ROWSUPDATED` FROM `MYDB`.`MAIN` as sink WHERE sink.`BATCH_ID_OUT` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM `BATCH_METADATA` as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN')-1";
         String rowsDeleted = "SELECT 0 as `ROWSDELETED`";
-        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `MYDB`.`MAIN` as sink WHERE sink.`BATCH_ID_IN` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN'))-(SELECT COUNT(*) FROM `MYDB`.`MAIN` as sink WHERE sink.`BATCH_ID_OUT` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN')-1) as `ROWSINSERTED`";
+        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `MYDB`.`MAIN` as sink WHERE sink.`BATCH_ID_IN` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM `BATCH_METADATA` as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN'))-(SELECT COUNT(*) FROM `MYDB`.`MAIN` as sink WHERE sink.`BATCH_ID_OUT` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM `BATCH_METADATA` as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN')-1) as `ROWSINSERTED`";
         String rowsTerminated = "SELECT 0 as `ROWSTERMINATED`";
 
         verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
@@ -245,7 +245,7 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink " +
-                "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1 " +
+                "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1 " +
                 "WHERE (sink.`batch_id_out` = 123456) AND " +
                 "(EXISTS (SELECT * FROM `mydb`.`staging` as stage " +
                 "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`validity_from_target` = stage.`validity_from_reference`) " +
@@ -254,7 +254,7 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
         String expectedUpsertQuery = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `validity_from_target`, `validity_through_target`, `digest`, `batch_id_in`, `batch_id_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`,stage.`validity_through_reference`,stage.`digest`," +
-                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
+                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
                 "123456 " +
                 "FROM `mydb`.`staging` as stage " +
                 "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
@@ -268,9 +268,9 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
 
         String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage";
-        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1";
+        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1";
         String rowsDeleted = "SELECT 0 as `rowsDeleted`";
-        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_id_in` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'))-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1) as `rowsInserted`";
+        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_id_in` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'))-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1) as `rowsInserted`";
         String rowsTerminated = "SELECT 0 as `rowsTerminated`";
 
         verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);

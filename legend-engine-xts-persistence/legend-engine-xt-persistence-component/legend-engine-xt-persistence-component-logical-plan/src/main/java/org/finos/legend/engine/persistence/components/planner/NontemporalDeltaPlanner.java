@@ -126,8 +126,8 @@ class NontemporalDeltaPlanner extends Planner
     }
 
     /*
-        DELETE FROM main_table
-        WHERE EXIST (SELECT * FROM staging_table WHERE pk_match AND digest_match AND staging.delete_indicator_is_match)
+        DELETE FROM \"main\"_table
+        WHERE EXIST (SELECT * FROM \"staging\"_table WHERE pk_match AND digest_match AND staging.delete_indicator_is_match)
      */
     private Delete getDeleteOperation()
     {
@@ -198,11 +198,11 @@ class NontemporalDeltaPlanner extends Planner
     /*
     UPDATE main_table
     SET
-    sink.COL1 = (SELECT stage.COL1 FROM staging as stage WHERE (PKs match) AND (DIGEST does not match)),
-    sink.COL2 = (SELECT stage.COL2 FROM staging as stage WHERE (PKs match) AND (DIGEST does not match)),
+    sink.COL1 = (SELECT stage.COL1 FROM \"staging\" as stage WHERE (PKs match) AND (DIGEST does not match)),
+    sink.COL2 = (SELECT stage.COL2 FROM \"staging\" as stage WHERE (PKs match) AND (DIGEST does not match)),
     ..
     WHERE EXISTS
-    (SELECT * FROM staging_table WHERE (PKs match) AND (DIGEST does not match) AND DATA_SPLIT_CONDITION)
+    (SELECT * FROM \"staging\"_table WHERE (PKs match) AND (DIGEST does not match) AND DATA_SPLIT_CONDITION)
      */
     private Update getUpdateOperation()
     {

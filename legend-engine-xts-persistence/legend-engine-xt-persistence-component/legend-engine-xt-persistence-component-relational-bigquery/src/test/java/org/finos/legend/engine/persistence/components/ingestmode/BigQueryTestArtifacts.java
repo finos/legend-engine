@@ -201,7 +201,7 @@ public class BigQueryTestArtifacts
             "`id` INT64 NOT NULL,`name` STRING NOT NULL,`amount` FLOAT64,`biz_date` DATE,`digest` STRING," +
             "`batch_id_in` INT64 NOT NULL,`batch_id_out` INT64,PRIMARY KEY (`id`, `name`, `batch_id_in`) NOT ENFORCED)";
 
-    public static String expectedMetadataTableCreateQuery = "CREATE TABLE IF NOT EXISTS batch_metadata" +
+    public static String expectedMetadataTableCreateQuery = "CREATE TABLE IF NOT EXISTS `batch_metadata`" +
             "(`table_name` STRING(255)," +
             "`batch_start_ts_utc` DATETIME," +
             "`batch_end_ts_utc` DATETIME," +
@@ -210,7 +210,7 @@ public class BigQueryTestArtifacts
             "`batch_source_info` JSON," +
             "`additional_metadata` JSON)";
 
-    public static String expectedMetadataTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS BATCH_METADATA" +
+    public static String expectedMetadataTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS `BATCH_METADATA`" +
             "(`TABLE_NAME` STRING(255)," +
             "`BATCH_START_TS_UTC` DATETIME," +
             "`BATCH_END_TS_UTC` DATETIME," +
@@ -223,39 +223,39 @@ public class BigQueryTestArtifacts
             "(`ID` INT64 NOT NULL,`NAME` STRING NOT NULL,`AMOUNT` FLOAT64,`BIZ_DATE` DATE,`DIGEST` STRING," +
             "`BATCH_ID_IN` INT64 NOT NULL,`BATCH_ID_OUT` INT64,PRIMARY KEY (`ID`, `NAME`, `BATCH_ID_IN`) NOT ENFORCED)";
 
-    public static String expectedMetadataTableIngestQuery = "INSERT INTO batch_metadata (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`)" +
-            " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'DONE')";
+    public static String expectedMetadataTableIngestQuery = "INSERT INTO `batch_metadata` (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`)" +
+            " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'DONE')";
 
-    public static String expectedMetadataTableIngestQueryWithBatchSuccessValue = "INSERT INTO batch_metadata (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`)" +
-        " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'SUCCEEDED')";
+    public static String expectedMetadataTableIngestQueryWithBatchSuccessValue = "INSERT INTO `batch_metadata` (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`)" +
+        " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'SUCCEEDED')";
 
-    public static String expectedMetadataTableIngestWithStagingFiltersQuery = "INSERT INTO batch_metadata " +
+    public static String expectedMetadataTableIngestWithStagingFiltersQuery = "INSERT INTO `batch_metadata` " +
             "(`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `batch_source_info`) " +
-            "(SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata " +
+            "(SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata " +
             "WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
             "CURRENT_DATETIME(),'DONE',PARSE_JSON('{\"staging_filters\":{\"batch_id_in\":{\"GT\":5}}}'))";
 
-    public static String expectedMetadataTableIngestQueryWithUpperCase = "INSERT INTO BATCH_METADATA (`TABLE_NAME`, `TABLE_BATCH_ID`, `BATCH_START_TS_UTC`, `BATCH_END_TS_UTC`, `BATCH_STATUS`)" +
-            " (SELECT 'MAIN',(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'DONE')";
+    public static String expectedMetadataTableIngestQueryWithUpperCase = "INSERT INTO `BATCH_METADATA` (`TABLE_NAME`, `TABLE_BATCH_ID`, `BATCH_START_TS_UTC`, `BATCH_END_TS_UTC`, `BATCH_STATUS`)" +
+            " (SELECT 'MAIN',(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM `BATCH_METADATA` as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'DONE')";
     
-    public static String expectedMetadataTableIngestQueryWithPlaceHolders = "INSERT INTO batch_metadata (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`) " +
+    public static String expectedMetadataTableIngestQueryWithPlaceHolders = "INSERT INTO `batch_metadata` (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`) " +
             "(SELECT 'main',{BATCH_ID_PATTERN},PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','{BATCH_START_TS_PATTERN}'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','{BATCH_END_TS_PATTERN}'),'DONE')";
 
-    public static String expectedMetadataTableIngestQueryWithAdditionalMetadata = "INSERT INTO batch_metadata " +
+    public static String expectedMetadataTableIngestQueryWithAdditionalMetadata = "INSERT INTO `batch_metadata` " +
         "(`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `additional_metadata`)" +
-        " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata " +
+        " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata " +
         "WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'DONE'," +
         "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
 
-    public static String expectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase = "INSERT INTO BATCH_METADATA " +
+    public static String expectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase = "INSERT INTO `BATCH_METADATA` " +
         "(`TABLE_NAME`, `TABLE_BATCH_ID`, `BATCH_START_TS_UTC`, `BATCH_END_TS_UTC`, `BATCH_STATUS`, `ADDITIONAL_METADATA`)" +
-        " (SELECT 'MAIN',(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA " +
+        " (SELECT 'MAIN',(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM `BATCH_METADATA` as BATCH_METADATA " +
         "WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'DONE'," +
         "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
 
-    public static String expectedMetadataTableIngestQueryWithAdditionalMetadataWithBatchSuccessValueWithUpperCase = "INSERT INTO BATCH_METADATA " +
+    public static String expectedMetadataTableIngestQueryWithAdditionalMetadataWithBatchSuccessValueWithUpperCase = "INSERT INTO `BATCH_METADATA` " +
         "(`TABLE_NAME`, `TABLE_BATCH_ID`, `BATCH_START_TS_UTC`, `BATCH_END_TS_UTC`, `BATCH_STATUS`, `ADDITIONAL_METADATA`)" +
-        " (SELECT 'MAIN',(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA " +
+        " (SELECT 'MAIN',(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM `BATCH_METADATA` as BATCH_METADATA " +
         "WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'SUCCEEDED'," +
         "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
 

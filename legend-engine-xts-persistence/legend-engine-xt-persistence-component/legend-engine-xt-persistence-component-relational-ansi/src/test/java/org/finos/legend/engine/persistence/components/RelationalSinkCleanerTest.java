@@ -37,10 +37,10 @@ public class RelationalSinkCleanerTest extends IngestModeTest
             .addFields(batchIdOut)
             .build();
     private final MetadataDataset metadata = MetadataDataset.builder().metadataDatasetName("batch_metadata").build();
-    private final String auditTableCreationQuery = "CREATE TABLE IF NOT EXISTS sink_cleanup_audit(\"table_name\" VARCHAR(255),\"execution_ts_utc\" DATETIME,\"status\" VARCHAR(32),\"requested_by\" VARCHAR(64))";
+    private final String auditTableCreationQuery = "CREATE TABLE IF NOT EXISTS \"sink_cleanup_audit\"(\"table_name\" VARCHAR(255),\"execution_ts_utc\" DATETIME,\"status\" VARCHAR(32),\"requested_by\" VARCHAR(64))";
     private final String dropMainTableQuery = "DROP TABLE IF EXISTS \"mydb\".\"main\"";
-    private final String deleteFromMetadataTableQuery = "DELETE FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'";
-    private final String insertToAuditTableQuery = "INSERT INTO sink_cleanup_audit (\"table_name\", \"execution_ts_utc\", \"status\", \"requested_by\") (SELECT 'main','2000-01-01 00:00:00.000000','SUCCEEDED','lh_dev')";
+    private final String deleteFromMetadataTableQuery = "DELETE FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'";
+    private final String insertToAuditTableQuery = "INSERT INTO \"sink_cleanup_audit\" (\"table_name\", \"execution_ts_utc\", \"status\", \"requested_by\") (SELECT 'main','2000-01-01 00:00:00.000000','SUCCEEDED','lh_dev')";
 
 
     @BeforeEach

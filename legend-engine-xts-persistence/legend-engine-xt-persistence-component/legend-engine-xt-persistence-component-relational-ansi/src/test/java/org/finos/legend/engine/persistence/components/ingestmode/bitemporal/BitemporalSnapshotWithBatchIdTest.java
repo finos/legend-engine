@@ -86,7 +86,7 @@ public class BitemporalSnapshotWithBatchIdTest extends IngestModeTest
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
         String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink " +
-            "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
+            "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
             "WHERE sink.\"batch_id_out\" = 999999999";
 
         Assertions.assertEquals(expectedBitemporalMainTableCreateQuery, preActionsSql.get(0));
@@ -128,7 +128,7 @@ public class BitemporalSnapshotWithBatchIdTest extends IngestModeTest
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
         String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink " +
-            "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
+            "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
             "WHERE (sink.\"batch_id_out\" = 999999999) " +
             "AND (NOT (EXISTS " +
             "(SELECT * FROM \"mydb\".\"staging\" as stage " +
@@ -137,7 +137,7 @@ public class BitemporalSnapshotWithBatchIdTest extends IngestModeTest
         String expectedUpsertQuery = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"validity_through_reference\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"validity_from_target\", \"validity_through_target\") " +
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"validity_through_reference\",stage.\"digest\"," +
-            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999,stage.\"validity_from_reference\",stage.\"validity_through_reference\" " +
+            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999,stage.\"validity_from_reference\",stage.\"validity_through_reference\" " +
             "FROM \"mydb\".\"staging\" as stage " +
             "WHERE NOT (stage.\"digest\" IN (SELECT sink.\"digest\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999)))";
 
@@ -183,7 +183,7 @@ public class BitemporalSnapshotWithBatchIdTest extends IngestModeTest
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
         String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink " +
-            "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
+            "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
             "WHERE (sink.\"batch_id_out\" = 999999999) " +
             "AND (NOT (EXISTS " +
             "(SELECT * FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") AND (sink.\"validity_from_reference\" = stage.\"validity_from_reference\") AND (sink.\"validity_through_reference\" = stage.\"validity_through_reference\")) AND (sink.\"digest\" = stage.\"digest\")))) " +
@@ -192,7 +192,7 @@ public class BitemporalSnapshotWithBatchIdTest extends IngestModeTest
         String expectedUpsertQuery = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"validity_through_reference\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"validity_from_target\", \"validity_through_target\") " +
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"validity_through_reference\",stage.\"digest\"," +
-            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999,stage.\"validity_from_reference\",stage.\"validity_through_reference\" " +
+            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999,stage.\"validity_from_reference\",stage.\"validity_through_reference\" " +
             "FROM \"mydb\".\"staging\" as stage " +
             "WHERE NOT (stage.\"digest\" IN (SELECT sink.\"digest\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999)))";
 
@@ -249,7 +249,7 @@ public class BitemporalSnapshotWithBatchIdTest extends IngestModeTest
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
         String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink " +
-            "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
+            "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
             "WHERE (sink.\"batch_id_out\" = 999999999) " +
             "AND (NOT (EXISTS " +
             "(SELECT * FROM \"mydb\".\"staging\" as stage " +
@@ -258,7 +258,7 @@ public class BitemporalSnapshotWithBatchIdTest extends IngestModeTest
         String expectedUpsertQuery = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"validity_from_target\", \"validity_through_target\") " +
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\"," +
-            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999,stage.\"validity_from_reference\",'9999-12-31 23:59:59' " +
+            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999,stage.\"validity_from_reference\",'9999-12-31 23:59:59' " +
             "FROM \"mydb\".\"staging\" as stage " +
             "WHERE NOT (stage.\"digest\" IN (SELECT sink.\"digest\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999)))";
 
@@ -318,7 +318,7 @@ public class BitemporalSnapshotWithBatchIdTest extends IngestModeTest
 
         String expectedMilestoneQuery = "UPDATE \"MYDB\".\"MAIN\" as SINK " +
             "SET SINK.\"BATCH_ID_OUT\" = (SELECT MAX(\"TABLE_BATCH_ID\")-1 " +
-            "FROM BATCH_METADATA as BATCH_METADATA WHERE BATCH_METADATA.\"TABLE_NAME\" = 'main') " +
+            "FROM \"BATCH_METADATA\" as BATCH_METADATA WHERE BATCH_METADATA.\"TABLE_NAME\" = 'main') " +
             "WHERE (SINK.\"BATCH_ID_OUT\" = 999999999) " +
             "AND (NOT (EXISTS (SELECT * FROM \"MYDB\".\"STAGING\" as STAGE " +
             "WHERE ((SINK.\"ID\" = STAGE.\"ID\") AND (SINK.\"NAME\" = STAGE.\"NAME\") " +
@@ -329,7 +329,7 @@ public class BitemporalSnapshotWithBatchIdTest extends IngestModeTest
             "(\"ID\", \"NAME\", \"AMOUNT\", \"VALIDITY_FROM_REFERENCE\", \"DIGEST\", " +
             "\"BATCH_ID_IN\", \"BATCH_ID_OUT\", \"VALIDITY_FROM_TARGET\", \"VALIDITY_THROUGH_TARGET\") " +
             "(SELECT STAGE.\"ID\",STAGE.\"NAME\",STAGE.\"AMOUNT\",STAGE.\"VALIDITY_FROM_REFERENCE\"," +
-            "STAGE.\"DIGEST\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')" +
+            "STAGE.\"DIGEST\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')" +
             ",999999999,STAGE.\"VALIDITY_FROM_REFERENCE\",'9999-12-31 23:59:59' FROM \"MYDB\".\"STAGING\" as STAGE " +
             "WHERE NOT (STAGE.\"DIGEST\" IN (SELECT SINK.\"DIGEST\" FROM \"MYDB\".\"MAIN\" as SINK WHERE SINK.\"BATCH_ID_OUT\" = 999999999)))";
 
@@ -386,7 +386,7 @@ public class BitemporalSnapshotWithBatchIdTest extends IngestModeTest
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
         String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink " +
-            "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
+            "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
             "WHERE (sink.\"batch_id_out\" = 999999999) " +
             "AND (NOT (EXISTS " +
             "(SELECT * FROM \"mydb\".\"staging\" as stage " +
@@ -395,7 +395,7 @@ public class BitemporalSnapshotWithBatchIdTest extends IngestModeTest
         String expectedUpsertQuery = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"validity_from_target\", \"validity_through_target\") " +
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\"," +
-            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999,stage.\"validity_from_reference\",'9999-12-31 23:59:59' " +
+            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM \"batch_metadata\" as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999,stage.\"validity_from_reference\",'9999-12-31 23:59:59' " +
             "FROM \"mydb\".\"staging\" as stage " +
             "WHERE NOT (stage.\"digest\" IN (SELECT sink.\"digest\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999)))";
 

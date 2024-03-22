@@ -45,7 +45,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
 
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `batch_id`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`," +
-                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
+                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
                 "FROM `mydb`.`staging` as stage)";
 
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTableCreateQuery, preActionsSqlList.get(0));
@@ -66,7 +66,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         String insertSql = "INSERT INTO `mydb`.`main` " +
             "(`id`, `name`, `amount`, `biz_date`, `batch_update_time`, `batch_id`) " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,'2000-01-01 00:00:00.000000'," +
-            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
+            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
             "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage)";
 
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTableWithAuditPKCreateQuery, preActionsSqlList.get(0));
@@ -89,7 +89,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         String insertSql = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `biz_date`, `batch_update_time`, `batch_id`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,'2000-01-01 00:00:00.000000'," +
-                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
+                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
                 "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage)";
 
         String maxDataErrorCheckSql = "SELECT MAX(`legend_persistence_distinct_rows`) as `MAX_DATA_ERRORS` FROM " +
@@ -127,7 +127,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
 
         String insertSql = "INSERT INTO `MYDB`.`MAIN` (`ID`, `NAME`, `AMOUNT`, `BIZ_DATE`, `BATCH_ID`) " +
                 "(SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`BIZ_DATE`," +
-                "(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN') " +
+                "(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM `BATCH_METADATA` as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN') " +
                 "FROM `MYDB`.`STAGING` as stage)";
 
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTableCreateQueryWithUpperCase, preActionsSqlList.get(0));
@@ -143,7 +143,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
 
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `batch_id`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`," +
-                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
+                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM `batch_metadata` as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
                 "FROM `mydb`.`staging` as stage)";
 
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTableCreateQuery, preActionsSqlList.get(0));

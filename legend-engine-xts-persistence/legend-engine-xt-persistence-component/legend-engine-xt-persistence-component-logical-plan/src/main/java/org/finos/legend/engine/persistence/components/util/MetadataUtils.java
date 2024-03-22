@@ -62,7 +62,7 @@ public class MetadataUtils
     }
 
     /*
-    (SELECT COALESCE(MAX("table_batch_id"),0)+1 FROM batch_metadata WHERE "table_name" = mainTableName)-1";
+    (SELECT COALESCE(MAX("table_batch_id"),0)+1 FROM "batch_metadata" WHERE "table_name" = mainTableName)-1";
     */
     public Value getPrevBatchId(StringValue mainTableName)
     {
@@ -71,7 +71,7 @@ public class MetadataUtils
     }
 
     /*
-    SELECT COALESCE(MAX("table_batch_id"),0)+1 FROM batch_metadata WHERE "table_name" = mainTableName
+    SELECT COALESCE(MAX("table_batch_id"),0)+1 FROM "batch_metadata" WHERE "table_name" = mainTableName
     */
     public BatchIdValue getBatchId(StringValue mainTableName)
     {
@@ -97,9 +97,9 @@ public class MetadataUtils
     }
 
     /*
-    INSERT INTO batch_metadata ("table_name", "table_batch_id", "batch_start_ts_utc", "batch_end_ts_utc", "batch_status")
+    INSERT INTO "batch_metadata" ("table_name", "table_batch_id", "batch_start_ts_utc", "batch_end_ts_utc", "batch_status")
     (SELECT 'main',
-    (SELECT COALESCE(MAX("table_batch_id"),0)+1 FROM batch_metadata WHERE "table_name" = 'main'),
+    (SELECT COALESCE(MAX("table_batch_id"),0)+1 FROM "batch_metadata" WHERE "table_name" = 'main'),
     '{BATCH_START_TIMESTAMP_PLACEHOLDER}',
     '{BATCH_END_TIMESTAMP_PLACEHOLDER}',
     'DONE');

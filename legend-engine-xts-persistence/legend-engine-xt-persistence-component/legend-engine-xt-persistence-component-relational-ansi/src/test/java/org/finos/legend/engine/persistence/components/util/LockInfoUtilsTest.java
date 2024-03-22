@@ -48,8 +48,8 @@ public class LockInfoUtilsTest
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(operation).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expectedSql = "INSERT INTO main_table_lock (\"insert_ts_utc\", \"table_name\") " +
-                "(SELECT '2000-01-01 00:00:00.000000','main' WHERE NOT (EXISTS (SELECT * FROM main_table_lock as main_table_lock)))";
+        String expectedSql = "INSERT INTO \"main_table_lock\" (\"insert_ts_utc\", \"table_name\") " +
+                "(SELECT '2000-01-01 00:00:00.000000','main' WHERE NOT (EXISTS (SELECT * FROM \"main_table_lock\" as main_table_lock)))";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 
@@ -62,7 +62,7 @@ public class LockInfoUtilsTest
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(operation).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expectedSql = "UPDATE main_table_lock as main_table_lock SET main_table_lock.\"last_used_ts_utc\" = '2000-01-01 00:00:00.000000'";
+        String expectedSql = "UPDATE \"main_table_lock\" as main_table_lock SET main_table_lock.\"last_used_ts_utc\" = '2000-01-01 00:00:00.000000'";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 }
