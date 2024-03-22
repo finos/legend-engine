@@ -39,7 +39,7 @@ public class RelationalSinkCleanerTest extends BaseTest
         MetadataDataset metadata = MetadataDataset.builder().metadataDatasetName("batch_metadata").build();
         DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         createSampleMainTableWithData(mainTable.name());
-        String lockTable = mainTable.name()+ ApiUtils.LOCK_INFO_DATASET_SUFFIX;
+        String lockTable = mainTable.name() + ApiUtils.LOCK_INFO_DATASET_SUFFIX;
         createLockTable(lockTable);
         LockInfoDataset lockDataset = LockInfoDataset.builder()
                 .database(mainTable.datasetReference().database())
@@ -114,7 +114,7 @@ public class RelationalSinkCleanerTest extends BaseTest
 
     private void createLockTable(String lockTable)
     {
-        h2Sink.executeStatement("CREATE TABLE TEST."+ lockTable +" (ID INT PRIMARY KEY, NAME VARCHAR(255), BIRTH DATETIME)");
+        h2Sink.executeStatement("CREATE TABLE TEST." + lockTable + " (ID INT PRIMARY KEY, NAME VARCHAR(255), BIRTH DATETIME)");
     }
 
     @Test
