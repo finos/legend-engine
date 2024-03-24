@@ -19,6 +19,7 @@ import org.antlr.v4.runtime.Vocabulary;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.HostedServiceParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
+import org.junit.Test;
 
 import java.util.List;
 
@@ -42,5 +43,19 @@ public class TestHostedServiceParsing extends TestGrammarParser.TestGrammarParse
                 "   documentation : 'sass';\n" +
                 "   autoActivateUpdates : true;\n" +
                 "}\n";
+    }
+
+
+    @Test
+    public void testMissingProperty()
+    {
+        test("###HostedService\n" +
+                "HostedService pack::A " + "\n" +
+                "{\n" +
+                "   function : a::f():String[1];\n" +
+                "   pattern : 'sass';\n" +
+                "   documentation : 'sass';\n" +
+                "   autoActivateUpdates : true;\n" +
+                "}\n", "PARSER error at [2:1-8:1]: Field 'ownership' is required");
     }
 }
