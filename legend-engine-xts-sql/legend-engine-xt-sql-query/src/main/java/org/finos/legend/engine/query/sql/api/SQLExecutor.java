@@ -95,6 +95,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.finos.legend.engine.plan.generation.PlanGenerator.transformExecutionPlan;
@@ -104,11 +105,11 @@ public class SQLExecutor
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SQLExecutor.class);
     private static final ObjectMapper OBJECT_MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private static final Map<Class<? extends Literal>, String> LITERAL_TO_PURE_TYPES = UnifiedMap.newMapWith(
-        Tuples.pair(IntegerLiteral.class, "Integer"),
-        Tuples.pair(StringLiteral.class, "String"),
-        Tuples.pair(BooleanLiteral.class, "Boolean"),
-        Tuples.pair(LongLiteral.class, "Integer"),
-        Tuples.pair(DoubleLiteral.class, "Float")
+            Tuples.pair(IntegerLiteral.class, "Integer"),
+            Tuples.pair(StringLiteral.class, "String"),
+            Tuples.pair(BooleanLiteral.class, "Boolean"),
+            Tuples.pair(LongLiteral.class, "Integer"),
+            Tuples.pair(DoubleLiteral.class, "Float")
     );
 
     private final ModelManager modelManager;
@@ -137,6 +138,11 @@ public class SQLExecutor
 
     public Result execute(Query query, List<Object> positionalArguments, String user, SQLContext context, Identity identity)
     {
+        return execute(query, positionalArguments, user, context, identity, Optional.empty());
+    }
+
+    public Result execute(Query query, List<Object> positionalArguments, String user, SQLContext context, Identity identity, Optional<String> externalizeContentType)
+    {
         return process(query, positionalArguments, (transformedContext, pureModel, sources, positionals, span) ->
         {
             long start = System.currentTimeMillis();
@@ -159,7 +165,7 @@ public class SQLExecutor
             MetricsHandler.observe("execute", start, System.currentTimeMillis());
 
             return result;
-        }, "execute", context, identity);
+        }, "execute", context, identity, externalizeContentType);
     }
 
     private Map<String, Result> getPlanArguments(RichIterable<? extends Root_meta_external_query_sql_transformation_queryToPure_PlanParameter> arguments, PureModel pureModel, String user, Identity identity)
@@ -200,7 +206,7 @@ public class SQLExecutor
                     return transformLambda(lambda, pureModel);
                 },
                 (sources, extensions, pureModel) -> core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_rootContext_SQLSource_MANY__Extension_MANY__SqlTransformContext_1_(sources, extensions, pureModel.getExecutionSupport())._scopeWithFrom(false),
-                "lambda", context, identity);
+                "lambda", context, identity, Optional.empty());
     }
 
     public SingleExecutionPlan plan(Query query, SQLContext context, Identity identity)
@@ -235,7 +241,12 @@ public class SQLExecutor
 
     private <T> T process(Query query, List<Object> positionalArguments, Function5<Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext, PureModel, RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource>, RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLPlaceholderParameter>, Span, T> func, String name, SQLContext context, Identity identity)
     {
-        return process(query, positionalArguments, func, (sources, extensions, pureModel) -> core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_rootContext_SQLSource_MANY__Extension_MANY__SqlTransformContext_1_(sources, extensions, pureModel.getExecutionSupport()), name, context, identity);
+        return process(query, positionalArguments, func, name, context, identity, Optional.empty());
+    }
+
+    private <T> T process(Query query, List<Object> positionalArguments, Function5<Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext, PureModel, RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource>, RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLPlaceholderParameter>, Span, T> func, String name, SQLContext context, Identity identity, Optional<String> externalizeContentType)
+    {
+        return process(query, positionalArguments, func, (sources, extensions, pureModel) -> core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_rootContext_SQLSource_MANY__Extension_MANY__SqlTransformContext_1_(sources, extensions, pureModel.getExecutionSupport()), name, context, identity, externalizeContentType);
     }
 
     private <T> T process(Query query,
@@ -244,7 +255,8 @@ public class SQLExecutor
                           Function3<RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource>, RichIterable<? extends Root_meta_pure_extension_Extension>, PureModel, Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext> transformContextFunc,
                           String name,
                           SQLContext context,
-                          Identity identity)
+                          Identity identity,
+                          Optional<String> externalizeContentType)
     {
         return TraceUtils.trace(name, span ->
         {
@@ -276,6 +288,8 @@ public class SQLExecutor
             LOGGER.info("{}", new LogInfo(identity.getName(), LoggingEventType.GENERATE_PLAN_START));
 
             Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext transformContext = transformContextFunc.value(compiledSources, routerExtensions.apply(pureModel), pureModel);
+            externalizeContentType.ifPresent(transformContext::_externalizeContentType);
+
             RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLPlaceholderParameter> positionals = new SQLSourceTranslator().translate(parameters, pureModel);
 
             transformContext._positionals(IterableIterate.collect(positionals, Root_meta_external_query_sql_transformation_queryToPure_SQLPlaceholderParameter::_variable));
@@ -349,7 +363,7 @@ public class SQLExecutor
         //this means all pointers are from same source, so we can combine to utilise model cache.
         if (allCompatiblePointers)
         {
-            pureModelContext = allContexts.collectIf(p -> p instanceof PureModelContextPointer, p -> ((PureModelContextPointer) p))
+            pureModelContext = allContexts.collectIf(PureModelContextPointer.class::isInstance, p -> ((PureModelContextPointer) p))
                     .injectInto(null, (d, e) -> e.combine((PureModelContextPointer) d));
         }
         else
@@ -366,7 +380,7 @@ public class SQLExecutor
         return extension.resolve(tables.toList(), context, identity);
     }
 
-    static String serializeToJSON(Object pureObject, PureModel pureModel, Boolean alloyJSON)
+    static String serializeToJSON(Object pureObject, PureModel pureModel, boolean alloyJSON)
     {
         return alloyJSON
                 ? org.finos.legend.pure.generated.core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(pureObject, pureModel.getExecutionSupport())
@@ -380,7 +394,7 @@ public class SQLExecutor
 
     private Lambda transformLambda(LambdaFunction<?> lambda, PureModel pureModel)
     {
-        Object protocol = transformToVersionedModel(lambda,  PureClientVersions.production, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
+        Object protocol = transformToVersionedModel(lambda, PureClientVersions.production, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
         return transform(protocol, Lambda.class, pureModel);
     }
 
@@ -401,7 +415,7 @@ public class SQLExecutor
     {
         try
         {
-            Class cl = Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + version + "_transfers_valueSpecification");
+            Class<?> cl = Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + version + "_transfers_valueSpecification");
             Method method = cl.getMethod("Root_meta_protocols_pure_" + version + "_transformation_fromPureGraph_transformLambda_FunctionDefinition_1__Extension_MANY__Lambda_1_", FunctionDefinition.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
             return method.invoke(null, lambda, extensions, executionSupport);
         }
