@@ -1,0 +1,80 @@
+import meta::external::store::rel::test::query::models::testmodel::*;
+
+//
+// Sample model for testing
+//
+
+Class meta::external::store::rel::test::query::models::testmodel::TestRootClass
+{
+   property1: String[0..1];
+   property2: TestClassA[0..1];
+   property3: String[0..1];
+   property4: TestClassB[0..1];
+   property5: String[*];
+   property6: TestSuperClass[*];
+}
+
+Class meta::external::store::rel::test::query::models::testmodel::TestSuperClass
+{
+  propertySuper: String[*];
+}
+
+Class meta::external::store::rel::test::query::models::testmodel::TestSubClass extends meta::external::store::rel::test::query::models::testmodel::TestSuperClass
+{
+  propertySub: String[*];
+}
+
+Class meta::external::store::rel::test::query::models::testmodel::TestClassA
+{
+  propertyA1: TestClassAA[0..1];
+  propertyA2: TestClassAB[0..1];
+  propertyA3: String[0..1];
+}
+
+Class meta::external::store::rel::test::query::models::testmodel::TestClassAA
+{
+  propertyAA1: TestClassAAA[0..1];
+  // This property is used to test 'at' along a multihop path from the root.
+  propertyAA2: TestClassAAA[*];
+}
+
+Class meta::external::store::rel::test::query::models::testmodel::TestClassAAA
+{
+  propertyAAA1: TestClassAAAA[0..1];
+  propertyAAA2: String[0..1];
+}
+
+Class meta::external::store::rel::test::query::models::testmodel::TestClassAAAA
+{
+  propertyAAAA1: String[0..1];
+}
+
+Class meta::external::store::rel::test::query::models::testmodel::TestClassAB
+{
+  propertyAB1: TestClassABA[0..1];
+}
+
+Class meta::external::store::rel::test::query::models::testmodel::TestClassABA
+{
+  propertyABA: String[0..1];
+}
+
+Class meta::external::store::rel::test::query::models::testmodel::TestClassB
+{
+  propertyB: TestClassC[0..1];
+}
+
+Class meta::external::store::rel::test::query::models::testmodel::TestClassC
+{
+  propertyC1: String[0..1];
+  propertyC2: String[*];
+}
+
+Class meta::external::store::rel::test::query::models::testmodel::TestClassD
+{
+  propertyD1: String[*];
+  propertyD2: String[0..1];
+  propertyD3: String[0..1];
+  propertyD4: String[0..1];
+  propertyD5: String[0..1];
+}

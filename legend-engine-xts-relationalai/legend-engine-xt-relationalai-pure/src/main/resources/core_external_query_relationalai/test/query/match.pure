@@ -1,0 +1,103 @@
+import meta::external::store::rel::mapping::*;
+import meta::external::store::rel::mapping::schema::*;
+import meta::external::store::rel::runtime::*;
+import meta::external::store::rel::test::query::match::*;
+import meta::external::store::rel::test::query::util::*;
+import meta::external::store::rel::utils::assert::*;
+
+Class meta::external::store::rel::test::query::match::TestClassWrapper {
+  fieldSuper: TestClassSuper[0..1];
+  fieldSub: TestClassSub[0..1];
+}
+
+Class meta::external::store::rel::test::query::match::TestClassSuper {
+  fieldOfSuper: String[0..1];
+}
+
+Class meta::external::store::rel::test::query::match::TestClassSub extends TestClassSuper {
+  fieldOfSub: Decimal[0..1];
+}
+
+// Tests matching where a subtype is tested as a supertype.
+function <<test.Test>> meta::external::store::rel::test::query::match::testQueryMatchSub(): Any[*] {
+  let schema = RAITestSchema()->includeEverythingFrom(TestClassWrapper);
+
+  let rai = $schema->TestConnection();
+
+  /*
+   * Expected intermediate PExpr is:
+   *
+   * Map(
+   *   All(meta_rel_test_query_match_TestClassWrapper),
+   *   ScopeUntyped(
+   *     x,
+   *     Match(
+   *       PropertyAccess(SetAccess(meta_rel_test_query_match_TestClassWrapper, x), fieldSub, meta_rel_test_query_match_TestClassWrapper),
+   *       Cases[
+   *         ScopeTyped(y, meta_rel_test_query_match_TestClassSub, PropertyAccess(VariablePlaceholder(y), fieldOfSub, meta_rel_test_query_match_TestClassSub)),
+   *         ScopeTyped(z, meta_rel_test_query_match_TestClassSuper, PropertyAccess(VariablePlaceholder(z), fieldOfSuper, meta_rel_test_query_match_TestClassSuper))
+   *       ]
+   *     )
+   *   )
+   * )
+   */
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        TestClassWrapper.all()->map(x | $x.fieldSub->match([
+          y: TestClassSub[1]   | $y.fieldOfSub,
+          z: TestClassSuper[1] | $z.fieldOfSuper
+        ]))
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def output = exists(x2: x2 = TestClassWrapper:fieldSub[x1] and (if TestClassSub(x2) then TestClassSub:fieldOfSub[x2] else if TestClassSuper(x2) then TestClassSuper:fieldOfSuper[x2] else false end end)) from x1 in TestClassWrapper'
+    ],
+    $transpiledQuery
+  );
+}
+
+// Tests matching where a supertype is tested as a subtype.
+function <<test.Test>> meta::external::store::rel::test::query::match::testQueryMatchSuper(): Any[*] {
+  let schema = RAITestSchema()->includeEverythingFrom(TestClassWrapper);
+
+  let rai = $schema->TestConnection();
+
+  /*
+   * Expected intermediate PExpr is:
+   *
+   * Map(
+   *   All(meta_rel_test_query_match_TestClassWrapper),
+   *   ScopeUntyped(
+   *     x,
+   *     Match(
+   *       PropertyAccess(SetAccess(meta_rel_test_query_match_TestClassWrapper, x), fieldSuper, meta_rel_test_query_match_TestClassWrapper),
+   *       Cases[
+   *         ScopeTyped(y, meta_rel_test_query_match_TestClassSub, PropertyAccess(VariablePlaceholder(y), fieldOfSub, meta_rel_test_query_match_TestClassSub)),
+   *         ScopeTyped(z, meta_rel_test_query_match_TestClassSuper, PropertyAccess(VariablePlaceholder(z), fieldOfSuper, meta_rel_test_query_match_TestClassSuper))
+   *       ]
+   *     )
+   *   )
+   * )
+   */
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query(|
+        TestClassWrapper.all()->map(x | $x.fieldSuper->match([
+          y: TestClassSub[1]   | $y.fieldOfSub,
+          z: TestClassSuper[1] | $z.fieldOfSuper
+       ]))
+      )
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def output = exists(x2: x2 = TestClassWrapper:fieldSuper[x1] and (if TestClassSub(x2) then TestClassSub:fieldOfSub[x2] else if TestClassSuper(x2) then TestClassSuper:fieldOfSuper[x2] else false end end)) from x1 in TestClassWrapper'
+    ],
+    $transpiledQuery
+  );
+}

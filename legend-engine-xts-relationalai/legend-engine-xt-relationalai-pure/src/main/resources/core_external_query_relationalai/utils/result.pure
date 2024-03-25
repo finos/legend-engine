@@ -1,5 +1,5 @@
-import meta::external::store::rel::utils::*;
 import meta::external::store::rel::trace::*;
+import meta::external::store::rel::utils::*;
 
 Class meta::external::store::rel::utils::Result<T|n> {
   <<equality.Key>> values: T[n];
@@ -7,8 +7,8 @@ Class meta::external::store::rel::utils::Result<T|n> {
 }
 
 Class meta::external::store::rel::utils::QueryRewriteError {
-  <<equality.Key>> message: String[1];
-  <<equality.Key>> trace: Trace[0..1];
+  message: String[1];
+  trace: Trace[0..1];
 }
 
 function meta::external::store::rel::utils::errorTrace(message: String[1], trace: Trace[0..1]): QueryRewriteError[1] {
@@ -20,15 +20,14 @@ function meta::external::store::rel::utils::errorTrace(message: String[1]): Quer
 }
 
 function <<access.private>> meta::external::store::rel::utils::failMessage<T>(result: Result<T|*>[1]): String[1] {
-  $result.errors->map({e: QueryRewriteError[1] | 
-    let stage = $e.trace->traceLog()->makeString('\n  ', '\n  ', '');
-    '\nFailure at stage:' + $stage + '\n' + $e.message;
+  $result.errors->map({e: QueryRewriteError[1] |
+    format('\nFailure: %s\n%s', [$e.message, $e.trace->traceLog()->concatenateMessages()])
   })->joinStrings()
 }
 
 function meta::external::store::rel::utils::okOrElse<T|m>(value: T[m], else: FunctionDefinition<{->Result<T|m>[1]}>[1]): Result<T|m>[1] {
-  if ($value->isEmpty(), 
-    | $else->eval(), 
+  if ($value->isEmpty(),
+    | $else->eval(),
     {|
       ^Result<T|m>(
         values=if($value->size() > 1, | $value->toOneMany(), | $value->toOne())
@@ -56,43 +55,43 @@ function meta::external::store::rel::utils::error(message: String[1], trace: Tra
 }
 
 function meta::external::store::rel::utils::andThen<S,T|n>(result: Result<S|0..1>[1], fn: FunctionDefinition<{S[1]->Result<T|n>[1]}>[1]): Result<T|n>[1] {
-  if($result.errors->isEmpty(), 
-    | $fn->eval($result.values->evaluateAndDeactivate()), 
+  if($result.errors->isEmpty(),
+    | $fn->eval($result.values->evaluateAndDeactivate()),
     | ^Result<T|n>(errors=$result.errors)
   )
 }
 
 function meta::external::store::rel::utils::andMany<S,T|n>(result: Result<S|0..1>[1], fn: FunctionDefinition<{S[1]->Result<T|n>[*]}>[1]): Result<T|n>[*] {
-  if($result.errors->isEmpty(), 
-    | $fn->eval($result.values->evaluateAndDeactivate()), 
+  if($result.errors->isEmpty(),
+    | $fn->eval($result.values->evaluateAndDeactivate()),
     | ^Result<T|n>(errors=$result.errors)
   )
 }
 
 function meta::external::store::rel::utils::andThem<S,T|n>(result: Result<S|*>[1], fn: FunctionDefinition<{S[*]->Result<T|n>[1]}>[1]): Result<T|n>[1] {
-  if($result.errors->isEmpty(), 
-    | $fn->eval($result.values->evaluateAndDeactivate()), 
+  if($result.errors->isEmpty(),
+    | $fn->eval($result.values->evaluateAndDeactivate()),
     | ^Result<T|n>(errors=$result.errors)
   )
 }
 
 function meta::external::store::rel::utils::then<S,T|n>(result: Result<S|0..1>[1], fn: FunctionDefinition<{S[1]->T[n]}>[1]): Result<T|n>[1] {
-  if($result.errors->isEmpty(), 
-    | ^Result<T|n>(values=$fn->eval($result.values->evaluateAndDeactivate()->toOne())), 
+  if($result.errors->isEmpty(),
+    | ^Result<T|n>(values=$fn->eval($result.values->evaluateAndDeactivate()->toOne())),
     | ^Result<T|n>(errors=$result.errors)
   )
 }
 
 function meta::external::store::rel::utils::them<S,T|n>(result: Result<S|*>[1], fn: FunctionDefinition<{S[*]->T[n]}>[1]): Result<T|n>[1] {
-  if($result.errors->isEmpty(), 
-    | ^Result<T|n>(values=$fn->eval($result.values->evaluateAndDeactivate())), 
+  if($result.errors->isEmpty(),
+    | ^Result<T|n>(values=$fn->eval($result.values->evaluateAndDeactivate())),
     | ^Result<T|n>(errors=$result.errors)
   )
 }
 
 function meta::external::store::rel::utils::inspect<T|m>(result: Result<T|m>[1], fn: FunctionDefinition<{T[m]->Any[*]}>[1]): Result<T|m>[1] {
-  if($result.errors->isEmpty(), 
-    {| $fn->eval($result.values->evaluateAndDeactivate()); $result;}, 
+  if($result.errors->isEmpty(),
+    {| $fn->eval($result.values->evaluateAndDeactivate()); $result;},
     | $result
   )
 }
@@ -106,15 +105,15 @@ function meta::external::store::rel::utils::orDefaultValue<T|m>(result: Result<T
 }
 
 function meta::external::store::rel::utils::unwrap<T>(result: Result<T|0..1>[1]): T[1] {
-  if($result.errors->isEmpty(), 
-    | $result.values->toOne(), 
+  if($result.errors->isEmpty(),
+    | $result.values->toOne(),
     | fail($result->failMessage())
   )
 }
 
 function meta::external::store::rel::utils::unwrapm<T>(result: Result<T|*>[1]): T[*] {
-  if($result.errors->isEmpty(), 
-    | $result.values, 
+  if($result.errors->isEmpty(),
+    | $result.values,
     | fail($result->failMessage())
   )
 }
@@ -129,24 +128,24 @@ function meta::external::store::rel::utils::isErr<T|n>(result: Result<T|n>[1]): 
 
 function meta::external::store::rel::utils::collect<T>(results: Result<T|0..1>[*]): Result<T|*>[1] {
   $results->fold({r: Result<T|0..1>[1], accum: Result<T|*>[1] |
-    if($r->isOk(), | 
+    if($r->isOk(), |
       ^Result<T|*>(
-        values=if ($accum.errors->isEmpty(), | $accum.values->concatenate($r.values), | []), 
+        values=if ($accum.errors->isEmpty(), | $accum.values->concatenate($r.values), | []),
         errors=$accum.errors
-      ), 
-    | 
+      ),
+    |
       ^Result<T|*>(errors=$accum.errors->concatenate($r.errors), values=[])
     )
   }, okm([])->cast(@Result<T|*>))
 }
 
 function meta::external::store::rel::utils::tryCast<T>(source: Any[1], object: T[1], trace: Trace[1]): Result<T|0..1>[1] {
-  if ($source->instanceOf($object->type()), 
-    | ^Result<T|0..1>(values=$source->cast($object)), 
+  if ($source->instanceOf($object->type()),
+    | ^Result<T|0..1>(values=$source->cast($object)),
     {|
       let message = 'Cannot cast object of type ' +
-        $source->type().name->orElse('<<unknown>>') + 
-        ' into class ' + 
+        $source->type().name->orElse('<<unknown>>') +
+        ' into class ' +
         $object->type().name->orElse('<<unknown>>');
       //^Result<T|0..1>(errors=[$message]);
       error($message, $trace);
@@ -169,17 +168,17 @@ function meta::external::store::rel::utils::tryCastm<T>(result: Result<Any|*>[1]
 }
 
 function meta::external::store::rel::utils::test<T>(
-  result: Result<T|0..1>[1], 
+  result: Result<T|0..1>[1],
   check: FunctionDefinition<{T[1]->Boolean[1]}>[1],
   else: FunctionDefinition<{T[1]->Result<T|0..1>[1]}>[1]
 ): Result<T|0..1>[1] {
-  $result->andThen(inner: T[1] | 
+  $result->andThen(inner: T[1] |
     if ($check->eval($inner), | $result, | $else->eval($inner))
   )
 }
 
 function meta::external::store::rel::utils::test<T>(
-  object: T[1], 
+  object: T[1],
   check: FunctionDefinition<{T[1]->Boolean[1]}>[1],
   else: FunctionDefinition<{T[1]->Result<T|0..1>[1]}>[1]
 ): Result<T|0..1>[1] {
@@ -187,11 +186,11 @@ function meta::external::store::rel::utils::test<T>(
 }
 
 function meta::external::store::rel::utils::testm<T>(
-  result: Result<T|*>[1], 
+  result: Result<T|*>[1],
   check: FunctionDefinition<{T[*]->Boolean[1]}>[1],
   else: FunctionDefinition<{->Result<T|*>[1]}>[1]
 ): Result<T|*>[1] {
-  $result->andThem(inner: T[*] | 
+  $result->andThem(inner: T[*] |
     if ($check->eval($inner), | $result, | $else->eval())
   )
 }

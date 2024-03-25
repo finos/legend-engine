@@ -1,10 +1,17 @@
+import meta::external::store::rel::utils::*;
 import meta::external::store::rel::trace::*;
 
 /**
   * A traced computation.
   */
 Class meta::external::store::rel::trace::Trace {
-  <<equality.Key>> stages: String[*];
+  <<equality.Key>> stages: Stage[*];
+}
+
+Class meta::external::store::rel::trace::Stage {
+  <<equality.Key>> stageName: String[1];
+  /** Each message is a sgtring label and a delayed-evaluated string message. */
+  messages: Pair<String,FunctionDefinition<{->String[1]}>>[*];
 }
 
 function meta::external::store::rel::trace::emptyTrace(): Trace[1] {
@@ -12,18 +19,57 @@ function meta::external::store::rel::trace::emptyTrace(): Trace[1] {
 }
 
 /**
-  * Append a named staged to the traced computation. 
+  * Append a named staged to the traced computation.
   */
-function meta::external::store::rel::utils::stage(trace: Trace[1], stageName: String[1]): Trace[1] {
-  ^$trace(stages=$trace.stages->add($stageName))
+function meta::external::store::rel::trace::stage(trace: Trace[1], stageName: String[1]): Trace[1] {
+  ^$trace(stages=$trace.stages->add(0, ^Stage(stageName=$stageName)))
 }
 
-function meta::external::store::rel::utils::traceLog(trace: Trace[0..1]): String[*] {
+/**
+  * Append a message to the current stage.
+  */
+function meta::external::store::rel::trace::detailLazy(trace: Trace[1], label: String[1], message: FunctionDefinition<{->String[1]}>[1]): Trace[1] {
+  let headStage = $trace.stages->at(0);
+  let headStageMessages = $headStage.messages;
+  ^$trace(stages=$trace.stages->tail()->add(0, ^$headStage(messages=$headStageMessages->add(pair($label, $message)))));
+}
+
+/**
+  * Append a message to the current stage.
+  */
+function meta::external::store::rel::trace::detail(trace: Trace[1], label: String[1], elem: Any[1]): Trace[1] {
+  detailLazy($trace, $label, {| $elem->toString() });
+}
+
+function meta::external::store::rel::trace::traceLog(trace: Trace[0..1]): String[*] {
   if($trace->isEmpty(),
     | ['(no trace)'],
     | if($trace.stages->isEmpty(),
         | ['(empty trace)'],
-        {| $trace.stages->reverse()->toNumbered()->map(p: Pair<Integer,String>[1] | format('stage %s: %s', [$p.first, $p.second])) }
+        {|
+          $trace.stages
+            ->reverse()
+            ->toNumbered()
+            ->map(p: Pair<Integer,Stage>[1] |
+              let stage = $p.second;
+              let messages =
+                $stage.messages
+                  ->map(lazyMessage: Pair<String,FunctionDefinition<{->String[1]}>>[1] |
+                    let label = $lazyMessage.first;
+                    let messageEval = $lazyMessage.second->eval();
+                    if ($messageEval->isEmpty(),
+                      | format('%s: (none)', $label),
+                      | format('%s: %s', [$label, $messageEval->toOne()])
+                      );
+                  );
+              let line = format('stage %s: %s', [$p.first, $stage.stageName]);
+              if ($messages->isEmpty(),
+                | $line,
+                | format('%s\n%s', [$line, $messages->concatenateMessages()])
+                );
+            )
+            ->reverse()
+        }
       )
   )
 }

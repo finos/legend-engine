@@ -1,8 +1,8 @@
-import meta::pure::store::*;
-import meta::pure::mapping::*;
 import meta::core::runtime::*;
-import meta::pure::extension::*;
 import meta::external::store::rel::mapping::*;
+import meta::pure::extension::*;
+import meta::pure::mapping::*;
+import meta::pure::store::*;
 
 function meta::external::store::rel::contract::contract(): StoreContract[1] {
   ^StoreContract(
@@ -20,6 +20,17 @@ function meta::external::store::rel::contract::contract(): StoreContract[1] {
       // meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_,
       // meta::relational::functions::columnProjectionsFromRoot_Any_MANY__NamedRelation_1__String_MANY__Boolean_$0_1$__Integer_$0_1$__RelationData_1_
     ],
+    // Treat every property as auto-mapped so that match functions will be routed.
+    isPropertyAutoMapped = {prop: AbstractProperty<Any>[1], set: InstanceSetImplementation[1] |
+      $set->match([
+        {r: RelSetImplementation[1] |
+          let propertyName = $prop.name->toOne();
+          let setHasPropertyMapping = $r->_propertyMappingsByPropertyName($propertyName)->isNotEmpty();
+          $setHasPropertyMapping && !$prop->isPrimitiveValueProperty(); // TODO: Check we need the second conjunct.
+        },
+        {a: Any[*] | false }
+      ])
+    },
     // ------------------------------------------------------------------------------------------ Routing
 
     // ExecutionPlan Generation -------------------------------------------------------------------------

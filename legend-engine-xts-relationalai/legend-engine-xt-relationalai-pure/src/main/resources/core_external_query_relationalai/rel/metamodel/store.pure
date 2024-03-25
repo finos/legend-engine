@@ -1,6 +1,17 @@
-import meta::external::store::rel::metamodel::store::*;
 import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::metamodel::store::*;
 import meta::external::store::rel::utils::*;
+
+Class meta::external::store::rel::metamodel::store::RAITranspilerConfig {
+  /** Set to true to suppress newlines in the output. */
+  configNoIndent: Boolean[1];
+  /** The prefix of the output relation, e.g., query1. */
+  outputRelationPrefix: String[0..1];
+}
+
+function meta::external::store::rel::metamodel::store::defaultConfig(): RAITranspilerConfig[1] {
+  ^RAITranspilerConfig(configNoIndent=false)
+}
 
 Class meta::external::store::rel::metamodel::store::RAIDatabase extends meta::pure::store::Store {
   // In the case of relational databases, we find schema definitions here (tables, joins).
@@ -8,11 +19,13 @@ Class meta::external::store::rel::metamodel::store::RAIDatabase extends meta::pu
   // be installed.
   declarations: RelationDeclaration[*];
 
-  program: Program[0..1];
+  program: RelProgram[0..1];
+
+  config: RAITranspilerConfig[1];
 
   // TODO: This is just a hack, as calls in the router component call `elementToPath`. Since our
-  // manually instantiated object of this type do _not_ have a package path, calls to 
-  // `elementToPath` error out without this attribute. 
+  // manually instantiated object of this type do _not_ have a package path, calls to
+  // `elementToPath` error out without this attribute.
   // Reported via https://github.com/finos/legend-pure/issues/424
   name: String[0..1];
 }
@@ -37,12 +50,16 @@ Class meta::external::store::rel::metamodel::store::NestedRelationDeclaration ex
 /// Constructor methods
 /////////////////////////
 
-function meta::external::store::rel::metamodel::store::RAIDatabase(declarations: RelationDeclaration[*], program: Program[0..1], name: String[0..1]): RAIDatabase[1] {
-  ^RAIDatabase(declarations=$declarations, program=$program, name=$name);
+function meta::external::store::rel::metamodel::store::RAIDatabase(declarations: RelationDeclaration[*], program: RelProgram[0..1], config: RAITranspilerConfig[1], name: String[0..1]): RAIDatabase[1] {
+  ^RAIDatabase(declarations=$declarations, program=$program, config=$config, name=$name);
+}
+
+function meta::external::store::rel::metamodel::store::RAIDatabase(declarations: RelationDeclaration[*], config: RAITranspilerConfig[1], name: String[0..1]): RAIDatabase[1] {
+  RAIDatabase($declarations, [], $config, $name);
 }
 
 function meta::external::store::rel::metamodel::store::RAIDatabase(declarations: RelationDeclaration[*], name: String[0..1]): RAIDatabase[1] {
-  RAIDatabase($declarations, [], $name);
+  RAIDatabase($declarations, defaultConfig(), $name);
 }
 
 function meta::external::store::rel::metamodel::store::RAIDatabase(declarations: RelationDeclaration[*]): RAIDatabase[1] {
@@ -61,7 +78,7 @@ function meta::external::store::rel::metamodel::store::nestedRelation(parent: Re
   ^NestedRelationDeclaration(parent=$parent, this=$this);
 }
 
-function meta::external::store::rel::metamodel::store::with(database: RAIDatabase[1], declarations: RelationDeclaration[*]): RAIDatabase[1] {
+function meta::external::store::rel::metamodel::store::addDeclarations(database: RAIDatabase[1], declarations: RelationDeclaration[*]): RAIDatabase[1] {
   $database->mutateAdd('declarations', $declarations);
 }
 
@@ -69,11 +86,15 @@ function meta::external::store::rel::metamodel::store::with(database: RAIDatabas
 /// API methods
 /////////////////////////
 
-function meta::external::store::rel::metamodel::store::name(decl: RelationDeclaration[1]): String[1] {
+function <<access.private>> meta::external::store::rel::metamodel::store::name(decl: RelationDeclaration[1]): String[1] {
   $decl->match([
-    {named: NamedRelationDeclaration[1] | $named.name},
-    {nested: NestedRelationDeclaration[1] | format('%s:%s', [$nested.parent->name(), $nested.this->name()])}
-  ]);
+    named: NamedRelationDeclaration[1]   | $named.name,
+    nested: NestedRelationDeclaration[1] | format('%s:%s', [$nested.parent->name(), $nested.this->name()])
+  ])
+}
+
+function meta::external::store::rel::metamodel::store::declToName(decl: RelationDeclaration[1]): RelRelationName[1] {
+  $decl->name()->rel()
 }
 
 /////////////////////////

@@ -3,17 +3,17 @@
   *
   * Here we define classes that model the part of PURE expressions
   * which are supported for compilation into Rel code. Most of this file
-  * consists of functions that take instances of `ValueSpecification` and 
+  * consists of functions that take instances of `ValueSpecification` and
   * translate these instances into IR objects. IR objects exist so that
   * subsequent compilation can rely on well-defined type signatures without
   * having to manually parse `ValueSpecification`s first.
   */
 
-import meta::external::store::rel::utils::lang::*;
 import meta::external::store::rel::compile::ir::*;
 import meta::external::store::rel::mapping::*;
 import meta::external::store::rel::metamodel::*;
 import meta::external::store::rel::utils::*;
+import meta::external::store::rel::utils::lang::*;
 
 /**
   * Abstract type representing PURE types.
@@ -28,7 +28,7 @@ Class meta::external::store::rel::compile::ir::PExprTypeClass extends PExprType 
 }
 
 /**
-  * Type of a primitive as specificed by the given set.
+  * Type of a primitive as specificed by the given kind.
   */
 Class meta::external::store::rel::compile::ir::PExprTypePrimitive extends PExprType {
   kind: SupportedPrimitiveType[1];
@@ -40,24 +40,31 @@ Enum meta::external::store::rel::compile::ir::SupportedPrimitiveType {
   TypeFloat,
   TypeInteger,
   TypeStrictDate,
-  TypeString
+  TypeString,
+  TypeDecimal,
+  UnsupportedType // Type reserved for testing purposes.
 }
 
+/**
+  * Return the Rel type for the given primitive Pure type.
+  */
 function meta::external::store::rel::compile::ir::name(t: SupportedPrimitiveType[1]): String[1] {
   switch([
-    case($t == SupportedPrimitiveType.TypeBoolean,    | 'Boolean'),
-    case($t == SupportedPrimitiveType.TypeDateTime,   | 'DateTime'),
-    case($t == SupportedPrimitiveType.TypeFloat,      | 'Float'),
-    case($t == SupportedPrimitiveType.TypeInteger,    | 'Integer'),
-    case($t == SupportedPrimitiveType.TypeStrictDate, | 'DateTime'), // TODO: Check this is the correct Rel type.
-    case($t == SupportedPrimitiveType.TypeString,     | 'String')
+    case($t == SupportedPrimitiveType.TypeBoolean,     | 'Boolean'),
+    case($t == SupportedPrimitiveType.TypeDateTime,    | 'DateTime'),
+    case($t == SupportedPrimitiveType.TypeFloat,       | 'Float'),
+    case($t == SupportedPrimitiveType.TypeInteger,     | 'Integer'),
+    case($t == SupportedPrimitiveType.TypeStrictDate,  | 'DateTime'), // TODO: Check this is the correct Rel type.
+    case($t == SupportedPrimitiveType.TypeString,      | 'String'),
+    case($t == SupportedPrimitiveType.TypeDecimal,     | 'FixedDecimal[64, 18]'),
+    case($t == SupportedPrimitiveType.UnsupportedType, | 'UnsupportedType')
   ], {|
     fail(format('Unsupported primitive type `%s`', $t));
     'unreachable';
   })
 }
 
-function meta::external::store::rel::compile::ir::exprType(set: RelSetImplementation[1]): PExprTypeClass[1] {
+function meta::external::store::rel::compile::ir::exprTypeClass(set: RelSetImplementation[1]): PExprTypeClass[1] {
   ^PExprTypeClass(set=$set);
 }
 
@@ -79,14 +86,21 @@ function meta::external::store::rel::compile::ir::exprTypeStrictDate(): PExprTyp
 function meta::external::store::rel::compile::ir::exprTypeString(): PExprTypePrimitive[1] {
   ^PExprTypePrimitive(kind=SupportedPrimitiveType.TypeString);
 }
+function meta::external::store::rel::compile::ir::exprTypeDecimal(): PExprTypePrimitive[1] {
+  ^PExprTypePrimitive(kind=SupportedPrimitiveType.TypeDecimal);
+}
+function meta::external::store::rel::compile::ir::exprTypeUnsupported(): PExprTypePrimitive[1] {
+  ^PExprTypePrimitive(kind=SupportedPrimitiveType.UnsupportedType);
+}
 
-function meta::external::store::rel::compile::ir::exprType(rawType: Type[1]): PExprTypePrimitive[1] {
+function meta::external::store::rel::compile::ir::exprTypePrimitive(rawType: Type[1]): PExprTypePrimitive[1] {
   switch([
     case($rawType == Boolean,    | exprTypeBoolean()),
     case($rawType == DateTime,   | exprTypeDateTime()),
     case($rawType == Float,      | exprTypeFloat()),
     case($rawType == Integer,    | exprTypeInteger()),
-    case($rawType == StrictDate, | exprTypeStrictDate())
+    case($rawType == StrictDate, | exprTypeStrictDate()),
+    case($rawType == Decimal,    | exprTypeDecimal())
   ], {|
     assert($rawType == String, format('Unsupported primitive type `%s`', $rawType.name));
     exprTypeString();
@@ -128,6 +142,10 @@ Class meta::external::store::rel::compile::ir::ConstDateTime extends meta::exter
   value: DateTime[1];
 }
 
+Class meta::external::store::rel::compile::ir::ConstDecimal extends meta::external::store::rel::compile::ir::Constant {
+  value: Decimal[1];
+}
+
 /** Marker for the empty collection. */
 Class meta::external::store::rel::compile::ir::ConstEmpty extends meta::external::store::rel::compile::ir::Constant {
   /* No properties. */
@@ -137,6 +155,16 @@ Class meta::external::store::rel::compile::ir::ConstEmpty extends meta::external
   * Expression asking to fetch all elements of a certain type.
   */
 Class meta::external::store::rel::compile::ir::PExprAll extends PExpr {
+  set: RelSetImplementation[1];
+}
+
+/**
+  * Expression corresponding to a named set.
+  *
+  * TODO: This was previously a compilation step. Try to unify this case with PExprAll.
+  * TODO: How is this different to PExprSetAccess? Try to combine.
+  */
+Class meta::external::store::rel::compile::ir::PExprSet extends PExpr {
   set: RelSetImplementation[1];
 }
 
@@ -153,7 +181,7 @@ Class meta::external::store::rel::compile::ir::PExprFilter extends PExpr {
   */
 Class meta::external::store::rel::compile::ir::PExprFunction<|n> extends PExpr {
   arguments: PExpr[n];
-  fn: FunctionDefinition<{meta::external::store::rel::metamodel::Expr[n]->meta::external::store::rel::metamodel::Expr[1]}>[1];
+  fn: FunctionDefinition<{meta::external::store::rel::metamodel::RelExpr[n]->meta::external::store::rel::metamodel::RelExpr[1]}>[1];
 }
 
 /**
@@ -194,8 +222,8 @@ Class meta::external::store::rel::compile::ir::PExprSetAccess extends PExpr {
   */
 Class meta::external::store::rel::compile::ir::PExprPropertyAccess extends PExpr {
   parent: PExpr[1];
-  property: Property<Nil, Any|*>[1];
-  set: RelSetImplementation[0..1];
+  /** The property mapping of the property applied to the parent expression as argumemt. */
+  propertyMapping: RelPropertyMapping[1];
 }
 
 /**
@@ -210,10 +238,10 @@ Class meta::external::store::rel::compile::ir::PExprColumnAccess extends PExpr {
 
 /**
   * Helper type for representing variable scopes.
-  */ 
+  */
 Class <<typemodifiers.abstract>> meta::external::store::rel::compile::ir::PExprScope extends PExpr {
-  inner: PExpr[1];
   parent: PExpr[0..1];
+  inner: PExpr[1];
 }
 
 Class meta::external::store::rel::compile::ir::PExprScopeTyped extends PExprScope {
@@ -242,11 +270,27 @@ Class meta::external::store::rel::compile::ir::PExprMap extends PExpr {
 }
 
 /**
-  * Type denoting projections.
+  * Type denoting `in` expressions.
+  */
+Class meta::external::store::rel::compile::ir::PExprIn extends PExpr {
+  parent: PExpr[1];
+  inExprs: PExpr[*];
+}
+
+/**
+  * Type denoting `project` expressions.
   */
 Class meta::external::store::rel::compile::ir::PExprProject extends PExpr {
   parent: PExpr[1];
   projections: Pair<String,PExprScope>[*];
+}
+
+/**
+  * Type denoting `restrict` expressions.
+  */
+Class meta::external::store::rel::compile::ir::PExprRestrict extends PExpr {
+  parent: PExpr[1];
+  columns: String[*]; // TODO: Is it allowed to have an empty sequence of columns in a restrict?
 }
 
 /**
@@ -387,8 +431,8 @@ function meta::external::store::rel::compile::ir::variablePlaceholder(identifier
 }
 
 function meta::external::store::rel::compile::ir::fexpr<|n>(
-  arguments: PExpr[n], 
-  fn: FunctionDefinition<{meta::external::store::rel::metamodel::Expr[n]->meta::external::store::rel::metamodel::Expr[1]}>[1]
+  arguments: PExpr[n],
+  fn: FunctionDefinition<{meta::external::store::rel::metamodel::RelExpr[n]->meta::external::store::rel::metamodel::RelExpr[1]}>[1]
 ): PExprFunction<|n>[1] {
   ^PExprFunction<|n>(arguments=$arguments, fn=$fn)
 }
@@ -401,12 +445,14 @@ function meta::external::store::rel::compile::ir::setAccess(set: RelSetImplement
   ^PExprSetAccess(set=$set, variable=$variable)
 }
 
+/**
+  * Represents the property (given in the specified mapping) applied to the given P-Expression as argument.
+  */
 function meta::external::store::rel::compile::ir::propertyAccess(
-  parent: PExpr[1], 
-  property: Property<Nil, Any|*>[1],
-  set: RelSetImplementation[0..1]
+  parent: PExpr[1],
+  propertyMapping: RelPropertyMapping[1]
 ): PExprPropertyAccess[1] {
-  ^PExprPropertyAccess(parent=$parent, property=$property, set=$set)
+  ^PExprPropertyAccess(parent=$parent, propertyMapping=$propertyMapping)
 }
 
 
@@ -416,6 +462,10 @@ function meta::external::store::rel::compile::ir::columnAccess(parent: PExpr[1],
 
 function meta::external::store::rel::compile::ir::all(set: RelSetImplementation[1]): PExprAll[1] {
   ^PExprAll(set=$set)
+}
+
+function meta::external::store::rel::compile::ir::exprSet(set: RelSetImplementation[1]): PExprSet[1] {
+  ^PExprSet(set=$set)
 }
 
 function meta::external::store::rel::compile::ir::filter(parent: PExpr[1], predicate: PExprScope[1]): PExprFilter[1] {
@@ -438,7 +488,7 @@ function meta::external::store::rel::compile::ir::scopeUntyped(inner: PExpr[1], 
   ^PExprScopeUntyped(inner=$inner, variables=$variables, parent=$parent)
 }
 
-function meta::external::store::rel::compile::ir::withParent(scoped: PExprScope[1], parent: PExpr[0..1]): PExprScope[1] {
+function meta::external::store::rel::compile::ir::withParent(scoped: PExprScope[1], parent: PExpr[1]): PExprScope[1] {
   ^$scoped(parent=$parent)
 }
 
@@ -448,6 +498,10 @@ function meta::external::store::rel::compile::ir::atExpr(parent: PExpr[1], index
 
 function meta::external::store::rel::compile::ir::mapExpr(parent: PExpr[1], body: PExprScope[1]): PExprMap[1] {
   ^PExprMap(parent=$parent, body=$body)
+}
+
+function meta::external::store::rel::compile::ir::inExpr(parent: PExpr[1], inExprs: PExpr[*]): PExprIn[1] {
+  ^PExprIn(parent=$parent, inExprs=$inExprs)
 }
 
 function meta::external::store::rel::compile::ir::exists(parent: PExpr[1], predicate: PExprScope[1]): meta::external::store::rel::compile::ir::PExprExists[1] {
@@ -460,6 +514,10 @@ function meta::external::store::rel::compile::ir::forAll(parent: PExpr[1], predi
 
 function meta::external::store::rel::compile::ir::project(parent: PExpr[1], projections: Pair<String,PExprScope>[*]): PExprProject[1] {
   ^PExprProject(parent=$parent, projections=$projections)
+}
+
+function meta::external::store::rel::compile::ir::restrict(parent: PExpr[1], columns: String[*]): PExprRestrict[1] {
+  ^PExprRestrict(parent=$parent, columns=$columns)
 }
 
 function meta::external::store::rel::compile::ir::aggregate(map: PExprScope[1], aggregateFunction: PExprScope[1]): PExprAggregate[1] {
@@ -514,13 +572,16 @@ function meta::external::store::rel::compile::ir::matchExpr(parent: PExpr[1], ca
 // API functions //
 ///////////////////
 
+/*
+ * TODO: Remove this function if possible, or alternatively better define it.
+ */
 function meta::external::store::rel::compile::ir::set(expr: PExpr[1]): RelSetImplementation[0..1] {
   $expr->match([
     e: PExprAt[1]             | $e.parent->set(),
     e: PExprSetAccess[1]      | $e.set,
     e: PExprScope[1]          | $e.parent->map(p | $p->set()),
     e: PExprAll[1]            | $e.set,
-    e: PExprPropertyAccess[1] | $e.set,
+    e: PExprPropertyAccess[1] | $e.parent->set(),
     e: PExprCast[1]           | $e.set,
     e: PExprMap[1]            | $e.parent->set(),
     e: PExprFilter[1]         | $e.parent->set(),
@@ -528,7 +589,8 @@ function meta::external::store::rel::compile::ir::set(expr: PExpr[1]): RelSetImp
     e: PExprForAll[1]         | $e.parent->set(),
     e: PExprProject[1]        | $e.parent->set(),
     e: PExprGroupBy[1]        | $e.parent->set(),
-    step: PExprCompilationStep[1] | $step.property->map(fun | $fun->eval('set', []))->first()->cast(@RelSetImplementation)
+    step: PExprCompilationStep[1] | $step.property->map(fun | $fun->eval('set', []))->first()->cast(@RelSetImplementation),
+    e: PExpr[1]               | [] // Catch all case.
   ])
 }
 

@@ -1,5 +1,5 @@
-import meta::pure::mapping::*;
 import meta::external::store::rel::mapping::*;
+import meta::pure::mapping::*;
 
 function meta::external::store::rel::mapping::rel(activities: Activity[*]): String[1] {
   let relSource = $activities
