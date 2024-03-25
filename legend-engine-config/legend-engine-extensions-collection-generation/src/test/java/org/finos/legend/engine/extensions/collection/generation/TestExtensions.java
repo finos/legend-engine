@@ -280,7 +280,6 @@ public class TestExtensions
                 .with(SnowflakeAppProtocolExtension.class)
                 .with(HostedServiceProtocolExtension.class)
                 .with(BigQueryFunctionProtocolExtension.class)
-//                .with(FunctionActivatorProto.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.DiagramProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.GenerationProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.PersistenceProtocolExtension.class)
