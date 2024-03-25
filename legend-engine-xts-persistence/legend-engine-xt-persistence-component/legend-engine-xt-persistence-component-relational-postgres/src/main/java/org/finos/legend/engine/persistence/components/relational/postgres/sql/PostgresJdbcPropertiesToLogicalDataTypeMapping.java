@@ -22,7 +22,6 @@ public class PostgresJdbcPropertiesToLogicalDataTypeMapping implements JdbcPrope
 {
     public FieldType getDataType(String typeName, String dataType, Integer columnSize, Integer decimalDigits)
     {
-
         switch (typeName)
         {
             case CHAR:
@@ -40,7 +39,7 @@ public class PostgresJdbcPropertiesToLogicalDataTypeMapping implements JdbcPrope
                 return FieldType.builder().dataType(DataType.TINYINT).build();
             case SMALLINT:
                 return FieldType.builder().dataType(DataType.SMALLINT).build();
-            case INTEGER:
+            case INT4:
                 return FieldType.builder().dataType(DataType.INTEGER).build();
             case BIGINT:
                 return FieldType.builder().dataType(DataType.BIGINT).build();

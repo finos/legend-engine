@@ -75,7 +75,7 @@ class AppendOnlyTest extends BaseTest
         loadStagingDataWithNoPkInUpperCase(dataPass1);
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
-        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, " order by \"BATCH_ID\", \"INCOME\"");
         // 3. Assert that the staging table is truncated
         List<Map<String, Object>> stagingTableList = postgresSink.executeQuery("select * from \"TEST\".\"STAGING\"");
         Assertions.assertEquals(stagingTableList.size(), 0);
@@ -87,7 +87,7 @@ class AppendOnlyTest extends BaseTest
         loadStagingDataWithNoPkInUpperCase(dataPass2);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
-        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, " order by \"BATCH_ID\", \"INCOME\"");
         // 3. Assert that the staging table is truncated
         stagingTableList = postgresSink.executeQuery("select * from \"TEST\".\"STAGING\"");
         Assertions.assertEquals(stagingTableList.size(), 0);
@@ -126,7 +126,7 @@ class AppendOnlyTest extends BaseTest
         loadStagingDataWithNoPkInUpperCase(dataPass1);
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = createExpectedStatsMap(2, 0, 2, 0, 0);
-        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, " order by \"BATCH_ID\", \"INCOME\"");
 
         // ------------ Perform incremental (append) milestoning With Clean Staging Table ------------------------
         String dataPass2 = basePathForInput + "input/with_staging_filter/data_pass2.csv";
@@ -135,6 +135,6 @@ class AppendOnlyTest extends BaseTest
         loadStagingDataWithNoPkInUpperCase(dataPass2);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(2, 0, 2, 0, 0);
-        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, " order by \"BATCH_ID\", \"INCOME\"");
     }
 }

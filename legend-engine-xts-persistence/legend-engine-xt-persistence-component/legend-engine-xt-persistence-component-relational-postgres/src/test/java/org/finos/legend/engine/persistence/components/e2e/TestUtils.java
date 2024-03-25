@@ -627,11 +627,12 @@ public class TestUtils
             .build();
     }
 
-    public static Dataset getCsvDatasetRefWithLessColumnsThanMain(String dataPath)
+    public static DatasetDefinition getDatasetWithLessColumnsThanMain()
     {
-        return CsvExternalDatasetReference.builder()
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
             .schema(getStagingSchemaWithLessColumnThanMain())
-            .csvDataPath(dataPath)
             .build();
     }
 

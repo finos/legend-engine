@@ -157,14 +157,14 @@ public class BaseTest
         executor.executePhysicalPlan(tableCreationPhysicalPlan);
     }
 
-    protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats) throws Exception
+    protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, String orderByClause) throws Exception
     {
-        return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, Clock.systemUTC());
+        return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, Clock.systemUTC(), orderByClause);
     }
 
-    protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Set<SchemaEvolutionCapability> userCapabilitySet, Clock executionTimestampClock) throws Exception
+    protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Set<SchemaEvolutionCapability> userCapabilitySet, Clock executionTimestampClock, String orderByClause) throws Exception
     {
-        return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, executionTimestampClock, userCapabilitySet, false);
+        return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, executionTimestampClock, userCapabilitySet, false, orderByClause);
     }
 
     private void verifyLatestStagingFilters(RelationalIngestor ingestor, Datasets datasets) throws Exception
@@ -188,7 +188,7 @@ public class BaseTest
     protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets,
                                                           String[] schema, String expectedDataPath, Map<String, Object> expectedStats,
                                                           Clock executionTimestampClock, Set<SchemaEvolutionCapability> userCapabilitySet,
-                                                          boolean verifyStagingFilters) throws Exception
+                                                          boolean verifyStagingFilters, String orderByClause) throws Exception
     {
         // Execute physical plans
         RelationalIngestor ingestor = RelationalIngestor.builder()
@@ -201,11 +201,12 @@ public class BaseTest
                 .schemaEvolutionCapabilitySet(userCapabilitySet)
                 .enableConcurrentSafety(true)
                 .build();
-        return executePlansAndVerifyResults(ingestor, datasets, schema, expectedDataPath, expectedStats, verifyStagingFilters);
+        return executePlansAndVerifyResults(ingestor, datasets, schema, expectedDataPath, expectedStats, verifyStagingFilters, orderByClause);
     }
 
     protected IngestorResult executePlansAndVerifyResults(RelationalIngestor ingestor, Datasets datasets, String[] schema,
-                                                          String expectedDataPath, Map<String, Object> expectedStats, boolean verifyStagingFilters) throws Exception
+                                                          String expectedDataPath, Map<String, Object> expectedStats,
+                                                          boolean verifyStagingFilters, String orderByClause) throws Exception
     {
         // Execute physical plans
         IngestorResult result = ingestor.performFullIngestion(JdbcConnection.of(postgresSink.connection()), datasets).get(0);
@@ -213,7 +214,7 @@ public class BaseTest
         Map<StatisticName, Object> actualStats = result.statisticByName();
 
         // Verify the database data
-        List<Map<String, Object>> tableData = postgresSink.executeQuery("select * from \"TEST\".\"main\"");
+        List<Map<String, Object>> tableData = postgresSink.executeQuery("select * from \"TEST\".\"main\"" + orderByClause);
         TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
 
         // Verify statistics
@@ -233,22 +234,22 @@ public class BaseTest
         return result;
     }
 
-    protected IngestorResult executePlansAndVerifyResultsWithStagingFilters(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Clock executionTimestampClock) throws Exception
+    protected IngestorResult executePlansAndVerifyResultsWithStagingFilters(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Clock executionTimestampClock, String orderByClause) throws Exception
     {
-        return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, executionTimestampClock, Collections.emptySet(), true);
+        return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, executionTimestampClock, Collections.emptySet(), true, orderByClause);
     }
 
-    protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Clock executionTimestampClock) throws Exception
+    protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Clock executionTimestampClock, String orderByClause) throws Exception
     {
-        return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, executionTimestampClock, Collections.emptySet(), false);
+        return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, executionTimestampClock, Collections.emptySet(), false, orderByClause);
     }
 
-    protected List<IngestorResult> executePlansAndVerifyResultsWithSpecifiedDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, List<DataSplitRange> dataSplitRanges) throws Exception
+    protected List<IngestorResult> executePlansAndVerifyResultsWithSpecifiedDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, List<DataSplitRange> dataSplitRanges, String orderByClause) throws Exception
     {
-        return executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, dataSplitRanges, Clock.systemUTC());
+        return executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, dataSplitRanges, Clock.systemUTC(), orderByClause);
     }
 
-    protected List<IngestorResult> executePlansAndVerifyResultsWithSpecifiedDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, List<DataSplitRange> dataSplitRanges, Clock executionTimestampClock) throws Exception
+    protected List<IngestorResult> executePlansAndVerifyResultsWithSpecifiedDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, List<DataSplitRange> dataSplitRanges, Clock executionTimestampClock, String orderByClause) throws Exception
     {
         RelationalIngestor ingestor = RelationalIngestor.builder()
             .ingestMode(ingestMode)
@@ -261,7 +262,7 @@ public class BaseTest
 
         List<IngestorResult> results = ingestor.performFullIngestionWithDataSplits(JdbcConnection.of(postgresSink.connection()), datasets, dataSplitRanges);
 
-        List<Map<String, Object>> tableData = postgresSink.executeQuery("select * from \"TEST\".\"main\"");
+        List<Map<String, Object>> tableData = postgresSink.executeQuery("select * from \"TEST\".\"main\"" + orderByClause);
         TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
 
         for (int i = 0; i < results.size(); i++)
@@ -276,7 +277,7 @@ public class BaseTest
         return results;
     }
 
-    protected List<IngestorResult> executePlansAndVerifyResultsWithDerivedDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, Clock executionTimestampClock) throws Exception
+    protected List<IngestorResult> executePlansAndVerifyResultsWithDerivedDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, Clock executionTimestampClock, String orderByClause) throws Exception
     {
         RelationalIngestor ingestor = RelationalIngestor.builder()
             .ingestMode(ingestMode)
@@ -289,7 +290,7 @@ public class BaseTest
 
         List<IngestorResult> results = ingestor.performFullIngestion(JdbcConnection.of(postgresSink.connection()), datasets);
 
-        List<Map<String, Object>> tableData = postgresSink.executeQuery("select * from \"TEST\".\"main\"");
+        List<Map<String, Object>> tableData = postgresSink.executeQuery("select * from \"TEST\".\"main\"" + orderByClause);
         TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
 
         for (int i = 0; i < results.size(); i++)
@@ -315,12 +316,12 @@ public class BaseTest
         return expectedStats;
     }
 
-    public IngestorResult executePlansAndVerifyForCaseConversion(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats) throws Exception
+    public IngestorResult executePlansAndVerifyForCaseConversion(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, String orderByClause) throws Exception
     {
-        return executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, Clock.systemUTC());
+        return executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, Clock.systemUTC(), orderByClause);
     }
 
-    public IngestorResult executePlansAndVerifyForCaseConversion(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Clock executionTimestampClock) throws Exception
+    public IngestorResult executePlansAndVerifyForCaseConversion(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Clock executionTimestampClock, String orderByClause) throws Exception
     {
         RelationalIngestor ingestor = RelationalIngestor.builder()
                 .ingestMode(ingestMode)
@@ -332,10 +333,10 @@ public class BaseTest
                 .schemaEvolutionCapabilitySet(Collections.emptySet())
                 .caseConversion(CaseConversion.TO_UPPER)
                 .build();
-        return executePlansAndVerifyForCaseConversion(ingestor, datasets, schema, expectedDataPath, expectedStats);
+        return executePlansAndVerifyForCaseConversion(ingestor, datasets, schema, expectedDataPath, expectedStats, orderByClause);
     }
 
-    public IngestorResult executePlansAndVerifyForCaseConversion(RelationalIngestor ingestor, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats) throws Exception
+    public IngestorResult executePlansAndVerifyForCaseConversion(RelationalIngestor ingestor, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, String orderByClause) throws Exception
     {
         Executor executor = ingestor.initExecutor(JdbcConnection.of(postgresSink.connection()));
 
@@ -351,7 +352,7 @@ public class BaseTest
         Map<StatisticName, Object> actualStats = result.statisticByName();
 
         // Verify the database data
-        List<Map<String, Object>> tableData = postgresSink.executeQuery("select * from \"TEST\".\"MAIN\"");
+        List<Map<String, Object>> tableData = postgresSink.executeQuery("select * from \"TEST\".\"MAIN\"" + orderByClause);
 
         TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
 
@@ -366,12 +367,82 @@ public class BaseTest
         return result;
     }
 
+    protected void loadBasicStagingData(String path)
+    {
+        postgresTestContainer.copyFileToContainer(path, path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "COPY \"TEST\".\"staging\"" +
+            "(\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"digest\")" +
+            " FROM '/" + path + "' CSV";
+        postgresSink.executeStatement(loadSql);
+    }
+
+    protected void loadBasicStagingDataInUpperCase(String path)
+    {
+        postgresTestContainer.copyFileToContainer(path, path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"STAGING\";" +
+            "COPY \"TEST\".\"STAGING\"" +
+            "(\"ID\", \"NAME\", \"INCOME\", \"START_TIME\", \"EXPIRY_DATE\", \"DIGEST\")" +
+            " FROM '/" + path + "' CSV";
+        postgresSink.executeStatement(loadSql);
+    }
+
+    protected void loadBasicStagingDataWithColumnsThanMain(String path)
+    {
+        postgresTestContainer.copyFileToContainer(path, path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "COPY \"TEST\".\"staging\"" +
+            "(\"id\", \"name\", \"income\", \"start_time\", \"digest\")" +
+            " FROM '/" + path + "' CSV";
+        postgresSink.executeStatement(loadSql);
+    }
+
     protected void loadStagingDataWithNoPkInUpperCase(String path)
     {
         postgresTestContainer.copyFileToContainer(path, path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"STAGING\";" +
             "COPY \"TEST\".\"STAGING\"" +
             "(\"NAME\", \"INCOME\", \"EXPIRY_DATE\")" +
+            " FROM '/" + path + "' CSV";
+        postgresSink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataForWithPartition(String path)
+    {
+        postgresTestContainer.copyFileToContainer(path, path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "COPY \"TEST\".\"staging\"" +
+            "(\"date\", \"entity\", \"price\", \"volume\", \"digest\")" +
+            " FROM '/" + path + "' CSV";
+        postgresSink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataWithVersion(String path)
+    {
+        postgresTestContainer.copyFileToContainer(path, path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "COPY \"TEST\".\"staging\"" +
+            "(\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"digest\", \"version\")" +
+            " FROM '/" + path + "' CSV";
+        postgresSink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataForWithPartitionWithVersion(String path)
+    {
+        postgresTestContainer.copyFileToContainer(path, path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "COPY \"TEST\".\"staging\"" +
+            "(\"date\", \"entity\", \"price\", \"volume\", \"digest\", \"version\")" +
+            " FROM '/" + path + "' CSV";
+        postgresSink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataForWithPartitionWithVersionInUpperCase(String path)
+    {
+        postgresTestContainer.copyFileToContainer(path, path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"STAGING\";" +
+            "COPY \"TEST\".\"STAGING\"" +
+            "(\"DATE\", \"ENTITY\", \"PRICE\", \"VOLUME\", \"DIGEST\", \"VERSION\")" +
             " FROM '/" + path + "' CSV";
         postgresSink.executeStatement(loadSql);
     }

@@ -18,6 +18,7 @@ import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Update;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
@@ -32,6 +33,7 @@ import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper
 import org.finos.legend.engine.persistence.components.relational.postgres.sql.PostgresDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.postgres.sql.PostgresJdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.postgres.sql.visitor.FieldVisitor;
+import org.finos.legend.engine.persistence.components.relational.postgres.sql.visitor.SQLUpdateVisitor;
 import org.finos.legend.engine.persistence.components.relational.postgres.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
@@ -75,6 +77,7 @@ public class PostgresSink extends AnsiSqlSink
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
         logicalPlanVisitorByClass.put(SchemaDefinition.class, new SchemaDefinitionVisitor());
         logicalPlanVisitorByClass.put(Field.class, new FieldVisitor());
+        logicalPlanVisitorByClass.put(Update.class, new SQLUpdateVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
         Map<DataType, Set<DataType>> implicitDataTypeMapping = new HashMap<>();

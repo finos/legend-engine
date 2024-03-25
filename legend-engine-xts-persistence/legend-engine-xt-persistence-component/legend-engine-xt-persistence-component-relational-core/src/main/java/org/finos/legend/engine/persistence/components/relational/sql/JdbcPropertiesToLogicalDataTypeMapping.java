@@ -24,6 +24,7 @@ public interface JdbcPropertiesToLogicalDataTypeMapping extends TypeMapping
     String SMALLINT = "SMALLINT";
     String INTEGER = "INTEGER";
     String BIGINT = "BIGINT";
+    String INT4 = "INT4";
     String DECIMAL = "DECIMAL";
     String DOUBLE = "DOUBLE";
     String REAL = "REAL";

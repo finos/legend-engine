@@ -22,7 +22,6 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.schema.B
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Char;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.DataType;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Date;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Decimal;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Double;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Integer;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Json;
@@ -33,7 +32,6 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.schema.S
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Time;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Timestamp;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.TimestampWithTimezone;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.TinyInt;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.VarChar;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.VariableSizeDataType;
 
@@ -50,9 +48,6 @@ public class PostgresDataTypeMapping implements DataTypeMapping
                 break;
             case BIGINT:
                 dataType = new BigInt();
-                break;
-            case TINYINT:
-                dataType = new TinyInt();
                 break;
             case SMALLINT:
                 dataType = new SmallInt();
@@ -82,11 +77,6 @@ public class PostgresDataTypeMapping implements DataTypeMapping
             case FLOAT:
                 dataType = new Real();
                 break;
-            case DECIMAL:
-                dataType = new Decimal(type.length().orElse(-1), type.scale().orElse(-1));
-                type.length().ifPresent(dataType::setLength);
-                type.scale().ifPresent(dataType::setScale);
-                break;
             case DOUBLE:
                 dataType = new Double();
                 break;
@@ -98,6 +88,7 @@ public class PostgresDataTypeMapping implements DataTypeMapping
                 dataType = new Time();
                 type.scale().ifPresent(dataType::setScale);
                 break;
+            case DECIMAL:
             case NUMERIC:
                 dataType = new Numeric();
                 type.length().ifPresent(dataType::setLength);
