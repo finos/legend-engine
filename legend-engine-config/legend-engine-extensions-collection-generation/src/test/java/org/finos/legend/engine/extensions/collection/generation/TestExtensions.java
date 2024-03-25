@@ -307,12 +307,7 @@ public class TestExtensions
     {
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<Class<? extends GenerationExtension>>empty()
-                .with(org.finos.legend.engine.external.format.protobuf.deprecated.generation.ProtobufGenerationExtension.class)
-                .with(org.finos.legend.engine.external.format.avro.extension.AvroGenerationExtension.class)
-                .with(org.finos.legend.engine.external.format.jsonSchema.extension.JSONSchemaGenerationExtension.class)
-                .with(org.finos.legend.engine.external.language.morphir.extension.MorphirGenerationExtension.class)
-                .with(org.finos.legend.engine.query.graphQL.api.format.generation.GraphQLGenerationExtension.class)
-                .with(org.finos.legend.engine.external.format.daml.generation.DAMLGenerationExtension.class);
+                .with(org.finos.legend.engine.external.format.avro.extension.AvroGenerationExtension.class);
     }
 
     protected Iterable<? extends Class<? extends PureGrammarParserExtension>> getExpectedGrammarParserExtensions()
