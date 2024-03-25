@@ -63,6 +63,17 @@ public class TestSnowflakeParsing extends TestGrammarParser.TestGrammarParserTes
     }
 
     @Test
+    public void testGetParserErrorMissingOwnership()
+    {
+        test("###Snowflake\n" +
+                "SnowflakeApp x::A\n" +
+                "{\n" +
+                "   function : a::f():String[1];" +
+                "   applicationName : 'sass';\n" +
+                "}\n", "PARSER error at [2:1-5:1]: Field 'ownership' is required");
+    }
+
+    @Test
     public void testGetParserErrorMissingFunction()
     {
         test("###Snowflake\n" +
