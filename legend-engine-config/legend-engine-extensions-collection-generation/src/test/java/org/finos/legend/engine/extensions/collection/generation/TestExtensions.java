@@ -25,6 +25,7 @@ import org.finos.legend.engine.entitlement.services.RelationalDatabaseEntitlemen
 import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataDriverDescription;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
+import org.finos.legend.engine.functionActivator.generation.FunctionActivatorArtifactGenerationExtension;
 import org.finos.legend.engine.generation.DataSpaceAnalyticsArtifactGenerationExtension;
 import org.finos.legend.engine.generation.OpenApiArtifactGenerationExtension;
 import org.finos.legend.engine.generation.SearchDocumentArtifactGenerationExtension;
@@ -279,6 +280,7 @@ public class TestExtensions
                 .with(SnowflakeAppProtocolExtension.class)
                 .with(HostedServiceProtocolExtension.class)
                 .with(BigQueryFunctionProtocolExtension.class)
+//                .with(FunctionActivatorProto.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.DiagramProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.GenerationProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.PersistenceProtocolExtension.class)
@@ -472,7 +474,8 @@ public class TestExtensions
                 .with(SearchDocumentArtifactGenerationExtension.class)
                 .with(OpenApiArtifactGenerationExtension.class)
                 .with(SnowflakeAppArtifactGenerationExtension.class)
-                .with(HostedServiceArtifactGenerationExtension.class);
+                .with(HostedServiceArtifactGenerationExtension.class)
+                .with(FunctionActivatorArtifactGenerationExtension.class);
     }
 
     protected Iterable<? extends Class<? extends EntitlementServiceExtension>> getExpectedEntitlementServiceExtensions()

@@ -33,5 +33,7 @@
         <module>legend-engine-xt-functionActivator-deployment</module>
         <module>legend-engine-xt-functionActivator-protocol</module>
         <module>legend-engine-xt-functionActivator-pure</module>
+        <module>legend-engine-xt-functionActivator-generation</module>
+
     </modules>
 </project>
