@@ -52,7 +52,7 @@ import static org.finos.legend.engine.persistence.components.util.MetadataUtils.
 
 public class ApiUtils
 {
-    private static final String LOCK_INFO_DATASET_SUFFIX = "_legend_persistence_lock";
+    public static final String LOCK_INFO_DATASET_SUFFIX = "_legend_persistence_lock";
 
     public static Dataset deriveMainDatasetFromStaging(Datasets datasets, IngestMode ingestMode)
     {

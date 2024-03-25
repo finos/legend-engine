@@ -80,6 +80,7 @@ function meta::pure::router::printer::asString(f:ValueSpecification[1], pref:Pre
                                                                      b:KeyExpression[1]|'^KeyExpression(key = ' + $b.key->asString($pref) + ', value = '+ $b.expression->asString($pref) + ')',
                                                                      a:BasicColumnSpecification<Any>[1]| '^BasicColumnSpecification<' + $a->genericType().typeArguments.rawType.name->makeString() + '>(name = \'' + $a.name + '\', func = ' + $a.func->asString($pref) + ')';,
                                                                      r:RoutedVariablePlaceHolder[1]|'$'+$r.name,
+                                                                     p:meta::pure::executionPlan::PlanVarPlaceHolder[1]|'$'+$p.name,
                                                                      a:Class<Any>[1]|if (efq($pref),|$a->elementToPath(),|$a->genericType().rawType.name->toOne()+' '+$a->toString()),
                                                                      a:Any[1]|$a->genericType().rawType.name->toOne()+' '+$a->toString();
                                                                    ]))->joinStrings(', ')+if($i.values->size() < 2,|'',|']');,

@@ -59,7 +59,11 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
         {|
           let unRoutedFunction = ^$l(expressionSequence = $vs, openVariables=$a.second->keys());
           let routedFunction   = routeFunction($unRoutedFunction, getPlatformRoutingStrategy(), $exeCtx, $a.second, $extensions, $debug);
-          let vars             = $a.second->put($varName->toOne(), ^List<RoutedVariablePlaceHolder>(values=^RoutedVariablePlaceHolder(name=$varName->toOne())));
+          let deactivatedEs = $routedFunction.expressionSequence->evaluateAndDeactivate();
+          let vars             = $a.second->put($varName->toOne(), ^List<meta::pure::executionPlan::PlanVarPlaceHolder>(values=^meta::pure::executionPlan::PlanVarPlaceHolder(type = $deactivatedEs->last().genericType.rawType->toOne(), 
+                                                                                                                        name=$varName->toOne(), multiplicity = $deactivatedEs->last()->toOne().multiplicity, 
+                                                                                                                        supportsStream = $deactivatedEs->last()->toOne().multiplicity->isToMany())));
+
           ^$a
           (
             first  = ^$routedFunction(expressionSequence = $a.first.expressionSequence->concatenate($routedFunction.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>),
