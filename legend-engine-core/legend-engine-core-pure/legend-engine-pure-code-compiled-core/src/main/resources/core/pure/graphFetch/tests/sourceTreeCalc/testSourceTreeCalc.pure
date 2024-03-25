@@ -2069,3 +2069,62 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withFlatteningInTransform
   }
 )
 
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::ownerInPropertySubTree::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::ownerInPropertySubTree::Source 
+{
+  id : Integer[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::ownerInPropertySubTree::B
+{
+  b : Integer[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::ownerInPropertySubTree::Target 
+{
+  b : meta::pure::graphFetch::tests::sourceTreeCalc::ownerInPropertySubTree::B[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::ownerInPropertySubTree::SourceWrapper 
+{
+  s : meta::pure::graphFetch::tests::sourceTreeCalc::ownerInPropertySubTree::Source[1];
+}
+
+
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::ownerInPropertySubTree::testSourceTreeCalc():Boolean[1]
+{
+  let tree = #{
+    Target {b {b}}
+  }#;
+
+  let expectedString = 'Source\n' +
+                       '(\n' +
+                       '  id\n'+
+                       ')';
+                       
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree($tree,
+                                                               meta::pure::graphFetch::tests::sourceTreeCalc::ownerInPropertySubTree::M,
+                                                               meta::pure::extension::defaultExtensions());
+
+  assertEquals($expectedString, $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());  
+}
+
+###Mapping 
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::ownerInPropertySubTree::M 
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::ownerInPropertySubTree::Target : Pure 
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::ownerInPropertySubTree::Source
+    b[prop_b] : ^meta::pure::graphFetch::tests::sourceTreeCalc::ownerInPropertySubTree::SourceWrapper(s = $src)
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::ownerInPropertySubTree::B[prop_b] : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::ownerInPropertySubTree::SourceWrapper
+    b : $src.s.id
+  }
+)
+
+
