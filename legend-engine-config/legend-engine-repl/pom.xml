@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-config</artifactId>
-        <version>4.41.1-SNAPSHOT</version>
+        <version>4.42.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -28,6 +28,7 @@
 
     <modules>
         <module>legend-engine-repl-client</module>
+        <module>legend-engine-repl-client-windows</module>
         <module>legend-engine-repl-relational</module>
     </modules>
 </project>

@@ -2529,3 +2529,101 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanWithL
                '  )\n' +
                ')\n', $result->planToString($extensions));
  }
+
+ function <<test.Test>> meta::pure::executionPlan::tests::testMultiExpressionWithPlatformAndFromFunction():Boolean[1]
+{
+   let f = {names:String[*]| 
+              let upperNames = $names->map(n|$n->toUpper());
+              meta::relational::tests::model::simple::Person.all()->filter(e|$e.firm.legalName->in($upperNames))->meta::pure::mapping::from(simpleRelationalMapping, meta::external::store::relational::tests::testRuntime());
+            };
+
+   let plan = executionPlan($f, meta::relational::extension::relationalExtensions());
+   assertEquals (
+        'Sequence\n'+
+        '(\n'+
+        '  type = Class[impls=(meta::relational::tests::model::simple::Person | simpleRelationalMappingInc.meta_relational_tests_model_simple_Person)]\n'+
+        '  resultSizeRange = *\n'+
+        '  (\n'+
+        '    FunctionParametersValidationNode\n'+
+        '    (\n'+
+        '      functionParameters = [names:String[*]]\n'+
+        '    )\n'+
+        '    Allocation\n'+
+        '    (\n'+
+        '      type = String\n'+
+        '      resultSizeRange = *\n'+
+        '      name = upperNames\n'+
+        '      value = \n'+
+        '        (\n'+
+        '          PureExp\n'+
+        '          (\n'+
+        '            type = String\n'+
+        '            resultSizeRange = *\n'+
+        '            requires = [names(String[*])]\n'+
+        '            expression = $names -> map([Routed Func:n:String[1] | $n -> toUpper();])\n'+
+        '          )\n'+
+        '        )\n'+
+        '    )\n'+
+        '    RelationalBlockExecutionNode\n'+
+        '    (\n'+
+        '      type = Class[impls=(meta::relational::tests::model::simple::Person | simpleRelationalMappingInc.meta_relational_tests_model_simple_Person)]\n'+
+        '      resultSizeRange = *\n'+
+        '      (\n'+
+        '        Allocation\n'+
+        '        (\n'+
+        '          type = String\n'+
+        '          name = inFilterClause_upperNames\n'+
+        '          value = \n'+
+        '            (\n'+
+        '              FreeMarkerConditionalExecutionNode\n'+
+        '              (\n'+
+        '                type = String\n'+
+        '                condition = ${(instanceOf(upperNames, "Stream") || instanceOf(upperNames, "StreamingResult") || ((collectionSize(upperNames![])?number) > 50))?c}\n'+
+        '                trueBlock = \n'+
+        '                (\n'+
+        '                  Sequence\n'+
+        '                  (\n'+
+        '                    type = String\n'+
+        '                    (\n'+
+        '                      CreateAndPopulateTempTable\n'+
+        '                      (\n'+
+        '                        type = Void\n'+
+        '                        inputVarNames = [upperNames]\n'+
+        '                        tempTableName = tempTableForIn_upperNames\n'+
+        '                        tempTableColumns = [(ColumnForStoringInCollection, VARCHAR(200) )]\n'+
+        '                        connection = TestDatabaseConnection(type = "H2")\n'+
+        '                      )\n'+
+        '                      Constant\n'+
+        '                      (\n'+
+        '                        type = String\n'+
+        '                        values=[select "temptableforin_uppernames_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_upperNames as "temptableforin_uppernames_0"]\n'+
+        '                      )\n'+
+        '                    )\n'+
+        '                  )\n'+
+        '                )\n'+
+        '                falseBlock = \n'+
+        '                (\n'+
+        '                  Constant\n'+
+        '                  (\n'+
+        '                    type = String\n'+
+        '                    values=[${renderCollection(upperNames![] "," "\'" "\'" {"\'" : "\'\'" } "null")}]\n'+
+        '                  )\n'+
+        '                )\n'+
+        '              )\n'+
+        '            )\n'+
+        '        )\n'+
+        '        Relational\n'+
+        '        (\n'+
+        '          type = Class[impls=(meta::relational::tests::model::simple::Person | simpleRelationalMappingInc.meta_relational_tests_model_simple_Person)]\n'+
+        '          resultSizeRange = *\n'+
+        '          resultColumns = [("pk_0", INT), ("firstName", VARCHAR(200)), ("age", INT), ("lastName", VARCHAR(200))]\n'+
+        '          sql = select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME in (${inFilterClause_upperNames})\n'+
+        '          connection = TestDatabaseConnection(type = "H2")\n'+
+        '        )\n'+
+        '      ) \n'+
+        '    )\n'+
+        '  )\n'+
+        ')\n' , $plan->planToString( meta::relational::extension::relationalExtensions()));
+
+}
+

@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-avro</artifactId>
-        <version>4.41.1-SNAPSHOT</version>
+        <version>4.42.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-avro-api</artifactId>
@@ -45,6 +45,14 @@
             <artifactId>legend-engine-shared-core</artifactId>
         </dependency>
         <!-- ENGINE -->
+
+        <!-- JACKSON -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+
+        </dependency>
+        <!-- JACKSON -->
 
         <!-- ANNOTATIONS -->
         <dependency>
@@ -92,6 +100,28 @@
             <artifactId>pac4j-core</artifactId>
         </dependency>
         <!-- PAC4J -->
+
+        <!-- TEST -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-compiler</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-common</artifactId>
+            <version>${jersey.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- TEST -->
+
     </dependencies>
 
 

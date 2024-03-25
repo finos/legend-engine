@@ -24,7 +24,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.api.analytics.model.BindingModelCoverageAnalysisInput;
-import org.finos.legend.engine.external.shared.format.imports.PureModelContextDataGenerator;
+import org.finos.legend.engine.language.pure.compiler.fromPureGraph.PureModelContextDataGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;

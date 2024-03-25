@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core-language-pure</artifactId>
-        <version>4.41.1-SNAPSHOT</version>
+        <version>4.42.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-language-pure-compiler</artifactId>
@@ -179,7 +179,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <scope>runtime</scope>
         </dependency>
         <!-- JACKSON -->
 
