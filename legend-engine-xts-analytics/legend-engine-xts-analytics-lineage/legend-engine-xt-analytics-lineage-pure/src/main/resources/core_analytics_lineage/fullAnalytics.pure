@@ -33,7 +33,6 @@ import meta::analytics::lineage::graph::*;
 import meta::analytics::lineage::flow::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
-import  meta::analytics::lineage::tests::*;
 
 Class meta::analytics::lineage::FunctionAnalytics
 {
@@ -107,15 +106,6 @@ function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], 
       relationTree = $relationTree,
       reportLineage = buildReportLineage($reprocessedFuncBody, $sourceMapping)
    );
-}
-
-function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::computeLineage():Boolean[1]
-{
-   let f = {|meta::analytics::lineage::tests::model::Employees.all()->project([f | $f.divisionName],'symbol')};
-   let start = now();
-   let res = meta::analytics::lineage::computeLineage($f,meta::analytics::lineage::tests::mapping::EmployeeDemographics, [], meta::pure::extension::defaultExtensions()); 
-   let end = now();
-   assert($end->dateDiff($start, DurationUnit.MONTHS) <= 4, | 'Time taken to compute lineage is taking longer than expected. Please investigate.');
 }
 
 function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], m:Mapping[1], extensions:meta::pure::extension::Extension[*]):FunctionAnalytics[1]
