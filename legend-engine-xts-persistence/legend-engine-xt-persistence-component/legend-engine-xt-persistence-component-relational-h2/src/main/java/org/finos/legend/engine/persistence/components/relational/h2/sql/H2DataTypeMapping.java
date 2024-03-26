@@ -69,11 +69,11 @@ public class H2DataTypeMapping implements DataTypeMapping
             case TIMESTAMP:
             case DATETIME:
                 dataType = new Timestamp();
-                type.scale().ifPresent(dataType::setScale);
+                type.length().ifPresent(dataType::setLength);
                 break;
             case TIMESTAMP_TZ:
                 dataType = new TimestampWithTimezone();
-                type.scale().ifPresent(dataType::setScale);
+                type.length().ifPresent(dataType::setLength);
                 break;
             case DATE:
                 dataType = new Date();
@@ -96,7 +96,7 @@ public class H2DataTypeMapping implements DataTypeMapping
                 break;
             case TIME:
                 dataType = new Time();
-                type.scale().ifPresent(dataType::setScale);
+                type.length().ifPresent(dataType::setLength);
                 break;
             case NUMERIC:
                 dataType = new Numeric();
