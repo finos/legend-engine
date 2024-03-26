@@ -1,0 +1,160 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+###Mapping
+Mapping meta::analytics::lineage::tests::mapping::EmployeeDemographics
+(
+  *meta::analytics::lineage::tests::model::Employees: Relational
+  {
+    ~primaryKey
+    (
+      [meta::analytics::lineage::tests::store::FirmDemographicsStore]test.DivisionalEntitlements.ZIP_CODE
+    )
+    ~mainTable [meta::analytics::lineage::tests::store::FirmDemographicsStore]test.DivisionalEntitlements
+    divisionName: [meta::analytics::lineage::tests::store::FirmDemographicsStore]test.DivisionalEntitlements.divisionName
+  }
+)
+
+###Pure 
+Class meta::analytics::lineage::tests::model::Employees
+{
+    divisionName: String[1];
+}
+
+###Relational
+Database meta::analytics::lineage::tests::store::FirmDemographicsStore
+(
+  Schema SCHEMA_EXAMPLE_1
+  (
+    Table TABLE_EXAMPLE_1 
+    (
+      LAST_NAME VARCHAR(10),
+      MIDDLE_INITIAL VARCHAR(10) PRIMARY KEY,
+      PHONE_NUMBER INTEGER,
+      SALARY INTEGER,
+      ZIP_CODE VARCHAR(255) PRIMARY KEY,
+      TERM_ID INTEGER PRIMARY KEY,
+      VETERAN_STATUS VARCHAR(10)
+    )
+  )
+
+  Schema SCHEMA_EXAMPLE_2
+  (
+    Table SCHEMA_2_TABLE_1
+    (
+      id INTEGER PRIMARY KEY,
+      IN_Z TIMESTAMP NOT NULL
+    )
+    Table SCHEMA_2_TABLE_2
+    (
+      id INTEGER PRIMARY KEY,
+      divisionName VARCHAR(33),
+      region VARCHAR(4),
+      IN_Z TIMESTAMP NOT NULL
+    )
+  )
+
+  Schema test 
+  (
+    View FilteredEmployeeInfo
+    (
+      ~filter EMPLOYEE_GROUPING_FILTER
+      uniqueEmployeeIdInt: MASTER_SCHEMA.EMPLOYEE_GROUPING.uniqueEmployeeIdInt PRIMARY KEY
+    )
+    
+    View FilteredEntitlements
+    (
+      ~filter ENTITLEMENT_FILTER
+      LAST_NAME: SCHEMA_EXAMPLE_1.TABLE_EXAMPLE_1.LAST_NAME,
+      SALARY: SCHEMA_EXAMPLE_1.TABLE_EXAMPLE_1.SALARY,
+      ZIP_CODE: SCHEMA_EXAMPLE_1.TABLE_EXAMPLE_1.ZIP_CODE,
+      TERM_ID: SCHEMA_EXAMPLE_1.TABLE_EXAMPLE_1.TERM_ID,
+      PHONE_NUMBER: SCHEMA_EXAMPLE_1.TABLE_EXAMPLE_1.PHONE_NUMBER
+    )
+
+    View TeamEntitlements
+    (
+      SALARY: [meta::analytics::lineage::tests::store::FirmDemographicsStore] @Entitlement_AccountToGroup > (INNER) @Entitlement_AccountToGroup  | FilteredEntitlements.SALARY,
+      LAST_NAME: [meta::analytics::lineage::tests::store::FirmDemographicsStore] @Entitlement_AccountToGroup > (INNER)  @Entitlement_AccountToGroup | FilteredEntitlements.LAST_NAME,
+      ZIP_CODE: [meta::analytics::lineage::tests::store::FirmDemographicsStore]@Entitlement_AccountToGroup > (INNER)  @Entitlement_AccountToGroup | FilteredEntitlements.ZIP_CODE,
+      TERM_ID: [meta::analytics::lineage::tests::store::FirmDemographicsStore] @Entitlement_AccountToGroup > (INNER)  @Entitlement_AccountToGroup | FilteredEntitlements.TERM_ID
+    )
+
+    
+    View PaymentInfo
+    (
+      ~groupBy
+      (
+        [meta::analytics::lineage::tests::store::FirmDemographicsStore]test.TeamEntitlements.SALARY
+      )
+      id: [meta::analytics::lineage::tests::store::FirmDemographicsStore]test.TeamEntitlements.SALARY PRIMARY KEY,
+      IN_Z: max([meta::analytics::lineage::tests::store::FirmDemographicsStore]@Entitlement_SCHEMA_2_TABLE_1 | SCHEMA_EXAMPLE_2.SCHEMA_2_TABLE_1.IN_Z)
+    )
+    
+    View NewJoineeEntitities
+    (
+      LAST_NAME: case(isNotEmpty([meta::analytics::lineage::tests::store::FirmDemographicsStore]test.TeamEntitlements.LAST_NAME), case(equal([meta::analytics::lineage::tests::store::FirmDemographicsStore]test.TeamEntitlements.LAST_NAME, '='), [meta::analytics::lineage::tests::store::FirmDemographicsStore]@Entitlement_SCHEMA_2_TABLE_1_View > [meta::analytics::lineage::tests::store::FirmDemographicsStore]@Latest_SCHEMA_2_TABLE_1_For_joinDate > [meta::analytics::lineage::tests::store::FirmDemographicsStore]@SCHEMA_2_TABLE_1_SCHEMA_2_TABLE_1SCHEMA_2_TABLE_2 | SCHEMA_EXAMPLE_2.SCHEMA_2_TABLE_2.region, case(equal(TeamEntitlements.LAST_NAME,'XXX'), [meta::analytics::lineage::tests::store::FirmDemographicsStore]@Entitlement_SCHEMA_2_TABLE_1_View > [meta::analytics::lineage::tests::store::FirmDemographicsStore]@Latest_SCHEMA_2_TABLE_1_For_joinDate > [meta::analytics::lineage::tests::store::FirmDemographicsStore]@SCHEMA_2_TABLE_1_SCHEMA_2_TABLE_1SCHEMA_2_TABLE_2 | SCHEMA_EXAMPLE_2.SCHEMA_2_TABLE_2.region, TeamEntitlements.LAST_NAME)), [meta::analytics::lineage::tests::store::FirmDemographicsStore]@Entitlement_SCHEMA_2_TABLE_1_View > [meta::analytics::lineage::tests::store::FirmDemographicsStore]@Latest_SCHEMA_2_TABLE_1_For_joinDate > [meta::analytics::lineage::tests::store::FirmDemographicsStore]@SCHEMA_2_TABLE_1_SCHEMA_2_TABLE_1SCHEMA_2_TABLE_2 | SCHEMA_EXAMPLE_2.SCHEMA_2_TABLE_2.region),
+      divisionName: [meta::analytics::lineage::tests::store::FirmDemographicsStore]@Entitlement_SCHEMA_2_TABLE_1_View > [meta::analytics::lineage::tests::store::FirmDemographicsStore]@Latest_SCHEMA_2_TABLE_1_For_joinDate > [meta::analytics::lineage::tests::store::FirmDemographicsStore]@SCHEMA_2_TABLE_1_SCHEMA_2_TABLE_1SCHEMA_2_TABLE_2 | SCHEMA_EXAMPLE_2.SCHEMA_2_TABLE_2.divisionName,
+      ZIP_CODE: [meta::analytics::lineage::tests::store::FirmDemographicsStore]test.TeamEntitlements.ZIP_CODE,
+      TERM_ID: TeamEntitlements.TERM_ID
+    )
+    
+    View DivisionalEntitlements
+    (
+      ~groupBy
+      (
+        [meta::analytics::lineage::tests::store::FirmDemographicsStore]test.NewJoineeEntitities.ZIP_CODE,
+        [meta::analytics::lineage::tests::store::FirmDemographicsStore]test.NewJoineeEntitities.TERM_ID,
+        [meta::analytics::lineage::tests::store::FirmDemographicsStore]test.NewJoineeEntitities.LAST_NAME
+      )
+      divisionName: max([meta::analytics::lineage::tests::store::FirmDemographicsStore]test.NewJoineeEntitities.divisionName),
+      ZIP_CODE: [meta::analytics::lineage::tests::store::FirmDemographicsStore]test.NewJoineeEntitities.ZIP_CODE
+    )
+
+  )
+
+  Schema MASTER_SCHEMA
+  (
+    Table EMPLOYEE_GROUPING
+    (
+      uniqueEmployeeIdInt INTEGER PRIMARY KEY,
+      joinDate DATE PRIMARY KEY,
+      MIDDLE_INITIAL VARCHAR(512) PRIMARY KEY
+    )
+  )
+
+  
+  Join Entitlement_SCHEMA_2_TABLE_1([meta::analytics::lineage::tests::store::FirmDemographicsStore]test.TeamEntitlements.SALARY = SCHEMA_EXAMPLE_2.SCHEMA_2_TABLE_1.id)
+  Join Latest_SCHEMA_2_TABLE_1_For_joinDate([meta::analytics::lineage::tests::store::FirmDemographicsStore]test.PaymentInfo.id = SCHEMA_EXAMPLE_2.SCHEMA_2_TABLE_1.id
+    and datePart([meta::analytics::lineage::tests::store::FirmDemographicsStore]test.PaymentInfo.IN_Z) = datePart(SCHEMA_EXAMPLE_2.SCHEMA_2_TABLE_1.IN_Z))
+
+  Join Entitlement_SCHEMA_2_TABLE_1_View([meta::analytics::lineage::tests::store::FirmDemographicsStore]test.TeamEntitlements.SALARY = [meta::analytics::lineage::tests::store::FirmDemographicsStore]test.PaymentInfo.id)
+  
+  Join SCHEMA_2_TABLE_1_SCHEMA_2_TABLE_1SCHEMA_2_TABLE_2(SCHEMA_EXAMPLE_2.SCHEMA_2_TABLE_1.id = SCHEMA_EXAMPLE_2.SCHEMA_2_TABLE_2.id
+    and SCHEMA_EXAMPLE_2.SCHEMA_2_TABLE_1.IN_Z = SCHEMA_EXAMPLE_2.SCHEMA_2_TABLE_2.IN_Z)
+
+  Join Entitlement_AccountToGroup([meta::analytics::lineage::tests::store::FirmDemographicsStore]test.FilteredEntitlements.PHONE_NUMBER = [meta::analytics::lineage::tests::store::FirmDemographicsStore]test.FilteredEmployeeInfo.uniqueEmployeeIdInt)
+  
+  Filter ENTITLEMENT_FILTER(SCHEMA_EXAMPLE_1.TABLE_EXAMPLE_1.ZIP_CODE = '${ZIP_CODE}'
+    and SCHEMA_EXAMPLE_1.TABLE_EXAMPLE_1.MIDDLE_INITIAL = '${MIDDLE_INITIAL}'
+    and SCHEMA_EXAMPLE_1.TABLE_EXAMPLE_1.VETERAN_STATUS = '${VETERAN_STATUS}')
+
+  Filter EMPLOYEE_GROUPING_FILTER(
+    MASTER_SCHEMA.EMPLOYEE_GROUPING.joinDate = '${joinDate}'
+    and MASTER_SCHEMA.EMPLOYEE_GROUPING.MIDDLE_INITIAL = '${MIDDLE_INITIAL}')
+
+
+
+)
