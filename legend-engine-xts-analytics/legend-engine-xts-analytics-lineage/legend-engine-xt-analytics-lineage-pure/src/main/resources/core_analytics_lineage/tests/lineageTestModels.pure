@@ -18,7 +18,7 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::co
    let start = now();
    let res = meta::analytics::lineage::computeLineage($f,meta::analytics::lineage::tests::mapping::EmployeeDemographics, [], meta::pure::extension::defaultExtensions()); 
    let end = now();
-   assert($end->dateDiff($start, DurationUnit.MONTHS) <= 4, | 'Time taken to compute lineage is taking longer than expected. Please investigate.');
+   assert($end->dateDiff($start, DurationUnit.MINUTES) <= 4, | 'Time taken to compute lineage is taking longer than expected. Please investigate.');
 }
 
 ###Mapping
