@@ -303,7 +303,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         List<String> milestoningSqlList = operations.ingestSql();
 
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`, `batch_id`) " +
-            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,LAKEHOUSE_MD5(TO_JSON(STRUCT(stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`)))," +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,LAKEHOUSE_MD5(['amount','biz_date','id','name'],[stage.`amount`,stage.`biz_date`,stage.`id`,stage.`name`])," +
             "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
             "FROM `mydb`.`staging` as stage)";
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableCreateQueryWithNoPKs, preActionsSqlList.get(0));
@@ -339,7 +339,59 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
     {
         String insertSql  = "INSERT INTO `mydb`.`main` " +
             "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`, `batch_id`) " +
-            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,LAKEHOUSE_MD5(TO_JSON(STRUCT(stage.`name`,stage.`biz_date`))),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,LAKEHOUSE_MD5(['biz_date','name'],[stage.`biz_date`,stage.`name`]),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
+            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
+            "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
+            "WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
+
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, generatorResults.get(0).preActionsSql().get(0));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, generatorResults.get(0).preActionsSql().get(1));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTempStagingTableWithCountAndDataSplit, generatorResults.get(0).preActionsSql().get(2));
+
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedTempStagingCleanupQuery, generatorResults.get(0).deduplicationAndVersioningSql().get(0));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedInsertIntoBaseTempStagingWithAllVersionAndFilterDuplicates, generatorResults.get(0).deduplicationAndVersioningSql().get(1));
+
+        Assertions.assertEquals(enrichSqlWithDataSplits(insertSql, dataSplitRanges.get(0)), generatorResults.get(0).ingestSql().get(0));
+        Assertions.assertEquals(enrichSqlWithDataSplits(insertSql, dataSplitRanges.get(1)), generatorResults.get(1).ingestSql().get(0));
+        Assertions.assertEquals(2, generatorResults.size());
+
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableIngestQuery, generatorResults.get(0).metadataIngestSql().get(0));
+
+        // Stats
+        String incomingRecordCount = "SELECT COALESCE(SUM(stage.`legend_persistence_count`),0) as `incomingRecordCount` FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
+            "WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
+        Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCount, dataSplitRanges.get(0)), generatorResults.get(0).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCount, dataSplitRanges.get(1)), generatorResults.get(1).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsUpdated, generatorResults.get(0).postIngestStatisticsSql().get(StatisticName.ROWS_UPDATED));
+        Assertions.assertEquals(rowsDeleted, generatorResults.get(0).postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+        Assertions.assertEquals(rowsInserted, generatorResults.get(0).postIngestStatisticsSql().get(StatisticName.ROWS_INSERTED));
+        Assertions.assertEquals(rowsTerminated, generatorResults.get(0).postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+    }
+
+    @Override
+    @Test
+    public void testAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecordsUdfDigestGenerationTypeConversionUdf()
+    {
+        TestScenario scenario = new AppendOnlyScenarios().WITH_AUDITING__FAIL_ON_DUPS__ALL_VERSION__NO_FILTER_EXISTING_RECORDS__UDF_DIGEST_GENERATION__TYPE_CONVERSION_UDF();
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(scenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .ingestRunId(ingestRunId)
+            .build();
+
+        List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
+        verifyAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecordsUdfDigestGenerationTypeConversionUdf(operations, dataSplitRangesOneToTwo);
+    }
+
+    @Override
+    public void verifyAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecordsUdfDigestGenerationTypeConversionUdf(List<GeneratorResult> generatorResults, List<DataSplitRange> dataSplitRanges)
+    {
+        String insertSql  = "INSERT INTO `mydb`.`main` " +
+            "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`, `batch_id`) " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`," +
+            "LAKEHOUSE_MD5(['amount','biz_date','name'],[doubleToString(stage.`amount`),dateToString(stage.`biz_date`),stage.`name`]),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
             "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
             "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
             "WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";

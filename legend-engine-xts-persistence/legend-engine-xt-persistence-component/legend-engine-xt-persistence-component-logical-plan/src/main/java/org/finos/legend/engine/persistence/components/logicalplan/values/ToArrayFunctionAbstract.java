@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,29 +14,20 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.values;
 
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
+import org.immutables.value.Value.Immutable;
+import org.immutables.value.Value.Style;
 
 import java.util.List;
-import java.util.Map;
 
-@org.immutables.value.Value.Immutable
-@org.immutables.value.Value.Style(
-        typeAbstract = "*Abstract",
-        typeImmutable = "*",
-        jdkOnly = true,
-        optionalAcceptNullable = true,
-        strictBuilder = true
+@Immutable
+@Style(
+    typeAbstract = "*Abstract",
+    typeImmutable = "*",
+    jdkOnly = true,
+    optionalAcceptNullable = true,
+    strictBuilder = true
 )
-public interface DigestUdfAbstract extends Value
+public interface ToArrayFunctionAbstract extends Value
 {
-
-    String udfName();
-
-    List<String> fieldNames();
-
     List<Value> values();
-
-    List<DataType> fieldTypes();
-
-    Map<DataType, String> typeConversionUdfNames();
 }

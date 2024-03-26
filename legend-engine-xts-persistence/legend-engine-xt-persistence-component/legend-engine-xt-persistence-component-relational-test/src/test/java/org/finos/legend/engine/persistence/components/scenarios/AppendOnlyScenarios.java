@@ -27,8 +27,12 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllV
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AppendOnlyScenarios extends BaseTest
 {
@@ -258,6 +262,31 @@ public class AppendOnlyScenarios extends BaseTest
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
             .filterExistingRecords(false)
             .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(digestUdf).digestField(digestField).addAllFieldsToExcludeFromDigest(Arrays.asList(id.name(), amount.name())).build())
+            .build();
+        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchema, ingestMode);
+    }
+
+    public TestScenario WITH_AUDITING__FAIL_ON_DUPS__ALL_VERSION__NO_FILTER_EXISTING_RECORDS__UDF_DIGEST_GENERATION__TYPE_CONVERSION_UDF()
+    {
+        Map<DataType, String> typeConversionUdfs = new HashMap<>();
+        typeConversionUdfs.put(DataType.DOUBLE, "doubleToString");
+        typeConversionUdfs.put(DataType.DATE, "dateToString");
+
+        AppendOnly ingestMode = AppendOnly.builder()
+            .deduplicationStrategy(FailOnDuplicates.builder().build())
+            .versioningStrategy(AllVersionsStrategy.builder()
+                .versioningField(bizDateField)
+                .dataSplitFieldName(dataSplitField)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
+                .performStageVersioning(true)
+                .build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
+            .filterExistingRecords(false)
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder()
+                .digestUdfName(digestUdf)
+                .putAllTypeConversionUdfNames(typeConversionUdfs)
+                .digestField(digestField)
+                .addAllFieldsToExcludeFromDigest(Collections.singletonList(id.name())).build())
             .build();
         return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchema, ingestMode);
     }

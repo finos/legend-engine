@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.relational.h2.sqldom.schemaops.values;
+package org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schemaops.values;
 
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
-import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Value;
 
 import java.util.ArrayList;
@@ -51,7 +50,6 @@ public class ToArrayFunction extends Value
     @Override
     public void genSqlWithoutAlias(StringBuilder builder) throws SqlDomException
     {
-        builder.append(Clause.ARRAY.get());
         builder.append(OPEN_SQUARE_BRACKET);
         if (values != null)
         {
