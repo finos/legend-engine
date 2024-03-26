@@ -96,7 +96,7 @@ function <<access.private>> meta::pure::lineage::scanColumns::scanColumns(p:Prop
                              |
                                 let nClassToSets = if($classToSets->keys()->contains($cl), |$classToSets, | $classToSets->keyValues()->concatenate(pair($cl, list($m->_classMappingByClass($cl)->map(s|$s->resolveOperation($m)))))->newMap());
                                 let nsets = $nClassToSets->get($cl).values;
-                                $p.children->map(c|$c->scanColumns($m, $sets->concatenate($nsets)->removeDuplicates({a,b|$a.id == $b.id}), $nClassToSets, $idToSet, false, ^$debug(space=$debug.space+'    ')));,
+                                $p.children->map(c|$c->scanColumns($m, $sets->concatenate($nsets)->removeDuplicatesBy(x | $x.id), $nClassToSets, $idToSet, false, ^$debug(space=$debug.space+'    ')));,
                              |
                                 $p.children->map(c|$c->scanColumns($m, $sets, $classToSets, $idToSet, false, ^$debug(space=$debug.space+'    '))););,
                      a :Any[1]|

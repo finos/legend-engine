@@ -486,8 +486,8 @@ function meta::pure::router::clustering::storeContractForSetImplementation(setIm
          pair($storeContract, $mapping->resolveStore($store));,
       o: meta::pure::mapping::OperationSetImplementation[1]|
          let roots = $o->resolveInstanceSetImplementations();
-         let storeContract = $roots->map(r|$extensions->meta::pure::extension::storeContractForSetImplementation($r))->removeDuplicates(x|$x.id,{a,b|$a==$b})->toOne();
-         let store = $roots->map(r|$mapping->resolveStore($storeContract.resolveStoreFromSetImplementation->toOne()->eval($r)))->removeDuplicates(x|$x->elementToPath(),{a,b|$a==$b})->toOne();
+         let storeContract = $roots->map(r|$extensions->meta::pure::extension::storeContractForSetImplementation($r))->removeDuplicatesBy(x|$x.id)->toOne();
+         let store = $roots->map(r|$mapping->resolveStore($storeContract.resolveStoreFromSetImplementation->toOne()->eval($r)))->removeDuplicatesBy(x|$x->elementToPath())->toOne();
          pair($storeContract, $mapping->resolveStore($store));
   ]);
 }
