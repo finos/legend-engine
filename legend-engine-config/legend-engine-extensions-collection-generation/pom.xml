@@ -479,6 +479,13 @@
         </dependency>
         <!-- Dataspace -->
 
+        <!-- FunctionActivator -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-functionActivator-generation</artifactId>
+        </dependency>
+        <!-- FunctionActivator -->
+
         <!-- Snowflake App -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
