@@ -1,9 +1,0 @@
-{
-  "name": "core_mastery",
-  "pattern": "(meta::pure::mastery)(::.*)?",
-  "dependencies": [
-    "platform",
-    "platform_functions",
-    "core_service"
-  ]
-}
