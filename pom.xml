@@ -98,7 +98,6 @@
         <module>legend-engine-xts-analytics</module>
 
         <!-- Application -->
-        <module>legend-engine-xts-mastery</module>
         <module>legend-engine-application-query</module>
     </modules>
 
@@ -1388,22 +1387,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-persistence-test-runner</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-mastery-protocol</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-mastery-grammar</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-mastery-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

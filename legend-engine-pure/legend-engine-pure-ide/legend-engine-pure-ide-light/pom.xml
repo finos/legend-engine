@@ -39,25 +39,25 @@
             </resource>
         </resources>
         <plugins>
-            <plugin>
-                <groupId>com.googlecode.maven-download-plugin</groupId>
-                <artifactId>download-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>download-web-content</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>wget</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <skip>${skip.yarn}</skip>
-                    <url>${pure-ide.web-application.url}</url>
-                    <unpack>true</unpack>
-                    <outputDirectory>${project.build.directory}/web-content</outputDirectory>
-                </configuration>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>com.googlecode.maven-download-plugin</groupId>-->
+<!--                <artifactId>download-maven-plugin</artifactId>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>download-web-content</id>-->
+<!--                        <phase>initialize</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>wget</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--                <configuration>-->
+<!--                    <skip>${skip.yarn}</skip>-->
+<!--                    <url>${pure-ide.web-application.url}</url>-->
+<!--                    <unpack>true</unpack>-->
+<!--                    <outputDirectory>${project.build.directory}/web-content</outputDirectory>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
