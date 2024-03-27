@@ -574,6 +574,7 @@ public class DomainParseTreeWalker
             ValueSpecification valueSpecification = parser.parsePrimitiveValue(expectedValue, serviceParamSourceInformation, null);
             EqualTo equalToAssertion = new EqualTo();
             equalToAssertion.expected = valueSpecification;
+            equalToAssertion.sourceInformation = walkerSourceInformation.getSourceInformation(functionTestSuiteContext.primitiveValue());
             assertion = equalToAssertion;
         }
         assertion.id = DEFAULT_TESTABLE_ID;
