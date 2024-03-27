@@ -117,9 +117,6 @@ public class TestFreeMarkerExecutor
         rootMap.put("C3", "${C4}");
         rootMap.put("C4", "C4");
         rootMap.put("D", "abcd<@efg");
-        //should fail in the old flow (since old flow processes placeholder with specialcharacter value twice, causing it to fail
-        Assert.assertThrows(RuntimeException.class, () -> processRecursivelyWithFlagSwitching(sql, rootMap, "", "this is A1 and B2 and C4 placeholders and abcd<@efg with special characters."));
-        System.clearProperty(overridePropertyForTemplateModel);
         //processing should pass with new flow since it allows placeholder to process only once and avoid this issue.
         Assert.assertEquals("this is A1 and B2 and C4 placeholders and abcd<@efg with special characters.", processRecursively(sql, rootMap, ""));
     }

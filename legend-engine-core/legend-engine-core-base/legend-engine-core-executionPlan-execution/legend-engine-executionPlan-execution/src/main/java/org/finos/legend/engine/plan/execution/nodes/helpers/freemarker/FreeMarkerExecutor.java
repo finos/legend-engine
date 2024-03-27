@@ -126,15 +126,7 @@ public class FreeMarkerExecutor
 
     public static String processRecursively(String input, Map<String, ?> variableMap, String templateFunctions)
     {
-        boolean overrideTemplateModelFlag = Boolean.valueOf(System.getProperty(overridePropertyForTemplateModel));
-        if (!overrideTemplateModelFlag)
-        {
-            return process(input, new TemplateHashModelOverride(variableMap, templateFunctions), templateFunctions);
-        }
-        else
-        {
-            return recur(input, variableMap, templateFunctions);
-        }
+        return process(input, new TemplateHashModelOverride(variableMap, templateFunctions), templateFunctions);   
     }
 
     private static String recur(String input, Map<String,?> variableMap, String templateFunctions)
