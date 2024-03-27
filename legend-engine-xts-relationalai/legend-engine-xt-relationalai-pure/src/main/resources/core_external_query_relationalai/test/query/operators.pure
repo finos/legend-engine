@@ -1,0 +1,639 @@
+import meta::external::store::rel::test::query::*;
+import meta::external::store::rel::test::query::util::*;
+import meta::external::store::rel::mapping::*;
+import meta::external::store::rel::mapping::schema::*;
+import meta::external::store::rel::metamodel::store::*;
+import meta::external::store::rel::runtime::*;
+import meta::external::store::rel::test::query::models::testmodel::*;
+import meta::external::store::rel::utils::assert::*;
+
+// Basic test query.
+function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryAll(): Any[*] {
+  let schema = RAITestSchema()->includeSingleClass(TestRootClass);
+
+  let rai = $schema->TestConnection();
+
+  /*
+   * Expected intermediate PExpr is:
+   * All(meta_rel_test_query_models_testmodel_TestRootClass)
+   */
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({| TestRootClass.all() })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def output[:query](x) = TestRootClass(x)',
+      'def output[:property1] = TestRootClass:property1[x] for x where output[:query](x)',
+      'def output[:property3] = TestRootClass:property3[x] for x where output[:query](x)',
+      'def output[:property5] = TestRootClass:property5[x] for x where output[:query](x)'
+    ],
+    $transpiledQuery
+  );
+}
+
+// Basic map query.
+function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryMap(): Any[*] {
+  let schema = RAITestSchema()->includeFromClassProperties(TestRootClass);
+
+  let rai = $schema->TestConnection();
+
+/*
+
+Filter(
+  Map(
+    Map(
+      All(meta_rel_test_query_models_testmodel_TestRootClass),
+      ScopeUntyped(
+        PropertyAccess(
+          SetAccess(meta_rel_test_query_models_testmodel_TestRootClass, r),
+          property4,
+          meta_rel_test_query_models_testmodel_TestRootClass),
+        r
+      )
+    ),
+    ScopeUntyped(
+      PropertyAccess(
+        SetAccess(meta_rel_test_query_models_testmodel_TestClassB, b),
+        propertyB,
+        meta_rel_test_query_models_testmodel_TestClassB
+      ),
+      b
+    )
+  ),
+  ScopeUntyped(
+    Function(
+      meta$rel$compile$ir$getFunctionExpr$29$system$imports$import__core_external_query_relationalai_compile_ir_translation_pure_1$79,
+      Function(
+        meta$rel$compile$ir$getFunctionExpr$29$system$imports$import__core_external_query_relationalai_compile_ir_translation_pure_1$79,
+        PropertyAccess(
+          SetAccess(meta_rel_test_query_models_testmodel_TestClassC, c),
+          propertyC1,
+          meta_rel_test_query_models_testmodel_TestClassC
+        )
+      )
+    ),
+    c
+  )
+)
+
+*/
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        TestRootClass.all()->map(r | $r.property4)->map(b | $b.propertyB)->filter(c | $c.propertyC1 != '')
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def output[:query](x) = (x3 in TestClassB:propertyB[x2] from x2 in TestRootClass:property4[x1] from x1 in TestRootClass: not TestClassC:propertyC1[x3] = "")(x)',
+      'def output[:propertyC1] = TestClassC:propertyC1[x] for x where output[:query](x)',
+      'def output[:propertyC2] = TestClassC:propertyC2[x] for x where output[:query](x)'
+    ],
+    $transpiledQuery
+  );
+}
+
+// Basic test of multi-level map.
+function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryMapMultiLevel(): Any[*] {
+  let schema = RAITestSchema()->includeFromClassProperties(TestRootClass);
+
+  let rai = $schema->TestConnection();
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        TestRootClass.all()->map(w | $w.property4.propertyB )
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def output[:query](x) = TestClassB:propertyB[x2] from x2 in TestRootClass:property4[x1] from x1 in TestRootClass(x)',
+      'def output[:propertyC1] = TestClassC:propertyC1[x] for x where output[:query](x)',
+      'def output[:propertyC2] = TestClassC:propertyC2[x] for x where output[:query](x)'
+    ],
+    $transpiledQuery
+  );
+}
+
+// Basic test of 'at'.
+function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryAt(): Any[*] {
+  let schema = RAITestSchema()->includeSingleClass(TestRootClass);
+
+  let rai = $schema->TestConnection();
+
+  /*
+   * Expected intermediate PExpr is:
+   *
+   * At(
+   *   Map(
+   *     All(meta_rel_test_query_models_testmodel_TestRootClass),
+   *     ScopeUntyped(
+   *       PropertyAccess(
+   *         SetAccess(meta_rel_test_query_models_testmodel_TestRootClass, h),
+   *         property5,
+   *         meta_rel_test_query_models_testmodel_TestRootClass
+   *       ),
+   *       h
+   *     )
+   *   ),
+   *   5
+   * )
+   *
+   */
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        TestRootClass.all()->map(h | $h.property5)->at(5)
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def output = (TestRootClass:property5[x1] from x1 in TestRootClass)[5]'
+    ],
+    $transpiledQuery
+  );
+}
+
+// Test of 'at' after a multi-level map.
+function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryMapMultiLevelAt(): Any[*] {
+  let schema = RAITestSchema()->includeFromClassProperties(TestRootClass);
+
+  let rai = $schema->TestConnection();
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        TestRootClass.all()->map(w | $w.property4.propertyB.propertyC2 )->at(0)
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def output = (TestClassC:propertyC2[x3] from x3 in TestClassB:propertyB[x2] from x2 in TestRootClass:property4[x1] from x1 in TestRootClass)[0]'
+    ],
+    $transpiledQuery
+  );
+}
+
+// Basic project test.
+function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryProject(): Any[*] {
+  let schema = RAITestSchema()->includeSingleClass(TestRootClass);
+
+  let rai = $schema->TestConnection();
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        TestRootClass.all()->project([
+          x|$x.property1,
+          x|$x.property3,
+          x|$x.property5 ],
+          [ 'PropertyOne', 'PropertyThree', 'PropertyFive' ]
+        )
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def tbl1[:base] = x from x in TestRootClass',
+      'def tbl1[:PropertyOne, x] = tbl1(:base, x), TestRootClass:property1[x]',
+      'def tbl1[:PropertyThree, x] = tbl1(:base, x), TestRootClass:property3[x]',
+      'def tbl1[:PropertyFive, x] = tbl1(:base, x), TestRootClass:property5[x]',
+      'def output = tbl1[:PropertyOne, i], tbl1[:PropertyThree, i], tbl1[:PropertyFive, i] from i'
+    ],
+    $transpiledQuery
+  );
+}
+
+// Basic project with restricrt test.
+function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryProjectRestrict(): Any[*] {
+  let schema = RAITestSchema()->includeSingleClass(TestRootClass);
+
+  let rai = $schema->TestConnection();
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        TestRootClass.all()->project([
+          x|$x.property1,
+          x|$x.property3,
+          x|$x.property5 ],
+          [ 'PropertyOne', 'PropertyThree', 'PropertyFive' ]
+        )
+        ->restrict(
+          [ 'PropertyOne', 'PropertyFive' ]
+        )
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def tbl1[:base] = x from x in TestRootClass',
+      'def tbl1[:PropertyOne, x] = tbl1(:base, x), TestRootClass:property1[x]',
+      'def tbl1[:PropertyFive, x] = tbl1(:base, x), TestRootClass:property5[x]',
+      'def output = tbl1[:PropertyOne, i], tbl1[:PropertyFive, i] from i'
+    ],
+    $transpiledQuery
+  );
+}
+
+// Basic multi-level project test.
+function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryProjectMultiLevel(): Any[*] {
+  let schema = RAITestSchema()->includeFromClassProperties(TestRootClass);
+
+  let rai = $schema->TestConnection();
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        TestRootClass.all()->project([
+          x|$x.property1,
+          x|$x.property3,
+          x|$x.property5,
+          x|$x.property2.propertyA1.propertyAA1.propertyAAA1.propertyAAAA1,
+          x|$x.property2.propertyA1.propertyAA1.propertyAAA2,
+          x|$x.property2.propertyA2.propertyAB1.propertyABA ],
+          [ 'PropertyOne', 'PropertyThree', 'PropertyFive', 'PropertyPath1', 'PropertyPath2', 'PropertyPath3' ]
+        )
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def tbl1[:base] = x from x in TestRootClass',
+      'def tbl1[:PropertyOne, x] = tbl1(:base, x), TestRootClass:property1[x]',
+      'def tbl1[:PropertyThree, x] = tbl1(:base, x), TestRootClass:property3[x]',
+      'def tbl1[:PropertyFive, x] = tbl1(:base, x), TestRootClass:property5[x]',
+      'def tbl1[:PropertyPath1, x] = tbl1(:base, x), TestClassAAAA:propertyAAAA1[x4] from x4 in TestClassAAA:propertyAAA1[x3] from x3 in TestClassAA:propertyAA1[x2] from x2 in TestClassA:propertyA1[x1] from x1 in TestRootClass:property2[x]',
+      'def tbl1[:PropertyPath2, x] = tbl1(:base, x), TestClassAAA:propertyAAA2[x7] from x7 in TestClassAA:propertyAA1[x6] from x6 in TestClassA:propertyA1[x5] from x5 in TestRootClass:property2[x]',
+      'def tbl1[:PropertyPath3, x] = tbl1(:base, x), TestClassABA:propertyABA[x10] from x10 in TestClassAB:propertyAB1[x9] from x9 in TestClassA:propertyA2[x8] from x8 in TestRootClass:property2[x]',
+      'def output = tbl1[:PropertyOne, i], tbl1[:PropertyThree, i], tbl1[:PropertyFive, i], tbl1[:PropertyPath1, i], tbl1[:PropertyPath2, i], tbl1[:PropertyPath3, i] from i'
+    ],
+    $transpiledQuery
+  );
+}
+
+// Basic multi-level project test with 'at' along a multihop path.
+function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryProjectMultiLevelWithAt(): Any[*] {
+  let schema = RAITestSchema()->includeFromClassProperties(TestRootClass);
+
+  let rai = $schema->TestConnection();
+
+  /*
+   * Expected intermediate PExpr is:
+   *
+   * Project(
+   *   All(meta_external_store_rel_test_query_models_testmodel_TestRootClass),
+   *   [
+   *     Projection(
+   *       PropertyOne,
+   *       ScopeUntyped(
+   *         x,
+   *         PropertyAccess(SetAccess(meta_external_store_rel_test_query_models_testmodel_TestRootClass, x), property1, meta_external_store_rel_test_query_models_testmodel_TestRootClass)
+   *       )
+   *     ),
+   *     Projection(
+   *       PropertyPath1,
+   *       ScopeUntyped(
+   *         x,
+   *         Map(
+   *           PropertyAccess(
+   *             At(
+   *               Map(
+   *                 Map(
+   *                   PropertyAccess(VariablePlaceholder(x), property2, meta_external_store_rel_test_query_models_testmodel_TestRootClass),
+   *                   ScopeUntyped(
+   *                     v_automap,
+   *                     PropertyAccess(VariablePlaceholder(v_automap), propertyA1, meta_external_store_rel_test_query_models_testmodel_TestClassA)
+   *                   )
+   *                 ),
+   *                 ScopeUntyped(v_automap, PropertyAccess(VariablePlaceholder(v_automap), propertyAA2, meta_external_store_rel_test_query_models_testmodel_TestClassAA))
+   *               ), 
+   *               3
+   *             ),
+   *             propertyAAA1,
+   *             meta_external_store_rel_test_query_models_testmodel_TestClassAAA
+   *           ),
+   *           ScopeUntyped(
+   *             v_automap,
+   *             PropertyAccess(VariablePlaceholder(v_automap), propertyAAAA1, meta_external_store_rel_test_query_models_testmodel_TestClassAAAA)
+   *           )
+   *         )
+   *       )
+   *     ),
+   *     Projection(
+   *       PropertyPath2,
+   *       ScopeUntyped(
+   *         x,
+   *         Map(
+   *           Map(
+   *             Map(
+   *               PropertyAccess(VariablePlaceholder(x), property2, meta_external_store_rel_test_query_models_testmodel_TestRootClass),
+   *               ScopeUntyped(
+   *                 v_automap,
+   *                 PropertyAccess(VariablePlaceholder(v_automap), propertyA1, meta_external_store_rel_test_query_models_testmodel_TestClassA)
+   *               )
+   *             ),
+   *             ScopeUntyped(
+   *               v_automap,
+   *               PropertyAccess(VariablePlaceholder(v_automap), propertyAA1, meta_external_store_rel_test_query_models_testmodel_TestClassAA)
+   *             )
+   *           ),
+   *           ScopeUntyped(
+   *             v_automap,
+   *             PropertyAccess(VariablePlaceholder(v_automap), propertyAAA2, meta_external_store_rel_test_query_models_testmodel_TestClassAAA)
+   *           )
+   *         )
+   *       )
+   *     )
+   *   ]
+   * )
+   */
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        TestRootClass.all()->project([
+          x|$x.property1,
+          x|$x.property2.propertyA1.propertyAA2->at(3).propertyAAA1.propertyAAAA1,
+          x|$x.property2.propertyA1.propertyAA1.propertyAAA2 ],
+          [ 'PropertyOne', 'PropertyPath1', 'PropertyPath2' ]
+        )
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def tbl1[:base] = x from x in TestRootClass',
+      'def tbl1[:PropertyOne, x] = tbl1(:base, x), TestRootClass:property1[x]',
+      'def tbl1[:PropertyPath1, x] = tbl1(:base, x), TestClassAAAA:propertyAAAA1[x3] from x3 in TestClassAAA:propertyAAA1[(TestClassAA:propertyAA2[x2] from x2 in TestClassA:propertyA1[x1] from x1 in TestRootClass:property2[x])[3]]',
+      'def tbl1[:PropertyPath2, x] = tbl1(:base, x), TestClassAAA:propertyAAA2[x6] from x6 in TestClassAA:propertyAA1[x5] from x5 in TestClassA:propertyA1[x4] from x4 in TestRootClass:property2[x]',
+      'def output = tbl1[:PropertyOne, i], tbl1[:PropertyPath1, i], tbl1[:PropertyPath2, i] from i'
+    ],
+    $transpiledQuery
+  );
+}
+
+// Basic test of cast operator.
+function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryCast(): Any[*] {
+  let schema = RAITestSchema()->includeEverythingFrom(TestRootClass);
+
+  let rai = $schema->TestConnection();
+
+  /*
+   * Expected intermediate PExpr is:
+   *
+   * Map(
+   *   All(meta_rel_test_query_models_testmodel_TestRootClass),
+   *   ScopeUntyped(
+   *     Cast(
+   *       PropertyAccess(
+   *         SetAccess(meta_rel_test_query_models_testmodel_TestRootClass, x),
+   *         property6,
+   *         meta_rel_test_query_models_testmodel_TestRootClass
+   *       ),
+   *       meta_rel_test_query_models_testmodel_TestSubClass
+   *     ),
+   *     x
+   *   )
+   * )
+   *
+   */
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+          TestRootClass.all()->map(x |
+            $x.property6->cast(@TestSubClass)
+          )
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def output[:query](x) = (x2 in TestSubClass: TestRootClass:property6[x1][x2]) from x1 in TestRootClass(x)',
+      'def output[:propertySub] = TestSubClass:propertySub[x] for x where output[:query](x)',
+      'def output[:propertySuper] = TestSuperClass:propertySuper[x] for x where output[:query](x)'
+    ],
+    $transpiledQuery
+  );
+}
+
+function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryProjectMultiLevelWithAtSimple1(): Any[*] {
+  let schema = RAITestSchema()->includeFromClassProperties(TestClassAA);
+
+  let rai = $schema->TestConnection();
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        TestClassAA.all()->project([
+          x|$x.propertyAA2->at(3).propertyAAA2 ],
+          [ 'PropertyPath1' ]
+        )
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def tbl1[:base] = x from x in TestClassAA',
+      'def tbl1[:PropertyPath1, x] = tbl1(:base, x), TestClassAAA:propertyAAA2[TestClassAA:propertyAA2[x][3]]',
+      'def output = tbl1[:PropertyPath1, i] from i'
+    ],
+    $transpiledQuery
+  );
+}
+
+function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryProjectMultiLevelWithAtSimple2(): Any[*] {
+  let schema = RAITestSchema()->includeFromClassProperties(TestClassA);
+
+  let rai = $schema->TestConnection();
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        TestClassA.all()->project([
+          x|$x.propertyA1.propertyAA2->at(3) ],
+          [ 'PropertyPath1' ]
+        )
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def tbl1[:base] = x from x in TestClassA',
+      'def tbl1[:PropertyPath1, x] = tbl1(:base, x), (TestClassAA:propertyAA2[x1] from x1 in TestClassA:propertyA1[x])[3]',
+      'def output = tbl1[:PropertyPath1, i] from i'
+    ],
+    $transpiledQuery
+  );
+}
+
+function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryProjectMultiLevelWithAtSimple3(): Any[*] {
+  let schema = RAITestSchema()->includeFromClassProperties(TestClassA);
+
+  let rai = $schema->TestConnection();
+
+  /*
+   * Expected intermediate PExpr is:
+   *
+   * Project(
+   *   All(meta_external_store_rel_test_query_models_testmodel_TestClassA),
+   *   [
+   *     Projection(
+   *       PropertyPath1,
+   *       ScopeUntyped(
+   *         x,
+   *         PropertyAccess(
+   *           At(
+   *             Map(
+   *               PropertyAccess(
+   *                 SetAccess(meta_external_store_rel_test_query_models_testmodel_TestClassA, x),
+   *                 propertyA1,
+   *                 meta_external_store_rel_test_query_models_testmodel_TestClassA
+   *               ),
+   *               ScopeUntyped(
+   *                 v_automap,
+   *                 PropertyAccess(VariablePlaceholder(v_automap), propertyAA2, meta_external_store_rel_test_query_models_testmodel_TestClassAA)
+   *               )
+   *             ),
+   *             3
+   *           ),
+   *           propertyAAA2,
+   *           meta_external_store_rel_test_query_models_testmodel_TestClassAAA
+   *         )
+   *       )
+   *     )
+   *   ]
+   * )
+   */
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        TestClassA.all()->project([
+          x|$x.propertyA1.propertyAA2->at(3).propertyAAA2 ],
+          [ 'PropertyPath1' ]
+        )
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def tbl1[:base] = x from x in TestClassA',
+      'def tbl1[:PropertyPath1, x] = tbl1(:base, x), TestClassAAA:propertyAAA2[(TestClassAA:propertyAA2[x1] from x1 in TestClassA:propertyA1[x])[3]]',
+      'def output = tbl1[:PropertyPath1, i] from i'
+    ],
+    $transpiledQuery
+  );
+}
+
+function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryProjectNestedIn(): Any[*] {
+  let schema = RAITestSchema()->includeFromClassProperties(TestRootClass);
+
+  let rai = $schema->TestConnection();
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        TestRootClass.all()->project([
+          x|$x.property2.propertyA3->in(['apple','orange','pear']) ],
+          [ 'PropertyPath1' ]
+        )
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def tbl1[:base] = x from x in TestRootClass',
+      'def tbl1[:PropertyPath1, x] = tbl1(:base, x), empty(intersect[(TestClassA:propertyA3[x1] from x1 in TestRootClass:property2[x]), ("apple"; "orange"; "pear")])',
+      'def output = tbl1[:PropertyPath1, i] from i'
+    ],
+    $transpiledQuery
+  );
+}
+
+function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryJoinRestrict(): Any[*] {
+  let schema = RAITestSchema()->includeSingleClass(TestClassC)->includeSingleClass(TestClassD);
+
+  let rai = $schema->TestConnection();
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        TestClassC.all()->project(
+          [
+            x | $x.propertyC1,
+            x | $x.propertyC2
+          ],
+          [
+            'ColC1',
+            'ColC2'
+          ]
+        )->join(
+          TestClassD.all()->project(
+            [
+              x | $x.propertyD1,
+              x | $x.propertyD2,
+              x | $x.propertyD3,
+              x | $x.propertyD4,
+              x | $x.propertyD5
+            ],
+            [
+              'ColD1',
+              'ColD2',
+              'ColD3',
+              'ColD4',
+              'ColD5'
+            ]
+          ),
+          meta::relational::metamodel::join::JoinType.INNER,
+          {
+            row1: TDSRow[1],row2: TDSRow[1] |
+              ($row1.getString('ColC1') == $row2.getString('ColD1')) &&
+              ($row1.getInteger('ColC2') == $row2.getInteger('ColD3')) 
+          }
+        )
+        ->restrict(
+          [
+            // Here we project out column ColC2 and ColD1 which were used in the join. 
+            'ColC1',
+            'ColD2',
+            'ColD3',
+            'ColD4',
+            'ColD5'
+          ]
+        )
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def tbl1[:base] = x from x in TestClassC',
+      'def tbl1[:ColC1, x] = tbl1(:base, x), TestClassC:propertyC1[x]',
+      'def tbl1[:ColC2, x] = tbl1(:base, x), TestClassC:propertyC2[x]',
+      'def tbl2[:base] = x from x in TestClassD',
+      'def tbl2[:ColD1, x] = tbl2(:base, x), TestClassD:propertyD1[x]',
+      'def tbl2[:ColD2, x] = tbl2(:base, x), TestClassD:propertyD2[x]',
+      'def tbl2[:ColD3, x] = tbl2(:base, x), TestClassD:propertyD3[x]',
+      'def tbl2[:ColD4, x] = tbl2(:base, x), TestClassD:propertyD4[x]',
+      'def tbl2[:ColD5, x] = tbl2(:base, x), TestClassD:propertyD5[x]',
+      'def tbl3[:base] = sort[(tbl1[:ColC1, i] = tbl2[:ColD1, j]) and (tbl1[:ColC2, i] = tbl2[:ColD3, j]) for i, j]',
+      'def tbl3[:ColC1] = k, tbl1[:ColC1, i], tbl3[:base, k, i, _] from i, k',
+      'def tbl3[:ColD2] = k, tbl2[:ColD2, i], tbl3[:base, k, _, i] from i, k',
+      'def tbl3[:ColD3] = k, tbl2[:ColD3, i], tbl3[:base, k, _, i] from i, k',
+      'def tbl3[:ColD4] = k, tbl2[:ColD4, i], tbl3[:base, k, _, i] from i, k',
+      'def tbl3[:ColD5] = k, tbl2[:ColD5, i], tbl3[:base, k, _, i] from i, k',
+      'def output = tbl3[:ColC1, i], tbl3[:ColD2, i], tbl3[:ColD3, i], tbl3[:ColD4, i], tbl3[:ColD5, i] from i'
+    ],
+    $transpiledQuery
+  );
+}

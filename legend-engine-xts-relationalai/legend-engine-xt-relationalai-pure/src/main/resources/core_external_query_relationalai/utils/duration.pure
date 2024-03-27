@@ -1,0 +1,12 @@
+
+/*
+ * Measuring the time a functin takes (for development purposes).
+ */
+function meta::external::store::rel::utils::reportDuration<T|n>(message: String[1], f: FunctionDefinition<{->T[n]}>[1]): T[n] {
+  let timeBegin = now();
+  let result = $f->eval();
+  let timeEnd = now();
+  let duration = $timeBegin->dateDiff($timeEnd, DurationUnit.MILLISECONDS);
+  println(format('%s took: %s milliseconds', [$message, $duration]));
+  $result;
+}

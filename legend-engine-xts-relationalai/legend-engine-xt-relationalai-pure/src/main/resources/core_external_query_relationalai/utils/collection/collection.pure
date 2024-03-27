@@ -1,5 +1,5 @@
-import meta::external::store::rel::utils::collection::*;
 import meta::external::store::rel::utils::*;
+import meta::external::store::rel::utils::collection::*;
 
 Class meta::external::store::rel::utils::collection::BiMap<K, V> {
   to: Map<K, V>[1];

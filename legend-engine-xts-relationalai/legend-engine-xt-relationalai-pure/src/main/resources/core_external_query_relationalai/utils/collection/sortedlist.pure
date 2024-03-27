@@ -1,0 +1,141 @@
+import meta::external::store::rel::utils::collection::*;
+import meta::pure::functions::boolean::*;
+
+Class meta::external::store::rel::utils::collection::SortedList<T> {
+  <<equality.Key>> elements: T[*];
+}
+
+function meta::external::store::rel::utils::collection::sortedList<T>(elements: T[*]): SortedList<T>[1] {
+  ^SortedList<T>(elements=$elements)
+}
+
+function <<access.private>> meta::external::store::rel::utils::collection::binarySearch<T>(list: T[*], element: T[1]): Integer[1] {
+  binarySearch($list, $element, 0, $list->size() - 1);
+}
+
+function <<access.private>> meta::external::store::rel::utils::collection::binarySearch<T>(list: T[*], x: T[1], left: Integer[1], right: Integer[1]): Integer[1] {
+  assert(($left >= 0) && ($right >= -1), 'Left and right index must be within the legal range.');
+  /*
+   * Imperative version of the algorithm:
+   *
+   * L := 0
+   * R := n − 1
+   * while L <= R do
+   *     m := floor((L + R) / 2)
+   *     if A[m] < T then
+   *         L := m + 1
+   *     else if A[m] > T then
+   *         R := m − 1
+   *     else:
+   *         return m
+   * return -1
+   */
+  if ( $left > $right,
+     {|
+       /*
+        * In the case where the element is not found, return a negative number.
+        * This value will always be negative because left >= 0.
+        * Furthermore, if `element` had been present in the list then it would have been at
+        * index `left`. Hence the caller can use the returned value to determine the index
+        * at which to insert `element` into the list.
+        */
+       -($left+1);
+     },
+     {|
+       let mid = floor(($left + $right) / 2);
+       let candidate = $list->at($mid);
+       let cmp = $candidate->compare($x);
+       if ( $cmp == 0,
+          | $mid,
+          | if ( $cmp < 0,
+               | binarySearch($list, $x, $mid + 1, $right),
+               | binarySearch($list, $x, $left, $mid - 1)
+               )
+          );
+     });
+}
+
+function meta::external::store::rel::utils::collection::size<T>(list: SortedList<T>[1]): Integer[1] {
+  $list.elements->size()
+}
+
+function meta::external::store::rel::utils::collection::insert<T>(list: SortedList<T>[1], element: T[1]): SortedList<T>[1] {
+  /*
+   * Use the value returned by `binarySearch` to determine the index at which to insert `element`.
+   */
+  let hitIndex = $list.elements->binarySearch($element);
+  if ( $hitIndex < 0,
+     | ^SortedList<T>(elements=$list.elements->add(-$hitIndex-1, $element)),
+     | $list
+     );
+}
+
+function meta::external::store::rel::utils::collection::remove<T>(list: SortedList<T>[1], element: T[1]): SortedList<T>[1] {
+  let hitIndex = $list.elements->binarySearch($element);
+  if ( $hitIndex < 0,
+     | $list,
+     | ^SortedList<T>(elements=$list.elements->slice(0, $hitIndex)->concatenate($list.elements->slice($hitIndex+1, $list->size())))
+     );
+}
+
+function meta::external::store::rel::utils::collection::filterList<T>(list: SortedList<T>[1], func: Function<{T[1]->Boolean[1]}>[1]): SortedList<T>[1] {
+  ^SortedList<T>(elements=$list.elements->filter($func))
+}
+
+function meta::external::store::rel::utils::collection::contains<T>(list: SortedList<T>[1], element: T[1]): Boolean[1] {
+  $list.elements->binarySearch($element) >= 0
+}
+
+function meta::external::store::rel::utils::collection::describe<T>(list: SortedList<T>[1]): String[1] {
+  $list.elements->makeString('[', ', ', ']');
+}
+
+function <<test.Test>> meta::external::store::rel::utils::collection::testContains(): Any[*] {
+  let list = sortedList(['a', 'b', 'c', 'e', 'f', 'g']);
+  let emptyList = sortedList([]);
+
+  assertEquals($list->contains('a'), true);
+  assertEquals($list->contains('y'), false);
+  assertEquals($list->contains('d'), false);
+
+  assertEquals($emptyList->contains('d'), false);
+}
+
+function <<test.Test>> meta::external::store::rel::utils::collection::testInsert(): Any[*] {
+  let list = sortedList(['a', 'b', 'c', 'e', 'f', 'g', 'z']);
+
+  assertEquals(
+    $list->insert('y'),
+    sortedList(['a', 'b', 'c', 'e', 'f', 'g', 'y', 'z'])
+  );
+  assertEquals(
+    $list->insert('y')->insert('d'),
+    sortedList(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'y', 'z'])
+  );
+  assertEquals(
+    $list->insert('y')->insert('d')->insert('a'),
+    sortedList(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'y', 'z'])
+  );
+}
+
+function <<test.Test>> meta::external::store::rel::utils::collection::testDescribe(): Any[*] {
+  let list = sortedList(['a', 'b', 'c', 'e', 'f', 'g', 'z']);
+  assertEquals($list->describe(), '[a, b, c, e, f, g, z]');
+}
+
+function <<test.Test>> meta::external::store::rel::utils::collection::testRemove(): Any[*] {
+  let list = sortedList(['a', 'b', 'c', 'e', 'f', 'g', 'z']);
+
+  assertEquals($list->remove('y'), $list);
+  assertEquals($list->remove('a'), sortedList(['b', 'c', 'e', 'f', 'g', 'z']));
+  assertEquals($list->remove('d')->remove('a'), sortedList(['b', 'c', 'e', 'f', 'g', 'z']));
+}
+
+
+function <<test.Test>> meta::external::store::rel::utils::collection::testFilter(): Any[*] {
+  let list = sortedList(['a', 'b', 'c', 'e', 'f', 'g', 'z']);
+
+  assertEquals($list->filterList(c | $c != 'y'), $list);
+  assertEquals($list->filterList(c | $c != 'a'), sortedList(['b', 'c', 'e', 'f', 'g', 'z']));
+  assertEquals($list->filterList(c | $c != 'd' && $c != 'a'), sortedList(['b', 'c', 'e', 'f', 'g', 'z']));
+}
