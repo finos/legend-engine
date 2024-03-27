@@ -27,18 +27,30 @@ import java.util.List;
 
 public class TableNameExtractor extends SqlBaseParserBaseVisitor<List<QualifiedName>>
 {
+    private final Boolean extractTables;
+    private final Boolean extractTableFunctions;
+
+    public TableNameExtractor() {
+        this(true, true);
+    }
+
+    public TableNameExtractor(Boolean extractTables, Boolean extractTableFunctions) {
+        this.extractTables = extractTables;
+        this.extractTableFunctions = extractTableFunctions;
+    }
+
     @Override
     public List<QualifiedName> visitTableName(SqlBaseParser.TableNameContext ctx)
     {
         QualifiedName qualifiedName = getQualifiedName(ctx.qname());
-        return Lists.fixedSize.with(qualifiedName);
+        return this.extractTables ? Lists.fixedSize.with(qualifiedName) : Lists.fixedSize.empty();
     }
 
     @Override
     public List<QualifiedName> visitTableFunction(SqlBaseParser.TableFunctionContext ctx)
     {
         QualifiedName qualifiedName = getQualifiedName(ctx.qname());
-        return Lists.fixedSize.with(qualifiedName);
+        return this.extractTableFunctions ? Lists.fixedSize.with(qualifiedName) : Lists.fixedSize.empty();
     }
 
     @Override
