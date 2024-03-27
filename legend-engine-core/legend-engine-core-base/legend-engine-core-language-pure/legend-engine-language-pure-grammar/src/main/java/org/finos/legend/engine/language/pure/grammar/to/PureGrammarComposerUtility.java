@@ -150,7 +150,7 @@ public class PureGrammarComposerUtility
         }
         else
         {
-            return UNQUOTED_IDENTIFIER_PATTERN.matcher(val).matches() ? val : convertString(val, true, doubleQuotes);
+            return convertString(val, true, doubleQuotes);
         }
     }
 
