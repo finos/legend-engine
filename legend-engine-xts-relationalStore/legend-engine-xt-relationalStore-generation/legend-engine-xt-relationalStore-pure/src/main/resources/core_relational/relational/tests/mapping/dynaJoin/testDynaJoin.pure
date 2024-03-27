@@ -44,7 +44,7 @@ function <<test.Test>> meta::relational::tests::mapping::dynajoin::testJoinWithA
    assertSize($result.values, 2);
    assertSameElements(['1','6'],$result.values->map(r |$r.id->toString()));
    assertSameElements([%2014-12-03,%2014-12-04],$result.values->map(r |$r.latestEventDate));
-   assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id and "tradeeventviewmaxtradeeventdate_0".trade_id in (1, 6)) where "root".ID in (1, 6)', $result->sqlRemoveFormatting());
+   assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id having "root".trade_id in (1, 6)) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id and "tradeeventviewmaxtradeeventdate_0".trade_id in (1, 6)) where "root".ID in (1, 6)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::dynajoin::testFilterOnJoinWithAggregateFunction():Boolean[1]
@@ -53,7 +53,7 @@ function <<test.Test>> meta::relational::tests::mapping::dynajoin::testFilterOnJ
    assertSize($result.values, 1);
    assertSameElements(['1'],$result.values->map(r |$r.id->toString() ));
    assertSameElements([%2014-12-03],$result.values->map(r |$r.latestEventDate));
-   assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id and "tradeeventviewmaxtradeeventdate_0".trade_id in (1, 6)) where ("root".ID in (1, 6) and "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate = \'2014-12-03\')', $result->sqlRemoveFormatting() );
+   assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id having "root".trade_id in (1, 6)) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id and "tradeeventviewmaxtradeeventdate_0".trade_id in (1, 6)) where ("root".ID in (1, 6) and "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate = \'2014-12-03\')', $result->sqlRemoveFormatting() );
 }
 
 function <<test.Test>> meta::relational::tests::mapping::dynajoin::testFilterOnJoinWithAggregateFunctionWithProject():Boolean[1]
@@ -70,7 +70,7 @@ function <<test.Test>> meta::relational::tests::mapping::dynajoin::testFilterOnJ
    assertSize($tds.rows, 2);
    assertEquals([1, %2014-12-03], $tds.rows->at(0).values);
    assertEquals([6, %2014-12-04], $tds.rows->at(1).values);
-   assertEquals('select "root".ID as "id", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id and "tradeeventviewmaxtradeeventdate_0".trade_id in (1, 6)) where "root".ID in (1, 6)', $result->sqlRemoveFormatting());
+   assertEquals('select "root".ID as "id", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id having "root".trade_id in (1, 6)) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id and "tradeeventviewmaxtradeeventdate_0".trade_id in (1, 6)) where "root".ID in (1, 6)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::dynajoin::testSelfJoinWithAggregateFunction():Boolean[1]
