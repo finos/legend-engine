@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-xts-flatdata</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.42.2</version>
+        <version>4.42.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
