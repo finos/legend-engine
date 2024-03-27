@@ -29,7 +29,7 @@
 
 
     <modules>
-        <module>legend-engine-xt-functionActivator-api</module>
+        <module>legend-engine-xt-functionActivator-http-api</module>
         <module>legend-engine-xt-functionActivator-deployment</module>
         <module>legend-engine-xt-functionActivator-protocol</module>
         <module>legend-engine-xt-functionActivator-pure</module>

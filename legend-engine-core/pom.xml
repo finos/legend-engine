@@ -32,6 +32,6 @@
         <module>legend-engine-core-pure</module>
         <module>legend-engine-core-testable</module>
         <module>legend-engine-core-external-format</module>
-        <module>legend-engine-core-query-pure-rest</module>
+        <module>legend-engine-core-query-pure-http-api</module>
     </modules>
 </project>

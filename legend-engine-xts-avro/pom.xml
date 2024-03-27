@@ -31,6 +31,6 @@
     <modules>
         <module>legend-engine-xt-avro</module>
         <module>legend-engine-xt-avro-pure</module>
-        <module>legend-engine-xt-avro-api</module>
+        <module>legend-engine-xt-avro-http-api</module>
     </modules>
 </project>

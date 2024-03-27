@@ -310,12 +310,12 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-sql-query</artifactId>
+            <artifactId>legend-engine-xt-sql-http-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-sql-query</artifactId>
+            <artifactId>legend-engine-xt-sql-http-api</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>

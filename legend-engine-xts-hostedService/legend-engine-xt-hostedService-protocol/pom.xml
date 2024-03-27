@@ -38,7 +38,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-analytics-lineage-api</artifactId>
+            <artifactId>legend-engine-xt-analytics-lineage-http-api</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>log4j</groupId>

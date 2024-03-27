@@ -28,6 +28,6 @@
 
     <modules>
         <module>legend-engine-xt-analytics-binding-pure</module>
-        <module>legend-engine-xt-analytics-binding-api</module>
+        <module>legend-engine-xt-analytics-binding-http-api</module>
     </modules>
 </project>

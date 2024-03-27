@@ -31,7 +31,7 @@
         <module>legend-engine-external-format-grammar</module>
         <module>legend-engine-external-format-compiler</module>
         <module>legend-engine-external-format-generation</module>
-        <module>legend-engine-external-format-api</module>
+        <module>legend-engine-external-format-http-api</module>
         <module>legend-engine-external-format-example</module>
     </modules>
 </project>

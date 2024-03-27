@@ -10,6 +10,24 @@
     <artifactId>legend-engine-xt-arrow-runtime</artifactId>
     <packaging>jar</packaging>
     <name>Legend Engine - XT - Arrow - Runtime</name>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>executionEnforcement</id>
+                        <configuration>
+                            <skip>false</skip>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

@@ -29,7 +29,7 @@
 
 
     <modules>
-        <module>legend-engine-xt-data-space-api</module>
+        <module>legend-engine-xt-data-space-http-api</module>
         <module>legend-engine-xt-data-space-compiler</module>
         <module>legend-engine-xt-data-space-generation</module>
         <module>legend-engine-xt-data-space-grammar</module>

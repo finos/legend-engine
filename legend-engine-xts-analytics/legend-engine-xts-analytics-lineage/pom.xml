@@ -27,7 +27,7 @@
     <name>Legend Engine - XTS - Analytics - Lineage</name>
 
     <modules>
-        <module>legend-engine-xt-analytics-lineage-api</module>
+        <module>legend-engine-xt-analytics-lineage-http-api</module>
         <module>legend-engine-xt-analytics-lineage-pure</module>
     </modules>
 </project>

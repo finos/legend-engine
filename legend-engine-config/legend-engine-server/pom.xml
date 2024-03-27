@@ -28,7 +28,7 @@
 
     <modules>
         <module>legend-engine-server-integration-tests</module>
-        <module>legend-engine-server-rest</module>
+        <module>legend-engine-server-http-server</module>
         <module>legend-engine-server-support-core</module>
     </modules>
 </project>
