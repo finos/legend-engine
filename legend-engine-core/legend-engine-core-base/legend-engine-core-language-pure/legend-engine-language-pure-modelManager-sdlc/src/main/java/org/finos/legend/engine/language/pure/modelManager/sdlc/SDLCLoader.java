@@ -19,10 +19,14 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
+
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.security.auth.Subject;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -43,6 +47,7 @@ import org.finos.legend.engine.language.pure.modelManager.sdlc.pure.PureServerLo
 import org.finos.legend.engine.language.pure.modelManager.sdlc.workspace.WorkspaceSDLCLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextCollection;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureSDLC;
@@ -128,7 +133,25 @@ public class SDLCLoader implements ModelLoader
     @Override
     public boolean shouldCache(PureModelContext context)
     {
-        return this.supports(context) && (isCacheablePureSDLC(((PureModelContextPointer) context).sdlcInfo) || isCacheableAlloySDLC(((PureModelContextPointer) context).sdlcInfo));
+        return this.supports(context) &&
+                (
+                    (
+                        context instanceof PureModelContextCollection &&
+                        isCacheableCollection((PureModelContextCollection) context)
+                    ) ||
+                    (
+                        context instanceof PureModelContextPointer &&
+                        (
+                            isCacheablePureSDLC(((PureModelContextPointer) context).sdlcInfo) ||
+                            isCacheableAlloySDLC(((PureModelContextPointer) context).sdlcInfo)
+                        )
+                    )
+                );
+    }
+
+    private boolean isCacheableCollection(PureModelContextCollection context)
+    {
+        return !context.getContexts().isEmpty() && context.getContexts().stream().allMatch(this::shouldCache);
     }
 
     private boolean isCacheablePureSDLC(SDLC sdlc)
@@ -148,30 +171,36 @@ public class SDLCLoader implements ModelLoader
     @Override
     public PureModelContext cacheKey(PureModelContext context, Identity identity)
     {
-        if (isCacheablePureSDLC(((PureModelContextPointer) context).sdlcInfo))
+        if (context instanceof PureModelContextPointer)
         {
-            final Subject executionSubject = getSubject();
-            Function0<PureModelContext> pureModelContextFunction = () -> this.pureLoader.getCacheKey(context, identity, executionSubject);
-            return executionSubject == null ? pureModelContextFunction.value() : exec(executionSubject, pureModelContextFunction::value);
+            if (isCacheablePureSDLC(((PureModelContextPointer) context).sdlcInfo))
+            {
+                final Subject executionSubject = getSubject();
+                Function0<PureModelContext> pureModelContextFunction = () -> this.pureLoader.getCacheKey(context, identity, executionSubject);
+                return executionSubject == null ? pureModelContextFunction.value() : exec(executionSubject, pureModelContextFunction::value);
+            }
+            else
+            {
+                return this.alloyLoader.getCacheKey(context);
+            }
         }
-        else
+        else if (context instanceof PureModelContextCollection)
         {
-            return this.alloyLoader.getCacheKey(context);
+            List<PureModelContext> contextsCacheKeys = ((PureModelContextCollection) context).getContexts().stream().map(pureModelContext -> this.cacheKey(pureModelContext, identity)).collect(Collectors.toList());
+            return new PureModelContextCollection(contextsCacheKeys);
         }
+        throw new RuntimeException("Invalid PureModelContext type for generating cache key");
     }
 
     @Override
     public boolean supports(PureModelContext context)
     {
-        return context instanceof PureModelContextPointer;
+        return context instanceof PureModelContextPointer || context instanceof PureModelContextCollection;
     }
 
     @Override
     public PureModelContextData load(Identity identity, PureModelContext ctx, String clientVersion, Span parentSpan)
     {
-        PureModelContextPointer context = (PureModelContextPointer) ctx;
-        Assert.assertTrue(clientVersion != null, () -> "Client version should be set when pulling metadata from the metadata repository");
-
         SDLCFetcher fetcher = new SDLCFetcher(
                 parentSpan,
                 clientVersion,
@@ -181,9 +210,24 @@ public class SDLCLoader implements ModelLoader
                 this.alloyLoader,
                 this.workspaceLoader
         );
-
         Subject subject = getSubject();
-        PureModelContextData metaData = subject == null ? context.sdlcInfo.accept(fetcher) : exec(subject, () -> context.sdlcInfo.accept(fetcher));
+        PureModelContextData metaData;
+        Assert.assertTrue(clientVersion != null, () -> "Client version should be set when pulling metadata from the metadata repository");
+
+        if (ctx instanceof PureModelContextPointer)
+        {
+            PureModelContextPointer context = (PureModelContextPointer) ctx;
+            metaData = subject == null ? context.sdlcInfo.accept(fetcher) : exec(subject, () -> context.sdlcInfo.accept(fetcher));
+        }
+        else if (ctx instanceof PureModelContextCollection)
+        {
+            Collection<SDLC> sdlcList = ((PureModelContextCollection) ctx).getContexts().stream().map(context1 -> ((PureModelContextPointer) context1).sdlcInfo).collect(Collectors.toList());
+            metaData = subject == null ? fetcher.visit(sdlcList) : exec(subject, () -> fetcher.visit(sdlcList));
+        }
+        else
+        {
+            throw new RuntimeException("Invalid call to SDLCLoader.load");
+        }
 
         if (metaData.origin != null)
         {

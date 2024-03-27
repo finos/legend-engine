@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2020 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,10 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.pure.modelManager.sdlc.configuration;
+package org.finos.legend.engine.protocol.pure.v1.model.context;
 
-public class MetadataServerPrivateAccessTokenConfiguration extends MetadataServerPac4jConfiguration
+import java.util.Collection;
+import java.util.List;
+
+public class PureModelContextCollection extends PureModelContext
 {
-    public String accessTokenHeaderName;
-    public String clientName;
+    private final Collection<PureModelContext> contexts;
+
+    public PureModelContextCollection(List<PureModelContext> contexts)
+    {
+        this.contexts = contexts;
+    }
+
+    public Collection<PureModelContext> getContexts()
+    {
+        return contexts;
+    }
 }

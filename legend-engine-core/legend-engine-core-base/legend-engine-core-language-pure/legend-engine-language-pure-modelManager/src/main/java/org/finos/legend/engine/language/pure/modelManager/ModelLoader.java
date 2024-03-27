@@ -19,6 +19,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
+import java.util.List;
+
 public interface ModelLoader
 {
     boolean supports(PureModelContext context);
