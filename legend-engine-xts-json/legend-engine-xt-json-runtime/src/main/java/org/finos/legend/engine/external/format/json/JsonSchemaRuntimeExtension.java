@@ -19,6 +19,7 @@ import org.finos.legend.engine.external.format.json.read.IJsonDeserializeExecuti
 import org.finos.legend.engine.external.format.json.read.IJsonInternalizeExecutionNodeSpecifics;
 import org.finos.legend.engine.external.format.json.write.IJsonExternalizeExecutionNodeSpecifics;
 import org.finos.legend.engine.external.format.json.write.JsonDataWriter;
+import org.finos.legend.engine.external.format.json.write.JsonTDSWriter;
 import org.finos.legend.engine.external.shared.runtime.ExternalFormatRuntimeExtension;
 import org.finos.legend.engine.external.shared.runtime.write.ExternalFormatSerializeResult;
 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;
@@ -31,8 +32,10 @@ import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.StoreStreamReadingObjectsIterator;
+import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeTDSExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatInternalizeExecutionNode;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
@@ -122,6 +125,19 @@ public class JsonSchemaRuntimeExtension implements ExternalFormatRuntimeExtensio
         catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e)
         {
             throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Result executeExternalizeTDSExecutionNode(ExternalFormatExternalizeTDSExecutionNode node, Result result, Identity identity, ExecutionState executionState)
+    {
+        if (result instanceof RelationalResult)
+        {
+            return new ExternalFormatSerializeResult(new JsonTDSWriter((RelationalResult) result), result, CONTENT_TYPE);
+        }
+        else
+        {
+            throw new RuntimeException("JSON external format only supported on relational execution");
         }
     }
 

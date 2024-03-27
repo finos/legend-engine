@@ -1,0 +1,66 @@
+{
+  "builder": {
+    "_type": "tdsBuilder",
+    "columns": [
+      {
+        "name": "id",
+        "type": "Integer",
+        "relationalType": "INTEGER"
+      },
+      {
+        "name": "startDate",
+        "type": "Date",
+        "relationalType": "DATE"
+      },
+      {
+        "name": "name",
+        "type": "String",
+        "relationalType": "VARCHAR(200)"
+      }
+    ]
+  },
+  "activities": [
+    {
+      "_type": "relational",
+      "comment": "-- \"executionTraceID\" : \"e27392e9-8ec0-4024-bbc0-bf71297a5676\"",
+      "sql": "select \"root\".id as \"id\", \"root\".start_date as \"startDate\", \"root\".name as \"name\" from EmployeeTable as \"root\""
+    }
+  ],
+  "result": {
+    "columns": [
+      "id",
+      "startDate",
+      "name"
+    ],
+    "rows": [
+      {
+        "values": [
+          101,
+          "2023-08-24",
+          "Alice"
+        ]
+      },
+      {
+        "values": [
+          102,
+          "2022-08-24",
+          "Bob"
+        ]
+      },
+      {
+        "values": [
+          103,
+          "2022-07-24",
+          "Curtis"
+        ]
+      },
+      {
+        "values": [
+          104,
+          "2022-07-23",
+          "Danielle"
+        ]
+      }
+    ]
+  }
+}
