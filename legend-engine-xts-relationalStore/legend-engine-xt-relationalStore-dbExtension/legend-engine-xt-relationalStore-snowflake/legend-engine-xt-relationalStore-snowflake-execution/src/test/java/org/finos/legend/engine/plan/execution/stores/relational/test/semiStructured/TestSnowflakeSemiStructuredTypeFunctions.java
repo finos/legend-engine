@@ -29,12 +29,12 @@ public class TestSnowflakeSemiStructuredTypeFunctions extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                         "    (\n" +
-                        "      type = TDS[(Customer Address Type, String, \"\", \"\"), (Payment Type, String, \"\", \"\")]\n" +
+                        "      type = TDS[(Customer Address Type, String, VARCHAR(65536), \"\"), (Payment Type, String, VARCHAR(65536), \"\")]\n" +
                         "      resultColumns = [(\"Customer Address Type\", \"\"), (\"Payment Type\", \"\")]\n" +
                         "      sql = select \"root\".CUSTOMER['customerAddress']['@type']::varchar as \"Customer Address Type\", \"root\".CUSTOMER['transactionDetails']['payment']['@type']::varchar as \"Payment Type\" from ORDER_SCHEMA.ORDER_TABLE as \"root\"\n" +
                         "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                         "    )\n";
-        String TDSType = "  type = TDS[(Customer Address Type, String, \"\", \"\"), (Payment Type, String, \"\", \"\")]\n";
+        String TDSType = "  type = TDS[(Customer Address Type, String, VARCHAR(65536), \"\"), (Payment Type, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -45,12 +45,12 @@ public class TestSnowflakeSemiStructuredTypeFunctions extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                         "    (\n" +
-                        "      type = TDS[(Customer Address Type, String, \"\", \"\"), (Payment Type, String, \"\", \"\")]\n" +
+                        "      type = TDS[(Customer Address Type, String, VARCHAR(65536), \"\"), (Payment Type, String, VARCHAR(65536), \"\")]\n" +
                         "      resultColumns = [(\"Customer Address Type\", \"\"), (\"Payment Type\", \"\")]\n" +
                         "      sql = select \"root\".CUSTOMER['customerAddress']['@type']::varchar as \"Customer Address Type\", \"root\".CUSTOMER['transactionDetails']['payment']['@type']::varchar as \"Payment Type\" from ORDER_SCHEMA.ORDER_TABLE as \"root\"\n" +
                         "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                         "    )\n";
-        String TDSType = "  type = TDS[(Customer Address Type, String, \"\", \"\"), (Payment Type, String, \"\", \"\")]\n";
+        String TDSType = "  type = TDS[(Customer Address Type, String, VARCHAR(65536), \"\"), (Payment Type, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -61,12 +61,12 @@ public class TestSnowflakeSemiStructuredTypeFunctions extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                         "    (\n" +
-                        "      type = TDS[(Order Id, Integer, INT, \"\"), (Customer Address Type, String, \"\", \"\")]\n" +
+                        "      type = TDS[(Order Id, Integer, INT, \"\"), (Customer Address Type, String, VARCHAR(65536), \"\")]\n" +
                         "      resultColumns = [(\"Order Id\", INT), (\"Customer Address Type\", \"\")]\n" +
                         "      sql = select \"root\".ORDERID as \"Order Id\", \"root\".CUSTOMER['customerAddress']['@type']::varchar as \"Customer Address Type\" from ORDER_SCHEMA.ORDER_TABLE as \"root\" where \"root\".CUSTOMER['transactionDetails']['payment']['@type']::varchar = 'CashOnDeliveryPayment'\n" +
                         "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                         "    )\n";
-        String TDSType = "  type = TDS[(Order Id, Integer, INT, \"\"), (Customer Address Type, String, \"\", \"\")]\n";
+        String TDSType = "  type = TDS[(Order Id, Integer, INT, \"\"), (Customer Address Type, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -77,12 +77,12 @@ public class TestSnowflakeSemiStructuredTypeFunctions extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                         "    (\n" +
-                        "      type = TDS[(Order Id, Integer, INT, \"\"), (Product Type, String, \"\", \"\")]\n" +
+                        "      type = TDS[(Order Id, Integer, INT, \"\"), (Product Type, String, VARCHAR(65536), \"\")]\n" +
                         "      resultColumns = [(\"Order Id\", INT), (\"Product Type\", \"\")]\n" +
                         "      sql = select \"root\".ORDERID as \"Order Id\", \"ss_flatten_0\".VALUE['@type']::varchar as \"Product Type\" from ORDER_SCHEMA.ORDER_TABLE as \"root\" inner join lateral flatten(input => \"root\".CUSTOMER['products'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\"\n" +
                         "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                         "    )\n";
-        String TDSType = "  type = TDS[(Order Id, Integer, INT, \"\"), (Product Type, String, \"\", \"\")]\n";
+        String TDSType = "  type = TDS[(Order Id, Integer, INT, \"\"), (Product Type, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -93,12 +93,12 @@ public class TestSnowflakeSemiStructuredTypeFunctions extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                         "    (\n" +
-                        "      type = TDS[(Order Id, Integer, INT, \"\"), (Product Type, String, \"\", \"\")]\n" +
+                        "      type = TDS[(Order Id, Integer, INT, \"\"), (Product Type, String, VARCHAR(65536), \"\")]\n" +
                         "      resultColumns = [(\"Order Id\", INT), (\"Product Type\", \"\")]\n" +
                         "      sql = select \"root\".ORDERID as \"Order Id\", \"ss_flatten_0\".VALUE['@type']::varchar as \"Product Type\" from ORDER_SCHEMA.ORDER_TABLE as \"root\" inner join lateral flatten(input => \"root\".CUSTOMER['products'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\"\n" +
                         "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                         "    )\n";
-        String TDSType = "  type = TDS[(Order Id, Integer, INT, \"\"), (Product Type, String, \"\", \"\")]\n";
+        String TDSType = "  type = TDS[(Order Id, Integer, INT, \"\"), (Product Type, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -109,12 +109,12 @@ public class TestSnowflakeSemiStructuredTypeFunctions extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                         "    (\n" +
-                        "      type = TDS[(Order Id, Integer, INT, \"\"), (Product 0 Type, String, \"\", \"\"), (Product 1 Type, String, \"\", \"\")]\n" +
+                        "      type = TDS[(Order Id, Integer, INT, \"\"), (Product 0 Type, String, VARCHAR(65536), \"\"), (Product 1 Type, String, VARCHAR(65536), \"\")]\n" +
                         "      resultColumns = [(\"Order Id\", INT), (\"Product 0 Type\", \"\"), (\"Product 1 Type\", \"\")]\n" +
                         "      sql = select \"root\".ORDERID as \"Order Id\", \"root\".CUSTOMER['products'][0]['@type']::varchar as \"Product 0 Type\", \"root\".CUSTOMER['products'][1]['@type']::varchar as \"Product 1 Type\" from ORDER_SCHEMA.ORDER_TABLE as \"root\"\n" +
                         "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                         "    )\n";
-        String TDSType = "  type = TDS[(Order Id, Integer, INT, \"\"), (Product 0 Type, String, \"\", \"\"), (Product 1 Type, String, \"\", \"\")]\n";
+        String TDSType = "  type = TDS[(Order Id, Integer, INT, \"\"), (Product 0 Type, String, VARCHAR(65536), \"\"), (Product 1 Type, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
