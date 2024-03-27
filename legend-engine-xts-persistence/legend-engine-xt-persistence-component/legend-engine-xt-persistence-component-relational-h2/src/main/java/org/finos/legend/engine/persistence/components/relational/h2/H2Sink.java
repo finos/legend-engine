@@ -40,6 +40,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Metadat
 import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataRowNumberField;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ParseJsonFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ToArrayFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.TryCastFunction;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
@@ -54,7 +55,6 @@ import org.finos.legend.engine.persistence.components.relational.api.ApiUtils;
 import org.finos.legend.engine.persistence.components.relational.api.ErrorCategory;
 import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
-import org.finos.legend.engine.persistence.components.relational.h2.logicalplan.values.ToArrayFunction;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2JdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.CopyVisitor;

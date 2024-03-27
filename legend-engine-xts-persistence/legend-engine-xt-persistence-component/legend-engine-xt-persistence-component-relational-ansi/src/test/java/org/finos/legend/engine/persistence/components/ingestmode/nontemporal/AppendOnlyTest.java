@@ -296,6 +296,18 @@ public class AppendOnlyTest extends AppendOnlyTestCases
     {
     }
 
+    @Override
+    @Test
+    public void testAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecordsUdfDigestGenerationTypeConversionUdf()
+    {
+        // Digest UDF Generation not available for ANSI sink
+    }
+
+    @Override
+    public void verifyAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecordsUdfDigestGenerationTypeConversionUdf(List<GeneratorResult> generatorResults, List<DataSplitRange> dataSplitRanges)
+    {
+    }
+
     public RelationalSink getRelationalSink()
     {
         return AnsiSqlSink.get();

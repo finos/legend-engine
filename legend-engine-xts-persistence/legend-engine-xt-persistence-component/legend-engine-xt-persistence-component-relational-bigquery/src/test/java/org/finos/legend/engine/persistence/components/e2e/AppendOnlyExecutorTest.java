@@ -22,6 +22,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeA
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.junit.jupiter.api.Assertions;
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -93,8 +95,17 @@ public class AppendOnlyExecutorTest extends BigQueryEndToEndTest
     @Test
     public void testMilestoningWithDigestGeneration() throws IOException, InterruptedException
     {
+        Map<DataType, String> typeConversionUdfs = new HashMap<>();
+        typeConversionUdfs.put(DataType.INT, "demo.numericToString");
+        typeConversionUdfs.put(DataType.INTEGER, "demo.numericToString");
+        typeConversionUdfs.put(DataType.DATE, "demo.dateToString");
+        typeConversionUdfs.put(DataType.TIMESTAMP, "demo.timestampToString");
+
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName("demo.LAKEHOUSE_MD5").digestField(digestName).build())
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder()
+                .digestUdfName("demo.LAKEHOUSE_MD5")
+                .putAllTypeConversionUdfNames(typeConversionUdfs)
+                .digestField(digestName).build())
             .auditing(DateTimeAuditing.builder().dateTimeField("audit_ts").build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .batchIdField("batch_id")
@@ -114,18 +125,33 @@ public class AppendOnlyExecutorTest extends BigQueryEndToEndTest
         delete("demo", "batch_metadata");
 
         // Register UDF
-        runQuery("DROP FUNCTION IF EXISTS demo.stringifyJson;");
+        runQuery("DROP FUNCTION IF EXISTS demo.numericToString;");
+        runQuery("DROP FUNCTION IF EXISTS demo.timestampToString;");
+        runQuery("DROP FUNCTION IF EXISTS demo.dateToString;");
+        runQuery("DROP FUNCTION IF EXISTS demo.stringifyArr;");
         runQuery("DROP FUNCTION IF EXISTS demo.LAKEHOUSE_MD5;");
-        runQuery("CREATE FUNCTION demo.stringifyJson(json_data JSON)\n" +
+        runQuery("CREATE FUNCTION demo.numericToString(value NUMERIC)\n" +
+            "AS (\n" +
+            "  CAST(value AS STRING)\n" +
+            ");\n");
+        runQuery("CREATE FUNCTION demo.timestampToString(value TIMESTAMP)\n" +
+            "AS (\n" +
+            "  CAST(value AS STRING)\n" +
+            ");\n");
+        runQuery("CREATE FUNCTION demo.dateToString(value DATE)\n" +
+            "AS (\n" +
+            "  CAST(value AS STRING)\n" +
+            ");\n");
+        runQuery("CREATE FUNCTION demo.stringifyArr(arr1 ARRAY<STRING>, arr2 ARRAY<STRING>)\n" +
             "            RETURNS STRING\n" +
             "            LANGUAGE js AS \"\"\"\n" +
             "            let output = \"\"; \n" +
-            "            Object.keys(json_data).sort().filter(field => json_data[field] != null).forEach(field => { output += field; output += json_data[field];})\n" +
+            "            for (const [index, element] of arr1.entries()) { output += arr1[index]; output += arr2[index]; }\n" +
             "            return output;\n" +
             "            \"\"\"; \n");
-        runQuery("CREATE FUNCTION demo.LAKEHOUSE_MD5(json_data JSON)\n" +
+        runQuery("CREATE FUNCTION demo.LAKEHOUSE_MD5(arr1 ARRAY<STRING>, arr2 ARRAY<STRING>)\n" +
             "AS (\n" +
-            "  TO_HEX(MD5(demo.stringifyJson(json_data)))\n" +
+            "  TO_HEX(MD5(demo.stringifyArr(arr1, arr2)))\n" +
             ");\n");
 
         // Pass 1

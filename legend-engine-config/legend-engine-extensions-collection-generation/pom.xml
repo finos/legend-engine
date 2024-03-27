@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-config</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.42.1-SNAPSHOT</version>
+        <version>4.42.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -478,6 +478,13 @@
             <artifactId>legend-engine-xt-data-space-protocol</artifactId>
         </dependency>
         <!-- Dataspace -->
+
+        <!-- FunctionActivator -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-functionActivator-generation</artifactId>
+        </dependency>
+        <!-- FunctionActivator -->
 
         <!-- Snowflake App -->
         <dependency>

@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.persistence.components.relational.ansi;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
@@ -82,6 +80,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.SelectV
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.SumBinaryValueOperator;
 import org.finos.legend.engine.persistence.components.logicalplan.values.TabularValues;
+import org.finos.legend.engine.persistence.components.logicalplan.values.Udf;
 import org.finos.legend.engine.persistence.components.logicalplan.values.WindowFunction;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
@@ -148,6 +147,7 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TableModifierVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TabularValuesVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TruncateVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.UdfVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.WindowFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.api.DataError;
 import org.finos.legend.engine.persistence.components.relational.api.ApiUtils;
@@ -220,6 +220,7 @@ public class AnsiSqlSink extends RelationalSink
 
         logicalPlanVisitorByClass.put(Update.class, new SQLUpdateVisitor());
         logicalPlanVisitorByClass.put(FunctionImpl.class, new FunctionVisitor());
+        logicalPlanVisitorByClass.put(Udf.class, new UdfVisitor());
         logicalPlanVisitorByClass.put(HashFunction.class, new HashFunctionVisitor());
         logicalPlanVisitorByClass.put(WindowFunction.class, new WindowFunctionVisitor());
         logicalPlanVisitorByClass.put(ParseJsonFunction.class, new ParseJsonFunctionVisitor());

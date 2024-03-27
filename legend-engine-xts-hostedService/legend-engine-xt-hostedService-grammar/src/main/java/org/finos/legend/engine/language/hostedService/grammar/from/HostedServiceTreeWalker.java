@@ -28,7 +28,6 @@ import org.finos.legend.engine.language.pure.grammar.from.runtime.RuntimeParser;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedService;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceDeploymentConfiguration;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.protocol.hostedService.metamodel.control.UserList;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
@@ -96,19 +95,16 @@ public class HostedServiceTreeWalker
             functionContext.functionIdentifier().getText(),
             walkerSourceInformation.getSourceInformation(functionContext.functionIdentifier())
         );
-        HostedServiceParserGrammar.ServiceOwnershipContext ownerContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceOwnership(), "owners", hostedService.sourceInformation);
-        if (ownerContext != null)
+        HostedServiceParserGrammar.ServiceOwnershipContext ownerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.serviceOwnership(), "ownership", hostedService.sourceInformation);
+        if (ownerContext.userList() != null)
         {
-            if (ownerContext.userList() != null)
-            {
-                HostedServiceParserGrammar.UserListContext userListOwnersContext = ownerContext.userList();
-                hostedService.ownership = new UserList(ListIterate.collect(userListOwnersContext.STRING(), ownerCtx -> PureGrammarParserUtility.fromGrammarString(ownerCtx.getText(), true)));
-            }
-            else
-            {
-                HostedServiceParserGrammar.DeploymentContext deploymentOwnerContext = ownerContext.deployment();
-                hostedService.ownership = new DeploymentOwner(PureGrammarParserUtility.fromGrammarString(deploymentOwnerContext.STRING().getText(), true));
-            }
+            HostedServiceParserGrammar.UserListContext userListOwnersContext = ownerContext.userList();
+            hostedService.ownership = new UserList(ListIterate.collect(userListOwnersContext.STRING(), ownerCtx -> PureGrammarParserUtility.fromGrammarString(ownerCtx.getText(), true)));
+        }
+        else
+        {
+            HostedServiceParserGrammar.DeploymentContext deploymentOwnerContext = ownerContext.deployment();
+            hostedService.ownership = new DeploymentOwner(PureGrammarParserUtility.fromGrammarString(deploymentOwnerContext.STRING().getText(), true));
         }
         HostedServiceParserGrammar.ServiceDocumentationContext descriptionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceDocumentation(), "documentation", hostedService.sourceInformation);
         if (descriptionContext != null)

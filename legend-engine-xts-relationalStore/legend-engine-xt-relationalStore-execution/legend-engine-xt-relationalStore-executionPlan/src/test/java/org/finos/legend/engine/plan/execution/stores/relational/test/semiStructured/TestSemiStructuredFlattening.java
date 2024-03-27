@@ -267,6 +267,28 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
                 "David,A7,2,,C1\n", h2Result.replace("\r\n", "\n"));
     }
 
+    @Test
+    public void testSemiStructuredFlatteningWithParseJsonMapping()
+    {
+        String queryFunction = "flatten::semiStructuredPrimitivePropertyFlattening__TabularDataSet_1_";
+
+        String h2Result = this.executeFunction(queryFunction, "flatten::mapping::H2ParseJsonMapping", h2Runtime);
+        Assert.assertEquals("Peter,Firm X,O1\n" +
+                "Peter,Firm X,O2\n" +
+                "John,Firm X,O1\n" +
+                "John,Firm X,O2\n" +
+                "John,Firm X,O1\n" +
+                "John,Firm X,O2\n" +
+                "Anthony,Firm X,O1\n" +
+                "Anthony,Firm X,O2\n" +
+                "Fabrice,Firm A,O3\n" +
+                "Fabrice,Firm A,O4\n" +
+                "Oliver,Firm B,O5\n" +
+                "Oliver,Firm B,O6\n" +
+                "David,Firm B,O5\n" +
+                "David,Firm B,O6\n", h2Result.replace("\r\n", "\n"));
+    }
+
     @Override
     public String modelResourcePath()
     {

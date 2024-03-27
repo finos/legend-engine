@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,23 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.relational.h2.logicalplan.values;
-
-import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
-import org.immutables.value.Value.Immutable;
-import org.immutables.value.Value.Style;
+package org.finos.legend.engine.persistence.components.logicalplan.values;
 
 import java.util.List;
 
-@Immutable
-@Style(
-    typeAbstract = "*Abstract",
-    typeImmutable = "*",
-    jdkOnly = true,
-    optionalAcceptNullable = true,
-    strictBuilder = true
+@org.immutables.value.Value.Immutable
+@org.immutables.value.Value.Style(
+        typeAbstract = "*Abstract",
+        typeImmutable = "*",
+        jdkOnly = true,
+        optionalAcceptNullable = true,
+        strictBuilder = true
 )
-public interface ToArrayFunctionAbstract extends Value
+public interface UdfAbstract extends Value
 {
-    List<Value> values();
+
+    String udfName();
+
+    List<Value> parameters();
 }

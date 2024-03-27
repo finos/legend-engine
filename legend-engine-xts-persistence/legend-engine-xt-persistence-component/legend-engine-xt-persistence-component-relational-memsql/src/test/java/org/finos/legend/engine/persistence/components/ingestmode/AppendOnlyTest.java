@@ -298,4 +298,16 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
     public void verifyAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecordsUdfDigestGeneration(List<GeneratorResult> generatorResults, List<DataSplitRange> dataSplitRanges)
     {
     }
+
+    @Override
+    @Test
+    public void testAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecordsUdfDigestGenerationTypeConversionUdf()
+    {
+        // Digest UDF Generation not available for Memsql sink
+    }
+
+    @Override
+    public void verifyAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecordsUdfDigestGenerationTypeConversionUdf(List<GeneratorResult> generatorResults, List<DataSplitRange> dataSplitRanges)
+    {
+    }
 }
