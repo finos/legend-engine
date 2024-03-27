@@ -60,21 +60,21 @@ function <<test.Test>> meta::relational::tests::mapping::classMappingFilterWithI
 {
    let result = execute(|Person.all()->filter(p|$p.firstName == 'John'), baseMappingWithInnerJoinInFilter, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['John', 'John'], $result.values.firstName);
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName" from (select "root".ID as ID, "root".FIRSTNAME as FIRSTNAME, "root".LASTNAME as LASTNAME, "root".AGE as AGE, "root".ADDRESSID as ADDRESSID, "root".FIRMID as FIRMID, "root".MANAGERID as MANAGERID from personTable as "root" inner join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME = \'Firm X\') as "root" where "root".FIRSTNAME = \'John\'', $result->sqlRemoveFormatting());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName" from (select "root".ID as ID, "root".FIRSTNAME as FIRSTNAME, "root".LASTNAME as LASTNAME, "root".AGE as AGE, "root".ADDRESSID as ADDRESSID, "root".FIRMID as FIRMID, "root".MANAGERID as MANAGERID from personTable as "root" inner join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME = \'Firm X\' and "root".FIRSTNAME = \'John\') as "root" where "root".FIRSTNAME = \'John\'', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::classMappingFilterWithInnerJoin::testRootFilterAndProjectionQueryWithInnerJoinClassMappingFilterAndPropertyMappedWithJoinToFilterTable():Boolean[1]
 {
    let result = execute(|Person.all()->filter(p|$p.age > 20)->project([e|$e.firstName],['firstName']), mappingWithInnerJoinInFilter, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['Peter', 'John', 'Anthony'], $result.values.rows.values);
-   assertEquals('select "root".FIRSTNAME as "firstName" from (select "root".ID as ID, "root".FIRSTNAME as FIRSTNAME, "root".LASTNAME as LASTNAME, "root".AGE as AGE, "root".ADDRESSID as ADDRESSID, "root".FIRMID as FIRMID, "root".MANAGERID as MANAGERID from personTable as "root" inner join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME = \'Firm X\') as "root" where ("root".AGE is not null and "root".AGE > 20)', $result->sqlRemoveFormatting());
+   assertEquals('select "root".FIRSTNAME as "firstName" from (select "root".ID as ID, "root".FIRSTNAME as FIRSTNAME, "root".LASTNAME as LASTNAME, "root".AGE as AGE, "root".ADDRESSID as ADDRESSID, "root".FIRMID as FIRMID, "root".MANAGERID as MANAGERID from personTable as "root" inner join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME = \'Firm X\' and "root".AGE is not null and "root".AGE > 20) as "root" where ("root".AGE is not null and "root".AGE > 20)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::classMappingFilterWithInnerJoin::testRootFilterAndProjectionQueryWithInnerJoinClassOwnedPropertyMappingTable():Boolean[1]
 {
    let result = execute(|Person.all()->filter(p|$p.firstName == 'John')->project([e|$e.lastName],['firmName']), classOwnedMappingWithInnerJoinInFilter, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals([['Firm X', 'Firm X']], $result.values.rows.values);
-   assertEquals('select "firmtable_1".LEGALNAME as "firmName" from (select "root".ID as ID, "root".FIRSTNAME as FIRSTNAME, "root".LASTNAME as LASTNAME, "root".AGE as AGE, "root".ADDRESSID as ADDRESSID, "root".FIRMID as FIRMID, "root".MANAGERID as MANAGERID from personTable as "root" inner join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME = \'Firm X\') as "root" left outer join firmTable as "firmtable_1" on ("firmtable_1".ID = "root".FIRMID) where "root".FIRSTNAME = \'John\'', $result->sqlRemoveFormatting());
+   assertEquals('select "firmtable_1".LEGALNAME as "firmName" from (select "root".ID as ID, "root".FIRSTNAME as FIRSTNAME, "root".LASTNAME as LASTNAME, "root".AGE as AGE, "root".ADDRESSID as ADDRESSID, "root".FIRMID as FIRMID, "root".MANAGERID as MANAGERID from personTable as "root" inner join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME = \'Firm X\' and "root".FIRSTNAME = \'John\') as "root" left outer join firmTable as "firmtable_1" on ("firmtable_1".ID = "root".FIRMID) where "root".FIRSTNAME = \'John\'', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::classMappingFilterWithInnerJoin::testChainedJoinsWithUnionsAndIsolationWithProjectionQueryTableFilter():Boolean[1]

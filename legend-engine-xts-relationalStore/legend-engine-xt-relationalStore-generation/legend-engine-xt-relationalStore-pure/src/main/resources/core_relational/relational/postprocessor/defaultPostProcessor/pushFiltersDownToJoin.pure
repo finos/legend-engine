@@ -52,13 +52,70 @@ function meta::relational::postProcessor::filterPushDown::pushFiltersDownToJoins
 
 function <<access.private>> meta::relational::postProcessor::filterPushDown::pushFiltersDownToJoins(r: RelationalTreeNode[1], filteringPairs: List<Pair<TableAliasColumn, RelationalOperationElement>>[1], extensions:Extension[*]):RelationalTreeNode[1]
 {
-   $r->match([
-      j:JoinTreeNode[1] | let join = $j.join;
-                          let res = $join.operation->tryAddingFiltersToJoinOperation($filteringPairs, $j.alias, $extensions);
-                          ^$j( join=^$join(operation=$res.first->cast(@Operation)),
-                               childrenData=$j->children()->map(c | $c->pushFiltersDownToJoins(list($filteringPairs.values->concatenate($res.second.values)), $extensions)));,
-      r:RelationalTreeNode[1] | ^$r(childrenData=$r->children()->map(c | $c->pushFiltersDownToJoins($filteringPairs, $extensions)));
-  ]);
+   let unSupportedJoinExists = $r->allNodes()->exists(n | $n->match([
+      j: JoinTreeNode[1] | $j.joinType->in([JoinType.RIGHT_OUTER, JoinType.FULL_OUTER]),
+      a: Any[*]          | false
+   ]));
+
+   if ($unSupportedJoinExists,
+       | $r,
+       | $r->match([
+            j:JoinTreeNode[1] | let join = $j.join;
+                                let res = $join.operation->tryAddingFiltersToJoinOperation($filteringPairs, $j.alias, $extensions);
+                                ^$j( join=^$join(operation=$res.first->cast(@Operation)),
+                                    alias=$j.alias->tryPushFiltersIntoSubQuery(list($res.first->getFilteringPairs()), $extensions),
+                                    childrenData=$j->children()->map(c | $c->pushFiltersDownToJoins(list($filteringPairs.values->concatenate($res.second.values)), $extensions)));,
+            r:RelationalTreeNode[1] | ^$r(alias=$r.alias->tryPushFiltersIntoSubQuery($filteringPairs, $extensions), childrenData=$r->children()->map(c | $c->pushFiltersDownToJoins($filteringPairs, $extensions)));
+        ]);
+   );
+}
+
+function <<access.private>> meta::relational::postProcessor::filterPushDown::allNodes(r: RelationalTreeNode[1]): RelationalTreeNode[*]
+{
+   $r->concatenate($r->children()->map(x | $x->allNodes()))
+}
+
+function <<access.private>> meta::relational::postProcessor::filterPushDown::candidatePairsForAlias(alias: TableAlias[1], filteringPairs: List<Pair<TableAliasColumn, RelationalOperationElement>>[1], extensions: Extension[*]): List<Pair<TableAliasColumn, RelationalOperationElement>>[1]
+{
+   // In a relational tree node, alias names should be unique (sub queries not considered)
+   ^$filteringPairs(values = $filteringPairs.values->filter(p | $p.first.alias.name == $alias.name));
+}
+
+function <<access.private>> meta::relational::postProcessor::filterPushDown::tryPushFiltersIntoSubQuery(alias: TableAlias[1], filteringPairs: List<Pair<TableAliasColumn, RelationalOperationElement>>[1], extensions:Extension[*]):TableAlias[1]
+{
+   $alias.relationalElement->match([
+      subSelect: SelectSQLQuery[1]      | ^$alias(relationalElement = $subSelect->tryAddingFiltersToSubQuery(candidatePairsForAlias($alias, $filteringPairs, $extensions), $extensions)),
+      viewSelect: ViewSelectSQLQuery[1] | ^$alias(relationalElement = ^$viewSelect(selectSQLQuery = $viewSelect.selectSQLQuery->tryAddingFiltersToSubQuery(candidatePairsForAlias($alias, $filteringPairs, $extensions), $extensions))),
+      a:Any[*]                          | $alias
+   ])
+}
+
+function <<access.private>> meta::relational::postProcessor::filterPushDown::tryAddingFiltersToSubQuery(subSelect: SelectSQLQuery[1], filteringPairs: List<Pair<TableAliasColumn, RelationalOperationElement>>[1], extensions:Extension[*]): SelectSQLQuery[1]
+{
+   let groupByExists = $subSelect.groupBy->isNotEmpty();
+   let opToUpdate = $groupByExists->if(|$subSelect.havingOperation, |$subSelect.filteringOperation);
+   if ($opToUpdate->size() > 1,
+       | $subSelect,
+       | let newFilters = $filteringPairs.values->map({fp |
+            let selectCol = $subSelect.columns->filter(x | $x->match([
+               a:Alias[1] | ($a.name == $fp.first.column.name) && ($a.relationalElement->instanceOf(TableAliasColumn)), 
+               a:Any[*]   | false
+            ]));
+            if ($selectCol->size() == 1,
+                | let toReplaceWith = $selectCol->toOne()->cast(@Alias).relationalElement->cast(@TableAliasColumn);
+                  let transformFunc = {rel: RelationalOperationElement[1] | if($rel == $fp.first, | $toReplaceWith, | $rel)};
+                  $fp.second->transformNonCached($transformFunc);,
+                | []
+            );
+         });
+         let combinedNewFilter = $newFilters->reverse()->andFilters($extensions);
+
+         if ($combinedNewFilter->isEmpty(),
+             | $subSelect,
+             | let updatedOp = if($opToUpdate->size() == 1, | [$combinedNewFilter->toOne(), $opToUpdate->toOne()]->andFilters($extensions), | $combinedNewFilter);
+               $groupByExists->if(|^$subSelect(havingOperation = $updatedOp), | ^$subSelect(filteringOperation = $updatedOp));
+         );
+   );
 }
 
 function <<access.private>> meta::relational::postProcessor::filterPushDown::addFilterToJoinoperation(filteringPairs : Pair<TableAliasColumn, RelationalOperationElement>[*], left: TableAliasColumn[1], right: TableAliasColumn[1], operation: RelationalOperationElement[1], joinTableAlias: TableAlias[1], extensions:Extension[*]):Pair<RelationalOperationElement, List<Pair<TableAliasColumn, RelationalOperationElement>>>[1]
