@@ -463,7 +463,7 @@ function <<test.Test>> meta::relational::tests::query::function::distinct::testC
 function <<test.Test>> meta::relational::tests::query::function::divide::testDivideFunctionPrecision():Boolean[1]
 {
    let result = execute(|Trade.all()->filter(t | $t.id == 2)->map(t | [$t.quantity, 32147678342]->times()->divide(1000)), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSameSQL('select ((1.0 * ("root".quantity * 32147678342)) / 1000) from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id and "tradeeventviewmaxtradeeventdate_0".trade_id = 2) where "root".ID = 2', $result);
+   assertSameSQL('select ((1.0 * ("root".quantity * 32147678342)) / 1000) from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id having "root".trade_id = 2) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id and "tradeeventviewmaxtradeeventdate_0".trade_id = 2) where "root".ID = 2', $result);
    assertEq(10287257069.44, $result.values->at(0));
    // 8 decimal places
    let result2 = execute(|Trade.all()->filter(t | $t.id == 2)->map(t | [$t.quantity, 32147678342]->times()->divide(1000000000)), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
