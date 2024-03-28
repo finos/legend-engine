@@ -150,7 +150,7 @@
         <bouncycastle.version>1.67</bouncycastle.version>
         <byte-buddy.version>1.11.20</byte-buddy.version>
         <commons-codec.version>1.15</commons-codec.version>
-        <commons-compress.version>1.21</commons-compress.version>
+        <commons-compress.version>1.26.0</commons-compress.version>
         <commons-csv.version>1.5</commons-csv.version>
         <commons-io.version>2.7</commons-io.version>
         <commons-lang.version>2.6</commons-lang.version>
