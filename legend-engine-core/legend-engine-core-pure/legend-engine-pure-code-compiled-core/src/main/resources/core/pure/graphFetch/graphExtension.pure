@@ -498,7 +498,15 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
 
          let inlinedPropertyTree = $propertyPaths.result->buildPropertyTree()->inlineQualifiedPropertyNodes();
 
-         let inlinedGraphTree = $inlinedPropertyTree->propertyTreeToGraphFetchTree($owner)->removeDummyProperties();
+         // Property tree root node may not start at owner (e.g. when the source of a mapping is wrapped in a new class and passed to a property mapping).
+         // Here we try and find the part of the tree that starts at the owner - in usual case we will return the same tree but now also handle case mentioned above. 
+         // Due to subTypes we could end up returning multiple trees hence we check if there is only one and start there, otherwise continue with old behaviour. 
+         let treeStartingAtOwner = findSubTreeWithOwner($inlinedPropertyTree, $owner);
+
+         let inlinedGraphTree = if($treeStartingAtOwner->size() == 1, 
+                                    | $treeStartingAtOwner->toOne()->propertyTreeToGraphFetchTree($owner)->removeDummyProperties(),
+                                    | $inlinedPropertyTree->propertyTreeToGraphFetchTree($owner)->removeDummyProperties()
+                                );
 
          // copy common properties from base type tree to subtype trees at property level
          // TODO - remove when propertySubTypes are embedded in propertyTrees
@@ -637,6 +645,21 @@ function <<access.private>> meta::pure::graphFetch::addPassThroughSubTreesAtPath
       | ^$srcNode(subTrees=$srcNode.subTrees->cast(@PropertyGraphFetchTree)->map(st|if($st.property == $head.property, |$st->addPassThroughSubTrees($tgtPgft, $extensions), |$st))),
       | ^$srcNode(subTrees=$srcNode.subTrees->cast(@PropertyGraphFetchTree)->map(st|if($st.property == $head.property, |$st->addPassThroughSubTreesAtPath(list($tail), $tgtPgft, $extensions), |$st)))
    );
+}
+
+function meta::pure::graphFetch::findSubTreeWithOwner(pTree:PropertyPathTree[1], ownerClass:Class<Any>[1]) : PropertyPathTree[*]
+{
+  $pTree.value->match([
+    node:PropertyPathNode[1] | if($ownerClass == $node.class || $node.class->isStrictSubType($ownerClass),
+                                  | $pTree,
+                                  | $pTree.children->map(ch | findSubTreeWithOwner($ch, $ownerClass))
+                                ),
+    clz:Class<Any>[1] | if($clz == $ownerClass || $ownerClass->isStrictSubType($clz),
+                          | $pTree,
+                          | $pTree.children->map(ch | findSubTreeWithOwner($ch, $ownerClass))
+                        ),
+    any:Any[1] | $pTree.children->map(ch | findSubTreeWithOwner($ch, $ownerClass))
+  ]);
 }
 
 function meta::pure::graphFetch::propertyTreeToGraphFetchTree(pTree:PropertyPathTree[1], ownerClass:Class<Any>[1]): RootGraphFetchTree<Any>[1]

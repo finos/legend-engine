@@ -3,7 +3,7 @@
     <parent>
         <artifactId>legend-engine-server</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.42.1-SNAPSHOT</version>
+        <version>4.42.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -122,17 +122,6 @@
             <groupId>org.finos.legend.shared</groupId>
             <artifactId>legend-shared-pac4j</artifactId>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>org.pac4j.jax-rs</groupId>
-            <artifactId>core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        -->
-        <!-- Authentication -->
 
         <!-- PROMETHEUS -->
         <dependency>
@@ -140,20 +129,6 @@
             <artifactId>simpleclient</artifactId>
         </dependency>
         <!-- PROMETHEUS -->
-
-        <!-- OPEN TRACING -->
-        <!--
-        TODO
-        <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-util</artifactId>
-        </dependency>
-        -->
-        <!-- OPEN TRACING -->
 
         <!-- LOG -->
         <dependency>

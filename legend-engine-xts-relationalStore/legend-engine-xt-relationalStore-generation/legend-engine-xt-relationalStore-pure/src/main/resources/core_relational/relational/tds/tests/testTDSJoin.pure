@@ -1118,6 +1118,30 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::tds::tdsJoin::al
   assertSameElements(['Smith','Johnson','Hill','Allen','Roberts','Hill','Harris','Peter','John','John','Anthony','Fabrice','Oliver','David'], $result.values.rows->map(r|$r.values->makeString(',')));
 }
 
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::tds::tdsJoin::alloy::testJoinWithExtendWithDigestOnColumnsOnBothQueries():Boolean[1]
+{
+  let result = execute({|testJoinTDS_Person.all()
+                  ->meta::pure::tds::project([p|$p.personID, p|$p.firstName, p|$p.lastName, p|$p.employerID], ['personID', 'firstName','lastName', 'eID'])
+                  ->meta::pure::tds::extensions::extendWithDigestOnColumns('hash1', meta::pure::functions::hash::HashType.MD5, ['firstName', 'lastName'])
+                  ->join(testJoinTDS_Firm.all()
+                    ->meta::pure::tds::project([p|$p.legalName, p|$p.firmID], ['firmName','fID'])
+                    ->meta::pure::tds::extensions::extendWithDigestOnColumns('hash2', meta::pure::functions::hash::HashType.MD5,['legalName']),
+                    JoinType.LEFT_OUTER, {a,b|($a.getInteger('eID')) == $b.getInteger('fID')}
+                  )
+                }, testJoinTDSMappingTwoDatabase, twoDBRunTime(), meta::relational::extension::relationalExtensions());
+  assertSize($result.values.rows, 7 );
+  assertSameElements([
+    '1,Peter,Smith,1,ee0af362d8c1e4fa8c805dfeadd1aa37,Firm X,1,d41d8cd98f00b204e9800998ecf8427e',
+    '2,John,Johnson,1,f8758ee5b78e87c2c62f4bed81ce3537,Firm X,1,d41d8cd98f00b204e9800998ecf8427e',
+    '3,John,Hill,1,5a60b85c13b6c8273a6d2d55ff6a7815,Firm X,1,d41d8cd98f00b204e9800998ecf8427e',
+    '4,Anthony,Allen,1,aceae9411805b964e79dd85254a18a64,Firm X,1,d41d8cd98f00b204e9800998ecf8427e',
+    '5,Fabrice,Roberts,2,78e0713429c21373986cd56e497ece2f,Firm A,2,d41d8cd98f00b204e9800998ecf8427e',
+    '6,Oliver,Hill,3,ab43019b868088e113c5d313a7f5ca40,Firm B,3,d41d8cd98f00b204e9800998ecf8427e',
+    '7,David,Harris,4,988f1ea1ec2cdacc3bb1dff202d4160a,Firm C,4,d41d8cd98f00b204e9800998ecf8427e'
+    ],
+    $result.values.rows->map(r|$r.values->makeString(',')));
+}
+
 ###Relational
 Database meta::relational::tests::tds::tdsJoin::database2
 (
