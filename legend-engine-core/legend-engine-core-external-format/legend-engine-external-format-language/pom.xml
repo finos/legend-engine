@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core-external-format</artifactId>
-        <version>4.42.1-SNAPSHOT</version>
+        <version>4.42.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -31,7 +31,7 @@
         <module>legend-engine-external-format-grammar</module>
         <module>legend-engine-external-format-compiler</module>
         <module>legend-engine-external-format-generation</module>
-        <module>legend-engine-external-format-api</module>
+        <module>legend-engine-external-format-http-api</module>
         <module>legend-engine-external-format-example</module>
     </modules>
 </project>

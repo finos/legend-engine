@@ -31,17 +31,10 @@ import java.util.List;
 )
 public abstract class SinkCleanupGeneratorResultAbstract
 {
-    public abstract SqlPlan preActionsSqlPlan();
 
     public abstract SqlPlan dropSqlPlan();
 
     public abstract SqlPlan cleanupSqlPlan();
-
-
-    public List<String> preActionsSql()
-    {
-        return preActionsSqlPlan().getSqlList();
-    }
 
     public List<String> cleanupSql()
     {

@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-flatdata</artifactId>
-        <version>4.42.1-SNAPSHOT</version>
+        <version>4.42.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -182,7 +182,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-format-api</artifactId>
+            <artifactId>legend-engine-external-format-http-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

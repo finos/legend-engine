@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core-base</artifactId>
-        <version>4.42.1-SNAPSHOT</version>
+        <version>4.42.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -26,13 +26,29 @@
     <packaging>pom</packaging>
     <name>Legend Engine - Core - Execution Plan - Execution</name>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>executionEnforcement</id>
+                        <configuration>
+                            <skip>false</skip>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <modules>
         <module>legend-engine-executionPlan-dependencies</module>
         <module>legend-engine-executionPlan-execution</module>
-        <module>legend-engine-executionPlan-execution-api</module>
+        <module>legend-engine-executionPlan-execution-http-api</module>
         <module>legend-engine-executionPlan-execution-authorizer</module>
         <module>legend-engine-executionPlan-execution-store-inMemory</module>
     </modules>
-
 
 </project>

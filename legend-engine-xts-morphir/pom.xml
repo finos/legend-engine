@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.42.1-SNAPSHOT</version>
+        <version>4.42.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -31,6 +31,6 @@
     <modules>
         <module>legend-engine-xt-morphir</module>
         <module>legend-engine-xt-morphir-pure</module>
-        <module>legend-engine-xt-morphir-api</module>
+        <module>legend-engine-xt-morphir-http-api</module>
     </modules>
 </project>

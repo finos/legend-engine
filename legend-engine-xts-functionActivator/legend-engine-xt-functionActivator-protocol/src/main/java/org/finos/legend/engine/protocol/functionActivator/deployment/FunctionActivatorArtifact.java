@@ -29,7 +29,7 @@ public class FunctionActivatorArtifact
 
     public String getVersionInfo(AlloySDLC sdlc)
     {
-        if (this.version != null)
+        if (sdlc.version != null)
         {
             return sdlc.groupId + ":" + sdlc.artifactId + ":" + sdlc.version;
         }

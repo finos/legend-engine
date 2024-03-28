@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-server</artifactId>
-        <version>4.42.1-SNAPSHOT</version>
+        <version>4.42.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-server-integration-tests</artifactId>
@@ -47,7 +47,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-executionPlan-execution-api</artifactId>
+            <artifactId>legend-engine-executionPlan-execution-http-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -76,7 +76,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-api</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-connection-http-api</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -91,7 +91,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-api</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-http-api</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>

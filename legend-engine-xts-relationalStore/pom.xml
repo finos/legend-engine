@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.42.1-SNAPSHOT</version>
+        <version>4.42.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -35,5 +35,6 @@
         <module>legend-engine-xt-relationalStore-execution</module>
         <module>legend-engine-xt-relationalStore-generation</module>
         <module>legend-engine-xt-relationalStore-test</module>
+        <module>legend-engine-xt-relationalStore-connection-http-api</module>
     </modules>
 </project>
