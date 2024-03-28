@@ -67,7 +67,7 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-java</artifactId>
-            <scope>Runtime</scope>
+            <scope>runtime</scope>
         </dependency>
         <!-- Java compiled code support -->
 
