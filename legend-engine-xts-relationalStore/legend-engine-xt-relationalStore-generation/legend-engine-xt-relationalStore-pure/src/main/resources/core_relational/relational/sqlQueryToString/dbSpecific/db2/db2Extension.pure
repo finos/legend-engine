@@ -82,6 +82,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::db2::
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='%s', transform=transformAdjustDB2SQL_String_3__String_1_)),
     dynaFnToSql('char',                   $allStates,            ^ToSql(format='ascii_chr(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings('(',' concat ', ')')})),
+    dynaFnToSql('concat_ws',              $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings('(',' concat ', ')')})),
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateDB2()})),
     dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeDB2()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='cast(%s as VARCHAR(128))')),

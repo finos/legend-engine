@@ -85,6 +85,7 @@ function meta::relational::functions::sqlQueryToString::sybaseIQ::getDynaFunctio
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='%s', transform={p:String[1] | convertBoolAndOrToCaseStatement($p, false)})),    
     dynaFnToSql('char',                   $allStates,            ^ToSql(format='char(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' + ')})),
+    dynaFnToSql('concat_ws',              $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' + ')})),
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateIQ()})),
     dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeIQ()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='convert(VARCHAR(128), %s)')),

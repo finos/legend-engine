@@ -60,6 +60,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='%s', transform={p:String[1] | convertBoolAndOrToCaseStatement($p, false)})),    
     dynaFnToSql('char',                   $allStates,            ^ToSql(format='char(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' + ')})),
+    dynaFnToSql('concat_ws',              $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' + ')})),
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForSqlServer(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='cast(%s as date)')),
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='datepart(day, %s)')),

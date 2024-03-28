@@ -144,6 +144,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::athen
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)')),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)')),      
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('concat_ws',              $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='cast(%s as VARCHAR(128))')),
     dynaFnToSql('count',                  $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='date_diff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForAthena(),$p->at(0),$p->at(1)]})),
