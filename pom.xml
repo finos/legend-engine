@@ -14,8 +14,7 @@
  limitations under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -27,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.42.3-SNAPSHOT</version>
+    <version>4.42.3</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -133,7 +132,7 @@
         <maven.enforcer.requireMavenVersion>3.6.2</maven.enforcer.requireMavenVersion>
         <project.build.outputTimestamp>1680115922</project.build.outputTimestamp>
         <surefire.vm.params>-XX:-MaxFDLimit -XX:SoftRefLRUPolicyMSPerMB=1</surefire.vm.params>
-        <surefire.reports.directory/>
+        <surefire.reports.directory />
 
         <!-- Databases -->
         <databricks.version>2.6.27</databricks.version>
@@ -232,7 +231,7 @@
 
     <scm>
         <developerConnection>scm:git:https://github.com/finos/legend-engine</developerConnection>
-        <tag>HEAD</tag>
+        <tag>legend-engine-4.42.3</tag>
     </scm>
 
     <build>
@@ -497,7 +496,7 @@
                                 <requireMavenVersion>
                                     <version>${maven.enforcer.requireMavenVersion}</version>
                                 </requireMavenVersion>
-                                <dependencyConvergence/>
+                                <dependencyConvergence />
                                 <bannedDependencies>
                                     <excludes>
                                         <!-- Default -->
@@ -542,7 +541,7 @@
                                 <requireJavaVersion>
                                     <version>${maven.enforcer.requireJavaVersion}</version>
                                 </requireJavaVersion>
-                                <dependencyConvergence/>
+                                <dependencyConvergence />
                                 <bannedDependencies>
                                     <searchTransitive>true</searchTransitive>
                                     <excludes>
@@ -592,7 +591,7 @@
                                 <requireJavaVersion>
                                     <version>${maven.enforcer.requireJavaVersion}</version>
                                 </requireJavaVersion>
-                                <dependencyConvergence/>
+                                <dependencyConvergence />
                                 <bannedDependencies>
                                     <searchTransitive>true</searchTransitive>
                                     <excludes>
