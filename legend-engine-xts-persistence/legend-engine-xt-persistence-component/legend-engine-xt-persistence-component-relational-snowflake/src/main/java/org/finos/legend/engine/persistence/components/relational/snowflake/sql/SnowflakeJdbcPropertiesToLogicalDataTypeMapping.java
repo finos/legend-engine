@@ -48,13 +48,13 @@ public class SnowflakeJdbcPropertiesToLogicalDataTypeMapping implements JdbcProp
             case DATE:
                 return FieldType.builder().dataType(DataType.DATE).build();
             case TIME:
-                return FieldType.builder().dataType(DataType.TIME).scale(decimalDigits).build();
+                return FieldType.builder().dataType(DataType.TIME).length(decimalDigits).build();
             case TIMESTAMPNTZ:
-                return FieldType.builder().dataType(DataType.TIMESTAMP).scale(decimalDigits).build();
+                return FieldType.builder().dataType(DataType.TIMESTAMP).length(decimalDigits).build();
             case TIMESTAMPLTZ:
-                return FieldType.builder().dataType(DataType.TIMESTAMP_LTZ).scale(decimalDigits).build();
+                return FieldType.builder().dataType(DataType.TIMESTAMP_LTZ).length(decimalDigits).build();
             case TIMESTAMPTZ:
-                return FieldType.builder().dataType(DataType.TIMESTAMP_TZ).scale(decimalDigits).build();
+                return FieldType.builder().dataType(DataType.TIMESTAMP_TZ).length(decimalDigits).build();
             case VARIANT:
                 return FieldType.builder().dataType(DataType.JSON).build();
             case OBJECT:

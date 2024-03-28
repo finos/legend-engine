@@ -99,27 +99,27 @@ public class SnowflakeDataTypeMapping implements DataTypeMapping
                 break;
             case TIME:
                 dataType = new Time();
-                type.scale().ifPresent(dataType::setScale);
+                type.length().ifPresent(dataType::setLength);
                 break;
             case DATETIME:
                 dataType = new DateTime();
-                type.scale().ifPresent(dataType::setScale);
+                type.length().ifPresent(dataType::setLength);
                 break;
             case TIMESTAMP:
                 dataType = new Timestamp();
-                type.scale().ifPresent(dataType::setScale);
+                type.length().ifPresent(dataType::setLength);
                 break;
             case TIMESTAMP_NTZ:
                 dataType = new TimestampWithNoTimeZone();
-                type.scale().ifPresent(dataType::setScale);
+                type.length().ifPresent(dataType::setLength);
                 break;
             case TIMESTAMP_TZ:
                 dataType = new TimestampWithTimezone();
-                type.scale().ifPresent(dataType::setScale);
+                type.length().ifPresent(dataType::setLength);
                 break;
             case TIMESTAMP_LTZ:
                 dataType = new TimestampWithLocalTimezone();
-                type.scale().ifPresent(dataType::setScale);
+                type.length().ifPresent(dataType::setLength);
                 break;
             case JSON:
             case VARIANT:

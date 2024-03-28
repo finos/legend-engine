@@ -55,6 +55,7 @@ public class SqlUtils
                 break;
             case UNMASKED:
                 logger.info(sqlAfterReplacingPlaceholders);
+                System.out.println(sqlAfterReplacingPlaceholders);
                 break;
             case DISABLED:
                 break;
@@ -68,6 +69,7 @@ public class SqlUtils
         if (!sqlLogging.equals(SqlLogging.DISABLED))
         {
             logger.info(sql);
+            System.out.println(sql);
         }
     }
 }

@@ -263,7 +263,7 @@ public class JdbcHelper implements RelationalExecutionHelper
         String databaseName = dataset.datasetReference().database().orElse(null);
         try
         {
-            if (!(typeMapping instanceof  JdbcPropertiesToLogicalDataTypeMapping))
+            if (!(typeMapping instanceof JdbcPropertiesToLogicalDataTypeMapping))
             {
                 throw new IllegalStateException("Only JdbcPropertiesToLogicalDataTypeMapping allowed in constructDatasetFromDatabase");
             }
