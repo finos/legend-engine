@@ -24,39 +24,38 @@ public class PostgresJdbcPropertiesToLogicalDataTypeMapping implements JdbcPrope
     {
         switch (typeName)
         {
-            case CHAR:
+            case BPCHAR:
                 return FieldType.builder().dataType(DataType.CHAR).length(columnSize).build();
             case VARCHAR:
-            case CHARACTER_VARYING:
                 return FieldType.builder().dataType(DataType.VARCHAR).length(columnSize).build();
-            case CLOB:
-                return FieldType.builder().dataType(DataType.LONGTEXT).length(columnSize).build();
-            case VARBINARY:
-                return FieldType.builder().dataType(DataType.BINARY).length(columnSize).build();
-            case BOOLEAN:
+            case BYTEA:
+                return FieldType.builder().dataType(DataType.BINARY).build();
+            case BIT:
+                return FieldType.builder().dataType(DataType.BIT).length(columnSize).build();
+            case TEXT:
+                return FieldType.builder().dataType(DataType.TEXT).build();
+            case BOOL:
                 return FieldType.builder().dataType(DataType.BOOLEAN).build();
-            case TINYINT:
-                return FieldType.builder().dataType(DataType.TINYINT).build();
-            case SMALLINT:
+            case INT2:
                 return FieldType.builder().dataType(DataType.SMALLINT).build();
             case INT4:
                 return FieldType.builder().dataType(DataType.INTEGER).build();
-            case BIGINT:
+            case INT8:
                 return FieldType.builder().dataType(DataType.BIGINT).build();
-            case DECIMAL:
-                return FieldType.builder().dataType(DataType.DECIMAL).length(columnSize).scale(decimalDigits).build();
-            case REAL:
+            case NUMERIC:
+                return FieldType.builder().dataType(DataType.NUMERIC).length(columnSize).scale(decimalDigits).build();
+            case FLOAT4:
                 return FieldType.builder().dataType(DataType.REAL).build();
-            case DOUBLE:
+            case FLOAT8:
                 return FieldType.builder().dataType(DataType.DOUBLE).build();
             case DATE:
                 return FieldType.builder().dataType(DataType.DATE).build();
             case TIME:
-                return FieldType.builder().dataType(DataType.TIME).scale(decimalDigits).build();
+                return FieldType.builder().dataType(DataType.TIME).length(decimalDigits).build();
             case TIMESTAMP:
-                return FieldType.builder().dataType(DataType.TIMESTAMP).scale(decimalDigits).build();
-            case TIMESTAMP_WITH_TIME_ZONE:
-                return FieldType.builder().dataType(DataType.TIMESTAMP_TZ).scale(decimalDigits).build();
+                return FieldType.builder().dataType(DataType.TIMESTAMP).length(decimalDigits).build();
+            case TIMESTAMPTZ:
+                return FieldType.builder().dataType(DataType.TIMESTAMP_TZ).length(decimalDigits).build();
             case JSON:
                 return FieldType.builder().dataType(DataType.JSON).build();
             default:

@@ -15,23 +15,24 @@
 package org.finos.legend.engine.persistence.components.relational.postgres.sql;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
+import org.finos.legend.engine.persistence.components.relational.postgres.sqldom.schema.ByteArray;
+import org.finos.legend.engine.persistence.components.relational.postgres.sqldom.schema.DoublePrecision;
+import org.finos.legend.engine.persistence.components.relational.postgres.sqldom.schema.TimestampWithTimezone;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.BigInt;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Binary;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Bit;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Boolean;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Char;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.DataType;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Date;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Double;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Integer;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Json;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.LongText;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Numeric;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Real;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.SmallInt;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Text;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Time;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Timestamp;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.TimestampWithTimezone;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.VarChar;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.VariableSizeDataType;
 
@@ -61,42 +62,46 @@ public class PostgresDataTypeMapping implements DataTypeMapping
                 dataType = new VarChar();
                 type.length().ifPresent(dataType::setLength);
                 break;
+            case TEXT:
+                dataType = new Text();
+                break;
             case TIMESTAMP:
+            case TIMESTAMP_NTZ:
             case DATETIME:
                 dataType = new Timestamp();
-                type.scale().ifPresent(dataType::setScale);
+                type.length().ifPresent(dataType::setLength);
                 break;
             case TIMESTAMP_TZ:
                 dataType = new TimestampWithTimezone();
-                type.scale().ifPresent(dataType::setScale);
+                type.length().ifPresent(dataType::setLength);
                 break;
             case DATE:
                 dataType = new Date();
                 break;
-            case REAL:
-            case FLOAT:
-                dataType = new Real();
-                break;
-            case DOUBLE:
-                dataType = new Double();
-                break;
-            case BINARY:
-                dataType = new Binary();
-                type.length().ifPresent(dataType::setLength);
-                break;
             case TIME:
                 dataType = new Time();
-                type.scale().ifPresent(dataType::setScale);
+                type.length().ifPresent(dataType::setLength);
+                break;
+            case REAL:
+                dataType = new Real();
+                break;
+            case FLOAT:
+            case DOUBLE:
+                dataType = new DoublePrecision();
+                break;
+            case BINARY:
+            case BYTES:
+                dataType = new ByteArray();
+                break;
+            case BIT:
+                dataType = new Bit();
+                type.length().ifPresent(dataType::setLength);
                 break;
             case DECIMAL:
             case NUMERIC:
                 dataType = new Numeric();
                 type.length().ifPresent(dataType::setLength);
                 type.scale().ifPresent(dataType::setScale);
-                break;
-            case LONGTEXT:
-                dataType = new LongText();
-                type.length().ifPresent(dataType::setLength);
                 break;
             case BOOLEAN:
                 dataType = new Boolean();
@@ -105,10 +110,14 @@ public class PostgresDataTypeMapping implements DataTypeMapping
             case JSON:
                 dataType = new Json();
                 break;
-            case VARBINARY:
+            case LONGTEXT:
+            case TINYINT:
             case LONGVARCHAR:
-            case BIT:
+            case VARBINARY:
             case LONGVARBINARY:
+            case TIMESTAMP_LTZ:
+            case MAP:
+            case ARRAY:
             default:
                 throw new IllegalArgumentException("Unexpected value: " + type.dataType());
         }
