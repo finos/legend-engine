@@ -78,7 +78,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-functionActivator-api</artifactId>
+            <artifactId>legend-engine-xt-functionActivator-http-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

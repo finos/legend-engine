@@ -35,8 +35,8 @@
         <module>legend-engine-xt-graphQL-protocol</module>
         <module>legend-engine-xt-graphQL-pure</module>
         <module>legend-engine-xt-graphQL-pure-metamodel</module>
-        <module>legend-engine-xt-graphQL-query</module>
+        <module>legend-engine-xt-graphQL-http-api</module>
         <module>legend-engine-xt-graphQL-relational-extension</module>
-        <module>legend-engine-xt-graphQL-api</module>
+        <module>legend-engine-xt-graphQL-generation-http-api</module>
     </modules>
 </project>

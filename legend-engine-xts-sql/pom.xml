@@ -37,6 +37,6 @@
         <module>legend-engine-xt-sql-providers</module>
         <module>legend-engine-xt-sql-pure</module>
         <module>legend-engine-xt-sql-pure-metamodel</module>
-        <module>legend-engine-xt-sql-query</module>
+        <module>legend-engine-xt-sql-http-api</module>
     </modules>
 </project>

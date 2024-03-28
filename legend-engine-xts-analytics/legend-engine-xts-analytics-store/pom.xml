@@ -28,6 +28,6 @@
 
     <modules>
         <module>legend-engine-xt-analytics-store-entitlement</module>
-        <module>legend-engine-xt-analytics-store-entitlement-api</module>
+        <module>legend-engine-xt-analytics-store-entitlement-http-api</module>
     </modules>
 </project>

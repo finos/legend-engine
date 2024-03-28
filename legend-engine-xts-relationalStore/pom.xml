@@ -35,5 +35,6 @@
         <module>legend-engine-xt-relationalStore-execution</module>
         <module>legend-engine-xt-relationalStore-generation</module>
         <module>legend-engine-xt-relationalStore-test</module>
+        <module>legend-engine-xt-relationalStore-connection-http-api</module>
     </modules>
 </project>

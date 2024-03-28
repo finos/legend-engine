@@ -191,7 +191,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-format-api</artifactId>
+            <artifactId>legend-engine-external-format-http-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

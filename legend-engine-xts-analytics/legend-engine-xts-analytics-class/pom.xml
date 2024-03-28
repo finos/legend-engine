@@ -28,6 +28,6 @@
 
     <modules>
         <module>legend-engine-xt-analytics-class-pure</module>
-        <module>legend-engine-xt-analytics-class-api</module>
+        <module>legend-engine-xt-analytics-class-http-api</module>
     </modules>
 </project>

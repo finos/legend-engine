@@ -29,7 +29,7 @@
 
 
     <modules>
-        <module>legend-engine-xt-diagram-api</module>
+        <module>legend-engine-xt-diagram-http-api</module>
         <module>legend-engine-xt-diagram-compiler</module>
         <module>legend-engine-xt-diagram-grammar</module>
         <module>legend-engine-xt-diagram-protocol</module>

@@ -27,7 +27,7 @@
     <name>Legend Engine - Pure - IDE</name>
 
     <modules>
-        <module>legend-engine-pure-ide-light</module>
+        <module>legend-engine-pure-ide-light-http-server</module>
         <module>legend-engine-pure-ide-light-metadata-pure</module>
         <module>legend-engine-pure-ide-light-pure</module>
     </modules>
