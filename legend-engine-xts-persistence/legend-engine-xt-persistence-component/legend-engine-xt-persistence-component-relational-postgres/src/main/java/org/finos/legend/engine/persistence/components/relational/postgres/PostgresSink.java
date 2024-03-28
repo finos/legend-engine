@@ -70,8 +70,6 @@ public class PostgresSink extends AnsiSqlSink
         capabilities.add(Capability.EXPLICIT_DATA_TYPE_CONVERSION);
         capabilities.add(Capability.DATA_TYPE_LENGTH_CHANGE);
         capabilities.add(Capability.DATA_TYPE_SCALE_CHANGE);
-        capabilities.add(Capability.TRANSFORM_WHILE_COPY);
-        capabilities.add(Capability.DRY_RUN);
         CAPABILITIES = Collections.unmodifiableSet(capabilities);
 
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
@@ -80,6 +78,7 @@ public class PostgresSink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(Update.class, new SQLUpdateVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
+        // TODO: These two mappings have not been confirmed, to do with schema evolution
         Map<DataType, Set<DataType>> implicitDataTypeMapping = new HashMap<>();
         implicitDataTypeMapping.put(DataType.DECIMAL, new HashSet<>(Arrays.asList(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT, DataType.BIGINT, DataType.FLOAT, DataType.DOUBLE, DataType.REAL, DataType.NUMERIC)));
         implicitDataTypeMapping.put(DataType.DOUBLE, new HashSet<>(Arrays.asList(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT, DataType.FLOAT, DataType.REAL)));
