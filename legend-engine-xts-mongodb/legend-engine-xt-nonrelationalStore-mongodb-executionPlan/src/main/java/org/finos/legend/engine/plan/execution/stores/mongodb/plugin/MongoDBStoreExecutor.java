@@ -28,11 +28,10 @@ public class MongoDBStoreExecutor implements StoreExecutor
         this.storeExecutionConfiguration = storeExecutionConfiguration;
     }
 
-
     @Override
     public MongoDBStoreExecutionState buildStoreExecutionState()
     {
-        return new MongoDBStoreExecutionState(this.state);
+        return new MongoDBStoreExecutionState(this.state, this.storeExecutionConfiguration);
     }
 
     @Override

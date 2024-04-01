@@ -88,6 +88,7 @@ import org.finos.legend.engine.plan.execution.graphFetch.GraphFetchExecutionConf
 import org.finos.legend.engine.plan.execution.service.api.ServiceModelingApi;
 import org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.plugin.ElasticsearchV7StoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.plugin.ElasticsearchV7StoreExecutorBuilder;
+import org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.plugin.ElasticsearchV7StoreExecutorConfiguration;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
 import org.finos.legend.engine.plan.execution.stores.mongodb.plugin.MongoDBStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.mongodb.plugin.MongoDBStoreExecutorBuilder;
@@ -283,9 +284,10 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         ServiceStoreExecutor serviceStoreExecutor = (ServiceStoreExecutor) new ServiceStoreExecutorBuilder().build(serviceStoreExecutionConfiguration);
 
         MongoDBStoreExecutorConfiguration mongoDBExecutorConfiguration = MongoDBStoreExecutorConfiguration.newInstance().withCredentialProviderProvider(credentialProviderProvider).build();
-        MongoDBStoreExecutor mongoDBStoreExecutor = (MongoDBStoreExecutor) new MongoDBStoreExecutorBuilder().build(mongoDBExecutorConfiguration);
+        MongoDBStoreExecutor mongoDBStoreExecutor = new MongoDBStoreExecutorBuilder().build(mongoDBExecutorConfiguration);
 
-        ElasticsearchV7StoreExecutor elasticsearchV7StoreExecutor = (ElasticsearchV7StoreExecutor) new ElasticsearchV7StoreExecutorBuilder().build();
+        ElasticsearchV7StoreExecutorConfiguration elasticsearchV7StoreExecutorConfiguration = ElasticsearchV7StoreExecutorConfiguration.newInstance().withCredentialProviderProvider(credentialProviderProvider).build();
+        ElasticsearchV7StoreExecutor elasticsearchV7StoreExecutor = (ElasticsearchV7StoreExecutor) new ElasticsearchV7StoreExecutorBuilder().build(elasticsearchV7StoreExecutorConfiguration);
 
         PlanExecutor planExecutor;
         ParallelGraphFetchExecutionExecutorPool parallelGraphFetchExecutionExecutorPool = null;
