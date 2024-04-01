@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.mongodb.plugin;
+package org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.plugin;
 
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 
-public class MongoDBStoreExecutorConfiguration implements StoreExecutorConfiguration
+public class ElasticsearchV7StoreExecutorConfiguration implements StoreExecutorConfiguration
 {
     private CredentialProviderProvider credentialProviderProvider;
 
@@ -48,11 +48,11 @@ public class MongoDBStoreExecutorConfiguration implements StoreExecutorConfigura
             return this;
         }
 
-        public MongoDBStoreExecutorConfiguration build()
+        public ElasticsearchV7StoreExecutorConfiguration build()
         {
-            MongoDBStoreExecutorConfiguration mongoDBStoreExecutionConfiguration = new MongoDBStoreExecutorConfiguration();
-            mongoDBStoreExecutionConfiguration.credentialProviderProvider = this.credentialProviderProvider;
-            return mongoDBStoreExecutionConfiguration;
+            ElasticsearchV7StoreExecutorConfiguration elasticsearchV7StoreExecutorConfiguration = new ElasticsearchV7StoreExecutorConfiguration();
+            elasticsearchV7StoreExecutorConfiguration.credentialProviderProvider = credentialProviderProvider;
+            return elasticsearchV7StoreExecutorConfiguration;
         }
     }
 

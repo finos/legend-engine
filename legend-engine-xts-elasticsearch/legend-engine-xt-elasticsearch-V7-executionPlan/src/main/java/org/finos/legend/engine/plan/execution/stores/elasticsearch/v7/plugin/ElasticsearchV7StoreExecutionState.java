@@ -25,9 +25,17 @@ public class ElasticsearchV7StoreExecutionState implements StoreExecutionState
 {
     private final ElasticsearchV7StoreState state;
 
-    public ElasticsearchV7StoreExecutionState(ElasticsearchV7StoreState state)
+    private final ElasticsearchV7StoreExecutorConfiguration elasticsearchV7StoreExecutorConfiguration;
+
+    public ElasticsearchV7StoreExecutionState(ElasticsearchV7StoreState state, ElasticsearchV7StoreExecutorConfiguration elasticsearchV7StoreExecutorConfiguration)
     {
         this.state = state;
+        this.elasticsearchV7StoreExecutorConfiguration = elasticsearchV7StoreExecutorConfiguration;
+    }
+
+    public ElasticsearchV7StoreExecutorConfiguration getStoreExecutionConfiguration()
+    {
+        return this.elasticsearchV7StoreExecutorConfiguration;
     }
 
     @Override

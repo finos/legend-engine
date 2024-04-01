@@ -25,18 +25,19 @@ public class MongoDBStoreExecutionState implements StoreExecutionState
 {
 
     private final MongoDBStoreState state;
-    private RuntimeContext runtimeContext;
+    private RuntimeContext runtimeContext = RuntimeContext.empty();
 
+    private MongoDBStoreExecutorConfiguration storeExecutionConfiguration;
 
-    public MongoDBStoreExecutionState(MongoDBStoreState state, RuntimeContext runtimeContext)
+    public MongoDBStoreExecutionState(MongoDBStoreState state, MongoDBStoreExecutorConfiguration storeExecutionConfiguration)
     {
         this.state = state;
-        this.runtimeContext = runtimeContext;
+        this.storeExecutionConfiguration = storeExecutionConfiguration;
     }
 
-    public MongoDBStoreExecutionState(MongoDBStoreState state)
+    public MongoDBStoreExecutorConfiguration getStoreExecutionConfiguration()
     {
-        this(state, RuntimeContext.empty());
+        return storeExecutionConfiguration;
     }
 
     @Override
@@ -54,7 +55,7 @@ public class MongoDBStoreExecutionState implements StoreExecutionState
     @Override
     public StoreExecutionState copy()
     {
-        return new MongoDBStoreExecutionState(this.state, this.runtimeContext);
+        return new MongoDBStoreExecutionState(this.state, this.storeExecutionConfiguration);
     }
 
     @Override
