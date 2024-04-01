@@ -26,13 +26,9 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Alt
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Show;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Update;
-import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
-import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
-import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
-import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.executor.RelationalExecutionHelper;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
@@ -68,7 +64,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 public class MemSqlSink extends AnsiSqlSink
@@ -173,23 +168,6 @@ public class MemSqlSink extends AnsiSqlSink
         else
         {
             throw new UnsupportedOperationException("Only JdbcConnection is supported for MemSql Sink");
-        }
-    }
-
-
-    @Override
-    public Optional<Optimizer> optimizerForCaseConversion(CaseConversion caseConversion)
-    {
-        switch (caseConversion)
-        {
-            case TO_LOWER:
-                return Optional.of(new LowerCaseOptimizer());
-            case TO_UPPER:
-                return Optional.of(new UpperCaseOptimizer());
-            case NONE:
-                return Optional.empty();
-            default:
-                throw new IllegalArgumentException("Unrecognized case conversion: " + caseConversion);
         }
     }
 

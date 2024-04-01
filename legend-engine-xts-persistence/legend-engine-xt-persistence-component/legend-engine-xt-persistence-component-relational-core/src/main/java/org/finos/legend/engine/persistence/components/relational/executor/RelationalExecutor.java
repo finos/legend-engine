@@ -135,7 +135,7 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
     @Override
     public void setSqlLogging(SqlLogging sqlLogging)
     {
-        this.sqlLogging = SqlLogging.UNMASKED;
+        this.sqlLogging = sqlLogging;
     }
 
     @Override

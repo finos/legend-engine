@@ -69,7 +69,6 @@ public class SqlUtils
         if (!sqlLogging.equals(SqlLogging.DISABLED))
         {
             logger.info(sql);
-            System.out.println(sql);
         }
     }
 }
