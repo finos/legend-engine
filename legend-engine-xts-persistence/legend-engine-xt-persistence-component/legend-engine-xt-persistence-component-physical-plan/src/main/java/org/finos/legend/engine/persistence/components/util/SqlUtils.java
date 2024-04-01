@@ -55,7 +55,6 @@ public class SqlUtils
                 break;
             case UNMASKED:
                 logger.info(sqlAfterReplacingPlaceholders);
-                System.out.println(sqlAfterReplacingPlaceholders);
                 break;
             case DISABLED:
                 break;
