@@ -20,7 +20,7 @@ import org.testcontainers.utility.MountableFile;
 
 public class PostgresTestContainer
 {
-    private PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer(DockerImageName.parse("postgres").withTag("latest"));
+    private PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer(DockerImageName.parse("postgres").withTag("16.2"));
 
     public static PostgresTestContainer build()
     {
