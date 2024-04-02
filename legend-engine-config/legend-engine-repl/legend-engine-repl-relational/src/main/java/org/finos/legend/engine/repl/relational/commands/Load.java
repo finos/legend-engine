@@ -18,12 +18,15 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.repl.client.Client;
-import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.client.jline3.JLine3Parser;
+import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.relational.RelationalReplExtension;
+import org.finos.legend.engine.repl.relational.shared.ConnectionHelper;
 import org.jline.builtins.Completers;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
@@ -63,13 +66,16 @@ public class Load implements Command
             {
                 throw new RuntimeException("Error, load should be used as 'load <path> <connection>'");
             }
-            String tableName = "test" + getTables(this.relationalReplExtension.getConnection()).size() + 1;
 
-            try (Connection connection = this.relationalReplExtension.getConnection())
+            DatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(this.client.getModelState().parse(), tokens[2]);
+
+            try (Connection connection = ConnectionHelper.getConnection(databaseConnection, client.getPlanExecutor()))
             {
+                String tableName = "test" + getTables(connection).size() + 1;
+
                 try (Statement statement = connection.createStatement())
                 {
-                    statement.executeUpdate("CREATE TABLE " + tableName + " AS SELECT * FROM CSVREAD('" + tokens[1] + "');");
+                    statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().load(tableName, tokens[1]));
                 }
             }
 
@@ -101,7 +107,7 @@ public class Load implements Command
             else
             {
                 String start = words.subList(words.indexOf(" ") + 1, words.size()).get(0);
-                PureModelContextData d = this.client.getLegendInterface().parse(this.client.buildState().makeString("\n"));
+                PureModelContextData d = this.client.getModelState().parse();
                 return
                         ListIterate.select(d.getElementsOfType(PackageableConnection.class), c -> !c._package.equals("__internal__"))
                                 .collect(c -> PureGrammarComposerUtility.convertPath(c.getPath()))

@@ -20,9 +20,11 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.relational.RelationalReplExtension;
+import org.finos.legend.engine.repl.relational.shared.ConnectionHelper;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
@@ -58,7 +60,11 @@ public class DB implements Command
             {
                 throw new RuntimeException("Error, load should be used as 'db <connection>'");
             }
-            try (Connection connection = relationalReplExtension.getConnection())
+
+            PureModelContextData d = this.client.getModelState().parse();
+            DatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(d, tokens[1]);
+
+            try (Connection connection = ConnectionHelper.getConnection(databaseConnection, client.getPlanExecutor()))
             {
                 this.client.getTerminal().writer().println(
                         getTables(connection).collect(c -> c.schema + "." + c.name + "(" + c.columns.collect(col -> col.name + " " + col.type).makeString(", ") + ")").makeString("\n")
@@ -76,7 +82,7 @@ public class DB implements Command
         {
             MutableList<String> words = Lists.mutable.withAll(parsedLine.words()).drop(2);
             String start = words.get(0);
-            PureModelContextData d = this.client.getLegendInterface().parse(this.client.buildState().makeString("\n"));
+            PureModelContextData d = this.client.getModelState().parse();
             return
                     ListIterate.select(d.getElementsOfType(PackageableConnection.class), c -> !c._package.equals("__internal__"))
                             .collect(c -> PureGrammarComposerUtility.convertPath(c.getPath()))

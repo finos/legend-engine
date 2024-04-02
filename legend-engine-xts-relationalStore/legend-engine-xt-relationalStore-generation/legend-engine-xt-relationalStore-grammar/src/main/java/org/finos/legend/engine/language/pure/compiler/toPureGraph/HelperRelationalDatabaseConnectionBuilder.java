@@ -44,14 +44,9 @@ public class HelperRelationalDatabaseConnectionBuilder
         Root_meta_external_store_relational_runtime_DatabaseConnection connection = pureConnection._type(context.pureModel.getEnumValue("meta::relational::runtime::DatabaseType", connectionType));
         connection._timeZone(timeZone);
         connection._quoteIdentifiers(quoteIdentifiers);
-
-        try
+        if (element != null)
         {
             HelperRelationalBuilder.resolveDatabase(element, elementSourceInformation, context);
-        }
-        catch (RuntimeException e)
-        {
-            context.pureModel.storesIndex.putIfAbsent(element, new Root_meta_relational_metamodel_Database_Impl(element)._name(element));
         }
     }
 

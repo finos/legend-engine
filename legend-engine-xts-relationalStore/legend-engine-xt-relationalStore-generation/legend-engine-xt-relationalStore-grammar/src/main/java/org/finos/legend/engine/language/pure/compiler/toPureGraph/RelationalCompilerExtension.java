@@ -114,9 +114,8 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.RelationalOperationElement;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAlias;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasAccessor;
-import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.DataType;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.*;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Integer;
-import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Varchar;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.NamedRelation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Relation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
@@ -749,6 +748,14 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         else if (c instanceof Integer)
         {
             primitiveType = "Integer";
+        }
+        else if (c instanceof BigInt)
+        {
+            primitiveType = "Integer";
+        }
+        else if (c instanceof Bit)
+        {
+            primitiveType = "Boolean";
         }
         else
         {

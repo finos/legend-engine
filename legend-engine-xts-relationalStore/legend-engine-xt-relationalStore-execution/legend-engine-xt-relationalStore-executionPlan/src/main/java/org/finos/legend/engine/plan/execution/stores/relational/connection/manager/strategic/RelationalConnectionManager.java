@@ -127,7 +127,7 @@ public class RelationalConnectionManager implements ConnectionManager
         DataSourceSpecification key = this.dataSourceTrans.collect(f -> datasourceSpecification.accept(f.value(relationalDatabaseConnection, connectionKey))).detect(Objects::nonNull);
         if (key == null)
         {
-            throw new RuntimeException(datasourceSpecification.getClass() + " is not supported!");
+            throw new RuntimeException("Can't find a transformer for a datasource of type '" + datasourceSpecification.getClass() + "'");
         }
         return key;
     }
