@@ -91,10 +91,14 @@ function <<access.private>> meta::external::format::json::binding::validation::g
                                       format = 'JSON',
                                       sourceSchemaId = $binding.schemaId,
                                       targetPackage = $targetPackage->toOne()
-                                    );
+                                    );      
 
-      let classesFromSchemaSet  = jsonSchemaToPure($binding.schemaSet->toOne(), $jsonSchemaToPureConfig)->filter(pe| $pe->instanceOf(Class))->cast(@Class<Any>);
-      matchModelsAndSchemas($classesFromSchemaSet, $classesFromModelUnit);
+      if(anyLegendJsonSpecificationWithEmptyInnerSchema($binding.schemaSet->toOne(), $jsonSchemaToPureConfig), 
+        | getBindingDetailsWithoutSchemaSet($binding),
+        | 
+          let classesFromSchemaSet  = jsonSchemaToPure($binding.schemaSet->toOne(), $jsonSchemaToPureConfig)->filter(pe| $pe->instanceOf(Class))->cast(@Class<Any>);
+          matchModelsAndSchemas($classesFromSchemaSet, $classesFromModelUnit);
+      );
   );
 }
 

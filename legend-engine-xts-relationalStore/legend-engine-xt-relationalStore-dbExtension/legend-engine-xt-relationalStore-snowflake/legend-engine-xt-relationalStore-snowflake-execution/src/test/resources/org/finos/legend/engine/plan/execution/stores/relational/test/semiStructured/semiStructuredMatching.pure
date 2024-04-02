@@ -86,38 +86,11 @@ Database match::store::SnowflakeDB
   )
 )
 
-Database match::store::MemSQLDB
-(
-  Schema ORDER_SCHEMA
-  (
-    Table ORDER_TABLE
-    (
-      ORDERID INTEGER PRIMARY KEY,
-      ORDERNAME VARCHAR(100),
-      CUSTOMER JSON
-    )
-  )
-)
-
-Database match::store::H2DB
-(
-  Schema ORDER_SCHEMA
-  (
-    Table ORDER_TABLE
-    (
-      ORDERID INTEGER PRIMARY KEY,
-      ORDERNAME VARCHAR(100),
-      CUSTOMER VARCHAR(1000)
-    )
-  )
-)
-
 ###ExternalFormat
-Binding match::store::OrderBinding
+Binding match::store::CustomerBinding
 {
   contentType: 'application/json';
   modelIncludes: [
-    match::model::Order,
     match::model::Customer,
     match::model::CustomerAddress,
     match::model::BillingAddress,
@@ -128,6 +101,80 @@ Binding match::store::OrderBinding
     match::model::PrepaidPayment,
     match::model::WalletPrepaidPayment,
     match::model::CardPrepaidPayment
+  ];
+}
+
+SchemaSet match::schema::Customer_v07
+{
+  format: JSON;
+  schemas: [
+    {
+      id: Customer;
+      location: 'Customer.json';
+      content: '{\n  "$schema": "http://json-schema.org/draft-07/schema#",\n  "title": "match::model::Customer",\n  "type": "object",\n  "properties": {\n    "customerId": {\n      "type": "string"\n    },\n    "customerAddress": {\n      "oneOf": [\n        {\n          "$ref": "#/definitions/match::model::BillingAddress"\n        },\n        {\n          "$ref": "#/definitions/match::model::CustomerAddress"\n        },\n        {\n          "$ref": "#/definitions/match::model::ShippingAddress"\n        }\n      ]\n    },\n    "transactionDetails": {\n      "$ref": "#/definitions/match::model::TransactionDetails"\n    }\n  },\n  "required": [\n    "customerId",\n    "customerAddress",\n    "transactionDetails"\n  ],\n  "definitions": {\n    "match::model::BillingAddress": {\n      "$schema": "http://json-schema.org/draft-07/schema#",\n      "title": "match::model::BillingAddress",\n      "allOf": [\n        {\n          "$ref": "#/definitions/match::model::CustomerAddress"\n        }\n      ],\n      "type": "object",\n      "properties": {\n        "billAddress": {\n          "type": "string"\n        }\n      },\n      "required": [\n        "billAddress"\n      ]\n    },\n    "match::model::CardPrepaidPayment": {\n      "$schema": "http://json-schema.org/draft-07/schema#",\n      "title": "match::model::CardPrepaidPayment",\n      "allOf": [\n        {\n          "$ref": "#/definitions/match::model::PrepaidPayment"\n        }\n      ],\n      "type": "object",\n      "properties": {\n        "cardTransactionAmount": {\n          "type": "integer"\n        }\n      },\n      "required": [\n        "cardTransactionAmount"\n      ]\n    },\n    "match::model::CashOnDeliveryPayment": {\n      "$schema": "http://json-schema.org/draft-07/schema#",\n      "title": "match::model::CashOnDeliveryPayment",\n      "allOf": [\n        {\n          "$ref": "#/definitions/match::model::Payment"\n        }\n      ],\n      "type": "object",\n      "properties": {\n        "amountToBePaid": {\n          "type": "integer"\n        }\n      },\n      "required": [\n        "amountToBePaid"\n      ]\n    },\n    "match::model::CustomerAddress": {\n      "$schema": "http://json-schema.org/draft-07/schema#",\n      "title": "match::model::CustomerAddress",\n      "type": "object",\n      "properties": {\n        "name": {\n          "type": "string"\n        }\n      },\n      "required": [\n        "name"\n      ]\n    },\n    "match::model::Payment": {\n      "$schema": "http://json-schema.org/draft-07/schema#",\n      "title": "match::model::Payment",\n      "type": "object",\n      "properties": {\n        "paymentId": {\n          "type": "string"\n        }\n      },\n      "required": [\n        "paymentId"\n      ]\n    },\n    "match::model::PrepaidPayment": {\n      "$schema": "http://json-schema.org/draft-07/schema#",\n      "title": "match::model::PrepaidPayment",\n      "allOf": [\n        {\n          "$ref": "#/definitions/match::model::Payment"\n        }\n      ],\n      "type": "object",\n      "properties": {\n        "amountPaid": {\n          "type": "integer"\n        }\n      },\n      "required": [\n        "amountPaid"\n      ]\n    },\n    "match::model::ShippingAddress": {\n      "$schema": "http://json-schema.org/draft-07/schema#",\n      "title": "match::model::ShippingAddress",\n      "allOf": [\n        {\n          "$ref": "#/definitions/match::model::CustomerAddress"\n        }\n      ],\n      "type": "object",\n      "properties": {\n        "shipAddress": {\n          "type": "string"\n        }\n      },\n      "required": [\n        "shipAddress"\n      ]\n    },\n    "match::model::TransactionDetails": {\n      "$schema": "http://json-schema.org/draft-07/schema#",\n      "title": "match::model::TransactionDetails",\n      "type": "object",\n      "properties": {\n        "payment": {\n          "oneOf": [\n            {\n              "$ref": "#/definitions/match::model::CardPrepaidPayment"\n            },\n            {\n              "$ref": "#/definitions/match::model::CashOnDeliveryPayment"\n            },\n            {\n              "$ref": "#/definitions/match::model::Payment"\n            },\n            {\n              "$ref": "#/definitions/match::model::PrepaidPayment"\n            },\n            {\n              "$ref": "#/definitions/match::model::WalletPrepaidPayment"\n            }\n          ]\n        }\n      },\n      "required": [\n        "payment"\n      ]\n    },\n    "match::model::WalletPrepaidPayment": {\n      "$schema": "http://json-schema.org/draft-07/schema#",\n      "title": "match::model::WalletPrepaidPayment",\n      "allOf": [\n        {\n          "$ref": "#/definitions/match::model::PrepaidPayment"\n        }\n      ],\n      "type": "object",\n      "properties": {\n        "walletTransactionAmount": {\n          "type": "integer"\n        }\n      },\n      "required": [\n        "walletTransactionAmount"\n      ]\n    }\n  }\n}';
+    }
+  ];
+}
+
+SchemaSet match::schema::Customer_v_LegendJson
+{
+  format: JSON;
+  schemas: [
+    {
+      id: Customer;
+      location: 'Customer.json';
+      content: '{\n  "$schema": "LEGEND_JSON",\n  "typeConfig": {\n    "typeKeyName": "_type",\n    "fullyQualifiedTypePath": true,\n    "fullyQualifiedTypeNameOverride": {\n      "match::model::PrepaidPayment": "Prepaid",\n      "match::model::WalletPrepaidPayment": "Wallet"\n     }\n  },\n  "innerSchema": {\n    "$schema": "http://json-schema.org/draft-07/schema#",\n    "title": "match::model::Customer",\n    "type": "object",\n    "properties": {\n      "customerId": {\n        "type": "string"\n      },\n      "customerAddress": {\n        "oneOf": [\n          {\n            "$ref": "#/definitions/match::model::BillingAddress"\n          },\n          {\n            "$ref": "#/definitions/match::model::CustomerAddress"\n          },\n          {\n            "$ref": "#/definitions/match::model::ShippingAddress"\n          }\n        ]\n      },\n      "transactionDetails": {\n        "$ref": "#/definitions/match::model::TransactionDetails"\n      }\n    },\n    "required": [\n      "customerId",\n      "customerAddress",\n      "transactionDetails"\n    ],\n    "definitions": {\n      "match::model::BillingAddress": {\n        "$schema": "http://json-schema.org/draft-07/schema#",\n        "title": "match::model::BillingAddress",\n        "allOf": [\n          {\n            "$ref": "#/definitions/match::model::CustomerAddress"\n          }\n        ],\n        "type": "object",\n        "properties": {\n          "billAddress": {\n            "type": "string"\n          }\n        },\n        "required": [\n          "billAddress"\n        ]\n      },\n      "match::model::CardPrepaidPayment": {\n        "$schema": "http://json-schema.org/draft-07/schema#",\n        "title": "match::model::CardPrepaidPayment",\n        "allOf": [\n          {\n            "$ref": "#/definitions/match::model::PrepaidPayment"\n          }\n        ],\n        "type": "object",\n        "properties": {\n          "cardTransactionAmount": {\n            "type": "integer"\n          }\n        },\n        "required": [\n          "cardTransactionAmount"\n        ]\n      },\n      "match::model::CashOnDeliveryPayment": {\n        "$schema": "http://json-schema.org/draft-07/schema#",\n        "title": "match::model::CashOnDeliveryPayment",\n        "allOf": [\n          {\n            "$ref": "#/definitions/match::model::Payment"\n          }\n        ],\n        "type": "object",\n        "properties": {\n          "amountToBePaid": {\n            "type": "integer"\n          }\n        },\n        "required": [\n          "amountToBePaid"\n        ]\n      },\n      "match::model::CustomerAddress": {\n        "$schema": "http://json-schema.org/draft-07/schema#",\n        "title": "match::model::CustomerAddress",\n        "type": "object",\n        "properties": {\n          "name": {\n            "type": "string"\n          }\n        },\n        "required": [\n          "name"\n        ]\n      },\n      "match::model::Payment": {\n        "$schema": "http://json-schema.org/draft-07/schema#",\n        "title": "match::model::Payment",\n        "type": "object",\n        "properties": {\n          "paymentId": {\n            "type": "string"\n          }\n        },\n        "required": [\n          "paymentId"\n        ]\n      },\n      "match::model::PrepaidPayment": {\n        "$schema": "http://json-schema.org/draft-07/schema#",\n        "title": "match::model::PrepaidPayment",\n        "allOf": [\n          {\n            "$ref": "#/definitions/match::model::Payment"\n          }\n        ],\n        "type": "object",\n        "properties": {\n          "amountPaid": {\n            "type": "integer"\n          }\n        },\n        "required": [\n          "amountPaid"\n        ]\n      },\n      "match::model::ShippingAddress": {\n        "$schema": "http://json-schema.org/draft-07/schema#",\n        "title": "match::model::ShippingAddress",\n        "allOf": [\n          {\n            "$ref": "#/definitions/match::model::CustomerAddress"\n          }\n        ],\n        "type": "object",\n        "properties": {\n          "shipAddress": {\n            "type": "string"\n          }\n        },\n        "required": [\n          "shipAddress"\n        ]\n      },\n      "match::model::TransactionDetails": {\n        "$schema": "http://json-schema.org/draft-07/schema#",\n        "title": "match::model::TransactionDetails",\n        "type": "object",\n        "properties": {\n          "payment": {\n            "oneOf": [\n              {\n                "$ref": "#/definitions/match::model::CardPrepaidPayment"\n              },\n              {\n                "$ref": "#/definitions/match::model::CashOnDeliveryPayment"\n              },\n              {\n                "$ref": "#/definitions/match::model::Payment"\n              },\n              {\n                "$ref": "#/definitions/match::model::PrepaidPayment"\n              },\n              {\n                "$ref": "#/definitions/match::model::WalletPrepaidPayment"\n              }\n            ]\n          }\n        },\n        "required": [\n          "payment"\n        ]\n      },\n      "match::model::WalletPrepaidPayment": {\n        "$schema": "http://json-schema.org/draft-07/schema#",\n        "title": "match::model::WalletPrepaidPayment",\n        "allOf": [\n          {\n            "$ref": "#/definitions/match::model::PrepaidPayment"\n          }\n        ],\n        "type": "object",\n        "properties": {\n          "walletTransactionAmount": {\n            "type": "integer"\n          }\n        },\n        "required": [\n          "walletTransactionAmount"\n        ]\n      }\n    }\n  }\n}';
+    }
+  ];
+}
+
+SchemaSet match::schema::Customer_v_MinimalLegendJson
+{
+  format: JSON;
+  schemas: [
+    {
+      id: Customer;
+      location: 'Customer.json';
+      content: '{\n  "$schema": "LEGEND_JSON",\n  "typeConfig": {\n    "typeKeyName": "_type",\n    "fullyQualifiedTypePath": false\n  }\n}';
+    }
+  ];
+}
+
+Binding match::store::CustomerBindingWithLegendJsonSchema
+{
+  schemaSet: match::schema::Customer_v_LegendJson;
+  schemaId: Customer;
+  contentType: 'application/json';
+  modelIncludes: [
+    match::model::Customer,
+    match::model::CashOnDeliveryPayment,
+    match::model::TransactionDetails,
+    match::model::CustomerAddress,
+    match::model::CardPrepaidPayment,
+    match::model::WalletPrepaidPayment,
+    match::model::PrepaidPayment,
+    match::model::Payment,
+    match::model::ShippingAddress,
+    match::model::BillingAddress
+  ];
+}
+
+Binding match::store::CustomerBindingWithMinimalLegendJsonSchema
+{
+  schemaSet: match::schema::Customer_v_MinimalLegendJson;
+  schemaId: Customer;
+  contentType: 'application/json';
+  modelIncludes: [
+    match::model::Customer,
+    match::model::CashOnDeliveryPayment,
+    match::model::TransactionDetails,
+    match::model::CustomerAddress,
+    match::model::CardPrepaidPayment,
+    match::model::WalletPrepaidPayment,
+    match::model::PrepaidPayment,
+    match::model::Payment,
+    match::model::ShippingAddress,
+    match::model::BillingAddress
   ];
 }
 
@@ -143,37 +190,37 @@ Mapping match::mapping::SnowflakeMapping
     ~mainTable [match::store::SnowflakeDB]ORDER_SCHEMA.ORDER_TABLE
     orderId: [match::store::SnowflakeDB]ORDER_SCHEMA.ORDER_TABLE.ORDERID,
     orderName: [match::store::SnowflakeDB]ORDER_SCHEMA.ORDER_TABLE.ORDERNAME,
-    customer: Binding match::store::OrderBinding : [match::store::SnowflakeDB]ORDER_SCHEMA.ORDER_TABLE.CUSTOMER
+    customer: Binding match::store::CustomerBinding : [match::store::SnowflakeDB]ORDER_SCHEMA.ORDER_TABLE.CUSTOMER
   }
 )
 
-Mapping match::mapping::MemSQLMapping
+Mapping match::mapping::SnowflakeMappingWithLegendJsonSchema
 (
   match::model::Order: Relational
   {
     ~primaryKey
     (
-      [match::store::MemSQLDB]ORDER_SCHEMA.ORDER_TABLE.ORDERID
+      [match::store::SnowflakeDB]ORDER_SCHEMA.ORDER_TABLE.ORDERID
     )
-    ~mainTable [match::store::MemSQLDB]ORDER_SCHEMA.ORDER_TABLE
-    orderId: [match::store::MemSQLDB]ORDER_SCHEMA.ORDER_TABLE.ORDERID,
-    orderName: [match::store::MemSQLDB]ORDER_SCHEMA.ORDER_TABLE.ORDERNAME,
-    customer: Binding match::store::OrderBinding : [match::store::MemSQLDB]ORDER_SCHEMA.ORDER_TABLE.CUSTOMER
+    ~mainTable [match::store::SnowflakeDB]ORDER_SCHEMA.ORDER_TABLE
+    orderId: [match::store::SnowflakeDB]ORDER_SCHEMA.ORDER_TABLE.ORDERID,
+    orderName: [match::store::SnowflakeDB]ORDER_SCHEMA.ORDER_TABLE.ORDERNAME,
+    customer: Binding match::store::CustomerBindingWithLegendJsonSchema : [match::store::SnowflakeDB]ORDER_SCHEMA.ORDER_TABLE.CUSTOMER
   }
 )
 
-Mapping match::mapping::H2Mapping
+Mapping match::mapping::SnowflakeMappingWithMinimalLegendJsonSchema
 (
   match::model::Order: Relational
   {
     ~primaryKey
-     (
-       [match::store::H2DB]ORDER_SCHEMA.ORDER_TABLE.ORDERID
-     )
-     ~mainTable [match::store::H2DB]ORDER_SCHEMA.ORDER_TABLE
-     orderId: [match::store::H2DB]ORDER_SCHEMA.ORDER_TABLE.ORDERID,
-     orderName: [match::store::H2DB]ORDER_SCHEMA.ORDER_TABLE.ORDERNAME,
-     customer: Binding match::store::OrderBinding : [match::store::H2DB]ORDER_SCHEMA.ORDER_TABLE.CUSTOMER
+    (
+      [match::store::SnowflakeDB]ORDER_SCHEMA.ORDER_TABLE.ORDERID
+    )
+    ~mainTable [match::store::SnowflakeDB]ORDER_SCHEMA.ORDER_TABLE
+    orderId: [match::store::SnowflakeDB]ORDER_SCHEMA.ORDER_TABLE.ORDERID,
+    orderName: [match::store::SnowflakeDB]ORDER_SCHEMA.ORDER_TABLE.ORDERNAME,
+    customer: Binding match::store::CustomerBindingWithMinimalLegendJsonSchema : [match::store::SnowflakeDB]ORDER_SCHEMA.ORDER_TABLE.CUSTOMER
   }
 )
 

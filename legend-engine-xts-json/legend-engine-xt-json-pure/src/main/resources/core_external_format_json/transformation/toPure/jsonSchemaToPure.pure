@@ -97,6 +97,14 @@ function <<access.private>> meta::external::format::json::transformation::toPure
 // generation
 // ========================================================================================================================================================
 
+function meta::external::format::json::transformation::toPure::anyLegendJsonSpecificationWithEmptyInnerSchema(schemaSet:SchemaSet[1], config:JsonSchemaToModelConfiguration[1]): Boolean[1]
+{
+  let schemas = $schemaSet.schemas;
+  let context = createGenerationContext($schemaSet, $config);
+  let schemaInputs = $schemas->map(s | $s->schemaToSchemaInput($context));
+  anyLegendJsonSpecificationWithEmptyInnerSchema($schemaInputs);
+}
+
 function meta::external::format::json::transformation::toPure::jsonSchemaToPure(schemaSet:SchemaSet[1], config:JsonSchemaToModelConfiguration[1]): PackageableElement[*]
 {
    jsonSchemaToPure($schemaSet, $config, noDebug());

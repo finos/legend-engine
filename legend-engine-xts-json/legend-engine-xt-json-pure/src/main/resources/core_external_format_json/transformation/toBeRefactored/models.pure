@@ -54,7 +54,8 @@ meta::json::schema::generation::JSONSchemaSpecification
    JSON_SCHEMA_DRAFT_07,
    JSON_SCHEMA_2019_09,
    OPEN_API_V3_0_3_YAML,
-   OPEN_API_V3_0_3_YAML_PLAIN
+   OPEN_API_V3_0_3_YAML_PLAIN,
+   LEGEND_JSON
 }
 
 // Functions

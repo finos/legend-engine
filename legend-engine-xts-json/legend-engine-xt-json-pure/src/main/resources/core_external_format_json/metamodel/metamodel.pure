@@ -17,3 +17,10 @@ Class meta::external::format::json::metamodel::JsonSchema
 {
    content : String[1];  
 }
+
+Class meta::external::format::json::metamodel::TypeConfig extends meta::external::format::shared::metamodel::TypeConfig
+{
+    typeKeyName : String[1] = '@type';
+    fullyQualifiedTypePath : Boolean[1] = false;
+    fullyQualifiedTypeNameOverride: Map<String, String>[0..1];
+}

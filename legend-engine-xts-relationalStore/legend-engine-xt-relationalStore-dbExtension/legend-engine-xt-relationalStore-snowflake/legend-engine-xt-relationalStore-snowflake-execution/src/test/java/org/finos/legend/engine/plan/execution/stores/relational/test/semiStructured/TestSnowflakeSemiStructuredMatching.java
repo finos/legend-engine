@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.test.semiStructured;
 
-import org.eclipse.collections.impl.multimap.set.SynchronizedSetMultimap;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -22,6 +21,9 @@ public class TestSnowflakeSemiStructuredMatching extends AbstractTestSnowflakeSe
 {
     private static final String snowflakeMapping = "match::mapping::SnowflakeMapping";
     private static final String snowflakeRuntime = "match::runtime::SnowflakeRuntime";
+
+    private static final String snowflakeMappingWithLegendJsonSchema = "match::mapping::SnowflakeMappingWithLegendJsonSchema";
+    private static final String snowflakeMappingWithMinimalLegendJsonSchema = "match::mapping::SnowflakeMappingWithMinimalLegendJsonSchema";
 
     @Test
     public void testSemiStructuredMatchComplexProperty()
@@ -40,6 +42,34 @@ public class TestSnowflakeSemiStructuredMatching extends AbstractTestSnowflakeSe
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
+    @Test
+    public void testLegendJsonSchemaSemiStructuredMatchComplexProperty()
+    {
+        String queryFunction = "match::semiStructuredMatchComplexProperty__TabularDataSet_1_";
+
+        String snowflakePlan1 = this.buildExecutionPlanString(queryFunction, snowflakeMappingWithLegendJsonSchema, snowflakeRuntime);
+        String snowflakeExpected1 =
+                "    Relational\n" +
+                "    (\n" +
+                "      type = TDS[(Customer Address, String, VARCHAR(65536), \"\")]\n" +
+                "      resultColumns = [(\"Customer Address\", \"\")]\n" +
+                "      sql = select case when \"root\".CUSTOMER['customerAddress']['_type']::varchar in ('match::model::BillingAddress') then \"root\".CUSTOMER['customerAddress']['billAddress']::varchar when \"root\".CUSTOMER['customerAddress']['_type']::varchar in ('match::model::ShippingAddress') then \"root\".CUSTOMER['customerAddress']['shipAddress']::varchar else 'Default Address' end as \"Customer Address\" from ORDER_SCHEMA.ORDER_TABLE as \"root\"\n" +
+                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                "    )\n";
+        String TDSType = "  type = TDS[(Customer Address, String, VARCHAR(65536), \"\")]\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected1), snowflakePlan1);
+
+        String snowflakePlan2 = this.buildExecutionPlanString(queryFunction, snowflakeMappingWithMinimalLegendJsonSchema, snowflakeRuntime);
+        String snowflakeExpected2 =
+                "    Relational\n" +
+                "    (\n" +
+                "      type = TDS[(Customer Address, String, VARCHAR(65536), \"\")]\n" +
+                "      resultColumns = [(\"Customer Address\", \"\")]\n" +
+                "      sql = select case when \"root\".CUSTOMER['customerAddress']['_type']::varchar in ('BillingAddress') then \"root\".CUSTOMER['customerAddress']['billAddress']::varchar when \"root\".CUSTOMER['customerAddress']['_type']::varchar in ('ShippingAddress') then \"root\".CUSTOMER['customerAddress']['shipAddress']::varchar else 'Default Address' end as \"Customer Address\" from ORDER_SCHEMA.ORDER_TABLE as \"root\"\n" +
+                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                "    )\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected2), snowflakePlan2);
+    }
 
     @Test
     public void testSemiStructuredMatchWithMultipleProject()
@@ -75,6 +105,34 @@ public class TestSnowflakeSemiStructuredMatching extends AbstractTestSnowflakeSe
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
+    @Test
+    public void testLegendJsonSchemaSemiStructuredMatchWithComplexFilter()
+    {
+        String queryFunction = "match::semiStructuredMatchWithComplexFilter__TabularDataSet_1_";
+
+        String snowflakePlan1 = this.buildExecutionPlanString(queryFunction, snowflakeMappingWithLegendJsonSchema, snowflakeRuntime);
+        String snowflakeExpected1 =
+                "    Relational\n" +
+                "    (\n" +
+                "      type = TDS[(Customer Address, String, VARCHAR(65536), \"\")]\n" +
+                "      resultColumns = [(\"Customer Address\", \"\")]\n" +
+                "      sql = select case when \"root\".CUSTOMER['customerAddress']['_type']::varchar in ('match::model::BillingAddress') then \"root\".CUSTOMER['customerAddress']['billAddress']::varchar when \"root\".CUSTOMER['customerAddress']['_type']::varchar in ('match::model::ShippingAddress') then \"root\".CUSTOMER['customerAddress']['shipAddress']::varchar else null end as \"Customer Address\" from ORDER_SCHEMA.ORDER_TABLE as \"root\" where case when \"root\".CUSTOMER['transactionDetails']['payment']['_type']::varchar in ('match::model::CashOnDeliveryPayment') then \"root\".CUSTOMER['transactionDetails']['payment']['amountToBePaid'] when \"root\".CUSTOMER['transactionDetails']['payment']['_type']::varchar in ('Prepaid', 'Wallet', 'match::model::CardPrepaidPayment') then \"root\".CUSTOMER['transactionDetails']['payment']['amountPaid'] else null end < 200\n" +
+                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                "    )\n";
+        String TDSType = "  type = TDS[(Customer Address, String, VARCHAR(65536), \"\")]\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected1), snowflakePlan1);
+
+        String snowflakePlan2 = this.buildExecutionPlanString(queryFunction, snowflakeMappingWithMinimalLegendJsonSchema, snowflakeRuntime);
+        String snowflakeExpected2 =
+                "    Relational\n" +
+                "    (\n" +
+                "      type = TDS[(Customer Address, String, VARCHAR(65536), \"\")]\n" +
+                "      resultColumns = [(\"Customer Address\", \"\")]\n" +
+                "      sql = select case when \"root\".CUSTOMER['customerAddress']['_type']::varchar in ('BillingAddress') then \"root\".CUSTOMER['customerAddress']['billAddress']::varchar when \"root\".CUSTOMER['customerAddress']['_type']::varchar in ('ShippingAddress') then \"root\".CUSTOMER['customerAddress']['shipAddress']::varchar else null end as \"Customer Address\" from ORDER_SCHEMA.ORDER_TABLE as \"root\" where case when \"root\".CUSTOMER['transactionDetails']['payment']['_type']::varchar in ('CashOnDeliveryPayment') then \"root\".CUSTOMER['transactionDetails']['payment']['amountToBePaid'] when \"root\".CUSTOMER['transactionDetails']['payment']['_type']::varchar in ('PrepaidPayment', 'WalletPrepaidPayment', 'CardPrepaidPayment') then \"root\".CUSTOMER['transactionDetails']['payment']['amountPaid'] else null end < 200\n" +
+                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                "    )\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected2), snowflakePlan2);
+    }
 
     @Test
     public void testSemiStructuredMatchWithVariableAccess()
@@ -135,7 +193,6 @@ public class TestSnowflakeSemiStructuredMatching extends AbstractTestSnowflakeSe
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
     }
 
-
     @Test
     public void testSemiStructuredMatchMultilevel()
     {
@@ -151,6 +208,35 @@ public class TestSnowflakeSemiStructuredMatching extends AbstractTestSnowflakeSe
                         "    )\n";
         String TDSType = "  type = TDS[(Amount, Integer, BIGINT, \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
+    }
+
+    @Test
+    public void testLegendJsonSchemaSemiStructuredMatchMultiLevel()
+    {
+        String queryFunction = "match::semiStructuredMatchMultilevel__TabularDataSet_1_";
+
+        String snowflakePlan1 = this.buildExecutionPlanString(queryFunction, snowflakeMappingWithLegendJsonSchema, snowflakeRuntime);
+        String snowflakeExpected1 =
+                "    Relational\n" +
+                "    (\n" +
+                "      type = TDS[(Amount, Integer, BIGINT, \"\")]\n" +
+                "      resultColumns = [(\"Amount\", \"\")]\n" +
+                "      sql = select case when \"root\".CUSTOMER['transactionDetails']['payment']['_type']::varchar in ('Prepaid', 'Wallet', 'match::model::CardPrepaidPayment') then case when \"root\".CUSTOMER['transactionDetails']['payment']['_type']::varchar in ('Wallet') then \"root\".CUSTOMER['transactionDetails']['payment']['walletTransactionAmount'] when \"root\".CUSTOMER['transactionDetails']['payment']['_type']::varchar in ('match::model::CardPrepaidPayment') then \"root\".CUSTOMER['transactionDetails']['payment']['cardTransactionAmount'] when \"root\".CUSTOMER['transactionDetails']['payment']['_type']::varchar in ('Prepaid', 'Wallet', 'match::model::CardPrepaidPayment') then \"root\".CUSTOMER['transactionDetails']['payment']['amountPaid'] else null end when \"root\".CUSTOMER['transactionDetails']['payment']['_type']::varchar in ('match::model::CashOnDeliveryPayment') then \"root\".CUSTOMER['transactionDetails']['payment']['amountToBePaid'] else null end as \"Amount\" from ORDER_SCHEMA.ORDER_TABLE as \"root\"\n" +
+                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                "    )\n";
+        String TDSType = "  type = TDS[(Amount, Integer, BIGINT, \"\")]\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected1), snowflakePlan1);
+
+        String snowflakePlan2 = this.buildExecutionPlanString(queryFunction, snowflakeMappingWithMinimalLegendJsonSchema, snowflakeRuntime);
+        String snowflakeExpected2 =
+                "    Relational\n" +
+                "    (\n" +
+                "      type = TDS[(Amount, Integer, BIGINT, \"\")]\n" +
+                "      resultColumns = [(\"Amount\", \"\")]\n" +
+                "      sql = select case when \"root\".CUSTOMER['transactionDetails']['payment']['_type']::varchar in ('PrepaidPayment', 'WalletPrepaidPayment', 'CardPrepaidPayment') then case when \"root\".CUSTOMER['transactionDetails']['payment']['_type']::varchar in ('WalletPrepaidPayment') then \"root\".CUSTOMER['transactionDetails']['payment']['walletTransactionAmount'] when \"root\".CUSTOMER['transactionDetails']['payment']['_type']::varchar in ('CardPrepaidPayment') then \"root\".CUSTOMER['transactionDetails']['payment']['cardTransactionAmount'] when \"root\".CUSTOMER['transactionDetails']['payment']['_type']::varchar in ('PrepaidPayment', 'WalletPrepaidPayment', 'CardPrepaidPayment') then \"root\".CUSTOMER['transactionDetails']['payment']['amountPaid'] else null end when \"root\".CUSTOMER['transactionDetails']['payment']['_type']::varchar in ('CashOnDeliveryPayment') then \"root\".CUSTOMER['transactionDetails']['payment']['amountToBePaid'] else null end as \"Amount\" from ORDER_SCHEMA.ORDER_TABLE as \"root\"\n" +
+                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                "    )\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected2), snowflakePlan2);
     }
 
     @Test

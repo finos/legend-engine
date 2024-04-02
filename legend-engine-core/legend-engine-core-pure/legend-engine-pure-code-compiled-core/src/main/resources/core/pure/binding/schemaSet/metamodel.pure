@@ -31,3 +31,7 @@ Association meta::external::format::shared::metamodel::SchemaSetMembers
    set        : SchemaSet[1];
    schemas    : Schema[*];
 }
+
+Class <<typemodifiers.abstract>> meta::external::format::shared::metamodel::TypeConfig
+{
+}

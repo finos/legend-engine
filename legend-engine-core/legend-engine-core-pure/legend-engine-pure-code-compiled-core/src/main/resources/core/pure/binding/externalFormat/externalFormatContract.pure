@@ -34,12 +34,12 @@ Class meta::external::format::shared::ExternalFormatContract<T>
     ~function: !$this.internalizeReturnsChecked || $this.sourceRecordSerializeTree->isNotEmpty()
     ~enforcementLevel: Error
     ~message: 'External Format needs to provide serialized tree structure for its source record, if it returns checked result for internalize'
-  )   
+  )
 ]
 {
-  id                               : String[1];   
+  id                               : String[1];
   contentTypes                     : String[*];
-  
+
   externalFormatMetamodel          : Class<T>[1];
 
   externalFormatToPureDescriptor   : ExternalFormatToPureDescriptor<SchemaToModelConfiguration>[0..1];
@@ -52,8 +52,7 @@ Class meta::external::format::shared::ExternalFormatContract<T>
         | $this.externalFormatBindingValidator->toOne()->eval($binding););
   }:BindingDetail[1];
 
-  externalizeConfig                : Class<ExternalFormatExternalizeConfig>[0..1];
-  internalizeConfig                : Class<ExternalFormatInternalizeConfig>[0..1];
+  typeConfigDescriptor             : ExternalFormatTypeConfigDescriptor[0..1];
 
   internalizeReturnsChecked        : Boolean[1] = false;              // By default we assume external format would NOT wrap internalize response into checked structure
   sourceRecordSerializeTree        : RootGraphFetchTree<Any>[0..1];   // If external Format choses to return checked wrapped response for internalize, it needs to provide serialized representation of its source record metamodel
@@ -111,6 +110,13 @@ Class <<typemodifiers.abstract>> meta::external::format::shared::ExternalFormatE
 Class <<typemodifiers.abstract>> meta::external::format::shared::ExternalFormatInternalizeConfig
 {
 
+}
+
+Class meta::external::format::shared::ExternalFormatTypeConfigDescriptor
+{
+  typeConfigFromBindingGenerator: Function<{Binding[1]->TypeConfig[1]}>[1];
+  typeKeyNameFromTypeConfig: Function<{TypeConfig[1]->String[1]}>[1];
+  typeNameForClassFromTypeConfig: Function<{TypeConfig[1],Class<Any>[1]->String[1]}>[1];
 }
 
 function <<access.private>> meta::external::format::shared::checkSuperType(actualType: Class<Any>[1], expectedType: Class<Any>[1]):Boolean[1]

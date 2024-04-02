@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::format::shared::binding::*;
 import meta::pure::executionPlan::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
@@ -2421,12 +2422,16 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   let leftSideOp = processValueSpecificationReturnPropertyMapping($leftSide, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne();
   let processedLeftSide = $leftSideOp.element->cast(@SelectWithCursor);
   let leftSelect = $processedLeftSide.select;
-
-  let checkCol = if($state.inFilter,|$leftSelect.filteringOperation, |$leftSelect.columns)->toOne();
-  //Currently hardcoding '@type' as a property.
-  let checkColType = ^SemiStructuredPropertyAccess(operand = $checkCol->cast(@SemiStructuredPropertyAccess),property = ^Literal(value = '@type'), returnType = String);
   let propMapping = $leftSideOp.currentPropertyMapping;
 
+  let binding = $propMapping->cast(@SemiStructuredRelationalPropertyMapping).transformer->cast(@BindingTransformer<Any>).binding->toOne();
+  let typeConfigDescriptor = $extensions.availableExternalFormats->meta::external::format::shared::utils::getExternalFormatContractForContentType($binding.contentType).typeConfigDescriptor->toOne();  
+  let typeConfig = $typeConfigDescriptor.typeConfigFromBindingGenerator->eval($binding);
+
+  let checkCol = if($state.inFilter,|$leftSelect.filteringOperation, |$leftSelect.columns)->toOne();
+  let typeIdentifierKey = $typeConfigDescriptor.typeKeyNameFromTypeConfig->eval($typeConfig);
+  let checkColType = ^SemiStructuredPropertyAccess(operand = $checkCol->cast(@SemiStructuredPropertyAccess),property = ^Literal(value = $typeIdentifierKey), returnType = String);
+  
   let functions  = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->cast(@meta::pure::metamodel::function::Function<Any>);
   let processedFuncs = $functions->map(f|$f->processMatchFunctions($processedLeftSide, $vars, $state, $nodeId, $aggFromMap, $context->shift(), $extensions, $joinType, $propMapping));
 
@@ -2443,8 +2448,10 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
                                                                       list($functionType->cast(@Class<Any>)->meta::pure::functions::meta::allSpecializations())
                                                                     );
                                                             );
+  
+  let typeNamesToMatch = $allFunctionsSubtypes->size()->range()->map(ind | list($allFunctionsSubtypes->at($ind).values->map(cls| $typeConfigDescriptor.typeNameForClassFromTypeConfig->eval($typeConfig, $cls))));        
 
-  let matchConditions = $allFunctionsSubtypes->size()->range()->map(index | ^DynaFunction(name = 'in', parameters = [$checkColType,^LiteralList(values = $allFunctionsSubtypes->at($index).values.name->map(x | ^meta::relational::metamodel::Literal(value =$x)))]));
+  let matchConditions = $allFunctionsSubtypes->size()->range()->map(index | ^DynaFunction(name = 'in', parameters = [$checkColType,^LiteralList(values = $typeNamesToMatch->at($index).values->map(x | ^meta::relational::metamodel::Literal(value =$x)))]));
   let matchConditionsWithConclusions = $allFunctionsSubtypes->size()->range()->map(index | $matchConditions->at($index)->concatenate($matchConclusions->at($index)));
 
   let caseParams = if($matchConditions->size() == $functionCount - 1,

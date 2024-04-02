@@ -1,0 +1,59 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::json::schema::fromSchema::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::json::metamodel::*;
+import meta::external::format::json::TypeConfig::*;
+
+
+function meta::external::format::json::TypeConfig::jsonTypeConfigDescriptor(): meta::external::format::shared::ExternalFormatTypeConfigDescriptor[1]
+{
+  ^meta::external::format::shared::ExternalFormatTypeConfigDescriptor
+  (
+    typeConfigFromBindingGenerator = extractTypeConfigFromBinding_Binding_1__TypeConfig_1_,
+    typeKeyNameFromTypeConfig      = getTypeKeyName_TypeConfig_1__String_1_,
+    typeNameForClassFromTypeConfig = getTypeNameForClass_TypeConfig_1__Class_1__String_1_
+  );
+}
+
+function meta::external::format::json::TypeConfig::extractTypeConfigFromBinding(binding:Binding[1]): TypeConfig[1]
+{
+  if($binding.schemaSet->isEmpty(),
+    | ^meta::external::format::json::metamodel::TypeConfig(),
+    |
+      let rootSchemaId = $binding.schemaId->toOne('must specify the root schemaId to extract typeConfig from');
+      let schemaDetail = $binding.schemaSet->toOne().schemas->filter(s|$s.id == $rootSchemaId)->toOne('expected exactly one schema with id ' + $rootSchemaId).detail->cast(@JsonSchema);
+      $schemaDetail->getTypeConfigFromSchema();
+  );
+}
+
+function meta::external::format::json::TypeConfig::getTypeKeyName(config: meta::external::format::shared::metamodel::TypeConfig[1]): String[1]
+{
+  $config->cast(@TypeConfig).typeKeyName;
+}
+
+function meta::external::format::json::TypeConfig::getTypeNameForClass(config: meta::external::format::shared::metamodel::TypeConfig[1], clazz: Class<Any>[1]): String[1]
+{
+  let jsonConfig = $config->cast(@TypeConfig);
+  let fullName = $clazz->elementToPath();
+  let override = if($jsonConfig.fullyQualifiedTypeNameOverride->isNotEmpty(), | $jsonConfig.fullyQualifiedTypeNameOverride->toOne()->get($fullName), | []);
+  if($override->isNotEmpty(),
+    | $override->toOne()->cast(@String),
+    |
+  if($jsonConfig.fullyQualifiedTypePath,
+    | $fullName,
+    | $clazz.name->toOne()
+  ));
+}

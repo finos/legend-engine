@@ -20,10 +20,13 @@ import org.junit.Test;
 public class TestSemiStructuredMatching extends AbstractTestSemiStructured
 {
     private static final String memSQLMapping = "match::mapping::MemSQLMapping";
+    private static final String memSQLMappingWithMinimalLegendJsonSchema = "match::mapping::MemSQLMappingWithMinimalLegendJsonSchema";
     private static final String memSQLRuntime = "match::runtime::MemSQLRuntime";
 
     private static final String h2Mapping = "match::mapping::H2Mapping";
+    private static final String h2MappingWithLegendJsonSchema = "match::mapping::H2MappingWithLegendJsonSchema";
     private static final String h2Runtime = "match::runtime::H2Runtime";
+    private static final String h2RuntimeWithLegendJsonSchema = "match::runtime::H2RuntimeWithLegendJsonSchema";
 
     @Test
     public void testSemiStructuredMatchComplexProperty()
@@ -41,6 +44,34 @@ public class TestSemiStructuredMatching extends AbstractTestSemiStructured
         Assert.assertEquals(memSQLExpected, memSQLPlan);
 
         String h2Result = this.executeFunction(queryFunction, h2Mapping, h2Runtime);
+        Assert.assertEquals("B1\n" +
+                "B2\n" +
+                "B3\n" +
+                "Default Address\n" +
+                "S1\n" +
+                "S2\n" +
+                "S3\n" +
+                "S4\n", h2Result.replace("\r\n", "\n"));
+
+        Assert.assertEquals("[ORDER_TABLE.CUSTOMER <TableAliasColumn>]", this.scanColumns(queryFunction, h2Mapping));
+    }
+
+    @Test
+    public void testLegendJsonSchemaSemiStructuredMatchComplexProperty()
+    {
+        String queryFunction = "match::semiStructuredMatchComplexProperty__TabularDataSet_1_";
+        String memSQLPlan = this.buildExecutionPlanString(queryFunction, memSQLMappingWithMinimalLegendJsonSchema, memSQLRuntime);
+        String memSQLExpected =
+                "Relational\n" +
+                "(\n" +
+                "  type = TDS[(Customer Address, String, VARCHAR(65536), \"\")]\n" +
+                "  resultColumns = [(\"Customer Address\", \"\")]\n" +
+                "  sql = select case when `root`.CUSTOMER::customerAddress::$_type in ('BillingAddress') then `root`.CUSTOMER::customerAddress::$billAddress when `root`.CUSTOMER::customerAddress::$_type in ('ShippingAddress') then `root`.CUSTOMER::customerAddress::$shipAddress else 'Default Address' end as `Customer Address` from ORDER_SCHEMA.ORDER_TABLE as `root`\n" +
+                "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
+                ")\n";
+        Assert.assertEquals(memSQLExpected, memSQLPlan);
+
+        String h2Result = this.executeFunction(queryFunction, h2MappingWithLegendJsonSchema, h2RuntimeWithLegendJsonSchema);
         Assert.assertEquals("B1\n" +
                 "B2\n" +
                 "B3\n" +
@@ -108,6 +139,33 @@ public class TestSemiStructuredMatching extends AbstractTestSemiStructured
     }
 
     @Test
+    public void testLegendJsonSchemaSemiStructuredMatchWithComplexFilter()
+    {
+        String queryFunction = "match::semiStructuredMatchWithComplexFilter__TabularDataSet_1_";
+        String memSQLPlan = this.buildExecutionPlanString(queryFunction, memSQLMappingWithMinimalLegendJsonSchema, memSQLRuntime);
+        String memSQLExpected =
+                "Relational\n" +
+                "(\n" +
+                "  type = TDS[(Customer Address, String, VARCHAR(65536), \"\")]\n" +
+                "  resultColumns = [(\"Customer Address\", \"\")]\n" +
+                "  sql = select case when `root`.CUSTOMER::customerAddress::$_type in ('BillingAddress') then `root`.CUSTOMER::customerAddress::$billAddress when `root`.CUSTOMER::customerAddress::$_type in ('ShippingAddress') then `root`.CUSTOMER::customerAddress::$shipAddress else null end as `Customer Address` from ORDER_SCHEMA.ORDER_TABLE as `root` where case when `root`.CUSTOMER::transactionDetails::payment::$_type in ('CashOnDeliveryPayment') then `root`.CUSTOMER::transactionDetails::payment::amountToBePaid !:> bigint when `root`.CUSTOMER::transactionDetails::payment::$_type in ('PrepaidPayment', 'WalletPrepaidPayment', 'CardPrepaidPayment') then `root`.CUSTOMER::transactionDetails::payment::amountPaid !:> bigint else null end < 200\n" +
+                "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
+                ")\n";
+
+        Assert.assertEquals(memSQLExpected, memSQLPlan);
+
+        String h2Result = this.executeFunction(queryFunction, h2MappingWithLegendJsonSchema, h2RuntimeWithLegendJsonSchema);
+        Assert.assertEquals("B2\n" +
+                "\n" +
+                "S1\n" +
+                "S2\n" +
+                "S3\n" +
+                "S4\n", h2Result.replace("\r\n", "\n"));
+
+        Assert.assertEquals("[ORDER_TABLE.CUSTOMER <TableAliasColumn>]", this.scanColumns(queryFunction, h2Mapping));
+    }
+
+    @Test
     public void testSemiStructuredMatchWithVariableAccess()
     {
         String queryFunction = "match::semiStructuredMatchWithVariableAccess__TabularDataSet_1_";
@@ -155,7 +213,6 @@ public class TestSemiStructuredMatching extends AbstractTestSemiStructured
 
     }
 
-
     @Test
     public void testSemiStructuredMatchMultilevel()
     {
@@ -172,6 +229,35 @@ public class TestSemiStructuredMatching extends AbstractTestSemiStructured
         Assert.assertEquals(memSQLExpected, memSQLPlan);
 
         String h2Result = this.executeFunction(queryFunction, h2Mapping, h2Runtime);
+        Assert.assertEquals("200\n" +
+                "180\n" +
+                "290\n" +
+                "150\n" +
+                "185\n" +
+                "120\n" +
+                "200\n" +
+                "190\n", h2Result.replace("\r\n", "\n"));
+
+        Assert.assertEquals("[ORDER_TABLE.CUSTOMER <TableAliasColumn>]", this.scanColumns(queryFunction, h2Mapping));
+    }
+
+    @Test
+    public void testLegendJsonSchemaSemiStructuredMatchMultilevel()
+    {
+        String queryFunction = "match::semiStructuredMatchMultilevel__TabularDataSet_1_";
+        String memSQLPlan = this.buildExecutionPlanString(queryFunction, memSQLMappingWithMinimalLegendJsonSchema, memSQLRuntime);
+        String memSQLExpected =
+                "Relational\n" +
+                "(\n" +
+                "  type = TDS[(Amount, Integer, BIGINT, \"\")]\n" +
+                "  resultColumns = [(\"Amount\", \"\")]\n" +
+                "  sql = select case when `root`.CUSTOMER::transactionDetails::payment::$_type in ('PrepaidPayment', 'WalletPrepaidPayment', 'CardPrepaidPayment') then case when `root`.CUSTOMER::transactionDetails::payment::$_type in ('WalletPrepaidPayment') then `root`.CUSTOMER::transactionDetails::payment::walletTransactionAmount !:> bigint when `root`.CUSTOMER::transactionDetails::payment::$_type in ('CardPrepaidPayment') then `root`.CUSTOMER::transactionDetails::payment::cardTransactionAmount !:> bigint when `root`.CUSTOMER::transactionDetails::payment::$_type in ('PrepaidPayment', 'WalletPrepaidPayment', 'CardPrepaidPayment') then `root`.CUSTOMER::transactionDetails::payment::amountPaid !:> bigint else null end when `root`.CUSTOMER::transactionDetails::payment::$_type in ('CashOnDeliveryPayment') then `root`.CUSTOMER::transactionDetails::payment::amountToBePaid !:> bigint else null end as `Amount` from ORDER_SCHEMA.ORDER_TABLE as `root`\n" +
+                "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
+                ")\n";
+
+        Assert.assertEquals(memSQLExpected, memSQLPlan);
+
+        String h2Result = this.executeFunction(queryFunction, h2MappingWithLegendJsonSchema, h2RuntimeWithLegendJsonSchema);
         Assert.assertEquals("200\n" +
                 "180\n" +
                 "290\n" +

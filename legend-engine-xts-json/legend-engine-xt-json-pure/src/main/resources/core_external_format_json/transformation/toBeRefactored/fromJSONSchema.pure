@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::format::json::metamodel::*;
 import meta::json::*;
 import meta::json::schema::*;
 import meta::external::format::json::schema::*;
@@ -36,28 +37,41 @@ Class meta::external::format::json::schema::fromSchema::SchemaInput
    
 }
 
+function meta::external::format::json::schema::fromSchema::anyLegendJsonSpecificationWithEmptyInnerSchema(schemas:SchemaInput[*]): Boolean[1]
+{
+  let parsedSchemas = $schemas->map(s| $s.schema->meta::json::parseJSON()->cast(@JSONObject));
+  $parsedSchemas->filter(s|$s->isLegendJsonSpecification() && $s->getInnerSchemaFromLegendJsonSpecification()->isEmpty())->isNotEmpty();
+}
+
 function meta::external::format::json::schema::fromSchema::JSONSchemaToPure(schemas:SchemaInput[*]):PackageableElement[*]
 { 
-   let processed = $schemas->map(s|$s->processSchema(false));  
-   let subSchemas = $processed->map(s|$s->extractSubSchemas($processed)); 
+   let parsedSchemas = $schemas->map(s| $s.schema->meta::json::parseJSON()->cast(@JSONObject));
 
+   let validatedlegendJsonSpec = $parsedSchemas->filter(s|$s->isLegendJsonSpecification() && $s->getTypeConfigFromLegendJsonSpecification()->isNotEmpty());
 
-   let allSchemas = $processed->concatenate($subSchemas)->filter(s|$s.schemaType!=SchemaType.collection);
-   let processedWithSuperType = $allSchemas->JSONSchemaSuperTypes();
-   let prefix = if($schemas.pathPrefix->first()->isEmpty(),| 'generated',|$schemas.pathPrefix->at(0));
-   let extendedProfile =    $processedWithSuperType.extendedTags->distinct()->createProfile($prefix);
-   let pathSchemas = $processedWithSuperType->map(s | pair($s.fileName->refToFullPath([]),$s);)->newMap();
-   $pathSchemas->values()->map(s | let parsedFileName =  $s.fileName->refToFullPath([]);  
-                                          if( JSONSchemaIsObject($s.parsedSchema),
-                                               |JSONSchemaToClass($parsedFileName,$s,$pathSchemas,$s.pathPrefix,$extendedProfile,true),
-                                               | if(JSONSchemaIsEnum($s.parsedSchema),
-                                                    |JSONSchemaToEnum($parsedFileName,$s.parsedSchema,$s.pathPrefix,$extendedProfile),
-                                                    |fragmentToFunction($parsedFileName,$s.parsedSchema,$s.pathPrefix,$pathSchemas,$extendedProfile);
-                                                   );
-                                     );
-                                  )->concatenate($extendedProfile);
-   
-} 
+   if($validatedlegendJsonSpec->filter(s| $s->getInnerSchemaFromLegendJsonSpecification()->isEmpty())->isEmpty(), // InnerSchema for Legend Json spec is optional. We can't generate models from an Empty Inner Schema.
+    | 
+      let processed = zip($schemas, $parsedSchemas)->map(s|processSchema($s.first, $s.second, false));
+      let subSchemas = $processed->map(s|$s->extractSubSchemas($processed)); 
+      
+      let allSchemas = $processed->concatenate($subSchemas)->filter(s|$s.schemaType!=SchemaType.collection);
+      let processedWithSuperType = $allSchemas->JSONSchemaSuperTypes();
+      let prefix = if($schemas.pathPrefix->first()->isEmpty(),| 'generated',|$schemas.pathPrefix->at(0));
+      let extendedProfile =    $processedWithSuperType.extendedTags->distinct()->createProfile($prefix);
+      let pathSchemas = $processedWithSuperType->map(s | pair($s.fileName->refToFullPath([]),$s);)->newMap();
+      $pathSchemas->values()->map(s | let parsedFileName =  $s.fileName->refToFullPath([]);  
+                                              if( JSONSchemaIsObject($s.parsedSchema),
+                                                  |JSONSchemaToClass($parsedFileName,$s,$pathSchemas,$s.pathPrefix,$extendedProfile,true),
+                                                  | if(JSONSchemaIsEnum($s.parsedSchema),
+                                                        |JSONSchemaToEnum($parsedFileName,$s.parsedSchema,$s.pathPrefix,$extendedProfile),
+                                                        |fragmentToFunction($parsedFileName,$s.parsedSchema,$s.pathPrefix,$pathSchemas,$extendedProfile);
+                                                      );
+                                        );
+                                      )->concatenate($extendedProfile);, 
+    | 
+      []
+    );   
+}
 
 function <<access.protected>> {doc.doc = 'Function used by validation service'} meta::external::format::json::schema::fromSchema::JSONSchemaRemoveRef(schemas:SchemaInput[*]):SchemaInput[*]
 {
@@ -74,7 +88,6 @@ function <<access.protected>> {doc.doc = 'Function used by validation service'} 
   
    
 }
-
  
 function <<access.private>> meta::external::format::json::schema::fromSchema::deReferenceElement(element:JSONElement[1],parentFile:String[1], schemas:Map<String,ProcessedSchema>[1],key:String[0..1]):JSONElement[1]
 {
@@ -140,22 +153,51 @@ function <<access.private>> meta::external::format::json::schema::fromSchema::ex
                 );
       );        
                
-       }
-
-
-function <<access.private>> meta::external::format::json::schema::fromSchema::processSchema(schema:SchemaInput[1],embedded:Boolean[1]):ProcessedSchema[1]
-{
-  let  r=  processSchema($schema.fileName,$schema.schema->meta::json::parseJSON()->cast(@JSONObject),$schema.pathPrefix,$embedded);
-   $r;
-   
 }
 
+function <<access.private>>  meta::external::format::json::schema::fromSchema::isLegendJsonSpecification(parsedSchema: JSONObject[1]): Boolean[1]
+{
+  let spec = $parsedSchema.keyValuePairs->getValueForKey('$schema');
+  $spec->isNotEmpty() && $spec->toOne()->cast(@JSONString).value == meta::json::schema::generation::JSONSchemaSpecification.LEGEND_JSON->toString();
+}
 
+function <<access.private>> meta::external::format::json::schema::fromSchema::getTypeConfigFromLegendJsonSpecification(parsedSchema: JSONObject[1]): meta::external::format::json::metamodel::TypeConfig[1]
+{
+  let jsonConfig = $parsedSchema.keyValuePairs->getValueForKey('typeConfig')->cast(@JSONObject)->head()->toOne('missing required property: typeConfig for LegendJson specification');
+  let typeConfig = meta::json::fromJSON($jsonConfig, meta::external::format::json::metamodel::TypeConfig)->cast(@meta::external::format::json::metamodel::TypeConfig)->toOne();
+  $typeConfig;
+}
+
+function meta::external::format::json::schema::fromSchema::getTypeConfigFromSchema(schema: JsonSchema[1]): meta::external::format::json::metamodel::TypeConfig[1]
+{
+  let parsedSchema = $schema.content->meta::json::parseJSON()->cast(@JSONObject);
+  if($parsedSchema->isLegendJsonSpecification(), | getTypeConfigFromLegendJsonSpecification($parsedSchema), | ^meta::external::format::json::metamodel::TypeConfig());
+}
+
+function <<access.private>> meta::external::format::json::schema::fromSchema::getInnerSchemaFromLegendJsonSpecification(parsedSchema: JSONObject[1]): JSONObject[0..1]
+{
+  $parsedSchema.keyValuePairs->getValueForKey('innerSchema')->cast(@JSONObject)->head();
+}
+
+function <<access.private>> meta::external::format::json::schema::fromSchema::processSchema(schema:SchemaInput[1], parsedSchema: JSONObject[1], embedded:Boolean[1]):ProcessedSchema[1]
+{
+  if($parsedSchema->isLegendJsonSpecification(), 
+    | 
+      processSchema($schema.fileName, $parsedSchema->getInnerSchemaFromLegendJsonSpecification()->toOne('expected non-null innerSchema for LegendJson schema'),$schema.pathPrefix,$embedded);, 
+    | processSchema($schema.fileName, $parsedSchema,$schema.pathPrefix,$embedded)
+  ); 
+}
+
+function <<access.private>> meta::external::format::json::schema::fromSchema::processSchema(schema:SchemaInput[1],embedded:Boolean[1]):ProcessedSchema[1]
+{  
+  let parsedSchema = $schema.schema->meta::json::parseJSON()->cast(@JSONObject);
+  processSchema($schema, $parsedSchema, $embedded);  
+}
 
 function <<access.private>> meta::external::format::json::schema::fromSchema::processSchema(fileName:String[1],parsedSchema:JSONObject[1],prefix:String[0..1],embedded:Boolean[1]):ProcessedSchema[1]
 {
 
-   let allOf=  $parsedSchema.keyValuePairs->getValueForKey('allOf');
+   let allOf =  $parsedSchema.keyValuePairs->getValueForKey('allOf');
   
 
    let updatedSchema = if($allOf->isNotEmpty() && $allOf->toOne()->instanceOf(JSONArray) && $allOf->toOne()->cast(@JSONArray)->extractObjectFromColletion()->isNotEmpty(),
