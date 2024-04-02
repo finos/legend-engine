@@ -43,6 +43,6 @@ function meta::external::store::elasticsearch::v7::executionPlan::generation::pl
 
   if ($processOutput.extraNodes->isEmpty(),
     |$esNode,
-    |^SequenceExecutionNode(resultType = $esNode.resultType, executionNodes = $processOutput.extraNodes->removeDuplicates({x, y | $x.varName == $y.varName})->concatenate($esNode))
+    |^SequenceExecutionNode(resultType = $esNode.resultType, executionNodes = $processOutput.extraNodes->removeDuplicatesBy(x | $x.varName)->concatenate($esNode))
   );
 }
