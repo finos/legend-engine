@@ -68,6 +68,7 @@ public class HostedServiceDeploymentManager implements  DeploymentManager<Hosted
         if (artifact.version == null)
         {
             deployConf = c.select(conf -> conf.destination.equals(HostedServiceDestination.Sandbox)).getFirst();
+            artifact.deploymentConfiguration = deployConf;
         }
         else
         {
