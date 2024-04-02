@@ -71,6 +71,8 @@ public class Client
 
         replExtensions.forEach(c -> c.setClient(this));
 
+        replExtensions.forEach(e -> e.initialize());
+
         this.terminal = TerminalBuilder.terminal();
 
         this.terminal.writer().println("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
@@ -99,6 +101,7 @@ public class Client
         this.terminal.flush();
         ((Execute) this.commands.getLast()).execute("1+1");
         this.terminal.writer().println("Ready!\n");
+
     }
 
     public void loop()

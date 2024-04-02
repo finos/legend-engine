@@ -27,7 +27,12 @@ import org.finos.legend.engine.repl.relational.commands.Load;
 import org.finos.legend.engine.repl.relational.local.LocalConnectionManagement;
 import org.finos.legend.engine.repl.relational.local.LocalConnectionType;
 
+import org.finos.legend.engine.repl.relational.commands.Show;
+import org.finos.legend.engine.repl.relational.httpServer.ReplGridServer;
+
+import java.awt.*;
 import java.sql.SQLException;
+
 
 import static org.finos.legend.engine.repl.relational.grid.Grid.prettyGridPrint;
 import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
@@ -35,6 +40,7 @@ import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getT
 public class RelationalReplExtension implements ReplExtension
 {
     private Client client;
+    public ReplGridServer replGridServer;
 
     private LocalConnectionManagement localConnectionManagement;
 
@@ -66,6 +72,27 @@ public class RelationalReplExtension implements ReplExtension
         this.localConnectionManagement.addLocalConnection(LocalConnectionType.DuckDB, "DuckDuck");
     }
 
+    private boolean canShowGrid()
+    {
+        return Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
+    }
+
+    public void initialize()
+    {
+        try
+        {
+            if (canShowGrid())
+            {
+                this.replGridServer = new ReplGridServer(this.client);
+                this.replGridServer.initializeServer();
+            }
+        }
+        catch (Exception e)
+        {
+            this.client.getTerminal().writer().println(e.getMessage());
+        }
+    }
+
     @Override
     public MutableList<String> generateDynamicContent(String code)
     {
@@ -75,7 +102,12 @@ public class RelationalReplExtension implements ReplExtension
     @Override
     public MutableList<Command> getExtraCommands()
     {
-        return Lists.mutable.with(new DB(this.client, this), new Load(this.client, this));
+        MutableList<Command> extraCommands = Lists.mutable.with(new DB(this.client, this), new Load(this.client, this));
+        if (canShowGrid())
+        {
+            extraCommands.add(new Show(this.client, this.replGridServer));
+        }
+        return extraCommands;
     }
 
     @Override

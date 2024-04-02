@@ -29,7 +29,7 @@
     <properties>
         <skip.yarn>false</skip.yarn>
         <pure-ide.web-application.version>9.0.0</pure-ide.web-application.version>
-        <pure-ide.web-application.url>https://registry.npmjs.org/@finos/legend-application-pure-ide-deployment/-/legend-application-pure-ide-deployment-${pure-ide.web-application.version}.tgz</pure-ide.web-application.url>
+        <pure-ide.web-application.url>${npm.registry.url}/@finos/legend-application-pure-ide-deployment/-/legend-application-pure-ide-deployment-${pure-ide.web-application.version}.tgz</pure-ide.web-application.url>
     </properties>
 
     <build>

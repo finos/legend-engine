@@ -46,10 +46,17 @@ public class Execute implements Command
 
     private final PlanExecutor planExecutor;
 
+    private PureModelContextData currentPMCD;
+
     public Execute(Client client, PlanExecutor planExecutor)
     {
         this.client = client;
         this.planExecutor = planExecutor;
+    }
+
+    public PureModelContextData getCurrentPMCD()
+    {
+        return currentPMCD;
     }
 
     @Override
@@ -106,6 +113,7 @@ public class Execute implements Command
                 "function a::b::c::d():Any[*]\n{\n" + txt + ";\n}";
 
         PureModelContextData d = this.client.getModelState().parseWithTransient(code);
+        this.currentPMCD = d;
 
         if (this.client.isDebug())
         {
