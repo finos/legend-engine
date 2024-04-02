@@ -30,11 +30,13 @@ public class TableNameExtractor extends SqlBaseParserBaseVisitor<List<QualifiedN
     private final Boolean extractTables;
     private final Boolean extractTableFunctions;
 
-    public TableNameExtractor() {
+    public TableNameExtractor() 
+    {
         this(true, true);
     }
 
-    public TableNameExtractor(Boolean extractTables, Boolean extractTableFunctions) {
+    public TableNameExtractor(Boolean extractTables, Boolean extractTableFunctions) 
+    {
         this.extractTables = extractTables;
         this.extractTableFunctions = extractTableFunctions;
     }
