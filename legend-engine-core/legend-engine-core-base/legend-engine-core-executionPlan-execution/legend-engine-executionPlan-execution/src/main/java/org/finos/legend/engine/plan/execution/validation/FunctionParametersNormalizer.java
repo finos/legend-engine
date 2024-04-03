@@ -21,6 +21,7 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.date.EngineDate;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -78,6 +79,14 @@ class FunctionParametersNormalizer
             case "Float":
             {
                 return normalizeParameterValue(paramValue, FunctionParametersNormalizer::normalizeFloat);
+            }
+            case "Decimal":
+            {
+                return normalizeParameterValue(paramValue, FunctionParametersNormalizer::normalizeDecimal);
+            }
+            case "Boolean":
+            {
+                return normalizeParameterValue(paramValue, FunctionParametersNormalizer::normalizeBoolean);
             }
             default:
             {
@@ -168,11 +177,69 @@ class FunctionParametersNormalizer
 
     private static Object normalizeInteger(Object value)
     {
-        return (value instanceof Integer) ? ((Integer) value).longValue() : value;
+        if (value instanceof Long)
+        {
+            return value;
+        }
+        if (value instanceof Integer)
+        {
+            return ((Integer) value).longValue();
+        }
+        if (value instanceof String)
+        {
+            return Long.parseLong((String) value);
+        }
+        throw new IllegalArgumentException("Invalid Integer value: " + value);
     }
 
     private static Object normalizeFloat(Object value)
     {
-        return (value instanceof Float) ? ((Float) value).doubleValue() : value;
+        if (value instanceof Float)
+        {
+            return ((Float) value).doubleValue();
+        }
+        if (value instanceof Double)
+        {
+            return value;
+        }
+        if (value instanceof Integer)
+        {
+            return ((Integer) value).doubleValue();
+        }
+        if (value instanceof Long)
+        {
+            return ((Long) value).doubleValue();
+        }
+        if (value instanceof String)
+        {
+            return Double.parseDouble((String) value);
+        }
+        throw new IllegalArgumentException("Invalid Double value: " + value);
+    }
+
+    private static Object normalizeDecimal(Object value)
+    {
+        if (value instanceof BigDecimal)
+        {
+            return value;
+        }
+        if (value instanceof String)
+        {
+            return new BigDecimal((String) value);
+        }
+        throw new IllegalArgumentException("Invalid Decimal value: " + value);
+    }
+
+    private static Object normalizeBoolean(Object value)
+    {
+        if (value instanceof Boolean)
+        {
+            return value;
+        }
+        if (value instanceof String)
+        {
+            return Boolean.valueOf((String) value);
+        }
+        throw new IllegalArgumentException("Invalid Boolean value: " + value);
     }
 }
