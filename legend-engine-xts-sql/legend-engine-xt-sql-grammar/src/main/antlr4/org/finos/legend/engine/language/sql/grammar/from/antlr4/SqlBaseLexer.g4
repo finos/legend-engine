@@ -337,6 +337,10 @@ REGEX_MATCH: '~';
 REGEX_NO_MATCH: '!~';
 REGEX_MATCH_CI: '~*';
 REGEX_NO_MATCH_CI: '!~*';
+OP_LIKE: '~~';
+OP_ILIKE: '~~*';
+OP_NOT_LIKE: '!~~';
+OP_NOT_ILIKE: '!~~*';
 
 PLUS: '+';
 MINUS: '-';

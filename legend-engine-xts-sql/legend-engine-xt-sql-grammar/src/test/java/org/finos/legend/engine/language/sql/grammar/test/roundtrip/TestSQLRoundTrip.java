@@ -40,6 +40,19 @@ public class TestSQLRoundTrip
     }
 
     @Test
+    public void testPatternMatching()
+    {
+        check("SELECT * FROM myTable where 'abc' ~ 'def'");
+        check("SELECT * FROM myTable where 'abc' ~* 'def'");
+        check("SELECT * FROM myTable where 'abc' !~ 'def'");
+        check("SELECT * FROM myTable where 'abc' !~* 'def'");
+        check("SELECT * FROM myTable where 'abc' ~~ 'def'");
+        check("SELECT * FROM myTable where 'abc' ~~* 'def'");
+        check("SELECT * FROM myTable where 'abc' !~~ 'def'");
+        check("SELECT * FROM myTable where 'abc' !~~* 'def'");
+    }
+
+    @Test
     public void testParameters()
     {
         check("SELECT * FROM myTable where name = $1");
