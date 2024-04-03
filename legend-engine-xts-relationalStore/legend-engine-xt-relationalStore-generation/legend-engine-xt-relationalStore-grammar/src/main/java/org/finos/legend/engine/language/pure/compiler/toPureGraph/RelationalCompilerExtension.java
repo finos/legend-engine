@@ -683,12 +683,15 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         {
             if (store instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database)
             {
-                Assert.assertTrue(accessor.path.size() > 1, () -> "Please provide a table");
+                if (accessor.path.size() <= 1)
+                {
+                    throw new EngineException("Error in the accessor definition. Please provide a table.", accessor.sourceInformation, EngineErrorType.COMPILATION);
+                }
                 org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database ds = (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database) store;
                 org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Schema schema = ds._schemas().getFirst();
                 if (schema == null)
                 {
-                    throw new EngineException("The database " + store._name() + " has not schemas", accessor.sourceInformation, EngineErrorType.COMPILATION);
+                    throw new EngineException("The database " + store._name() + " has no schemas", accessor.sourceInformation, EngineErrorType.COMPILATION);
                 }
                 Table table = schema._tables().select(c -> c.getName().equals(accessor.path.get(1))).getFirst();
                 if (table == null)
@@ -732,9 +735,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
 
 
             }
-
-
-            return (ValueSpecification) null;
+            return null;
         });
     }
 
