@@ -24,6 +24,11 @@ public class ElasticsearchV7StoreExecutor implements StoreExecutor
 
     private final ElasticsearchV7StoreExecutorConfiguration elasticsearchV7StoreExecutorConfiguration;
 
+    public ElasticsearchV7StoreExecutor()
+    {
+        this.elasticsearchV7StoreExecutorConfiguration = ElasticsearchV7StoreExecutorConfiguration.newInstance().build();
+    }
+
     public ElasticsearchV7StoreExecutor(ElasticsearchV7StoreExecutorConfiguration elasticsearchV7StoreExecutorConfiguration)
     {
         this.elasticsearchV7StoreExecutorConfiguration = elasticsearchV7StoreExecutorConfiguration;
