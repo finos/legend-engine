@@ -338,6 +338,10 @@ class BulkLoadPlanner extends Planner
         {
             operations.add(Create.of(false, externalDataset));
         }
+        if (options().enableConcurrentSafety())
+        {
+            operations.add(Create.of(true, lockInfoDataset().orElseThrow(IllegalStateException::new).get()));
+        }
         return LogicalPlan.of(operations);
     }
 

@@ -744,6 +744,7 @@ public abstract class RelationalIngestorAbstract
                                                  Executor<SqlGen, TabularData, SqlPlan> executor, GeneratorResult generatorResult,
                                                  IngestMode ingestMode, SchemaEvolutionResult schemaEvolutionResult)
     {
+        acquireLock();
         List<IngestorResult> results = new ArrayList<>();
         Map<String, PlaceholderValue> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, Optional.empty());
 
