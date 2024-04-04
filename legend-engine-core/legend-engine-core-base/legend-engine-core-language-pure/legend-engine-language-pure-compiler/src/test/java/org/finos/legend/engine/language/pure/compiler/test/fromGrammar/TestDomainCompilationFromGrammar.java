@@ -1016,6 +1016,15 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "" +
                 "Class test::B" +
                 "{" +
+                "   z(){test::A.all()->project([a|$a.name.name], ['a'])}:meta::pure::tds::TabularDataSet[1];" +
+                "}", "COMPILATION error at [1:91-94]: The property 'name' can't be accessed on primitive types. Inferred primitive type is String");
+        test("Class test::A" +
+                "{" +
+                "   name : String[1];" +
+                "}" +
+                "" +
+                "Class test::B" +
+                "{" +
                 "   z(){test::A.all()->project([a|$a.nawme], ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];" +
                 "}", "COMPILATION error at [1:86-90]: Can't find property 'nawme' in class 'test::A'");
         test("Class  test::A" +
