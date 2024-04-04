@@ -17,26 +17,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine-core-base</artifactId>
+        <artifactId>legend-engine</artifactId>
         <version>4.42.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-core-language-pure</artifactId>
+    <artifactId>legend-engine-xts-protocol-java-generation</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - Core - Language - Pure</name>
-
+    <name>Legend Engine - XTS - Protocol - Java - Generation</name>
 
     <modules>
-        <module>legend-engine-language-pure-compiler</module>
-        <module>legend-engine-language-pure-compiler-http-api</module>
-        <module>legend-engine-language-pure-grammar</module>
-        <module>legend-engine-language-pure-grammar-http-api</module>
-        <module>legend-engine-language-pure-modelManager</module>
-        <module>legend-engine-language-pure-modelManager-sdlc</module>
-        <module>legend-engine-language-pure-modelManager-sdlc-http-api</module>
-        <module>legend-engine-protocol</module>
-        <module>legend-engine-protocol-http-api</module>
-        <module>legend-engine-protocol-pure</module>
+        <module>legend-engine-protocol-generation</module>
+        <module>legend-engine-protocol-generation-pure</module>
     </modules>
 </project>
