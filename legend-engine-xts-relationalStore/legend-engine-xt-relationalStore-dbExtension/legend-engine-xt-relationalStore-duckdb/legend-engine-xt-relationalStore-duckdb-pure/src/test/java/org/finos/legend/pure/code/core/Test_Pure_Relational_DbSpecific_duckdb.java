@@ -27,7 +27,7 @@ public class Test_Pure_Relational_DbSpecific_duckdb
 {
     public static TestSuite suite()
     {
-        String testPackage = "meta::relational::tests::sqlQueryToString::duckdb";
+        String testPackage = "meta::relational::tests::sqlQueryToString::duckDB";
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
         return PureTestBuilderCompiled.buildSuite(TestCollection.collectTests(testPackage, executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport);
     }

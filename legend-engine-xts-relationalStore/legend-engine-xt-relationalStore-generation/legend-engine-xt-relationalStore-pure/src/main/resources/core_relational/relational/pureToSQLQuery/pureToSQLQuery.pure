@@ -6675,7 +6675,7 @@ function meta::relational::functions::pureToSqlQuery::processRowCount(expression
    let mergedSQL = mergeSQLQueryData([$nested, $operation]->map(x | extractSelectSQLQuery($x)), $nodeId, $state, $context, $extensions);
    let selectWithCursor = $nested->extractSelectWithCursor($operation);
    ^$selectWithCursor(select = ^$mergedSQL(
-                                      distinct = true
+                                      columns = ^Alias(name = 'count', relationalElement = newDynaFunction('count', $mergedSQL.columns->at(0)->cast(@Alias).relationalElement))
                                 )
                      );
 }

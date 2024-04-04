@@ -35,7 +35,7 @@ public class TestRelationalConnectionCompilationRoundtrip
                 "###Connection\n" +
                 "RelationalDatabaseConnection simple::StaticConnection\n" +
                 "{\n" +
-                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  store: model::relational::tests::dbInc;\n" +
                 "  type: MemSQL;\n" +
                 "  specification: Static\n" +
                 "  {\n" +
@@ -67,7 +67,7 @@ public class TestRelationalConnectionCompilationRoundtrip
                 "###Connection\n" +
                 "RelationalDatabaseConnection simple::StaticConnection\n" +
                 "{\n" +
-                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  store: model::relational::tests::dbInc;\n" +
                 "  type: SqlServer;\n" +
                 "  specification: Static\n" +
                 "  {\n" +
