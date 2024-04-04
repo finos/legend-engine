@@ -5347,12 +5347,10 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                      r:FunctionRoutedValueSpecification[1]|$r.value->processTdsLambda($a,$returnColumnName, $vars, $state, $currentPropertyMapping, $context),
                      f:FunctionExpression[1]|
                         if ($f.func->instanceOf(meta::pure::metamodel::relation::Column),
-                          | println($f.func.name->toOne()->toOne()->addQuotesIfNecessary());
-                           println('ok');
-                            let foundColumn = $a->filter(alias|
+                          | let foundColumn = $a->filter(alias|
                                                             $alias->match(
                                                                 [
-                                                                  al:Alias[1]| println($al.name);$al.name->addQuotesIfNecessary();,
+                                                                  al:Alias[1]| $al.name->addQuotesIfNecessary();,
                                                                   t:TableAliasColumn[1]| $t.column.name->addQuotesIfNecessary(),
                                                                   w:WindowColumn[1]| $w.columnName->addQuotesIfNecessary()
                                                                 ]
@@ -6672,8 +6670,12 @@ function meta::relational::functions::pureToSqlQuery::processDistinct(expression
 function meta::relational::functions::pureToSqlQuery::processRowCount(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
    let nested = processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne();
-   let mergedSQL = mergeSQLQueryData([$nested, $operation]->map(x | extractSelectSQLQuery($x)), $nodeId, $state, $context, $extensions);
    let selectWithCursor = $nested->extractSelectWithCursor($operation);
+
+   let query = $selectWithCursor.select->cast(@TdsSelectSqlQuery);
+
+   let mergedSQL = if($query.groupBy->isNotEmpty(), |$query->isolateTdsSelect($extensions), |$query);
+
    ^$selectWithCursor(select = ^$mergedSQL(
                                       columns = ^Alias(name = 'count', relationalElement = newDynaFunction('count', $mergedSQL.columns->at(0)->cast(@Alias).relationalElement))
                                 )
