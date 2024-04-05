@@ -129,17 +129,20 @@ public class JdbcHelper implements RelationalExecutionHelper
     @Override
     public void closeTransactionManager()
     {
-        try
+        if (this.transactionManager != null)
         {
-            this.transactionManager.close();
-        }
-        catch (SQLException e)
-        {
-            throw new RuntimeException(e);
-        }
-        finally
-        {
-            this.transactionManager = null;
+            try
+            {
+                this.transactionManager.close();
+            }
+            catch (SQLException e)
+            {
+                throw new RuntimeException(e);
+            }
+            finally
+            {
+                this.transactionManager = null;
+            }
         }
     }
 
