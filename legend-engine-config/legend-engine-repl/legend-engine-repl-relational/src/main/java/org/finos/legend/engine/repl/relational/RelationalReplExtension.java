@@ -63,21 +63,18 @@ public class RelationalReplExtension implements ReplExtension
         return "relational";
     }
 
-    public void setClient(Client client)
-    {
-        this.client = client;
-        this.localConnectionManagement = new LocalConnectionManagement(client);
-        this.localConnectionManagement.addLocalConnection(LocalConnectionType.H2, "MyTestH2");
-        this.localConnectionManagement.addLocalConnection(LocalConnectionType.DuckDB, "DuckDuck");
-    }
-
     private boolean canShowGrid()
     {
         return Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
     }
 
-    public void initialize()
+    public void initialize(Client client)
     {
+        this.client = client;
+        this.localConnectionManagement = new LocalConnectionManagement(client);
+        this.localConnectionManagement.addLocalConnection(LocalConnectionType.H2, "MyTestH2");
+        this.localConnectionManagement.addLocalConnection(LocalConnectionType.DuckDB, "DuckDuck");
+
         try
         {
             if (canShowGrid())

@@ -67,7 +67,7 @@ public class TestGridServer
             "###Connection\n" +
             "RelationalDatabaseConnection test::TestConnection\n" +
             "{\n" +
-            "  store: store::TestDB;\n" +
+            "  store: test::TestDatabase;\n" +
             "  type: H2;\n" +
             "  specification: LocalH2\n" +
             "  {\n" +
