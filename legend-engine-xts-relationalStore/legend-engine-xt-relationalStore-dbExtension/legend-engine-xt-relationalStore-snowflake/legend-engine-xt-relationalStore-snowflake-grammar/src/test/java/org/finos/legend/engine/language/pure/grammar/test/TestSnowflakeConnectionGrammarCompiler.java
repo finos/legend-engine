@@ -35,7 +35,7 @@ public class TestSnowflakeConnectionGrammarCompiler
                 "###Connection\n" +
                 "RelationalDatabaseConnection simple::StaticConnection\n" +
                 "{\n" +
-                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  store: model::relational::tests::dbInc;\n" +
                 "  type: Snowflake;\n" +
                 "  specification: Snowflake\n" +
                 "  {\n" +
@@ -90,7 +90,7 @@ public class TestSnowflakeConnectionGrammarCompiler
         String connString = "###Connection\n" +
                 "RelationalDatabaseConnection simple::StaticConnection\n" +
                 "{\n" +
-                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  store: model::relational::tests::dbInc;\n" +
                 "  type: Snowflake;\n" +
                 "  specification: Snowflake\n" +
                 "  {\n" +
@@ -173,7 +173,7 @@ public class TestSnowflakeConnectionGrammarCompiler
                 "###Connection\n" +
                 "RelationalDatabaseConnection simple::StaticConnection\n" +
                 "{\n" +
-                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  store: model::relational::tests::dbInc;\n" +
                 "  type: Snowflake;\n" +
                 "  mode: local;\n" +
                 "}\n");
@@ -182,16 +182,16 @@ public class TestSnowflakeConnectionGrammarCompiler
         Root_meta_external_store_relational_runtime_RelationalDatabaseConnection connection = (Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) result.getTwo().getConnection("simple::StaticConnection", SourceInformation.getUnknownSourceInformation());
         Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification specification = (Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification) connection._datasourceSpecification();
 
-        Assert.assertEquals("legend-local-snowflake-databaseName-apps-pure-studio-relational-tests-dbInc", specification._databaseName());
-        Assert.assertEquals("legend-local-snowflake-accountName-apps-pure-studio-relational-tests-dbInc", specification._accountName());
-        Assert.assertEquals("legend-local-snowflake-warehouseName-apps-pure-studio-relational-tests-dbInc", specification._warehouseName());
-        Assert.assertEquals("legend-local-snowflake-region-apps-pure-studio-relational-tests-dbInc", specification._region());
-        Assert.assertEquals("legend-local-snowflake-role-apps-pure-studio-relational-tests-dbInc", specification._role());
+        Assert.assertEquals("legend-local-snowflake-databaseName-model-relational-tests-dbInc", specification._databaseName());
+        Assert.assertEquals("legend-local-snowflake-accountName-model-relational-tests-dbInc", specification._accountName());
+        Assert.assertEquals("legend-local-snowflake-warehouseName-model-relational-tests-dbInc", specification._warehouseName());
+        Assert.assertEquals("legend-local-snowflake-region-model-relational-tests-dbInc", specification._region());
+        Assert.assertEquals("legend-local-snowflake-role-model-relational-tests-dbInc", specification._role());
 
         Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy authenticationStrategy = (Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy) connection._authenticationStrategy();
 
-        Assert.assertEquals("legend-local-snowflake-publicuserName-apps-pure-studio-relational-tests-dbInc", authenticationStrategy._publicUserName());
-        Assert.assertEquals("legend-local-snowflake-privateKeyVaultReference-apps-pure-studio-relational-tests-dbInc", authenticationStrategy._privateKeyVaultReference());
-        Assert.assertEquals("legend-local-snowflake-passphraseVaultReference-apps-pure-studio-relational-tests-dbInc", authenticationStrategy._passPhraseVaultReference());
+        Assert.assertEquals("legend-local-snowflake-publicuserName-model-relational-tests-dbInc", authenticationStrategy._publicUserName());
+        Assert.assertEquals("legend-local-snowflake-privateKeyVaultReference-model-relational-tests-dbInc", authenticationStrategy._privateKeyVaultReference());
+        Assert.assertEquals("legend-local-snowflake-passphraseVaultReference-model-relational-tests-dbInc", authenticationStrategy._passPhraseVaultReference());
     }
 }

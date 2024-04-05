@@ -336,27 +336,32 @@ function meta::relational::relation::testUtils::processTDS(tds:TDS<Any>[1], stat
 function meta::relational::relation::testUtils::testTDSDatabaseRun(f:Function<{->Any[*]}>[1]):Any[*]
 {
     // //For debug
-     //meta::pure::executionPlan::executionPlan($f->meta::relational::relation::testUtils::reprocess().first, ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions(), debug());
+    // meta::pure::executionPlan::executionPlan($f->meta::relational::relation::testUtils::reprocess().first, ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions(), debug());
     // [];
 
     let x = meta::legend::executeLegendQuery($f->meta::relational::relation::testUtils::reprocess().first, [], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
     let res = $x->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull));
-    let tdsString = $res.result.columns->joinStrings(',') + '\n' +
-                    $res.result.rows->map(x|
-                        range($x.values->size())->map(z | if($x.values->at($z) == TDSNull,
-                                                              |let type = $res.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns->at($z).type;
-                                                               if ([
-                                                                    pair(|$type == 'Integer', |-2147483648),
-                                                                    pair(|$type == 'String', |'null')
-                                                                   ],
-                                                                   |fail();0;
-                                                               );,
-                                                              |$x.values->at($z)
-                                                          )
-                                                  )->makeString(',')
-                        )->joinStrings('\n');
-    //println($tdsString);
-    $tdsString->stringToTDS();
+
+    let resultType = $f->functionReturnType().rawType;
+
+    if ($resultType->toOne()->instanceOf(PrimitiveType),
+      | $res.result.rows->at(0).values->at(0),
+      | let tdsString = $res.result.columns->joinStrings(',') + '\n' +
+                        $res.result.rows->map(x|
+                            range($x.values->size())->map(z | if($x.values->at($z) == TDSNull,
+                                                                  |let type = $res.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns->at($z).type;
+                                                                    if ([
+                                                                        pair(|$type == 'Integer', |-2147483648),
+                                                                        pair(|$type == 'String', |'null')
+                                                                        ],
+                                                                        |fail();0;
+                                                                    );,
+                                                                  |$x.values->at($z)
+                                                              )
+                                                      )->makeString(',')
+                            )->joinStrings('\n');
+          $tdsString->stringToTDS();
+    );
 }
 
 
