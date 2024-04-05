@@ -109,11 +109,14 @@ public class MultiTableIngestionTest extends BaseTest
                 .enableSchemaEvolution(false)
                 .build();
 
-        Executor executor = ingestor.init(JdbcConnection.of(h2Sink.connection()));
+        Executor executor = ingestor.initExecutor(JdbcConnection.of(h2Sink.connection()));
 
         // Create Main tables
-        datasets1 = ingestor.create(datasets1);
-        datasets2 = ingestor.create(datasets2);
+        ingestor.initDatasets(datasets1);
+        ingestor.create();
+
+        ingestor.initDatasets(datasets2);
+        ingestor.create();
 
         // Pass 1:
         String dataset1Path = basePathForInput + "multi_table_ingestion/staging_dataset1_pass1.csv";
@@ -171,7 +174,8 @@ public class MultiTableIngestionTest extends BaseTest
             executor.begin();
             for (Datasets datasets: allDatasets)
             {
-                IngestorResult result = ingestor.ingest(datasets).get(0);
+                ingestor.initDatasets(datasets);
+                IngestorResult result = ingestor.ingest().get(0);
                 multiTableIngestionResult.add(result);
             }
 
@@ -219,11 +223,13 @@ public class MultiTableIngestionTest extends BaseTest
                 .enableSchemaEvolution(false)
                 .build();
 
-        Executor executor = ingestor.init(JdbcConnection.of(h2Sink.connection()));
+        Executor executor = ingestor.initExecutor(JdbcConnection.of(h2Sink.connection()));
 
         // Create Main tables
-        datasets1 = ingestor.create(datasets1);
-        datasets2 = ingestor.create(datasets2);
+        ingestor.initDatasets(datasets1);
+        ingestor.create();
+        ingestor.initDatasets(datasets2);
+        ingestor.create();
 
         // Pass 1:
         String dataset1Path = basePathForInput + "multi_table_ingestion/staging_dataset1_pass1.csv";
@@ -256,7 +262,8 @@ public class MultiTableIngestionTest extends BaseTest
             executor.begin();
             for (Datasets datasets: allDatasets)
             {
-                IngestorResult result = ingestor.ingest(datasets).get(0);
+                ingestor.initDatasets(datasets);
+                IngestorResult result = ingestor.ingest().get(0);
                 multiTableIngestionResult.add(result);
             }
 

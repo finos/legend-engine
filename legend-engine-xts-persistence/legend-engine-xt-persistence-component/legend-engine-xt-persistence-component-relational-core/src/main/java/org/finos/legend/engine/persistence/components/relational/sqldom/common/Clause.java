@@ -23,6 +23,7 @@ public enum Clause
     INSERT("INSERT"),
     INSERT_INTO("INSERT INTO"),
     CREATE("CREATE"),
+    REPLACE("REPLACE"),
     ALTER("ALTER"),
     VALUES("VALUES"),
     FROM("FROM"),
@@ -30,12 +31,14 @@ public enum Clause
     MERGE_INTO("MERGE INTO"),
     USING("USING"),
     WHERE("WHERE"),
+    HAVING("HAVING"),
     SET("SET"),
     EXISTS("EXISTS"),
     WHEN_MATCHED("WHEN MATCHED"),
     WHEN_NOT_MATCHED("WHEN NOT MATCHED"),
     THEN("THEN"),
     AND("AND"),
+    OR("OR"),
     IN("IN"),
     ON("ON"),
     NOT("NOT"),
@@ -58,10 +61,15 @@ public enum Clause
     NOT_ENFORCED("NOT ENFORCED"),
     DATA_TYPE("DATA TYPE"),
     CONVERT("CONVERT"),
+    CAST("CAST"),
+    TRY_CAST("TRY_CAST"),
+    AS("AS"),
     ARRAY("ARRAY"),
     LOAD_DATA("LOAD DATA"),
     OVERWRITE("OVERWRITE"),
-    FILES("FILES");
+    FILES("FILES"),
+    EXTERNAL("EXTERNAL"),
+    OPTIONS("OPTIONS");
 
     private final String clause;
 

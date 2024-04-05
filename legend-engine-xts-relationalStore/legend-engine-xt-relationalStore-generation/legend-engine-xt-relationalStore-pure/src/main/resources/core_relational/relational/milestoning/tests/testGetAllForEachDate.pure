@@ -18,7 +18,6 @@ import meta::relational::mapping::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::tests::csv::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::tests::milestoning::businessdate::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
@@ -210,14 +209,14 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
 
 // function <<test.Test>> meta::relational::tests::milestoning::temporalProjectionQuery::testProcessingTemporalQueryWithListOfDates():Boolean[1]
 // {
-//    let result = execute(|Product->getAllForEachDate([%2020-05-10,%2020-06-10,%2019-02-15]), milestoningmap, testRuntime()), meta::relational::extension::relationalExtensions());
+//    let result = execute(|Product->getAllForEachDate([%2020-05-10,%2020-06-10,%2019-02-15]), milestoningmap, meta::external::store::relational::tests::testRuntime()), meta::relational::extension::relationalExtensions());
 //    assertSameSQL();
 // }
 
 function meta::relational::tests::milestoning::initDatabaseForCalendar():ConnectionStore[1]
 {
 
-   let connection = ^TestDatabaseConnection(type = DatabaseType.H2);
+   let connection = ^meta::external::store::relational::runtime::TestDatabaseConnection(type = DatabaseType.H2);
    let connectionStore = ^ConnectionStore(element = Calendardb,connection=$connection);
 
    executeInDb('drop table if exists CalendarTable;',$connection);

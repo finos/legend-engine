@@ -32,9 +32,10 @@ import java.util.TimeZone;
 import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.auth.NoPasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.config.ServerConfig;
+import org.finos.legend.engine.postgres.handler.legend.LegendExecutionService;
+import org.finos.legend.engine.postgres.handler.legend.LegendHttpClient;
 import static org.finos.legend.engine.postgres.handler.legend.LegendResultSet.TIMESTAMP_FORMATTER;
 import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
-import org.finos.legend.engine.postgres.handler.legend.LegendTdsClient;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -52,7 +53,7 @@ public class PostgresServerTypeMappingTest
     @BeforeClass
     public static void setUpClass()
     {
-        LegendTdsClient client = new LegendTdsClient("http", "localhost", String.valueOf(wireMockRule.port()));
+        LegendExecutionService client = new LegendExecutionService(new LegendHttpClient("http", "localhost", String.valueOf(wireMockRule.port())));
         LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);

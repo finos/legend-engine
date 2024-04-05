@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
@@ -81,6 +82,7 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
+                .ingestRunId(ingestRunId)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         verifyUnitemporalDeltaWithDeleteIndFilterDupsNoVersion(operations);
@@ -97,6 +99,7 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
+                .ingestRunId(ingestRunId)
                 .build();
         List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
         verifyUnitemporalDeltaWithDeleteIndNoDedupAllVersion(operations, dataSplitRangesOneToTwo);
@@ -270,6 +273,7 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .cleanupStagingData(false)
+                .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         verifyUnitemporalDeltaWithNoVersionAndStagingFilter(operations);
@@ -303,6 +307,7 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .cleanupStagingData(false)
+                .ingestRunId(ingestRunId)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         this.verifyUnitemporalDeltaWithFilterDupsMaxVersionWithStagingFilter(operations);
@@ -320,6 +325,7 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
             .relationalSink(getRelationalSink())
             .executionTimestampClock(fixedClock_2000_01_01)
             .cleanupStagingData(false)
+            .ingestRunId(ingestRunId)
             .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         this.verifyUnitemporalDeltaWithFilterDupsMaxVersionWithFilteredDataset(operations);
@@ -355,6 +361,8 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .cleanupStagingData(true)
+                .batchSuccessStatusValue("SUCCEEDED")
+                .ingestRunId(ingestRunId)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         this.verifyUnitemporalDeltaWithFailOnDupsMaxVersioningWithoutPerform(operations);
@@ -373,6 +381,9 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .cleanupStagingData(true)
                 .caseConversion(CaseConversion.TO_UPPER)
+                .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
+                .sampleRowCount(10)
+                .ingestRunId(ingestRunId)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         this.verifyUnitemporalDeltaWithNoDedupMaxVersioningAndUpperCaseWithoutStagingFilters(operations);

@@ -38,6 +38,11 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "      description: 'some information about the context';\n" +
                 "      mapping: model::String;\n" +
                 "      defaultRuntime: model::Runtime;\n" +
+                "      testData:\n" +
+                "        Reference\n" +
+                "        #{\n" +
+                "          com::model::someDataElement\n" +
+                "        }#;\n" +
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
@@ -87,6 +92,143 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "    ];\n" +
                 "  };\n" +
                 "}\n");
+
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "      testData:\n" +
+                "        DataspaceTestData\n" +
+                "        #{\n" +
+                "          com::test::aDifferentDataspace\n" +
+                "        }#;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  title: 'some title';\n" +
+                "  description: 'some description';\n" +
+                "}\n");
+
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "      testData:\n" +
+                "        DataspaceTestData\n" +
+                "        #{\n" +
+                "          com::test::aDifferentDataspace\n" +
+                "        }#;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  title: 'some title';\n" +
+                "  description: 'some description';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      title: 'Executable 1';\n" +
+                "      description: 'description';\n" +
+                "      executable: model::MyExecutable;\n" +
+                "    },\n" +
+                "    {\n" +
+                "      title: 'Template 1';\n" +
+                "      description: 'description';\n" +
+                "      query: |model::Firm.all()->project([x|$x.id, x|$x.employees.firstName], ['Id', 'Employees/First Name']);\n" +
+                "      executionContextKey: 'Context 1';\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testSuccessfulMappingIncludeDataspace()
+    {
+        String models = "###Pure\n" +
+                "Class test::A extends test::B\n" +
+                "{\n" +
+                "  prop1: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::S_A\n" +
+                "{\n" +
+                "  prop1: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "  currency: String[*];\n" +
+                "}\n" +
+                "\n" +
+                "\n";
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n" +
+                "\n" +
+                "\n" + models +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "Mapping test::M1\n" +
+                "(\n" +
+                "  include dataspace model::dataSpace\n" +
+                "\n" +
+                "  test::A[1]: Pure\n" +
+                "  {\n" +
+                "    ~src test::S_A\n" +
+                "    prop1: $src.prop1\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection model::connection\n" +
+                "{\n" +
+                "  class: test::B;\n" +
+                "  url: 'executor:default';\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "  connectionStores:\n" +
+                "  [\n" +
+                "    model::connection:\n" +
+                "    [\n" +
+                "      (dataspace) model::dataSpace\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n"
+                );
     }
 
     @Test
@@ -363,6 +505,249 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "      diagram: test::model::TestDiagram2;\n" +
                 "    }\n" +
                 "  ];\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataspaceExecutableTemplate() throws JsonProcessingException
+    {
+        testComposedGrammar("{\n" +
+                "  \"_type\": \"data\",\n" +
+                "  \"version\": \"v1_0_0\",\n" +
+                "  \"elements\": [\n" +
+                "    {\n" +
+                "      \"_type\": \"dataSpace\",\n" +
+                "      \"name\": \"TestDataSpace\",\n" +
+                "      \"package\": \"test::model\",\n" +
+                "      \"title\": \"My Data Space\",\n" +
+                "      \"executionContexts\": [\n" +
+                "        {\n" +
+                "          \"name\": \"INT\",\n" +
+                "          \"title\": \"Integration\",\n" +
+                "          \"description\": \"some description 1\",\n" +
+                "          \"mapping\": {\n" +
+                "            \"type\": \"MAPPING\",\n" +
+                "            \"path\": \"test::model::TestMapping\"\n" +
+                "          },\n" +
+                "          \"defaultRuntime\": {\n" +
+                "            \"type\": \"RUNTIME\",\n" +
+                "            \"path\": \"test::model::TestRuntime\"\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ],\n" +
+                "      \"defaultExecutionContext\": \"INT\",\n" +
+                "      \"description\": \"some description 2\",\n" +
+                "      \"diagrams\": [\n" +
+                "        {\n" +
+                "          \"title\": \"Diagram 1\",\n" +
+                "          \"description\": \"description\",\n" +
+                "          \"diagram\": { \"path\": \"model::MyDiagram\" }\n" +
+                "        },\n" +
+                "        {\n" +
+                "          \"title\": \"Diagram 2\",\n" +
+                "          \"description\": \"description\",\n" +
+                "          \"diagram\": { \"path\": \"model::MyDiagram\" }\n" +
+                "        }\n" +
+                "      ],\n" +
+                "      \"elements\": [\n" +
+                "        { \"path\": \"test::model\" },\n" +
+                "        { \"path\": \"test::model::Class1\" },\n" +
+                "        { \"path\": \"test::model::Class2\" },\n" +
+                "        { \"path\": \"test::model::Assoc1\" },\n" +
+                "        { \"path\": \"test::model::MyEnum\", \"exclude\": true }\n" +
+                "      ],\n" +
+                "      \"executables\": [\n" +
+                "        {\n" +
+                "          \"_type\": \"dataSpacePackageableElementExecutable\",\n" +
+                "          \"title\": \"Executable 1\",\n" +
+                "          \"description\": \"description\",\n" +
+                "          \"executable\": { \"path\": \"model::MyExecutable\" }\n" +
+                "        },\n" +
+                "        {\n" +
+                "          \"_type\": \"dataSpacePackageableElementExecutable\",\n" +
+                "          \"title\": \"Executable 2\",\n" +
+                "          \"description\": \"description\",\n" +
+                "          \"executable\": { \"path\": \"model::MyExecutable\" }\n" +
+                "        },\n" +
+                "        {\n" +
+                "          \"_type\": \"dataSpaceTemplateExecutable\",\n" +
+                "          \"title\": \"Template 1\",\n" +
+                "          \"description\": \"description\",\n" +
+                "          \"query\": {\n" +
+                "            \"_type\": \"lambda\",\n" +
+                "            \"body\": [\n" +
+                "              {\n" +
+                "                \"_type\": \"func\",\n" +
+                "                \"function\": \"project\",\n" +
+                "                \"parameters\": [\n" +
+                "                  {\n" +
+                "                    \"_type\": \"func\",\n" +
+                "                    \"function\": \"getAll\",\n" +
+                "                    \"parameters\": [\n" +
+                "                      {\n" +
+                "                        \"_type\": \"packageableElementPtr\",\n" +
+                "                        \"fullPath\": \"model::Firm\"\n" +
+                "                      }\n" +
+                "                    ]\n" +
+                "                  },\n" +
+                "                  {\n" +
+                "                    \"_type\": \"collection\",\n" +
+                "                    \"multiplicity\": {\n" +
+                "                      \"lowerBound\": 2,\n" +
+                "                      \"upperBound\": 2\n" +
+                "                    },\n" +
+                "                    \"values\": [\n" +
+                "                      {\n" +
+                "                        \"_type\": \"lambda\",\n" +
+                "                        \"body\": [\n" +
+                "                          {\n" +
+                "                            \"_type\": \"property\",\n" +
+                "                            \"parameters\": [\n" +
+                "                              {\n" +
+                "                                \"_type\": \"var\",\n" +
+                "                                \"name\": \"x\"\n" +
+                "                              }\n" +
+                "                            ],\n" +
+                "                            \"property\": \"id\"\n" +
+                "                          }\n" +
+                "                        ],\n" +
+                "                        \"parameters\": [\n" +
+                "                          {\n" +
+                "                            \"_type\": \"var\",\n" +
+                "                            \"name\": \"x\"\n" +
+                "                          }\n" +
+                "                        ]\n" +
+                "                      },\n" +
+                "                      {\n" +
+                "                        \"_type\": \"lambda\",\n" +
+                "                        \"body\": [\n" +
+                "                          {\n" +
+                "                            \"_type\": \"property\",\n" +
+                "                            \"parameters\": [\n" +
+                "                              {\n" +
+                "                                \"_type\": \"property\",\n" +
+                "                                \"parameters\": [\n" +
+                "                                  {\n" +
+                "                                    \"_type\": \"var\",\n" +
+                "                                    \"name\": \"x\"\n" +
+                "                                  }\n" +
+                "                                ],\n" +
+                "                                \"property\": \"employees\"\n" +
+                "                              }\n" +
+                "                            ],\n" +
+                "                            \"property\": \"firstName\"\n" +
+                "                          }\n" +
+                "                        ],\n" +
+                "                        \"parameters\": [\n" +
+                "                          {\n" +
+                "                            \"_type\": \"var\",\n" +
+                "                            \"name\": \"x\"\n" +
+                "                          }\n" +
+                "                        ]\n" +
+                "                      }\n" +
+                "                    ]\n" +
+                "                  },\n" +
+                "                  {\n" +
+                "                    \"_type\": \"collection\",\n" +
+                "                    \"multiplicity\": {\n" +
+                "                      \"lowerBound\": 2,\n" +
+                "                      \"upperBound\": 2\n" +
+                "                    },\n" +
+                "                    \"values\": [\n" +
+                "                      {\n" +
+                "                        \"_type\": \"string\",\n" +
+                "                        \"value\": \"Id\"\n" +
+                "                      },\n" +
+                "                      {\n" +
+                "                        \"_type\": \"string\",\n" +
+                "                        \"value\": \"Employees/First Name\"\n" +
+                "                      }\n" +
+                "                    ]\n" +
+                "                  }\n" +
+                "                ]\n" +
+                "              }\n" +
+                "            ],\n" +
+                "            \"parameters\": []\n" +
+                "          },\n" +
+                "          \"executionContextKey\": \"INT\"\n" +
+                "        }\n" +
+                "      ],\n" +
+                "      \"supportInfo\": {\n" +
+                "        \"_type\": \"combined\",\n" +
+                "        \"documentationUrl\": \"https://www.example.org\",\n" +
+                "        \"emails\": [\"testEmail@test.org\"],\n" +
+                "        \"website\": \"https://www.example.org\",\n" +
+                "        \"faqUrl\": \"https://www.example.org\",\n" +
+                "        \"supportUrl\": \"https://www.example.org\"\n" +
+                "      }\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n", "###DataSpace\n" +
+                "DataSpace test::model::TestDataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'INT';\n" +
+                "      title: 'Integration';\n" +
+                "      description: 'some description 1';\n" +
+                "      mapping: test::model::TestMapping;\n" +
+                "      defaultRuntime: test::model::TestRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'INT';\n" +
+                "  title: 'My Data Space';\n" +
+                "  description: 'some description 2';\n" +
+                "  diagrams:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      title: 'Diagram 1';\n" +
+                "      description: 'description';\n" +
+                "      diagram: model::MyDiagram;\n" +
+                "    },\n" +
+                "    {\n" +
+                "      title: 'Diagram 2';\n" +
+                "      description: 'description';\n" +
+                "      diagram: model::MyDiagram;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  elements:\n" +
+                "  [\n" +
+                "    test::model,\n" +
+                "    test::model::Class1,\n" +
+                "    test::model::Class2,\n" +
+                "    test::model::Assoc1,\n" +
+                "    -test::model::MyEnum\n" +
+                "  ];\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      title: 'Executable 1';\n" +
+                "      description: 'description';\n" +
+                "      executable: model::MyExecutable;\n" +
+                "    },\n" +
+                "    {\n" +
+                "      title: 'Executable 2';\n" +
+                "      description: 'description';\n" +
+                "      executable: model::MyExecutable;\n" +
+                "    },\n" +
+                "    {\n" +
+                "      title: 'Template 1';\n" +
+                "      description: 'description';\n" +
+                "      query: |model::Firm.all()->project([x|$x.id, x|$x.employees.firstName], ['Id', 'Employees/First Name']);\n" +
+                "      executionContextKey: 'INT';\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  supportInfo: Combined {\n" +
+                "    documentationUrl: 'https://www.example.org';\n" +
+                "    website: 'https://www.example.org';\n" +
+                "    faqUrl: 'https://www.example.org';\n" +
+                "    supportUrl: 'https://www.example.org';\n" +
+                "    emails:\n" +
+                "    [\n" +
+                "      'testEmail@test.org'\n" +
+                "    ];\n" +
+                "  };\n" +
                 "}\n");
     }
 }

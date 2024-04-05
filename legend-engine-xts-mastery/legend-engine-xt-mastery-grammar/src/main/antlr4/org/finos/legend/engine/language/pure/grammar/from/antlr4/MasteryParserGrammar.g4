@@ -277,6 +277,7 @@ resolutionQuery:                            BRACE_OPEN
                                              | resolutionQueryKeyType
                                              | resolutionQueryOptional
                                              | resolutionQueryPrecedence
+                                             | resolutionQueryFilter
                                             )*
                                             BRACE_CLOSE
 ;
@@ -299,6 +300,8 @@ resolutionQueryKeyType:                  RESOLUTION_QUERY_KEY_TYPE COLON (
 resolutionQueryOptional:                 RESOLUTION_QUERY_OPTIONAL COLON boolean_value SEMI_COLON
 ;
 resolutionQueryPrecedence:               PRECEDENCE COLON INTEGER SEMI_COLON
+;
+resolutionQueryFilter:                   RESOLUTION_QUERY_FILTER COLON lambdaFunction SEMI_COLON
 ;
 // -------------------------------------- PRECEDENCE RULES--------------------------------------
 

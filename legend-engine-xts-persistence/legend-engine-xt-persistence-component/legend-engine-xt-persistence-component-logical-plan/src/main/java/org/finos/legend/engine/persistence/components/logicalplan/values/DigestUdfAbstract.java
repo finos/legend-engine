@@ -14,10 +14,10 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.values;
 
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 @org.immutables.value.Value.Immutable
 @org.immutables.value.Value.Style(
@@ -36,5 +36,7 @@ public interface DigestUdfAbstract extends Value
 
     List<Value> values();
 
-    Optional<Dataset> dataset();
+    List<DataType> fieldTypes();
+
+    Map<DataType, String> typeConversionUdfNames();
 }

@@ -26,7 +26,6 @@ import meta::relational::postProcessor::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::metamodel::*;
 import meta::relational::mapping::*;
 import meta::pure::alloy::connections::*;
@@ -52,15 +51,15 @@ function <<access.private>> meta::relational::postProcessor::prefixForWrapperAll
    'inFilterClause_';
 }
 
-function <<access.private>> meta::relational::postProcessor::processedTempTableNameForIn(dbType: DatabaseType[1]):String[1]
+function <<access.private>> meta::relational::postProcessor::processedTempTableNameForIn(dbType: DatabaseType[1], dc: meta::external::store::relational::runtime::DatabaseConnection[1]):String[1]
 {
-   $dbType->createDbConfig([]).procesTempTableName('tempTableForIn_');
+   $dbType->createDbConfig([]).procesTempTableName('tempTableForIn_', $dc);
 }
 
-function meta::relational::postProcessor::processInOperation(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
+function meta::relational::postProcessor::processInOperation(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
 {
    let connection = $runtime->connectionByElement($store->toOne())->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection);
-   let isTestRun  = $connection->instanceOf(TestDatabaseConnection)
+   let isTestRun  = $connection->instanceOf(meta::external::store::relational::runtime::TestDatabaseConnection)
                     || ($connection->instanceOf(RelationalDatabaseConnection) && $connection->cast(@RelationalDatabaseConnection).datasourceSpecification->instanceOf(LocalH2DatasourceSpecification));
    let dbThreshold = $connection.type->getCollectionThresholdLimitForDatabaseType($isTestRun);
    let dbSpecificTempTableCreationLogicSupplier = $connection.type->getDbSpecificTempTableCreationLogicSupplierForDatabaseType($isTestRun);
@@ -73,7 +72,7 @@ function meta::relational::postProcessor::processInOperation(query:SQLQuery[1], 
                                                          d  : DynaFunction[1] | if($d.name == 'in' &&  $d.parameters->at(1)->instanceOf(LiteralList) && ($d.parameters->at(1)->cast(@LiteralList).values->size() > $dbThreshold->toOne()),
                                                                                    |
                                                                                    let dbType               = $connection.type;
-                                                                                   let tempTableName        = $dbType->processedTempTableNameForIn() + $uniqueId->toString();
+                                                                                   let tempTableName        = $dbType->processedTempTableNameForIn($connection) + $uniqueId->toString();
                                                                                    let tempTableColumnName  = 'ColumnForStoringInCollection';
 
                                                                                    let firstLiteralValue    = $d.parameters->at(1)->cast(@LiteralList).values->map(l | $l.value)->at(0);
@@ -106,7 +105,7 @@ function meta::relational::postProcessor::processInOperation(query:SQLQuery[1], 
    );
 }
 
-function meta::relational::postProcessor::generatePostProcessorResult(changedFunctions:Pair<RelationalOperationElement, RelationalOperationElement>[*], query:SQLQuery[1], connection:DatabaseConnection[1], dbThreshold:Integer[1], dbSpecificTempTableCreationLogicSupplier:Function<{String[1]->String[1]}>[0..1], runtime:Runtime[1], store:Database[1], exeCtx:ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
+function meta::relational::postProcessor::generatePostProcessorResult(changedFunctions:Pair<RelationalOperationElement, RelationalOperationElement>[*], query:SQLQuery[1], connection:DatabaseConnection[1], dbThreshold:Integer[1], dbSpecificTempTableCreationLogicSupplier:Function<{String[1]->String[1]}>[0..1], runtime:Runtime[1], store:Database[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
 {
    let getTypeLambda = {val:Any[1] |if($val->instanceOf(VarPlaceHolder), | $val->cast(@VarPlaceHolder).type, | $val->type())};
 
@@ -117,8 +116,8 @@ function meta::relational::postProcessor::generatePostProcessorResult(changedFun
 
                           let outerAllocationNodeName               = if($newInFunction.parameters->at(1)->instanceOf(VarPlaceHolder),
                                                                          |$newInFunction.parameters->at(1)->cast(@VarPlaceHolder).name,
-                                                                         |$newInFunction.parameters->at(1)->cast(@SelectSQLQuery).data.alias.name->toOne()->replace($dbType->processedTempTableNameForIn(), prefixForWrapperAllocationNodeName()));
-                          let tempTableName                         = $outerAllocationNodeName->replace(prefixForWrapperAllocationNodeName(), $dbType->processedTempTableNameForIn());
+                                                                         |$newInFunction.parameters->at(1)->cast(@SelectSQLQuery).data.alias.name->toOne()->replace($dbType->processedTempTableNameForIn($connection), prefixForWrapperAllocationNodeName()));
+                          let tempTableName                         = $outerAllocationNodeName->replace(prefixForWrapperAllocationNodeName(), $dbType->processedTempTableNameForIn($connection));
                           let tempTableColumnName                   = 'ColumnForStoringInCollection';
                           let allocationNodeName                    = $outerAllocationNodeName->replace(prefixForWrapperAllocationNodeName(), 'tempVarForIn_');
 

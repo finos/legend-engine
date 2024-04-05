@@ -16,9 +16,13 @@ package org.finos.legend.engine.language.sql.grammar.integration.interpreted.nat
 
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.sql.grammar.integration.test.TestSQLEmbedded;
-import org.finos.legend.engine.pure.runtime.compiler.Tools;
+import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.LegendCompileMixedProcessorSupport;
+import org.finos.legend.engine.pure.runtime.compiler.test.Tools;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntime;
+import org.finos.legend.pure.m3.serialization.runtime.PureRuntimeBuilder;
+import org.finos.legend.pure.m3.serialization.runtime.VoidPureRuntimeStatus;
+import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.junit.BeforeClass;
 
 public class TestSQLEmbeddedInterpreted extends TestSQLEmbedded
@@ -26,8 +30,24 @@ public class TestSQLEmbeddedInterpreted extends TestSQLEmbedded
     @BeforeClass
     public static void setUp()
     {
-        Pair<FunctionExecution, PureRuntime> res = Tools.setUpInterpreted();
+        Pair<FunctionExecution, PureRuntime> res = setUpInterpreted();
         functionExecution = res.getOne();
         runtime = res.getTwo();
+    }
+
+    public static Pair<FunctionExecution, PureRuntime> setUpInterpreted()
+    {
+        return Tools.initialize(
+                codeStorage -> new PureRuntimeBuilder(codeStorage)
+                        .withRuntimeStatus(VoidPureRuntimeStatus.VOID_PURE_RUNTIME_STATUS)
+                        .setTransactionalByDefault(true)
+                        .build(),
+                (runtime, message) ->
+                {
+                    FunctionExecutionInterpreted functionExecution = new FunctionExecutionInterpreted();
+                    functionExecution.init(runtime, message);
+                    functionExecution.setProcessorSupport(new LegendCompileMixedProcessorSupport(functionExecution.getRuntime().getContext(), functionExecution.getRuntime().getModelRepository(), functionExecution.getProcessorSupport()));
+                    return functionExecution;
+                });
     }
 }

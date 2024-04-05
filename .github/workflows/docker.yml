@@ -34,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        module: [ {parent: legend-engine-config, name: legend-engine-server}, {parent: legend-engine-pure-ide, name: legend-engine-pure-ide-light} ]
+        module: [ {parent: legend-engine-config, name: legend-engine-server}, {parent: legend-engine-pure/legend-engine-pure-ide, name: legend-engine-pure-ide-light} ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2

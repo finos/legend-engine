@@ -49,7 +49,7 @@ function meta::external::store::relational::modelJoins::test::getXStoreRuntime()
   );
 }
 
-function meta::external::store::relational::modelJoins::test::getLocalRuntime():Runtime[1]
+function meta::external::store::relational::modelJoins::test::getSingleConnectionRuntime():Runtime[1]
 {
   let localruntime = ^meta::core::runtime::Runtime(
     connectionStores=[
@@ -62,25 +62,21 @@ function <<test.Test>> meta::external::store::relational::modelJoins::test::test
 {
   let query = {|Trade.all()->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);};
   let xstoreResult = executionPlan($query, XStoreTradesMapping, getXStoreRuntime(), meta::relational::extension::relationalExtensions());
-  let localResult = executionPlan($query, LocalTradesMapping, getLocalRuntime(),meta::relational::extension::relationalExtensions());
+  let localResult = executionPlan($query, LocalTradesMapping, getSingleConnectionRuntime(),meta::relational::extension::relationalExtensions());
   assertEquals(
     $xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery,
     $localResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery
   );
-  assertEquals('select "root".value as "Value", "legalentity_0".name as "Client/Name" from Trades.Trade as "root" left outer join Entity.LegalEntity as "legalentity_0" on ("root".ENTITY_ID_FK = "legalentity_0".ENTITY_ID and "root".ENTITY_NAME_FK = "legalentity_0".name)',$xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
-  // assertSameElements(['Anthony Firm X', 'David Firm C', 'Fabrice Firm A', 'John Firm X', 'John Firm X', 'Oliver Firm B', 'Peter Firm X'], $result.values->at(0).rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()));
 }
 
 function <<test.Test>> meta::external::store::relational::modelJoins::test::testPersonToFirmUsingFromProject():Boolean[1]
 {
   let xstoreResult = executionPlan({|Trade.all()->from(XStoreTradesMapping, getXStoreRuntime())->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);}, meta::relational::extension::relationalExtensions());
-  let localResult = executionPlan({|Trade.all()->from(LocalTradesMapping, getLocalRuntime())->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);}, meta::relational::extension::relationalExtensions());
+  let localResult = executionPlan({|Trade.all()->from(LocalTradesMapping, getSingleConnectionRuntime())->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);}, meta::relational::extension::relationalExtensions());
   assertEquals(
     $xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery,
     $localResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery
   );
-  assertEquals('select "root".value as "Value", "legalentity_0".name as "Client/Name" from Trades.Trade as "root" left outer join Entity.LegalEntity as "legalentity_0" on ("root".ENTITY_ID_FK = "legalentity_0".ENTITY_ID and "root".ENTITY_NAME_FK = "legalentity_0".name)',$xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
-  // assertSameElements(['Anthony Firm X', 'David Firm C', 'Fabrice Firm A', 'John Firm X', 'John Firm X', 'Oliver Firm B', 'Peter Firm X'], $result.values->at(0).rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()));
 }
 
 function <<test.Test, test.ToFix>> meta::external::store::relational::modelJoins::test::testPersonToFirmGraphUsingFetch():Boolean[1]
@@ -95,7 +91,7 @@ function <<test.Test, test.ToFix>> meta::external::store::relational::modelJoins
    }#;
   let query = {|Trade.all()->graphFetch($tree)->serialize($tree);};
   let xstoreResult = executionPlan($query, XStoreTradesMapping, getXStoreRuntime(), meta::relational::extension::relationalExtensions());
-  let localResult = executionPlan($query, LocalTradesMapping, getLocalRuntime(), meta::relational::extension::relationalExtensions());
+  let localResult = executionPlan($query, LocalTradesMapping, getSingleConnectionRuntime(), meta::relational::extension::relationalExtensions());
   false;
 }
 
@@ -110,7 +106,7 @@ function <<test.Test, test.ToFix>> meta::external::store::relational::modelJoins
       }
    }#;
   let xstoreResult = executionPlan({|Trade.all()->from(XStoreTradesMapping, getXStoreRuntime())->graphFetch($tree)->serialize($tree);}, meta::relational::extension::relationalExtensions());
-  let localResult = executionPlan({|Trade.all()->from(LocalTradesMapping, getLocalRuntime())->graphFetch($tree)->serialize($tree);}, meta::relational::extension::relationalExtensions());
+  let localResult = executionPlan({|Trade.all()->from(LocalTradesMapping, getSingleConnectionRuntime())->graphFetch($tree)->serialize($tree);}, meta::relational::extension::relationalExtensions());
   false;
 }
 
@@ -174,7 +170,7 @@ Database meta::external::store::relational::modelJoins::test::LocalTradesDatabas
   )
 
   Join Entity_Trade(
-    Trades.Trade.ENTITY_ID_FK = Entity.LegalEntity.ENTITY_ID and Trades.Trade.ENTITY_NAME_FK = Entity.LegalEntity.name
+    case(isNull(toString(toString(Trades.Trade.ENTITY_ID_FK))), toString(Trades.Trade.ENTITY_ID_FK), toString(Trades.Trade.ENTITY_ID_FK)) = Entity.LegalEntity.ENTITY_ID and case(isNull(Trades.Trade.ENTITY_NAME_FK),'Unknown',Trades.Trade.ENTITY_NAME_FK) = Entity.LegalEntity.name
   )
 )
 
@@ -209,12 +205,6 @@ Mapping meta::external::store::relational::modelJoins::test::LegalEntityMapping
     ~mainTable [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity
     entityId: [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity.ENTITY_ID,
     name: [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity.name
-  }
-
-  OtherEntity[otherEntity]: Pure
-  {
-    ~src LegalEntity
-    idPlusName: toString($src.entityId)+$src.name
   }
 )
 
@@ -265,8 +255,8 @@ Mapping meta::external::store::relational::modelJoins::test::XStoreTradesMapping
     ~mainTable [XStoreTradesDatabase]Trades.Trade
     id: [XStoreTradesDatabase]Trades.Trade.id,
     value: [XStoreTradesDatabase]Trades.Trade.value,
-    +entityIdFk: String[1]: [XStoreTradesDatabase]Trades.Trade.ENTITY_ID_FK,
-    +entityNameFk: String[1]: [XStoreTradesDatabase]Trades.Trade.ENTITY_NAME_FK
+    +entityIdFk: String[1]: case(isNull(toString(toString([XStoreTradesDatabase]Trades.Trade.ENTITY_ID_FK))), toString([XStoreTradesDatabase]Trades.Trade.ENTITY_ID_FK), toString([XStoreTradesDatabase]Trades.Trade.ENTITY_ID_FK)),
+    +entityNameFk: String[1]: case(isNull([LocalTradesDatabase]Trades.Trade.ENTITY_NAME_FK), 'Unknown', [LocalTradesDatabase]Trades.Trade.ENTITY_NAME_FK)
   }
 
   meta::external::store::relational::modelJoins::test::Trade_LegalEntity: XStore

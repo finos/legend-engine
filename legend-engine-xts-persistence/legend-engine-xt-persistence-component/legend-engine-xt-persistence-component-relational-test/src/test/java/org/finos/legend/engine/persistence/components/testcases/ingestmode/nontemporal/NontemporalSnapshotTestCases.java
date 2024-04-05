@@ -70,6 +70,7 @@ public abstract class NontemporalSnapshotTestCases extends BaseTest
             .relationalSink(getRelationalSink())
             .executionTimestampClock(fixedClock_2000_01_01)
             .collectStatistics(true)
+            .ingestRunId(ingestRunId)
             .build();
 
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
@@ -87,6 +88,7 @@ public abstract class NontemporalSnapshotTestCases extends BaseTest
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
+                .ingestRunId(ingestRunId)
                 .build();
 
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
@@ -136,7 +138,7 @@ public abstract class NontemporalSnapshotTestCases extends BaseTest
     {
         Dataset mainTable = DatasetDefinition.builder()
             .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchema)
+            .schema(stagingTableSchema)
             .build();
 
         try

@@ -26,7 +26,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.api.analytics.model.MappingModelCoverageAnalysisInput;
 import org.finos.legend.engine.api.analytics.model.MappingRuntimeCompatibilityAnalysisInput;
 import org.finos.legend.engine.api.analytics.model.MappingRuntimeCompatibilityAnalysisResult;
-import org.finos.legend.engine.external.shared.format.imports.PureModelContextDataGenerator;
+import org.finos.legend.engine.language.pure.compiler.fromPureGraph.PureModelContextDataGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -39,6 +39,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
@@ -97,8 +99,9 @@ public class MappingAnalytics
                                          @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        PureModel pureModel = this.modelManager.loadModel(input.model, input.clientVersion, profiles, null);
-        PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, profiles);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        PureModel pureModel = this.modelManager.loadModel(input.model, input.clientVersion, identity, null);
+        PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, identity);
         Mapping mapping = input.mapping == null ? null : pureModel.getMapping(input.mapping);
         try (Scope scope = GlobalTracer.get().buildSpan("Mapping: analysis").startActive(true))
         {
@@ -175,11 +178,11 @@ public class MappingAnalytics
 
                    result.model = builder.build().combine(classes).combine(enums).combine(_profiles).combine(associations);
                }
-                return ManageConstantResult.manageResult(profiles, result);
+                return ManageConstantResult.manageResult(identity.getName(), result);
             }
             catch (Exception e)
             {
-                return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, profiles);
+                return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, identity.getName());
             }
         }
     }
@@ -193,14 +196,15 @@ public class MappingAnalytics
                                                        @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, profiles);
-        PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, profiles, null);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, identity);
+        PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, identity, null);
         Mapping mapping = input.mapping == null ? null : pureModel.getMapping(input.mapping);
         try (Scope scope = GlobalTracer.get().buildSpan("Mapping: analysis").startActive(true))
         {
             try
             {
-                return ManageConstantResult.manageResult(profiles, new MappingRuntimeCompatibilityAnalysisResult(
+                return ManageConstantResult.manageResult(identity.getName(), new MappingRuntimeCompatibilityAnalysisResult(
                         ListIterate.collect(HelperRuntimeBuilder.getMappingCompatibleRuntimes(
                                 mapping,
                                 ListIterate.selectInstancesOf(pureModelContextData.getElements(), PackageableRuntime.class),
@@ -208,7 +212,7 @@ public class MappingAnalytics
             }
             catch (Exception e)
             {
-                return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, profiles);
+                return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, identity.getName());
             }
         }
     }

@@ -1,0 +1,84 @@
+import meta::legend::compiler::match::*;
+
+function meta::legend::compiler::match::generate(f:Function<Any>[*]):String[1]
+{
+   'Map<String, Dispatch> map = Maps.mutable.empty();\n'+
+   $f->sortBy(f|$f->elementToPath())->map(ff|$ff->generateCheck())->joinStrings(';\n') + ';\n' +
+   'return map;\n'
+
+}
+
+function <<access.private>> meta::legend::compiler::match::generateCheck(f:Function<Any>[1]):String[1]
+{
+   'map.put("'+$f->elementToPath()+'", (List<ValueSpecification> ps) -> '+$f->functionType()->generateOneCheck('ps', true)+')';
+
+}
+
+function <<access.private>> meta::legend::compiler::match::generateOneCheck(ftype : FunctionType[1], param:String[1], firstCall:Boolean[1]):String[1]
+{
+   let parameters = $ftype.parameters->evaluateAndDeactivate();
+
+   let val = $param+'.size() == '+$parameters->size()->toString();
+
+   $val->concatenate(
+      $parameters->map(
+         p|$p.multiplicity->checkMultiplicity($parameters->indexOf($p), $param)->concatenate($p.genericType->checkType($parameters->indexOf($p), $param, $firstCall)) // first time parameter check is covariant subsequent ones are not.
+   ))->joinStrings(' && ');
+}
+
+function <<access.private>> meta::legend::compiler::match::checkMultiplicity(m:Multiplicity[1], offset:Integer[1], param:String[1]):String[0..1]
+{
+   checkMultiplicity($m, $param+'.get('+$offset->toString()+')._multiplicity()');
+}
+
+function <<access.private>> meta::legend::compiler::match::checkMultiplicity(m:Multiplicity[1], str:String[1]):String[0..1]
+{
+   if ($m.lowerBound.value == 1 && $m.upperBound.value == 1,
+       |'isOne('+$str+')',
+       |if ($m.lowerBound.value == 0 && $m.upperBound.value == 1,
+            | 'matchZeroOne('+$str+')',
+            | if ($m.lowerBound.value == 1,
+                  |'matchOneMany('+$str+')',
+                  |[]
+              )
+        )
+    );
+}
+
+function <<access.private>> meta::legend::compiler::match::checkType(m:GenericType[1], offset:Integer[1], param:String[1], b:Boolean[1]):String[0..1]
+{
+   checkType($m, $param+'.get('+$offset->toString()+')._genericType()', $b);
+}
+
+function <<access.private>> meta::legend::compiler::match::checkType(m:GenericType[1], str:String[1], covariant:Boolean[1]):String[0..1]
+{
+   [
+      pair(|$m.rawType->isEmpty() || $m.rawType == Enumeration, |[]),
+      pair(|$covariant && $m.rawType == Any, |[]),
+      pair(|!$covariant && $m.rawType == Nil, |[]),
+      pair(|$m.rawType == meta::pure::metamodel::function::Function, |let fType = $m.typeArguments->at(0).rawType->cast(@FunctionType)->toOne();
+                                                                      '('+printCheckType($str, 'Nil') + ' || check(funcType('+$str+'), (FunctionType ft) ->'+ checkMultiplicity($fType.returnMultiplicity,'ft._returnMultiplicity()')->concatenate(checkType($fType.returnType, 'ft._returnType()', true))
+                                                                        ->concatenate('check(ft._parameters().toList(), (List<? extends VariableExpression> nps) -> '+$fType->generateOneCheck('nps', false))->joinStrings(' && ') + ')))';),
+      pair(|$covariant && $m.rawType->isNotEmpty() && !$m.rawType->toOne().specializations->isEmpty(), |let type = $m.rawType->toOne(); printCheckTypeSet($str, 'Sets.immutable.with("Nil",'+$type->concatenate($type->_findAllSpecializations())->map(x|'"'+$x.name->toOne()+'"')->joinStrings(',')+')');),
+      pair(|!$covariant && $m.rawType->isNotEmpty() && !$m.rawType->toOne().generalizations->isEmpty(), |let type = $m.rawType->toOne(); printCheckTypeSet($str , 'Sets.immutable.with('+$type->getAllTypeGeneralisations()->map(x|'"'+$x.name->toOne()+'"')->joinStrings(',')+')');),
+      pair(|$covariant ,|let type = $m.rawType->toOne();'('+printCheckType($str, 'Nil')+' || '+printCheckType($str, $type.name->toOne())+')';),
+      pair(|!$covariant ,|let type = $m.rawType->toOne();'('+printCheckType($str, 'Any')+' || '+printCheckType($str, $type.name->toOne())+')';)
+   ]->filter(a|$a.first->eval())->first().second->toOne()->eval();
+}
+
+
+function <<access.private>> meta::legend::compiler::match::printCheckType(s:String[1], s2:String[1]):String[1]
+{
+   '"'+$s2+'".equals('+$s+'._rawType()._name())'
+}
+
+function <<access.private>> meta::legend::compiler::match::printCheckTypeSet(s:String[1], s2:String[1]):String[1]
+{
+   $s2+'.contains('+$s+'._rawType()._name())'
+}
+
+function <<access.private>> {doc.doc = 'Returns recursively all types that are specialisation of a given class'} meta::legend::compiler::match::_findAllSpecializations(c : Type[1]) : Type[*]
+{
+      let scs = $c.specializations.specific;
+      $scs->concatenate($scs->map(s |$s->_findAllSpecializations()))->removeDuplicates();
+}

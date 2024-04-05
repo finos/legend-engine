@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-graphQL</artifactId>
-        <version>4.37.3-SNAPSHOT</version>
+        <version>4.42.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -82,12 +82,17 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-runtime-java-extension-store-relational</artifactId>
+                        <artifactId>legend-pure-runtime-java-extension-compiled-store-relational</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-platform-dsl-diagram-java</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-platform-dsl-store-java</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                    </dependencies>

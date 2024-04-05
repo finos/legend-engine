@@ -2,41 +2,41 @@
  * Implementation of variable substitutions for P-Expressions.
  */
 
-import meta::rel::compile::ir::*;
-import meta::rel::compile::substitution::*;
-import meta::rel::metamodel::*;
-import meta::rel::trace::*;
-import meta::rel::utils::*;
+import meta::external::store::rel::compile::ir::*;
+import meta::external::store::rel::compile::substitution::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::trace::*;
+import meta::external::store::rel::utils::*;
 
-Class meta::rel::compile::substitution::VariableSubstitution {
+Class meta::external::store::rel::compile::substitution::VariableSubstitution {
   /** The mapping from variables names to expressions. The trace is for debugging only. */
   function: FunctionDefinition<{String[1],Trace[1]->Result<Expr|0..1>[1]}>[1];
 }
 
-Class meta::rel::compile::substitution::ColumnAccessRewrite {
+Class meta::external::store::rel::compile::substitution::ColumnAccessRewrite {
   /** The mapping from column expressions to column expressions. The trace is for debugging only. */
   function: FunctionDefinition<{PExprColumnAccess[1],Trace[1]->Result<Expr|0..1>[1]}>[1]; // TODO: Make the return type PExprColumnAccess
 }
 
-function meta::rel::compile::substitution::emptySubstitution(): VariableSubstitution[1] {
+function meta::external::store::rel::compile::substitution::emptySubstitution(): VariableSubstitution[1] {
   ^VariableSubstitution(function={var: String[1], trace: Trace[1] | error(format('No binding in substitution for variable `%s`.', $var), $trace) })
 }
 
-function meta::rel::compile::substitution::emptyColumnAccessRewrite(): ColumnAccessRewrite[1] {
+function meta::external::store::rel::compile::substitution::emptyColumnAccessRewrite(): ColumnAccessRewrite[1] {
   ^ColumnAccessRewrite(function={_expr: PExprColumnAccess[1], trace: Trace[1] | error('No binding in column access rewrite for given expression.', $trace) })
 }
 
 /**
   * Add a mapping to the expression rewriting, where the target expression is lazily evaluated.
   */
-function meta::rel::compile::substitution::newColumnAccessRewrite(
+function meta::external::store::rel::compile::substitution::newColumnAccessRewrite(
   function: FunctionDefinition<{PExprColumnAccess[1],Trace[1]->Result<Expr|0..1>[1]}>[1] // TODO: Can we map only to PExprColumnAccess?
 ): ColumnAccessRewrite[1] {
   ^ColumnAccessRewrite(function=$function)
 }
 
 
-function meta::rel::compile::substitution::addBinding(
+function meta::external::store::rel::compile::substitution::addBinding(
   substitution: VariableSubstitution[1],
   key: String[1],
   value: Variable[1]
@@ -55,7 +55,7 @@ function meta::rel::compile::substitution::addBinding(
 /**
   * Add a mapping to the substitution, where the target expression is lazily evaluated.
   */
-function meta::rel::compile::substitution::addBinding(
+function meta::external::store::rel::compile::substitution::addBinding(
   substitution: VariableSubstitution[1],
   key: String[1],
   expr: FunctionDefinition<{->Result<Expr|0..1>[1]}>[1]
@@ -71,7 +71,7 @@ function meta::rel::compile::substitution::addBinding(
   })
 }
 
-function meta::rel::compile::substitution::apply(
+function meta::external::store::rel::compile::substitution::apply(
   substitution: VariableSubstitution[1],
   key: String[1],
   trace: Trace[1]
@@ -79,7 +79,7 @@ function meta::rel::compile::substitution::apply(
   $substitution.function->eval($key, $trace);
 }
 
-function meta::rel::compile::substitution::apply(
+function meta::external::store::rel::compile::substitution::apply(
   mapping: ColumnAccessRewrite[1],
   key: PExprColumnAccess[1],
   trace: Trace[1]

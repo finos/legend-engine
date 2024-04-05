@@ -21,6 +21,7 @@ public class MemsqlTestArtifacts
             "`name` VARCHAR(256) NOT NULL," +
             "`amount` DOUBLE," +
             "`biz_date` DATE," +
+            "`batch_id` INTEGER," +
             "PRIMARY KEY (`id`, `name`))";
 
     public static String expectedStagingTableCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`staging`(" +
@@ -35,6 +36,7 @@ public class MemsqlTestArtifacts
             "`NAME` VARCHAR(256) NOT NULL," +
             "`AMOUNT` DOUBLE," +
             "`BIZ_DATE` DATE," +
+            "`BATCH_ID` INTEGER," +
             "PRIMARY KEY (`ID`, `NAME`))";
 
     public static String expectedBaseTablePlusDigestCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
@@ -43,6 +45,7 @@ public class MemsqlTestArtifacts
             "`amount` DOUBLE," +
             "`biz_date` DATE," +
             "`digest` VARCHAR(256)," +
+            "`batch_id` INTEGER," +
             "PRIMARY KEY (`id`, `name`))";
 
     public static String expectedStagingTableWithDigestCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`staging`(" +
@@ -60,16 +63,17 @@ public class MemsqlTestArtifacts
             "`biz_date` DATE," +
             "`digest` VARCHAR(256)," +
             "`version` INTEGER," +
+            "`batch_id` INTEGER," +
             "PRIMARY KEY (`id`, `name`))";
 
-    public static String expectedBaseTempStagingTableWithCount = "CREATE TABLE IF NOT EXISTS `mydb`.`staging_legend_persistence_temp_staging`" +
+    public static String expectedBaseTempStagingTableWithCount = "CREATE TABLE IF NOT EXISTS `mydb`.`staging_temp_staging_lp_yosulf`" +
             "(`id` INTEGER NOT NULL," +
             "`name` VARCHAR(256) NOT NULL," +
             "`amount` DOUBLE," +
             "`biz_date` DATE," +
             "`legend_persistence_count` INTEGER)";
 
-    public static String expectedBaseTempStagingTableWithVersionAndCount = "CREATE TABLE IF NOT EXISTS `mydb`.`staging_legend_persistence_temp_staging`" +
+    public static String expectedBaseTempStagingTableWithVersionAndCount = "CREATE TABLE IF NOT EXISTS `mydb`.`staging_temp_staging_lp_yosulf`" +
             "(`id` INTEGER NOT NULL," +
             "`name` VARCHAR(256) NOT NULL," +
             "`amount` DOUBLE," +
@@ -78,7 +82,7 @@ public class MemsqlTestArtifacts
             "`version` INTEGER," +
             "`legend_persistence_count` INTEGER)";
 
-    public static String expectedBaseTempStagingTablePlusDigestWithCount = "CREATE TABLE IF NOT EXISTS `mydb`.`staging_legend_persistence_temp_staging`" +
+    public static String expectedBaseTempStagingTablePlusDigestWithCount = "CREATE TABLE IF NOT EXISTS `mydb`.`staging_temp_staging_lp_yosulf`" +
             "(`id` INTEGER NOT NULL," +
             "`name` VARCHAR(256) NOT NULL," +
             "`amount` DOUBLE," +
@@ -86,7 +90,7 @@ public class MemsqlTestArtifacts
             "`digest` VARCHAR(256)," +
             "`legend_persistence_count` INTEGER)";
 
-    public static String expectedBaseTempStagingTablePlusDigestWithCountAndDataSplit = "CREATE TABLE IF NOT EXISTS `mydb`.`staging_legend_persistence_temp_staging`" +
+    public static String expectedBaseTempStagingTablePlusDigestWithCountAndDataSplit = "CREATE TABLE IF NOT EXISTS `mydb`.`staging_temp_staging_lp_yosulf`" +
             "(`id` INTEGER NOT NULL," +
             "`name` VARCHAR(256) NOT NULL," +
             "`amount` DOUBLE," +
@@ -102,6 +106,7 @@ public class MemsqlTestArtifacts
             "`BIZ_DATE` DATE," +
             "`DIGEST` VARCHAR(256)," +
             "`VERSION` INTEGER," +
+            "`BATCH_ID` INTEGER," +
             "PRIMARY KEY (`ID`, `NAME`))";
 
     public static String expectedBaseTablePlusDigestCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`(" +
@@ -110,6 +115,7 @@ public class MemsqlTestArtifacts
             "`AMOUNT` DOUBLE," +
             "`BIZ_DATE` DATE," +
             "`DIGEST` VARCHAR(256)," +
+            "`BATCH_ID` INTEGER," +
             "PRIMARY KEY (`ID`, `NAME`))";
 
     public static String expectedBaseTableCreateQueryWithNoPKs = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
@@ -117,7 +123,8 @@ public class MemsqlTestArtifacts
             "`name` VARCHAR(256)," +
             "`amount` DOUBLE," +
             "`biz_date` DATE," +
-            "`digest` VARCHAR(256))";
+            "`digest` VARCHAR(256)," +
+            "`batch_id` INTEGER)";
 
     public static String expectedStagingTableCreateQueryWithNoPKs = "CREATE TABLE IF NOT EXISTS `mydb`.`staging`(" +
             "`id` INTEGER," +
@@ -125,9 +132,6 @@ public class MemsqlTestArtifacts
             "`amount` DOUBLE," +
             "`biz_date` DATE," +
             "`digest` VARCHAR(256))";
-
-    public static String expectedBaseTableCreateQueryWithAuditAndNoPKs = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
-            "(`id` INTEGER,`name` VARCHAR(256),`amount` DOUBLE,`biz_date` DATE,`digest` VARCHAR(256),`batch_update_time` DATETIME)";
 
     public static String expectedMainTableBatchIdAndVersionBasedCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
             "`id` INTEGER NOT NULL,`name` VARCHAR(256) NOT NULL,`amount` DOUBLE,`biz_date` DATE,`digest` VARCHAR(256),`version` INTEGER," +
@@ -144,6 +148,7 @@ public class MemsqlTestArtifacts
             "`biz_date` DATE," +
             "`digest` VARCHAR(256)," +
             "`batch_update_time` DATETIME NOT NULL," +
+            "`batch_id` INTEGER," +
             "PRIMARY KEY (`id`, `name`, `batch_update_time`))";
 
     public static String expectedBaseTablePlusDigestPlusUpdateTimestampCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`(" +
@@ -153,16 +158,18 @@ public class MemsqlTestArtifacts
             "`BIZ_DATE` DATE," +
             "`DIGEST` VARCHAR(256)," +
             "`BATCH_UPDATE_TIME` DATETIME NOT NULL," +
+            "`BATCH_ID` INTEGER," +
             "PRIMARY KEY (`ID`, `NAME`, `BATCH_UPDATE_TIME`))";
 
-    public static String expectedBaseTableWithAuditNotPKCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
-            "`id` INTEGER NOT NULL," +
-            "`name` VARCHAR(256) NOT NULL," +
-            "`amount` DOUBLE," +
-            "`biz_date` DATE," +
-            "`digest` VARCHAR(256)," +
-            "`batch_update_time` DATETIME," +
-            "PRIMARY KEY (`id`, `name`))";
+    public static String expectedBaseTablePlusDigestPlusUpdateTimestampAndBatchNumberCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
+        "`id` INTEGER NOT NULL," +
+        "`name` VARCHAR(256) NOT NULL," +
+        "`amount` DOUBLE," +
+        "`biz_date` DATE," +
+        "`digest` VARCHAR(256)," +
+        "`batch_update_time` DATETIME NOT NULL," +
+        "`batch_number` INTEGER," +
+        "PRIMARY KEY (`id`, `name`, `batch_update_time`))";
 
     public static String expectedBaseTableWithAuditPKCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
             "`id` INTEGER NOT NULL," +
@@ -170,10 +177,11 @@ public class MemsqlTestArtifacts
             "`amount` DOUBLE," +
             "`biz_date` DATE," +
             "`batch_update_time` DATETIME NOT NULL," +
+            "`batch_id` INTEGER," +
             "PRIMARY KEY (`id`, `name`, `batch_update_time`))";
 
     public static String expectedStagingCleanupQuery = "DELETE FROM `mydb`.`staging` as stage";
-    public static String expectedTempStagingCleanupQuery = "DELETE FROM `mydb`.`staging_legend_persistence_temp_staging` as stage";
+    public static String expectedTempStagingCleanupQuery = "DELETE FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage";
 
     public static String expectedDropTableQuery = "DROP TABLE IF EXISTS `mydb`.`staging` CASCADE";
 
@@ -190,7 +198,8 @@ public class MemsqlTestArtifacts
             "`batch_end_ts_utc` DATETIME," +
             "`batch_status` VARCHAR(32)," +
             "`table_batch_id` INTEGER," +
-            "`staging_filters` JSON)";
+            "`batch_source_info` JSON," +
+            "`additional_metadata` JSON)";
 
     public static String expectedMetadataTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS BATCH_METADATA" +
             "(`TABLE_NAME` VARCHAR(255)," +
@@ -198,7 +207,8 @@ public class MemsqlTestArtifacts
             "`BATCH_END_TS_UTC` DATETIME," +
             "`BATCH_STATUS` VARCHAR(32)," +
             "`TABLE_BATCH_ID` INTEGER," +
-            "`STAGING_FILTERS` JSON)";
+            "`BATCH_SOURCE_INFO` JSON," +
+            "`ADDITIONAL_METADATA` JSON)";
 
     public static String expectedMainTableBatchIdBasedCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`" +
             "(`ID` INTEGER NOT NULL,`NAME` VARCHAR(256) NOT NULL,`AMOUNT` DOUBLE,`BIZ_DATE` DATE,`DIGEST` VARCHAR(256)," +
@@ -212,6 +222,21 @@ public class MemsqlTestArtifacts
 
     public static String expectedMetadataTableIngestQueryWithPlaceHolders = "INSERT INTO batch_metadata (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`) " +
             "(SELECT 'main',{BATCH_ID_PATTERN},'{BATCH_START_TS_PATTERN}','{BATCH_END_TS_PATTERN}','DONE')";
+
+    public static String expectedMetadataTableIngestQueryWithBatchSuccessValue = "INSERT INTO batch_metadata (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`)" +
+        " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'SUCCEEDED')";
+
+    public static String expectedMetadataTableIngestQueryWithAdditionalMetadata = "INSERT INTO batch_metadata " +
+        "(`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `additional_metadata`)" +
+        " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata " +
+        "WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'DONE'," +
+        "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
+
+    public static String expectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase = "INSERT INTO BATCH_METADATA " +
+        "(`TABLE_NAME`, `TABLE_BATCH_ID`, `BATCH_START_TS_UTC`, `BATCH_END_TS_UTC`, `BATCH_STATUS`, `ADDITIONAL_METADATA`)" +
+        " (SELECT 'MAIN',(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA " +
+        "WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'DONE'," +
+        "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
 
     public static String expectedMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
             "(`id` INTEGER NOT NULL," +
@@ -442,7 +467,7 @@ public class MemsqlTestArtifacts
             "`delete_indicator` VARCHAR(256)," +
             "PRIMARY KEY (`id`, `name`, `validity_from_reference`))";
 
-    public static String expectedInsertIntoBaseTempStagingWithMaxVersionAndFilterDuplicates = "INSERT INTO `mydb`.`staging_legend_persistence_temp_staging` " +
+    public static String expectedInsertIntoBaseTempStagingWithMaxVersionAndFilterDuplicates = "INSERT INTO `mydb`.`staging_temp_staging_lp_yosulf` " +
             "(`id`, `name`, `amount`, `biz_date`, `legend_persistence_count`) " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`legend_persistence_count` as `legend_persistence_count` FROM " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`legend_persistence_count` as `legend_persistence_count`," +
@@ -451,13 +476,13 @@ public class MemsqlTestArtifacts
             "`mydb`.`staging` as stage GROUP BY stage.`id`, stage.`name`, stage.`amount`, stage.`biz_date`) as stage) " +
             "as stage WHERE stage.`legend_persistence_rank` = 1)";
 
-    public static String expectedInsertIntoBaseTempStagingPlusDigestWithFilterDuplicates = "INSERT INTO `mydb`.`staging_legend_persistence_temp_staging` " +
+    public static String expectedInsertIntoBaseTempStagingPlusDigestWithFilterDuplicates = "INSERT INTO `mydb`.`staging_temp_staging_lp_yosulf` " +
             "(`id`, `name`, `amount`, `biz_date`, `digest`, `legend_persistence_count`) " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
             "COUNT(*) as `legend_persistence_count` FROM `mydb`.`staging` as stage " +
             "GROUP BY stage.`id`, stage.`name`, stage.`amount`, stage.`biz_date`, stage.`digest`)";
 
-    public static String expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndFilterDuplicates = "INSERT INTO `mydb`.`staging_legend_persistence_temp_staging` " +
+    public static String expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndFilterDuplicates = "INSERT INTO `mydb`.`staging_temp_staging_lp_yosulf` " +
             "(`id`, `name`, `amount`, `biz_date`, `digest`, `legend_persistence_count`) " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`legend_persistence_count` as `legend_persistence_count` FROM " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`legend_persistence_count` as `legend_persistence_count`,DENSE_RANK() OVER " +
@@ -466,32 +491,32 @@ public class MemsqlTestArtifacts
             "`mydb`.`staging` as stage GROUP BY stage.`id`, stage.`name`, stage.`amount`, stage.`biz_date`, stage.`digest`) as stage) as stage " +
             "WHERE stage.`legend_persistence_rank` = 1)";
 
-    public static String expectedInsertIntoBaseTempStagingPlusDigestWithAllVersionAndFilterDuplicates = "INSERT INTO `mydb`.`staging_legend_persistence_temp_staging` " +
+    public static String expectedInsertIntoBaseTempStagingPlusDigestWithAllVersionAndFilterDuplicates = "INSERT INTO `mydb`.`staging_temp_staging_lp_yosulf` " +
             "(`id`, `name`, `amount`, `biz_date`, `digest`, `legend_persistence_count`, `data_split`) " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`legend_persistence_count` as `legend_persistence_count`,DENSE_RANK() OVER (PARTITION BY stage.`id`,stage.`name` ORDER BY stage.`biz_date` ASC) as `data_split` " +
             "FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,COUNT(*) as `legend_persistence_count` FROM `mydb`.`staging` as stage " +
             "GROUP BY stage.`id`, stage.`name`, stage.`amount`, stage.`biz_date`, stage.`digest`) as stage)";
 
     public static String maxDupsErrorCheckSql = "SELECT MAX(stage.`legend_persistence_count`) as `MAX_DUPLICATES` FROM " +
-            "`mydb`.`staging_legend_persistence_temp_staging` as stage";
+            "`mydb`.`staging_temp_staging_lp_yosulf` as stage";
 
     public static String dataErrorCheckSqlForBizDateAsVersion = "SELECT MAX(`legend_persistence_distinct_rows`) as `MAX_DATA_ERRORS` FROM " +
             "(SELECT COUNT(DISTINCT(`digest`)) as `legend_persistence_distinct_rows` FROM " +
-            "`mydb`.`staging_legend_persistence_temp_staging` as stage GROUP BY `id`, `name`, `biz_date`) as stage";
+            "`mydb`.`staging_temp_staging_lp_yosulf` as stage GROUP BY `id`, `name`, `biz_date`) as stage";
 
     public static String dataErrorCheckSqlForVersionAsVersion = "SELECT MAX(`legend_persistence_distinct_rows`) as `MAX_DATA_ERRORS` FROM " +
         "(SELECT COUNT(DISTINCT(`digest`)) as `legend_persistence_distinct_rows` FROM " +
-        "`mydb`.`staging_legend_persistence_temp_staging` as stage GROUP BY `id`, `name`, `version`) as stage";
+        "`mydb`.`staging_temp_staging_lp_yosulf` as stage GROUP BY `id`, `name`, `version`) as stage";
 
-    public static String expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndAllowDuplicates = "INSERT INTO `mydb`.`staging_legend_persistence_temp_staging` " +
+    public static String expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndAllowDuplicates = "INSERT INTO `mydb`.`staging_temp_staging_lp_yosulf` " +
             "(`id`, `name`, `amount`, `biz_date`, `digest`) " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` FROM " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,DENSE_RANK() " +
             "OVER (PARTITION BY stage.`id`,stage.`name` ORDER BY stage.`biz_date` DESC) as `legend_persistence_rank` " +
             "FROM `mydb`.`staging` as stage) as stage WHERE stage.`legend_persistence_rank` = 1)";
 
-    public static String expectedTempStagingCleanupQueryInUpperCase = "DELETE FROM `MYDB`.`STAGING_LEGEND_PERSISTENCE_TEMP_STAGING` as stage";
-    public static String expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndAllowDuplicatesUpperCase = "INSERT INTO `MYDB`.`STAGING_LEGEND_PERSISTENCE_TEMP_STAGING` " +
+    public static String expectedTempStagingCleanupQueryInUpperCase = "DELETE FROM `MYDB`.`STAGING_TEMP_STAGING_LP_YOSULF` as stage";
+    public static String expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndAllowDuplicatesUpperCase = "INSERT INTO `MYDB`.`STAGING_TEMP_STAGING_LP_YOSULF` " +
             "(`ID`, `NAME`, `AMOUNT`, `BIZ_DATE`, `DIGEST`, `LEGEND_PERSISTENCE_COUNT`) " +
             "(SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`BIZ_DATE`,stage.`DIGEST`,stage.`LEGEND_PERSISTENCE_COUNT` as `LEGEND_PERSISTENCE_COUNT` " +
             "FROM (SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`BIZ_DATE`,stage.`DIGEST`," +
@@ -501,5 +526,17 @@ public class MemsqlTestArtifacts
             "FROM `MYDB`.`STAGING` as stage GROUP BY stage.`ID`, stage.`NAME`, stage.`AMOUNT`, stage.`BIZ_DATE`, stage.`DIGEST`) as stage) as stage WHERE stage.`LEGEND_PERSISTENCE_RANK` = 1)";
     public static String dataErrorCheckSqlUpperCase = "SELECT MAX(`LEGEND_PERSISTENCE_DISTINCT_ROWS`) as `MAX_DATA_ERRORS` " +
             "FROM (SELECT COUNT(DISTINCT(`DIGEST`)) as `LEGEND_PERSISTENCE_DISTINCT_ROWS` " +
-            "FROM `MYDB`.`STAGING_LEGEND_PERSISTENCE_TEMP_STAGING` as stage GROUP BY `ID`, `NAME`, `BIZ_DATE`) as stage";
+            "FROM `MYDB`.`STAGING_TEMP_STAGING_LP_YOSULF` as stage GROUP BY `ID`, `NAME`, `BIZ_DATE`) as stage";
+
+    public static String dupRowsSql = "SELECT `id`,`name`,`legend_persistence_count` FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
+            "WHERE stage.`legend_persistence_count` > 1 LIMIT 20";
+
+    public static String dataErrorsSqlWithBizDateVersion = "SELECT `id`,`name`,`biz_date`,COUNT(DISTINCT(`digest`)) as `legend_persistence_error_count` FROM " +
+            "`mydb`.`staging_temp_staging_lp_yosulf` as stage GROUP BY `id`, `name`, `biz_date` HAVING `legend_persistence_error_count` > 1 LIMIT 20";
+
+    public static String dataErrorsSqlWithBizDateVersionUpperCase = "SELECT `ID`,`NAME`,`BIZ_DATE`,COUNT(DISTINCT(`DIGEST`)) as `LEGEND_PERSISTENCE_ERROR_COUNT` FROM `MYDB`.`STAGING_TEMP_STAGING_LP_YOSULF` " +
+            "as stage GROUP BY `ID`, `NAME`, `BIZ_DATE` HAVING `LEGEND_PERSISTENCE_ERROR_COUNT` > 1 LIMIT 20";
+
+    public static String dataErrorsSql = "SELECT `id`,`name`,`version`,COUNT(DISTINCT(`digest`)) as `legend_persistence_error_count` FROM " +
+            "`mydb`.`staging_temp_staging_lp_yosulf` as stage GROUP BY `id`, `name`, `version` HAVING `legend_persistence_error_count` > 1 LIMIT 20";
 }

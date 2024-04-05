@@ -192,7 +192,7 @@ public class ServiceParseTreeWalker
         ConnectionTestData connectionData = new ConnectionTestData();
 
         connectionData.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        connectionData.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+        connectionData.id = (ctx.qualifiedName().packagePath() == null ? "" : (PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier()) + "::")) + PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
         connectionData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), this.walkerSourceInformation, this.context.getPureGrammarParserExtensions());
 
         return connectionData;
@@ -464,7 +464,7 @@ public class ServiceParseTreeWalker
                 PureList param = new PureList();
                 param.values = paramValues;
                 param.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.testListValueParam());
-                return new ClassInstance("listInstance", param);
+                return new ClassInstance("listInstance", param, param.sourceInformation);
             }
             else if (ctx.testSingleValueParam() != null)
             {

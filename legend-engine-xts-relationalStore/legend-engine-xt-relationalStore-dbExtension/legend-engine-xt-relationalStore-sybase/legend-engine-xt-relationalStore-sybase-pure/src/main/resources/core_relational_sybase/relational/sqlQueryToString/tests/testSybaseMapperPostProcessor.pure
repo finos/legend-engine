@@ -9,7 +9,7 @@ function <<test.Test>> meta::pure::alloy::connections::tests::sybase::testTableM
         (
             connectionStores = ^meta::core::runtime::ConnectionStore(
                                 element = meta::relational::tests::db,
-                                connection=^TestDatabaseConnection(
+                                connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
                                 type = DatabaseType.Sybase,
                                 queryPostProcessorsWithParameter = meta::pure::alloy::connections::tableMapperPostProcessor(^meta::pure::alloy::connections::MapperPostProcessor(mappers = ^meta::pure::alloy::connections::SchemaNameMapper(from = 'productSchema', to = 'productSchemaTransformed')))
                             ))

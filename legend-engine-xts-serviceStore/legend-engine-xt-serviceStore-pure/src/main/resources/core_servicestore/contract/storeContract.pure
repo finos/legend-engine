@@ -21,7 +21,6 @@ import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::mapping::*;
 import meta::pure::extension::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::external::store::service::functions::pureToServiceStoreQuery::*;
 import meta::external::store::service::metamodel::mapping::*;
 import meta::external::store::service::metamodel::runtime::*;
@@ -76,7 +75,7 @@ function meta::external::store::service::contract::serviceStoreStoreContract():S
 }
 
 // Execution Plan
-function meta::external::store::service::contract::planExecution(sq:StoreQuery[1], ext:RoutedValueSpecification[0..1], mapping:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+function meta::external::store::service::contract::planExecution(sq:StoreQuery[1], ext:RoutedValueSpecification[0..1], mapping:Mapping[0..1], runtime:Runtime[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let fe = $sq.fe->evaluateAndDeactivate()->cast(@FunctionExpression);
    assert($fe.func->in(graphFetchFunctions()), 'Service Store supports graphFetch queries only');

@@ -15,17 +15,22 @@
 package org.finos.legend.engine.external.shared.format.extension;
 
 import org.finos.legend.engine.external.shared.format.generations.description.GenerationConfigurationDescription;
-import org.finos.legend.engine.external.shared.format.imports.description.ImportConfigurationDescription;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.shared.core.extension.LegendGenerationExtension;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationConfiguration;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;
 
 import java.util.List;
 
-public interface GenerationExtension
+public interface GenerationExtension extends LegendGenerationExtension
 {
+    @Override
+    default String type()
+    {
+        return "Generation";
+    }
+
     String getLabel();
 
     String getKey();
@@ -34,11 +39,7 @@ public interface GenerationExtension
 
     GenerationConfigurationDescription getGenerationDescription();
 
-    ImportConfigurationDescription getImportDescription();
-
     Root_meta_pure_generation_metamodel_GenerationConfiguration defaultConfig(CompileContext context);
-
-    Object getService(ModelManager modelManager);
 
     List<Root_meta_pure_generation_metamodel_GenerationOutput> generateFromElement(PackageableElement element, CompileContext compileContext);
 }

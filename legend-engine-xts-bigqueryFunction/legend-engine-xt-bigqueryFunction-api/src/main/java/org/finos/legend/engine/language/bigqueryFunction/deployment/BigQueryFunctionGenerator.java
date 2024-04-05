@@ -23,18 +23,21 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionArtifact;
+import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
 
 public class BigQueryFunctionGenerator
 {
-    public static BigQueryFunctionArtifact generateArtifact(PureModel pureModel, Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction activator, Function<PureModel,RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    public static BigQueryFunctionArtifact generateArtifact(PureModel pureModel, Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         Pair<Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification, RichIterable<String>> artifactDetails = extractArtifactDetails(pureModel, activator, routerExtensions);
         Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification bigQueryDatasourceSpecification = artifactDetails.getOne();
         RichIterable<String> sqlExpressions = artifactDetails.getTwo();
-        return new BigQueryFunctionArtifact(activator._functionName(), Lists.mutable.withAll(sqlExpressions), bigQueryDatasourceSpecification._projectId(), bigQueryDatasourceSpecification._defaultDataset());
+        return new BigQueryFunctionArtifact(activator._functionName(), Lists.mutable.withAll(sqlExpressions), bigQueryDatasourceSpecification._projectId(), bigQueryDatasourceSpecification._defaultDataset(), (AlloySDLC) ((PureModelContextData)inputModel).origin.sdlcInfo);
     }
 
     private static Pair<Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification, RichIterable<String>> extractArtifactDetails(PureModel pureModel, Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)

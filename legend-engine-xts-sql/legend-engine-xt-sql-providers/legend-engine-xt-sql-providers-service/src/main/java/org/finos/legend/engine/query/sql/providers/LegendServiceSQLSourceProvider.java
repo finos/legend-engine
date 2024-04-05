@@ -35,8 +35,8 @@ import org.finos.legend.engine.query.sql.providers.shared.project.ProjectCoordin
 import org.finos.legend.engine.query.sql.providers.shared.project.ProjectCoordinateWrapper;
 import org.finos.legend.engine.query.sql.providers.shared.project.ProjectResolvedContext;
 import org.finos.legend.engine.query.sql.providers.shared.utils.SQLProviderUtils;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.util.List;
 import java.util.Optional;
@@ -68,14 +68,14 @@ public class LegendServiceSQLSourceProvider implements SQLSourceProvider
     }
 
     @Override
-    public SQLSourceResolvedContext resolve(List<TableSource> sources, SQLContext context, MutableList<CommonProfile> profiles)
+    public SQLSourceResolvedContext resolve(List<TableSource> sources, SQLContext context, Identity identity)
     {
         MutableList<Pair<SQLSource, PureModelContext>> resolved = ListIterate.collect(sources, source ->
         {
             String pattern = source.getArgumentValueAs(PATTERN, 0, String.class, true);
             ProjectCoordinateWrapper projectCoordinateWrapper = ProjectCoordinateWrapper.extractFromTableSource(source);
 
-            ProjectResolvedContext resolvedProject = projectCoordinateLoader.resolve(projectCoordinateWrapper, profiles);
+            ProjectResolvedContext resolvedProject = projectCoordinateLoader.resolve(projectCoordinateWrapper, identity);
 
             Service service = SQLProviderUtils.extractElement("service", Service.class, resolvedProject.getData(), s -> pattern.equals(s.pattern));
             FastList<SQLSourceArgument> keys = FastList.newListWith(new SQLSourceArgument(PATTERN, 0, pattern));

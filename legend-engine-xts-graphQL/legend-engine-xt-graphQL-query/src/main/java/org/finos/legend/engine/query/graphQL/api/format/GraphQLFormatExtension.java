@@ -16,9 +16,9 @@ package org.finos.legend.engine.query.graphQL.api.format;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
 import org.finos.legend.engine.external.shared.format.model.transformation.toModel.ExternalFormatModelGenerationExtension;
-import org.finos.legend.engine.external.shared.format.model.transformation.toModel.SchemaToModelConfiguration;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.graphQL.introspection.model.ProtocolToMetamodelTranslator;
 import org.finos.legend.engine.protocol.graphQL.introspection.model.__Schema;
@@ -31,6 +31,12 @@ import org.finos.legend.pure.generated.core_external_query_graphql_contract;
 
 public class GraphQLFormatExtension implements ExternalFormatModelGenerationExtension<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer, GraphQLSchemaToModelConfiguration>
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Query", "GraphQL");
+    }
+
     private final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer> graphQLIntrospectionContract = (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer>) core_external_query_graphql_contract.Root_meta_external_query_graphQL_contract_graphQLIntrospectionContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
 
     @Override

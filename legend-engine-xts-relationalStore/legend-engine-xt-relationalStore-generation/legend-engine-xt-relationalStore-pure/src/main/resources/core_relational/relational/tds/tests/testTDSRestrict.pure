@@ -27,7 +27,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testProjectAll
          ->project(p|$p.firstName,'firstName')
          ->restrict(['firstName']),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 1);
 
@@ -45,7 +45,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testProjectAll
          ->project([col(p|$p.firstName,'firstName'), col(p|'Hello', 'Hello')])
          ->restrict(['firstName', 'Hello']),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 2);
 
@@ -64,7 +64,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testLowerProje
          ->project([col(p|$p.firstName,'firstName'), col(p|'Hello','Hello')])
          ->restrict(['firstName']),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 1);
 
@@ -87,7 +87,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testLowerProje
          ->distinct()
          ->restrict(['firstName']),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 1);
 
@@ -109,7 +109,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testLowerProje
          ->sort([asc('Hello'), asc('firstName')])
          ->restrict(['firstName']),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 1);
 
@@ -137,7 +137,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictOn
          ->sort(asc('Firm'))
          ->restrict(['Firm', 'People count']),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 2);
 
@@ -163,7 +163,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictOn
          ->distinct()
          ->restrict(['Firm', 'People count']),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 2);
 
@@ -194,7 +194,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictOn
          ->restrict(['Firm', 'People count'])
          ->sort([asc('Firm'), asc('People count')]),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEquals([String, Integer], $result.values.columns.type);
    assertSize($result.values.columns, 2);
@@ -226,7 +226,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictOn
          ->restrict(['Firm'])
          ->sort(asc('Firm')),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 1);
 
@@ -257,7 +257,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictHa
          ->sort(asc('age'))
          ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 1);
 
@@ -267,9 +267,9 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictHa
 
 function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictWithPostProcessor():Boolean[1]
 {
-   let runtime = testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let connectionStore = $runtime.connectionStores->at(0);
-   let conn = $connectionStore.connection->cast(@TestDatabaseConnection);
+   let conn = $connectionStore.connection->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
    let runtimeWithPostProcessor = ^$runtime(connectionStores = ^$connectionStore(connection=^$conn(sqlQueryPostProcessors= [{query:meta::relational::metamodel::relation::SelectSQLQuery[1] | $query->meta::relational::postProcessor::postprocess({rel | $rel}) }])));
    let result = execute(|Person.all()->project([col(p|$p.firstName,'firstName'), col(p|'Hello','Hello')])->sort([asc('Hello'), asc('firstName')])->restrict(['firstName']), simpleRelationalMapping, $runtimeWithPostProcessor, meta::relational::extension::relationalExtensions());
 
@@ -287,7 +287,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictAf
          ->sort([asc('name'), asc('averageAge')])
          ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 2);
 
@@ -308,7 +308,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictAf
          ->restrict(['firstName'])
          ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 1);
 

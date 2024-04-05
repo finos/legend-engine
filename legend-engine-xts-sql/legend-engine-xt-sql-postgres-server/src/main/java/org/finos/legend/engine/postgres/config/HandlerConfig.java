@@ -16,13 +16,11 @@ package org.finos.legend.engine.postgres.config;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.finos.legend.engine.postgres.SessionsFactory;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = LegendHandlerConfig.class, name = "LEGEND"),
-        @JsonSubTypes.Type(value = JDBCHandlerConfig.class, name = "JDBC")
-})
+@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, property = "className")
 public interface HandlerConfig
 {
-    HandlerType getType();
+    SessionsFactory buildSessionsFactory();
+
 }

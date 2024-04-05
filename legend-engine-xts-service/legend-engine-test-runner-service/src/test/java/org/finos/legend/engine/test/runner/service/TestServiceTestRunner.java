@@ -21,9 +21,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.test.runner.shared.TestResult;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.net.URL;
@@ -39,7 +42,7 @@ public class TestServiceTestRunner
     {
         URL url = Objects.requireNonNull(getClass().getClassLoader().getResource(serviceModelPath));
         PureModelContextData pureModelContextData = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(url, PureModelContextData.class);
-        PureModel pureModel = new PureModel(pureModelContextData, null, Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
 
         Service service = pureModelContextData.getElementsOfType(Service.class).stream().filter(s -> s.getPath().equals(servicePath)).findFirst()
                 .orElseThrow(() -> new RuntimeException("Unable to find service with path '" + servicePath + "'"));
@@ -103,7 +106,7 @@ public class TestServiceTestRunner
     {
         URL url = Objects.requireNonNull(getClass().getClassLoader().getResource("legend-sdlc-test-services-without-tests.json"));
         PureModelContextData pureModelContextData = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(url, PureModelContextData.class);
-        PureModel pureModel = new PureModel(pureModelContextData, null, Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
 
         Service service = pureModelContextData.getElementsOfType(Service.class).get(0);
 
@@ -124,7 +127,7 @@ public class TestServiceTestRunner
     {
         URL url = Objects.requireNonNull(getClass().getClassLoader().getResource("legend-sdlc-test-services-multi-execution-without-tests.json"));
         PureModelContextData pureModelContextData = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(url, PureModelContextData.class);
-        PureModel pureModel = new PureModel(pureModelContextData, null, Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
 
         Service service = pureModelContextData.getElementsOfType(Service.class).get(0);
 

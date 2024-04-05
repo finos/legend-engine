@@ -126,7 +126,6 @@ import meta::relational::metamodel::*;
 import meta::pure::profiles::*;
 import meta::relational::metamodel::execute::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::functions::toDDL::*;
@@ -138,7 +137,7 @@ function meta::relational::tests::advanced::failures::moveFilterInOnClause::test
 
 function meta::relational::tests::advanced::failures::moveFilterInOnClause::createTablesAndFillDb():Boolean[1]
 {
-   let connection = testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+   let connection = testRuntime().connectionByElement(db)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'productTable', $connection);
    executeInDb2('insert into productTable (id, name) values (1, \'Firm X\');', $connection);

@@ -1,16 +1,16 @@
-import meta::rel::mapping::*;
+import meta::external::store::rel::mapping::*;
 import meta::pure::mapping::*;
 import meta::pure::store::*;
-import meta::rel::metamodel::*;
-import meta::rel::utils::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::utils::*;
 
 
-Class meta::rel::mapping::RelSetImplementation extends InstanceSetImplementation { 
+Class meta::external::store::rel::mapping::RelSetImplementation extends InstanceSetImplementation {
   // We demand an expression that defines the class we are implementing.
   classExpr: Expr[1];
 }
 
-function meta::rel::mapping::relInstanceSet<T>(
+function meta::external::store::rel::mapping::relInstanceSet<T>(
   owner: Mapping[1],
   sourceClass: Class<T>[1], 
   classExpr: Expr[1]
@@ -25,7 +25,7 @@ function meta::rel::mapping::relInstanceSet<T>(
   );
 }
 
-Class meta::rel::mapping::RelPropertyMapping extends PropertyMapping { 
+Class meta::external::store::rel::mapping::RelPropertyMapping extends PropertyMapping {
   target: Expr[1];
 }
 
@@ -33,7 +33,7 @@ Class meta::rel::mapping::RelPropertyMapping extends PropertyMapping {
 /// Constructor methods
 /////////////////////////
 
-function <<access.private>> meta::rel::mapping::propertyMapping(
+function <<access.private>> meta::external::store::rel::mapping::propertyMapping(
   property: Property<Nil,Any|*>[1], 
   target: Expr[1],
   owner: RelSetImplementation[0..1],
@@ -69,7 +69,7 @@ function <<access.private>> meta::rel::mapping::propertyMapping(
   );
 }
 
-function meta::rel::mapping::propertyMapping<T>(
+function meta::external::store::rel::mapping::propertyMapping<T>(
   sourceClass: Class<T>[1], 
   property: String[1], 
   target: Expr[1],
@@ -88,7 +88,7 @@ function meta::rel::mapping::propertyMapping<T>(
     )
 }
 
-function <<access.private>> meta::rel::mapping::withPropertyMapping(
+function <<access.private>> meta::external::store::rel::mapping::withPropertyMapping(
   setImpl: RelSetImplementation[1],
   propertyMapping: RelPropertyMapping[1]
 ): RelSetImplementation[1] {
@@ -103,7 +103,7 @@ function <<access.private>> meta::rel::mapping::withPropertyMapping(
   );
 }
 
-function meta::rel::mapping::withPropertyMapping(
+function meta::external::store::rel::mapping::withPropertyMapping(
   setImpl: RelSetImplementation[1],
   source: Property<Nil,Any|*>[1], 
   target: Expr[1],
@@ -112,7 +112,7 @@ function meta::rel::mapping::withPropertyMapping(
   $setImpl->withPropertyMapping(propertyMapping($source, $target, $setImpl, $store));
 }
 
-function meta::rel::mapping::addSetImplementation(
+function meta::external::store::rel::mapping::addSetImplementation(
   mapping: Mapping[1],
   setImpl: RelSetImplementation[1]
 ): Mapping[1] {

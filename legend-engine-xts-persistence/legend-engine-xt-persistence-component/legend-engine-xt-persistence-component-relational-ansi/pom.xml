@@ -15,7 +15,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-persistence-component</artifactId>
-        <version>4.37.3-SNAPSHOT</version>
+        <version>4.42.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -51,6 +51,12 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
+        <!-- ECLIPSE COLLECTIONS -->
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <!-- ECLIPSE COLLECTIONS -->
         <!-- TEST -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

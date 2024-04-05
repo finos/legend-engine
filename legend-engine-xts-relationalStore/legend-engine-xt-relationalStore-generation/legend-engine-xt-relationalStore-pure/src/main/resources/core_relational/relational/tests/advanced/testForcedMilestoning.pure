@@ -15,7 +15,6 @@
 import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::functions::asserts::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::mapping::*;
 import meta::relational::metamodel::execute::*;
 import meta::external::store::relational::runtime::*;

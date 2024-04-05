@@ -38,6 +38,7 @@ import java.util.Set;
 public class IngestModeMapper
 {
     public static final String DIGEST_FIELD_DEFAULT = "DIGEST";
+    public static final String BATCH_ID_FIELD_DEFAULT = "BATCH_ID";
 
     /*
     Mapper from Persistence model to IngestMode object

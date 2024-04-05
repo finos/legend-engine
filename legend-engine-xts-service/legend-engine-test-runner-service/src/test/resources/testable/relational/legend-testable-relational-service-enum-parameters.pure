@@ -7,7 +7,7 @@ Service service::RelationalServiceWithEnumParams
   execution: Single
   {
     query: eType : model::EmployeeType[1]|model::Person.all()->filter(p|$p.employeeType == $eType)->project([x|$x.firstName, x|$x.lastName], ['First Name', 'Last Name']);
-    mapping: execution::RelationalMapping;
+    mapping: execution::FirmMapping;
     runtime: execution::Runtime;
   }
   testSuites:
@@ -18,10 +18,15 @@ Service service::RelationalServiceWithEnumParams
       [
         connections:
         [
-          connection_1:
+          model::MyConnection:
             Reference
             #{
               data::RelationalData
+            }#,
+          model::MyConnection:
+            DataspaceTestData
+            #{
+              model::com::PersonDataspace
             }#
         ]
       ]

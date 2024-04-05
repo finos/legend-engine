@@ -14,8 +14,16 @@
 
 package org.finos.legend.engine.postgres.config;
 
+import org.finos.legend.engine.postgres.SessionsFactory;
+import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
+import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
 import org.finos.legend.engine.postgres.auth.AuthenticationMethodType;
+import org.finos.legend.engine.postgres.auth.GSSAuthenticationMethod;
+import org.finos.legend.engine.postgres.auth.IdentityProvider;
 import org.finos.legend.engine.postgres.auth.IdentityType;
+import org.finos.legend.engine.postgres.auth.KerberosIdentityProvider;
+import org.finos.legend.engine.postgres.auth.NoPasswordAuthenticationMethod;
+import org.finos.legend.engine.postgres.auth.UsernamePasswordAuthenticationMethod;
 
 public class ServerConfig
 {
@@ -24,6 +32,14 @@ public class ServerConfig
     private AuthenticationMethodType authenticationMethod;
     private IdentityType identityType;
     private GSSConfig gss;
+    private OpenTelemetryConfig otelConfig;
+
+    public Integer getMetricsPort()
+    {
+        return metricsPort;
+    }
+
+    private Integer metricsPort;
 
     public String getLogConfigFile()
     {
@@ -57,8 +73,43 @@ public class ServerConfig
         return gss;
     }
 
-    public ServerConfig()
+    public OpenTelemetryConfig getOtelConfig()
     {
+        return otelConfig;
+    }
+
+    public AuthenticationMethod buildAuthenticationMethod()
+    {
+        IdentityProvider identityProvider;
+        if (getIdentityType() == IdentityType.KERBEROS)
+        {
+            identityProvider = new KerberosIdentityProvider();
+        }
+        else if (getIdentityType() == IdentityType.ANONYMOUS)
+        {
+            identityProvider = new AnonymousIdentityProvider();
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Identity type not supported :" + getIdentityType());
+        }
+
+        switch (getAuthenticationMethod())
+        {
+            case PASSWORD:
+                return new UsernamePasswordAuthenticationMethod(identityProvider);
+            case NO_PASSWORD:
+                return new NoPasswordAuthenticationMethod(identityProvider);
+            case GSS:
+                return new GSSAuthenticationMethod(identityProvider);
+            default:
+                throw new UnsupportedOperationException("Authentication Method not supported :" + getAuthenticationMethod());
+        }
+    }
+
+    public SessionsFactory buildSessionFactory()
+    {
+        return handler.buildSessionsFactory();
     }
 
     public HandlerConfig getHandler()

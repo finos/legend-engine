@@ -14,19 +14,20 @@
 
 package org.finos.legend.engine.protocol.graphQL;
 
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.graphQL.grammar.from.GraphQLGrammarParser;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
 import org.finos.legend.engine.protocol.graphQL.metamodel.ProtocolToMetamodelTranslator;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 
 public class GenerateIntrospectionQueryBuilder
 {
     public static void main(String[] args)
     {
-        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), Lists.mutable.empty(), DeploymentMode.TEST);
+        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), DeploymentMode.TEST);
         String introspection = "fragment FullType on __Type {\n" +
                 "  kind\n" +
                 "  name\n" +

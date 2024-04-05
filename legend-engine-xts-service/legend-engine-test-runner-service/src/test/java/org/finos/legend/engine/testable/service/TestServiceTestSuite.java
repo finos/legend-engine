@@ -30,6 +30,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.testable.service.extension.ServiceTestRunner;
 import org.finos.legend.engine.testable.service.extension.ServiceTestableRunnerExtension;
@@ -250,7 +252,7 @@ public class TestServiceTestSuite
                         "}\n\n\n";
 
         PureModelContextData modelDataWithReferenceData = PureGrammarParser.newInstance().parseModel(serviceStoreServiceWithReferenceData + grammar);
-        PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, null);
+        PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service serviceWithReferenceData = (Root_meta_legend_service_metamodel_Service) pureModelWithReferenceData.getPackageableElement("testServiceStoreTestSuites::TestService");
         List<TestResult> serviceStoreTestResults = serviceTestableRunnerExtension.executeAllTest(serviceWithReferenceData, pureModelWithReferenceData, modelDataWithReferenceData);
@@ -321,7 +323,7 @@ public class TestServiceTestSuite
                         "}\n\n\n";
 
         PureModelContextData modelDataWithDefaultSerializationFormat = PureGrammarParser.newInstance().parseModel(serviceStoreServiceWithDefaultSerializationFormat + grammar);
-        PureModel pureModelWithDefaultSerializationFormat = Compiler.compile(modelDataWithDefaultSerializationFormat, DeploymentMode.TEST, null);
+        PureModel pureModelWithDefaultSerializationFormat = Compiler.compile(modelDataWithDefaultSerializationFormat, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service serviceWithDefaultSerializationFormat = (Root_meta_legend_service_metamodel_Service) pureModelWithDefaultSerializationFormat.getPackageableElement("testServiceStoreTestSuites::TestService");
         List<TestResult> serviceStoreTestResultsWithDefaultSerializationFormat = serviceTestableRunnerExtension.executeAllTest(serviceWithDefaultSerializationFormat, pureModelWithDefaultSerializationFormat, modelDataWithDefaultSerializationFormat);
@@ -410,7 +412,7 @@ public class TestServiceTestSuite
                         "}\n\n\n";
 
         PureModelContextData modelDataWithEmbeddedData = PureGrammarParser.newInstance().parseModel(serviceStoreServiceWithEmbeddedData + grammar);
-        PureModel pureModelWithEmbeddedData = Compiler.compile(modelDataWithEmbeddedData, DeploymentMode.TEST, null);
+        PureModel pureModelWithEmbeddedData = Compiler.compile(modelDataWithEmbeddedData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service serviceWithEmbeddedData = (Root_meta_legend_service_metamodel_Service) pureModelWithEmbeddedData.getPackageableElement("testServiceStoreTestSuites::TestService");
         List<TestResult> serviceStoreTestResultsWithEmbeddedData = serviceTestableRunnerExtension.executeAllTest(serviceWithEmbeddedData, pureModelWithEmbeddedData, modelDataWithEmbeddedData);
@@ -481,7 +483,7 @@ public class TestServiceTestSuite
                         "}\n\n\n";
 
         PureModelContextData modelDataWithFailingTest = PureGrammarParser.newInstance().parseModel(serviceStoreServiceWithFailingTest + grammar);
-        PureModel pureModelWithFailingTest = Compiler.compile(modelDataWithFailingTest, DeploymentMode.TEST, null);
+        PureModel pureModelWithFailingTest = Compiler.compile(modelDataWithFailingTest, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service serviceWithFailingTest = (Root_meta_legend_service_metamodel_Service) pureModelWithFailingTest.getPackageableElement("testServiceStoreTestSuites::TestService");
         List<TestResult> serviceStoreTestResultsWithFailingTest = serviceTestableRunnerExtension.executeAllTest(serviceWithFailingTest, pureModelWithFailingTest, modelDataWithFailingTest);
@@ -577,7 +579,7 @@ public class TestServiceTestSuite
                         "}\n\n\n";
 
         PureModelContextData modelDataWithMultipleAsserts = PureGrammarParser.newInstance().parseModel(serviceStoreServiceWithMultipleAsserts + grammar);
-        PureModel pureModelWithMultipleAsserts = Compiler.compile(modelDataWithMultipleAsserts, DeploymentMode.TEST, null);
+        PureModel pureModelWithMultipleAsserts = Compiler.compile(modelDataWithMultipleAsserts, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service serviceWithMultipleAsserts = (Root_meta_legend_service_metamodel_Service) pureModelWithMultipleAsserts.getPackageableElement("testServiceStoreTestSuites::TestService");
         List<TestResult> serviceStoreTestResultsWithMultipleAsserts = serviceTestableRunnerExtension.executeAllTest(serviceWithMultipleAsserts, pureModelWithMultipleAsserts, modelDataWithMultipleAsserts);
@@ -653,7 +655,7 @@ public class TestServiceTestSuite
                         "}\n\n\n";
 
         PureModelContextData modelDataWithMultipleAsserts2 = PureGrammarParser.newInstance().parseModel(serviceStoreServiceWithMultipleAsserts2 + grammar);
-        PureModel pureModelWithMultipleAsserts2 = Compiler.compile(modelDataWithMultipleAsserts2, DeploymentMode.TEST, null);
+        PureModel pureModelWithMultipleAsserts2 = Compiler.compile(modelDataWithMultipleAsserts2, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service serviceWithMultipleAsserts2 = (Root_meta_legend_service_metamodel_Service) pureModelWithMultipleAsserts2.getPackageableElement("testServiceStoreTestSuites::TestService");
         List<TestResult> serviceStoreTestResultsWithMultipleAsserts2 = serviceTestableRunnerExtension.executeAllTest(serviceWithMultipleAsserts2, pureModelWithMultipleAsserts2, modelDataWithMultipleAsserts2);
@@ -757,7 +759,7 @@ public class TestServiceTestSuite
                         "}\n\n\n";
 
         PureModelContextData modelDataWithMultipleTests1 = PureGrammarParser.newInstance().parseModel(serviceStoreServiceWithMultipleTests1 + grammar);
-        PureModel pureModelWithMultipleTests1 = Compiler.compile(modelDataWithMultipleTests1, DeploymentMode.TEST, null);
+        PureModel pureModelWithMultipleTests1 = Compiler.compile(modelDataWithMultipleTests1, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service serviceWithMultipleTests1 = (Root_meta_legend_service_metamodel_Service) pureModelWithMultipleTests1.getPackageableElement("testServiceStoreTestSuites::TestService");
         List<TestResult> serviceStoreTestResultsWithMultipleTests1 = serviceTestableRunnerExtension.executeAllTest(serviceWithMultipleTests1, pureModelWithMultipleTests1, modelDataWithMultipleTests1);
@@ -845,7 +847,7 @@ public class TestServiceTestSuite
                         "}\n\n\n";
 
         PureModelContextData modelDataWithMultipleTests2 = PureGrammarParser.newInstance().parseModel(serviceStoreServiceWithMultipleTests2 + grammar);
-        PureModel pureModelWithMultipleTests2 = Compiler.compile(modelDataWithMultipleTests2, DeploymentMode.TEST, null);
+        PureModel pureModelWithMultipleTests2 = Compiler.compile(modelDataWithMultipleTests2, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service serviceWithMultipleTests2 = (Root_meta_legend_service_metamodel_Service) pureModelWithMultipleTests2.getPackageableElement("testServiceStoreTestSuites::TestService");
         List<TestResult> serviceStoreTestResultsWithMultipleTests2 = serviceTestableRunnerExtension.executeAllTest(serviceWithMultipleTests2, pureModelWithMultipleTests2, modelDataWithMultipleTests2);
@@ -955,7 +957,7 @@ public class TestServiceTestSuite
                         "}\n\n\n";
 
         PureModelContextData modelDataWithMultipleTestSuites = PureGrammarParser.newInstance().parseModel(serviceStoreServiceWithMultipleTestSuites + grammar);
-        PureModel pureModelWithMultipleTestSuites = Compiler.compile(modelDataWithMultipleTestSuites, DeploymentMode.TEST, null);
+        PureModel pureModelWithMultipleTestSuites = Compiler.compile(modelDataWithMultipleTestSuites, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service serviceWithMultipleTestSuites = (Root_meta_legend_service_metamodel_Service) pureModelWithMultipleTestSuites.getPackageableElement("testServiceStoreTestSuites::TestService");
         List<TestResult> serviceStoreTestResultsWithMultipleTestSuites = serviceTestableRunnerExtension.executeAllTest(serviceWithMultipleTestSuites, pureModelWithMultipleTestSuites, modelDataWithMultipleTestSuites);
@@ -1074,7 +1076,7 @@ public class TestServiceTestSuite
                         "}\n\n\n";
 
         PureModelContextData modelDataWithParameters = PureGrammarParser.newInstance().parseModel(serviceStoreServiceWithParameters + grammar);
-        PureModel pureModelWithParameters = Compiler.compile(modelDataWithParameters, DeploymentMode.TEST, null);
+        PureModel pureModelWithParameters = Compiler.compile(modelDataWithParameters, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service serviceWithParameters = (Root_meta_legend_service_metamodel_Service) pureModelWithParameters.getPackageableElement("testServiceStoreTestSuites::TestService");
         List<TestResult> serviceStoreTestResultsWithParameters = serviceTestableRunnerExtension.executeAllTest(serviceWithParameters, pureModelWithParameters, modelDataWithParameters);
@@ -1182,7 +1184,7 @@ public class TestServiceTestSuite
                         "}\n\n\n";
 
         PureModelContextData modelDataWithTestError = PureGrammarParser.newInstance().parseModel(serviceStoreServiceWithTestError + grammar);
-        PureModel pureModelWithTestError = Compiler.compile(modelDataWithTestError, DeploymentMode.TEST, null);
+        PureModel pureModelWithTestError = Compiler.compile(modelDataWithTestError, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service serviceWithTestError = (Root_meta_legend_service_metamodel_Service) pureModelWithTestError.getPackageableElement("testServiceStoreTestSuites::TestService");
         List<TestResult> serviceStoreTestResultsWithTestError = serviceTestableRunnerExtension.executeAllTest(serviceWithTestError, pureModelWithTestError, modelDataWithTestError);
@@ -1267,7 +1269,7 @@ public class TestServiceTestSuite
                         "}\n\n\n";
 
         PureModelContextData modelDataWithInlineService = PureGrammarParser.newInstance().parseModel(serviceStoreInlineService + grammar);
-        PureModel pureModelWithInlineService = Compiler.compile(modelDataWithInlineService, DeploymentMode.TEST, null);
+        PureModel pureModelWithInlineService = Compiler.compile(modelDataWithInlineService, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service inlineServiceWithDefaultSerializationFormat = (Root_meta_legend_service_metamodel_Service) pureModelWithInlineService.getPackageableElement("testServiceStoreTestSuites::TestService");
         List<TestResult> serviceStoreTestResultsForInlineService = serviceTestableRunnerExtension.executeAllTest(inlineServiceWithDefaultSerializationFormat, pureModelWithInlineService, modelDataWithInlineService);
@@ -1458,7 +1460,7 @@ public class TestServiceTestSuite
                 "}\n";
 
         PureModelContextData modelDataWithReferenceData = PureGrammarParser.newInstance().parseModel(grammar);
-        PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, null);
+        PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service serviceWithReferenceData = (Root_meta_legend_service_metamodel_Service) pureModelWithReferenceData.getPackageableElement("testModelStoreTestSuites::service::DocM2MService");
         List<TestResult> serviceStoreTestResults = serviceTestableRunnerExtension.executeAllTest(serviceWithReferenceData, pureModelWithReferenceData, modelDataWithReferenceData);
@@ -1527,7 +1529,7 @@ public class TestServiceTestSuite
                 "\n" +
                 "\n";
         PureModelContextData modelDataWithInlineService = PureGrammarParser.newInstance().parseModel(grammar + inlineService);
-        PureModel pureModelWithInlineService = Compiler.compile(modelDataWithInlineService, DeploymentMode.TEST, null);
+        PureModel pureModelWithInlineService = Compiler.compile(modelDataWithInlineService, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service serviceWithInlineService = (Root_meta_legend_service_metamodel_Service) pureModelWithInlineService.getPackageableElement("testModelStoreTestSuites::service::DocM2MInlineService");
         List<TestResult> inlineServiceStoreTestResults = serviceTestableRunnerExtension.executeAllTest(serviceWithInlineService, pureModelWithInlineService, modelDataWithInlineService);
@@ -1679,7 +1681,7 @@ public class TestServiceTestSuite
                 "}\n";
 
         PureModelContextData modelDataWithReferenceData = PureGrammarParser.newInstance().parseModel(grammar);
-        PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, null);
+        PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service serviceWithReferenceData = (Root_meta_legend_service_metamodel_Service) pureModelWithReferenceData.getPackageableElement("testModelChainConnectionTestSuite::testService");
         List<TestResult> serviceStoreTestResults = serviceTestableRunnerExtension.executeAllTest(serviceWithReferenceData, pureModelWithReferenceData, modelDataWithReferenceData);
@@ -1810,7 +1812,7 @@ public class TestServiceTestSuite
                 "}\n";
 
         PureModelContextData modelDataForServiceWithStringParam = PureGrammarParser.newInstance().parseModel(grammar + serviceWithStringParam);
-        PureModel pureModelForServiceWithStringParam = Compiler.compile(modelDataForServiceWithStringParam, DeploymentMode.TEST, null);
+        PureModel pureModelForServiceWithStringParam = Compiler.compile(modelDataForServiceWithStringParam, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service pureServiceWithStringParam = (Root_meta_legend_service_metamodel_Service) pureModelForServiceWithStringParam.getPackageableElement("test::firm::model::myService");
         List<TestResult> resultsWithStringParam = serviceTestableRunnerExtension.executeAllTest(pureServiceWithStringParam, pureModelForServiceWithStringParam, modelDataForServiceWithStringParam);
@@ -1864,7 +1866,7 @@ public class TestServiceTestSuite
                 "}\n";
 
         PureModelContextData modelDataForServiceWithByteStreamParam = PureGrammarParser.newInstance().parseModel(grammar + serviceWithByteStreamParam);
-        PureModel pureModelForServiceWithByteStreamParam = Compiler.compile(modelDataForServiceWithByteStreamParam, DeploymentMode.TEST, null);
+        PureModel pureModelForServiceWithByteStreamParam = Compiler.compile(modelDataForServiceWithByteStreamParam, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service pureServiceWithByteStreamParam = (Root_meta_legend_service_metamodel_Service) pureModelForServiceWithByteStreamParam.getPackageableElement("test::firm::model::myService");
         List<TestResult> resultsWithByteStreamParam = serviceTestableRunnerExtension.executeAllTest(pureServiceWithByteStreamParam, pureModelForServiceWithByteStreamParam, modelDataForServiceWithByteStreamParam);
@@ -1918,7 +1920,7 @@ public class TestServiceTestSuite
                 "}\n";
 
         PureModelContextData modelDataForServiceWithTestFailing = PureGrammarParser.newInstance().parseModel(grammar + serviceWithTestFailing);
-        PureModel pureModelForServiceWithTestFailing = Compiler.compile(modelDataForServiceWithTestFailing, DeploymentMode.TEST, null);
+        PureModel pureModelForServiceWithTestFailing = Compiler.compile(modelDataForServiceWithTestFailing, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service pureServiceWithTestFailing = (Root_meta_legend_service_metamodel_Service) pureModelForServiceWithTestFailing.getPackageableElement("test::firm::model::myService");
         List<TestResult> resultsWithTestFailing = serviceTestableRunnerExtension.executeAllTest(pureServiceWithTestFailing, pureModelForServiceWithTestFailing, modelDataForServiceWithTestFailing);
@@ -2193,7 +2195,7 @@ public class TestServiceTestSuite
                 "}";
 
         PureModelContextData modelDataWithReferenceData = PureGrammarParser.newInstance().parseModel(grammar);
-        PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, null);
+        PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service serviceWithReferenceData = (Root_meta_legend_service_metamodel_Service) pureModelWithReferenceData.getPackageableElement("testXStoreTestSuites::service::InMemoryCrossStoreService");
         List<TestResult> serviceStoreTestResults = serviceTestableRunnerExtension.executeAllTest(serviceWithReferenceData, pureModelWithReferenceData, modelDataWithReferenceData);
@@ -2455,7 +2457,7 @@ public class TestServiceTestSuite
                 "\n";
 
         PureModelContextData modelDataWithAllTestPassing = PureGrammarParser.newInstance().parseModel(serviceGrammarWithAllTestPassing + grammar);
-        PureModel pureModelWithAllTestPassing = Compiler.compile(modelDataWithAllTestPassing, DeploymentMode.TEST, null);
+        PureModel pureModelWithAllTestPassing = Compiler.compile(modelDataWithAllTestPassing, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service serviceWithAllTestPassing = (Root_meta_legend_service_metamodel_Service) pureModelWithAllTestPassing.getPackageableElement("testModelStoreTestSuites::service::DocM2MService");
         List<TestResult> serviceStoreTestResults = serviceTestableRunnerExtension.executeAllTest(serviceWithAllTestPassing, pureModelWithAllTestPassing, modelDataWithAllTestPassing);
@@ -2554,7 +2556,7 @@ public class TestServiceTestSuite
                 "\n";
 
         PureModelContextData modelDataWithDifferentConnections = PureGrammarParser.newInstance().parseModel(serviceGrammarWithDifferentConnections + grammar);
-        PureModel pureModelWithDifferentConnections = Compiler.compile(modelDataWithDifferentConnections, DeploymentMode.TEST, null);
+        PureModel pureModelWithDifferentConnections = Compiler.compile(modelDataWithDifferentConnections, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service serviceWithDifferentConnections = (Root_meta_legend_service_metamodel_Service) pureModelWithDifferentConnections.getPackageableElement("testModelStoreTestSuites::service::DocM2MService");
         List<TestResult> serviceStoreTestResultsWithDifferentConnections = serviceTestableRunnerExtension.executeAllTest(serviceWithDifferentConnections, pureModelWithDifferentConnections, modelDataWithDifferentConnections);
@@ -2652,7 +2654,7 @@ public class TestServiceTestSuite
                 "\n";
 
         PureModelContextData modelDataWithTestFailing = PureGrammarParser.newInstance().parseModel(serviceGrammarWithTestFailing + grammar);
-        PureModel pureModelWithTestFailing = Compiler.compile(modelDataWithTestFailing, DeploymentMode.TEST, null);
+        PureModel pureModelWithTestFailing = Compiler.compile(modelDataWithTestFailing, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service serviceWithTestFailing = (Root_meta_legend_service_metamodel_Service) pureModelWithTestFailing.getPackageableElement("testModelStoreTestSuites::service::DocM2MService");
         List<TestResult> serviceStoreTestResultsWithTestFailing = serviceTestableRunnerExtension.executeAllTest(serviceWithTestFailing, pureModelWithTestFailing, modelDataWithTestFailing);
@@ -3152,6 +3154,206 @@ public class TestServiceTestSuite
     }
 
     @Test
+    public void testFailingRelationalLegacyServiceSuite()
+    {
+        // setup
+        List<TestResult> relationalTestResult = executeServiceTest("testable/relational-legacy-runtime-dsl/", "legend-testable-relational-model.pure", "legend-testable-relational-service-simple-fail.pure", "service::SimpleRelationalPassFailing");
+        // Assertions
+        Assert.assertEquals(relationalTestResult.size(), 1);
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::SimpleRelationalPassFailing");
+        Assert.assertTrue(testResult instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.FAIL, ((TestExecuted) testResult).testExecutionStatus);
+        TestExecuted failedResult = (TestExecuted) testResult;
+        Assert.assertEquals(failedResult.atomicTestId, "test1");
+        Assert.assertEquals(failedResult.testSuiteId, "testSuite1");
+        List<AssertionStatus> statuses = failedResult.assertStatuses;
+        Assert.assertEquals(statuses.size(), 2);
+        // pass assertion
+        AssertionStatus status1 = statuses.stream().filter(t -> t.id.equals("shouldPass")).findFirst().get();
+        Assert.assertEquals(status1.id, "shouldPass");
+        Assert.assertTrue(status1 instanceof AssertPass);
+        // fail assertion
+        AssertionStatus failStatus = statuses.stream().filter(t -> t.id.equals("shouldFail")).findFirst().get();
+        Assert.assertTrue(failStatus instanceof EqualToJsonAssertFail);
+        EqualToJsonAssertFail jsonAssertFail = (EqualToJsonAssertFail) failStatus;
+        Assert.assertEquals("Actual result does not match Expected result", jsonAssertFail.message);
+        String expected_Expected =
+                "[ {\n" +
+                        "  \"Employees/First Name\" : \"JohnDIFF\",\n" +
+                        "  \"Employees/Last Name\" : \"Doe\",\n" +
+                        "  \"Legal Name\" : \"Finos\"\n" +
+                        "}, {\n" +
+                        "  \"Employees/First Name\" : \"Nicole\",\n" +
+                        "  \"Employees/Last Name\" : \"Smith\",\n" +
+                        "  \"Legal Name\" : \"Finos\"\n" +
+                        "}, {\n" +
+                        "  \"Employees/First Name\" : \"Time\",\n" +
+                        "  \"Employees/Last Name\" : \"Smith\",\n" +
+                        "  \"Legal Name\" : \"Apple\"\n" +
+                        "} ]";
+        String expected_Actual = "[ {\n" +
+                "  \"Employees/First Name\" : \"John\",\n" +
+                "  \"Employees/Last Name\" : \"Doe\",\n" +
+                "  \"Legal Name\" : \"Finos\"\n" +
+                "}, {\n" +
+                "  \"Employees/First Name\" : \"Nicole\",\n" +
+                "  \"Employees/Last Name\" : \"Smith\",\n" +
+                "  \"Legal Name\" : \"Finos\"\n" +
+                "}, {\n" +
+                "  \"Employees/First Name\" : \"Time\",\n" +
+                "  \"Employees/Last Name\" : \"Smith\",\n" +
+                "  \"Legal Name\" : \"Apple\"\n" +
+                "} ]";
+
+        MatcherAssert.assertThat(expected_Expected, JsonMatchers.jsonEquals(jsonAssertFail.expected));
+        MatcherAssert.assertThat(expected_Actual, JsonMatchers.jsonEquals(jsonAssertFail.actual));
+    }
+
+    @Test
+    public void testFailingRelationalLegacyInlineServiceSuite()
+    {
+        // setup
+        List<TestResult> relationalTestResult = executeServiceTest("testable/relational-legacy-runtime-dsl/", "legend-testable-relational-model.pure", "legend-testable-relational-service-simple-fail.pure", "service::SimpleRelationalPassFailing");
+        // Assertions
+        Assert.assertEquals(relationalTestResult.size(), 1);
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::SimpleRelationalPassFailing");
+        Assert.assertTrue(testResult instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.FAIL, ((TestExecuted) testResult).testExecutionStatus);
+        TestExecuted failedResult = (TestExecuted) testResult;
+        Assert.assertEquals(failedResult.atomicTestId, "test1");
+        Assert.assertEquals(failedResult.testSuiteId, "testSuite1");
+        List<AssertionStatus> statuses = failedResult.assertStatuses;
+        Assert.assertEquals(statuses.size(), 2);
+        // pass assertion
+        AssertionStatus status1 = statuses.stream().filter(t -> t.id.equals("shouldPass")).findFirst().get();
+        Assert.assertEquals(status1.id, "shouldPass");
+        Assert.assertTrue(status1 instanceof AssertPass);
+        // fail assertion
+        AssertionStatus failStatus = statuses.stream().filter(t -> t.id.equals("shouldFail")).findFirst().get();
+        Assert.assertTrue(failStatus instanceof EqualToJsonAssertFail);
+        EqualToJsonAssertFail jsonAssertFail = (EqualToJsonAssertFail) failStatus;
+        Assert.assertEquals("Actual result does not match Expected result", jsonAssertFail.message);
+        String expected_Expected =
+                "[ {\n" +
+                        "  \"Employees/First Name\" : \"JohnDIFF\",\n" +
+                        "  \"Employees/Last Name\" : \"Doe\",\n" +
+                        "  \"Legal Name\" : \"Finos\"\n" +
+                        "}, {\n" +
+                        "  \"Employees/First Name\" : \"Nicole\",\n" +
+                        "  \"Employees/Last Name\" : \"Smith\",\n" +
+                        "  \"Legal Name\" : \"Finos\"\n" +
+                        "}, {\n" +
+                        "  \"Employees/First Name\" : \"Time\",\n" +
+                        "  \"Employees/Last Name\" : \"Smith\",\n" +
+                        "  \"Legal Name\" : \"Apple\"\n" +
+                        "} ]";
+        String expected_Actual = "[ {\n" +
+                "  \"Employees/First Name\" : \"John\",\n" +
+                "  \"Employees/Last Name\" : \"Doe\",\n" +
+                "  \"Legal Name\" : \"Finos\"\n" +
+                "}, {\n" +
+                "  \"Employees/First Name\" : \"Nicole\",\n" +
+                "  \"Employees/Last Name\" : \"Smith\",\n" +
+                "  \"Legal Name\" : \"Finos\"\n" +
+                "}, {\n" +
+                "  \"Employees/First Name\" : \"Time\",\n" +
+                "  \"Employees/Last Name\" : \"Smith\",\n" +
+                "  \"Legal Name\" : \"Apple\"\n" +
+                "} ]";
+
+        MatcherAssert.assertThat(expected_Expected, JsonMatchers.jsonEquals(jsonAssertFail.expected));
+        MatcherAssert.assertThat(expected_Actual, JsonMatchers.jsonEquals(jsonAssertFail.actual));
+    }
+
+    @Test
+    public void testPassingRelationalLegacyWithParams()
+    {
+        // setup
+        List<TestResult> relationalTestResult = executeServiceTest("testable/relational-legacy-runtime-dsl/", "legend-testable-relational-model.pure", "legend-testable-relational-service-parameters.pure", "service::RelationalServiceWithParams");
+        // Assertions
+        Assert.assertEquals(relationalTestResult.size(), 1);
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::RelationalServiceWithParams");
+        Assert.assertTrue(testResult instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) testResult).testExecutionStatus);
+        TestExecuted passed = (TestExecuted) testResult;
+        Assert.assertEquals(passed.atomicTestId, "test1");
+        Assert.assertEquals(passed.testSuiteId, "testSuite1");
+    }
+
+    @Test
+    public void testRelationalLegacyServiceWithCommaWithQuotesInCSV()
+    {
+        // setup
+        List<TestResult> relationalTestResult = executeServiceTest("testable/relational-legacy-runtime-dsl/", "legend-testable-relational-model.pure", "legend-testable-relational-service-csv-test-data.pure","service::RelationalServiceWithCSVWithCommaWithQuotes");
+        // Assertions
+        Assert.assertEquals(relationalTestResult.size(), 1);
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::RelationalServiceWithCSVWithCommaWithQuotes");
+        Assert.assertTrue(testResult instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) testResult).testExecutionStatus);
+        TestExecuted passed = (TestExecuted) testResult;
+        Assert.assertEquals(passed.atomicTestId, "test_1");
+        Assert.assertEquals(passed.testSuiteId, "testSuite_1");
+    }
+
+    @Test
+    public void testRelationalLegacyServiceWithCommaWithoutQuotesInCSV()
+    {
+        // setup
+        List<TestResult> relationalTestResult = executeServiceTest("testable/relational-legacy-runtime-dsl/", "legend-testable-relational-model.pure", "legend-testable-relational-service-csv-test-data.pure","service::RelationalServiceWithCSVWithComma");
+        // Assertions
+        Assert.assertEquals(relationalTestResult.size(), 1);
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::RelationalServiceWithCSVWithComma");
+        Assert.assertTrue(testResult instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) testResult).testExecutionStatus);
+        TestExecuted passed = (TestExecuted) testResult;
+        Assert.assertEquals(passed.atomicTestId, "test_1");
+        Assert.assertEquals(passed.testSuiteId, "testSuite_1");
+    }
+
+    @Test
+    public void testPassingRelationalLegacyWithEnumParams()
+    {
+        // setup
+        List<TestResult> relationalTestResult = executeServiceTest("testable/relational-legacy-runtime-dsl/", "legend-testable-relational-model.pure", "legend-testable-relational-service-enum-parameters.pure", "service::RelationalServiceWithEnumParams");
+        // Assertions
+        Assert.assertEquals(relationalTestResult.size(), 1);
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::RelationalServiceWithEnumParams");
+        Assert.assertTrue(testResult instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) testResult).testExecutionStatus);
+    }
+
+    @Test
+    public void testPassingRelationalLegacyWithSpecialEmbeddedData()
+    {
+        // setup
+        List<TestResult> relationalTestResult = executeServiceTest("testable/relational-legacy-runtime-dsl/", "legend-testable-relational-model.pure", "legend-testable-relational-service-embeddedData.pure", "service::SimpleRelationalPassWithSpecialEmbeddedData");
+        // Assertions
+        Assert.assertEquals(relationalTestResult.size(), 1);
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::SimpleRelationalPassWithSpecialEmbeddedData");
+        Assert.assertTrue(testResult instanceof TestExecuted);
+        if (((TestExecuted) testResult).testExecutionStatus == TestExecutionStatus.FAIL)
+        {
+            AssertionStatus status = ((TestExecuted) testResult).assertStatuses.get(0);
+            if (status instanceof EqualToJsonAssertFail)
+            {
+                EqualToJsonAssertFail failAssert = (EqualToJsonAssertFail) status;
+                Assert.assertEquals(failAssert.expected, failAssert.actual);
+            }
+        }
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) testResult).testExecutionStatus);
+        TestExecuted passed = (TestExecuted) testResult;
+        Assert.assertEquals(passed.atomicTestId, "test1");
+        Assert.assertEquals(passed.testSuiteId, "testSuite1");
+    }
+
+    @Test
     public void testTestExecutionForLimitedTestIds()
     {
         String grammar = "###ServiceStore\n" +
@@ -3363,7 +3565,7 @@ public class TestServiceTestSuite
                         "}\n\n\n";
 
         PureModelContextData modelDataWithMultipleTests1 = PureGrammarParser.newInstance().parseModel(serviceStoreServiceWithMultipleTests1 + grammar);
-        PureModel pureModelWithMultipleTests1 = Compiler.compile(modelDataWithMultipleTests1, DeploymentMode.TEST, null);
+        PureModel pureModelWithMultipleTests1 = Compiler.compile(modelDataWithMultipleTests1, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service serviceWithMultipleTests1 = (Root_meta_legend_service_metamodel_Service) pureModelWithMultipleTests1.getPackageableElement("testServiceStoreTestSuites::TestService");
         ServiceTestRunner testRunner = new ServiceTestRunner(serviceWithMultipleTests1, PureClientVersions.production);
@@ -3637,7 +3839,7 @@ public class TestServiceTestSuite
                 "\n";
 
         PureModelContextData modelDataWithMultiExecutionService = PureGrammarParser.newInstance().parseModel(multiExecutionService + multiExecutionGrammar);
-        PureModel pureModelWithMultiExecutionService = Compiler.compile(modelDataWithMultiExecutionService, DeploymentMode.TEST, null);
+        PureModel pureModelWithMultiExecutionService = Compiler.compile(modelDataWithMultiExecutionService, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Root_meta_legend_service_metamodel_Service multiExecutionServiceWithMultipleTests = (Root_meta_legend_service_metamodel_Service) pureModelWithMultiExecutionService.getPackageableElement("testModelStoreTestSuites::service::DocM2MService");
         ServiceTestRunner multiExecutionTestRunner = new ServiceTestRunner(multiExecutionServiceWithMultipleTests, PureClientVersions.production);
@@ -3669,7 +3871,7 @@ public class TestServiceTestSuite
         ServiceTestableRunnerExtension serviceTestableRunnerExtension = new ServiceTestableRunnerExtension();
         String pureModelString = getFullPureModelGrammar(basePath, grammar, service);
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString);
-        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
+        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
         Root_meta_legend_service_metamodel_Service serviceWithTest = (Root_meta_legend_service_metamodel_Service) pureModel.getPackageableElement(fullPath);
         return serviceTestableRunnerExtension.executeAllTest(serviceWithTest, pureModel, pureModelContextData);
     }

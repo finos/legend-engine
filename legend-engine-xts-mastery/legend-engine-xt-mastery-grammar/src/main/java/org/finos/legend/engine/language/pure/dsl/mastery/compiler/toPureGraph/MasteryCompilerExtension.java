@@ -18,6 +18,7 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
@@ -56,6 +57,12 @@ public class MasteryCompilerExtension implements IMasteryCompilerExtension
     public static final String EXCHANGE = "Exchange";
 
     @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Mastery");
+    }
+
+    @Override
     public CompilerExtension build()
     {
         return new MasteryCompilerExtension();
@@ -76,7 +83,7 @@ public class MasteryCompilerExtension implements IMasteryCompilerExtension
                 (masterRecordDefinition, context) ->
                 {
                     Root_meta_pure_mastery_metamodel_MasterRecordDefinition pureMasteryMetamodelMasterRecordDefinition = (Root_meta_pure_mastery_metamodel_MasterRecordDefinition) context.pureModel.getOrCreatePackage(masterRecordDefinition._package)._children().detect(c -> masterRecordDefinition.name.equals(c._name()));
-                    pureMasteryMetamodelMasterRecordDefinition._identityResolution(HelperMasterRecordDefinitionBuilder.buildIdentityResolution(masterRecordDefinition.identityResolution, context));
+                    pureMasteryMetamodelMasterRecordDefinition._identityResolution(HelperMasterRecordDefinitionBuilder.buildIdentityResolution(masterRecordDefinition.identityResolution, masterRecordDefinition.modelClass, context));
                     pureMasteryMetamodelMasterRecordDefinition._sources(HelperMasterRecordDefinitionBuilder.buildRecordSources(masterRecordDefinition.sources, context));
                     pureMasteryMetamodelMasterRecordDefinition._postCurationEnrichmentService(BuilderUtil.buildService(masterRecordDefinition.postCurationEnrichmentService, context, masterRecordDefinition.sourceInformation));
                     pureMasteryMetamodelMasterRecordDefinition._exceptionWorkflowTransformService(BuilderUtil.buildService(masterRecordDefinition.exceptionWorkflowTransformService, context, masterRecordDefinition.sourceInformation));

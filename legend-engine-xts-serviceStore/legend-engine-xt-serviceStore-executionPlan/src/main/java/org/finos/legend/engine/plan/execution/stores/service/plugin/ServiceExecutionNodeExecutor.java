@@ -20,7 +20,6 @@ import org.apache.http.Header;
 import org.apache.http.entity.StringEntity;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.plan.dependencies.store.serviceStore.IServiceParametersResolutionExecutionNodeSpecifics;
@@ -54,7 +53,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphF
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryPropertyGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryRootGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.Collections;
 import java.util.List;
@@ -62,12 +61,12 @@ import java.util.Map;
 
 public class ServiceExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
-    MutableList<CommonProfile> profiles;
+    Identity identity;
     ExecutionState executionState;
 
-    public ServiceExecutionNodeExecutor(MutableList<CommonProfile> profiles, ExecutionState executionState)
+    public ServiceExecutionNodeExecutor(Identity identity, ExecutionState executionState)
     {
-        this.profiles = profiles;
+        this.identity = identity;
         this.executionState = executionState;
     }
 
@@ -96,14 +95,14 @@ public class ServiceExecutionNodeExecutor implements ExecutionNodeVisitor<Result
                 List<Header> headers = ServiceExecutor.getProcessedHeaders(node.params, mappedParameters, this.executionState);
                 StringEntity requestBodyEntity = ServiceExecutor.getRequestBodyEntity(node.requestBodyDescription, this.executionState);
                 CredentialProviderProvider credentialProviderProvider = ((ServiceStoreExecutionState) executionState.getStoreExecutionState(StoreType.Service)).getCredentialProviderProvider();
-                return new ServiceExecutor(credentialProviderProvider).executeHttpService(processedUrl, headers, requestBodyEntity, node.method, node.mimeType, node.securitySchemes,node.authenticationSchemes, this.profiles);
+                return new ServiceExecutor(credentialProviderProvider).executeHttpService(processedUrl, headers, requestBodyEntity, node.method, node.mimeType, node.securitySchemes,node.authenticationSchemes, this.identity);
             }
         }
         else if (executionNode instanceof ServiceParametersResolutionExecutionNode)
         {
             ServiceParametersResolutionExecutionNode node = (ServiceParametersResolutionExecutionNode) executionNode;
 
-            IServiceParametersResolutionExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.profiles);
+            IServiceParametersResolutionExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.identity);
             try
             {
                 List<String> requiredSources = Lists.mutable.empty();
@@ -125,7 +124,7 @@ public class ServiceExecutionNodeExecutor implements ExecutionNodeVisitor<Result
         {
             LimitExecutionNode limitExecutionNode = (LimitExecutionNode) executionNode;
 
-            Result childResult = limitExecutionNode.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+            Result childResult = limitExecutionNode.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.identity, this.executionState));
 
             Result result;
             if (childResult instanceof StreamingObjectResult)

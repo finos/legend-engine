@@ -1,14 +1,14 @@
-import meta::rel::utils::collection::*;
-import meta::rel::compile::*;
-import meta::rel::metamodel::*;
-import meta::rel::compile::utils::*;
-import meta::rel::utils::*;
+import meta::external::store::rel::utils::collection::*;
+import meta::external::store::rel::compile::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::compile::utils::*;
+import meta::external::store::rel::utils::*;
 
 
 /**
   * Type that tracks the state of compilation.
   */
-Class meta::rel::compile::CompilationState {
+Class meta::external::store::rel::compile::CompilationState {
   // The program generated thus far.
   program: Program[1];
   // The current expression. This expression is used to
@@ -32,7 +32,7 @@ Class meta::rel::compile::CompilationState {
   serializers: Any[*];
 }
 
-function meta::rel::compile::CompilationState(debugContext: DebugContext[1]): CompilationState[1] {
+function meta::external::store::rel::compile::CompilationState(debugContext: DebugContext[1]): CompilationState[1] {
   ^CompilationState(
     program=program('compiled', []),
     variableFactory=^IdentifierFactory(),
@@ -42,7 +42,7 @@ function meta::rel::compile::CompilationState(debugContext: DebugContext[1]): Co
   );
 }
 
-function meta::rel::compile::step(
+function meta::external::store::rel::compile::step(
   state: Result<CompilationState|0..1>[1],
   logic: FunctionDefinition<{Expr[1]->Result<Expr|0..1>[1]}>[1]
 ): Result<CompilationState|0..1>[1] {
@@ -54,10 +54,10 @@ function meta::rel::compile::step(
   });
 }
 
-function meta::rel::compile::current(state: Result<CompilationState|0..1>[1]): Result<Expr|0..1>[1] {
+function meta::external::store::rel::compile::current(state: Result<CompilationState|0..1>[1]): Result<Expr|0..1>[1] {
   $state->andThen(inner: CompilationState[1] | $inner->current());
 }
 
-function meta::rel::compile::current(state: CompilationState[1]): Result<Expr|0..1>[1] {
+function meta::external::store::rel::compile::current(state: CompilationState[1]): Result<Expr|0..1>[1] {
   $state.current->okOr(| errorTrace('Current expression empty.'));
 }

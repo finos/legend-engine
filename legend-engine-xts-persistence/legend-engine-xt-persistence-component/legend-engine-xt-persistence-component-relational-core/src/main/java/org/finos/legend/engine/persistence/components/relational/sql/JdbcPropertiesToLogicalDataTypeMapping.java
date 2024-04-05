@@ -44,6 +44,7 @@ public interface JdbcPropertiesToLogicalDataTypeMapping extends TypeMapping
     String OBJECT = "OBJECT";
     String ARRAY = "ARRAY";
     String CHARACTER_VARYING = "CHARACTER VARYING";
+    String JSON = "JSON";
 
     FieldType getDataType(String typeName, String dataType, Integer columnSize, Integer decimalDigits);
 }

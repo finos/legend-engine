@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-service</artifactId>
-        <version>4.37.3-SNAPSHOT</version>
+        <version>4.42.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-services-model</artifactId>
@@ -79,7 +79,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-configuration</artifactId>
+            <artifactId>legend-engine-configuration-contract-extension-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
         <!-- ENGINE -->
@@ -113,13 +113,6 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
         <!-- JACKSON -->
-
-        <!-- ANNOTATIONS -->
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- ANNOTATIONS -->
 
         <!-- ECLIPSE COLLECTIONS -->
         <dependency>

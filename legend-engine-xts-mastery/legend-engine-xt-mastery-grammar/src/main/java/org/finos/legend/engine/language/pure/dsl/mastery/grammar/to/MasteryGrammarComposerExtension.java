@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.dsl.mastery.grammar.to;
 
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
@@ -32,38 +33,47 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery
 import java.util.Collections;
 import java.util.List;
 
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
+
 public class MasteryGrammarComposerExtension implements IMasteryComposerExtension
 {
     @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Mastery");
+    }
+
+    private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) ->
+    {
+        if (element instanceof MasterRecordDefinition)
+        {
+            return renderMasterRecordDefinition((MasterRecordDefinition) element, context);
+        }
+        if (element instanceof DataProvider)
+        {
+            return renderDataProvider((DataProvider) element, context);
+        }
+        if (element instanceof Connection)
+        {
+            return renderConnection((Connection) element, context);
+        }
+        if (element instanceof MasteryRuntime)
+        {
+            return renderMasteryRuntime((MasteryRuntime) element, context);
+        }
+        return null;
+    });
+
+    @Override
+    public MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> getExtraPackageableElementComposers()
+    {
+        return renderers;
+    }
+
+    @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
     {
-        return Lists.fixedSize.of((elements, context, sectionName) ->
-        {
-            if (!MasteryParserExtension.NAME.equals(sectionName))
-            {
-                return null;
-            }
-            return ListIterate.collect(elements, element ->
-            {
-                if (element instanceof MasterRecordDefinition)
-                {
-                    return renderMasterRecordDefinition((MasterRecordDefinition) element, context);
-                }
-                if (element instanceof DataProvider)
-                {
-                    return renderDataProvider((DataProvider) element, context);
-                }
-                if (element instanceof Connection)
-                {
-                    return renderConnection((Connection) element, context);
-                }
-                if (element instanceof MasteryRuntime)
-                {
-                    return renderMasteryRuntime((MasteryRuntime) element, context);
-                }
-                return "/* Can't transform element '" + element.getPath() + "' in this section */";
-            }).makeString("\n\n");
-        });
+        return Lists.mutable.with(buildSectionComposer(MasteryParserExtension.NAME, renderers));
     }
 
     @Override
@@ -80,27 +90,27 @@ public class MasteryGrammarComposerExtension implements IMasteryComposerExtensio
             return composableElements.isEmpty()
                     ? null
                     : new PureFreeSectionGrammarComposerResult(composableElements
-                        .collect(element ->
+                    .collect(element ->
+                    {
+                        if (element instanceof MasterRecordDefinition)
                         {
-                            if (element instanceof MasterRecordDefinition)
-                            {
-                                return MasteryGrammarComposerExtension.renderMasterRecordDefinition((MasterRecordDefinition) element, context);
-                            }
-                            else if (element instanceof DataProvider)
-                            {
-                                return MasteryGrammarComposerExtension.renderDataProvider((DataProvider) element, context);
-                            }
-                            else if (element instanceof Connection)
-                            {
-                                return MasteryGrammarComposerExtension.renderConnection((Connection) element, context);
-                            }
-                            else if (element instanceof MasteryRuntime)
-                            {
-                                return MasteryGrammarComposerExtension.renderMasteryRuntime((MasteryRuntime) element, context);
-                            }
-                            throw new UnsupportedOperationException("Unsupported type " + element.getClass().getName());
-                        })
-                        .makeString("###" + MasteryParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+                            return MasteryGrammarComposerExtension.renderMasterRecordDefinition((MasterRecordDefinition) element, context);
+                        }
+                        else if (element instanceof DataProvider)
+                        {
+                            return MasteryGrammarComposerExtension.renderDataProvider((DataProvider) element, context);
+                        }
+                        else if (element instanceof Connection)
+                        {
+                            return MasteryGrammarComposerExtension.renderConnection((Connection) element, context);
+                        }
+                        else if (element instanceof MasteryRuntime)
+                        {
+                            return MasteryGrammarComposerExtension.renderMasteryRuntime((MasteryRuntime) element, context);
+                        }
+                        throw new UnsupportedOperationException("Unsupported type " + element.getClass().getName());
+                    })
+                    .makeString("###" + MasteryParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
 

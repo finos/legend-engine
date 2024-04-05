@@ -1,14 +1,14 @@
-import meta::rel::compile::*;
-import meta::rel::compile::ir::*;
-import meta::rel::compile::ir::tds::*;
-import meta::rel::compile::substitution::*;
-import meta::rel::compile::utils::*;
-import meta::rel::metamodel::*;
-import meta::rel::metamodel::utils::*;
-import meta::rel::trace::*;
-import meta::rel::utils::*;
+import meta::external::store::rel::compile::*;
+import meta::external::store::rel::compile::ir::*;
+import meta::external::store::rel::compile::ir::tds::*;
+import meta::external::store::rel::compile::substitution::*;
+import meta::external::store::rel::compile::utils::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::metamodel::utils::*;
+import meta::external::store::rel::trace::*;
+import meta::external::store::rel::utils::*;
 
-function meta::rel::compile::tds::compile(
+function meta::external::store::rel::compile::tds::compile(
   join: Join[1], 
   substitution: VariableSubstitution[1],
   mapping: ColumnAccessRewrite[1],
@@ -102,7 +102,7 @@ function meta::rel::compile::tds::compile(
     });
 }
 
-function meta::rel::compile::tds::compile(
+function meta::external::store::rel::compile::tds::compile(
   filter: TDSFilter[1],
   substitution: VariableSubstitution[1],
   rewrite: ColumnAccessRewrite[1],

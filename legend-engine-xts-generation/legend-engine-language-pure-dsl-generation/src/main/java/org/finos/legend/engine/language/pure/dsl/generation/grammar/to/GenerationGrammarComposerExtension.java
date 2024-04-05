@@ -14,7 +14,9 @@
 
 package org.finos.legend.engine.language.pure.dsl.generation.grammar.to;
 
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -28,45 +30,48 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generat
 
 import java.util.List;
 
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
 public class GenerationGrammarComposerExtension implements PureGrammarComposerExtension
 {
     @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Generation", "!!MoveToArtifact!!", "-Core");
+    }
+
+    private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderersFile = Lists.mutable.with((element, context) ->
+    {
+        if (element instanceof FileGenerationSpecification)
+        {
+            return renderFileGenerationSpecification((FileGenerationSpecification) element);
+        }
+        return null;
+    });
+    private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderersGenerators = Lists.mutable.with((element, context) ->
+    {
+        if (element instanceof GenerationSpecification)
+        {
+            return renderGenerationSpecification((GenerationSpecification) element);
+        }
+        return null;
+    });
+    private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.withAll(renderersFile).withAll(renderersGenerators);
+
+    @Override
+    public MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> getExtraPackageableElementComposers()
+    {
+        return renderers;
+    }
+
+    @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
     {
         return Lists.mutable.with(
-                (elements, context, sectionName) ->
-                {
-                    if (!GenerationParserExtension.FILE_GENERATION_SECTION_NAME.equals(sectionName))
-                    {
-                        return null;
-                    }
-                    return ListIterate.collect(elements, element ->
-                    {
-                        if (element instanceof FileGenerationSpecification)
-                        {
-                            return renderFileGenerationSpecification((FileGenerationSpecification) element);
-                        }
-                        return "/* Can't transform element '" + element.getPath() + "' in this section */";
-                    }).makeString("\n\n");
-                },
-                (elements, context, sectionName) ->
-                {
-                    if (!GenerationParserExtension.GENERATION_SPECIFICATION_SECTION_NAME.equals(sectionName))
-                    {
-                        return null;
-                    }
-                    return ListIterate.collect(elements, element ->
-                    {
-                        if (element instanceof GenerationSpecification)
-                        {
-                            return renderGenerationSpecification((GenerationSpecification) element);
-                        }
-                        return "/* Can't transform element '" + element.getPath() + "' in this section */";
-                    }).makeString("\n\n");
-                }
+                buildSectionComposer(GenerationParserExtension.FILE_GENERATION_SECTION_NAME, renderersFile),
+                buildSectionComposer(GenerationParserExtension.GENERATION_SPECIFICATION_SECTION_NAME, renderersGenerators)
         );
     }
 

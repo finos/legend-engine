@@ -15,54 +15,35 @@
 package org.finos.legend.engine.persistence.components.relational.h2.sql.visitor;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
-import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
-import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
-import org.finos.legend.engine.persistence.components.relational.h2.logicalplan.values.ToArrayFunction;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Udf;
-import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
-import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 
-public class DigestUdfVisitor implements LogicalPlanVisitor<DigestUdf>
+public class DigestUdfVisitor extends org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DigestUdfVisitor
 {
 
-    @Override
-    public VisitorResult visit(PhysicalPlanNode prev, DigestUdf current, VisitorContext context)
+    protected Value getColumnValueAsStringType(Value value, DataType dataType, Map<DataType, String> typeConversionUdfNames)
     {
-        Udf udf = new Udf(context.quoteIdentifier(), current.udfName());
-        prev.push(udf);
-        List<Value> columnNameList = new ArrayList<>();
-        List<Value> columnValueList = new ArrayList<>();
-        for (int i = 0; i < current.values().size(); i++)
+        if (value instanceof StagedFilesFieldValue)
         {
-            columnNameList.add(StringValue.of(current.fieldNames().get(i)));
-
-            if (current.values().get(i) instanceof StagedFilesFieldValue)
-            {
-                // The field, being StagedFilesFieldValue, is already a String
-                StagedFilesFieldValue stagedFilesField = (StagedFilesFieldValue) current.values().get(i);
-                columnValueList.add(FieldValue.builder().fieldName(stagedFilesField.fieldName()).build());
-            }
-            else
-            {
-                // Else need to convert the field into a String
-                columnValueList.add(FunctionImpl.builder().functionName(FunctionName.CONVERT).addValue(current.values().get(i), ObjectValue.of(DataType.VARCHAR.name())).build());
-            }
+            // The field, being StagedFilesFieldValue, is already a String read from a csv file
+            // Hence return a simple FieldValue with just the field name
+            return FieldValue.builder().fieldName(((StagedFilesFieldValue)value).fieldName()).build();
         }
 
-        ToArrayFunction columnNames = ToArrayFunction.builder().addAllValues(columnNameList).build();
-        ToArrayFunction columnValues = ToArrayFunction.builder().addAllValues(columnValueList).build();
-
-        return new VisitorResult(udf, Arrays.asList(columnNames, columnValues));
+        // Else need to convert the field into a String
+        if (typeConversionUdfNames.containsKey(dataType))
+        {
+            return org.finos.legend.engine.persistence.components.logicalplan.values.Udf.builder().udfName(typeConversionUdfNames.get(dataType)).addParameters(value).build();
+        }
+        else
+        {
+            return FunctionImpl.builder().functionName(FunctionName.CONVERT).addValue(value, ObjectValue.of(DataType.VARCHAR.name())).build();
+        }
     }
 }

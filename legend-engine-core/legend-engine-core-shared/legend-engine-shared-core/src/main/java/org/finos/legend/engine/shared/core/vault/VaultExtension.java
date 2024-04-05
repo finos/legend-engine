@@ -16,11 +16,12 @@ package org.finos.legend.engine.shared.core.vault;
 
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.tuple.Pair;
+import org.finos.legend.engine.shared.core.extension.LegendExtension;
 
 import java.util.Collections;
 import java.util.List;
 
-public interface VaultExtension
+public interface VaultExtension extends LegendExtension
 {
     default List<Pair<String, Class<? extends VaultConfiguration>>> getExtraVaultConfigurationSubTypes()
     {

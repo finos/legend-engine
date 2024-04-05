@@ -11,20 +11,20 @@
 
 import meta::pure::router::metamodel::*;
 import meta::pure::router::store::metamodel::*;
-import meta::rel::compile::ir::*;
-import meta::rel::compile::substitution::*;
-import meta::rel::lib::*;
-import meta::rel::mapping::*;
-import meta::rel::metamodel::*;
-import meta::rel::trace::*;
-import meta::rel::utils::*;
-import meta::rel::utils::lang::*;
+import meta::external::store::rel::compile::ir::*;
+import meta::external::store::rel::compile::substitution::*;
+import meta::external::store::rel::lib::*;
+import meta::external::store::rel::mapping::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::trace::*;
+import meta::external::store::rel::utils::*;
+import meta::external::store::rel::utils::lang::*;
 
 ///////////////////////////
 // Translation functions //
 ///////////////////////////
 
-function meta::rel::compile::ir::storeMappingRoutedValueSpecToRelSet(
+function meta::external::store::rel::compile::ir::storeMappingRoutedValueSpecToRelSet(
   spec: StoreMappingRoutedValueSpecification[1],
   trace: Trace[1]
 ): Result<RelSetImplementation|0..1>[1] {
@@ -35,7 +35,7 @@ function meta::rel::compile::ir::storeMappingRoutedValueSpecToRelSet(
     ->tryCast(@RelSetImplementation, $newTrace);
 }
 
-function meta::rel::compile::ir::valueSpecToPExpr(
+function meta::external::store::rel::compile::ir::valueSpecToPExpr(
   spec: ValueSpecification[1],
   trace: Trace[1]
 ): Result<PExpr|0..1>[1] {
@@ -44,7 +44,7 @@ function meta::rel::compile::ir::valueSpecToPExpr(
     ->valueSpecToPExpr([], $newTrace);
 }
 
-function meta::rel::compile::ir::valueSpecToPExpr(
+function meta::external::store::rel::compile::ir::valueSpecToPExpr(
   spec: ValueSpecification[1],
   set: RelSetImplementation[0..1],
   trace: Trace[1]
@@ -68,7 +68,7 @@ function meta::rel::compile::ir::valueSpecToPExpr(
   ]);
 }
 
-function meta::rel::compile::ir::instanceValueToPExpr(
+function meta::external::store::rel::compile::ir::instanceValueToPExpr(
   spec: InstanceValue[1],
   set: RelSetImplementation[0..1],
   trace: Trace[1]
@@ -88,7 +88,7 @@ function meta::rel::compile::ir::instanceValueToPExpr(
   );
 }
 
-function meta::rel::compile::ir::valueToPExpr(
+function meta::external::store::rel::compile::ir::valueToPExpr(
   value: Any[1],
   set: RelSetImplementation[0..1],
   trace: Trace[1]
@@ -104,7 +104,7 @@ function meta::rel::compile::ir::valueToPExpr(
     {class: Class<Any>[1] |
       $set
         ->map(set: RelSetImplementation[1] |
-          compilationStep({callback: VariableSubstitution[1], mapping: ColumnAccessRewrite[1], state: meta::rel::compile::CompilationState[1] |
+          compilationStep({callback: VariableSubstitution[1], mapping: ColumnAccessRewrite[1], state: meta::external::store::rel::compile::CompilationState[1] |
             ^$state(current=$set.classExpr)
               ->ok()
           })
@@ -124,7 +124,7 @@ function meta::rel::compile::ir::valueToPExpr(
   ]);
 }
 
-function meta::rel::compile::ir::functionExprToPExpr(
+function meta::external::store::rel::compile::ir::functionExprToPExpr(
   func: FunctionExpression[1],
   trace: Trace[1]
 ): Result<PExpr|0..1>[1] {
@@ -132,7 +132,7 @@ function meta::rel::compile::ir::functionExprToPExpr(
   functionExprToPExpr($func, [], $newTrace);
 }
 
-function meta::rel::compile::ir::functionExprToPExpr(
+function meta::external::store::rel::compile::ir::functionExprToPExpr(
   func: FunctionExpression[1],
   set: RelSetImplementation[0..1],
   trace: Trace[1]
@@ -178,17 +178,17 @@ function meta::rel::compile::ir::functionExprToPExpr(
           ], {|
             let exprs = $func.func->cast(@FunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate();
             if ($exprs->size() == 1, {| 
-              compilationStep({substitution: VariableSubstitution[1], mapping: ColumnAccessRewrite[1], state: meta::rel::compile::CompilationState[1] |
+              compilationStep({substitution: VariableSubstitution[1], mapping: ColumnAccessRewrite[1], state: meta::external::store::rel::compile::CompilationState[1] |
                 $parent
-                  ->meta::rel::compile::compile($substitution, $mapping, $state, $newTrace)
-                  ->andThen({prev: meta::rel::compile::CompilationState[1] | 
+                  ->meta::external::store::rel::compile::compile($substitution, $mapping, $state, $newTrace)
+                  ->andThen({prev: meta::external::store::rel::compile::CompilationState[1] |
                     let parent = $prev.current->toOne();
 
                     $exprs
                       ->at(0)
                       ->valueSpecToPExpr($newTrace)
                       ->andThen({pexpr: PExpr[1] |
-                        $pexpr->meta::rel::compile::compile(
+                        $pexpr->meta::external::store::rel::compile::compile(
                           $substitution->addBinding('this', {| $parent->ok() }),
                           $mapping,
                           $prev,
@@ -277,14 +277,14 @@ function meta::rel::compile::ir::functionExprToPExpr(
           handleCaseExtractEnumValue($func, $newTrace)),
         case($other == join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_ ||
              $other == filter_TabularDataSet_1__Function_1__TabularDataSet_1_,|
-          meta::rel::compile::ir::tds::intoPExpr($func, $newTrace))
+          meta::external::store::rel::compile::ir::tds::intoPExpr($func, $newTrace))
 //
 // FIXME: Commented out to fix the build.
-//        case($other == meta::rel::query::def_String_1__FunctionDefinition_1__Any_MANY_, {| 
+//        case($other == meta::external::store::rel::query::def_String_1__FunctionDefinition_1__Any_MANY_, {|
 //          // TODO not implemented yet
 //          let query = $func.parametersValues->at(1)->intoScoped()->unwrap()->inspect();
 //
-//          meta::rel::compile::ir::const(1)->ok();
+//          meta::external::store::rel::compile::ir::const(1)->ok();
 //      )
 //
       ], |
@@ -305,7 +305,7 @@ function meta::rel::compile::ir::functionExprToPExpr(
 // Handle cases //
 //////////////////
 
-function <<access.private>> meta::rel::compile::ir::handleCaseAt(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseAt(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
   assert($func.func == at_T_MANY__Integer_1__T_1_);
 
   let newTrace = $trace->stage('handleCaseAt(FunctionExpression[1],Trace[1])');
@@ -329,7 +329,7 @@ function <<access.private>> meta::rel::compile::ir::handleCaseAt(func: FunctionE
     });
 }
 
-function <<access.private>> meta::rel::compile::ir::handleCaseFilter(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseFilter(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
   assert($func.func == filter_T_MANY__Function_1__T_MANY_);
 
   let newTrace = $trace->stage('handleCaseFilter(FunctionExpression[1],Trace[1])');
@@ -346,7 +346,7 @@ function <<access.private>> meta::rel::compile::ir::handleCaseFilter(func: Funct
     );
 }
 
-function <<access.private>> meta::rel::compile::ir::handleCaseGetAll(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseGetAll(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
   assert($func.func == getAll_Class_1__T_MANY_);
 
   let newTrace = $trace->stage('handleCaseGetAll(FunctionExpression[1],Trace[1])');
@@ -360,7 +360,7 @@ function <<access.private>> meta::rel::compile::ir::handleCaseGetAll(func: Funct
     ->then(set: RelSetImplementation[1] | all($set));
 }
 
-function <<access.private>> meta::rel::compile::ir::handleCaseMap(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseMap(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
   assert($func.func == map_T_m__Function_1__V_m_ || $func.func == map_T_MANY__Function_1__V_MANY_ || $func.func == map_T_$0_1$__Function_1__V_$0_1$_);
 
   let newTrace = $trace->stage('handleCaseMap(FunctionExpression[1],Trace[1])');
@@ -377,7 +377,7 @@ function <<access.private>> meta::rel::compile::ir::handleCaseMap(func: Function
     );
 }
 
-function <<access.private>> meta::rel::compile::ir::handleCaseMatch(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseMatch(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
   assert($func.func == match_Any_MANY__Function_$1_MANY$__T_m_);
 
   let newTrace = $trace->stage('handleCaseMatch(FunctionExpression[1],Trace[1])');
@@ -397,7 +397,7 @@ function <<access.private>> meta::rel::compile::ir::handleCaseMatch(func: Functi
     );
 }
 
-function <<access.private>> meta::rel::compile::ir::handleCaseExists(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseExists(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
   assert($func.func == exists_T_MANY__Function_1__Boolean_1_);
 
   let newTrace = $trace->stage('handleCaseExists(FunctionExpression[1],Trace[1])');
@@ -414,7 +414,7 @@ function <<access.private>> meta::rel::compile::ir::handleCaseExists(func: Funct
     );
 }
 
-function <<access.private>> meta::rel::compile::ir::handleCaseForAll(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseForAll(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
   assert($func.func == forAll_T_MANY__Function_1__Boolean_1_);
 
   let newTrace = $trace->stage('handleCaseForAll(FunctionExpression[1],Trace[1])');
@@ -431,7 +431,7 @@ function <<access.private>> meta::rel::compile::ir::handleCaseForAll(func: Funct
     );
 }
 
-function <<access.private>> meta::rel::compile::ir::handleCaseGroupBy1(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseGroupBy1(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
   assert($func.func == groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_);
 
   let newTrace = $trace->stage('handleCaseGroupBy1(FunctionExpression[1],Trace[1])');
@@ -481,7 +481,7 @@ function <<access.private>> meta::rel::compile::ir::handleCaseGroupBy1(func: Fun
     });
 }
 
-function <<access.private>> meta::rel::compile::ir::handleCaseGroupBy2(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseGroupBy2(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
   assert($func.func == groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_);
 
   let newTrace = $trace->stage('handleCaseGroupBy2(FunctionExpression[1],Trace[1])');
@@ -510,7 +510,7 @@ function <<access.private>> meta::rel::compile::ir::handleCaseGroupBy2(func: Fun
     );
 }
 
-function <<access.private>> meta::rel::compile::ir::handleCaseBinaryOperator(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseBinaryOperator(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
   assert($func.func == and_Boolean_1__Boolean_1__Boolean_1_ || 
          $func.func == or_Boolean_1__Boolean_1__Boolean_1_ ||
          $func.func == equal_Any_MANY__Any_MANY__Boolean_1_ ||
@@ -544,7 +544,7 @@ function <<access.private>> meta::rel::compile::ir::handleCaseBinaryOperator(fun
     );
 }
 
-function <<access.private>> meta::rel::compile::ir::handleCaseUnaryOperator(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseUnaryOperator(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
   assert($func.func == not_Boolean_1__Boolean_1_ ||
          $func.func == isEmpty_Any_$0_1$__Boolean_1_ ||
          $func.func == toOne_T_MANY__T_1_);
@@ -562,7 +562,7 @@ function <<access.private>> meta::rel::compile::ir::handleCaseUnaryOperator(func
     );
 }
 
-function <<access.private>> meta::rel::compile::ir::handleCaseBigOperator1(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseBigOperator1(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
   assert($func.func == plus_Number_MANY__Number_1_ || $func.func == plus_String_MANY__String_1_ || 
          $func.func == plus_Integer_MANY__Integer_1_ || $func.func == plus_Float_MANY__Float_1_ || 
          $func.func == times_Number_MANY__Number_1_ || $func.func == times_Integer_MANY__Integer_1_ ||
@@ -587,7 +587,7 @@ function <<access.private>> meta::rel::compile::ir::handleCaseBigOperator1(func:
     );
 }
 
-function <<access.private>> meta::rel::compile::ir::handleCaseBigOperator2(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseBigOperator2(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
   assert($func.func == sum_Integer_MANY__Integer_1_ || $func.func == sum_Float_MANY__Float_1_ || $func.func == sum_Number_MANY__Number_1_ ||
          $func.func == count_Any_MANY__Integer_1_ ||
          $func.func == max_Integer_MANY__Integer_$0_1$_ || $func.func == max_Float_MANY__Float_$0_1$_ ||
@@ -607,7 +607,7 @@ function <<access.private>> meta::rel::compile::ir::handleCaseBigOperator2(func:
     );
 }
 
-function <<access.private>> meta::rel::compile::ir::handleCaseIf(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseIf(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
   assert($func.func == if_Boolean_1__Function_1__Function_1__T_m_);
 
   let newTrace = $trace->stage('handleCaseIf(FunctionExpression[1],Trace[1])');
@@ -629,7 +629,7 @@ function <<access.private>> meta::rel::compile::ir::handleCaseIf(func: FunctionE
     );
 }
 
-function <<access.private>> meta::rel::compile::ir::handleCaseInstanceOf(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseInstanceOf(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
   assert($func.func == instanceOf_Any_1__Type_1__Boolean_1_);
 
   let newTrace = $trace->stage('handleCaseInstanceOf(FunctionExpression[1],Trace[1])');
@@ -646,14 +646,14 @@ function <<access.private>> meta::rel::compile::ir::handleCaseInstanceOf(func: F
           $spec
             ->valueSpecToPExpr($newTrace)
             ->then({class: PExpr[1] |
-              compilationStep({substitution: VariableSubstitution[1], mapping: ColumnAccessRewrite[1], state: meta::rel::compile::CompilationState[1] |
+              compilationStep({substitution: VariableSubstitution[1], mapping: ColumnAccessRewrite[1], state: meta::external::store::rel::compile::CompilationState[1] |
                 $obj
-                  ->meta::rel::compile::compile($substitution, $mapping, $state, $newTrace)
-                  ->andThen({state: meta::rel::compile::CompilationState[1] |
+                  ->meta::external::store::rel::compile::compile($substitution, $mapping, $state, $newTrace)
+                  ->andThen({state: meta::external::store::rel::compile::CompilationState[1] |
                     let objExpr = $state.current->toOne();
                     $class
-                      ->meta::rel::compile::compile($substitution, $mapping, $state, $newTrace)
-                      ->then({next: meta::rel::compile::CompilationState[1] |
+                      ->meta::external::store::rel::compile::compile($substitution, $mapping, $state, $newTrace)
+                      ->then({next: meta::external::store::rel::compile::CompilationState[1] |
                         let typeExpr = $next.current->toOne();
                         let current = $typeExpr->atom($objExpr);
 
@@ -666,7 +666,7 @@ function <<access.private>> meta::rel::compile::ir::handleCaseInstanceOf(func: F
     });
 }
 
-function <<access.private>> meta::rel::compile::ir::handleCaseCast(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseCast(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
   assert($func.func == cast_Any_m__T_1__T_m_);
 
   let newTrace = $trace->stage('handleCaseCast(FunctionExpression[1],Trace[1])');
@@ -689,7 +689,7 @@ function <<access.private>> meta::rel::compile::ir::handleCaseCast(func: Functio
     );
 }
 
-function <<access.private>> meta::rel::compile::ir::handleCaseSerialize(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseSerialize(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
   assert($func.func == meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_);
 
   let newTrace = $trace->stage('handleCaseSerialize(FunctionExpression[1],Trace[1])');
@@ -699,15 +699,15 @@ function <<access.private>> meta::rel::compile::ir::handleCaseSerialize(func: Fu
   $param0
     ->valueSpecToPExpr($newTrace)
     ->then(parent: PExpr[1] | 
-      compilationStep({substitution: VariableSubstitution[1], mapping: ColumnAccessRewrite[1], state: meta::rel::compile::CompilationState[1] |
+      compilationStep({substitution: VariableSubstitution[1], mapping: ColumnAccessRewrite[1], state: meta::external::store::rel::compile::CompilationState[1] |
         $parent
-          ->meta::rel::compile::compile($substitution, $mapping, $state, $newTrace)
-          ->then(state: meta::rel::compile::CompilationState[1] | $state)
+          ->meta::external::store::rel::compile::compile($substitution, $mapping, $state, $newTrace)
+          ->then(state: meta::external::store::rel::compile::CompilationState[1] | $state)
       })
     );
 }
 
-function <<access.private>> meta::rel::compile::ir::handleCaseGraphFetch(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseGraphFetch(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
   assert($func.func == meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_);
 
   let newTrace = $trace->stage('handleCaseGraphFetch(FunctionExpression[1],Trace[1])');
@@ -717,16 +717,16 @@ function <<access.private>> meta::rel::compile::ir::handleCaseGraphFetch(func: F
   $param0
     ->valueSpecToPExpr($newTrace)
     ->then(parent: PExpr[1] | 
-      compilationStep({substitution: VariableSubstitution[1], mapping: ColumnAccessRewrite[1], state: meta::rel::compile::CompilationState[1] |
+      compilationStep({substitution: VariableSubstitution[1], mapping: ColumnAccessRewrite[1], state: meta::external::store::rel::compile::CompilationState[1] |
         // TODO: Implement!
         $parent
-          ->meta::rel::compile::compile($substitution, $mapping, $state, $newTrace)
-          ->then(state: meta::rel::compile::CompilationState[1] | $state)
+          ->meta::external::store::rel::compile::compile($substitution, $mapping, $state, $newTrace)
+          ->then(state: meta::external::store::rel::compile::CompilationState[1] | $state)
       })
     );
 }
 
-function <<access.private>> meta::rel::compile::ir::handleCaseExtractEnumValue(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseExtractEnumValue(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
   assert($func.func == meta::pure::functions::lang::extractEnumValue_Enumeration_1__String_1__T_1_);
 
   let newTrace = $trace->stage('handleCaseExtractEnumValue(FunctionExpression[1],Trace[1])');
@@ -748,12 +748,12 @@ function <<access.private>> meta::rel::compile::ir::handleCaseExtractEnumValue(f
             ->at(0)
             ->cast(@String);
 
-          compilationStep({callback: VariableSubstitution[1], mapping: ColumnAccessRewrite[1], state: meta::rel::compile::CompilationState[1] |
+          compilationStep({callback: VariableSubstitution[1], mapping: ColumnAccessRewrite[1], state: meta::external::store::rel::compile::CompilationState[1] |
             ^$state(current=
               $enum
                 ->enumName()
-                ->meta::rel::metamodel::rel()
-                ->appl(meta::rel::metamodel::label($enumValue))
+                ->meta::external::store::rel::metamodel::rel()
+                ->appl(meta::external::store::rel::metamodel::label($enumValue))
             )
             ->ok();
           });
@@ -761,7 +761,7 @@ function <<access.private>> meta::rel::compile::ir::handleCaseExtractEnumValue(f
     });
 }
 
-function meta::rel::compile::ir::intoAggregates(
+function meta::external::store::rel::compile::ir::intoAggregates(
   spec: ValueSpecification[1],
   parent: PExpr[1],
   trace: Trace[1]
@@ -820,7 +820,7 @@ function meta::rel::compile::ir::intoAggregates(
   ]);
 }
 
-function meta::rel::compile::ir::getFunctionExpr(
+function meta::external::store::rel::compile::ir::getFunctionExpr(
   fn: FunctionExpression[1],
   trace: Trace[1]
 ): Result<FunctionDefinition<{Expr[*]->Expr[1]}>|0..1>[1] {

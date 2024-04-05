@@ -1,7 +1,7 @@
-import meta::rel::utils::*;
-import meta::rel::utils::collection::*;
+import meta::external::store::rel::utils::*;
+import meta::external::store::rel::utils::collection::*;
 
-function <<test.Test>> meta::rel::test::utils::testResult(): Any[*] {
+function <<test.Test>> meta::external::store::rel::test::utils::testResult(): Any[*] {
   assertEquals(ok(1), ok(1));
   
   assertEquals(1, ok(1)->unwrap());
@@ -32,6 +32,11 @@ function <<test.Test>> meta::rel::test::utils::testResult(): Any[*] {
     [ok(1), ok(2)]->collect()
   );
 
+  let x = ^Result<Any|*>(errors=[errorTrace('2')]);
+  let y = ^Result<Any|*>(errors=[errorTrace('2')]);
+  println($x);
+  println($y);
+  println($x->equal($y));
   assertEquals(
     ^Result<Any|*>(errors=[errorTrace('2')]),
     [ok(1), ^Result<Any|0..1>(errors=[errorTrace('2')]), ok(3)]->collect()
@@ -53,14 +58,14 @@ function <<test.Test>> meta::rel::test::utils::testResult(): Any[*] {
   );
 }
 
-function <<test.Test>> meta::rel::test::utils::testHelpers(): Any[*] {
+function <<test.Test>> meta::external::store::rel::test::utils::testHelpers(): Any[*] {
   assertEquals(
     '1 | 2 | 3',
     [1, 2, 3]->stringify(e | $e->toString(), ' | ')
   );
 }
 
-function <<test.Test>> meta::rel::test::utils::testMaybe(): Any[*] {
+function <<test.Test>> meta::external::store::rel::test::utils::testMaybe(): Any[*] {
   assertEquals(
     [1, 2, 3],
     [1, 2, 3]->unlessEmpty(xs | $xs, [])

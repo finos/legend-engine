@@ -73,6 +73,12 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
      $this.dbExtension.semiStructuredElementProcessor->toOne()->eval($s, $sgc);
    }: String[1];
 
+   tableFunctionParamProcessor(r:RelationalOperationElement[1], sgc:SqlGenerationContext[1])
+   {
+    assert($this.dbExtension.tableFunctionParamProcessor->isNotEmpty(), '[unsupported-api] table function param processeing not supported for Database Type: ' + $this.dbType->toString());
+    $this.dbExtension.tableFunctionParamProcessor->toOne()->eval($r, $sgc);
+   }: String[1];
+
    lateralJoinProcessor(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*])
    {
      if($this.dbExtension.lateralJoinProcessor->isEmpty(), |meta::relational::functions::sqlQueryToString::default::processJoinTreeNodeWithLateralJoinDefault($j, $dbConfig, $format, $extensions), |$this.dbExtension.lateralJoinProcessor->toOne()->eval($j, $dbConfig, $format, $extensions));
@@ -87,6 +93,12 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
    selectSQLQueryProcessor(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1])
    {
      $this.dbExtension.selectSQLQueryProcessor->eval($s, $sgc, $isSubSelect);
+   }: String[1];
+
+   selectSQLQueryWithCTEsProcessor(s:SelectSQLQueryWithCommonTableExpressions[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1])
+   {
+     assert($this.dbExtension.selectSQLQueryWithCTEsProcessor->isNotEmpty(), '[unsupported-api] Common Table Expressions are not supported for Database Type: ' + $this.dbType->toString());
+     $this.dbExtension.selectSQLQueryWithCTEsProcessor->toOne()->eval($s, $sgc, $isSubSelect);
    }: String[1];
 
    upsertSQLQueryProcessor(u:UpsertSQLQuery[1], sgc:SqlGenerationContext[1])
@@ -104,9 +116,9 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
      if($this.dbExtension.tableNameToIdentifier->isEmpty(), |$s, |$this.dbExtension.tableNameToIdentifier->toOne()->eval($s, $this));
    }: String[1];
 
-   procesTempTableName(s:String[1])
+   procesTempTableName(s:String[1], dc:meta::external::store::relational::runtime::DatabaseConnection[1])
    {
-     if($this.dbExtension.processTempTableName->isEmpty(), |$s, |$this.dbExtension.processTempTableName->toOne()->eval($s));
+     if($this.dbExtension.processTempTableName->isEmpty(), |$s, |$this.dbExtension.processTempTableName->toOne()->eval($s, $dc));
    }: String[1];
 
    columnNameToIdentifier(s:String[1])
@@ -204,9 +216,11 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1];
    windowColumnProcessor: meta::pure::metamodel::function::Function<{WindowColumn[1], SqlGenerationContext[1] -> String[1]}>[0..1];
    semiStructuredElementProcessor: meta::pure::metamodel::function::Function<{RelationalOperationElement[1], SqlGenerationContext[1] -> String[1]}>[0..1];
+   tableFunctionParamProcessor: meta::pure::metamodel::function::Function<{RelationalOperationElement[1], SqlGenerationContext[1] -> String[1]}>[0..1];
    lateralJoinProcessor : meta::pure::metamodel::function::Function<{JoinTreeNode[1], DbConfig[1], Format[1], Extension[*] -> String[1]}>[0..1];
    joinStringsProcessor: meta::pure::metamodel::function::Function<{JoinStrings[1], SqlGenerationContext[1] -> String[1]}>[0..1];
    selectSQLQueryProcessor: meta::pure::metamodel::function::Function<{SelectSQLQuery[1], SqlGenerationContext[1], Boolean[1] -> String[1]}>[1];
+   selectSQLQueryWithCTEsProcessor: meta::pure::metamodel::function::Function<{SelectSQLQueryWithCommonTableExpressions[1], SqlGenerationContext[1], Boolean[1] -> String[1]}>[0..1];
    upsertSQLQueryProcessor: meta::pure::metamodel::function::Function<{UpsertSQLQuery[1], SqlGenerationContext[1] -> String[1]}>[0..1];
    schemaNameToIdentifier: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[0..1];
    tableNameToIdentifier: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[0..1];
@@ -215,7 +229,7 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    dynaFuncDispatch: meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1] -> DynaFunctionToSql[1]}>[1];
    ddlCommandsTranslator : RelationalDDLCommandsTranslator[0..1];
    preAndFinallyExecutionSQLQuery: meta::pure::metamodel::function::Function<{DbConfig[1], meta::external::store::relational::runtime::DatabaseConnection[1] -> PreAndFinallyExecutionSQLQuery[*]}>[0..1];
-   processTempTableName: meta::pure::metamodel::function::Function<{String[1] -> String[1]}>[0..1];
+   processTempTableName: meta::pure::metamodel::function::Function<{String[1], meta::external::store::relational::runtime::DatabaseConnection[1] -> String[1]}>[0..1];
 }
 
 Class meta::relational::functions::sqlQueryToString::RelationalDDLCommandsTranslator
@@ -369,6 +383,7 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                           js:JoinStrings[1] | $dbConfig.joinStringsProcessor($js, ^$sgc(config=^Config())),
                                           alias:Alias[1]|
                                                 let innerTerm = $alias.relationalElement->match([
+                                                   c : CommonTableExpressionReference[1]| $c->cast(@CommonTableExpressionReference).name->toString(),
                                                    r : VarSetPlaceHolder[1]|$r->processOperation($dbConfig, $format, $generationState, $config, $extensions),
                                                    s : SelectSQLQuery[1]|$s->processSelectSQLQuery($sgc, true),
                                                    r : RelationalOperationElement[1]|$r->processOperation($dbConfig, $format, $generationState, $config, $extensions)
@@ -385,14 +400,8 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                                       $identifier
                                                       ]);
                                              ,
-                                          c:TableAliasColumn[1]|let doubleQuote = if($config.useQuotesForTableAliasColumn == false, |'', |'"');
-                                                                if(!$config.generateJoin->isEmpty() && $config.generateJoin->toOne(),|if ($config.generateJoinTarget == $c.alias,
-                                                                                                                                          |'{target}.',
-                                                                                                                                          |let schema = $c.alias.relationalElement->match([t:Table[1]|$t.schema.name, v:View[1]|$v.schema.name]);
-                                                                                                                                           if ($schema == 'default',|'',|$schema+'.');
-                                                                                                                                      )
-                                                                                                                                    ,|''
-                                                                ) + if ($config.generateJoinTarget == $c.alias, |'',|$dbConfig.identifierProcessor($doubleQuote+$c.alias.name->toOne()+$doubleQuote) + '.') + processColumnName($c.column.name->toOne(), $dbConfig);,
+                                          x:TableAliasColumnName[1] | processTableAlias($x.alias, $dbConfig, $config) + processColumnName($x.columnName, $dbConfig);,                                                                
+                                          c:TableAliasColumn[1]| processTableAlias($c.alias, $dbConfig, $config) + processColumnName($c.column.name->toOne(), $dbConfig);,                                                                
                                           l:Literal[1]| processLiteral($l, $dbConfig),
                                           ll:LiteralList[1] | $ll.values->map(e | $e->processOperation($dbConfig, $format, $generationState, $config, $extensions))->joinStrings('(', ', ', ')'),
                                           s:SelectSQLQuery[1]| $s->processSelectSQLQuery($sgc, false),
@@ -405,10 +414,24 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                           s:SemiStructuredObjectNavigation[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
                                           s:SemiStructuredArrayFlatten[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
                                           s:SemiStructuredArrayFlattenOutput[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
+                                          t:TableFunctionParamPlaceHolder[1] | $dbConfig.tableFunctionParamProcessor($t, $sgc),
                                           {f:meta::relational::metamodel::operation::Function[1]| assert(false, 'Don\'t know how to handle %s', $f->type()); 'TO DO'; }
                                        ])->toOneMany()
                                      );
 }
+
+function meta::relational::functions::sqlQueryToString::processTableAlias(tableAlias:TableAlias[1], dbConfig : DbConfig[1], config:Config[1]):String[1]
+{
+  let doubleQuote = if($config.useQuotesForTableAliasColumn == false, |'', |'"');
+  if(!$config.generateJoin->isEmpty() && $config.generateJoin->toOne(),|if ($config.generateJoinTarget == $tableAlias,
+                                                                            |'{target}.',
+                                                                            |let schema = $tableAlias.relationalElement->match([t:Table[1]|$t.schema.name, v:View[1]|$v.schema.name]);
+                                                                              if ($schema == 'default',|'',|$schema+'.');
+                                                                        )
+                                                                      ,|''
+  ) + if ($config.generateJoinTarget == $tableAlias, |'',|$dbConfig.identifierProcessor($doubleQuote+$tableAlias.name->toOne()+$doubleQuote) + '.');
+}
+
 
 function meta::relational::functions::sqlQueryToString::tableToString(table:Table[1], dbConfig : DbConfig[1]):String[1]
 {
@@ -424,10 +447,13 @@ function meta::relational::functions::sqlQueryToString::indent(d:Format[1]):Form
 
 function meta::relational::functions::sqlQueryToString::processSelectSQLQuery(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
 {
-   if ($s.columns->isEmpty() && !$s.data->isEmpty() && $s.data.alias.relationalElement->toOne()->instanceOf(Union) && $s.data->map(x|$x->children())->isEmpty(),
-      | $s.data.alias.relationalElement->toOne()->processOperation($sgc.dbConfig, $sgc.format->indent(), $sgc.config, $sgc.extensions),
-      | $sgc.dbConfig.selectSQLQueryProcessor($s, $sgc, $isSubSelect)
-   );
+   if($s->instanceOf(SelectSQLQueryWithCommonTableExpressions),
+   | $sgc.dbConfig.selectSQLQueryWithCTEsProcessor($s->cast(@SelectSQLQueryWithCommonTableExpressions), $sgc, $isSubSelect),
+   | if ($s.columns->isEmpty() && !$s.data->isEmpty() && $s.data.alias.relationalElement->toOne()->instanceOf(Union) && $s.data->map(x|$x->children())->isEmpty(),
+     | $s.data.alias.relationalElement->toOne()->processOperation($sgc.dbConfig, $sgc.format->indent(), $sgc.config, $sgc.extensions),
+     | $sgc.dbConfig.selectSQLQueryProcessor($s, $sgc, $isSubSelect)
+     )
+   )
 }
 
 function meta::relational::functions::sqlQueryToString::processUpsertSQLQuery(u:UpsertSQLQuery[1], sgc:SqlGenerationContext[1]):String[1]
@@ -567,12 +593,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
                     ,| $dateParameter);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::isOptionalPlaceHolder(v:VarPlaceHolder[1]):Boolean[1]
+function meta::relational::functions::sqlQueryToString::isOptionalPlaceHolder(v:VarPlaceHolder[1]):Boolean[1]
 {
    $v.multiplicity->isNotEmpty() && eq($v.multiplicity->toOne()->meta::pure::functions::meta::getLowerBound(), 0);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::isCollectionPlaceHolder(v:VarPlaceHolder[1]):Boolean[1]
+function  meta::relational::functions::sqlQueryToString::isCollectionPlaceHolder(v:VarPlaceHolder[1]):Boolean[1]
 {
    $v.multiplicity->isNotEmpty() && $v.multiplicity == ZeroMany;
 }

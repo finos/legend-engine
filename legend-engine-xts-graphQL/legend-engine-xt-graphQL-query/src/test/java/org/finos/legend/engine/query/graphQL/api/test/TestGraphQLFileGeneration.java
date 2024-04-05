@@ -15,19 +15,24 @@
 package org.finos.legend.engine.query.graphQL.api.test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.eclipse.collections.impl.*;
+import org.eclipse.collections.impl.factory.*;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.engine.query.graphQL.api.format.generation.GraphQLGenerationExtension;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.InputStream;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+
+import static org.finos.legend.pure.generated.core_external_query_graphql_deprecated_tests_generationTests.Root_meta_external_query_graphQL_generation_tests_constants_comparisonExpressions_String_MANY__String_1_;
 
 public class TestGraphQLFileGeneration
 {
@@ -37,17 +42,21 @@ public class TestGraphQLFileGeneration
         try
         {
             PureModelContextData pureModelContextData = getProtocol("simpleFileGeneration.json");
-            PureModel pureModel = new PureModel(pureModelContextData, null, DeploymentMode.TEST);
+            PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), DeploymentMode.TEST);
             FileGenerationSpecification fileGeneration = pureModelContextData.getElementsOfType(FileGenerationSpecification.class).get(0);
             GraphQLGenerationExtension graphQLGenerationExtension = new GraphQLGenerationExtension();
             List<? extends Root_meta_pure_generation_metamodel_GenerationOutput> outputs = graphQLGenerationExtension.generateFromElement(fileGeneration, pureModel.getContext());
 
-            Assert.assertEquals(outputs.size(), 4);
+            Assert.assertEquals(outputs.size(), 5);
             outputs.forEach(o ->
             {
                 if (o._fileName().endsWith("scalars.graphql"))
                 {
                     Assert.assertEquals(getResourceAsString("scalars.graphql"), o._content());
+                }
+                else if (o._fileName().endsWith("primitive_comparisons.graphql"))
+                {
+                    Assert.assertEquals(Root_meta_external_query_graphQL_generation_tests_constants_comparisonExpressions_String_MANY__String_1_(Iterables.iList("Int", "String"), pureModel.getExecutionSupport()), o._content());
                 }
                 else
                 {
@@ -67,17 +76,21 @@ public class TestGraphQLFileGeneration
         try
         {
             PureModelContextData pureModelContextData = getProtocol("scalarFileGeneration.json");
-            PureModel pureModel = new PureModel(pureModelContextData, null, DeploymentMode.TEST);
+            PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), DeploymentMode.TEST);
             FileGenerationSpecification fileGeneration = pureModelContextData.getElementsOfType(FileGenerationSpecification.class).get(0);
             GraphQLGenerationExtension graphQLGenerationExtension = new GraphQLGenerationExtension();
             List<? extends Root_meta_pure_generation_metamodel_GenerationOutput> outputs = graphQLGenerationExtension.generateFromElement(fileGeneration, pureModel.getContext());
 
-            Assert.assertEquals(outputs.size(), 2);
+            Assert.assertEquals(outputs.size(), 3);
             outputs.forEach(o ->
             {
                 if (o._fileName().endsWith("scalars.graphql"))
                 {
                     Assert.assertEquals(getResourceAsString("scalars.graphql"), o._content());
+                }
+                else if (o._fileName().endsWith("primitive_comparisons.graphql"))
+                {
+                    Assert.assertEquals(Root_meta_external_query_graphQL_generation_tests_constants_comparisonExpressions_String_MANY__String_1_(Iterables.iList("BigDecimal","Date", "DateTime"), pureModel.getExecutionSupport()), o._content());
                 }
                 else
                 {

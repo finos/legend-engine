@@ -14,12 +14,16 @@
 
 package org.finos.legend.engine.persistence.components.relational.api;
 
-import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics;
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
+import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.SqlPlanAbstract;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
+import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Style;
 
@@ -27,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Immutable
@@ -43,6 +48,8 @@ public abstract class GeneratorResultAbstract
 
     public abstract SqlPlan preActionsSqlPlan();
 
+    public abstract SqlPlan dryRunPreActionsSqlPlan();
+
     public abstract Optional<SqlPlan> initializeLockSqlPlan();
 
     public abstract Optional<SqlPlan> acquireLockSqlPlan();
@@ -53,9 +60,13 @@ public abstract class GeneratorResultAbstract
 
     public abstract SqlPlan ingestSqlPlan();
 
+    public abstract SqlPlan dryRunSqlPlan();
+
+    public abstract Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan();
+
     public abstract Optional<DataSplitRange> ingestDataSplitRange();
 
-    public abstract Optional<SqlPlan> metadataIngestSqlPlan();
+    public abstract SqlPlan metadataIngestSqlPlan();
 
     public abstract Optional<SqlPlan> deduplicationAndVersioningSqlPlan();
 
@@ -63,7 +74,9 @@ public abstract class GeneratorResultAbstract
 
     public abstract Optional<SqlPlan> postCleanupSqlPlan();
 
-    public abstract Map<DedupAndVersionErrorStatistics, SqlPlan> deduplicationAndVersioningErrorChecksSqlPlan();
+    public abstract SqlPlan dryRunPostCleanupSqlPlan();
+
+    public abstract Map<DedupAndVersionErrorSqlType, SqlPlan> deduplicationAndVersioningErrorChecksSqlPlan();
 
     public abstract Map<StatisticName, SqlPlan> preIngestStatisticsSqlPlan();
 
@@ -72,6 +85,11 @@ public abstract class GeneratorResultAbstract
     public List<String> preActionsSql()
     {
         return preActionsSqlPlan().getSqlList();
+    }
+
+    public List<String> dryRunPreActionsSql()
+    {
+        return dryRunPreActionsSqlPlan().getSqlList();
     }
 
     public List<String> initializeLockSql()
@@ -99,9 +117,25 @@ public abstract class GeneratorResultAbstract
             .orElseGet(ingestSqlPlan()::getSqlList);
     }
 
+    public List<String> dryRunSql()
+    {
+        return dryRunSqlPlan().getSqlList();
+    }
+
+    public Map<ValidationCategory, List<Pair<Set<FieldValue>, String>>> dryRunValidationSql()
+    {
+        return dryRunValidationSqlPlan().keySet().stream()
+            .collect(Collectors.toMap(
+               k -> k,
+               k -> dryRunValidationSqlPlan().get(k).stream().map(
+                   e -> Tuples.pair(e.getOne(), e.getTwo().getSql())
+               ).collect(Collectors.toList())
+            ));
+    }
+
     public List<String> metadataIngestSql()
     {
-        return metadataIngestSqlPlan().map(SqlPlanAbstract::getSqlList).orElse(Collections.emptyList());
+        return metadataIngestSqlPlan().getSqlList();
     }
 
     public List<String> deduplicationAndVersioningSql()
@@ -119,6 +153,11 @@ public abstract class GeneratorResultAbstract
         return postCleanupSqlPlan().map(SqlPlanAbstract::getSqlList).orElse(Collections.emptyList());
     }
 
+    public List<String> dryRunPostCleanupSql()
+    {
+        return dryRunPostCleanupSqlPlan().getSqlList();
+    }
+
     public Map<StatisticName, String> preIngestStatisticsSql()
     {
         return preIngestStatisticsSqlPlan().keySet().stream()
@@ -127,7 +166,7 @@ public abstract class GeneratorResultAbstract
                 k -> preIngestStatisticsSqlPlan().get(k).getSql()));
     }
 
-    public Map<DedupAndVersionErrorStatistics, String> deduplicationAndVersioningErrorChecksSql()
+    public Map<DedupAndVersionErrorSqlType, String> deduplicationAndVersioningErrorChecksSql()
     {
         return deduplicationAndVersioningErrorChecksSqlPlan().keySet().stream()
                 .collect(Collectors.toMap(

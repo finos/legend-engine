@@ -29,6 +29,9 @@ Class meta::pure::alloy::connections::alloy::specification::SnowflakeDatasourceS
     proxyPort:String[0..1];
     nonProxyHosts:String[0..1];
 
+    tempTableDb: String[0..1];
+    tempTableSchema: String[0..1];
+
     <<equality.Key>> accountType: meta::pure::alloy::connections::alloy::specification::SnowflakeAccountType[0..1];
     <<equality.Key>> organization:String[0..1];
     <<equality.Key>> cloudType:String[0..1];

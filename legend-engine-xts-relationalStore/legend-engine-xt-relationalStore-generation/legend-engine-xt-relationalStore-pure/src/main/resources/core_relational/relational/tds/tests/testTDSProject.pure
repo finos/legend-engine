@@ -28,7 +28,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectStri
          ->project(p|$p.firstName,'firstName')
          ->project([col(r:TDSRow[1]|$r.getString('firstName'), 'firstName'), col({r:TDSRow[1]|'Hello'}, 'hello')]),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 2);
 
@@ -46,7 +46,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectFunc
          ->project(p|$p.firstName,'first_name')
          ->project([col(r:TDSRow[1]|$r.getString('first_name'), 'first_name'), col({r:TDSRow[1]|'Hello'->length()}, 'hello_length')]),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 2);
 
@@ -64,7 +64,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectStri
          ->project(p|$p.firstName,'first_name')
          ->project([col(r:TDSRow[1]|$r.getString('first_name'), 'first_name'), col(r:TDSRow[1]|$r.getString('first_name'), 'name_again')]),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 2);
 
@@ -82,7 +82,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectFunc
          ->project(p|$p.firstName,'first_name')
          ->project([col(r:TDSRow[1]|$r.getString('first_name'), 'first_name'), col({r:TDSRow[1]| $r.getString('first_name')->length()}, 'name_length')]),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals([String, Integer], $result.values.columns.type);
    assertSize($result.values.columns, 2);
 
@@ -100,7 +100,7 @@ function <<test.ToFix>> meta::relational::tests::tds::tdsProject::testProjectFun
          ->project([a|$a.name, a|$a.type],['name', 'type'])
          ->project([col(r:TDSRow[1]|$r.getString('name'), 'name'), col(r:TDSRow[1]|$r.getString('type'), 'type'), col({r:TDSRow[1]|$r.getEnum('type') == GeographicEntityType.CITY}, 'type_enum')]),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 3);
 
@@ -120,7 +120,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectMult
                    col({r:TDSRow[1]|'Hello'}, 'const'),
                    col({r:TDSRow[1]|$r.getString('first_name')->length()}, 'name_length')]),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 3);
 
@@ -141,7 +141,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectAndP
                    col(r:TDSRow[1]|$r.getInteger('name_length'), 'name_length'),
                    col({r:TDSRow[1]|$r.getInteger('name_length') * 2}, 'double_name_length')]),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 3);
 
@@ -161,7 +161,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectOnDy
                    col(r:TDSRow[1]|$r.getString('LAST'), 'LAST'),
                    col({r:TDSRow[1]|$r.getString('LAST')->length()}, 'name_length')]),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.rows, 7);
 
@@ -181,7 +181,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectOnMu
                    col(r:TDSRow[1]|$r.getString('last_name'), 'last_name'),
                    col({r:TDSRow[1]| $r.getString('first_name')->length() + $r.getString('last_name')->length()}, 'combined_length')]),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 3);
 
@@ -199,7 +199,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testDateLiteral
          ->project(p|$p.firstName,'firstName')
          ->project([col(r:TDSRow[1]|$r.getString('firstName'), 'firstName'), col({r:TDSRow[1]|%2016-08-10}, 'dateLiteral')]),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->at(0);
 
@@ -231,7 +231,7 @@ function <<test.Test, test.ExcludeAlloy>> {test.excludePlatform = 'Java compiled
                       col({r:TDSRow[1]| $r.getString($firstNameColName)->length()}, 'first_name_length')]);
       ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 3);
 
@@ -255,7 +255,7 @@ function <<test.ToFix>> meta::relational::tests::tds::tdsProject::testProjectWit
                       col({r:TDSRow[1]| $r.getString('first_name')->length()}, $outColName)]);
       ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 3);
 
@@ -273,7 +273,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectRedu
          ->project([p|$p.firstName, p|$p.lastName->toUpper()], ['first', 'LAST'])
          ->project([col(r:TDSRow[1]|$r.getString('first'), 'first')]),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.rows, 7);
 
@@ -291,7 +291,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testHourFunctio
          ->project(p|$p.firstName,'firstName')
          ->project([col(r:TDSRow[1]|$r.getString('firstName'), 'firstName'),col({r:TDSRow[1]|%2016-08-10T08:55:00.0->hour()}, 'hour')]),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->at(0);
 
@@ -317,7 +317,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectEnum
          ->project([col(r:TDSRow[1]|$r.getString('firstName'), 'firstName'),
             col({r:TDSRow[1]|now()->adjust(1, $units) > now()}, 'tomorrowGreaterThanToday')]),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->at(0);
 
@@ -343,7 +343,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectWith
          ->project([col(r:TDSRow[1]|$r.getString('firstName'), 'firstName'),
             col({r:TDSRow[1]|now()->adjust(1, DurationUnit.DAYS) > now()}, 'tomorrowGreaterThanToday')]),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->at(0);
 
@@ -369,7 +369,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testFilterAfter
          ->filter(r|$r.getInteger('age') > 25)
          ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions(),debug());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(),debug());
 
    assertSize($result.values.columns, 1);
 
@@ -390,7 +390,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testFilterAfter
          ->sort(asc('age'))
          ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 1);
 
@@ -413,7 +413,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testSortAfterLi
          ->sort(desc('age'))
          ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 1);
 
@@ -433,7 +433,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testLimitAfterL
          ->limit(5)
          ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 1);
 
@@ -453,7 +453,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testSliceAfterL
          ->slice(2,100)
          ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 1);
 
@@ -474,7 +474,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testLimitAfterS
          ->limit(100)
          ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 1);
 
@@ -495,7 +495,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testDropAfterLi
          ->drop(2)
          ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 1);
 
@@ -516,7 +516,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testLimitAfterD
          ->limit(5)
          ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 1);
 
@@ -537,7 +537,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testTakeAfterLi
          ->take(5)
          ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 1);
 
@@ -558,7 +558,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testLimitAfterT
          ->limit(5)
          ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 1);
 
@@ -579,7 +579,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testOptionalLim
          ->limit([])
          ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 1);
 
@@ -599,7 +599,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testOptionalLim
          ->limit(1->first())
          ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 1);
 
@@ -624,7 +624,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectWith
                   ])
                ->filter( x| $x.getString('first_name' ) == 'David' )
              , simpleRelationalMapping
-             , testRuntime()
+             , meta::external::store::relational::tests::testRuntime()
          , meta::relational::extension::relationalExtensions());
    assertEquals( 'David|35' ,   $result.values.rows->map(r|$r.values->makeString('|'))->makeString(',') );
    assertEquals ( 'select "root".FIRSTNAME as "first_name", "root".AGE as "age" from personTable as "root" where "root".FIRSTNAME = \'David\'' , $result->sqlRemoveFormatting());
@@ -642,7 +642,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectWith
                   ],['first_name','last_name','age'], ['first_name','age' ])
                ->filter( x| $x.getString('first_name' ) == 'David' )
              , simpleRelationalMapping
-             , testRuntime()
+             , meta::external::store::relational::tests::testRuntime()
          , meta::relational::extension::relationalExtensions());
    assertEquals( 'David|35' ,   $result.values.rows->map(r|$r.values->makeString('|'))->makeString(',') );
    assertEquals ( 'select "root".FIRSTNAME as "first_name", "root".AGE as "age" from personTable as "root" where "root".FIRSTNAME = \'David\'' , $result->sqlRemoveFormatting());
@@ -668,7 +668,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectWith
                   [ 'first_name' , 'age' ] )
                ->filter( x| $x.getString('first_name' ) == 'David' )
              , simpleRelationalMapping
-             , testRuntime()
+             , meta::external::store::relational::tests::testRuntime()
          , meta::relational::extension::relationalExtensions());
    // Base test Case -> Only one table in the SQL since we asked for First Name & Age
    assertEquals ( 'select "root".FIRSTNAME as "first_name", "root".AGE as "age" from personTable as "root" where "root".FIRSTNAME = \'David\'' , $result1->sqlRemoveFormatting());
@@ -692,7 +692,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectWith
                   [ 'first_name' , 'age' , 'Firm Legal Name' ] )
                ->filter( x| $x.getString('first_name' ) == 'David' )
              , simpleRelationalMapping
-             , testRuntime()
+             , meta::external::store::relational::tests::testRuntime()
          , meta::relational::extension::relationalExtensions());
 
     // Test Case -> Two tables in the SQL since we asked for Firm Legal Name with First Name & Age from Test Case 1
@@ -717,7 +717,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectWith
                   [ 'first_name' , 'age' , 'Firm Legal Name' , 'Location Place'] )
                 ->filter( x| $x.getString('first_name' ) == 'David' )
              , simpleRelationalMapping
-             , testRuntime()
+             , meta::external::store::relational::tests::testRuntime()
          , meta::relational::extension::relationalExtensions());
 
     // Test Case -> Three tables in the SQL since we asked for Location
@@ -742,7 +742,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectWith
                    )
                ->filter( x| $x.getString('first_name' ) == 'David' )
              , simpleRelationalMapping
-             , testRuntime()
+             , meta::external::store::relational::tests::testRuntime()
          , meta::relational::extension::relationalExtensions());
 
 
@@ -763,7 +763,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testGetNumber()
          ->filter(r|$r.getNumber('age') > 25)
          ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 1);
 

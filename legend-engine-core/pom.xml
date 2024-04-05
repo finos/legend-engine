@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.37.3-SNAPSHOT</version>
+        <version>4.42.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -27,11 +27,11 @@
     <name>Legend Engine - Core</name>
 
     <modules>
-        <module>legend-engine-core-executionPlan-execution</module>
-        <module>legend-engine-core-executionPlan-generation</module>
-        <module>legend-engine-core-language-pure</module>
-        <module>legend-engine-core-query-pure</module>
+        <module>legend-engine-core-base</module>
         <module>legend-engine-core-shared</module>
-        <module>legend-engine-core-test</module>
+        <module>legend-engine-core-pure</module>
+        <module>legend-engine-core-testable</module>
+        <module>legend-engine-core-external-format</module>
+        <module>legend-engine-core-query-pure-rest</module>
     </modules>
 </project>

@@ -14,27 +14,24 @@
 
 package org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor;
 
-import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
-import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
-import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
-import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
-import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Udf;
-import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
-import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
+import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 
-import java.util.Arrays;
+import java.util.Map;
 
-public class DigestUdfVisitor implements LogicalPlanVisitor<DigestUdf>
+public class DigestUdfVisitor extends org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DigestUdfVisitor
 {
 
     @Override
-    public VisitorResult visit(PhysicalPlanNode prev, DigestUdf current, VisitorContext context)
+    protected Value getColumnValueAsStringType(Value value, DataType dataType, Map<DataType, String> typeConversionUdfNames)
     {
-        Udf udf = new Udf(context.quoteIdentifier(), current.udfName());
-        prev.push(udf);
-
-        FunctionImpl function = FunctionImpl.builder().functionName(FunctionName.TO_JSON).addValue(ObjectValue.of(current.dataset().orElseThrow(IllegalStateException::new).datasetReference().alias())).build();
-        return new VisitorResult(udf, Arrays.asList(function));
+        if (typeConversionUdfNames.containsKey(dataType))
+        {
+            return org.finos.legend.engine.persistence.components.logicalplan.values.Udf.builder().udfName(typeConversionUdfNames.get(dataType)).addParameters(value).build();
+        }
+        else
+        {
+            return value;
+        }
     }
 }

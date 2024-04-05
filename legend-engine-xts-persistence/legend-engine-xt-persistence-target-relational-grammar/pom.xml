@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-persistence</artifactId>
-        <version>4.37.3-SNAPSHOT</version>
+        <version>4.42.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -71,7 +71,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
+            <artifactId>legend-pure-m2-dsl-store-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
@@ -79,7 +79,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-dsl-path</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-dsl-path</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -168,7 +168,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-configuration</artifactId>
+            <artifactId>legend-engine-configuration-contract-extension-pure</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -185,7 +185,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-shared-format-model</artifactId>
+            <artifactId>legend-engine-external-format-core</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

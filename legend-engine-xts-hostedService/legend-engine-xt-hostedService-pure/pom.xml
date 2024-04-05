@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-hostedService</artifactId>
-        <version>4.37.3-SNAPSHOT</version>
+        <version>4.42.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -39,7 +39,7 @@
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
                                 <dependency> org.finos.legend.engine:legend-engine-pure-platform-dsl-graph-java</dependency>
-                                <dependency> org.finos.legend.pure:legend-pure-runtime-java-extension-dsl-graph</dependency>
+                                <dependency> org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-graph</dependency>
                             </ignoredUnusedDeclaredDependencies>
                             <ignoreUsedUndeclaredDependencies>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-graph-java</dependency>
@@ -186,7 +186,7 @@
 
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-dsl-graph</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-dsl-graph</artifactId>
 <!--            <scope>compile</scope>-->
         </dependency>
         <dependency>
@@ -210,7 +210,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
+            <artifactId>legend-engine-pure-platform-dsl-store-java</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

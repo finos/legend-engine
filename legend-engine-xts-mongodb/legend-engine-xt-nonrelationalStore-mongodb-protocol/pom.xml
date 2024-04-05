@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-mongodb</artifactId>
-        <version>4.37.3-SNAPSHOT</version>
+        <version>4.42.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-nonrelationalStore-mongodb-protocol</artifactId>
@@ -61,7 +61,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-runtime-java-extension-dsl-mapping</artifactId>
+                        <artifactId>legend-pure-runtime-java-extension-compiled-dsl-mapping</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
                     <dependency>
@@ -82,6 +82,11 @@
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-platform-dsl-diagram-java</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-platform-dsl-store-java</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -139,6 +144,10 @@
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
         </dependency>
         <!-- Eclipse -->
 

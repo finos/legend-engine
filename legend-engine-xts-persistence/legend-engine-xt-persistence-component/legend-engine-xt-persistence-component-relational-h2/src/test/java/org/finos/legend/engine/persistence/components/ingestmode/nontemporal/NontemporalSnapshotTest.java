@@ -70,7 +70,7 @@ class NontemporalSnapshotTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName};
 
         // ------------ Perform snapshot milestoning Pass1 ------------------------
         String dataPass1 = basePath + "input/vanilla_case/data_pass1.csv";
@@ -78,7 +78,6 @@ class NontemporalSnapshotTest extends BaseTest
         // 1. Load staging table
         loadBasicStagingData(dataPass1);
         // 2. Execute plans and verify results
-
         Map<String, Object> expectedStats = createExpectedStatsMap(5, 0, 5, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
         // 3. Assert that the staging table is NOT truncated
@@ -114,7 +113,7 @@ class NontemporalSnapshotTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName};
 
         // ------------ Perform snapshot milestoning Pass1 ------------------------
         String dataPass1 = basePath + "input/with_staging_filter/data_pass1.csv";
@@ -156,7 +155,7 @@ class NontemporalSnapshotTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
 
         // ------------ Perform incremental (append) milestoning Pass1 ------------------------
         String expectedDataPass1 = basePath + "expected/with_update_timestamp_field/expected_pass1.csv";
@@ -180,7 +179,7 @@ class NontemporalSnapshotTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName};
 
         // ------------ Perform snapshot milestoning Pass1 ------------------------
         String expectedDataPass1 = basePath + "expected/vanilla_case/expected_pass1.csv";
@@ -190,7 +189,6 @@ class NontemporalSnapshotTest extends BaseTest
         // ------------ Perform snapshot milestoning Pass2 ------------------------
         String dataPass2 = basePath + "input/vanilla_case/data_pass2.json";
         stagingTable = TestUtils.getBasicJsonDatasetReferenceTable(dataPass2);
-
         String expectedDataPass2 = basePath + "expected/vanilla_case/expected_pass2.csv";
         expectedStats.clear();
         expectedStats = createExpectedStatsMap(6, 5, 6, 0, 0);
@@ -212,7 +210,7 @@ class NontemporalSnapshotTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName};
 
         // ------------ Perform snapshot milestoning Pass1 ------------------------
         String expectedDataPass1 = basePath + "expected/vanilla_case/expected_pass1.csv";
@@ -222,7 +220,6 @@ class NontemporalSnapshotTest extends BaseTest
         // ------------ Perform snapshot milestoning Pass2 ------------------------
         String dataPass2 = basePath + "input/vanilla_case/data_pass2.csv";
         stagingTable = TestUtils.getBasicCsvDatasetReferenceTable(dataPass2);
-
         String expectedDataPass2 = basePath + "expected/vanilla_case/expected_pass2.csv";
         expectedStats.clear();
         expectedStats = createExpectedStatsMap(6, 5, 6, 0, 0);
@@ -244,7 +241,7 @@ class NontemporalSnapshotTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName};
 
         // ------------ Perform snapshot milestoning Pass1 ------------------------
         String expectedDataPass1 = basePath + "expected/less_columns_in_staging/expected_pass1.csv";
@@ -279,7 +276,7 @@ class NontemporalSnapshotTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(true).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName};
 
         // ------------ Perform snapshot milestoning With Clean Staging Table ------------------------
         String dataPass1 = basePath + "input/vanilla_case/data_pass1.csv";
@@ -316,7 +313,7 @@ class NontemporalSnapshotTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName, batchIdName};
 
         // ------------ Perform snapshot milestoning Pass1 ------------------------
         String dataPass1 = "src/test/resources/data/dedup-and-versioning/input/data2_with_dups_no_data_error.csv";
@@ -324,7 +321,6 @@ class NontemporalSnapshotTest extends BaseTest
         // 1. Load staging table
         TestDedupAndVersioning.loadDataIntoStagingTableWithVersion(dataPass1);
         // 2. Execute plans and verify results
-
         Map<String, Object> expectedStats = createExpectedStatsMap(6, 0, 3, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
@@ -367,15 +363,14 @@ class NontemporalSnapshotTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, expiryDateName, digestName, batchIdName};
 
         // ------------ Perform snapshot milestoning Pass1 ------------------------
         String dataPass1 = "src/test/resources/data/dedup-and-versioning/input/data5_without_dups.csv";
-        String expectedDataPass1 = "src/test/resources/data/dedup-and-versioning/input/data5_without_dups.csv";
+        String expectedDataPass1 = basePath + "expected/no_versioning_fail_on_duplicates/expected_pass1.csv";
         // 1. Load staging table
         TestDedupAndVersioning.loadDataIntoStagingTableWithoutVersion(dataPass1);
         // 2. Execute plans and verify results
-
         Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 

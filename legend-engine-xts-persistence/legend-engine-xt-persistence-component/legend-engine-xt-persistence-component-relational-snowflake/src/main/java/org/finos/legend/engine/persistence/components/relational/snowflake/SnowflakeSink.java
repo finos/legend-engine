@@ -14,7 +14,13 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
@@ -33,18 +39,28 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Cre
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Show;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataFileNameField;
+import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataRowNumberField;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ToArrayFunction;
+import org.finos.legend.engine.persistence.components.logicalplan.values.TryCastFunction;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
+import org.finos.legend.engine.persistence.components.relational.api.DataError;
+import org.finos.legend.engine.persistence.components.relational.api.ErrorCategory;
 import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
+import org.finos.legend.engine.persistence.components.relational.api.ApiUtils;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
+import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.SnowflakeStagedFilesDatasetProperties;
+import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.StandardFileFormat;
 import org.finos.legend.engine.persistence.components.relational.snowflake.optmizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.snowflake.optmizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.SnowflakeDataTypeMapping;
@@ -52,6 +68,8 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.sql.S
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.AlterVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.BatchEndTimestampVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ClusterKeyVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.MetadataFileNameFieldVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.MetadataRowNumberFieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.SQLCreateVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.FieldVisitor;
@@ -63,13 +81,22 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.sql.v
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesFieldValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DigestUdfVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesSelectionVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ToArrayFunctionVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.TryCastFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
+import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.Capability;
+import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
+import org.finos.legend.engine.persistence.components.util.ValidationCategory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -77,19 +104,24 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Queue;
 import java.util.Set;
-import java.util.Objects;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_ID_PATTERN;
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_START_TS_PATTERN;
+import static org.finos.legend.engine.persistence.components.util.ValidationCategory.NULL_VALUE;
+import static org.finos.legend.engine.persistence.components.util.ValidationCategory.TYPE_CONVERSION;
 
 public class SnowflakeSink extends AnsiSqlSink
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSink.class);
     private static final RelationalSink INSTANCE;
 
     private static final Set<Capability> CAPABILITIES;
@@ -102,6 +134,22 @@ public class SnowflakeSink extends AnsiSqlSink
     private static final String BULK_LOAD_STATUS = "status";
     private static final String ROWS_LOADED = "rows_loaded";
     private static final String ERRORS_SEEN = "errors_seen";
+    private static final String FIRST_ERROR = "first_error";
+    private static final String FIRST_ERROR_COLUMN_NAME = "first_error_column_name";
+    private static final String ERROR = "ERROR";
+    protected static final String FILE_WITH_ERROR = "FILE";
+    protected static final String ROW_NUMBER = "ROW_NUMBER";
+    private static final String LINE = "LINE";
+    private static final String CHARACTER = "CHARACTER";
+    private static final String CATEGORY = "CATEGORY";
+    private static final String COLUMN_NAME = "COLUMN_NAME";
+    private static final String REJECTED_RECORD = "REJECTED_RECORD";
+    private static final String FIELD_DELIMITER = "FIELD_DELIMITER";
+    private static final String ESCAPE = "ESCAPE";
+    private static final String FIELD_OPTIONALLY_ENCLOSED_BY = "FIELD_OPTIONALLY_ENCLOSED_BY";
+    private static final String CATEGORY_CONVERSION = "conversion";
+    private static final String CATEGORY_CHECK_CONSTRAINT = "check_constraint";
+    private static final String CATEGORY_OTHER = "other";
 
     static
     {
@@ -111,6 +159,7 @@ public class SnowflakeSink extends AnsiSqlSink
         capabilities.add(Capability.IMPLICIT_DATA_TYPE_CONVERSION);
         capabilities.add(Capability.DATA_TYPE_LENGTH_CHANGE);
         capabilities.add(Capability.TRANSFORM_WHILE_COPY);
+        capabilities.add(Capability.DRY_RUN);
         CAPABILITIES = Collections.unmodifiableSet(capabilities);
 
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
@@ -128,6 +177,10 @@ public class SnowflakeSink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(StagedFilesFieldValue.class, new StagedFilesFieldValueVisitor());
         logicalPlanVisitorByClass.put(StagedFilesSelection.class, new StagedFilesSelectionVisitor());
         logicalPlanVisitorByClass.put(DigestUdf.class, new DigestUdfVisitor());
+        logicalPlanVisitorByClass.put(TryCastFunction.class, new TryCastFunctionVisitor());
+        logicalPlanVisitorByClass.put(MetadataFileNameField.class, new MetadataFileNameFieldVisitor());
+        logicalPlanVisitorByClass.put(MetadataRowNumberField.class, new MetadataRowNumberFieldVisitor());
+        logicalPlanVisitorByClass.put(ToArrayFunction.class, new ToArrayFunctionVisitor());
 
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
@@ -137,6 +190,7 @@ public class SnowflakeSink extends AnsiSqlSink
         implicitDataTypeMapping.put(DataType.BIGINT, new HashSet<>(Arrays.asList(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT)));
         implicitDataTypeMapping.put(DataType.VARCHAR, new HashSet<>(Arrays.asList(DataType.CHAR, DataType.STRING, DataType.TEXT)));
         implicitDataTypeMapping.put(DataType.TIMESTAMP, Collections.singleton(DataType.DATETIME));
+        implicitDataTypeMapping.put(DataType.JSON, Collections.singleton(DataType.VARIANT));
         IMPLICIT_DATA_TYPE_MAPPING = Collections.unmodifiableMap(implicitDataTypeMapping);
 
         EXPLICIT_DATA_TYPE_MAPPING = Collections.unmodifiableMap(new HashMap<>());
@@ -224,36 +278,258 @@ public class SnowflakeSink extends AnsiSqlSink
         }
     }
 
+    public List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor,
+                                         SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan,
+                                         int sampleRowCount, CaseConversion caseConversion)
+    {
+        try
+        {
+            if (dryRunValidationSqlPlan == null || dryRunValidationSqlPlan.isEmpty())
+            {
+                return performDryRunWithValidationMode(datasets, executor, dryRunSqlPlan, sampleRowCount);
+            }
+            else
+            {
+                return performDryRunWithValidationQueries(datasets, executor, dryRunSqlPlan, dryRunValidationSqlPlan, sampleRowCount, caseConversion);
+            }
+        }
+        catch (Exception e)
+        {
+            return parseSnowflakeExceptions(e);
+        }
+    }
+
+    private List<DataError> parseSnowflakeExceptions(Exception e)
+    {
+        String errorMessage = e.getMessage();
+        String errorMessageWithoutLineBreaks = ApiUtils.removeLineBreaks(e.getMessage());
+
+        if (errorMessage.contains("Error parsing"))
+        {
+            return Collections.singletonList(DataError.builder().errorCategory(ErrorCategory.PARSING_ERROR).errorMessage(errorMessageWithoutLineBreaks).build());
+        }
+
+        if (errorMessage.contains("file") && errorMessage.contains("was not found"))
+        {
+            Optional<String> fileName = ApiUtils.findToken(errorMessage, "file '(.*)' was not found", 1);
+            Map<String, Object> errorDetails = buildErrorDetails(fileName, Optional.empty(), Optional.empty());
+            return Collections.singletonList(DataError.builder().errorCategory(ErrorCategory.FILE_NOT_FOUND).errorMessage(errorMessageWithoutLineBreaks).putAllErrorDetails(errorDetails).build());
+        }
+
+        return Collections.singletonList(DataError.builder().errorCategory(ErrorCategory.UNKNOWN).errorMessage(errorMessageWithoutLineBreaks).build());
+    }
+
+    private List<DataError> performDryRunWithValidationMode(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, int sampleRowCount)
+    {
+        List<TabularData> results = executor.executePhysicalPlanAndGetResults(dryRunSqlPlan, sampleRowCount);
+        List<DataError> dataErrors = new ArrayList<>();
+
+        if (!results.isEmpty())
+        {
+            List<Map<String, Object>> resultSets = results.get(0).getData();
+            for (Map<String, Object> row : resultSets)
+            {
+                Map<String, Object> errorDetails = buildErrorDetails(getString(row, FILE_WITH_ERROR), getString(row, COLUMN_NAME), getLong(row, ROW_NUMBER));
+                getLong(row, LINE).ifPresent(line -> errorDetails.put(DataError.LINE_NUMBER, line));
+                getLong(row, CHARACTER).ifPresent(characterPos -> errorDetails.put(DataError.CHARACTER_POSITION, characterPos));
+
+                DataError dataError = DataError.builder()
+                    .errorMessage(getString(row, ERROR).orElseThrow(IllegalStateException::new))
+                    .errorCategory(parseSnowflakeErrorCategory(row))
+                    .putAllErrorDetails(errorDetails)
+                    .errorRecord(getString(row, REJECTED_RECORD).map(rejectedRecord ->
+                    {
+                        try
+                        {
+                            return parseSnowflakeRejectedRecord(datasets, rejectedRecord);
+                        }
+                        catch (IOException e)
+                        {
+                            LOGGER.warn("Exception in parsing the record");
+                            return String.format("{\"%s\" : \"%s\"}", "unparsed_row", rejectedRecord);
+                        }
+                    }))
+                    .build();
+                dataErrors.add(dataError);
+            }
+        }
+        return dataErrors;
+    }
+
+    private ErrorCategory parseSnowflakeErrorCategory(Map<String, Object> row)
+    {
+        String snowflakeErrorCategory = getString(row, CATEGORY).orElseThrow(IllegalStateException::new);
+        String errorMessage = getString(row, ERROR).orElseThrow(IllegalStateException::new);
+
+        if (snowflakeErrorCategory.equals(CATEGORY_CONVERSION))
+        {
+            return ErrorCategory.TYPE_CONVERSION;
+        }
+        else if (snowflakeErrorCategory.equals(CATEGORY_CHECK_CONSTRAINT))
+        {
+            if (errorMessage.contains("NULL result in a non-nullable column"))
+            {
+                return ErrorCategory.CHECK_NULL_CONSTRAINT;
+            }
+            else
+            {
+                return ErrorCategory.CHECK_OTHER_CONSTRAINT;
+            }
+        }
+        else if (snowflakeErrorCategory.equals(CATEGORY_OTHER))
+        {
+            if (errorMessage.contains("file") && errorMessage.contains("was not found"))
+            {
+                return ErrorCategory.FILE_NOT_FOUND;
+            }
+            else
+            {
+                return ErrorCategory.UNKNOWN;
+            }
+        }
+        else
+        {
+            return ErrorCategory.UNKNOWN;
+        }
+    }
+
+    public String parseSnowflakeRejectedRecord(Datasets datasets, String rejectedRecord) throws IOException
+    {
+        Map<String, Object> formatOptions = getFormatOptions(datasets);
+        CSVFormat csvFormat = CSVFormat.DEFAULT.withQuote(null).withEscape(null);
+        if (formatOptions.containsKey(FIELD_DELIMITER))
+        {
+            csvFormat = csvFormat.withDelimiter(getChar(formatOptions, FIELD_DELIMITER).orElseThrow(IllegalStateException::new));
+        }
+        if (formatOptions.containsKey(ESCAPE))
+        {
+            csvFormat = csvFormat.withEscape(getChar(formatOptions, ESCAPE).orElseThrow(IllegalStateException::new));
+        }
+        if (formatOptions.containsKey(FIELD_OPTIONALLY_ENCLOSED_BY))
+        {
+            csvFormat = csvFormat.withQuote(getChar(formatOptions, FIELD_OPTIONALLY_ENCLOSED_BY).orElseThrow(IllegalStateException::new));
+        }
+
+        List<String> allFields = datasets.stagingDataset().schemaReference().fieldValues().stream().map(FieldValue::fieldName).collect(Collectors.toList());
+        Map<String, Object> errorRecordMap = new HashMap<>();
+
+        List<CSVRecord> records = csvFormat.parse(new StringReader(rejectedRecord)).getRecords();
+        for (CSVRecord csvRecord : records)
+        {
+            for (int i = 0; i < csvRecord.size(); i++)
+            {
+                errorRecordMap.put(allFields.get(i), csvRecord.get(i));
+            }
+        }
+
+        return new ObjectMapper().writeValueAsString(errorRecordMap);
+    }
+
+    private Map<String, Object> getFormatOptions(Datasets datasets)
+    {
+        if (!(datasets.stagingDataset() instanceof StagedFilesDataset))
+        {
+            throw new IllegalStateException("StagedFilesDataset expected");
+        }
+        StagedFilesDataset stagedFilesDataset = (StagedFilesDataset) datasets.stagingDataset();
+        if (!(stagedFilesDataset.stagedFilesDatasetProperties() instanceof SnowflakeStagedFilesDatasetProperties))
+        {
+            throw new IllegalStateException("SnowflakeStagedFilesDatasetProperties expected");
+        }
+        SnowflakeStagedFilesDatasetProperties snowflakeStagedFilesDatasetProperties = (SnowflakeStagedFilesDatasetProperties) stagedFilesDataset.stagedFilesDatasetProperties();
+        if (!snowflakeStagedFilesDatasetProperties.fileFormat().isPresent() || !(snowflakeStagedFilesDatasetProperties.fileFormat().get() instanceof StandardFileFormat))
+        {
+            throw new IllegalStateException("StandardFileFormat expected");
+        }
+        StandardFileFormat standardFileFormat = (StandardFileFormat) snowflakeStagedFilesDatasetProperties.fileFormat().get();
+        if (!standardFileFormat.formatType().equals(FileFormatType.CSV))
+        {
+            throw new IllegalStateException("CSV format expected");
+        }
+        return standardFileFormat.formatOptions();
+    }
+
+    private List<DataError> performDryRunWithValidationQueries(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount, CaseConversion caseConversion)
+    {
+        executor.executePhysicalPlan(dryRunSqlPlan);
+
+        int dataErrorsTotalCount = 0;
+        Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory = new HashMap<>();
+        for (ValidationCategory validationCategory : ValidationCategory.values())
+        {
+            dataErrorsByCategory.put(validationCategory, new LinkedList<>());
+        }
+
+        List<String> allFields = datasets.stagingDataset().schemaReference().fieldValues().stream().map(FieldValue::fieldName).collect(Collectors.toList());
+
+        List<Pair<Set<FieldValue>, SqlPlan>> queriesForNull = dryRunValidationSqlPlan.getOrDefault(NULL_VALUE, new ArrayList<>());
+        List<Pair<Set<FieldValue>, SqlPlan>> queriesForDatatype = dryRunValidationSqlPlan.getOrDefault(TYPE_CONVERSION, new ArrayList<>());
+
+        // Execute queries for null values
+        dataErrorsTotalCount += findNullValuesDataErrors(executor, queriesForNull, dataErrorsByCategory, allFields, caseConversion);
+        // Execute queries for datatype conversion
+        for (Pair<Set<FieldValue>, SqlPlan> pair : queriesForDatatype)
+        {
+            List<TabularData> results = executor.executePhysicalPlanAndGetResults(pair.getTwo());
+            if (!results.isEmpty())
+            {
+                List<Map<String, Object>> resultSets = results.get(0).getData();
+                for (Map<String, Object> row : resultSets)
+                {
+                    // This loop will only be executed once as there is always only one element in the set
+                    for (String column : pair.getOne().stream().map(FieldValue::fieldName).collect(Collectors.toSet()))
+                    {
+                        DataError dataError = constructDataError(allFields, row, TYPE_CONVERSION, column, caseConversion);
+                        dataErrorsByCategory.get(TYPE_CONVERSION).add(dataError);
+                        dataErrorsTotalCount++;
+                    }
+                }
+            }
+        }
+
+        return getDataErrorsWithFairDistributionAcrossCategories(sampleRowCount, dataErrorsTotalCount, dataErrorsByCategory);
+    }
+
     @Override
-    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, String> placeHolderKeyValues)
+    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, PlaceholderValue> placeHolderKeyValues)
     {
         List<TabularData> results = executor.executePhysicalPlanAndGetResults(ingestSqlPlan, placeHolderKeyValues);
         List<Map<String, Object>> resultSets = results.get(0).getData();
-        List<String> dataFilePathsWithFailedBulkLoad = new ArrayList<>();
+        List<String> dataFilePathsWithErrors = new ArrayList<>();
 
         long totalFilesLoaded = 0;
         long totalRowsLoaded = 0;
         long totalRowsWithError = 0;
+        List<String> errorMessages = new ArrayList<>();
 
         for (Map<String, Object> row: resultSets)
         {
-            Object bulkLoadStatus = row.get(BULK_LOAD_STATUS);
-            Object filePath = row.get(FILE);
-            if (Objects.nonNull(bulkLoadStatus) && bulkLoadStatus.equals(LOADED))
+            Optional<String> bulkLoadStatus = getString(row, BULK_LOAD_STATUS);
+            Optional<String> filePath = getString(row, FILE);
+            if (bulkLoadStatus.isPresent() && filePath.isPresent())
             {
-                totalFilesLoaded++;
-                totalRowsLoaded += (Long) row.get(ROWS_LOADED);
+                if (bulkLoadStatus.get().equals(LOADED))
+                {
+                    totalFilesLoaded++;
+                }
+                else
+                {
+                    // if partially loaded or load failed
+                    dataFilePathsWithErrors.add(filePath.get());
+                    errorMessages.add(getErrorMessage(row));
+                }
             }
 
-            if (Objects.nonNull(bulkLoadStatus) && !bulkLoadStatus.equals(LOADED) && Objects.nonNull(filePath))
+            Optional<Long> rowsWithError = getLong(row, ERRORS_SEEN);
+            if (rowsWithError.isPresent())
             {
-                dataFilePathsWithFailedBulkLoad.add(filePath.toString());
+                totalRowsWithError += rowsWithError.get();
             }
 
-            Object rowsWithError = row.get(ERRORS_SEEN);
-            if (Objects.nonNull(rowsWithError))
+            Optional<Long> rowsLoaded = getLong(row, ROWS_LOADED);
+            if (rowsLoaded.isPresent())
             {
-                totalRowsWithError += (Long) row.get(ERRORS_SEEN);
+                totalRowsLoaded += rowsLoaded.get();
             }
         }
 
@@ -265,11 +541,11 @@ public class SnowflakeSink extends AnsiSqlSink
         IngestorResult.Builder resultBuilder = IngestorResult.builder()
             .updatedDatasets(datasets)
             .putAllStatisticByName(stats)
-            .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
-            .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null));
+            .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN).value())
+            .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN).value()) : null));
         IngestorResult result;
 
-        if (dataFilePathsWithFailedBulkLoad.isEmpty())
+        if (dataFilePathsWithErrors.isEmpty())
         {
             result = resultBuilder
                 .status(IngestStatus.SUCCEEDED)
@@ -277,7 +553,8 @@ public class SnowflakeSink extends AnsiSqlSink
         }
         else
         {
-            String errorMessage = String.format("Unable to bulk load these files: %s", String.join(",", dataFilePathsWithFailedBulkLoad));
+            String errorMessage = "Errors encountered: " + String.join(",", errorMessages);
+            LOGGER.error(errorMessage);
             result = resultBuilder
                 .status(IngestStatus.FAILED)
                 .message(errorMessage)
@@ -286,4 +563,23 @@ public class SnowflakeSink extends AnsiSqlSink
         return result;
     }
 
+    private String getErrorMessage(Map<String, Object> row)
+    {
+        Map<String, Object> errorInfoMap = new HashMap<>();
+        errorInfoMap.put(FILE, row.get(FILE));
+        errorInfoMap.put(BULK_LOAD_STATUS, row.get(BULK_LOAD_STATUS));
+        errorInfoMap.put(ERRORS_SEEN, row.get(ERRORS_SEEN));
+        errorInfoMap.put(FIRST_ERROR, row.get(FIRST_ERROR));
+        errorInfoMap.put(FIRST_ERROR_COLUMN_NAME, row.get(FIRST_ERROR_COLUMN_NAME));
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        try
+        {
+            return objectMapper.writeValueAsString(errorInfoMap);
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
 }

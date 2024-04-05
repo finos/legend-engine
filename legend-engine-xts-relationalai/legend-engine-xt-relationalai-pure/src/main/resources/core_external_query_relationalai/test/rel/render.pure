@@ -1,9 +1,9 @@
-import meta::rel::metamodel::render::expr::*;
-import meta::rel::metamodel::render::program::*;
-import meta::rel::metamodel::*;
+import meta::external::store::rel::metamodel::render::expr::*;
+import meta::external::store::rel::metamodel::render::program::*;
+import meta::external::store::rel::metamodel::*;
 
 
-function <<test.Test>> meta::rel::test::metamodel::render::testSimpleRendering(): Any[*] {
+function <<test.Test>> meta::external::store::rel::test::metamodel::render::testSimpleRendering(): Any[*] {
   assertEquals(
     '1',
     const(1)->renderExpr()
@@ -40,7 +40,7 @@ function <<test.Test>> meta::rel::test::metamodel::render::testSimpleRendering()
   );
 }
 
-function <<test.Test>> meta::rel::test::metamodel::render::testExprRendering(): Any[*] {
+function <<test.Test>> meta::external::store::rel::test::metamodel::render::testExprRendering(): Any[*] {
   assertEquals(
     'edge',
     rel('edge')->renderExpr()
@@ -92,7 +92,7 @@ function <<test.Test>> meta::rel::test::metamodel::render::testExprRendering(): 
 }
 
 
-function <<test.Test>> meta::rel::test::metamodel::render::testDefRendering(): Any[*] {
+function <<test.Test>> meta::external::store::rel::test::metamodel::render::testDefRendering(): Any[*] {
   assertEquals(
     'def edge = {(1, 2); (2, 3)}',
     def(rel('edge'), relation([
@@ -132,7 +132,7 @@ function <<test.Test>> meta::rel::test::metamodel::render::testDefRendering(): A
   );
 }
 
-function <<test.Test>> meta::rel::test::metamodel::render::testICRendering(): Any[*] {
+function <<test.Test>> meta::external::store::rel::test::metamodel::render::testICRendering(): Any[*] {
   assertEquals(
     'ic test_ic {\n' + 
       'employee(_, name) implies String(name)\n' + 

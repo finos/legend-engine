@@ -22,8 +22,6 @@ import meta::pure::functions::io::http::*;
 import meta::pure::test::*;
 import meta::pure::store::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 import meta::external::store::elasticsearch::executionTest::testCase::*;
 import meta::external::store::elasticsearch::executionTest::test::*;
 import meta::external::store::elasticsearch::executionTest::utils::*;
@@ -246,7 +244,7 @@ function meta::external::store::elasticsearch::executionTest::testCase::execute(
   let resultJson = meta::legend::execute(
       $f,
       $vars,
-      ^ExecutionContext(),
+      ^meta::pure::runtime::ExecutionContext(),
       $config.extension
   );
 

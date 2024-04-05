@@ -869,6 +869,28 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    ];\n" +
                 "  }\n" +
                 "}\n", "COMPILATION error at [28:68-71]: Can't find a match for function 'from(class[*],Runtime[1],Mapping[1])'");
+
+        // test the assert with toOne compiles
+        test(resource + "###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName', 'ownerName2'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::class.all()->graphFetch(#{test::class{prop1}}#);\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "        { [], res: meta::pure::mapping::Result[1]|$res.values->toOne()->size() == 1 }\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
     }
 
     @Test
@@ -2467,7 +2489,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "COMPILATION error at [110:9-135:9]: Multiple assertions found with ids : 'assert1'"
         );
 
-        //Multiple Test data with same connection ids
+        //Should no longer throw errors. Correctly aggregates under listed connection
         test(resource + "###Service\n" +
                         "Service test::service::FirmService\n" +
                         "{\n" +
@@ -2528,8 +2550,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "      ]\n" +
                         "    }\n" +
                         "  ]\n" +
-                        "}\n",
-                "COMPILATION error at [108:7-125:7]: Multiple connection test data found with ids : 'connection1'"
+                        "}\n"
         );
 
         // Mis-match between parameter type & parameter value

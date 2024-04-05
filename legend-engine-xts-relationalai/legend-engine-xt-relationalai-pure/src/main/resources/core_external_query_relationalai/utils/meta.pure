@@ -1,12 +1,12 @@
-import meta::rel::utils::meta::*;
+import meta::external::store::rel::utils::meta::*;
 
-function meta::rel::utils::meta::primitiveProperties(class: Class<Any>[1]): Property<Nil, Any|*>[*] {
+function meta::external::store::rel::utils::meta::primitiveProperties(class: Class<Any>[1]): Property<Nil, Any|*>[*] {
   $class
     .properties
     ->filter(property | $property->isPrimitiveValueProperty();)
 }
 
-function meta::rel::utils::meta::complexProperties(class: Class<Any>[1]): Property<Nil, Any|*>[*] {
+function meta::external::store::rel::utils::meta::complexProperties(class: Class<Any>[1]): Property<Nil, Any|*>[*] {
   $class
     .propertiesFromAssociations
     ->concatenate(

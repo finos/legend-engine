@@ -65,7 +65,7 @@ class SchemaEvolutionTest extends BaseTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ADD_COLUMN);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
 
         // ------------ Perform Pass1 (Schema Evolution) ------------------------
         String dataPass1 = basePathForInput + "add_column_data_pass1.csv";
@@ -117,7 +117,7 @@ class SchemaEvolutionTest extends BaseTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_CONVERSION);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
 
         // ------------ Perform Pass1 (Schema Evolution) ------------------------
         String dataPass1 = basePathForInput + "data_type_conversion_data_pass1.csv";
@@ -170,7 +170,7 @@ class SchemaEvolutionTest extends BaseTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
 
         // ------------ Perform Pass1 (Schema Evolution) ------------------------
         String dataPass1 = basePathForInput + "datatype_type_size_change_data_pass1.csv";
@@ -225,7 +225,7 @@ class SchemaEvolutionTest extends BaseTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
 
         // ------------ Perform Pass1 (Schema Evolution) ------------------------
         String dataPass1 = basePathForInput + "column_nullability_change_data_pass1.csv";
@@ -279,7 +279,7 @@ class SchemaEvolutionTest extends BaseTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
 
         // ------------ Perform Pass1 (Schema Evolution) ------------------------
         String dataPass1 = basePathForInput + "data_type_conversion_and_column_nullability_change_data_pass1.csv";
@@ -334,7 +334,7 @@ class SchemaEvolutionTest extends BaseTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
 
         // ------------ Perform Pass1 (Schema Evolution) ------------------------
         String dataPass1 = basePathForInput + "data_type_conversion_and_data_type_size_change_data_pass1.csv";
@@ -388,7 +388,7 @@ class SchemaEvolutionTest extends BaseTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
 
         // ------------ Perform Pass1 (Schema Evolution) ------------------------
         String dataPass1 = basePathForInput + "make_main_column_nullable_data_pass1.csv";

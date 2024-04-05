@@ -16,7 +16,6 @@ import meta::pure::milestoning::*;
 import meta::pure::metamodel::dataSpace::*;
 import meta::pure::metamodel::dataSpace::analytics::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::functions::doc::*;
 
@@ -32,7 +31,7 @@ Class meta::pure::metamodel::dataSpace::analytics::DataSpaceCoverageAnalysisResu
   executionContexts: DataSpaceExecutionContextAnalysisResult[*];
 }
 
-function meta::pure::metamodel::dataSpace::analytics::analyzeDataSpace(dataSpace: DataSpace[1], allAvailableRuntimes: PackageableRuntime[*], returnLightGraph: Boolean[1]): DataSpaceAnalysisResult[1]
+function meta::pure::metamodel::dataSpace::analytics::analyzeDataSpace(dataSpace: DataSpace[1], allAvailableRuntimes: meta::pure::runtime::PackageableRuntime[*], returnLightGraph: Boolean[1]): DataSpaceAnalysisResult[1]
 {
   ^DataSpaceAnalysisResult
   (
@@ -42,7 +41,7 @@ function meta::pure::metamodel::dataSpace::analytics::analyzeDataSpace(dataSpace
   );
 }
 
-function meta::pure::metamodel::dataSpace::analytics::analyzeDataSpaceCoverage(dataSpace: DataSpace[1], allAvailableRuntimes: PackageableRuntime[*], returnLightGraph: Boolean[1]): DataSpaceCoverageAnalysisResult[1]
+function meta::pure::metamodel::dataSpace::analytics::analyzeDataSpaceCoverage(dataSpace: DataSpace[1], allAvailableRuntimes: meta::pure::runtime::PackageableRuntime[*], returnLightGraph: Boolean[1]): DataSpaceCoverageAnalysisResult[1]
 {
   ^DataSpaceCoverageAnalysisResult
   (
@@ -56,11 +55,11 @@ function meta::pure::metamodel::dataSpace::analytics::analyzeDataSpaceCoverage(d
 Class meta::pure::metamodel::dataSpace::analytics::DataSpaceExecutionContextAnalysisResult
 {
   name: String[1];
-  compatibleRuntimes: PackageableRuntime[*];
+  compatibleRuntimes: meta::pure::runtime::PackageableRuntime[*];
   mappingCoverage: meta::analytics::mapping::modelCoverage::MappingModelCoverageAnalysisResult[1];
 }
 
-function <<access.private>> meta::pure::metamodel::dataSpace::analytics::analyzeDataSpaceExecutionContexts(dataSpace: DataSpace[1], allAvailableRuntimes: PackageableRuntime[*], returnLightGraph: Boolean[1]): DataSpaceExecutionContextAnalysisResult[*]
+function <<access.private>> meta::pure::metamodel::dataSpace::analytics::analyzeDataSpaceExecutionContexts(dataSpace: DataSpace[1], allAvailableRuntimes: meta::pure::runtime::PackageableRuntime[*], returnLightGraph: Boolean[1]): DataSpaceExecutionContextAnalysisResult[*]
 {
   $dataSpace.executionContexts->map(context|^DataSpaceExecutionContextAnalysisResult(
     name = $context.name,
@@ -71,7 +70,7 @@ function <<access.private>> meta::pure::metamodel::dataSpace::analytics::analyze
 
 // NOTE: this compatibility check is fairly simple and only do static analysis on the runtimes
 // However, we could be more advanced and do some router analysis, etc.
-function <<access.private>> meta::pure::metamodel::dataSpace::analytics::getMappingCompatibleRuntimes(mappingToCheck: Mapping[1], runtimes: PackageableRuntime[*]): PackageableRuntime[*]
+function <<access.private>> meta::pure::metamodel::dataSpace::analytics::getMappingCompatibleRuntimes(mappingToCheck: Mapping[1], runtimes: meta::pure::runtime::PackageableRuntime[*]): meta::pure::runtime::PackageableRuntime[*]
 {
   $runtimes->removeDuplicates()->filter(runtime|isRuntimeCompatibleWithMapping($runtime, $mappingToCheck));
 }
@@ -81,7 +80,7 @@ function <<access.private>> meta::pure::metamodel::dataSpace::analytics::getAllI
    $mapping.includes.included->concatenate($mapping.includes->map(i | $i.included->getAllIncludedMappings()))->removeDuplicates();
 }
 
-function <<access.private>> meta::pure::metamodel::dataSpace::analytics::isRuntimeCompatibleWithMapping(runtime: PackageableRuntime[1], mappingToCheck: Mapping[1]): Boolean[1]
+function <<access.private>> meta::pure::metamodel::dataSpace::analytics::isRuntimeCompatibleWithMapping(runtime: meta::pure::runtime::PackageableRuntime[1], mappingToCheck: Mapping[1]): Boolean[1]
 {
   $runtime.runtimeValue.mappings
     ->map(mapping|[$mapping]->concatenate($mapping->getAllIncludedMappings())->removeDuplicates())

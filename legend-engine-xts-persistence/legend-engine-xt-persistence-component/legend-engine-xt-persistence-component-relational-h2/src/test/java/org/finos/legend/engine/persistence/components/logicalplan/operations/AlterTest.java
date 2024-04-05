@@ -33,6 +33,7 @@ import java.util.Optional;
 
 import static org.finos.legend.engine.persistence.components.TestUtils.alterColumn;
 import static org.finos.legend.engine.persistence.components.TestUtils.alterColumnName;
+import static org.finos.legend.engine.persistence.components.TestUtils.batchIdName;
 import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
 import static org.finos.legend.engine.persistence.components.TestUtils.expiryDateName;
 import static org.finos.legend.engine.persistence.components.TestUtils.idName;
@@ -70,7 +71,7 @@ class AlterTest extends BaseTest
 
         // Verify the new schema
         List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
-        List<String> expectedNewSchema = Arrays.asList(idName, nameName, incomeName, startTimeName, expiryDateName, digestName, alterColumnName);
+        List<String> expectedNewSchema = Arrays.asList(idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName, alterColumnName);
         String expectedPath = basePath + "expected/add_expected_pass.csv";
         TestUtils.assertTableColumnsEquals(expectedNewSchema, actualTableData);
         TestUtils.assertFileAndTableDataEquals(expectedNewSchema.toArray(new String[]{}), expectedPath, actualTableData);
@@ -101,7 +102,7 @@ class AlterTest extends BaseTest
 
         // Verify the new schema
         List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
-        List<String> expectedNewSchema = Arrays.asList(idName, nameName, incomeName, startTimeName, expiryDateName, digestName);
+        List<String> expectedNewSchema = Arrays.asList(idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName);
         String expectedPath = basePath + "expected/change_type_expected_pass.csv";
         TestUtils.assertTableColumnsEquals(expectedNewSchema, actualTableData);
         TestUtils.assertFileAndTableDataEquals(expectedNewSchema.toArray(new String[]{}), expectedPath, actualTableData);
@@ -135,7 +136,7 @@ class AlterTest extends BaseTest
 
         // Verify the new schema
         List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
-        List<String> expectedNewSchema = Arrays.asList(idName, nameName, incomeName, startTimeName, expiryDateName, digestName);
+        List<String> expectedNewSchema = Arrays.asList(idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName);
         String expectedPath = basePath + "expected/nullable_column_expected_pass.csv";
         TestUtils.assertTableColumnsEquals(expectedNewSchema, actualTableData);
         TestUtils.assertFileAndTableDataEquals(expectedNewSchema.toArray(new String[]{}), expectedPath, actualTableData);
@@ -147,9 +148,9 @@ class AlterTest extends BaseTest
     private void insertMainData(String path) throws Exception
     {
         validateFileExists(path);
-        String loadSql = "INSERT INTO \"TEST\".\"main\"(id, name, income, start_time ,expiry_date, digest) " +
-            "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", INT), CONVERT(\"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE) ,  \"digest\"" +
-            " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest', NULL )";
+        String loadSql = "INSERT INTO \"TEST\".\"main\"(id, name, income, start_time , expiry_date, digest, batch_id) " +
+            "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", INT), CONVERT(\"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE) ,  \"digest\", CONVERT(\"batch_id\", INT)" +
+            " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest, batch_id', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 }

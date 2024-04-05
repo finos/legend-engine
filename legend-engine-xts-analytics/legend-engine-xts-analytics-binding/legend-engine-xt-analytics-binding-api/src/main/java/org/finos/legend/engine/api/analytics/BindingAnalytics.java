@@ -24,12 +24,14 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.api.analytics.model.BindingModelCoverageAnalysisInput;
-import org.finos.legend.engine.external.shared.format.imports.PureModelContextDataGenerator;
+import org.finos.legend.engine.language.pure.compiler.fromPureGraph.PureModelContextDataGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
@@ -74,8 +76,9 @@ public class BindingAnalytics
                                                 @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, profiles);
-        PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, profiles, null);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, identity);
+        PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, identity, null);
         Root_meta_external_format_shared_binding_Binding binding = (Root_meta_external_format_shared_binding_Binding) pureModel.getPackageableElement(input.binding);
         RichIterable<? extends Root_meta_external_format_shared_binding_Binding> bindings = Lists.immutable.of(binding);
 
@@ -90,11 +93,11 @@ public class BindingAnalytics
                 {
                     builder.addElement(Objects.requireNonNull(pureModelContextData.getElements().stream().filter(el -> input.binding.equals(el.getPath())).findFirst().get()));
                 }
-                return ManageConstantResult.manageResult(profiles, builder.build().combine(classes), objectMapper);
+                return ManageConstantResult.manageResult(identity.getName(), builder.build().combine(classes), objectMapper);
             }
             catch (Exception e)
             {
-                return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, profiles);
+                return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, identity.getName());
             }
         }
     }

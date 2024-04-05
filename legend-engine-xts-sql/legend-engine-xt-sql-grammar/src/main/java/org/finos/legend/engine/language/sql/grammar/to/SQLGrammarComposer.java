@@ -87,7 +87,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(AliasedRelation val)
             {
-                return visit(val.relation) + " AS " + val.alias;
+                return visit(val.relation) + " AS " + quoteIfNeeded(val.alias);
             }
 
             @Override
@@ -105,6 +105,7 @@ public class SQLGrammarComposer
                 String orderBy = val.orderBy != null && !val.orderBy.isEmpty()
                         ? " ORDER BY " + visit(val.orderBy, ", ")
                         : "";
+
                 return String.join(".", val.name.parts) + "(" + args + orderBy + ")" + group + window;
             }
 
@@ -170,6 +171,7 @@ public class SQLGrammarComposer
                 String left = val.left.accept(this);
                 String right = val.right.accept(this);
                 String operator = comparator.get(val.operator);
+
                 if (operator == null)
                 {
                     throw new IllegalArgumentException("Unknown operator: " + val.operator);
@@ -212,9 +214,15 @@ public class SQLGrammarComposer
             }
 
             @Override
-            public String visit(ParameterExpression val)
+            public String visit(PositionalParameterExpression val)
             {
                 return "$" + val.index;
+            }
+
+            @Override
+            public String visit(ParameterPlaceholderExpression val)
+            {
+                return "?";
             }
 
             @Override
@@ -415,8 +423,8 @@ public class SQLGrammarComposer
             @Override
             public String visit(QualifiedNameReference val)
             {
-                //TODO quote if needed
-                return String.join(".", val.name.parts);
+                String value = String.join(".", val.name.parts);
+                return quoteIfNeeded(value);
             }
 
             @Override
@@ -474,7 +482,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(SingleColumn val)
             {
-                return val.expression.accept(this) + (val.alias == null ? "" : " AS " + val.alias);
+                return val.expression.accept(this) + (val.alias == null ? "" : " AS " + quoteIfNeeded(val.alias));
             }
 
             @Override
@@ -558,6 +566,11 @@ public class SQLGrammarComposer
                 return nodes.stream()
                         .map(node -> node.accept(this))
                         .collect(Collectors.joining(delimiter));
+            }
+
+            private String quoteIfNeeded(String value)
+            {
+                return value.contains(" ") ? "\"" + value + "\"" : value;
             }
         });
     }

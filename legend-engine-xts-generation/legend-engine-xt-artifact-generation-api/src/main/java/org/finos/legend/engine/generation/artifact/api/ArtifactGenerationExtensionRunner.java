@@ -17,14 +17,13 @@ package org.finos.legend.engine.generation.artifact.api;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.generation.artifact.ArtifactGenerationFactory;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 public class ArtifactGenerationExtensionRunner
 {
@@ -37,17 +36,17 @@ public class ArtifactGenerationExtensionRunner
         this.modelManager = modelManager;
     }
 
-    public ArtifactGenerationExtensionOutput run(ArtifactGenerationExtensionInput artifactGenerationExtensionInput, MutableList<CommonProfile> pm)
+    public ArtifactGenerationExtensionOutput run(ArtifactGenerationExtensionInput artifactGenerationExtensionInput, Identity identity)
     {
         String clientVersion = artifactGenerationExtensionInput.clientVersion == null ? PureClientVersions.production : artifactGenerationExtensionInput.clientVersion;
-        PureModelContextData mainModel = this.modelManager.loadData(artifactGenerationExtensionInput.model, clientVersion, pm);
+        PureModelContextData mainModel = this.modelManager.loadData(artifactGenerationExtensionInput.model, clientVersion, identity);
 
         List<PackageableElement> elementList = Lists.mutable.empty();
         if (artifactGenerationExtensionInput.includeElementPaths != null)
         {
             elementList = mainModel.getElements().stream().filter(element -> artifactGenerationExtensionInput.includeElementPaths.contains(element.getPath())).collect(Collectors.toList());
         }
-        PureModel pureModel = this.modelManager.loadModel(mainModel, artifactGenerationExtensionInput.clientVersion, pm, null);
+        PureModel pureModel = this.modelManager.loadModel(mainModel, artifactGenerationExtensionInput.clientVersion, identity, null);
         ArtifactGenerationFactory factory = ArtifactGenerationFactory.newFactory(pureModel, mainModel, elementList, artifactGenerationExtensionInput.excludedExtensionKeys);
         return ArtifactGenerationExtensionOutput.fromFactoryResults(factory.generate(), pureModel);
     }

@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-json</artifactId>
-        <version>4.37.3-SNAPSHOT</version>
+        <version>4.42.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -58,10 +58,6 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-modelManager</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-compiler</artifactId>
         </dependency>
         <dependency>
@@ -74,35 +70,6 @@
         </dependency>
         <!-- ENGINE -->
 
-        <!-- ANNOTATIONS -->
-        <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-annotations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.inject</groupId>
-            <artifactId>javax.inject</artifactId>
-        </dependency>
-        <!-- ANNOTATIONS -->
-
-        <!-- JACKSON -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-        </dependency>
-        <!-- JACKSON -->
 
         <!-- ECLIPSE COLLECTIONS -->
         <dependency>
@@ -115,34 +82,12 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
-        <!-- OPEN TRACING -->
+        <!-- JACKSON -->
         <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-util</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-api</artifactId>
-        </dependency>
-        <!-- OPEN TRACING -->
-
-        <!-- LOG -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <!-- LOG -->
-
-        <!-- PAC4J -->
-        <dependency>
-            <groupId>org.pac4j.jax-rs</groupId>
-            <artifactId>core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- PAC4J -->
+        <!-- JACKSON -->
 
         <!-- TEST -->
         <dependency>

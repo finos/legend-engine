@@ -71,6 +71,7 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
         boolean isAuditingFieldPK = doesDatasetContainsAnyPK(mainSchemaFields);
         appendOnly.auditing().accept(new EnrichSchemaWithAuditing(mainSchemaFields, isAuditingFieldPK));
         appendOnly.digestGenStrategy().accept(IngestModeVisitors.EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY).ifPresent(digest -> addDigestField(mainSchemaFields, digest));
+        addBatchIdField(mainSchemaFields, appendOnly.batchIdField());
         removeDataSplitField(appendOnly.dataSplitField());
         return mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.addAllFields(mainSchemaFields).build()).build();
     }
@@ -81,6 +82,7 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
         removeDataSplitField(nontemporalSnapshot.dataSplitField());
         boolean isAuditingFieldPK = doesDatasetContainsAnyPK(mainSchemaFields);
         nontemporalSnapshot.auditing().accept(new EnrichSchemaWithAuditing(mainSchemaFields, isAuditingFieldPK));
+        addBatchIdField(mainSchemaFields, nontemporalSnapshot.batchIdField());
         return mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.addAllFields(mainSchemaFields).build()).build();
     }
 
@@ -91,6 +93,7 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
         removeDataSplitField(nontemporalDelta.dataSplitField());
         nontemporalDelta.mergeStrategy().accept(new EnrichSchemaWithMergeStrategy(mainSchemaFields));
         nontemporalDelta.auditing().accept(new EnrichSchemaWithAuditing(mainSchemaFields, true));
+        addBatchIdField(mainSchemaFields, nontemporalDelta.batchIdField());
         return mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.addAllFields(mainSchemaFields).build()).build();
     }
 
@@ -136,12 +139,7 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
     public Dataset visitBulkLoad(BulkLoadAbstract bulkLoad)
     {
         bulkLoad.digestGenStrategy().accept(IngestModeVisitors.EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY).ifPresent(digest -> addDigestField(mainSchemaFields, digest));
-        Field batchIdField = Field.builder()
-                .name(bulkLoad.batchIdField())
-                .type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty()))
-                .primaryKey(false)
-                .build();
-        mainSchemaFields.add(batchIdField);
+        addBatchIdField(mainSchemaFields, bulkLoad.batchIdField());
         bulkLoad.auditing().accept(new EnrichSchemaWithAuditing(mainSchemaFields, false));
         return mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.addAllFields(mainSchemaFields).build()).build();
     }
@@ -165,6 +163,12 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
                     .build();
             schemaFields.add(digest);
         }
+    }
+
+    public static void addBatchIdField(List<Field> schemaFields, String batchIdFieldName)
+    {
+        Field batchIdField = getBatchIdField(batchIdFieldName, false);
+        schemaFields.add(batchIdField);
     }
 
     private boolean doesDatasetContainsAnyPK(List<Field> mainSchemaFields)
@@ -330,5 +334,4 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
                 .primaryKey(isPrimary)
                 .build();
     }
-
 }

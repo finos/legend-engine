@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::join::*;
@@ -54,7 +53,7 @@ function meta::relational::postProcessor::reAliasColumnName::lengthConfig(runtim
 {
   let type =  $runtime.connectionStores.connection->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection).type;
 
-  let length = $type->cast(@DatabaseType)->toOne()->createDbConfig([]).dbExtension.aliasLimit;
+  let length = $type->cast(@DatabaseType)->distinct()->toOne('Provided runtime has multiple database connections of different types')->createDbConfig([]).dbExtension.aliasLimit;
   if($length->isEmpty(),
      | fail('Db not configured for column rename');0;,
      | $length
@@ -65,6 +64,14 @@ function  meta::relational::postProcessor::reAliasColumnName::search(q:Relationa
 {
    $q->map(r| $r->match([
                     v:ViewSelectSQLQuery[1]|$v.selectSQLQuery->search($runtime);,
+                    c:CommonTableExpression[1] | $c.sqlQuery->search($runtime),
+                    s:SelectSQLQueryWithCommonTableExpressions[1] | let dataProcessed = if($s.data->isNotEmpty(), | $s.data->toOne()->search($runtime), | []);
+                                                                    let cols = $s.columns;
+                                                                    let cteSearch = $s.commonTableExpressions->fold({c, res |
+                                                                      $res->concatenate($c->search($runtime));
+                                                                      }, []);
+                                                                    $dataProcessed->concatenate($cols->search($runtime))->concatenate($s.filteringOperation->search($runtime))->concatenate($cteSearch);,
+
                     s:SelectSQLQuery[1]|  let dataProcessed = if($s.data->isNotEmpty(), | $s.data->toOne()->search($runtime), | []);
                                           let cols = $s.columns;
                                           $dataProcessed->concatenate($cols->search($runtime))

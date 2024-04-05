@@ -14,9 +14,7 @@
 
 import meta::pure::executionPlan::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::lineage::scanRelations::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::lineage::scanProject::*;
 import meta::pure::lineage::scanColumns::*;
@@ -300,7 +298,7 @@ function <<access.private>> meta::analytics::lineage::flowDatabase::getTables(r:
 
 function <<access.private>> meta::analytics::lineage::flowDatabase::getTables(r:RelationalOperationElement[*]):NamedRelation[*]
 {
-   $r->meta::relational::functions::pureToSqlQuery::extractTableAliasColumns().alias.relationalElement->cast(@NamedRelation)->map(nr|$nr->match([
+   $r->meta::relational::functions::pureToSqlQuery::extractTableAliasColumns().alias.relationalElement->cast(@NamedRelation)->removeDuplicates()->map(nr|$nr->match([
       v:View[1]|$v->mainTable()
                   ->concatenate($v.filter.joinTreeNode.join.operation->meta::analytics::lineage::flowDatabase::getTables())
                   ->concatenate($v.filter.filter.operation->meta::analytics::lineage::flowDatabase::getTables())

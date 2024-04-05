@@ -25,7 +25,6 @@ import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::metamodel::*;
 
 function meta::relational::postProcessor::getObjectReferenceStoreType():String[1]
@@ -33,12 +32,11 @@ function meta::relational::postProcessor::getObjectReferenceStoreType():String[1
    'Relational'
 }
 
-function meta::relational::postProcessor::processObjectReferenceInOperation(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
+function meta::relational::postProcessor::processObjectReferenceInOperation(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
 {
    let connectionPre = $runtime->connectionByElement($store->toOne());
-   let connectionStorePre = $runtime.connectionStores->filter(c|$c.connection==$connectionPre)->toOne();
+   let connectionStorePre = $runtime.connectionStores->filter(c|$c.connection==$connectionPre);
    let connection = $connectionPre->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection);
-   let connectionStore = ^$connectionStorePre(connection=$connection);
    let tempTableNamePrefix     = 'tempTableForObjectReferenceIn_';
    let columnName              = 'ObjectReferenceInCollectionColumn';
 

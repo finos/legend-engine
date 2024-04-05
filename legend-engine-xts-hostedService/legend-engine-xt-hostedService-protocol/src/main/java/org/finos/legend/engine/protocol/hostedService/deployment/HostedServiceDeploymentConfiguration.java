@@ -18,5 +18,8 @@ import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionAct
 
 public class HostedServiceDeploymentConfiguration extends FunctionActivatorDeploymentConfiguration
 {
-
+    public HostedServiceDestination destination;
+    public String domain;
+    public int port;
+    public String path;
 }

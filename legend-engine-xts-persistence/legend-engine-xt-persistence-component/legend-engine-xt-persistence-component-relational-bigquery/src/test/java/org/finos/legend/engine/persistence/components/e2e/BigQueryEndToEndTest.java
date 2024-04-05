@@ -21,7 +21,6 @@ import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.InsertAllRequest;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableId;
-import com.opencsv.CSVReader;
 import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
@@ -51,6 +50,7 @@ import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.junit.jupiter.api.Assertions;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -100,6 +100,7 @@ public class BigQueryEndToEndTest
     // and for getting the service account credential, refer https://cloud.google.com/iam/docs/keys-create-delete
     protected final String projectId = "dummy-value";
     protected final String credentialPath = "dummy-value";
+    public static String COMMA_DELIMITER = ",";
 
     protected SchemaDefinition stagingSchema = SchemaDefinition.builder()
             .addFields(id) // PK
@@ -200,9 +201,10 @@ public class BigQueryEndToEndTest
         List<String> milestoningSqlList = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
         List<String> postActionsSql = operations.postActionsSql();
+        List<String> postCleanupSql = operations.postCleanupSql();
 
         // Perform ingestion
-        ingest(preActionsSqlList, milestoningSqlList, metadataIngestSql, postActionsSql);
+        ingest(preActionsSqlList, milestoningSqlList, metadataIngestSql, postActionsSql, postCleanupSql);
     }
 
     void verifyStagingFilters(RelationalIngestor ingestor, RelationalConnection connection, Datasets datasets) throws JsonProcessingException
@@ -230,12 +232,13 @@ public class BigQueryEndToEndTest
         runQueries(Arrays.asList(sql));
     }
 
-    void ingest(List<String> preActionsSqlList, List<String> milestoningSqlList, List<String> metadataIngestSql, List<String> postActionsSql) throws IOException, InterruptedException
+    void ingest(List<String> preActionsSqlList, List<String> milestoningSqlList, List<String> metadataIngestSql, List<String> postActionsSql, List<String> postCleanupSql) throws IOException, InterruptedException
     {
         runQueries(preActionsSqlList);
         runQueries(milestoningSqlList);
         runQueries(metadataIngestSql);
         runQueries(postActionsSql);
+        runQueries(postCleanupSql);
     }
 
     void createTable(org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset stagingTable) throws InterruptedException, IOException
@@ -351,9 +354,16 @@ public class BigQueryEndToEndTest
 
     private static List<String[]> readCsvData(String path) throws IOException
     {
-        FileReader fileReader = new FileReader(path);
-        CSVReader csvReader = new CSVReader(fileReader);
-        List<String[]> lines = csvReader.readAll();
+        List<String[]> lines = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(path)))
+        {
+            String line;
+            while ((line = br.readLine()) != null)
+            {
+                String[] values = line.split(COMMA_DELIMITER);
+                lines.add(values);
+            }
+        }
         return lines;
     }
 

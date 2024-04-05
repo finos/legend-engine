@@ -1,0 +1,18 @@
+{
+  "port": 9998,
+  "metricsPort": 8802,
+  "authenticationMethod": "NO_PASSWORD",
+  "identityType": "ANONYMOUS",
+  "handler": {
+    "className": "org.finos.legend.engine.postgres.config.StaticHandlerConfig",
+    "result": "legend-engine-xt-sql-postgres-server/src/test/resources/legendTdsResult.json",
+    "schema": "legend-engine-xt-sql-postgres-server/src/test/resources/legendTdsSchema.json",
+    "delay": 1000,
+    "type": "STATIC"
+  },
+  "otelConfig": {
+    "zipkinEndpoint": "http://localhost:9411/api/v2/spans",
+    "serviceName": "legend-postgres-sql"
+  },
+  "logConfigFile": "legend-engine-xt-sql-postgres-server/src/test/resources/logback-test.xml"
+}

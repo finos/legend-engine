@@ -73,7 +73,6 @@ public class WindowFunction extends Value
     @Override
     public void genSqlWithoutAlias(StringBuilder builder) throws SqlDomException
     {
-        validate();
         function.genSqlWithoutAlias(builder);
         builder.append(WHITE_SPACE);
         builder.append(OVER);
@@ -81,7 +80,7 @@ public class WindowFunction extends Value
 
         builder.append(OPEN_PARENTHESIS);
         // Add Partition By
-        if (partitionByFields != null)
+        if (partitionByFields != null && !partitionByFields.isEmpty())
         {
             builder.append(PARTITION_BY.get() + WHITE_SPACE);
             for (int ctr = 0; ctr < partitionByFields.size(); ctr++)
@@ -120,14 +119,6 @@ public class WindowFunction extends Value
         else if (node instanceof Field)
         {
             partitionByFields.add((Field) node);
-        }
-    }
-
-    void validate() throws SqlDomException
-    {
-        if ((partitionByFields == null || partitionByFields.isEmpty()) && (orderByFields == null || orderByFields.isEmpty()))
-        {
-            throw new SqlDomException("Both partitionByFields and orderByFields are empty");
         }
     }
 }

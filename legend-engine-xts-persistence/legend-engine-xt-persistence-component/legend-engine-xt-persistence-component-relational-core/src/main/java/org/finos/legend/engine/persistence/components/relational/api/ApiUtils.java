@@ -31,24 +31,28 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFac
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetsCaseConverter;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.planner.Planner;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
-import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MAX_OF_FIELD;
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MIN_OF_FIELD;
+import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_STAGING_FILTERS;
 
 public class ApiUtils
 {
-    private static final String LOCK_INFO_DATASET_SUFFIX = "_legend_persistence_lock";
+    public static final String LOCK_INFO_DATASET_SUFFIX = "_legend_persistence_lock";
 
     public static Dataset deriveMainDatasetFromStaging(Datasets datasets, IngestMode ingestMode)
     {
@@ -65,12 +69,10 @@ public class ApiUtils
     {
         DatasetsCaseConverter converter = new DatasetsCaseConverter();
         MetadataDataset metadataDataset = datasets.metadataDataset().orElse(MetadataDataset.builder().build());
-        BulkLoadMetadataDataset bulkLoadMetadataDataset = datasets.bulkLoadMetadataDataset().orElse(BulkLoadMetadataDataset.builder().build());
         LockInfoDataset lockInfoDataset = getLockInfoDataset(datasets);
         Datasets enrichedDatasets = datasets
                 .withMetadataDataset(metadataDataset)
-                .withLockInfoDataset(lockInfoDataset)
-                .withBulkLoadMetadataDataset(bulkLoadMetadataDataset);
+                .withLockInfoDataset(lockInfoDataset);
         if (caseConversion == CaseConversion.TO_UPPER)
         {
             return converter.applyCase(enrichedDatasets, String::toUpperCase);
@@ -117,17 +119,14 @@ public class ApiUtils
     }
 
     public static Optional<Long> getNextBatchId(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
-                                          Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode)
+                                          Transformer<SqlGen, SqlPlan> transformer)
     {
-        if (ingestMode.accept(IngestModeVisitors.IS_INGEST_MODE_TEMPORAL) || ingestMode instanceof BulkLoad)
+        LogicalPlan logicalPlanForNextBatchId = LogicalPlanFactory.getLogicalPlanForNextBatchId(datasets);
+        List<TabularData> tabularData = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForNextBatchId));
+        Optional<Object> nextBatchId = getFirstColumnValue(getFirstRowForFirstResult(tabularData));
+        if (nextBatchId.isPresent())
         {
-            LogicalPlan logicalPlanForNextBatchId = LogicalPlanFactory.getLogicalPlanForNextBatchId(datasets, ingestMode);
-            List<TabularData> tabularData = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForNextBatchId));
-            Optional<Object> nextBatchId = getFirstColumnValue(getFirstRowForFirstResult(tabularData));
-            if (nextBatchId.isPresent())
-            {
-                return retrieveValueAsLong(nextBatchId.get());
-            }
+            return retrieveValueAsLong(nextBatchId.get());
         }
         return Optional.empty();
     }
@@ -165,13 +164,13 @@ public class ApiUtils
                 .findFirst()
                 .map(TabularData::getData)
                 .flatMap(t -> t.stream().findFirst())
-                .map(stringObjectMap -> (String) stringObjectMap.get(metadataDataset.stagingFiltersField()));
+                .map(stringObjectMap -> (String) stringObjectMap.get(metadataDataset.batchSourceInfoField()));
 
         // Convert map of Filters to List of Filters
         if (stagingFilters.isPresent())
         {
-            Map<String, Map<String, Object>> datasetFiltersMap = new ObjectMapper().readValue(stagingFilters.get(), new TypeReference<Map<String, Map<String, Object>>>() {});
-            for (Map.Entry<String, Map<String, Object>> filtersMapEntry : datasetFiltersMap.entrySet())
+            Map<String, Map<String, Map<String, Object>>> datasetFiltersMap = new ObjectMapper().readValue(stagingFilters.get(), new TypeReference<Map<String, Map<String, Map<String, Object>>>>() {});
+            for (Map.Entry<String, Map<String, Object>> filtersMapEntry : datasetFiltersMap.get(BATCH_SOURCE_INFO_STAGING_FILTERS).entrySet())
             {
                 for (Map.Entry<String, Object> filterEntry : filtersMapEntry.getValue().entrySet())
                 {
@@ -236,4 +235,85 @@ public class ApiUtils
         }
         return object;
     }
+
+    public static List<DataError> constructDataQualityErrors(Dataset stagingDataset, List<Map<String, Object>> dataErrors,
+                                                             ErrorCategory errorCategory, CaseConversion caseConversion, String errorField, String errorDetailsKey)
+    {
+        List<DataError> dataErrorList = new ArrayList<>();
+        List<String> allFields = stagingDataset.schemaReference().fieldValues().stream().map(FieldValue::fieldName).collect(Collectors.toList());
+        String caseCorrectedErrorField = convertCase(caseConversion, errorField);
+
+        for (Map<String, Object> dataError: dataErrors)
+        {
+            dataErrorList.add(DataError.builder()
+                    .errorMessage(errorCategory.getDefaultErrorMessage())
+                    .errorCategory(errorCategory)
+                    .errorRecord(buildErrorRecord(allFields, dataError))
+                    .putAllErrorDetails(buildErrorDetails(dataError, caseCorrectedErrorField, errorDetailsKey))
+                    .build());
+        }
+        return dataErrorList;
+    }
+
+    private static Map<String, Object> buildErrorDetails(Map<String, Object> dataError, String errorField, String errorDetailsKey)
+    {
+        Map<String, Object> errorDetails = new HashMap<>();
+        Object errorDetailsValue = dataError.get(errorField);
+        errorDetails.put(errorDetailsKey, errorDetailsValue);
+        return errorDetails;
+    }
+
+
+    public static String convertCase(CaseConversion caseConversion, String value)
+    {
+        switch (caseConversion)
+        {
+            case TO_UPPER:
+                return value.toUpperCase();
+            case TO_LOWER:
+                return value.toLowerCase();
+            default:
+                return value;
+        }
+    }
+
+    public static String buildErrorRecord(List<String> allColumns, Map<String, Object> row)
+    {
+        Map<String, Object> errorRecordMap = new HashMap<>();
+
+        for (String column : allColumns)
+        {
+            if (row.containsKey(column))
+            {
+                errorRecordMap.put(column, row.get(column));
+            }
+        }
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        try
+        {
+            return objectMapper.writeValueAsString(errorRecordMap);
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String removeLineBreaks(String str)
+    {
+        return str.replaceAll("\n", " ").replaceAll("\r", " ");
+    }
+
+    public static Optional<String> findToken(String message, String regex, int group)
+    {
+        Optional<String> token = Optional.empty();
+        Matcher matcher = Pattern.compile(regex).matcher(message);
+        if (matcher.find())
+        {
+            token = Optional.of(matcher.group(group));
+        }
+        return token;
+    }
+
 }

@@ -17,8 +17,9 @@ package org.finos.legend.engine.language.pure.grammar.to.data.contentPattern;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.extension.ContentWithType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.ContentPattern;
+import org.finos.legend.engine.shared.core.extension.LegendModuleSpecificExtension;
 
-public interface ContentPatternGrammarComposer
+public interface ContentPatternGrammarComposer  extends LegendModuleSpecificExtension
 {
     boolean supports(ContentPattern contentPattern);
 

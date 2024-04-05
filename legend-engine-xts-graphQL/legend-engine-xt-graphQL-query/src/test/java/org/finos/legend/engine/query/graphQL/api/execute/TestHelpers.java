@@ -14,14 +14,19 @@
 
 package org.finos.legend.engine.query.graphQL.api.execute;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Field;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.OperationDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.OperationType;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Selection;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.IntValue;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.ObjectField;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.ObjectValue;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class TestHelpers
@@ -40,5 +45,30 @@ public class TestHelpers
         operationDefinition.selectionSet = selectionList;
         Assert.assertFalse(GraphQLExecutionHelper.isARootField("abc", operationDefinition));
         Assert.assertTrue(GraphQLExecutionHelper.isARootField("getContacts", operationDefinition));
+    }
+
+    @Test
+    public void testWhere()
+    {
+        ObjectValue obj = new ObjectValue();
+        obj.fields = Lists.mutable.empty();
+        ObjectField objectField = new ObjectField();
+        objectField.name = "id";
+        ObjectValue obj1 = new ObjectValue();
+        obj1.fields = Lists.mutable.empty();
+        ObjectField objectField1 = new ObjectField();
+        objectField1.name = "_eq";
+        IntValue intValue = new IntValue();
+        intValue.value = 1;
+        objectField1.value = intValue;
+        obj1.fields.add(objectField1);
+        objectField.value = obj1;
+        obj.fields.add(objectField);
+        Assert.assertTrue(
+                GraphQLExecutionHelper.visitWhere(
+                    obj,
+                    "where"
+                ).containsKey("where_id__eq")
+        );
     }
 }

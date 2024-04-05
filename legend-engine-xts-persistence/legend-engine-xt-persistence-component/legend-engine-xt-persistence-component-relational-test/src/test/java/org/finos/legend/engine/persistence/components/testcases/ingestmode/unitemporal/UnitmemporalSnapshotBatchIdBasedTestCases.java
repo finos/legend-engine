@@ -67,6 +67,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                 .collectStatistics(true)
                 .createStagingDataset(true)
                 .enableConcurrentSafety(true)
+                .ingestRunId(ingestRunId)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         verifyUnitemporalSnapshotWithoutPartitionFailOnDupsNoVersion(operations);

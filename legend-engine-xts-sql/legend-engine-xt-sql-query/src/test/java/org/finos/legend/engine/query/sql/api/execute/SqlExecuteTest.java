@@ -26,13 +26,16 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.Enum;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.EnumSchemaColumn;
+import org.finos.legend.engine.protocol.sql.schema.metamodel.Parameter;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.PrimitiveSchemaColumn;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.PrimitiveType;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.Schema;
@@ -42,26 +45,27 @@ import org.finos.legend.engine.query.sql.api.MockPac4jFeature;
 import org.finos.legend.engine.query.sql.api.TestSQLSourceProvider;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import javax.ws.rs.client.Entity;
+import java.util.List;
 import java.util.ServiceLoader;
 
 public class SqlExecuteTest
 {
     @ClassRule
     public static final ResourceTestRule resources;
-    private static final PureModel pureModel;
     private static final ObjectMapper OM = new ObjectMapper();
+    private static final SQLGrammarParser PARSER = SQLGrammarParser.newInstance();
 
     static
     {
         Pair<PureModel, ResourceTestRule> pureModelAndResources = getPureModelResourceTestRulePair();
 
-        pureModel = pureModelAndResources.getOne();
         resources =  pureModelAndResources.getTwo();
     }
 
@@ -75,7 +79,7 @@ public class SqlExecuteTest
         TestSQLSourceProvider testSQLSourceProvider = new TestSQLSourceProvider();
         SqlExecute sqlExecute = new SqlExecute(modelManager, executor, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), FastList.newListWith(testSQLSourceProvider), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
 
-        PureModel pureModel = modelManager.loadModel(testSQLSourceProvider.getPureModelContextData(), PureClientVersions.production, null, "");
+        PureModel pureModel = modelManager.loadModel(testSQLSourceProvider.getPureModelContextData(), PureClientVersions.production, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), "");
         ResourceTestRule resources = ResourceTestRule.builder()
                 .setTestContainerFactory(new GrizzlyWebTestContainerFactory())
                 .addResource(sqlExecute)
@@ -86,14 +90,35 @@ public class SqlExecuteTest
         return Tuples.pair(pureModel,resources);
     }
 
+    private Query parse(String sql)
+    {
+        return (Query) PARSER.parseStatement(sql);
+    }
+
+    private void lambdaTest(String api, Entity<?> entity, String expected) throws JsonProcessingException
+    {
+        String lambda = resources.target("sql/v1/execution/" + api)
+                .request()
+                .post(entity).readEntity(String.class);
+
+        Lambda actual = new ObjectMapper().readValue(lambda, Lambda.class);
+        String actualGrammar = actual.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(RenderStyle.PRETTY).build());
+
+        Assert.assertEquals(expected, actualGrammar);
+    }
+
+    private void allLambdaTests(String sql, List<Object> arguments, String expected) throws JsonProcessingException
+    {
+        lambdaTest("lambda", Entity.json(new SQLQueryInput(null, sql, arguments)), expected);
+        lambdaTest("lambda", Entity.json(new SQLQueryInput(parse(sql), null, arguments)), expected);
+        lambdaTest("generateLambdaString", Entity.text(sql), expected);
+        lambdaTest("generateLambda", Entity.json(parse(sql)), expected);
+    }
+
     @Test
     public void testLambda() throws JsonProcessingException
     {
-        String lambda = resources.target("sql/v1/execution/generateLambdaString")
-                .request()
-                .post(Entity.text("SELECT Name FROM service('/personServiceForNames')")).readEntity(String.class);
-
-        String expectedCode = "names: String[*]|demo::employee.all()->filter(\n" +
+        String expectedCode = "{names: String[*],_1: String[1]|demo::employee.all()->filter(\n" +
                 "  p: demo::employee[1]|$names->isEmpty() ||\n" +
                 "    $p.name->in(\n" +
                 "    $names\n" +
@@ -109,102 +134,103 @@ public class SqlExecuteTest
                 "    'Name',\n" +
                 "    'Employee Type'\n" +
                 "  ]\n" +
-                ")->restrict('Name')";
+                ")->filter(\n" +
+                "  row: meta::pure::tds::TDSRow[1]|$row.getString('Name') ==\n" +
+                "    $_1\n" +
+                ")->restrict('Name')}";
 
-        Lambda actual = new ObjectMapper().readValue(lambda, Lambda.class);
-        String actualGrammar = actual.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(RenderStyle.PRETTY).build());
+        allLambdaTests("SELECT Name FROM service('/personServiceForNames') where Name = ?", FastList.newList(), expectedCode);
+    }
 
-        Assert.assertEquals(expectedCode, actualGrammar);
+
+    private void executeTest(String api, Entity<?> entity, TDSExecuteResult expected) throws JsonProcessingException
+    {
+        String results = resources.target("sql/v1/execution/" + api)
+                .request()
+                .post(entity).readEntity(String.class);
+
+        Assert.assertEquals(expected, OM.readValue(results, TDSExecuteResult.class));
+    }
+
+    private void allExecuteTests(String sql, List<Object> arguments, TDSExecuteResult expected) throws JsonProcessingException
+    {
+        allExecuteTests(sql, arguments, expected, false);
+    }
+
+    private void allExecuteTests(String sql, List<Object> arguments, TDSExecuteResult expected, boolean excludeDeprecated) throws JsonProcessingException
+    {
+        executeTest("execute", Entity.json(new SQLQueryInput(null, sql, arguments)), expected);
+        executeTest("execute", Entity.json(new SQLQueryInput(parse(sql), null, arguments)), expected);
+
+        if (!excludeDeprecated)
+        {
+            executeTest("executeQueryString", Entity.text(sql), expected);
+            executeTest("executeQuery", Entity.json(parse(sql)), expected);
+        }
     }
 
     @Test
     public void testExecuteWithParameters() throws JsonProcessingException
     {
-        String all = resources.target("sql/v1/execution/executeQueryString")
-                .request()
-                .post(Entity.text("SELECT Name FROM service('/personServiceForNames') ORDER BY Name")).readEntity(String.class);
-
-        String filtered = resources.target("sql/v1/execution/executeQueryString")
-                .request()
-                .post(Entity.text("SELECT Name FROM service('/personServiceForNames', names => ['Alice', 'Danielle']) ORDER BY Name")).readEntity(String.class);
-
-        TDSExecuteResult allExpected = TDSExecuteResult.builder(FastList.newListWith("Name"))
+        allExecuteTests("SELECT Name FROM service('/personServiceForNames') ORDER BY Name", FastList.newList(), TDSExecuteResult.builder(FastList.newListWith("Name"))
                 .addRow(FastList.newListWith("Alice"))
                 .addRow(FastList.newListWith("Bob"))
                 .addRow(FastList.newListWith("Curtis"))
                 .addRow(FastList.newListWith("Danielle"))
-                .build();
+                .build());
 
-        TDSExecuteResult filteredExpected = TDSExecuteResult.builder(FastList.newListWith("Name"))
+        allExecuteTests("SELECT Name FROM service('/personServiceForNames', names => ['Alice', 'Danielle']) ORDER BY Name", FastList.newList(), TDSExecuteResult.builder(FastList.newListWith("Name"))
                 .addRow(FastList.newListWith("Alice"))
                 .addRow(FastList.newListWith("Danielle"))
-                .build();
-
-        Assert.assertEquals(allExpected, OM.readValue(all, TDSExecuteResult.class));
-        Assert.assertEquals(filteredExpected, OM.readValue(filtered, TDSExecuteResult.class));
+                .build());
     }
 
     @Test
     public void testExecuteWithDateParams() throws JsonProcessingException
     {
-        String all = resources.target("sql/v1/execution/executeQueryString")
-                .request()
-                .post(Entity.text("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24')")).readEntity(String.class);
-
-        TDSExecuteResult allExpected = TDSExecuteResult.builder(FastList.newListWith("Name"))
+        allExecuteTests("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24')", FastList.newList(), TDSExecuteResult.builder(FastList.newListWith("Name"))
                 .addRow(FastList.newListWith("Alice"))
-                .build();
-
-        Assert.assertEquals(allExpected, OM.readValue(all, TDSExecuteResult.class));
+                .build());
     }
 
     @Test
     public void testExecuteWithEnumParams() throws JsonProcessingException
     {
-        String all = resources.target("sql/v1/execution/executeQueryString")
-                .request()
-                .post(Entity.text("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24', type => 'Type1')")).readEntity(String.class);
-
-        TDSExecuteResult allExpected = TDSExecuteResult.builder(FastList.newListWith("Name"))
+        allExecuteTests("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24', type => 'Type1')", FastList.newList(), TDSExecuteResult.builder(FastList.newListWith("Name"))
                 .addRow(FastList.newListWith("Alice"))
-                .build();
-
-        Assert.assertEquals(allExpected, OM.readValue(all, TDSExecuteResult.class));
+                .build());
     }
 
     @Test
     public void testExecuteWithExpressionParams() throws JsonProcessingException
     {
-        String all = resources.target("sql/v1/execution/executeQueryString")
-                .request()
-                .post(Entity.text("SELECT Name FROM service('/personServiceForStartDate/{date}', date => cast('2023-08-24' as DATE))")).readEntity(String.class);
-
-        TDSExecuteResult allExpected = TDSExecuteResult.builder(FastList.newListWith("Name"))
+        allExecuteTests("SELECT Name FROM service('/personServiceForStartDate/{date}', date => cast('2023-08-24' as DATE))", FastList.newList(), TDSExecuteResult.builder(FastList.newListWith("Name"))
                 .addRow(FastList.newListWith("Alice"))
-                .build();
-
-        Assert.assertEquals(allExpected, OM.readValue(all, TDSExecuteResult.class));
+                .build());
     }
 
     @Test
     public void testExecuteMultiUnionNoAliases() throws JsonProcessingException
     {
         //this is to test the query realiasing, can be moved to testTranspile one realiser moved to pure code
-        String all = resources.target("sql/v1/execution/executeQueryString")
-                .request()
-                .post(Entity.text("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24') " +
-                        "UNION SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24') " +
-                        "UNION SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24') " +
-                        "UNION SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24')")).readEntity(String.class);
 
-        TDSExecuteResult allExpected = TDSExecuteResult.builder(FastList.newListWith("Name"))
+        allExecuteTests("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24') " +
+                "UNION SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24') " +
+                "UNION SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24') " +
+                "UNION SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24')", FastList.newList(), TDSExecuteResult.builder(FastList.newListWith("Name"))
                 .addRow(FastList.newListWith("Alice"))
                 .addRow(FastList.newListWith("Alice"))
                 .addRow(FastList.newListWith("Alice"))
                 .addRow(FastList.newListWith("Alice"))
-                .build();
+                .build());
+    }
 
-        Assert.assertEquals(allExpected, OM.readValue(all, TDSExecuteResult.class));
+    @Test
+    public void testExecuteWithPositionalParameters() throws JsonProcessingException
+    {
+        allExecuteTests("SELECT Name FROM service('/personServiceForNames') WHERE Name = ? ORDER BY Name", FastList.newListWith("Alice"), TDSExecuteResult.builder(FastList.newListWith("Name"))
+                .addRow(FastList.newListWith("Alice"))
+                .build(), true);
     }
 
     @Test
@@ -218,62 +244,87 @@ public class SqlExecuteTest
         Assert.assertEquals("Name\r\nAlice\r\nBob\r\nCurtis\r\nDanielle\r\n", results);
     }
 
-    @Test
-    public void getSchemaForQueryWithDuplicateSources() throws JsonProcessingException
+    private void schemaTest(String api, Entity<?> entity, String expected) throws JsonProcessingException
     {
-        String actualSchema = resources.target("sql/v1/execution/getSchemaFromQueryString")
+        String lambda = resources.target("sql/v1/execution/" + api)
                 .request()
-                .post(Entity.text("SELECT Id FROM service.\"/testService\" UNION SELECT Id FROM service.\"/testService\"")).readEntity(String.class);
+                .post(entity).readEntity(String.class);
 
+        Lambda actual = new ObjectMapper().readValue(lambda, Lambda.class);
+        String actualGrammar = actual.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(RenderStyle.PRETTY).build());
+
+        Assert.assertEquals(expected, actualGrammar);
+    }
+
+    private void allSchemaTests(String sql, List<Object> arguments, Schema expected) throws JsonProcessingException
+    {
+        schemaTest("schema", Entity.json(new SQLQueryInput(null, sql, arguments)), expected);
+        schemaTest("schema", Entity.json(new SQLQueryInput(parse(sql), null, arguments)), expected);
+        schemaTest("getSchemaFromQueryString", Entity.text(sql), expected);
+        schemaTest("getSchemaFromQuery", Entity.json(parse(sql)), expected);
+    }
+
+    private void schemaTest(String api, Entity<?> entity, Schema expected) throws JsonProcessingException
+    {
+        String schema = resources.target("sql/v1/execution/" + api)
+                .request()
+                .post(entity).readEntity(String.class);
+
+        Assert.assertEquals(new ObjectMapper().writeValueAsString(expected), schema);
+    }
+
+    @Test
+    public void testSchema() throws JsonProcessingException
+    {
+        Schema schema = new Schema();
+        schema.columns = FastList.newListWith(
+                primitiveColumn("Id", PrimitiveType.Integer),
+                primitiveColumn("Name", PrimitiveType.String),
+                enumColumn("Employee Type", "demo::employeeType")
+        );
+
+        schema.enums = FastList.newListWith(
+                enumValue("demo::employeeType", "Type1", "Type2")
+        );
+
+        allSchemaTests("SELECT * FROM service.\"/testService\"", FastList.newList(), schema);
+    }
+
+    @Test
+    public void testSchemaParams() throws JsonProcessingException
+    {
+        Schema schema = new Schema();
+        schema.columns = FastList.newListWith(
+                primitiveColumn("Col", PrimitiveType.Integer)
+        );
+
+        schema.parameters = FastList.newListWith(parameter("_1", PrimitiveType.Integer));
+
+        allSchemaTests("SELECT 1 + ? AS \"Col\" FROM service.\"/testService\"", FastList.newList(), schema);
+    }
+
+    @Test
+    public void testSchemaParamsProvided() throws JsonProcessingException
+    {
+        Schema schema = new Schema();
+        schema.columns = FastList.newListWith(
+                primitiveColumn("Col", PrimitiveType.Integer)
+        );
+
+        schema.parameters = FastList.newListWith(parameter("_1", PrimitiveType.Integer));
+
+        allSchemaTests("SELECT 1 + ? AS \"Col\" FROM service.\"/testService\"", FastList.newListWith(1), schema);
+    }
+
+    @Test
+    public void testSchemaDuplicateSources() throws JsonProcessingException
+    {
         Schema schema = new Schema();
         schema.columns = FastList.newListWith(
                 primitiveColumn("Id", PrimitiveType.Integer)
         );
 
-        Assert.assertEquals(new ObjectMapper().writeValueAsString(schema), actualSchema);
-    }
-
-
-    @Test
-    public void getSchemaFromQueryString() throws JsonProcessingException
-    {
-        String actualSchema = resources.target("sql/v1/execution/getSchemaFromQueryString")
-                .request()
-                .post(Entity.text("SELECT * FROM service.\"/testService\"")).readEntity(String.class);
-
-        Schema schema = new Schema();
-        schema.columns = FastList.newListWith(
-                primitiveColumn("Id", PrimitiveType.Integer),
-                primitiveColumn("Name", PrimitiveType.String),
-                enumColumn("Employee Type", "demo::employeeType")
-        );
-
-        schema.enums = FastList.newListWith(
-                enumValue("demo::employeeType", "Type1", "Type2")
-        );
-
-        Assert.assertEquals(new ObjectMapper().writeValueAsString(schema), actualSchema);
-    }
-
-    @Test
-    public void getSchemaFromQuery() throws JsonProcessingException
-    {
-        String actualSchema = resources.target("sql/v1/execution/getSchemaFromQuery")
-                .request()
-                .post(Entity.json("{ \"_type\": \"query\", \"orderBy\": [], \"queryBody\": { \"_type\": \"querySpecification\", \"from\": [ { \"_type\": \"table\", \"name\": { \"parts\": [ \"service\", \"/testService\" ] } } ], \"groupBy\": [], \"orderBy\": [], \"select\": { \"_type\": \"select\", \"distinct\": false, \"selectItems\": [ { \"_type\": \"allColumns\" } ] } } }")).readEntity(String.class);
-
-        Schema schema = new Schema();
-        schema.columns = FastList.newListWith(
-                primitiveColumn("Id", PrimitiveType.Integer),
-                primitiveColumn("Name", PrimitiveType.String),
-                enumColumn("Employee Type", "demo::employeeType")
-        );
-
-        schema.enums = FastList.newListWith(
-                enumValue("demo::employeeType", "Type1", "Type2")
-        );
-
-        Assert.assertEquals(new ObjectMapper().writeValueAsString(schema), actualSchema);
+        allSchemaTests("SELECT Id FROM service.\"/testService\" UNION SELECT Id FROM service.\"/testService\"", FastList.newList(), schema);
     }
 
     private static PrimitiveSchemaColumn primitiveColumn(String name, PrimitiveType type)
@@ -303,4 +354,12 @@ public class SqlExecuteTest
         return e;
     }
 
+    private static Parameter parameter(String name, PrimitiveType type)
+    {
+        Parameter param = new Parameter();
+        param.name = name;
+        param.type = type;
+
+        return param;
+    }
 }

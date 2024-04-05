@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.versioning;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.common.Datasets;
@@ -32,19 +34,22 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.Dige
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.relational.api.DataError;
+import org.finos.legend.engine.persistence.components.relational.api.ErrorCategory;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalIngestor;
+import org.finos.legend.engine.persistence.components.relational.exception.DataQualityException;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
+import org.finos.legend.engine.persistence.components.util.TableNameGenUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.finos.legend.engine.persistence.components.TestUtils.*;
 import static org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract.DATA_SPLIT;
-import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.TEMP_STAGING_DATASET_BASE_NAME;
+import static org.finos.legend.engine.persistence.components.util.TableNameGenUtils.TEMP_STAGING_DATASET_QUALIFIER;
 
 public class TestDedupAndVersioning extends BaseTest
 {
@@ -102,8 +107,6 @@ public class TestDedupAndVersioning extends BaseTest
                     .addFields(batch)
                     .build();
 
-    private static final String tempStagingTableName = stagingTableName +  "_" + TEMP_STAGING_DATASET_BASE_NAME;
-
     String[] schemaWithCount = new String[]{idName, nameName, incomeName, expiryDateName, digestName, "legend_persistence_count"};
     String[] schemaWithVersion = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName};
     String[] schemaWithVersionAndCount = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName, "legend_persistence_count"};
@@ -123,9 +126,9 @@ public class TestDedupAndVersioning extends BaseTest
                 .auditing(NoAuditing.builder().build())
                 .build();
 
-        performDedupAndVersioining(datasets, ingestMode);
+        String ingestRunId = performDedupAndVersioining(datasets, ingestMode);
         // Validate tempTableExists
-        Assertions.assertEquals(false, h2Sink.doesTableExist(getTempStagingDataset()));
+        Assertions.assertEquals(false, h2Sink.doesTableExist(getTempStagingDataset(ingestRunId)));
     }
 
     // Scenario 2
@@ -140,9 +143,9 @@ public class TestDedupAndVersioning extends BaseTest
                 .versioningStrategy(MaxVersionStrategy.builder().versioningField("version").performStageVersioning(false).mergeDataVersionResolver(DigestBasedResolver.INSTANCE).build())
                 .build();
 
-        performDedupAndVersioining(datasets, ingestMode);
+        String ingestRunId = performDedupAndVersioining(datasets, ingestMode);
         // Validate tempTableExists
-        Assertions.assertEquals(false, h2Sink.doesTableExist(getTempStagingDataset()));
+        Assertions.assertEquals(false, h2Sink.doesTableExist(getTempStagingDataset(ingestRunId)));
     }
 
     // Scenario 3
@@ -163,20 +166,27 @@ public class TestDedupAndVersioning extends BaseTest
         String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data2_allow_dups_max_versioning.csv";
         loadDataIntoStagingTableWithVersion(srcDataPath);
 
-        performDedupAndVersioining(datasets, ingestMode);
-        verifyResults(expectedDataPath, schemaWithVersion);
+        String ingestRunId = performDedupAndVersioining(datasets, ingestMode);
+        verifyResults(expectedDataPath, schemaWithVersion, ingestRunId);
 
         // Data error scenario, should throw error
         String srcDataPath2 = "src/test/resources/data/dedup-and-versioning/input/data3_with_dups_and_data_error.csv";
         loadDataIntoStagingTableWithVersion(srcDataPath2);
         try
         {
-            performDedupAndVersioining(datasets, ingestMode);
+            ingestRunId = performDedupAndVersioining(datasets, ingestMode);
             Assertions.fail("Should not succeed");
         }
-        catch (Exception e)
+        catch (DataQualityException e)
         {
-            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch",e.getMessage());
+            Map<String, Object> row1 = new HashMap<>();
+            row1.put("name", "Cathy");
+            row1.put("id", 3);
+            row1.put("version", 1);
+
+            DataError dataError = buildDataError(ErrorCategory.DATA_VERSION_ERROR, row1, buildErrorDetailsMap("num_data_version_errors", 2L));
+            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch", e.getMessage());
+            Assertions.assertEquals(Arrays.asList(dataError), e.getDataErrors());
         }
     }
 
@@ -194,9 +204,9 @@ public class TestDedupAndVersioning extends BaseTest
                 .versioningStrategy(AllVersionsStrategy.builder().versioningField("version").performStageVersioning(false).mergeDataVersionResolver(DigestBasedResolver.INSTANCE).build())
                 .build();
 
-        performDedupAndVersioining(datasets, ingestMode);
+        String ingestRunId = performDedupAndVersioining(datasets, ingestMode);
         // Validate tempTableExists
-        Assertions.assertEquals(false, h2Sink.doesTableExist(getTempStagingDataset()));
+        Assertions.assertEquals(false, h2Sink.doesTableExist(getTempStagingDataset(ingestRunId)));
     }
 
     // Scenario 5
@@ -219,20 +229,27 @@ public class TestDedupAndVersioning extends BaseTest
         String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data2_allow_dups_all_version.csv";
         loadDataIntoStagingTableWithVersion(srcDataPath);
 
-        performDedupAndVersioining(datasets, ingestMode);
-        verifyResults(expectedDataPath, schemaWithVersionAndDataSplit);
+        String ingestRunId = performDedupAndVersioining(datasets, ingestMode);
+        verifyResults(expectedDataPath, schemaWithVersionAndDataSplit, ingestRunId);
 
         // Data error scenario, should throw error
         String srcDataPath2 = "src/test/resources/data/dedup-and-versioning/input/data3_with_dups_and_data_error.csv";
         loadDataIntoStagingTableWithVersion(srcDataPath2);
         try
         {
-            performDedupAndVersioining(datasets, ingestMode);
+            ingestRunId = performDedupAndVersioining(datasets, ingestMode);
             Assertions.fail("Should not succeed");
         }
-        catch (Exception e)
+        catch (DataQualityException e)
         {
-            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch",e.getMessage());
+            Map<String, Object> row1 = new HashMap<>();
+            row1.put("name", "Cathy");
+            row1.put("id", 3);
+            row1.put("version", 1);
+
+            DataError dataError = buildDataError(ErrorCategory.DATA_VERSION_ERROR, row1, buildErrorDetailsMap("num_data_version_errors", 2L));
+            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch", e.getMessage());
+            Assertions.assertEquals(Arrays.asList(dataError), e.getDataErrors());
         }
     }
 
@@ -252,9 +269,9 @@ public class TestDedupAndVersioning extends BaseTest
         String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data1_filter_dups_no_versioning.csv";
         loadDataIntoStagingTableWithoutVersion(srcDataPath);
 
-        performDedupAndVersioining(datasets, ingestMode);
+        String ingestRunId = performDedupAndVersioining(datasets, ingestMode);
         // Validate tempTableExists
-        verifyResults(expectedDataPath, schemaWithCount);
+        verifyResults(expectedDataPath, schemaWithCount, ingestRunId);
     }
 
     // Scenario 7
@@ -275,8 +292,8 @@ public class TestDedupAndVersioning extends BaseTest
         String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data2_filter_dups_no_versioning.csv";
         loadDataIntoStagingTableWithVersion(srcDataPath);
 
-        performDedupAndVersioining(datasets, ingestMode);
-        verifyResults(expectedDataPath, schemaWithVersionAndCount);
+        String ingestRunId = performDedupAndVersioining(datasets, ingestMode);
+        verifyResults(expectedDataPath, schemaWithVersionAndCount, ingestRunId);
     }
 
 
@@ -298,20 +315,27 @@ public class TestDedupAndVersioning extends BaseTest
         String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data2_filter_dups_max_versioning.csv";
         loadDataIntoStagingTableWithVersion(srcDataPath);
 
-        performDedupAndVersioining(datasets, ingestMode);
-        verifyResults(expectedDataPath, schemaWithVersionAndCount);
+        String ingestRunId = performDedupAndVersioining(datasets, ingestMode);
+        verifyResults(expectedDataPath, schemaWithVersionAndCount, ingestRunId);
 
         // Data error scenario, should throw error
         String srcDataPath2 = "src/test/resources/data/dedup-and-versioning/input/data3_with_dups_and_data_error.csv";
         loadDataIntoStagingTableWithVersion(srcDataPath2);
         try
         {
-            performDedupAndVersioining(datasets, ingestMode);
+            ingestRunId = performDedupAndVersioining(datasets, ingestMode);
             Assertions.fail("Should not succeed");
         }
-        catch (Exception e)
+        catch (DataQualityException e)
         {
-            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch",e.getMessage());
+            Map<String, Object> row1 = new HashMap<>();
+            row1.put("name", "Cathy");
+            row1.put("id", 3);
+            row1.put("version", 1);
+
+            DataError dataError = buildDataError(ErrorCategory.DATA_VERSION_ERROR, row1, buildErrorDetailsMap("num_data_version_errors", 2L));
+            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch", e.getMessage());
+            Assertions.assertEquals(Arrays.asList(dataError), e.getDataErrors());
         }
     }
 
@@ -335,9 +359,9 @@ public class TestDedupAndVersioning extends BaseTest
         String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data2_filter_dups_no_versioning.csv";
         loadDataIntoStagingTableWithVersion(srcDataPath);
 
-        performDedupAndVersioining(datasets, ingestMode);
+        String ingestRunId = performDedupAndVersioining(datasets, ingestMode);
         // Validate tempTableExists
-        verifyResults(expectedDataPath, schemaWithVersionAndCount);
+        verifyResults(expectedDataPath, schemaWithVersionAndCount, ingestRunId);
     }
 
     // Scenario 10
@@ -360,21 +384,28 @@ public class TestDedupAndVersioning extends BaseTest
         String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data2_filter_dups_all_version.csv";
         loadDataIntoStagingTableWithVersion(srcDataPath);
 
-        performDedupAndVersioining(datasets, ingestMode);
+        String ingestRunId = performDedupAndVersioining(datasets, ingestMode);
         // Validate tempTableExists
-        verifyResults(expectedDataPath, schemaWithVersionCountAndDataSplit);
+        verifyResults(expectedDataPath, schemaWithVersionCountAndDataSplit, ingestRunId);
 
         // Data error scenario, should throw error
         String srcDataPath2 = "src/test/resources/data/dedup-and-versioning/input/data3_with_dups_and_data_error.csv";
         loadDataIntoStagingTableWithVersion(srcDataPath2);
         try
         {
-            performDedupAndVersioining(datasets, ingestMode);
+            ingestRunId = performDedupAndVersioining(datasets, ingestMode);
             Assertions.fail("Should not succeed");
         }
-        catch (Exception e)
+        catch (DataQualityException e)
         {
-            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch",e.getMessage());
+            Map<String, Object> row1 = new HashMap<>();
+            row1.put("name", "Cathy");
+            row1.put("id", 3);
+            row1.put("version", 1);
+
+            DataError dataError = buildDataError(ErrorCategory.DATA_VERSION_ERROR, row1, buildErrorDetailsMap("num_data_version_errors", 2L));
+            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch", e.getMessage());
+            Assertions.assertEquals(Arrays.asList(dataError), e.getDataErrors());
         }
     }
 
@@ -395,12 +426,23 @@ public class TestDedupAndVersioning extends BaseTest
 
         try
         {
-            performDedupAndVersioining(datasets, ingestMode);
+            String ingestRunId = performDedupAndVersioining(datasets, ingestMode);
             Assertions.fail("Should not succeed");
         }
-        catch (Exception e)
+        catch (DataQualityException e)
         {
-            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy",e.getMessage());
+            Map<String, Object> row1  = new HashMap<>();
+            row1.put("name", "Andy");
+            row1.put("id", 1);
+
+            Map<String, Object> row2  = new HashMap<>();
+            row2.put("name", "Becky");
+            row2.put("id", 2);
+
+            DataError dataError1 = buildDataError(ErrorCategory.DUPLICATES, row1, buildErrorDetailsMap("num_duplicates", 3));
+            DataError dataError2 = buildDataError(ErrorCategory.DUPLICATES, row2, buildErrorDetailsMap("num_duplicates", 2));
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
+            Assertions.assertEquals(Arrays.asList(dataError1, dataError2), e.getDataErrors());
         }
     }
 
@@ -423,9 +465,9 @@ public class TestDedupAndVersioning extends BaseTest
         loadDataIntoStagingTableWithVersion(srcDataPath1);
 
         String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data4_fail_on_dups_no_versioning.csv";
-        performDedupAndVersioining(datasets, ingestMode);
+        String ingestRunId = performDedupAndVersioining(datasets, ingestMode);
         // Validate tempTableExists
-        verifyResults(expectedDataPath, schemaWithVersionAndCount);
+        verifyResults(expectedDataPath, schemaWithVersionAndCount, ingestRunId);
 
 
         // Duplicates scenario, should throw error
@@ -433,12 +475,18 @@ public class TestDedupAndVersioning extends BaseTest
         loadDataIntoStagingTableWithVersion(srcDataPath2);
         try
         {
-            performDedupAndVersioining(datasets, ingestMode);
+            ingestRunId = performDedupAndVersioining(datasets, ingestMode);
             Assertions.fail("Should not succeed");
         }
-        catch (Exception e)
+        catch (DataQualityException e)
         {
-            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy",e.getMessage());
+            Map<String, Object> row  = new HashMap<>();
+            row.put("name", "Becky");
+            row.put("id", 2);
+
+            DataError dataError = buildDataError(ErrorCategory.DUPLICATES, row, buildErrorDetailsMap("num_duplicates", 2));
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
+            Assertions.assertEquals(Arrays.asList(dataError), e.getDataErrors());
         }
     }
 
@@ -461,9 +509,9 @@ public class TestDedupAndVersioning extends BaseTest
         loadDataIntoStagingTableWithVersion(srcDataPath1);
 
         String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data4_fail_on_dups_max_versioin.csv";
-        performDedupAndVersioining(datasets, ingestMode);
+        String ingestRunId = performDedupAndVersioining(datasets, ingestMode);
         // Validate tempTableExists
-        verifyResults(expectedDataPath, schemaWithVersionAndCount);
+        verifyResults(expectedDataPath, schemaWithVersionAndCount, ingestRunId);
 
 
         // Duplicates scenario, should throw error
@@ -471,12 +519,18 @@ public class TestDedupAndVersioning extends BaseTest
         loadDataIntoStagingTableWithVersion(srcDataPath2);
         try
         {
-            performDedupAndVersioining(datasets, ingestMode);
+            ingestRunId = performDedupAndVersioining(datasets, ingestMode);
             Assertions.fail("Should not succeed");
         }
-        catch (Exception e)
+        catch (DataQualityException e)
         {
-            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy",e.getMessage());
+            Map<String, Object> row  = new HashMap<>();
+            row.put("name", "Becky");
+            row.put("id", 2);
+
+            DataError dataError = buildDataError(ErrorCategory.DUPLICATES, row, buildErrorDetailsMap("num_duplicates", 2));
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
+            Assertions.assertEquals(Arrays.asList(dataError), e.getDataErrors());
         }
     }
 
@@ -502,9 +556,9 @@ public class TestDedupAndVersioning extends BaseTest
         loadDataIntoStagingTableWithVersion(srcDataPath1);
 
         String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data4_fail_on_dups_no_versioning.csv";
-        performDedupAndVersioining(datasets, ingestMode);
+        String ingestRunId = performDedupAndVersioining(datasets, ingestMode);
         // Validate tempTableExists
-        verifyResults(expectedDataPath, schemaWithVersionAndCount);
+        verifyResults(expectedDataPath, schemaWithVersionAndCount, ingestRunId);
 
 
         // Duplicates scenario, should throw error
@@ -512,12 +566,18 @@ public class TestDedupAndVersioning extends BaseTest
         loadDataIntoStagingTableWithVersion(srcDataPath2);
         try
         {
-            performDedupAndVersioining(datasets, ingestMode);
+            ingestRunId = performDedupAndVersioining(datasets, ingestMode);
             Assertions.fail("Should not succeed");
         }
-        catch (Exception e)
+        catch (DataQualityException e)
         {
-            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy",e.getMessage());
+            Map<String, Object> row  = new HashMap<>();
+            row.put("name", "Becky");
+            row.put("id", 2);
+
+            DataError dataError = buildDataError(ErrorCategory.DUPLICATES, row, buildErrorDetailsMap("num_duplicates", 2));
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
+            Assertions.assertEquals(Arrays.asList(dataError), e.getDataErrors());
         }
     }
 
@@ -542,9 +602,9 @@ public class TestDedupAndVersioning extends BaseTest
         loadDataIntoStagingTableWithVersion(srcDataPath1);
 
         String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data4_fail_on_dups_no_versioning.csv";
-        performDedupAndVersioining(datasets, ingestMode);
+        String ingestRunId = performDedupAndVersioining(datasets, ingestMode);
         // Validate tempTableExists
-        verifyResults(expectedDataPath, schemaWithVersionCountAndDataSplit);
+        verifyResults(expectedDataPath, schemaWithVersionCountAndDataSplit, ingestRunId);
 
 
         // Duplicates scenario, should throw error
@@ -552,12 +612,18 @@ public class TestDedupAndVersioning extends BaseTest
         loadDataIntoStagingTableWithVersion(srcDataPath2);
         try
         {
-            performDedupAndVersioining(datasets, ingestMode);
+            ingestRunId = performDedupAndVersioining(datasets, ingestMode);
             Assertions.fail("Should not succeed");
         }
-        catch (Exception e)
+        catch (DataQualityException e)
         {
-            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy",e.getMessage());
+            Map<String, Object> row  = new HashMap<>();
+            row.put("name", "Becky");
+            row.put("id", 2);
+
+            DataError dataError = buildDataError(ErrorCategory.DUPLICATES, row, buildErrorDetailsMap("num_duplicates", 2));
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
+            Assertions.assertEquals(Arrays.asList(dataError), e.getDataErrors());
         }
     }
 
@@ -571,11 +637,11 @@ public class TestDedupAndVersioning extends BaseTest
                 .build();
     }
 
-    private Dataset getTempStagingDataset()
+    private Dataset getTempStagingDataset(String ingestRunId)
     {
         return DatasetReferenceImpl.builder()
                 .group(testSchemaName)
-                .name(tempStagingTableName)
+                .name(getTempStagingTableName(ingestRunId))
                 .build();
     }
 
@@ -612,16 +678,18 @@ public class TestDedupAndVersioning extends BaseTest
         h2Sink.executeStatement(createSql);
     }
 
-    private static void performDedupAndVersioining(Datasets datasets, IngestMode ingestMode)
+    private static String performDedupAndVersioining(Datasets datasets, IngestMode ingestMode)
     {
         RelationalIngestor ingestor = RelationalIngestor.builder()
                 .ingestMode(ingestMode)
                 .relationalSink(H2Sink.get())
                 .build();
 
-        Executor executor = ingestor.init(JdbcConnection.of(h2Sink.connection()));
-        datasets = ingestor.create(datasets);
-        datasets = ingestor.dedupAndVersion(datasets);
+        Executor executor = ingestor.initExecutor(JdbcConnection.of(h2Sink.connection()));
+        ingestor.initDatasets(datasets);
+        ingestor.create();
+        ingestor.dedupAndVersion();
+        return ingestor.getIngestRunId();
     }
 
     public static void loadDataIntoStagingTableWithoutVersion(String path) throws Exception
@@ -654,10 +722,33 @@ public class TestDedupAndVersioning extends BaseTest
         h2Sink.executeStatement(loadSql);
     }
 
-    private void verifyResults(String expectedDataPath, String [] schema) throws IOException
+    private void verifyResults(String expectedDataPath, String [] schema, String ingestRunId) throws IOException
     {
-        Assertions.assertEquals(true, h2Sink.doesTableExist(getTempStagingDataset()));
-        List<Map<String, Object>> tableData = h2Sink.executeQuery(String.format("select * from \"TEST\".\"%s\"", tempStagingTableName));
+        Assertions.assertEquals(true, h2Sink.doesTableExist(getTempStagingDataset(ingestRunId)));
+        List<Map<String, Object>> tableData = h2Sink.executeQuery(String.format("select * from \"TEST\".\"%s\"", getTempStagingTableName(ingestRunId)));
         TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
+    }
+
+    private String getTempStagingTableName(String ingestRunId)
+    {
+        return TableNameGenUtils.generateTableName(stagingTableName, TEMP_STAGING_DATASET_QUALIFIER, ingestRunId);
+    }
+
+    private Map<String, Object> buildErrorDetailsMap(String key, Object value)
+    {
+        Map<String, Object> errorDetailsMap = new HashMap<>();
+        errorDetailsMap.put(key, value);
+        return errorDetailsMap;
+    }
+
+    private DataError buildDataError(ErrorCategory errorCategory, Map<String, Object> row, Map<String, Object> errorDetailsMap) throws JsonProcessingException
+    {
+        DataError dataError = DataError.builder()
+                .errorMessage(errorCategory.getDefaultErrorMessage())
+                .errorCategory(errorCategory)
+                .errorRecord(new ObjectMapper().writeValueAsString(row))
+                .putAllErrorDetails(errorDetailsMap)
+                .build();
+        return dataError;
     }
 }

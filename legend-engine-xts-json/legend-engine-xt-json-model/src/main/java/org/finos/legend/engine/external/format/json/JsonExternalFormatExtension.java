@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.format.json;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.json.compile.JsonSchemaCompiler;
 import org.finos.legend.engine.external.format.json.fromModel.ModelToJsonSchemaConfiguration;
 import org.finos.legend.engine.external.format.json.toModel.JsonSchemaToModelConfiguration;
@@ -33,6 +34,19 @@ public class JsonExternalFormatExtension implements ExternalFormatSchemaGenerati
 {
     private static final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_json_metamodel_JsonSchema> jsonSchemaContract = (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_json_metamodel_JsonSchema>) core_external_format_json_externalFormatContract.Root_meta_external_format_json_contract_jsonSchemaFormatContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
     public static final String TYPE = jsonSchemaContract._id();
+
+    @Override
+    public String type()
+    {
+        return "MIX_Model_Generation_&_Schema_Generation";
+    }
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "JSON");
+    }
+
 
     @Override
     public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_json_metamodel_JsonSchema> getExternalFormatContract()

@@ -22,7 +22,6 @@ import meta::pure::executionPlan::platformBinding::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::extension::*;
 import meta::pure::mapping::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::platformBinding::legendJava::*;
@@ -106,8 +105,8 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
          ^LegendJavaDataRecordClassesExtension
          (
             dataRecordClasses = [
-               JsonDataRecord,
-               XmlDataRecord
+               meta::pure::mapping::modelToModel::JsonDataRecord,
+               meta::pure::mapping::modelToModel::XmlDataRecord
             ]
          ),
 
@@ -134,13 +133,13 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
          ^LegendJavaGraphFetchStoreStreamReadingExtension
          (
             dataRecordClassFromConnectionExtractors = [
-               j : JsonModelConnection[1] | JsonDataRecord,
-               x : XmlModelConnection[1]  | XmlDataRecord
+               j : JsonModelConnection[1] | meta::pure::mapping::modelToModel::JsonDataRecord,
+               x : XmlModelConnection[1]  | meta::pure::mapping::modelToModel::XmlDataRecord
             ],
 
             dataRecordTreeFromConnectionExtractors = [
-               json : JsonModelConnection[1] | #{JsonDataRecord {number, record}}#,
-               xml  : XmlModelConnection[1]  | #{XmlDataRecord {number, record}}#
+               json : JsonModelConnection[1] | #{meta::pure::mapping::modelToModel::JsonDataRecord {number, record}}#,
+               xml  : XmlModelConnection[1]  | #{meta::pure::mapping::modelToModel::XmlDataRecord {number, record}}#
             ],
 
             streamReaderMethodCodeGenerators = {conventions: Conventions[1], path: String[1], pureClass: meta::pure::metamodel::type::Class<Any>[1], storeStreamReadingContext: Code[1] |
@@ -161,7 +160,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
                   },
                   {
                      model: ModelConnection[1] |
-                        let varName = $model.instances->values()->at(0)->get(0)->cast(@RoutedVariablePlaceHolder).name;
+                        let varName = $model.instances->values()->at(0)->get(0)->match([p:PlanVarPlaceHolder[1]| $p.name, r:RoutedVariablePlaceHolder[1]| $r.name]);
                         let typeArg = $storeStreamReadingContext->j_invoke('streamType', $conventions->className($pureClass)->j_field('class', javaClassType()), javaReflectType());
                         $conventions->meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::objectStream::streamReaderClass($path)
                            ->j_new($storeStreamReadingContext->j_invoke('getResult', [j_string($varName), $typeArg], javaStream($conventions->className($pureClass))))->j_return();

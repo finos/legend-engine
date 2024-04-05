@@ -18,7 +18,6 @@ import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.IncrementalClock;
 import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.common.Datasets;
-import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.AppendOnly;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
@@ -30,6 +29,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllV
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FilteredDataset;
@@ -46,10 +46,12 @@ import org.junit.jupiter.api.Test;
 
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.finos.legend.engine.persistence.components.TestUtils.batchIdName;
 import static org.finos.legend.engine.persistence.components.TestUtils.batchUpdateTimeName;
 import static org.finos.legend.engine.persistence.components.TestUtils.dataSplitName;
 import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
@@ -103,7 +105,7 @@ class AppendOnlyTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(true).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{nameName.toUpperCase(), incomeName.toUpperCase(), expiryDateName.toUpperCase()};
+        String[] schema = new String[]{nameName.toUpperCase(), incomeName.toUpperCase(), expiryDateName.toUpperCase(), batchIdName.toUpperCase()};
 
         // ------------ Perform incremental (append) milestoning With Clean Staging Table ------------------------
         String dataPass1 = basePath + "input/vanilla_case/data_pass1.csv";
@@ -111,11 +113,7 @@ class AppendOnlyTest extends BaseTest
         // 1. Load staging table
         loadStagingDataWithNoPkInUpperCase(dataPass1);
         // 2. Execute plans and verify results
-        Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
         executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
         // 3. Assert that the staging table is truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"STAGING\"");
@@ -127,11 +125,7 @@ class AppendOnlyTest extends BaseTest
         // 1. Load staging table
         loadStagingDataWithNoPkInUpperCase(dataPass2);
         // 2. Execute plans and verify results
-        expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
         executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
         // 3. Assert that the staging table is truncated
         stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"STAGING\"");
@@ -162,7 +156,7 @@ class AppendOnlyTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{nameName.toUpperCase(), incomeName.toUpperCase(), expiryDateName.toUpperCase()};
+        String[] schema = new String[]{nameName.toUpperCase(), incomeName.toUpperCase(), expiryDateName.toUpperCase(), batchIdName.toUpperCase()};
 
         // ------------ Perform incremental (append) milestoning With Clean Staging Table ------------------------
         String dataPass1 = basePath + "input/with_staging_filter/data_pass1.csv";
@@ -170,11 +164,7 @@ class AppendOnlyTest extends BaseTest
         // 1. Load staging table
         loadStagingDataWithNoPkInUpperCase(dataPass1);
         // 2. Execute plans and verify results
-        Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 2);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        Map<String, Object> expectedStats = createExpectedStatsMap(2, 0, 2, 0, 0);
         executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
         // ------------ Perform incremental (append) milestoning With Clean Staging Table ------------------------
@@ -183,11 +173,7 @@ class AppendOnlyTest extends BaseTest
         // 1. Load staging table
         loadStagingDataWithNoPkInUpperCase(dataPass2);
         // 2. Execute plans and verify results
-        expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 2);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats = createExpectedStatsMap(2, 0, 2, 0, 0);
         executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
     }
 
@@ -215,7 +201,7 @@ class AppendOnlyTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
 
         // ------------ Perform incremental (append) milestoning Pass1 ------------------------
         String dataPass1 = basePath + "input/auditing_no_version_filter_dup_filter_existing/data_pass1.csv";
@@ -264,7 +250,7 @@ class AppendOnlyTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName.toUpperCase(), nameName.toUpperCase(), incomeName.toUpperCase(), startTimeName.toUpperCase(), expiryDateName.toUpperCase(), digestName.toUpperCase(), versionName.toUpperCase(), batchUpdateTimeName.toUpperCase()};
+        String[] schema = new String[]{idName.toUpperCase(), nameName.toUpperCase(), incomeName.toUpperCase(), startTimeName.toUpperCase(), expiryDateName.toUpperCase(), digestName.toUpperCase(), versionName.toUpperCase(), batchUpdateTimeName.toUpperCase(), batchIdName.toUpperCase()};
 
         // ------------ Perform incremental (append) milestoning Pass1 ------------------------
         String dataPass1 = basePath + "input/auditing_max_version_filter_dup_filter_existing/data_pass1.csv";
@@ -313,7 +299,7 @@ class AppendOnlyTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchUpdateTimeName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchUpdateTimeName, batchIdName};
 
         // ------------ Perform incremental (append) milestoning Pass1 ------------------------
         String dataPass1 = basePath + "input/auditing_max_version_filter_dup_no_filter_existing/data_pass1.csv";
@@ -364,7 +350,7 @@ class AppendOnlyTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchUpdateTimeName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchUpdateTimeName, batchIdName};
 
         // ------------ Perform incremental (append) milestoning Pass1 ------------------------
         String dataPass1 = basePath + "input/auditing_all_version_filter_dup_filter_existing/data_pass1.csv";
@@ -421,7 +407,7 @@ class AppendOnlyTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchUpdateTimeName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchUpdateTimeName, batchIdName};
 
         // ------------ Perform incremental (append) milestoning Pass1 ------------------------
         String dataPass1 = basePath + "input/auditing_all_version_filter_dup_no_filter_existing/data_pass1.csv";
@@ -489,12 +475,13 @@ class AppendOnlyTest extends BaseTest
         List<String> ingestSql = operations.ingestSql();
 
         String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"TEST\".\"MAIN\"" +
-            "(\"NAME\" VARCHAR(64) NOT NULL,\"INCOME\" BIGINT,\"EXPIRY_DATE\" DATE,\"DIGEST\" VARCHAR)";
+            "(\"NAME\" VARCHAR(64) NOT NULL,\"INCOME\" BIGINT,\"EXPIRY_DATE\" DATE,\"DIGEST\" VARCHAR,\"BATCH_ID\" INTEGER)";
 
         String expectedIngestSql = "INSERT INTO \"TEST\".\"MAIN\" " +
-            "(\"NAME\", \"INCOME\", \"EXPIRY_DATE\", \"DIGEST\") " +
+            "(\"NAME\", \"INCOME\", \"EXPIRY_DATE\", \"DIGEST\", \"BATCH_ID\") " +
             "(SELECT staging.\"NAME\" as \"NAME\",staging.\"INCOME\" as \"INCOME\",staging.\"EXPIRY_DATE\" as \"EXPIRY_DATE\"," +
-            "LAKEHOUSE_MD5(ARRAY['NAME','INCOME','EXPIRY_DATE'],ARRAY[CONVERT(staging.\"NAME\",VARCHAR),CONVERT(staging.\"INCOME\",VARCHAR),CONVERT(staging.\"EXPIRY_DATE\",VARCHAR)]) " +
+            "LAKEHOUSE_MD5(ARRAY['EXPIRY_DATE','INCOME','NAME'],ARRAY[CONVERT(staging.\"EXPIRY_DATE\",VARCHAR),CONVERT(staging.\"INCOME\",VARCHAR),CONVERT(staging.\"NAME\",VARCHAR)])," +
+            "(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN') " +
             "FROM \"TEST\".\"STAGING\" as staging)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
@@ -503,7 +490,7 @@ class AppendOnlyTest extends BaseTest
 
         // Verify execution using ingestor
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
-        String[] schema = new String[]{nameName.toUpperCase(), incomeName.toUpperCase(), expiryDateName.toUpperCase(), digestName.toUpperCase()};
+        String[] schema = new String[]{nameName.toUpperCase(), incomeName.toUpperCase(), expiryDateName.toUpperCase(), digestName.toUpperCase(), batchIdName.toUpperCase()};
 
         // ------------ Perform incremental (append) milestoning With Clean Staging Table ------------------------
         String dataPass1 = basePath + "input/digest_generation/data_pass1.csv";
@@ -511,11 +498,7 @@ class AppendOnlyTest extends BaseTest
         // 1. Load staging table
         loadStagingDataWithNoPkInUpperCase(dataPass1);
         // 2. Execute plans and verify results
-        Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
         executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
         // 3. Assert that the staging table is truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"STAGING\"");
@@ -527,11 +510,7 @@ class AppendOnlyTest extends BaseTest
         // 1. Load staging table
         loadStagingDataWithNoPkInUpperCase(dataPass2);
         // 2. Execute plans and verify results
-        expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
         executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
         // 3. Assert that the staging table is truncated
         stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"STAGING\"");
@@ -542,7 +521,7 @@ class AppendOnlyTest extends BaseTest
     Scenario: Test Append Only with auditing, all version, filter duplicates and no filter existing records with UDF based digest generation
     */
     @Test
-    void testAppendOnlyWithUDFDigestGeneration2() throws Exception
+    void testAppendOnlyWithUDFDigestGenerationWithFieldsToExclude() throws Exception
     {
         // Register UDF
         H2DigestUtil.registerMD5Udf(h2Sink, digestUDF);
@@ -566,7 +545,7 @@ class AppendOnlyTest extends BaseTest
                 .build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
             .filterExistingRecords(false)
-            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(digestUDF).digestField(digestName).build())
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(digestUDF).digestField(digestName).addAllFieldsToExcludeFromDigest(Arrays.asList(versionName)).build())
             .build();
 
         // Verify SQLs using generator
@@ -575,6 +554,7 @@ class AppendOnlyTest extends BaseTest
             .relationalSink(H2Sink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
+            .ingestRunId("075605e3-bada-47d7-9ae9-7138f392fe22")
             .build();
 
         GeneratorResult operations = generator.generateOperations(datasets);
@@ -583,14 +563,15 @@ class AppendOnlyTest extends BaseTest
         List<String> ingestSql = operations.ingestSql();
 
         String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"TEST\".\"main\"" +
-            "(\"id\" INTEGER NOT NULL,\"name\" VARCHAR(64) NOT NULL,\"income\" BIGINT,\"start_time\" TIMESTAMP NOT NULL,\"expiry_date\" DATE,\"version\" INTEGER,\"batch_update_time\" TIMESTAMP NOT NULL,\"digest\" VARCHAR,PRIMARY KEY (\"id\", \"start_time\", \"batch_update_time\"))";
+            "(\"id\" INTEGER NOT NULL,\"name\" VARCHAR(64) NOT NULL,\"income\" BIGINT,\"start_time\" TIMESTAMP NOT NULL,\"expiry_date\" DATE,\"version\" INTEGER,\"batch_update_time\" TIMESTAMP NOT NULL,\"digest\" VARCHAR,\"batch_id\" INTEGER,PRIMARY KEY (\"id\", \"start_time\", \"batch_update_time\"))";
 
         String expectedIngestSql = "INSERT INTO \"TEST\".\"main\" " +
-            "(\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"version\", \"digest\", \"batch_update_time\") " +
+            "(\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"version\", \"digest\", \"batch_update_time\", \"batch_id\") " +
             "(SELECT staging.\"id\" as \"id\",staging.\"name\" as \"name\",staging.\"income\" as \"income\",staging.\"start_time\" as \"start_time\",staging.\"expiry_date\" as \"expiry_date\",staging.\"version\" as \"version\"," +
-            "LAKEHOUSE_MD5(ARRAY['id','name','income','start_time','expiry_date','version'],ARRAY[CONVERT(staging.\"id\",VARCHAR),CONVERT(staging.\"name\",VARCHAR),CONVERT(staging.\"income\",VARCHAR),CONVERT(staging.\"start_time\",VARCHAR),CONVERT(staging.\"expiry_date\",VARCHAR),CONVERT(staging.\"version\",VARCHAR)])," +
-            "'2000-01-01 00:00:00.000000' " +
-            "FROM \"TEST\".\"staging_legend_persistence_temp_staging\" as staging WHERE (staging.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (staging.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
+            "LAKEHOUSE_MD5(ARRAY['expiry_date','id','income','name','start_time'],ARRAY[CONVERT(staging.\"expiry_date\",VARCHAR),CONVERT(staging.\"id\",VARCHAR),CONVERT(staging.\"income\",VARCHAR),CONVERT(staging.\"name\",VARCHAR),CONVERT(staging.\"start_time\",VARCHAR)])," +
+            "'2000-01-01 00:00:00.000000'," +
+            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN') " +
+            "FROM \"TEST\".\"staging_temp_staging_lp_yosulf\" as staging WHERE (staging.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (staging.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
@@ -598,11 +579,11 @@ class AppendOnlyTest extends BaseTest
 
         // Verify execution using ingestor
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, versionName, digestName, batchUpdateTimeName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, versionName, digestName, batchUpdateTimeName, batchIdName};
 
         // ------------ Perform incremental (append) milestoning Pass1 ------------------------
-        String dataPass1 = basePath + "input/digest_generation2/data_pass1.csv";
-        String expectedDataPass1 = basePath + "expected/digest_generation2/expected_pass1.csv";
+        String dataPass1 = basePath + "input/digest_generation_with_fields_to_exclude/data_pass1.csv";
+        String expectedDataPass1 = basePath + "expected/digest_generation_with_fields_to_exclude/expected_pass1.csv";
         // 1. Load staging table
         loadStagingDataWithVersionWithoutDigest(dataPass1);
         // 2. Execute plans and verify results
@@ -614,8 +595,110 @@ class AppendOnlyTest extends BaseTest
         executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, incrementalClock);
 
         // ------------ Perform incremental (append) milestoning Pass2 ------------------------
-        String dataPass2 = basePath + "input/digest_generation2/data_pass2.csv";
-        String expectedDataPass2 = basePath + "expected/digest_generation2/expected_pass2.csv";
+        String dataPass2 = basePath + "input/digest_generation_with_fields_to_exclude/data_pass2.csv";
+        String expectedDataPass2 = basePath + "expected/digest_generation_with_fields_to_exclude/expected_pass2.csv";
+        // 1. Load staging table
+        loadStagingDataWithVersionWithoutDigest(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStatsList = new ArrayList<>();
+        expectedStats1 = createExpectedStatsMap(4, 0, 3, 0, 0);
+        expectedStatsList.add(expectedStats1);
+        expectedStatsList.add(expectedStats2);
+        executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStatsList, incrementalClock);
+    }
+
+    /*
+   Scenario: Test Append Only with auditing, all version, filter duplicates and no filter existing records with UDF based digest generation with type conversion UDFs
+   */
+    @Test
+    void testAppendOnlyWithUDFDigestGenerationWithFieldsToExcludeAndTypeConversionUdfs() throws Exception
+    {
+        // Register UDF
+        H2DigestUtil.registerMD5Udf(h2Sink, digestUDF);
+
+        // Register a dummy String to String type conversion UDF
+        h2Sink.executeStatement("CREATE ALIAS StringToString AS '" +
+            "String stringToString(String value)\n" +
+            "    {\n" +
+            "        return value;\n" +
+            "    }'");
+
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingTable = TestUtils.getStagingTableWithNonPkVersionWithoutDigest();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+        IncrementalClock incrementalClock = new IncrementalClock(fixedExecutionZonedDateTime1.toInstant(), ZoneOffset.UTC, 1000);
+
+        // Create staging table
+        createStagingTableWithoutPks(stagingTable);
+
+        // Generate the milestoning object
+        AppendOnly ingestMode = AppendOnly.builder()
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .versioningStrategy(AllVersionsStrategy.builder()
+                .versioningField(versionName)
+                .dataSplitFieldName(dataSplitName)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
+                .performStageVersioning(true)
+                .build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
+            .filterExistingRecords(false)
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder()
+                .digestUdfName(digestUDF)
+                .putAllTypeConversionUdfNames(Collections.singletonMap(DataType.VARCHAR, "StringToString"))
+                .digestField(digestName)
+                .addAllFieldsToExcludeFromDigest(Collections.singletonList(versionName))
+                .build())
+            .build();
+
+        // Verify SQLs using generator
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(ingestMode)
+            .relationalSink(H2Sink.get())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .ingestRunId("075605e3-bada-47d7-9ae9-7138f392fe22")
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(datasets);
+
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> ingestSql = operations.ingestSql();
+
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"TEST\".\"main\"" +
+            "(\"id\" INTEGER NOT NULL,\"name\" VARCHAR(64) NOT NULL,\"income\" BIGINT,\"start_time\" TIMESTAMP NOT NULL,\"expiry_date\" DATE,\"version\" INTEGER,\"batch_update_time\" TIMESTAMP NOT NULL,\"digest\" VARCHAR,\"batch_id\" INTEGER,PRIMARY KEY (\"id\", \"start_time\", \"batch_update_time\"))";
+
+        String expectedIngestSql = "INSERT INTO \"TEST\".\"main\" " +
+            "(\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"version\", \"digest\", \"batch_update_time\", \"batch_id\") " +
+            "(SELECT staging.\"id\" as \"id\",staging.\"name\" as \"name\",staging.\"income\" as \"income\",staging.\"start_time\" as \"start_time\",staging.\"expiry_date\" as \"expiry_date\",staging.\"version\" as \"version\"," +
+            "LAKEHOUSE_MD5(ARRAY['expiry_date','id','income','name','start_time'],ARRAY[CONVERT(staging.\"expiry_date\",VARCHAR),CONVERT(staging.\"id\",VARCHAR),CONVERT(staging.\"income\",VARCHAR),StringToString(staging.\"name\"),CONVERT(staging.\"start_time\",VARCHAR)])," +
+            "'2000-01-01 00:00:00.000000'," +
+            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN') " +
+            "FROM \"TEST\".\"staging_temp_staging_lp_yosulf\" as staging WHERE (staging.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (staging.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
+
+        Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
+        Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+
+
+        // Verify execution using ingestor
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, versionName, digestName, batchUpdateTimeName, batchIdName};
+
+        // ------------ Perform incremental (append) milestoning Pass1 ------------------------
+        String dataPass1 = basePath + "input/digest_generation_with_fields_to_exclude/data_pass1.csv";
+        String expectedDataPass1 = basePath + "expected/digest_generation_with_fields_to_exclude/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataWithVersionWithoutDigest(dataPass1);
+        // 2. Execute plans and verify results
+        List<Map<String, Object>> expectedStatsList = new ArrayList<>();
+        Map<String, Object> expectedStats1 = createExpectedStatsMap(3, 0, 3, 0, 0);
+        Map<String, Object> expectedStats2 = createExpectedStatsMap(1, 0, 1, 0, 0);
+        expectedStatsList.add(expectedStats1);
+        expectedStatsList.add(expectedStats2);
+        executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, incrementalClock);
+
+        // ------------ Perform incremental (append) milestoning Pass2 ------------------------
+        String dataPass2 = basePath + "input/digest_generation_with_fields_to_exclude/data_pass2.csv";
+        String expectedDataPass2 = basePath + "expected/digest_generation_with_fields_to_exclude/expected_pass2.csv";
         // 1. Load staging table
         loadStagingDataWithVersionWithoutDigest(dataPass2);
         // 2. Execute plans and verify results
@@ -648,7 +731,7 @@ class AppendOnlyTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
 
         // ------------ Perform incremental (append) milestoning Pass1 ------------------------
         String expectedDataPass1 = basePath + "expected/import_with_populate_digest/expected_pass1.csv";
@@ -687,7 +770,7 @@ class AppendOnlyTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
 
         // ------------ Perform incremental (append) milestoning Pass1 ------------------------
         String expectedDataPass1 = basePath + "expected/less_columns_in_staging/expected_pass1.csv";
@@ -740,7 +823,7 @@ class AppendOnlyTest extends BaseTest
         }
         catch (Exception e)
         {
-            Assertions.assertTrue(e.getMessage().contains("Table \"main\" not found"));
+            Assertions.assertTrue(e.getMessage().contains("Table \"batch_metadata\" not found"));
         }
     }
 }

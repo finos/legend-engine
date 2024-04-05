@@ -16,7 +16,6 @@ import meta::pure::router::clustering::*;
 import meta::pure::router::metamodel::clustering::*;
 import meta::pure::mapping::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::extension::*;
 import meta::pure::graphFetch::*;
 import meta::pure::executionPlan::*;
@@ -68,7 +67,7 @@ function <<access.private>> meta::relational::mutation::executionPlan::validateG
   $propertyNamesInTree;
 }
 
-function meta::relational::mutation::executionPlan::planMutationExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionNode[1]
+function meta::relational::mutation::executionPlan::planMutationExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionNode[1]
 {
   let rootType = $sq.fe.genericType.rawType->toOne();
 

@@ -21,7 +21,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
-import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
@@ -37,6 +36,8 @@ import org.finos.legend.engine.protocol.sql.schema.metamodel.Schema;
 import org.finos.legend.engine.query.sql.api.SQLExecutor;
 import org.finos.legend.engine.query.sql.providers.core.SQLContext;
 import org.finos.legend.engine.query.sql.providers.core.SQLSourceProvider;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
@@ -85,94 +86,179 @@ public class SqlExecute
     @POST
     @ApiOperation(value = "Execute a SQL query using sql string")
     @Path("executeQueryString")
+    @Deprecated
     @Consumes({MediaType.TEXT_PLAIN})
     public Response executeSql(@Context HttpServletRequest request, String sql, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat")SerializationFormat format,
                                @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
-        Query query = parseSQL(sql);
-        return executeSql(request, query, format, pm, uriInfo);
+        return execute(request, new SQLQueryInput(null, sql, null), format, pm, uriInfo);
     }
 
     @POST
     @ApiOperation(value = "Execute a SQL query using protocol model")
     @Path("executeQuery")
+    @Deprecated
     @Consumes({MediaType.APPLICATION_JSON})
     public Response executeSql(@Context HttpServletRequest request, Query query, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format,
                                @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
-        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        SQLContext context = new SQLContext(query);
+        return execute(request, new SQLQueryInput(query, null, null), format, pm, uriInfo);
+    }
 
-        Result result = this.executor.execute(query, request.getRemoteUser(), context, profiles);
+    @POST
+    @ApiOperation(value = "Execute a SQL query")
+    @Path("execute")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response execute(@Context HttpServletRequest request, SQLQueryInput query, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format,
+                            @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Query q = extractQuery(query);
+        SQLContext context = new SQLContext(q, query.getPositionalArguments());
+
+        Result result = this.executor.execute(q, query.getPositionalArguments(), request.getRemoteUser(), context, identity);
 
         try (Scope ignored = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
         {
-            return manageResult(profiles, result, format, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);
+            return manageResult(identity.getName(), result, format, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);
         }
+    }
+
+    @POST
+    @ApiOperation(value = "Execute a SQL query")
+    @Path("execute")
+    @Consumes({MediaType.TEXT_PLAIN})
+    public Response execute(@Context HttpServletRequest request, String sql, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format,
+                            @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    {
+        return execute(request, new SQLQueryInput(null, sql, null), format, pm, uriInfo);
     }
 
     @POST
     @ApiOperation(value = "Execute a SQL query using sql string")
     @Path("generateLambdaString")
+    @Deprecated
     @Consumes({MediaType.TEXT_PLAIN})
     public Lambda generateLambda(@Context HttpServletRequest request, String sql, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
-        Query query = parseSQL(sql);
-        return generateLambda(request, query, pm, uriInfo);
+        return lambda(request, new SQLQueryInput(null, sql, null), pm, uriInfo);
     }
 
     @POST
     @ApiOperation(value = "Execute a SQL query using protocol model")
     @Path("generateLambda")
+    @Deprecated
     @Consumes({MediaType.APPLICATION_JSON})
     public Lambda generateLambda(@Context HttpServletRequest request, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
-        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        return lambda(request, new SQLQueryInput(query, null, null), pm, uriInfo);
+    }
 
-        SQLContext context = new SQLContext(query);
-        return executor.lambda(query, context, profiles);
+    @POST
+    @ApiOperation(value = "Generate lambda for a SQL query")
+    @Path("lambda")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Lambda lambda(@Context HttpServletRequest request, SQLQueryInput query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Query q = extractQuery(query);
+
+        SQLContext context = new SQLContext(q, query.getPositionalArguments());
+        return executor.lambda(q, context, identity);
+    }
+
+    @POST
+    @ApiOperation(value = "Generate lambda for a SQL query")
+    @Path("lambda")
+    @Consumes({MediaType.TEXT_PLAIN})
+    public Lambda lambda(@Context HttpServletRequest request, String sql, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    {
+        return lambda(request, new SQLQueryInput(null, sql, null), pm, uriInfo);
     }
 
     @POST
     @ApiOperation(value = "Generate plans for a SQL query using sql string")
     @Path("generatePlanQueryString")
+    @Deprecated
     @Consumes({MediaType.TEXT_PLAIN})
     public ExecutionPlan generatePlan(@Context HttpServletRequest request, String sql, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
-        Query query = parseSQL(sql);
-        return generatePlan(request, query, pm, uriInfo);
+        return plan(request, new SQLQueryInput(null, sql, null), pm, uriInfo);
     }
 
     @POST
     @ApiOperation(value = "Generate plans for a SQL query using protocol model")
     @Path("generatePlanQuery")
+    @Deprecated
     @Consumes({MediaType.APPLICATION_JSON})
     public ExecutionPlan generatePlan(@Context HttpServletRequest request, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
-        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        return plan(request, new SQLQueryInput(query, null, null), pm, uriInfo);
+    }
 
-        SQLContext context = new SQLContext(query);
-        return this.executor.plan(query, context, profiles);
+    @POST
+    @ApiOperation(value = "Generate plans for a SQL query")
+    @Path("plan")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public ExecutionPlan plan(@Context HttpServletRequest request, SQLQueryInput query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Query q = extractQuery(query);
+
+        SQLContext context = new SQLContext(q, query.getPositionalArguments());
+        return this.executor.plan(q, query.getPositionalArguments(), context, identity);
+    }
+
+    @POST
+    @ApiOperation(value = "Generate plans for a SQL query")
+    @Path("plan")
+    @Consumes({MediaType.TEXT_PLAIN})
+    public ExecutionPlan plan(@Context HttpServletRequest request, String sql, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    {
+        return plan(request, new SQLQueryInput(null, sql, null), pm, uriInfo);
     }
 
     @POST
     @ApiOperation(value = "Get schema for a SQL query")
     @Path("getSchemaFromQueryString")
+    @Deprecated
     @Consumes({MediaType.TEXT_PLAIN})
     public Schema getSchema(@Context HttpServletRequest request, String sql, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
-        Query query = parseSQL(sql);
-        return getSchema(request, query, pm, uriInfo);
+        return schema(request, new SQLQueryInput(null, sql, null), pm, uriInfo);
     }
 
     @POST
     @ApiOperation(value = "Get schema for a SQL query")
     @Path("getSchemaFromQuery")
+    @Deprecated
     @Consumes({MediaType.APPLICATION_JSON})
     public Schema getSchema(@Context HttpServletRequest request, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
+        return schema(request, new SQLQueryInput(query, null, null), pm, uriInfo);
+    }
+
+    @POST
+    @ApiOperation(value = "Get schema for a SQL query")
+    @Path("schema")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Schema schema(@Context HttpServletRequest request, SQLQueryInput query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        return this.executor.schema(query, profiles);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        return this.executor.schema(extractQuery(query), query.getPositionalArguments(), identity);
+    }
+
+    @POST
+    @ApiOperation(value = "Get schema for a SQL query")
+    @Path("schema")
+    @Consumes({MediaType.TEXT_PLAIN})
+    public Schema schema(@Context HttpServletRequest request, String sql, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    {
+        return schema(request, new SQLQueryInput(null, sql, null), pm, uriInfo);
     }
 
     @POST
@@ -187,5 +273,10 @@ public class SqlExecute
     private Query parseSQL(String sql)
     {
         return (Query) PARSER.parseStatement(sql);
+    }
+
+    private Query extractQuery(SQLQueryInput query)
+    {
+        return query.getQuery() != null ? query.getQuery() : parseSQL(query.getSql());
     }
 }

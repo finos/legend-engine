@@ -18,7 +18,6 @@ import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
 import meta::analytics::store::entitlements::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 
 function meta::analytics::store::entitlements::getGeneralRelationalTablesFromMapping(mapping:Mapping[1], runtime: Runtime[1]):TableWithType[*]

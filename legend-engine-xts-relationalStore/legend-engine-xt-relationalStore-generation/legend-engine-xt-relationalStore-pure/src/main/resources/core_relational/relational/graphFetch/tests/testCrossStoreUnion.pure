@@ -218,7 +218,6 @@ Mapping meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::cross
 
 ###Pure
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::executionPlan::*;
@@ -232,7 +231,7 @@ import meta::relational::runtime::*;
 
 function <<test.BeforePackage>> meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::createTablesInDb():Boolean[1]
 {
-   let dbConn = ^TestDatabaseConnection(type=DatabaseType.H2);
+   let dbConn = ^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2);
 
    dropAndCreateTableInDb(dbUnion, 'tradeTable', $dbConn);
    dropAndCreateTableInDb(dbUnion, 'productTable', $dbConn);

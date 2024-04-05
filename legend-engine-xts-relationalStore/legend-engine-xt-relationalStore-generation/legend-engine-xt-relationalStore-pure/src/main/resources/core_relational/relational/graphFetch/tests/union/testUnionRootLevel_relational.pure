@@ -176,7 +176,6 @@ Mapping meta::relational::graphFetch::tests::union::rootLevel::SameStoreMapping2
 
 ###Pure
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::executionPlan::*;
@@ -193,7 +192,7 @@ import meta::relational::runtime::*;
 function <<test.BeforePackage>> meta::relational::graphFetch::tests::union::rootLevel::createTablesInDb():Boolean[1]
 {
   // dbUnion
-   let dbConn  = ^TestDatabaseConnection(type=DatabaseType.H2);
+   let dbConn  = ^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2);
 
    dropAndCreateTableInDb(dbUnion, 'tradeTable', $dbConn);
    dropAndCreateTableInDb(dbUnion, 'productTable', $dbConn);
@@ -218,7 +217,7 @@ function <<test.BeforePackage>> meta::relational::graphFetch::tests::union::root
    executeInDb('insert into productTable2 (productId, productname, description) values (41, \'Prod_4\', \'Product 4 description\');', $dbConn);
 
    //dbUnionXStore
-   let dbConn_XStore  = ^TestDatabaseConnection(type=DatabaseType.H2);
+   let dbConn_XStore  = ^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2);
 
    dropAndCreateTableInDb(dbUnion_XStore, 'tradeTable_XStore', $dbConn_XStore);
    dropAndCreateTableInDb(dbUnion_XStore, 'productTable_XStore', $dbConn_XStore);
@@ -232,7 +231,7 @@ function <<test.BeforePackage>> meta::relational::graphFetch::tests::union::root
    true;
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::union::rootLevel::testSimpleUnion_SameStore():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::union::rootLevel::testSimpleUnion_SameStore():Boolean[1]
 {
    let tree = #{
       Trade {
@@ -262,7 +261,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    true;
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::union::rootLevel::testNestedUnion_SameStore():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::union::rootLevel::testNestedUnion_SameStore():Boolean[1]
 {
    let tree = #{
       Trade {
@@ -296,7 +295,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    );
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::union::rootLevel::testRootUnionWithOnePropertySet_SameStore():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::union::rootLevel::testRootUnionWithOnePropertySet_SameStore():Boolean[1]
 {
    let tree = #{
       Trade {
@@ -427,7 +426,6 @@ Mapping meta::relational::graphFetch::tests::union::rootLevel::CrossStoreMapping
 
 ###Pure
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::executionPlan::*;
@@ -441,7 +439,7 @@ import meta::pure::graphFetcha::tests::XStore::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::union::rootLevel::testSimpleUnion_CrossStore():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::union::rootLevel::testSimpleUnion_CrossStore():Boolean[1]
 {
    let tree = #{
       Trade {
@@ -470,7 +468,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    true;
 }
 
-function <<test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::union::rootLevel::testNestedUnion_CrossStore():Boolean[1]
+function <<test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::union::rootLevel::testNestedUnion_CrossStore():Boolean[1]
 {
    let tree = #{
       Trade {
@@ -504,7 +502,7 @@ function <<test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::re
    );
 }
 
-function <<test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::union::rootLevel::testRootUnionWithOnePropertySet_CrossStore():Boolean[1]
+function <<test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::union::rootLevel::testRootUnionWithOnePropertySet_CrossStore():Boolean[1]
 {
    let tree = #{
       Trade {
@@ -666,12 +664,10 @@ Mapping meta::relational::graphFetch::tests::union::rootLevel::FirmsAndEmployees
 import meta::pure::executionPlan::toString::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::relational::graphFetch::tests::union::rootLevel::*;
 

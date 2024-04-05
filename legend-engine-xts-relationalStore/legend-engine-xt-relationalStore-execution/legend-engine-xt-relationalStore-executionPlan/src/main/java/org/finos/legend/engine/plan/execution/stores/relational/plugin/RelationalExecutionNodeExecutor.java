@@ -30,6 +30,7 @@ import org.eclipse.collections.impl.map.mutable.MapAdapter;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicChecked;
+import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import org.finos.legend.engine.plan.dependencies.domain.graphFetch.IGraphInstance;
 import org.finos.legend.engine.plan.dependencies.store.relational.IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.relational.IRelationalResult;
@@ -136,8 +137,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleStrategyHashMap;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -169,14 +168,14 @@ import java.util.stream.StreamSupport;
 public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
     private final ExecutionState executionState;
-    private final MutableList<CommonProfile> profiles;
     private MutableList<Function2<ExecutionState, List<Map<String, Object>>, Result>> resultInterpreterExtensions;
+    private Identity identity;
 
-    public RelationalExecutionNodeExecutor(ExecutionState executionState, MutableList<CommonProfile> profiles)
+    public RelationalExecutionNodeExecutor(ExecutionState executionState, Identity identity)
     {
         this.executionState = executionState;
-        this.profiles = profiles;
         this.resultInterpreterExtensions = Iterate.addAllTo(ResultInterpreterExtensionLoader.extensions(), Lists.mutable.empty()).collect(ResultInterpreterExtension::additionalResultBuilder);
+        this.identity = identity;
     }
 
     @Override
@@ -189,7 +188,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).setRetainConnection(true);
             try
             {
-                Result res = new ExecutionNodeExecutor(this.profiles, connectionAwareState).visit((SequenceExecutionNode) relationalBlockExecutionNode);
+                Result res = new ExecutionNodeExecutor(this.identity, connectionAwareState).visit((SequenceExecutionNode) relationalBlockExecutionNode);
                 ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).getBlockConnectionContext().unlockAllBlockConnections();
                 return res;
             }
@@ -209,14 +208,6 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 if (result instanceof ConstantResult)
                 {
                     Object value = ((ConstantResult) result).getValue();
-                    if (value instanceof Map && ((Map<?, ?>) value).get("values") instanceof List)
-                    {
-                        return ((List<?>) ((Map<?, ?>) value).get("values")).stream().map(val ->
-                        {
-                            Map<?, ?> struct = (Map<?, ?>) val;
-                            return struct.get("value") != null ? struct.get("value") : ((List<?>) struct.get("values")).get(0);
-                        });
-                    }
                     if (value instanceof List)
                     {
                         return ((List<?>) value).stream();
@@ -260,7 +251,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
             JavaPlatformImplementation javaPlatformImpl = (JavaPlatformImplementation) createAndPopulateTempTableExecutionNode.implementation;
             String executionClassName = JavaHelper.getExecutionClassFullName(javaPlatformImpl);
-            Class<?> clazz = ExecutionNodeJavaPlatformHelper.getClassToExecute(createAndPopulateTempTableExecutionNode, executionClassName, this.executionState, this.profiles);
+            Class<?> clazz = ExecutionNodeJavaPlatformHelper.getClassToExecute(createAndPopulateTempTableExecutionNode, executionClassName, this.executionState, this.identity);
             if (Arrays.asList(clazz.getInterfaces()).contains(IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics.class))
             {
                 try
@@ -278,11 +269,11 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 // TODO Remove once platform version supports above and existing plans mitigated
                 String executionMethodName = JavaHelper.getExecutionMethodName(javaPlatformImpl);
                 createAndPopulateTempTableExecutionNode.tempTableColumnMetaData.forEach(t -> t.identifierForGetter = ExecutionNodeJavaPlatformHelper.executeStaticJavaMethod(createAndPopulateTempTableExecutionNode, executionClassName,
-                        executionMethodName, Collections.singletonList(Result.class), Collections.singletonList(new ConstantResult(t.identifierForGetter)), this.executionState, this.profiles));
+                        executionMethodName, Collections.singletonList(Result.class), Collections.singletonList(new ConstantResult(t.identifierForGetter)), this.executionState, this.identity));
             }
 
             RelationalDatabaseCommands databaseCommands = DatabaseManager.fromString(createAndPopulateTempTableExecutionNode.connection.type.name()).relationalDatabaseSupport();
-            try (Connection connectionManagerConnection = this.getConnection(createAndPopulateTempTableExecutionNode, databaseCommands, this.profiles, this.executionState))
+            try (Connection connectionManagerConnection = this.getConnection(createAndPopulateTempTableExecutionNode, databaseCommands, this.identity, this.executionState))
             {
                 TempTableStreamingResult tempTableStreamingResult = new TempTableStreamingResult(inputStream, createAndPopulateTempTableExecutionNode);
                 String databaseTimeZone = createAndPopulateTempTableExecutionNode.connection.timeZone == null ? RelationalExecutor.DEFAULT_DB_TIME_ZONE : createAndPopulateTempTableExecutionNode.connection.timeZone;
@@ -303,14 +294,14 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             {
                 scope.span().setTag("databaseType", relationalExecutionNode.getDatabaseTypeName());
                 scope.span().setTag("sql", relationalExecutionNode.sqlQuery());
-                Result result = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().execute(relationalExecutionNode, this.profiles, this.executionState);
+                Result result = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().execute(relationalExecutionNode, this.identity, this.executionState);
                 if (result instanceof RelationalResult && executionState.logSQLWithParamValues())
                 {
                     scope.span().setTag("executedSql", ((RelationalResult) result).executedSQl);
                 }
                 if (relationalExecutionNode.implementation != null && !(ExecutionNodeResultHelper.isResultSizeRangeSet(relationalExecutionNode) && ExecutionNodeResultHelper.isSingleRecordResult(relationalExecutionNode)))
                 {
-                    return executeImplementation(relationalExecutionNode, result, this.executionState, this.profiles);
+                    return executeImplementation(relationalExecutionNode, result, this.executionState, this.identity);
                 }
                 return result;
             }
@@ -324,7 +315,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 scope.span().setTag("databaseType", SQLExecutionNode.getDatabaseTypeName());
                 scope.span().setTag("executionTraceID", this.executionState.execID);
                 scope.span().setTag("sql", SQLExecutionNode.sqlQuery());
-                Result result = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().execute(SQLExecutionNode, profiles, executionState);
+                Result result = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().execute(SQLExecutionNode, identity, executionState);
                 if (result instanceof SQLExecutionResult && executionState.logSQLWithParamValues())
                 {
                     scope.span().setTag("executedSql", ((SQLExecutionResult) result).getExecutedSql());
@@ -335,7 +326,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         else if (executionNode instanceof RelationalSaveNode)
         {
             RelationalSaveNode relationalSaveNode = (RelationalSaveNode) executionNode;
-            Result sources = Iterate.getOnly(relationalSaveNode.childNodes()).accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+            Result sources = Iterate.getOnly(relationalSaveNode.childNodes()).accept(new ExecutionNodeExecutor(this.identity, this.executionState));
             if (!(sources instanceof StreamingObjectResult))
             {
                 throw new RuntimeException("Only StreamingObjectResults can be save sources!");
@@ -360,7 +351,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 MapAdapter.adapt(relationalSaveNode.getColumnValueGenerators())
                         .forEachKeyValue((columnName, node) ->
                         {
-                            Result columnValue = node.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+                            Result columnValue = node.accept(new ExecutionNodeExecutor(this.identity, this.executionState));
                             Result realizedColumnValue = columnValue.realizeInMemory();
                             this.executionState.addResult(columnName, realizedColumnValue);
                         });
@@ -369,7 +360,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 scope.span().setTag("databaseType", relationalSaveNode.getDatabaseTypeName());
                 scope.span().setTag("executionTraceID", this.executionState.execID);
                 scope.span().setTag("sql", relationalSaveNode.sqlQuery());
-                SQLUpdateResult sqlUpdateResult = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().execute(relationalSaveNode, profiles, executionState);
+                SQLUpdateResult sqlUpdateResult = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().execute(relationalSaveNode, identity, executionState);
                 return new ConstantResult(String.format("Success - %d rows updated!", sqlUpdateResult.getUpdateCount()));
             }
             finally
@@ -722,7 +713,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                         graphExecutionState.addResult(parentTempTableName, parentRealizedRelationalResult);
 
                         /* Execute relational node corresponding to the cross root */
-                        childResult = (SQLExecutionResult) node.relationalNode.accept(new ExecutionNodeExecutor(this.profiles, graphExecutionState));
+                        childResult = (SQLExecutionResult) node.relationalNode.accept(new ExecutionNodeExecutor(this.identity, graphExecutionState));
                         ResultSet childResultSet = childResult.getResultSet();
 
                         boolean childrenExist = node.children != null && !node.children.isEmpty();
@@ -845,7 +836,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
             try (Scope ignored2 = GlobalTracer.get().buildSpan("Graph Query Relational: Create Temp Table").startActive(true))
             {
-                createTempTableFromRealizedRelationalResultInBlockConnection(realizedRelationalResult, tempTableName, databaseConnection, databaseType, databaseTimeZone, this.executionState, this.profiles);
+                createTempTableFromRealizedRelationalResultInBlockConnection(realizedRelationalResult, tempTableName, databaseConnection, databaseType, databaseTimeZone, this.executionState, this.identity);
             }
 
             this.executionState.addResult(tempTableNameFromNode, new PreparedTempTableResult(tempTableName));
@@ -860,13 +851,13 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         }
     }
 
-    private static void createTempTableFromRealizedRelationalResultInBlockConnection(RealizedRelationalResult realizedRelationalResult, String tempTableName, DatabaseConnection databaseConnection, String databaseType, String databaseTimeZone, ExecutionState threadExecutionState, MutableList<CommonProfile> profiles)
+    private static void createTempTableFromRealizedRelationalResultInBlockConnection(RealizedRelationalResult realizedRelationalResult, String tempTableName, DatabaseConnection databaseConnection, String databaseType, String databaseTimeZone, ExecutionState threadExecutionState, Identity identity)
     {
         try (Scope ignored = GlobalTracer.get().buildSpan("create temp table").withTag("tempTableName", tempTableName).withTag("databaseType", databaseType).startActive(true))
         {
             RelationalStoreExecutionState relationalStoreExecutionState = (RelationalStoreExecutionState) threadExecutionState.getStoreExecutionState(StoreType.Relational);
             DatabaseManager databaseManager = DatabaseManager.fromString(databaseType);
-            BlockConnection blockConnection = relationalStoreExecutionState.getBlockConnectionContext().getBlockConnection(relationalStoreExecutionState, databaseConnection, profiles);
+            BlockConnection blockConnection = relationalStoreExecutionState.getBlockConnectionContext().getBlockConnection(relationalStoreExecutionState, databaseConnection, identity);
             databaseManager.relationalDatabaseSupport().accept(RelationalDatabaseCommandsVisitorBuilder.getStreamResultToTempTableVisitor(relationalStoreExecutionState.getRelationalExecutor().getRelationalExecutionConfiguration(), blockConnection, realizedRelationalResult, tempTableName, databaseTimeZone));
             blockConnection.addCommitQuery(databaseManager.relationalDatabaseSupport().dropTempTable(tempTableName));
             blockConnection.addRollbackQuery(databaseManager.relationalDatabaseSupport().dropTempTable(tempTableName));
@@ -874,7 +865,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         }
     }
 
-    private static void createTempTableFromRealizedRelationalResultUsingTempTableStrategyInBlockConnection(RelationalTempTableGraphFetchExecutionNode node, RealizedRelationalResult realizedRelationalResult, String tempTableName, DatabaseConnection databaseConnection, String databaseType, String databaseTimeZone, ExecutionState threadExecutionState, MutableList<CommonProfile> profiles)
+    private static void createTempTableFromRealizedRelationalResultUsingTempTableStrategyInBlockConnection(RelationalTempTableGraphFetchExecutionNode node, RealizedRelationalResult realizedRelationalResult, String tempTableName, DatabaseConnection databaseConnection, String databaseType, String databaseTimeZone, ExecutionState threadExecutionState, Identity identity)
     {
         RelationalStoreExecutionState relationalStoreExecutionState = null;
         boolean tempTableCreated = false;
@@ -883,16 +874,16 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             relationalStoreExecutionState = (RelationalStoreExecutionState) threadExecutionState.getStoreExecutionState(StoreType.Relational);
             relationalStoreExecutionState.setRetainConnection(true);
 
-            node.tempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
+            node.tempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(identity, threadExecutionState));
             tempTableCreated = true;
 
             if (node.tempTableStrategy instanceof LoadFromSubQueryTempTableStrategy)
             {
-                node.tempTableStrategy.loadTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
+                node.tempTableStrategy.loadTempTableNode.accept(new ExecutionNodeExecutor(identity, threadExecutionState));
             }
             else if (node.tempTableStrategy instanceof LoadFromResultSetAsValueTuplesTempTableStrategy)
             {
-                loadValuesIntoTempTablesFromRelationalResult(node.tempTableStrategy.loadTempTableNode, realizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.tempTableStrategy).tupleBatchSize, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.tempTableStrategy).quoteCharacterReplacement, databaseTimeZone, threadExecutionState, profiles);
+                loadValuesIntoTempTablesFromRelationalResult(node.tempTableStrategy.loadTempTableNode, realizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.tempTableStrategy).tupleBatchSize, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.tempTableStrategy).quoteCharacterReplacement, databaseTimeZone, threadExecutionState, identity);
             }
             else if (node.tempTableStrategy instanceof LoadFromTempFileTempTableStrategy)
             {
@@ -903,7 +894,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     CsvSerializer csvSerializer = new RealizedRelationalResultCSVSerializer(realizedRelationalResult, databaseTimeZone, true, false);
                     tempFile.writeFile(csvSerializer);
                     prepareExecutionStateForTempTableExecution("csv_file_location", threadExecutionState, tempFile.getTemporaryPathForFile());
-                    node.tempTableStrategy.loadTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
+                    node.tempTableStrategy.loadTempTableNode.accept(new ExecutionNodeExecutor(identity, threadExecutionState));
                 }
                 catch (Exception e)
                 {
@@ -920,7 +911,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             if (relationalStoreExecutionState != null && tempTableCreated)
             {
                 String dropTempTableSqlQuery = ((SQLExecutionNode) node.tempTableStrategy.dropTempTableNode.executionNodes.get(0)).sqlQuery;
-                BlockConnection blockConnection = relationalStoreExecutionState.getBlockConnectionContext().getBlockConnection(relationalStoreExecutionState, databaseConnection, profiles);
+                BlockConnection blockConnection = relationalStoreExecutionState.getBlockConnectionContext().getBlockConnection(relationalStoreExecutionState, databaseConnection, identity);
                 blockConnection.addCommitQuery(dropTempTableSqlQuery);
                 blockConnection.addRollbackQuery(dropTempTableSqlQuery);
                 blockConnection.close();
@@ -938,21 +929,22 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             }
             if (v instanceof Number)
             {
-                return (String) ResultNormalizer.normalizeToSql(v, databaseTimeZone);
+                return v.toString();
             }
-            if (v instanceof String)
+            if (v instanceof PureDate)
             {
-                if (quoteCharacterReplacement != null)
-                {
-                    return "'" + ((String)ResultNormalizer.normalizeToSql(v, databaseTimeZone)).replace("'", quoteCharacterReplacement) + "'";
-                }
-                return "'" + ResultNormalizer.normalizeToSql(v, databaseTimeZone) + "'";
+                return "'" + (String) ResultNormalizer.normalizeToSql(v, databaseTimeZone) + "'";
             }
-            return "'" + ResultNormalizer.normalizeToSql(v, databaseTimeZone) + "'";
+            if (v instanceof String && quoteCharacterReplacement != null)
+            {
+                return "'" + ((String) v).replace("'", quoteCharacterReplacement) + "'";
+            }
+            // TODO - Implement db specific processing for boolean type
+            return "'" + v.toString() + "'";
         };
     }
 
-    private static void loadValuesIntoTempTablesFromRelationalResult(ExecutionNode node, RealizedRelationalResult realizedRelationalResult, int batchSize, String quoteCharacterReplacement, String databaseTimeZone, ExecutionState threadExecutionState, MutableList<CommonProfile> profiles)
+    private static void loadValuesIntoTempTablesFromRelationalResult(ExecutionNode node, RealizedRelationalResult realizedRelationalResult, int batchSize, String quoteCharacterReplacement, String databaseTimeZone, ExecutionState threadExecutionState, Identity identity)
     {
         final Function<Object, String> normalizer = getNormalizer(quoteCharacterReplacement, databaseTimeZone);
 
@@ -964,7 +956,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     .map(row -> row.stream().map(normalizer).collect(Collectors.joining(",", "(", ")")))
                     .collect(Collectors.joining(",", "", ""));
             prepareExecutionStateForTempTableExecution("temp_table_rows_from_result_set", threadExecutionState, valuesTuples);
-            node.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
+            node.accept(new ExecutionNodeExecutor(identity, threadExecutionState));
         }
     }
 
@@ -997,7 +989,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         }
         JavaPlatformImplementation javaPlatformImpl = (JavaPlatformImplementation) node.implementation;
         String executeClassName = JavaHelper.getExecutionClassFullName(javaPlatformImpl);
-        return ExecutionNodeJavaPlatformHelper.getClassToExecute(node, executeClassName, this.executionState, this.profiles);
+        return ExecutionNodeJavaPlatformHelper.getClassToExecute(node, executeClassName, this.executionState, this.identity);
     }
 
     private Result getStreamingObjectResultFromRelationalResult(ExecutionNode node, RelationalResult relationalResult, DatabaseConnection databaseConnection) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, JsonProcessingException
@@ -1106,7 +1098,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         {
             ExecutionState state = new ExecutionState(this.executionState);
             state.activities.add(new AggregationAwareActivity(aggregationAwareExecutionNode.aggregationAwareActivity));
-            last = n.accept(new ExecutionNodeExecutor(this.profiles, state));
+            last = n.accept(new ExecutionNodeExecutor(this.identity, state));
         }
         return last;
     }
@@ -1178,11 +1170,11 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         throw new RuntimeException("Not implemented!");
     }
 
-    private Connection getConnection(CreateAndPopulateTempTableExecutionNode createAndPopulateTempTableExecutionNode, RelationalDatabaseCommands databaseCommands, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    private Connection getConnection(CreateAndPopulateTempTableExecutionNode createAndPopulateTempTableExecutionNode, RelationalDatabaseCommands databaseCommands, Identity identity, ExecutionState executionState)
     {
         if (((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).retainConnection())
         {
-            BlockConnection blockConnection = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getBlockConnectionContext().getBlockConnection(((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)), createAndPopulateTempTableExecutionNode.connection, profiles);
+            BlockConnection blockConnection = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getBlockConnectionContext().getBlockConnection(((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)), createAndPopulateTempTableExecutionNode.connection, identity);
             blockConnection.addRollbackQuery(databaseCommands.dropTempTable(createAndPopulateTempTableExecutionNode.tempTableName));
             blockConnection.addCommitQuery(databaseCommands.dropTempTable(createAndPopulateTempTableExecutionNode.tempTableName));
             return blockConnection;
@@ -1191,7 +1183,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
     }
 
     @JsonIgnore
-    private Result executeImplementation(RelationalExecutionNode relationalExecutionNode, Result result, ExecutionState executionState, MutableList<CommonProfile> profiles)
+    private Result executeImplementation(RelationalExecutionNode relationalExecutionNode, Result result, ExecutionState executionState, Identity identity)
     {
         if (!(result instanceof RelationalResult))
         {
@@ -1212,7 +1204,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     Tuples.pair(Arrays.asList(RelationalResult.class, DatabaseConnection.class), Arrays.asList(result, relationalExecutionNode.connection)),
                     Tuples.pair(Arrays.asList(RelationalResult.class, String.class), Arrays.asList(result, databaseConnectionString)),
                     Tuples.pair(Arrays.asList(IRelationalResult.class, String.class), Arrays.asList(result, databaseConnectionString)));
-            Stream<?> transformedResult = ExecutionNodeJavaPlatformHelper.executeStaticJavaMethod(relationalExecutionNode, executionClassName, executionMethodName, parameterTypesAndParametersAlternatives, executionState, profiles);
+            Stream<?> transformedResult = ExecutionNodeJavaPlatformHelper.executeStaticJavaMethod(relationalExecutionNode, executionClassName, executionMethodName, parameterTypesAndParametersAlternatives, executionState, identity);
             return new StreamingObjectResult<>(transformedResult, relationalResult.builder, relationalResult);
         }
         catch (Exception e)
@@ -1247,7 +1239,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 IRelationalChildGraphNodeExecutor executor = (IRelationalChildGraphNodeExecutor) executeClass.getConstructor().newInstance();
 
                 /* Execute relational node corresponding to the child */
-                childResult = (SQLExecutionResult) node.relationalNode.accept(new ExecutionNodeExecutor(profiles, executionState));
+                childResult = (SQLExecutionResult) node.relationalNode.accept(new ExecutionNodeExecutor(identity, executionState));
 
                 boolean nonPrimitiveNode = node.resultType instanceof ClassResultType;
                 boolean childrenExist = node.children != null && !node.children.isEmpty();
@@ -1371,12 +1363,12 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         GlobalTracer.get().activateSpan(graphFetchSpan);
         try
         {
-            rootResult = node.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+            rootResult = node.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.identity, this.executionState));
             SQLExecutionResult sqlExecutionResult = (SQLExecutionResult) rootResult;
             DatabaseConnection databaseConnection = sqlExecutionResult.getSQLExecutionNode().connection;
             ResultSet rootResultSet = ((SQLExecutionResult) rootResult).getResultSet();
 
-            IRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.profiles);
+            IRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.identity);
 
             List<Method> primaryKeyGetters = nodeSpecifics.primaryKeyGetters();
 
@@ -1547,14 +1539,14 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         
         try (Scope ignored = GlobalTracer.get().buildSpan("local store property graph fetch").withTag("storeType", "relational").withTag("property", ((PropertyGraphFetchTree) node.graphFetchTree).property).startActive(true))
         {
-            childResult = node.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+            childResult = node.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.identity, this.executionState));
 
             RelationalGraphObjectsBatch relationalGraphObjectsBatch = (RelationalGraphObjectsBatch) this.executionState.graphObjectsBatch;
 
             SQLExecutionResult childSqlResult = (SQLExecutionResult) childResult;
             ResultSet childResultSet = childSqlResult.getResultSet();
 
-            nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.profiles); // pass state to determine which java compiler to use. okay to use thread state.
+            nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.identity); // pass state to determine which java compiler to use. okay to use thread state.
             DatabaseConnection databaseConnection = childSqlResult.getSQLExecutionNode().connection;
             DoubleStrategyHashMap<Object, Object, SQLExecutionResult> parentMap = switchedParentHashMapPerChildResult(
                     relationalGraphObjectsBatch, node.parentIndex, childResultSet,
@@ -1636,7 +1628,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             boolean isLeaf = node.children == null || node.children.isEmpty();
             List<Pair<IGraphInstance<? extends IReferencedObject>, ExecutionCache<GraphFetchCacheKey, Object>>> childInstancesToDeepFetchAndCache = new ArrayList<>();
 
-            childResult = node.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.profiles, this.executionState)); // relational execution node to fetch properties for the level
+            childResult = node.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.identity, this.executionState)); // relational execution node to fetch properties for the level
 
             SQLExecutionResult childSqlResult = (SQLExecutionResult) childResult;
             databaseConnection = childSqlResult.getSQLExecutionNode().connection;
@@ -1644,7 +1636,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             databaseTimeZone = childSqlResult.getDatabaseTimeZone();
             ResultSet childResultSet = childSqlResult.getResultSet();
 
-            nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.profiles); // nodeSpecifics deal with how to create and manage the java impls.
+            nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.identity); // nodeSpecifics deal with how to create and manage the java impls.
 
             List<Pair<String, String>> allInstanceSetImplementations = nodeSpecifics.allInstanceSetImplementations();
             int setIdCount = allInstanceSetImplementations.size();
@@ -1770,7 +1762,6 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         RelationalExecutor relationalExecutor = ((RelationalStoreExecutionState)this.executionState.getStoreExecutionState(StoreType.Relational))
                 .getRelationalExecutor();
         String dbConnectionKey = relationalExecutor.getConnectionManager().generateKeyFromDatabaseConnection(databaseConnection).shortId();
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         String dbConnectionKeyWithIdentity = dbConnectionKey + "_" + identity.getName();
 
         RelationalGraphFetchExecutor relationalGraphFetchExecutor = ((RelationalStoreExecutionState)this.executionState.getStoreExecutionState(StoreType.Relational))
@@ -1793,10 +1784,10 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 {
                     if (!tempTableCreatedInParentConnection)
                     {
-                        createTempTableForChild(node, realizedRelationalResult, databaseConnection, databaseType, databaseTimeZone, this.executionState, this.profiles);
+                        createTempTableForChild(node, realizedRelationalResult, databaseConnection, databaseType, databaseTimeZone, this.executionState, this.identity);
                         tempTableCreatedInParentConnection = true;
                     }
-                    DelayedGraphFetchResult res = (DelayedGraphFetchResult) child.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+                    DelayedGraphFetchResult res = (DelayedGraphFetchResult) child.accept(new ExecutionNodeExecutor(this.identity, this.executionState));
                     submittedTasks.add(new DelayedGraphFetchResultWithExecInfo(CompletableFuture.completedFuture(res), false, dbConnectionKeyWithIdentity));
                 }
             }
@@ -1838,7 +1829,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
         try (Scope ignored = GlobalTracer.get().buildSpan("cross store property graph fetch").withTag("storeType", "relational").withTag("property", ((PropertyGraphFetchTree) node.graphFetchTree).property).startActive(true))
         {
-            IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.profiles);
+            IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.identity);
 
             RelationalGraphObjectsBatch relationalGraphObjectsBatch = new RelationalGraphObjectsBatch(this.executionState.graphObjectsBatch);
             List<?> parentObjects = relationalGraphObjectsBatch.getObjectsForNodeIndex(node.parentIndex);
@@ -1903,24 +1894,24 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                             {
                                 try
                                 {
-                                    node.parentTempTableStrategy.dropTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+                                    node.parentTempTableStrategy.dropTempTableNode.accept(new ExecutionNodeExecutor(this.identity, this.executionState));
                                 }
                                 catch (Exception ignored2)
                                 {
                                 }
-                                node.parentTempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
-                                loadValuesIntoTempTablesFromRelationalResult(node.parentTempTableStrategy.loadTempTableNode, parentRealizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.parentTempTableStrategy).tupleBatchSize, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.parentTempTableStrategy).quoteCharacterReplacement, databaseTimeZone, this.executionState, this.profiles);
+                                node.parentTempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(this.identity, this.executionState));
+                                loadValuesIntoTempTablesFromRelationalResult(node.parentTempTableStrategy.loadTempTableNode, parentRealizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.parentTempTableStrategy).tupleBatchSize, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.parentTempTableStrategy).quoteCharacterReplacement, databaseTimeZone, this.executionState, this.identity);
                             }
                             else if (node.parentTempTableStrategy instanceof LoadFromTempFileTempTableStrategy)
                             {
                                 try
                                 {
-                                    node.parentTempTableStrategy.dropTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+                                    node.parentTempTableStrategy.dropTempTableNode.accept(new ExecutionNodeExecutor(this.identity, this.executionState));
                                 }
                                 catch (Exception ignored2)
                                 {
                                 }
-                                node.parentTempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+                                node.parentTempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(this.identity, this.executionState));
 
                                 String requestId = new RequestIdGenerator().generateId();
                                 String fileName = node.parentTempTableName + requestId;
@@ -1929,7 +1920,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                                     CsvSerializer csvSerializer = new RealizedRelationalResultCSVSerializer(parentRealizedRelationalResult, databaseTimeZone, true, false);
                                     tempFile.writeFile(csvSerializer);
                                     prepareExecutionStateForTempTableExecution("csv_file_location", this.executionState, tempFile.getTemporaryPathForFile());
-                                    node.parentTempTableStrategy.loadTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+                                    node.parentTempTableStrategy.loadTempTableNode.accept(new ExecutionNodeExecutor(this.identity, this.executionState));
                                 }
                                 catch (Exception e)
                                 {
@@ -1948,7 +1939,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                         this.executionState.addResult(node.parentTempTableName, parentRealizedRelationalResult);
                     }
 
-                    childResult = node.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+                    childResult = node.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.identity, this.executionState));
                     SQLExecutionResult childSqlResult = (SQLExecutionResult) childResult;
                     DatabaseConnection databaseConnection = childSqlResult.getSQLExecutionNode().connection;
                     ResultSet childResultSet = childSqlResult.getResultSet();
@@ -2015,7 +2006,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
                     if (node.parentTempTableStrategy != null)
                     {
-                        node.parentTempTableStrategy.dropTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+                        node.parentTempTableStrategy.dropTempTableNode.accept(new ExecutionNodeExecutor(this.identity, this.executionState));
                     }
 
                     /* Execute store local children */
@@ -2124,9 +2115,9 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             relationalStoreExecutionStateForThread.setBlockConnectionContext(new BlockConnectionContext());
             relationalStoreExecutionStateForThread.setRetainConnection(true);
 
-            createTempTableForChild(node, realizedRelationalResult, databaseConnection, databaseType, databaseTimeZone, executionStateForThread, this.profiles);
+            createTempTableForChild(node, realizedRelationalResult, databaseConnection, databaseType, databaseTimeZone, executionStateForThread, this.identity);
 
-            return (DelayedGraphFetchResult) child.accept(new ExecutionNodeExecutor(this.profiles, executionStateForThread));
+            return (DelayedGraphFetchResult) child.accept(new ExecutionNodeExecutor(this.identity, executionStateForThread));
         }
         catch (Exception e)
         {
@@ -2143,18 +2134,18 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         }
     }
 
-    private static void createTempTableForChild(RelationalTempTableGraphFetchExecutionNode node, RealizedRelationalResult realizedRelationalResult, DatabaseConnection databaseConnection, String databaseType, String databaseTimeZone, ExecutionState executionState, MutableList<CommonProfile> profiles)
+    private static void createTempTableForChild(RelationalTempTableGraphFetchExecutionNode node, RealizedRelationalResult realizedRelationalResult, DatabaseConnection databaseConnection, String databaseType, String databaseTimeZone, ExecutionState executionState, Identity identity)
     {
         String tempTableName;
         if (node.tempTableStrategy != null)
         {
             tempTableName = node.processedTempTableName;
-            createTempTableFromRealizedRelationalResultUsingTempTableStrategyInBlockConnection(node, realizedRelationalResult, tempTableName, databaseConnection, databaseType, databaseTimeZone, executionState, profiles);
+            createTempTableFromRealizedRelationalResultUsingTempTableStrategyInBlockConnection(node, realizedRelationalResult, tempTableName, databaseConnection, databaseType, databaseTimeZone, executionState, identity);
         }
         else
         {
             tempTableName = DatabaseManager.fromString(databaseType).relationalDatabaseSupport().processTempTableName(node.tempTableName);
-            createTempTableFromRealizedRelationalResultInBlockConnection(realizedRelationalResult, tempTableName, databaseConnection, databaseType, databaseTimeZone, executionState, profiles);
+            createTempTableFromRealizedRelationalResultInBlockConnection(realizedRelationalResult, tempTableName, databaseConnection, databaseType, databaseTimeZone, executionState, identity);
         }
         executionState.addResult(node.tempTableName, new PreparedTempTableResult(tempTableName));
     }

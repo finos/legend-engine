@@ -368,6 +368,12 @@ public class BigQueryHelper implements RelationalExecutionHelper
         }
     }
 
+    @Override
+    public List<Map<String, Object>> executeQuery(String sql, int rows)
+    {
+        throw new RuntimeException("Not implemented for Big Query");
+    }
+
     public void executeStatementsInANewTransaction(List<String> sqls)
     {
         BigQueryTransactionManager txManager = null;
@@ -448,29 +454,59 @@ public class BigQueryHelper implements RelationalExecutionHelper
         }
     }
 
+    // Execute statement in a transaction - either use an existing one or use a new one
     public Map<StatisticName, Object> executeLoadStatement(String sql)
     {
-        BigQueryTransactionManager txManager = null;
-        try
+        if (this.transactionManager != null)
         {
-            txManager = new BigQueryTransactionManager(bigQuery);
-            return txManager.executeLoadStatement(sql);
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException("Error executing SQL query: " + sql, e);
-        }
-        finally
-        {
-            if (txManager != null)
+            try
             {
-                try
+                return this.transactionManager.executeLoadStatement(sql);
+            }
+            catch (InterruptedException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+        else
+        {
+            BigQueryTransactionManager txManager = null;
+            try
+            {
+                txManager = new BigQueryTransactionManager(bigQuery);
+                txManager.beginTransaction();
+                Map<StatisticName, Object> stats = txManager.executeLoadStatement(sql);
+                txManager.commitTransaction();
+                return stats;
+            }
+            catch (Exception e)
+            {
+                LOGGER.error("Error executing SQL statements: " + sql, e);
+                if (txManager != null)
                 {
-                    txManager.close();
+                    try
+                    {
+                        txManager.revertTransaction();
+                    }
+                    catch (InterruptedException e2)
+                    {
+                        throw new RuntimeException(e2);
+                    }
                 }
-                catch (InterruptedException e)
+                throw new RuntimeException(e);
+            }
+            finally
+            {
+                if (txManager != null)
                 {
-                    LOGGER.error("Error closing transaction manager.", e);
+                    try
+                    {
+                        txManager.close();
+                    }
+                    catch (InterruptedException e)
+                    {
+                        LOGGER.error("Error closing transaction manager.", e);
+                    }
                 }
             }
         }

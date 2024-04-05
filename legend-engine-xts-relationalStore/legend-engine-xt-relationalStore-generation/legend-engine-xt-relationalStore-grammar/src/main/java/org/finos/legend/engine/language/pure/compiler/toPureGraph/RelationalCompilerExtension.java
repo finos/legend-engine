@@ -18,7 +18,6 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
-import org.eclipse.collections.api.block.function.primitive.IntObjectToIntFunction;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
@@ -31,6 +30,7 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
@@ -41,6 +41,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handl
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validation.RelationalValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidatorContext;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
@@ -66,25 +67,27 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RootRelationalClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.mappingTest.RelationalInputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.DatabaseInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.executionContext.RelationalExecutionContext;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.RelationStoreAccessor;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.function.Procedure3;
+import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_MapperPostProcessor;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_PostProcessor;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_RelationalDatabaseConnection;
 import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_RelationalDatabaseConnection_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_MapperPostProcessor;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_PostProcessor;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_collection_List_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
-import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
+import org.finos.legend.pure.generated.Root_meta_pure_store_RelationStoreAccessor_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_mapping_GroupByMapping_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_mapping_RelationalAssociationImplementation_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_mapping_RootRelationalInstanceSetImplementation_Impl;
@@ -93,11 +96,14 @@ import org.finos.legend.pure.generated.Root_meta_relational_metamodel_TableAlias
 import org.finos.legend.pure.generated.Root_meta_relational_runtime_PostProcessorWithParameter;
 import org.finos.legend.pure.generated.Root_meta_relational_runtime_RelationalExecutionContext_Impl;
 import org.finos.legend.pure.generated.core_relational_relational_runtime_connection_postprocessor;
+import org.finos.legend.pure.m2.dsl.store.M2StorePaths;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregationAwareSetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.EmbeddedRelationalInstanceSetImplementation;
@@ -108,14 +114,24 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.RelationalOperationElement;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAlias;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasAccessor;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.DataType;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Integer;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Varchar;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.NamedRelation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Relation;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
+import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m3.navigation._package._Package;
+import org.finos.legend.pure.m3.navigation.relation._Column;
+import org.finos.legend.pure.m3.navigation.relation._RelationType;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -123,6 +139,12 @@ import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperM
 
 public class RelationalCompilerExtension implements IRelationalCompilerExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "-Core");
+    }
+
     @Override
     public CompilerExtension build()
     {
@@ -136,7 +158,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                 Database.class,
                 (Database srcDatabase, CompileContext context) ->
                 {
-                    org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = new Root_meta_relational_metamodel_Database_Impl(srcDatabase.name)._name(srcDatabase.name);
+                    org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = new Root_meta_relational_metamodel_Database_Impl(srcDatabase.name, SourceInformationHelper.toM3SourceInformation(srcDatabase.sourceInformation), null)._name(srcDatabase.name);
 
                     database._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                             ._rawType(context.pureModel.getType("meta::relational::metamodel::Database")));
@@ -181,7 +203,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     {
                         RootRelationalClassMapping classMapping = (RootRelationalClassMapping) cm;
                         String id = classMapping.id != null ? classMapping.id : getElementFullPath(context.resolveClass(classMapping._class, classMapping.classSourceInformation), context.pureModel.getExecutionSupport()).replaceAll("::", "_");
-                        final RootRelationalInstanceSetImplementation res = new Root_meta_relational_mapping_RootRelationalInstanceSetImplementation_Impl(id, null, context.pureModel.getClass("meta::relational::mapping::RootRelationalInstanceSetImplementation"))._id(id);
+                        final RootRelationalInstanceSetImplementation res = new Root_meta_relational_mapping_RootRelationalInstanceSetImplementation_Impl(id, SourceInformationHelper.toM3SourceInformation(cm.sourceInformation), context.pureModel.getClass("meta::relational::mapping::RootRelationalInstanceSetImplementation"))._id(id);
                         MutableList<RelationalOperationElement> groupByColumns = ListIterate.collect(classMapping.groupBy, relationalOperationElement -> HelperRelationalBuilder.processRelationalOperationElement(relationalOperationElement, context, Maps.mutable.empty(), Lists.mutable.empty()));
                         org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAlias mainTableAlias = null;
                         // user has defined main table
@@ -324,7 +346,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     if (associationMapping instanceof RelationalAssociationMapping)
                     {
                         RelationalAssociationMapping relationalAssociationImplementation = (RelationalAssociationMapping) associationMapping;
-                        RelationalAssociationImplementation base = new Root_meta_relational_mapping_RelationalAssociationImplementation_Impl("", null, context.pureModel.getClass("meta::relational::mapping::RelationalAssociationImplementation"));
+                        RelationalAssociationImplementation base = new Root_meta_relational_mapping_RelationalAssociationImplementation_Impl("", SourceInformationHelper.toM3SourceInformation(associationMapping.sourceInformation), context.pureModel.getClass("meta::relational::mapping::RelationalAssociationImplementation"));
                         final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association pureAssociation = context.resolveAssociation(relationalAssociationImplementation.association, associationMapping.sourceInformation);
                         MutableList<EmbeddedRelationalInstanceSetImplementation> embeddedRelationalPropertyMappings = Lists.mutable.empty();
                         MutableList<Store> stores = ListIterate.collect(relationalAssociationImplementation.stores, context::resolveStore);
@@ -351,7 +373,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     {
                         RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) connectionValue;
 
-                        Root_meta_external_store_relational_runtime_RelationalDatabaseConnection relational = new Root_meta_external_store_relational_runtime_RelationalDatabaseConnection_Impl("", null, context.pureModel.getClass("meta::external::store::relational::runtime::RelationalDatabaseConnection"));
+                        Root_meta_external_store_relational_runtime_RelationalDatabaseConnection relational = new Root_meta_external_store_relational_runtime_RelationalDatabaseConnection_Impl("", SourceInformationHelper.toM3SourceInformation(relationalDatabaseConnection.sourceInformation), context.pureModel.getClass("meta::external::store::relational::runtime::RelationalDatabaseConnection"));
                         HelperRelationalDatabaseConnectionBuilder.addDatabaseConnectionProperties(relational, relationalDatabaseConnection.element, relationalDatabaseConnection.elementSourceInformation, relationalDatabaseConnection.type.name(), relationalDatabaseConnection.timeZone, relationalDatabaseConnection.quoteIdentifiers, context);
 
                         List<IRelationalCompilerExtension> extensions = IRelationalCompilerExtension.getExtensions(context);
@@ -413,10 +435,10 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
             {
                 Database db = (Database) element;
                 stats.put("type", "Database");
-                stats.put("tables", "" + ListIterate.injectInto(0, db.schemas, (IntObjectToIntFunction<Schema>) (a, b) -> a + b.tables.size()));
-                stats.put("views", "" + ListIterate.injectInto(0, db.schemas, (IntObjectToIntFunction<Schema>) (a, b) -> a + b.views.size()));
-                stats.put("joins", "" + db.joins.size());
-                stats.put("filters", "" + db.filters.size());
+                stats.put("tables", Long.toString(Iterate.sumOfInt(db.schemas, s -> s.tables.size())));
+                stats.put("views", Long.toString(Iterate.sumOfInt(db.schemas, s -> s.views.size())));
+                stats.put("joins", java.lang.Integer.toString(db.joins.size()));
+                stats.put("filters", java.lang.Integer.toString(db.filters.size()));
             }
         });
     }
@@ -519,7 +541,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
                                 handlers.m(handlers.m(handlers.h("meta::pure::tds::extensions::extendWithDigestOnColumns_TabularDataSet_1__String_1__HashType_1__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4)),
-                                        handlers.m(handlers.h("meta::pure::tds::extensions::extendWithDigestOnColumns_TabularDataSet_1__String_1__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"),  ps -> ps.size() == 2)))
+                                        handlers.m(handlers.h("meta::pure::tds::extensions::extendWithDigestOnColumns_TabularDataSet_1__String_1__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 2)))
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
                                 handlers.m(handlers.m(handlers.h("meta::pure::tds::extensions::rowValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5)),
@@ -653,5 +675,97 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                 DatabaseAuthenticationFlowKey.newKey(DatabaseType.Postgres, StaticDatasourceSpecification.class, MiddleTierUserNamePasswordAuthenticationStrategy.class),
                 DatabaseAuthenticationFlowKey.newKey(DatabaseType.MemSQL, StaticDatasourceSpecification.class, UserNamePasswordAuthenticationStrategy.class)
         );
+    }
+
+    @Override
+    public List<Function4<RelationStoreAccessor, Store, CompileContext, ProcessingContext, ValueSpecification>> getExtraRelationStoreAccessorProcessors()
+    {
+        return Lists.mutable.with((accessor, store, context, processingContext) ->
+        {
+            if (store instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database)
+            {
+                Assert.assertTrue(accessor.path.size() > 1, () -> "Please provide a table");
+                org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database ds = (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database) store;
+                org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Schema schema = ds._schemas().getFirst();
+                if (schema == null)
+                {
+                    throw new EngineException("The database " + store._name() + " has not schemas", accessor.sourceInformation, EngineErrorType.COMPILATION);
+                }
+                Table table = schema._tables().select(c -> c.getName().equals(accessor.path.get(1))).getFirst();
+                if (table == null)
+                {
+                    throw new EngineException("The table " + accessor.path.get(1) + " can't be found in the store " + store._name(), accessor.sourceInformation, EngineErrorType.COMPILATION);
+                }
+
+                ProcessorSupport processorSupport = context.pureModel.getExecutionSupport().getProcessorSupport();
+
+                org.finos.legend.pure.m4.coreinstance.SourceInformation sourceInformation = null;
+
+                RelationType<?> type = _RelationType.build(table._columns().collect(c ->
+                {
+                    Column col = (Column) c;
+                    String name = col._name();
+                    if (name.startsWith("\""))
+                    {
+                        name = name.substring(1, name.length() - 1);
+                    }
+                    return (CoreInstance) _Column.getColumnInstance(name, false, null, convertTypes(col._type(), processorSupport), sourceInformation, processorSupport);
+                }).toList(), sourceInformation, processorSupport);
+
+                GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
+                        ._rawType(context.pureModel.getType(M2StorePaths.RelationStoreAccessor))
+                        ._typeArguments(FastList.newListWith(
+                                        new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(type)
+                                )
+                        );
+
+                return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
+                        ._genericType(genericType)
+                        ._multiplicity(context.pureModel.getMultiplicity("one"))
+                        ._values(
+                                FastList.newListWith(
+                                        new Root_meta_pure_store_RelationStoreAccessor_Impl<>("", new org.finos.legend.pure.m4.coreinstance.SourceInformation("X", 0, 0, 0, 0), null)
+                                                ._store(ds)
+                                                ._sourceElement(table)
+                                                ._classifierGenericType(genericType)
+                                )
+                        );
+
+
+            }
+
+
+            return (ValueSpecification) null;
+        });
+    }
+
+    private GenericType convertTypes(DataType c, ProcessorSupport processorSupport)
+    {
+        String primitiveType;
+        if (c instanceof Varchar)
+        {
+            primitiveType = "String";
+        }
+        else if (c instanceof Integer)
+        {
+            primitiveType = "Integer";
+        }
+        else
+        {
+            throw new RuntimeException("Implement support for '" + c.getClass().getName() + "'");
+        }
+        return (GenericType) processorSupport.type_wrapGenericType(_Package.getByUserPath(primitiveType, processorSupport));
+    }
+
+    @Override
+    public List<Procedure3<SetImplementation, Set<String>, CompileContext>> getExtraSetImplementationSourceScanners()
+    {
+        return Collections.singletonList((setImplementation, scannedSources, context) ->
+        {
+            if (setImplementation instanceof RootRelationalInstanceSetImplementation)
+            {
+                scannedSources.add(HelperModelBuilder.getElementFullPath(((RootRelationalInstanceSetImplementation) setImplementation)._mainTableAlias()._database(), context.pureModel.getExecutionSupport()));
+            }
+        });
     }
 }

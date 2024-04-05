@@ -1,5 +1,5 @@
 {
-  "purePackage": "meta::external::query::graphQL::metamodel::introspection::",
+  "purePackage": "meta::external::query::graphQL::metamodel::introspection",
   "javaPackage": "org.finos.legend.engine.protocol.graphQL.introspection.model",
   "elementsToBeExcluded": [
   ]

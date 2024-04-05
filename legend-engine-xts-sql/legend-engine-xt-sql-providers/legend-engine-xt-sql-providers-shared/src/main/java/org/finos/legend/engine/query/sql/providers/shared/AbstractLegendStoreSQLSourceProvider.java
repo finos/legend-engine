@@ -15,7 +15,6 @@
 
 package org.finos.legend.engine.query.sql.providers.shared;
 
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
@@ -32,7 +31,7 @@ import org.finos.legend.engine.query.sql.providers.shared.project.ProjectCoordin
 import org.finos.legend.engine.query.sql.providers.shared.project.ProjectCoordinateWrapper;
 import org.finos.legend.engine.query.sql.providers.shared.project.ProjectResolvedContext;
 import org.finos.legend.engine.query.sql.providers.shared.utils.SQLProviderUtils;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.List;
 
@@ -54,7 +53,7 @@ public abstract class AbstractLegendStoreSQLSourceProvider<T extends Store> impl
     protected abstract SQLSource createSource(TableSource source, T store, PackageableConnection connection, List<SQLSourceArgument> keys, PureModelContextData pmcd);
 
     @Override
-    public SQLSourceResolvedContext resolve(List<TableSource> sources, SQLContext context, MutableList<CommonProfile> profiles)
+    public SQLSourceResolvedContext resolve(List<TableSource> sources, SQLContext context, Identity identity)
     {
         List<PureModelContext> contexts = FastList.newList();
         List<SQLSource> sqlSources = FastList.newList();
@@ -62,7 +61,7 @@ public abstract class AbstractLegendStoreSQLSourceProvider<T extends Store> impl
         ListIterate.forEach(sources, source ->
         {
             ProjectCoordinateWrapper projectCoordinateWrapper = ProjectCoordinateWrapper.extractFromTableSource(source);
-            ProjectResolvedContext resolved = projectCoordinateLoader.resolve(projectCoordinateWrapper, profiles);
+            ProjectResolvedContext resolved = projectCoordinateLoader.resolve(projectCoordinateWrapper, identity);
 
             String storeName = source.getArgumentValueAs(ARG_STORE, -1, String.class, true);
             String connectionName = source.getArgumentValueAs(ARG_CONNECTION, -1, String.class, true);

@@ -21,11 +21,14 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeA
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,11 +43,13 @@ public class AppendOnlyGeneratorTest extends BigQueryEndToEndTest
                 .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField("digest").build())
                 .filterExistingRecords(true)
                 .auditing(DateTimeAuditing.builder().dateTimeField("audit_ts").build())
+                .batchIdField("batch_id")
                 .build();
 
         // Clean up
         delete("demo", "main");
         delete("demo", "staging");
+        delete("demo", "batch_metadata");
 
         // Pass 1
         System.out.println("--------- Batch 1 started ------------");
@@ -55,7 +60,7 @@ public class AppendOnlyGeneratorTest extends BigQueryEndToEndTest
         // Verify
         List<Map<String, Object>> tableData = runQuery("select * from `demo`.`main` order by id asc");
         String expectedPath = "src/test/resources/expected/append/data_pass1.csv";
-        String [] schema = new String[] {"id", "name", "amount", "biz_date", "digest", "insert_ts", "audit_ts"};
+        String [] schema = new String[] {"id", "name", "amount", "biz_date", "digest", "insert_ts", "audit_ts", "batch_id"};
         assertFileAndTableDataEquals(schema, expectedPath, tableData);
 
         // Pass 2
@@ -71,11 +76,19 @@ public class AppendOnlyGeneratorTest extends BigQueryEndToEndTest
     }
 
     @Test
-    public void testMilestoningWithDigestGeneration() throws IOException, InterruptedException
+    public void testMilestoningWithDigestGenerationWithFieldsToExclude() throws IOException, InterruptedException
     {
+        Map<DataType, String> typeConversionUdfs = new HashMap<>();
+        typeConversionUdfs.put(DataType.INTEGER, "demo.numericToString");
+
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName("demo.LAKEHOUSE_MD5").digestField(digestName).build())
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder()
+                .digestUdfName("demo.LAKEHOUSE_MD5")
+                .putAllTypeConversionUdfNames(typeConversionUdfs)
+                .digestField(digestName)
+                .addAllFieldsToExcludeFromDigest(Arrays.asList(bizDate.name(), insertTimestamp.name())).build())
             .auditing(NoAuditing.builder().build())
+            .batchIdField("batch_id")
             .build();
 
         SchemaDefinition stagingSchema = SchemaDefinition.builder()
@@ -88,20 +101,26 @@ public class AppendOnlyGeneratorTest extends BigQueryEndToEndTest
         // Clean up
         delete("demo", "main");
         delete("demo", "staging");
+        delete("demo", "batch_metadata");
 
         // Register UDF
-        runQuery("DROP FUNCTION IF EXISTS demo.stringifyJson;");
+        runQuery("DROP FUNCTION IF EXISTS demo.numericToString;");
+        runQuery("DROP FUNCTION IF EXISTS demo.stringifyArr;");
         runQuery("DROP FUNCTION IF EXISTS demo.LAKEHOUSE_MD5;");
-        runQuery("CREATE FUNCTION demo.stringifyJson(json_data JSON)\n" +
+        runQuery("CREATE FUNCTION demo.numericToString(value NUMERIC)\n" +
+            "AS (\n" +
+            "  CAST(value AS STRING)\n" +
+            ");\n");
+        runQuery("CREATE FUNCTION demo.stringifyArr(arr1 ARRAY<STRING>, arr2 ARRAY<STRING>)\n" +
             "            RETURNS STRING\n" +
             "            LANGUAGE js AS \"\"\"\n" +
             "            let output = \"\"; \n" +
-            "            Object.keys(json_data).sort().filter(field => json_data[field] != null).forEach(field => { output += field; output += json_data[field];})\n" +
+            "            for (const [index, element] of arr1.entries()) { output += arr1[index]; output += arr2[index]; }\n" +
             "            return output;\n" +
             "            \"\"\"; \n");
-        runQuery("CREATE FUNCTION demo.LAKEHOUSE_MD5(json_data JSON)\n" +
+        runQuery("CREATE FUNCTION demo.LAKEHOUSE_MD5(arr1 ARRAY<STRING>, arr2 ARRAY<STRING>)\n" +
             "AS (\n" +
-            "  TO_HEX(MD5(demo.stringifyJson(json_data)))\n" +
+            "  TO_HEX(MD5(demo.stringifyArr(arr1, arr2)))\n" +
             ");\n");
 
         // Pass 1
@@ -113,7 +132,7 @@ public class AppendOnlyGeneratorTest extends BigQueryEndToEndTest
         // Verify
         List<Map<String, Object>> tableData = runQuery("select * from `demo`.`main` order by name asc");
         String expectedPath = "src/test/resources/expected/append/digest_generation/data_pass1.csv";
-        String [] schema = new String[] {"name", "amount", "biz_date", "insert_ts", "digest"};
+        String [] schema = new String[] {"name", "amount", "biz_date", "insert_ts", "digest", "batch_id"};
         assertFileAndTableDataEquals(schema, expectedPath, tableData);
 
         // Pass 2

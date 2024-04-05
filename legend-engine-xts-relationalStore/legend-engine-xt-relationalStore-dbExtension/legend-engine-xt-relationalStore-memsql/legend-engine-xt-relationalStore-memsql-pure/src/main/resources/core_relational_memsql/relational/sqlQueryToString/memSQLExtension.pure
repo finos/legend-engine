@@ -38,7 +38,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
       identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslator(),
-      processTempTableName = processTempTableNameDefault_String_1__String_1_
+      processTempTableName = processTempTableNameDefault_String_1__DatabaseConnection_1__String_1_
    );
 }
 
@@ -165,7 +165,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
   if ($returnType == 'DATE', | 'date(json_extract_string(' + $fullPath + '))', |
   if ($returnType == 'BOOLEAN', | 'json_extract_json(' + $fullPath + ')', |
   if ($returnType == 'FLOAT', | 'json_extract_double(' + $fullPath + ')', |
-  if ($returnType == 'INTEGER', | 'json_extract_double(' + $fullPath + ')', |
+  if ($returnType == 'INTEGER', | 'json_extract_bigint(' + $fullPath + ')', |
   'json_extract_json(' + $fullPath + ')'))))));
 }
 
@@ -259,8 +259,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
 
   // MemSQL does not allow for fluent casting of date values, must explicitly cast the full operand after parsing as json string
   if($s.returnType == StrictDate, | 'date(' + $fullOperand + ')', |
+  if($s.returnType == Integer, | $fullOperand + ' !:> bigint', |
   if($s.returnType->isNotEmpty() && $s.returnType->toOne()->_subTypeOf(Date), | 'timestamp(' + $fullOperand + ')', |
-  $fullOperand));
+  $fullOperand)));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::castOperatorForMemSQLSemiStructuredData(type:Type[0..1]): String[1]
@@ -269,9 +270,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
    // Dates treated as strings and explicitly casted after
    if($type == StrictDate, | '::$', |
    if($type->isNotEmpty() && $type->toOne()->_subTypeOf(Date), | '::$', |
+   if($type->isNotEmpty() && $type->toOne()->_subTypeOf(Integer), | '::', |
    if($type->isNotEmpty() && $type->toOne()->_subTypeOf(Number), | '::%', |
    if($type->isNotEmpty() && $type->toOne()->instanceOf(Enumeration), | '::$', |
-   '::')))));
+   '::'))))));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processUpsertSQLQueryForMemSQL(upsertQuery:UpsertSQLQuery[1], sgc:SqlGenerationContext[1]):String[1]

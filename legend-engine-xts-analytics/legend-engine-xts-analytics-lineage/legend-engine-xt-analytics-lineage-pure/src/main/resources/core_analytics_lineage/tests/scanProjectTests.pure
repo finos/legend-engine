@@ -25,7 +25,7 @@ function <<access.private>> meta::pure::lineage::scanProject::test::executeWithP
                                 [
                                    'legalName',
                                    'employeesFirstNamePerFirm'
-                                ]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                                ]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 }
 
 function <<access.private>> meta::pure::lineage::scanProject::test::executeWithProjectUsingCol():Any[1]
@@ -35,7 +35,7 @@ function <<access.private>> meta::pure::lineage::scanProject::test::executeWithP
                                   col(f|$f.employees->map(e|$e.lastName),'b'),
                                   col(f|$f.employees->map(e|2 + $e.locations.place->count()),'c')
                                 ]
-                               ), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                               ), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 }
 
 Class <<access.private>> meta::pure::lineage::scanProject::test::LambdaHolder
@@ -53,7 +53,7 @@ function <<access.private>> meta::pure::lineage::scanProject::test::executeWithP
                                 ]
                                )}
    );
-   execute($holder.lambda, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   execute($holder.lambda, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 }
 
 function <<access.private>> meta::pure::lineage::scanProject::test::executeWithProjectUsingCol2():Any[1]
@@ -63,7 +63,7 @@ function <<access.private>> meta::pure::lineage::scanProject::test::executeWithP
                                   ^BasicColumnSpecification<Firm>(name='b', func={f:Firm[1]|$f.employees->map(e|$e.lastName)}),
                                   ^BasicColumnSpecification<Firm>(name='c', func={f:Firm[1]|$f.employees->map(e|2+$e.locations.place->count())})
                                 ]
-                               ), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                               ), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 }
 
 

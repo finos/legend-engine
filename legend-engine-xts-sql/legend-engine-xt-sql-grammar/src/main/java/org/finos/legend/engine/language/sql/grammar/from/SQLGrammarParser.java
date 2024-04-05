@@ -35,7 +35,6 @@ import java.util.BitSet;
 
 public class SQLGrammarParser
 {
-    private static final SqlVisitor sqlVisitor = new SqlVisitor();
     private static final ANTLRErrorListener errorListener = new SQLGrammerErrorListener();
 
     private SQLGrammarParser()
@@ -55,7 +54,7 @@ public class SQLGrammarParser
     public Expression parseExpression(String expression)
     {
         SqlBaseParser parser = getSqlBaseParser(expression, "expression");
-        return (Expression) sqlVisitor.visitSingleExpression(parser.singleExpression());
+        return (Expression) SqlVisitor.process(parser.singleExpression());
     }
 
     private Statement parse(String query, String name)
@@ -77,7 +76,7 @@ public class SQLGrammarParser
 
     private Statement visitStatement(SqlBaseParser.SingleStatementContext statement)
     {
-        return (Statement) sqlVisitor.visitSingleStatement(statement);
+        return (Statement) SqlVisitor.process(statement);
     }
 
     private static class SQLGrammerErrorListener extends BaseErrorListener

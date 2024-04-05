@@ -15,18 +15,33 @@
 package org.finos.legend.engine.language.hostedService.generation.deployment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
-import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceArtifact;
-import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentConfiguration;
-import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentResult;
+import org.finos.legend.engine.protocol.hostedService.deployment.*;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
+import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.security.auth.Subject;
+import java.security.PrivilegedExceptionAction;
 import java.util.List;
 
 public class HostedServiceDeploymentManager implements  DeploymentManager<HostedServiceArtifact, HostedServiceDeploymentResult, HostedServiceDeploymentConfiguration>
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HostedServiceDeploymentManager.class);
 
     public static ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
@@ -37,61 +52,69 @@ public class HostedServiceDeploymentManager implements  DeploymentManager<Hosted
 
     public HostedServiceDeploymentResult deploy(Identity identity, HostedServiceArtifact artifact)
     {
-        return new HostedServiceDeploymentResult();
+        return doDeploy(identity, (HostedServiceDeploymentConfiguration) artifact.deploymentConfiguration, artifact);
     }
-
 
     public HostedServiceDeploymentResult deploy(Identity identity, HostedServiceArtifact artifact, List<HostedServiceDeploymentConfiguration> availableRuntimeConfigurations)
     {
-        String host;
-        String path;
-        int port;
+        HostedServiceDeploymentConfiguration deployConf;
+        MutableList<HostedServiceDeploymentConfiguration> c = Lists.mutable.withAll(availableRuntimeConfigurations);
+        if (artifact.version == null)
+        {
+            deployConf = c.select(conf -> conf.destination.equals(HostedServiceDestination.Sandbox)).getFirst();
+        }
+        else
+        {
+            deployConf = (HostedServiceDeploymentConfiguration) artifact.deploymentConfiguration;
+        }
 
-//        if (artifact.deploymentConfiguration == null || activator._activationConfiguration()._stage()._name().equals(DeploymentStage.SANDBOX.name()))
-//        {
-//            if (availableRuntimeConfigurations.size() > 0)
-//            {
-//                host = availableRuntimeConfigurations.get(0).host;
-//                path = availableRuntimeConfigurations.get(0).path;
-//                port = availableRuntimeConfigurations.get(0).port;
-//            }
-//            else
-//            {
-//                throw new EngineException("No available configuration for sandbox deployment");
-//            }
-//            try
-//            {
-//                HttpPost request = new HttpPost(new URIBuilder()
-//                        .setScheme("http")
-//                        .setHost(host)
-//                        .setPort(port)
-//                        .setPath(path)
-//                        .build());
-//                StringEntity stringEntity = new StringEntity(mapper.writeValueAsString(artifact));
-//                stringEntity.setContentType("application/json");
-//                request.setEntity(stringEntity);
-//                CloseableHttpClient httpclient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
-//                Subject s = ProfileManagerHelper.extractSubject(profiles);
-//                Subject.doAs(s, (PrivilegedExceptionAction<HostedServiceDeploymentResult>) () ->
-//                            {
-//                                HttpResponse response = httpclient.execute(request);
-//                                return new HostedServiceDeploymentResult();
-//                            });
-//            }
-//            catch (Exception e)
-//            {
-//                throw new EngineException("No available configuration for sandbox deployment");
-//
-//            }
-//        }
-//        else if (activator._activationConfiguration() != null)
-//        {
-//            host = ((Root_meta_external_function_activator_hostedService_HostedServiceDeploymentConfiguration)activator._activationConfiguration())._;
-//            path = availableRuntimeConfigurations.get(0).path;
-//            port = availableRuntimeConfigurations.get(0).port;
-//        }
-        return new HostedServiceDeploymentResult();
+        return doDeploy(identity, deployConf, artifact);
     }
 
+    public HostedServiceDeploymentResult doDeploy(Identity identity, HostedServiceDeploymentConfiguration deployConf, HostedServiceArtifact artifact)
+    {
+        HostedServiceDeploymentResult result = new HostedServiceDeploymentResult();
+        try
+        {
+            HttpPost request = new HttpPost(new URIBuilder()
+                    .setScheme("http")
+                    .setHost(deployConf.domain)
+                    //.setPort(deployConf.port)
+                    .setPath(deployConf.path)
+                    .build());
+            StringEntity stringEntity = new StringEntity(mapper.writeValueAsString(artifact));
+            stringEntity.setContentType("application/json");
+            request.setEntity(stringEntity);
+            CloseableHttpClient httpclient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
+            Subject subject = identity.getCredential(LegendKerberosCredential.class).get().getSubject();
+            Subject.doAs(subject, (PrivilegedExceptionAction<String>) () ->
+            {
+                HttpResponse response = httpclient.execute(request);
+                if (response.getStatusLine().getStatusCode() != 200)
+                {
+                    result.error = EntityUtils.toString(response.getEntity());
+                }
+                else
+                {
+                    result.successful = true;
+                    result.deploymentLocation = buildDeployStub(deployConf, artifact);
+                }
+                return "done";
+            });
+            //LOGGER.info("Done deploying hosted service");
+        }
+        catch (Exception e)
+        {
+            LOGGER.error("Error deploying hosted service", e);
+            throw new EngineException(e.getMessage());
 
+        }
+        return result;
+    }
+
+    public String buildDeployStub(HostedServiceDeploymentConfiguration config, HostedServiceArtifact artifact)
+    {
+        //change to UI
+        return "http://" + config.domain + ":" + config.port + config.path + ((HostedServiceContent)artifact.content).pattern;
+    }
 }
