@@ -45,11 +45,10 @@ public class RelationalReplExtension implements ReplExtension
 
     static
     {
-        int port = 1024 + (int)(Math.random() * 10000);
-        System.setProperty("legend.test.h2.port", String.valueOf(port));
         try
         {
-            AlloyH2Server.startServer(port);
+            int port = AlloyH2Server.startServer(0).getPort();
+            System.setProperty("legend.test.h2.port", String.valueOf(port));
         }
         catch (SQLException e)
         {
