@@ -229,6 +229,9 @@
         <nexus.staging.maven.plugin.version>1.6.13</nexus.staging.maven.plugin.version>
         <versions.maven.plugin.version>2.7</versions.maven.plugin.version>
         <google.maven.download.plugin.version>1.8.1</google.maven.download.plugin.version>
+
+        <!--NPM registry -->
+        <npm.registry.url>https://registry.npmjs.org</npm.registry.url>
     </properties>
 
     <scm>

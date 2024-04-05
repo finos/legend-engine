@@ -36,7 +36,6 @@ import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
-import org.jline.terminal.spi.SystemStream;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 
@@ -65,26 +64,26 @@ public class Client
 
         this.completerExtensions = completerExtensions;
 
-        this.planExecutor =  PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build();
+        this.planExecutor = PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build();
 
         this.state = new ModelState(this.legendInterface, this.replExtensions);
 
-        replExtensions.forEach(c -> c.setClient(this));
+        replExtensions.forEach(e -> e.initialize(this));
 
         this.terminal = TerminalBuilder.terminal();
 
         this.terminal.writer().println("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
 
         this.commands = replExtensions
-                        .flatCollect(ReplExtension::getExtraCommands)
-                        .withAll(
-                                Lists.mutable.with(
-                                    new Ext(this),
-                                    new Debug(this),
-                                    new Graph(this),
-                                    new Execute(this, planExecutor)
-                                )
-                        );
+                .flatCollect(ReplExtension::getExtraCommands)
+                .withAll(
+                        Lists.mutable.with(
+                                new Ext(this),
+                                new Debug(this),
+                                new Graph(this),
+                                new Execute(this, planExecutor)
+                        )
+                );
 
         this.commands.add(0, new Help(this, this.commands));
 
@@ -99,6 +98,7 @@ public class Client
         this.terminal.flush();
         ((Execute) this.commands.getLast()).execute("1+1");
         this.terminal.writer().println("Ready!\n");
+
     }
 
     public void loop()
