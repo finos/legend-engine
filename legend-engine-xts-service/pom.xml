@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.42.3-SNAPSHOT</version>
+        <version>4.43.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -33,7 +33,7 @@
         <module>legend-engine-language-pure-dsl-service-pure</module>
         <module>legend-engine-service-post-validation-runner</module>
         <module>legend-engine-services-model</module>
-        <module>legend-engine-services-model-api</module>
+        <module>legend-engine-services-model-http-api</module>
         <module>legend-engine-test-runner-service</module>
     </modules>
 </project>

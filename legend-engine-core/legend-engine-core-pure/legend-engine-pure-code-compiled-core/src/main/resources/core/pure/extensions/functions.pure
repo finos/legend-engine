@@ -35,7 +35,7 @@ import meta::pure::graphFetch::executionPlan::*;
 function meta::pure::extension::storeContractForSetImplementation(extensions: Extension[*], s:InstanceSetImplementation[1]):StoreContract[1]
 {
   $extensions.availableStores
-    ->removeDuplicates(x|$x.id,{a,b|$a==$b})
+    ->removeDuplicatesBy(x|$x.id)
     ->filter(sc|$sc.supportsSetImplementation->eval($s))
     ->unique(|'for the setImplementation ' + $s->class().name->toOne() + '. For the extensions: [' + $extensions.type->joinStrings(',') + ']');
 }
@@ -47,7 +47,7 @@ function meta::pure::extension::_storeContractForSetImplementation(extensions: E
             $extensions->meta::pure::extension::storeContractForSetImplementation($i->toOne()),
         o: meta::pure::mapping::OperationSetImplementation[1]|
             let roots = $o->resolveInstanceSetImplementations();
-            $roots->map(r|$extensions->meta::pure::extension::storeContractForSetImplementation($r))->removeDuplicates(x|$x.id, {a,b|$a==$b})->toOne();
+            $roots->map(r|$extensions->meta::pure::extension::storeContractForSetImplementation($r))->removeDuplicatesBy(x|$x.id)->toOne();
     ]
   );
 }
@@ -55,14 +55,14 @@ function meta::pure::extension::_storeContractForSetImplementation(extensions: E
 function meta::pure::extension::storeContractFromStore(extensions: Extension[*], s: Store[1]):StoreContract[1]
 {
   $extensions.availableStores
-    ->removeDuplicates(x|$x.id,{a,b|$a==$b})
+    ->removeDuplicatesBy(x|$x.id)
     ->filter(sc|$sc.supportsStore->eval($s))
     ->unique(|'for the store ' + $s->class().name->toOne() + '. For the extensions: [' + $extensions.type->joinStrings(',') + ']');
 }
 
 function <<access.private>> meta::pure::extension::unique(storeContracts:StoreContract[*], message:Function<{->String[1]}>[1]):meta::pure::store::StoreContract[1]
 {
-  let list = $storeContracts->removeDuplicates(x|$x.id,{a,b|$a==$b});
+  let list = $storeContracts->removeDuplicatesBy(x|$x.id);
   assert($list->isNotEmpty(), |'The system can\'t find the appropriate StoreContract '+$message->eval());
   assert($list->size() == 1, |'The system found too many StoreContracts ['+$list.id->joinStrings(',')+'] '+$message->eval());
   $list->toOne();

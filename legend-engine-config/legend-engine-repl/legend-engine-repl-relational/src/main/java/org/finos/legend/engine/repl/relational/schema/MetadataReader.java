@@ -17,7 +17,10 @@ package org.finos.legend.engine.repl.relational.schema;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.JDBCType;
+import java.sql.ResultSet;
 
 public class MetadataReader
 {
@@ -27,7 +30,8 @@ public class MetadataReader
         {
             MutableList<Table> tables = Lists.mutable.empty();
             DatabaseMetaData metaData = connection.getMetaData();
-            try (ResultSet res = metaData.getTables(null, null, null, new String[]{"TABLE"}))
+
+            try (ResultSet res = metaData.getTables(null, null, null, null))
             {
                 while (res.next())
                 {
@@ -39,9 +43,7 @@ public class MetadataReader
                             while (columns.next())
                             {
                                 String columnName = columns.getString("COLUMN_NAME");
-                                int size = columns.getInt("COLUMN_SIZE");
-                                int datatype = columns.getInt("DATA_TYPE");
-                                cols.add(new Column(columnName, JDBCType.valueOf(datatype).getName() + (datatype == 12 ? "(" + size + ")" : "")));
+                                cols.add(new Column(columnName, getType(columns)));
                             }
                         }
                         tables.add(new Table(res.getString("TABLE_SCHEM"), res.getString("TABLE_NAME"), cols));
@@ -55,6 +57,27 @@ public class MetadataReader
             throw new RuntimeException(e);
         }
     }
+
+    public static String getType(ResultSet colInfo) throws Exception
+    {
+        int datatype = colInfo.getInt("DATA_TYPE");
+        int size = colInfo.getInt("COLUMN_SIZE");
+        String name = JDBCType.valueOf(datatype).getName();
+        String newType;
+        switch (name)
+        {
+            case "BOOLEAN":
+                newType = "Bit";
+                break;
+            case "VARCHAR":
+                newType = "VARCHAR(" + size + ")";
+                break;
+            default:
+                newType = name;
+        }
+        return newType;
+    }
+
 
 //    public static void printSchema(ResultSet res) throws Exception
 //    {

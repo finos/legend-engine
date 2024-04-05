@@ -187,7 +187,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::scanRelations(p:
                                | [],
                                | if($source->isNotEmpty(),
                                     | $source,
-                                    | $m->rootClassMappingByClass($cl)->toOne()->resolveOperation($m)->removeDuplicates({a,b|$a.id == $b.id})->filter(s | $s->instanceOf(RootRelationalInstanceSetImplementation))->cast(@RootRelationalInstanceSetImplementation);
+                                    | $m->rootClassMappingByClass($cl)->toOne()->resolveOperation($m)->removeDuplicatesBy(x | $x.id)->filter(s | $s->instanceOf(RootRelationalInstanceSetImplementation))->cast(@RootRelationalInstanceSetImplementation);
                                  );
                             );
          print(if($debug.debug,|$debug.space+'Process Class: '+$cl.name->toOne()+', Sets: '+$finalSources.id->joinStrings('[',',',']')+'\n',|''));

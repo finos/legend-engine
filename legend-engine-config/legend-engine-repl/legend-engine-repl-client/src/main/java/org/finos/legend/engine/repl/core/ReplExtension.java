@@ -42,11 +42,13 @@ public interface ReplExtension extends LegendExtension
 
     MutableList<Command> getExtraCommands();
 
-    MutableList<String> getExtraState();
+//    MutableList<String> getExtraState();
 
     boolean supports(Result res);
 
     String print(Result res);
 
     void setClient(Client client);
+
+    MutableList<String> generateDynamicContent(String code);
 }

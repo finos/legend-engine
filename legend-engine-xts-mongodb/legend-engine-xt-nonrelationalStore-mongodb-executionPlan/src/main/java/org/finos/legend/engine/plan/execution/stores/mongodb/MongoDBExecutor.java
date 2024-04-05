@@ -19,7 +19,6 @@ import com.mongodb.client.MongoCursor;
 import org.bson.Document;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
-import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBConnectionSpecification;
 import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBStoreConnectionProvider;
 import org.finos.legend.engine.plan.execution.stores.mongodb.result.MongoDBResult;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
@@ -31,7 +30,6 @@ import java.util.function.Supplier;
 
 public class MongoDBExecutor
 {
-
     private final CredentialProviderProvider credentialProviderProvider;
 
     public MongoDBExecutor(CredentialProviderProvider credentialProviderProvider)
@@ -43,8 +41,7 @@ public class MongoDBExecutor
     {
         try
         {
-            MongoDBStoreConnectionProvider mongoDBConnectionProvider = getMongoDBConnectionProvider();
-            MongoDBConnectionSpecification mongoDBConnectionSpec = new MongoDBConnectionSpecification(dbConnection.dataSourceSpecification);
+            MongoDBStoreConnectionProvider mongoDBConnectionProvider =  new MongoDBStoreConnectionProvider(this.credentialProviderProvider);
             try
             {
                 Document bsonCmd = Document.parse(dbCommand);
@@ -66,11 +63,5 @@ public class MongoDBExecutor
                     e,
                     ExceptionCategory.SERVER_EXECUTION_ERROR);
         }
-    }
-
-    private MongoDBStoreConnectionProvider getMongoDBConnectionProvider()
-    {
-        MongoDBStoreConnectionProvider connectionProvider = new MongoDBStoreConnectionProvider(this.credentialProviderProvider);
-        return connectionProvider;
     }
 }

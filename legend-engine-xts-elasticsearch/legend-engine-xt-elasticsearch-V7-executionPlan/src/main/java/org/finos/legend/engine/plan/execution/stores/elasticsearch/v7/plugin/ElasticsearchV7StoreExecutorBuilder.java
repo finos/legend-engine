@@ -38,12 +38,12 @@ public class ElasticsearchV7StoreExecutorBuilder implements StoreExecutorBuilder
     @Override
     public StoreExecutor build()
     {
-        return new ElasticsearchV7StoreExecutor();
+        return build(ElasticsearchV7StoreExecutorConfiguration.newInstance().build());
     }
 
     @Override
     public StoreExecutor build(StoreExecutorConfiguration storeExecutorConfiguration)
     {
-        return this.build();
+        return new ElasticsearchV7StoreExecutor((ElasticsearchV7StoreExecutorConfiguration)storeExecutorConfiguration);
     }
 }

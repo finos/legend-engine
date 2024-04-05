@@ -41,14 +41,12 @@ public class MongoDBStoreExecutorBuilder implements StoreExecutorBuilder
     }
 
     @Override
-    public StoreExecutor build(StoreExecutorConfiguration storeExecutorConfiguration)
+    public MongoDBStoreExecutor build(StoreExecutorConfiguration storeExecutorConfiguration)
     {
         if (!(storeExecutorConfiguration instanceof MongoDBStoreExecutorConfiguration))
         {
             throw new IllegalStateException("Incorrect store execution configuration, expected MongoDBStoreExecutorConfiguration. Please reach out to dev team");
         }
-        MongoDBStoreExecutorConfiguration mongoDBStoreExecutorConfiguration = (MongoDBStoreExecutorConfiguration) storeExecutorConfiguration;
-        MongoDBStoreState state = new MongoDBStoreState();
-        return new MongoDBStoreExecutor(state, mongoDBStoreExecutorConfiguration);
+        return new MongoDBStoreExecutor(new MongoDBStoreState(), (MongoDBStoreExecutorConfiguration) storeExecutorConfiguration);
     }
 }

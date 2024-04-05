@@ -301,7 +301,7 @@ function <<access.private>> meta::pure::router::store::routing::permutationSetOn
 
 function meta::pure::router::store::routing::permute(var:PermutationSet[*]):List<PermutationSet>[*]
 {
-   let l = $var->map(p|^List<PermutationSet>(values=$p.sets->removeDuplicates({a,b|$a.id == $b.id})->map(v|^$p(sets=$v))));
+   let l = $var->map(p|^List<PermutationSet>(values=$p.sets->removeDuplicatesBy(x|$x.id)->map(v|^$p(sets=$v))));
    let seed = $l->head().values->map(o|^List<PermutationSet>(values=$o));
    $l->tail()->fold({v,a|$a->combine($v.values)}, $seed);
 }
@@ -333,8 +333,8 @@ function <<access.private>> meta::pure::router::store::routing::unionL(vs:Functi
    let fr = $vs->at(0);
    let i = $fr.value->cast(@InstanceValue);
    let l = $i.values->at(0)->cast(@LambdaFunction<Any>);
-   let res = $vs.value->cast(@InstanceValue).values->cast(@LambdaFunction<Any>).expressionSequence->map(e|pair($e->asString(), $e))->removeDuplicates({a,b|$a.first == $b.first});
-   ^$fr(value=^$i(values=^$l(expressionSequence=doUnion($res.second, $concatenate, $l.expressionSequence->toOne().genericType))));
+   let res = $vs.value->cast(@InstanceValue).values->cast(@LambdaFunction<Any>).expressionSequence->removeDuplicatesBy(e|$e->asString());
+   ^$fr(value=^$i(values=^$l(expressionSequence=doUnion($res, $concatenate, $l.expressionSequence->toOne().genericType))));
 }
 
 function <<access.private>> meta::pure::router::store::routing::doUnion(v:ValueSpecification[*], concatenate:Boolean[1], genericType:GenericType[1]):ValueSpecification[1]

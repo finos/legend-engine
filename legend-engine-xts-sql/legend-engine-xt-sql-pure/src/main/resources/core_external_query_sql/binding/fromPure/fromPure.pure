@@ -1401,14 +1401,22 @@ function meta::external::query::sql::transformation::queryToPure::extractNameFro
     c:Cast[1] | 'CAST(' + $c.expression->extractNameFromExpression($context) + ' AS ' + $c.type->extractNameFromExpression($context) + ')',
     c:ComparisonExpression[1] |
       let operator = [
-        pair(ComparisonOperator.EQUAL, '='),
-        pair(ComparisonOperator.NOT_EQUAL, '!='),
-        pair(ComparisonOperator.LESS_THAN, '<'),
-        pair(ComparisonOperator.LESS_THAN_OR_EQUAL, '<='),
-        pair(ComparisonOperator.GREATER_THAN, '>'),
-        pair(ComparisonOperator.GREATER_THAN_OR_EQUAL, '>='),
-        pair(ComparisonOperator.IS_DISTINCT_FROM, 'IS DISTINCT FROM'),
-        pair(ComparisonOperator.IS_NOT_DISTINCT_FROM, 'IS NOT DISTINCT FROM')
+        pair(ComparisonOperator.EQUAL,                '='),
+        pair(ComparisonOperator.NOT_EQUAL,            '!='),
+        pair(ComparisonOperator.LESS_THAN,            '<'),
+        pair(ComparisonOperator.LESS_THAN_OR_EQUAL,   '<='),
+        pair(ComparisonOperator.GREATER_THAN,         '>'),
+        pair(ComparisonOperator.GREATER_THAN_OR_EQUAL,'>='),
+        pair(ComparisonOperator.IS_DISTINCT_FROM,     'IS DISTINCT FROM'),
+        pair(ComparisonOperator.IS_NOT_DISTINCT_FROM, 'IS NOT DISTINCT FROM'),
+        pair(ComparisonOperator.REGEX_MATCH,          '~'),
+        pair(ComparisonOperator.REGEX_MATCH_CI,       '~*'),
+        pair(ComparisonOperator.REGEX_NO_MATCH,       '!~'),
+        pair(ComparisonOperator.REGEX_NO_MATCH_CI,    '!~*'),
+        pair(ComparisonOperator.LIKE,                 '~~'),
+        pair(ComparisonOperator.ILIKE,                '~~*'),
+        pair(ComparisonOperator.NOT_LIKE,             '!~~'),
+        pair(ComparisonOperator.NOT_ILIKE,            '!~~*')
       ]->getValue($c.operator);
 
       $c.left->extractNameFromExpression($context) + ' ' + $operator + ' ' + $c.right->extractNameFromExpression($context);,
@@ -2185,7 +2193,16 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       processor('ltrim', String, {args, fc, ctx | processTrim(ltrim_String_1__String_1_, $args)}),
       processor('left', left_String_1__Integer_1__String_1_),
       processor('md5', String, {args, fc, ctx | processHash($args, meta::pure::functions::hash::HashType.MD5)}),
-      processor('regexp_like', matches_String_1__String_1__Boolean_1_),
+      processor('regexp_like', Boolean, {args, fc, ctx | 
+        assert($args->size() == 2 || $args->size() == 3, 'incorrect number of args to regexp_like');
+
+        let caseInsensitive = $args->size() == 3 && $args->at(2)->reactivate()->match([
+          s:String[1] | $s == 'i',
+          a:Any[*] | false
+        ]);
+
+        createRegexMatch($args->at(0), $args->at(1), $caseInsensitive, false);
+      }),
       processor('repeat', repeatString_String_$0_1$__Integer_1__String_$0_1$_),
       processor('replace', replace_String_1__String_1__String_1__String_1_),
       processor('reverse', reverseString_String_1__String_1_),
@@ -3027,9 +3044,43 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processStandardComparison(c:ComparisonExpression[1], left:ValueSpecification[1], right:ValueSpecification[1], type:Type[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
 {
   [
-    pair(ComparisonOperator.IS_DISTINCT_FROM, | createIsDistinctFrom($left, $right)),
-    pair(ComparisonOperator.IS_NOT_DISTINCT_FROM, | createIsNotDistinctFrom($left, $right))
+    pair(ComparisonOperator.IS_DISTINCT_FROM,     | createIsDistinctFrom($left, $right)),
+    pair(ComparisonOperator.IS_NOT_DISTINCT_FROM, | createIsNotDistinctFrom($left, $right)),
+    pair(ComparisonOperator.REGEX_MATCH,          | createRegexMatch($left, $right, false, false)),
+    pair(ComparisonOperator.REGEX_MATCH_CI,       | createRegexMatch($left, $right, true, false)),
+    pair(ComparisonOperator.REGEX_NO_MATCH,       | createRegexMatch($left, $right, false, true)),
+    pair(ComparisonOperator.REGEX_NO_MATCH_CI,    | createRegexMatch($left, $right, true, true)),
+    pair(ComparisonOperator.LIKE,                 | createLike($c.left, $c.right, false, false, $expContext, $context)),
+    pair(ComparisonOperator.ILIKE,                | createLike($c.left, $c.right, true, false, $expContext, $context)),
+    pair(ComparisonOperator.NOT_LIKE,             | createLike($c.left, $c.right, false, true, $expContext, $context)),
+    pair(ComparisonOperator.NOT_ILIKE,            | createLike($c.left, $c.right, true, true, $expContext, $context))
   ]->getValue($c.operator, | createStandardComparison($c, $left, $right, $type))->eval();
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createLike(left:meta::external::query::sql::metamodel::Expression[1], right:meta::external::query::sql::metamodel::Expression[1], caseInsensitive:Boolean[1], not:Boolean[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+{
+  let like = ^LikePredicate(value = $left, pattern = $right, ignoreCase = $caseInsensitive);
+  let expression = if ($not, | ^NotExpression(value = $like), | $like);
+
+  processExpression($expression, $expContext, $context);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createRegexMatch(left:ValueSpecification[1], right:ValueSpecification[1], caseInsensitive:Boolean[1], not:Boolean[1]):ValueSpecification[1]
+{
+  assertFalse($caseInsensitive, 'case insensitive regex currently not supported');
+
+  let pattern = $right->reactivate()->match([
+    s:String[1] | $s,
+    a:Any[*] | fail('regex must be a string literal'); '';
+  ]);
+
+  assert($pattern->startsWith('^') && $pattern->endsWith('$'), 'only exact match regex currently supported');
+
+  let patternIV = $pattern->substring(1, $pattern->length() - 1)->iv();
+
+  let match = nullOrSfe(matches_String_1__String_1__Boolean_1_, [$left, $patternIV]);
+
+  if ($not, | nullOrSfe(not_Boolean_1__Boolean_1_, $match), | $match);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processLiteral(literal: Literal[1], expContext:SqlTransformExpressionContext[1], context: SqlTransformContext[1]):ValueSpecification[1]

@@ -320,7 +320,7 @@ function meta::relational::functions::pureToSqlQuery::pushExtraFilteringOperatio
          |$s,
          |^$s(
                extraFilteringOperation = [],
-               filteringOperation=$s.filteringOperation->concatenate($s.extraFilteringOperation->map(f|pair($f->buildUniqueName(true, $extensions), $f))->removeDuplicates({a,b|$a.first == $b.first}).second)->andFilters($extensions)
+               filteringOperation=$s.filteringOperation->concatenate($s.extraFilteringOperation->removeDuplicatesBy(f|$f->buildUniqueName(true, $extensions)))->andFilters($extensions)
           )
    );
 }
@@ -343,7 +343,7 @@ function meta::relational::functions::pureToSqlQuery::orderImmediateChildNodeByJ
 
 function meta::relational::functions::pureToSqlQuery::combineFilters(s:RelationalOperationElement[*], and:Boolean[1], extensions:Extension[*]):RelationalOperationElement[0..1]
 {
-   let ns = $s->map(f|pair($f->buildUniqueName(true, $extensions), $f))->removeDuplicates({a,b|$a.first == $b.first}).second;
+   let ns = $s->removeDuplicatesBy(f|$f->buildUniqueName(true, $extensions));
    if ($ns->isEmpty(),
          |[],
          |if ($ns->size() == 1,
@@ -1101,7 +1101,7 @@ function meta::relational::functions::pureToSqlQuery::buildCorrelatedSubQuery(se
 
    // Find the columns that are in the filter but refer to nodes outside of the correlated subQuery
    let foundNodeSubNodes = $child->getAllNodes()->cast(@JoinTreeNode).alias;
-   let filters = if($select.savedFilteringOperation->isEmpty(),|[],|$select.savedFilteringOperation.second->map(f|pair($f->buildUniqueName(true, $extensions), $f))->removeDuplicates({a,b|$a.first == $b.first}).second);
+   let filters = if($select.savedFilteringOperation->isEmpty(),|[],|$select.savedFilteringOperation.second->removeDuplicatesBy(f|$f->buildUniqueName(true, $extensions)));
    let filtersPartition = $filters->map(f|let condition = $f->extractTableAliasColumns()->filter(t|!$foundNodeSubNodes.name->contains($t.alias.name))->isEmpty();
                                           if($condition,|^BiContainer<RelationalOperationElement>(first=$f),|^BiContainer<RelationalOperationElement>(second=$f));
                                     );
@@ -1703,7 +1703,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
                                                         ),
                                                        |^$secondStep(select = ^$newSel(savedFilteringOperation = $newSel.savedFilteringOperation
                                                                                                                 ->concatenate(pair($sel.leftSideOfFilter->toOne(), $srcOperation.select.filteringOperation->toOne()))
-                                                                                                                ->map(f|pair($f.second->buildUniqueName(true, $extensions), $f))->removeDuplicates({a,b|$a.first == $b.first}).second
+                                                                                                                ->removeDuplicatesBy(f|$f.second->buildUniqueName(true, $extensions))
                                                                              )
                                                         )
                                                     );
@@ -1804,7 +1804,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
         |  //firstStep can result in (saved) milestoning filtering operations which need to be processed along with the existing src saved filtering operations
             let savedFilteringOpWithOldAndNewOps=$newSel.savedFilteringOperation->map(p| let existingOrNewNode=if($oldSrcOperation.select.savedFilteringOperation->contains($p),|$p.first->findOneNode($oldSrcOperation.select.data->toOne(), $newSel.data->toOne()),|$p.first);pair($existingOrNewNode, $p.second);)
                                                                                ->concatenate(pair($newSel.leftSideOfFilter->toOne(), $oldSrcOperation.select.filteringOperation->toOne()))
-                                                                               ->map(f|pair($f.second->buildUniqueName(true, $extensions), $f))->removeDuplicates({a,b|$a.first == $b.first}).second;
+                                                                               ->removeDuplicatesBy(f|$f.second->buildUniqueName(true, $extensions));
 
            ^$firstStep(select = ^$newSel(savedFilteringOperation = $savedFilteringOpWithOldAndNewOps));
      );
@@ -1918,7 +1918,7 @@ function meta::relational::functions::pureToSqlQuery::processCrossPropertyMappin
       |  //firstStep can result in (saved) milestoning filtering operations which need to be processed along with the existing src saved filtering operations
           let savedFilteringOpWithOldAndNewOps=$newSel.savedFilteringOperation->map(p| let existingOrNewNode=if($oldSrcOperation.select.savedFilteringOperation->contains($p),|$p.first->findOneNode($oldSrcOperation.select.data->toOne(), $newSel.data->toOne()),|$p.first);pair($existingOrNewNode, $p.second);)
                                                                              ->concatenate(pair($newSel.leftSideOfFilter->toOne(), $oldSrcOperation.select.filteringOperation->toOne()))
-                                                                             ->map(f|pair($f.second->buildUniqueName(true, $extensions), $f))->removeDuplicates({a,b|$a.first == $b.first}).second;
+                                                                             ->removeDuplicatesBy(f|$f.second->buildUniqueName(true, $extensions));
 
          ^$firstStep(select = ^$newSel(savedFilteringOperation = $savedFilteringOpWithOldAndNewOps));
    );
@@ -2097,7 +2097,7 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
                                          let newSelect = if ($select.extraFilteringOperation->isEmpty(),
                                                                 |$select,
                                                                 |^$select(extraFilteringOperation=[],
-                                                                          filteringOperation=$select.filteringOperation->concatenate($select.extraFilteringOperation->map(f|pair($f->buildUniqueName(true, $extensions), $f))->removeDuplicates({a,b|$a.first == $b.first}).second)->andFilters($extensions)
+                                                                          filteringOperation=$select.filteringOperation->concatenate($select.extraFilteringOperation->removeDuplicatesBy(f|$f->buildUniqueName(true, $extensions)))->andFilters($extensions)
                                                                  )
                                                          );
                                          let newSelectWithCursor = ^$selectWithCursor(select = $newSelect);
@@ -2225,7 +2225,7 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
 
        let firstJoin = $newJoins->at(0);
        let firstChild = $newSelectsWithCutNode->at(0).first;
-       let joinY = ^$firstJoin(operation = $newJoins->removeDuplicates({a,b|$a.name == $b.name}).operation->orFilters($extensions)->cast(@Operation)->toOne());
+       let joinY = ^$firstJoin(operation = $newJoins->removeDuplicatesBy(x | $x.name).operation->orFilters($extensions)->cast(@Operation)->toOne());
        let newChild = ^$firstChild(alias=$unionNode, join=$joinY, childrenData=[]);
 
        let sel = $operation.select;
@@ -2278,15 +2278,14 @@ function meta::relational::functions::pureToSqlQuery::buildConcatenateSubSelect(
                                                      ->map(t:TableAliasColumn[1]|^Alias(name=$t.column.name, relationalElement=$t)))
                                                      ->removeDuplicates(),
                                      filteringOperation = if($isDataType,|[],|$leftSelect.filteringOperation)->concatenate($leftSelect.savedFilteringOperation.second)
-                                                          ->map(f|pair($f->buildUniqueName(false, $extensions), $f))
-                                                          ->removeDuplicates({a,b|$a.first == $b.first})
-                                                          .second->andFilters($extensions)
+                                                          ->removeDuplicatesBy(f|$f->buildUniqueName(false, $extensions))
+                                                          ->andFilters($extensions)
                                   );
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::alignJoinAndPkColumnsForUnion(select: SelectSQLQuery[1], allColumns:RelationalOperationElement[*]):SelectSQLQuery[1]
 {
-   let allCols = $allColumns->removeDuplicates({a,b|$a->cast(@Alias).name == $b->cast(@Alias).name})->cast(@Alias).name;
+   let allCols = $allColumns->map(c | $c->cast(@Alias).name)->removeDuplicates();
 
    let sqlNull = ^Literal(value=^SQLNull());
    let newCols = $allCols->map(a| let col = $select.columns->filter(c|$c->cast(@Alias).name == $a);
@@ -4202,7 +4201,7 @@ function meta::relational::functions::pureToSqlQuery::buildExistsAsJoinWithNullC
          let joinAndNonJoinElements = $existsFilter.groupBy->partition(r| let tacs = $r->extractTableAliasColumns();
                                                                           $tacs->size() == 1 && $joinAliases->contains($tacs->at(0));
                                                                       );
-         let allColumns = $joinAliases->concatenate($existsFilter.groupBy)->removeDuplicates({a,b| $a == $b });
+         let allColumns = $joinAliases->concatenate($existsFilter.groupBy)->removeDuplicates();
 
          assertFalse($joinAliases->isEmpty(),'Cant find any aliases right side of exists ->');
 
@@ -5348,12 +5347,10 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                      r:FunctionRoutedValueSpecification[1]|$r.value->processTdsLambda($a,$returnColumnName, $vars, $state, $currentPropertyMapping, $context),
                      f:FunctionExpression[1]|
                         if ($f.func->instanceOf(meta::pure::metamodel::relation::Column),
-                          | println($f.func.name->toOne()->toOne()->addQuotesIfNecessary());
-                           println('ok');
-                            let foundColumn = $a->filter(alias|
+                          | let foundColumn = $a->filter(alias|
                                                             $alias->match(
                                                                 [
-                                                                  al:Alias[1]| println($al.name);$al.name->addQuotesIfNecessary();,
+                                                                  al:Alias[1]| $al.name->addQuotesIfNecessary();,
                                                                   t:TableAliasColumn[1]| $t.column.name->addQuotesIfNecessary(),
                                                                   w:WindowColumn[1]| $w.columnName->addQuotesIfNecessary()
                                                                 ]
@@ -5801,7 +5798,7 @@ function meta::relational::functions::pureToSqlQuery::processProject(ids:String[
          ^$operation(
                      select = ^TdsSelectSqlQuery(
                         distinct = $merge.distinct,
-                        columns = $nonOlap->concatenate($importDataFlowCols)->cast(@Alias)->removeDuplicates({a,b|$a.name == $b.name})->concatenate($olapCols),
+                        columns = $nonOlap->concatenate($importDataFlowCols)->cast(@Alias)->removeDuplicatesBy(a|$a.name)->concatenate($olapCols),
                         data = $possiblePKsWithUpdatedData.second,
                         savedFilteringOperation = $merge.savedFilteringOperation,
                         filteringOperation = $merge.filteringOperation,
@@ -6353,7 +6350,7 @@ function meta::relational::functions::pureToSqlQuery::moveSelectQueryToSubSelect
                                               relationalElement=^$select(
                                                  data = $newData,
                                                  filteringOperation = $reprocessedFilteringOperation,
-                                                 columns = $reprocessedColumns.second->cast(@Alias)->removeDuplicates({a,b|$a.name == $b.name}),
+                                                 columns = $reprocessedColumns.second->cast(@Alias)->removeDuplicatesBy(a|$a.name),
                                                  preIsolationCurrentTreeNode = $currentTreeNode,
                                                  groupBy = $reprocessedGroupBys->filter(c|$c->instanceOf(TableAliasColumn)),
                                                  leftSideOfFilter = $newLeftSideOfFilter
@@ -6670,6 +6667,21 @@ function meta::relational::functions::pureToSqlQuery::processDistinct(expression
                      );
 }
 
+function meta::relational::functions::pureToSqlQuery::processRowCount(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   let nested = processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne();
+   let selectWithCursor = $nested->extractSelectWithCursor($operation);
+
+   let query = $selectWithCursor.select->cast(@TdsSelectSqlQuery);
+
+   let mergedSQL = if($query.groupBy->isNotEmpty(), |$query->isolateTdsSelect($extensions), |$query);
+
+   ^$selectWithCursor(select = ^$mergedSQL(
+                                      columns = ^Alias(name = 'count', relationalElement = newDynaFunction('count', $mergedSQL.columns->at(0)->cast(@Alias).relationalElement))
+                                )
+                     );
+}
+
 function meta::relational::functions::pureToSqlQuery::processUnary(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], f:meta::pure::metamodel::function::Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
    let nested = processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
@@ -6853,7 +6865,7 @@ function meta::relational::functions::pureToSqlQuery::possiblyMergeUnions(common
          let newQueries = $union.queries->zip($otherUnion.queries)->map(q|let f = $q.first;
                                                                           let s = $q.second;
                                                                           let merged = [$f, $s]->mergeSQLQueryData($nodeId, $state, $context, $extensions);
-                                                                                        ^$merged(filteringOperation = $merged.filteringOperation->map(f|pair($f->buildUniqueName(true, $extensions), $f))->removeDuplicates({a,b|$a.first == $b.first}).second);
+                                                                                        ^$merged(filteringOperation = $merged.filteringOperation->removeDuplicatesBy(f|$f->buildUniqueName(true, $extensions)));
                                                                );
 
          let merged = ^$union(queries = $newQueries,
@@ -6938,7 +6950,7 @@ function meta::relational::functions::pureToSqlQuery::merge(parentTargetTreeNode
                         let initAlias = ^OldAliasToNewAlias(first=$sourceTreeNode.alias.name, second=$a.node.alias);
                         let res = reprocessJoinTreeNode($sourceTreeNode, $childNode, $initAlias, $nodeId);
                         let newAliases = $res.second.values->add($initAlias);
-                        let parentFilters = $a.filteringOperation->map(f|pair($f->buildUniqueName(true, $extensions), $f))->removeDuplicates({a,b|$a.first == $b.first}).second;
+                        let parentFilters = $a.filteringOperation->removeDuplicatesBy(f|$f->buildUniqueName(true, $extensions));
                         let parentSavedFilters = $a.savedFilteringOperation;
                         let parentExtraFilters  = $a.extraFilteringOperation;
                         let parentGroupBy = $a.groupBy;
@@ -6998,7 +7010,7 @@ function meta::relational::functions::pureToSqlQuery::merge(parentTargetTreeNode
 
                         let mergedOriginalNode = $a.node->possiblyMergeUnions($sourceTreeNode, $nodeId, $state, $context, $extensions);
 
-                        let parentFilters = $mergeNodes.filteringOperation->map(f|pair($f->buildUniqueName(true, $extensions), $f))->removeDuplicates({a,b|$a.first == $b.first}).second;
+                        let parentFilters = $mergeNodes.filteringOperation->removeDuplicatesBy(f|$f->buildUniqueName(true, $extensions));
                         let parentSavedFilters = $mergeNodes.savedFilteringOperation;
                         let parentExtraFiler = $mergeNodes.extraFilteringOperation;
                         let parentGroupBy = $mergeNodes.groupBy;
@@ -7123,11 +7135,11 @@ function meta::relational::functions::pureToSqlQuery::mergeSQLQueryData(preQuery
    let filtered = ^$res
    (
       leftSideOfFilter = if($querySet->at(0).leftSideOfFilter->isEmpty(),|[],|$querySet->at(0).leftSideOfFilter->toOne()->findOneNode($querySet->at(0).data->toOne(), $res.data->toOne())),
-      savedFilteringOperation = $res.savedFilteringOperation->map(f|pair($f.second->buildUniqueName(true, $extensions), $f))->removeDuplicates({a,b|$a.first == $b.first}).second
+      savedFilteringOperation = $res.savedFilteringOperation->removeDuplicatesBy(f|$f.second->buildUniqueName(true, $extensions))
                                                             ->map(p| let originalQuery = $querySet->filter(q|!$q.data->isEmpty() && $q.data->toOne()->getAllNodes()->contains($p.first));
                                                                      pair(if ($originalQuery->isEmpty(),|$p.first,|$p.first->findOneNode($originalQuery->at(0).data->toOne(), $res.data->toOne())), $p.second);
                                                              ),
-      extraFilteringOperation = $res.extraFilteringOperation->map(f|pair($f->buildUniqueName(true, $extensions), $f))->removeDuplicates({a,b|$a.first == $b.first}).second
+      extraFilteringOperation = $res.extraFilteringOperation->removeDuplicatesBy(f|$f->buildUniqueName(true, $extensions))
    );
 
 
@@ -8170,6 +8182,7 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::slice_Relation_1__Integer_1__Integer_1__Relation_1_,second=meta::relational::functions::pureToSqlQuery::processSlice_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::sort_Relation_1__SortInfo_MANY__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processTDSSortSortInfo_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processProjectColumns_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::size_Relation_1__Integer_1_, second=meta::relational::functions::pureToSqlQuery::processRowCount_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::select_Relation_1__ColSpecArray_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processTdsRestrict_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processTdsRestrict_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_)
         

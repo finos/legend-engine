@@ -62,7 +62,7 @@ function meta::pure::executionPlan::platformBinding::extractPlatformBindingById(
    let platformBindings = $extensions.availablePlatformBindings->filter(p | $p.platformId == $platformId);
    assert($platformBindings->size() > 0, | 'Found no platform binding with id: ' +  $platformId);
    let first = $platformBindings->at(0);
-   ^$first(platformBindingExtensions = $platformBindings.platformBindingExtensions->removeDuplicates(x|$x.id, {a,b|$a==$b}));
+   ^$first(platformBindingExtensions = $platformBindings.platformBindingExtensions->removeDuplicatesBy(x|$x.id));
 }
 
 

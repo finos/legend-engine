@@ -435,7 +435,15 @@ Enum meta::external::query::sql::metamodel::ComparisonOperator
   GREATER_THAN,
   GREATER_THAN_OR_EQUAL,
   IS_DISTINCT_FROM,
-  IS_NOT_DISTINCT_FROM
+  IS_NOT_DISTINCT_FROM,
+  REGEX_MATCH,
+  REGEX_MATCH_CI,
+  REGEX_NO_MATCH,
+  REGEX_NO_MATCH_CI,
+  LIKE,
+  ILIKE,
+  NOT_LIKE,
+  NOT_ILIKE
 }
 
 Enum meta::external::query::sql::metamodel::CurrentTimeType

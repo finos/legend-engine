@@ -33,7 +33,7 @@ public class TestSemiStructuredMultiBindingMapping extends AbstractTestSemiStruc
         String memSQLExpected =
                 "Relational\n" +
                 "(\n" +
-                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Address Name, String, \"\", \"\")]\n" +
+                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Address Name, String, VARCHAR(65536), \"\")]\n" +
                 "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Address Name\", \"\")]\n" +
                 "  sql = select `root`.FIRSTNAME as `First Name`, `root`.ADDRESS_DETAILS::$name as `Address Name` from PERSON_SCHEMA.PERSON_TABLE as `root`\n" +
                 "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
@@ -58,7 +58,7 @@ public class TestSemiStructuredMultiBindingMapping extends AbstractTestSemiStruc
         String memSQLExpected =
                 "Relational\n" +
                 "(\n" +
-                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, \"\", \"\"), (Address Name, String, \"\", \"\")]\n" +
+                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, VARCHAR(65536), \"\"), (Address Name, String, VARCHAR(65536), \"\")]\n" +
                 "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Legal Name\", \"\"), (\"Address Name\", \"\")]\n" +
                 "  sql = select `root`.FIRSTNAME as `First Name`, `root`.FIRM_DETAILS::$legalName as `Firm Legal Name`, `root`.ADDRESS_DETAILS::$name as `Address Name` from PERSON_SCHEMA.PERSON_TABLE as `root`\n" +
                 "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
@@ -83,7 +83,7 @@ public class TestSemiStructuredMultiBindingMapping extends AbstractTestSemiStruc
         String memSQLExpected =
                 "Relational\n" +
                 "(\n" +
-                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, \"\", \"\"), (Address Name, String, \"\", \"\"), (Manager Firm Legal Name, String, \"\", \"\")]\n" +
+                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, VARCHAR(65536), \"\"), (Address Name, String, VARCHAR(65536), \"\"), (Manager Firm Legal Name, String, VARCHAR(65536), \"\")]\n" +
                 "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Legal Name\", \"\"), (\"Address Name\", \"\"), (\"Manager Firm Legal Name\", \"\")]\n" +
                 "  sql = select `root`.FIRSTNAME as `First Name`, `root`.FIRM_DETAILS::$legalName as `Firm Legal Name`, `root`.ADDRESS_DETAILS::$name as `Address Name`, `person_table_1`.FIRM_DETAILS::$legalName as `Manager Firm Legal Name` from PERSON_SCHEMA.PERSON_TABLE as `root` left outer join PERSON_SCHEMA.PERSON_TABLE as `person_table_1` on (`root`.MANAGERID = `person_table_1`.ID)\n" +
                 "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +

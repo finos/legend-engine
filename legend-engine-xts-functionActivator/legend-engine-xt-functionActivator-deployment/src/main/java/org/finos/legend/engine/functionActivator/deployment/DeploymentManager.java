@@ -24,6 +24,8 @@ import java.util.List;
 public interface DeploymentManager<U extends FunctionActivatorArtifact, V extends DeploymentResult, W extends FunctionActivatorDeploymentConfiguration>
 {
 
+    public List<W> selectConfig(List<FunctionActivatorDeploymentConfiguration> availableConfigs);
+
     public V deploy(Identity identity, U artifact);
 
     public V deploy(Identity identity, U artifact, List<W> availableRuntimeConfigurations);

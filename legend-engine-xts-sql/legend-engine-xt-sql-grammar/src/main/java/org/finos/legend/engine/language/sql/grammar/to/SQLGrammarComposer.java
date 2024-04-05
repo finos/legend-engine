@@ -34,7 +34,15 @@ public class SQLGrammarComposer
             Tuples.pair(ComparisonOperator.LESS_THAN_OR_EQUAL, "<="),
             Tuples.pair(ComparisonOperator.GREATER_THAN_OR_EQUAL, ">="),
             Tuples.pair(ComparisonOperator.IS_DISTINCT_FROM, "IS DISTINCT FROM"),
-            Tuples.pair(ComparisonOperator.IS_NOT_DISTINCT_FROM, "IS NOT DISTINCT FROM")
+            Tuples.pair(ComparisonOperator.IS_NOT_DISTINCT_FROM, "IS NOT DISTINCT FROM"),
+            Tuples.pair(ComparisonOperator.REGEX_MATCH, "~"),
+            Tuples.pair(ComparisonOperator.REGEX_MATCH_CI, "~*"),
+            Tuples.pair(ComparisonOperator.REGEX_NO_MATCH, "!~"),
+            Tuples.pair(ComparisonOperator.REGEX_NO_MATCH_CI, "!~*"),
+            Tuples.pair(ComparisonOperator.LIKE, "~~"),
+            Tuples.pair(ComparisonOperator.ILIKE, "~~*"),
+            Tuples.pair(ComparisonOperator.NOT_LIKE, "!~~"),
+            Tuples.pair(ComparisonOperator.NOT_ILIKE, "!~~*")
     );
     private final MutableMap<LogicalBinaryType, String> binaryComparator = UnifiedMap.newMapWith(
             Tuples.pair(LogicalBinaryType.AND, "AND"),

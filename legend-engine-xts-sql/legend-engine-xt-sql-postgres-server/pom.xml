@@ -3,7 +3,7 @@
     <parent>
         <artifactId>legend-engine-xts-sql</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.42.3-SNAPSHOT</version>
+        <version>4.43.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -310,12 +310,12 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-sql-query</artifactId>
+            <artifactId>legend-engine-xt-sql-http-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-sql-query</artifactId>
+            <artifactId>legend-engine-xt-sql-http-api</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>

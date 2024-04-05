@@ -15,13 +15,12 @@
 package org.finos.legend.engine.repl.relational.schema;
 
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
 
 public class Table
 {
     public String schema;
     public String name;
-    public MutableList<Column> columns = Lists.mutable.empty();
+    public MutableList<Column> columns;
 
     public Table(String schema, String name, MutableList<Column> columns)
     {

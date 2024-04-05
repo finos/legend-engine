@@ -34,7 +34,7 @@ public class TestExtractFromSemiStructuredSimple extends AbstractTestSemiStructu
         String memSQLExpected =
                 "Relational\n" +
                 "(\n" +
-                "  type = TDS[(Id, Integer, INT, \"\"), (Dot Only, StrictDate, \"\", \"\"), (Bracket Only, DateTime, \"\", \"\"), (Dot & Bracket, String, \"\", \"\")]\n" +
+                "  type = TDS[(Id, Integer, INT, \"\"), (Dot Only, StrictDate, DATE, \"\"), (Bracket Only, DateTime, TIMESTAMP, \"\"), (Dot & Bracket, String, VARCHAR(65536), \"\")]\n" +
                 "  resultColumns = [(\"Id\", INT), (\"Dot Only\", \"\"), (\"Bracket Only\", \"\"), (\"Dot & Bracket\", \"\")]\n" +
                 "  sql = select `root`.ID as `Id`, date(json_extract_string(`root`.FIRM_DETAILS, 'dates', 'estDate')) as `Dot Only`, timestamp(json_extract_string(`root`.FIRM_DETAILS, 'dates', 'last Update')) as `Bracket Only`, json_extract_string(`root`.FIRM_DETAILS, 'address', 'lines', '1', 'details') as `Dot & Bracket` from FIRM_SCHEMA.FIRM_TABLE as `root`\n" +
                 "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
@@ -56,7 +56,7 @@ public class TestExtractFromSemiStructuredSimple extends AbstractTestSemiStructu
         String memSQLExpected =
                 "Relational\n" +
                 "(\n" +
-                "  type = TDS[(Id, Integer, INT, \"\"), (Second Line of Address, String, \"\", \"\")]\n" +
+                "  type = TDS[(Id, Integer, INT, \"\"), (Second Line of Address, String, VARCHAR(65536), \"\")]\n" +
                 "  resultColumns = [(\"Id\", INT), (\"Second Line of Address\", \"\")]\n" +
                 "  sql = select `root`.ID as `Id`, json_extract_string(`root`.FIRM_DETAILS, 'address', 'lines', '1', 'details') as `Second Line of Address` from FIRM_SCHEMA.FIRM_TABLE as `root`\n" +
                 "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
@@ -101,7 +101,7 @@ public class TestExtractFromSemiStructuredSimple extends AbstractTestSemiStructu
         String memSQLExpected =
                 "Relational\n" +
                 "(\n" +
-                "  type = TDS[(Id, Integer, INT, \"\"), (Legal Name, String, \"\", \"\"), (Est Date, StrictDate, \"\", \"\"), (Mnc, Boolean, \"\", \"\"), (Employee Count, Integer, \"\", \"\"), (Revenue, Float, \"\", \"\"), (Last Update, DateTime, \"\", \"\")]\n" +
+                "  type = TDS[(Id, Integer, INT, \"\"), (Legal Name, String, VARCHAR(65536), \"\"), (Est Date, StrictDate, DATE, \"\"), (Mnc, Boolean, BIT, \"\"), (Employee Count, Integer, BIGINT, \"\"), (Revenue, Float, FLOAT, \"\"), (Last Update, DateTime, TIMESTAMP, \"\")]\n" +
                 "  resultColumns = [(\"Id\", INT), (\"Legal Name\", \"\"), (\"Est Date\", \"\"), (\"Mnc\", \"\"), (\"Employee Count\", \"\"), (\"Revenue\", \"\"), (\"Last Update\", \"\")]\n" +
                 "  sql = select `root`.ID as `Id`, json_extract_string(`root`.FIRM_DETAILS, 'legalName') as `Legal Name`, date(json_extract_string(`root`.FIRM_DETAILS, 'dates', 'estDate')) as `Est Date`, json_extract_json(`root`.FIRM_DETAILS, 'mnc') as `Mnc`, json_extract_bigint(`root`.FIRM_DETAILS, 'employeeCount') as `Employee Count`, json_extract_double(`root`.FIRM_DETAILS, 'revenue') as `Revenue`, timestamp(json_extract_string(`root`.FIRM_DETAILS, 'dates', 'last Update')) as `Last Update` from FIRM_SCHEMA.FIRM_TABLE as `root`\n" +
                 "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +

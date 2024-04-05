@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-snowflake</artifactId>
-        <version>4.42.3-SNAPSHOT</version>
+        <version>4.43.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -122,7 +122,7 @@
         <!-- TEST -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-test-server</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-test-http-server</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -147,7 +147,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-api</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-connection-http-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
