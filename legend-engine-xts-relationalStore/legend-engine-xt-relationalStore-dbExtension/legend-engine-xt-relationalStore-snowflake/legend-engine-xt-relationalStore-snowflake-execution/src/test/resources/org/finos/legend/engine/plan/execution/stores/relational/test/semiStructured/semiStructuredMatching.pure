@@ -165,16 +165,7 @@ Binding match::store::CustomerBindingWithMinimalLegendJsonSchema
   schemaId: Customer;
   contentType: 'application/json';
   modelIncludes: [
-    match::model::Customer,
-    match::model::CashOnDeliveryPayment,
-    match::model::TransactionDetails,
-    match::model::CustomerAddress,
-    match::model::CardPrepaidPayment,
-    match::model::WalletPrepaidPayment,
-    match::model::PrepaidPayment,
-    match::model::Payment,
-    match::model::ShippingAddress,
-    match::model::BillingAddress
+    match::model::Customer
   ];
 }
 

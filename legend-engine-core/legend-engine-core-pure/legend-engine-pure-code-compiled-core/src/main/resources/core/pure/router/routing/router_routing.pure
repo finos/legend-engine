@@ -784,6 +784,7 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     left_String_1__Integer_1__String_1_,
     right_String_1__Integer_1__String_1_,
     typeName_Any_1__String_1_,
+    typePath_Any_1__String_1_,
     meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_,
     meta::pure::functions::date::calendar::annualized_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,
     meta::pure::functions::date::calendar::cme_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,
