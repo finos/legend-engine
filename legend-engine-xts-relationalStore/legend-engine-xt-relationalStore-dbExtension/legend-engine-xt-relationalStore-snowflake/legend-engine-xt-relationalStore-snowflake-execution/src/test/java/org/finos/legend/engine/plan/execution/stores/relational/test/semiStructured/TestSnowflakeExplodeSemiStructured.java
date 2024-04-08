@@ -67,12 +67,12 @@ public class TestSnowflakeExplodeSemiStructured extends AbstractTestSnowflakeSem
         String snowflakeExpected =
                 "    Relational\n" +
                         "    (\n" +
-                        "      type = TDS[(Id, String, VARCHAR(100), \"\"), (Entity Tag, String, VARCHAR(65536), \"\"), (Entity Tag Id, String, VARCHAR(65536), \"\"), (Orders/Id, String, VARCHAR(100), \"\")]\n" +
+                        "      type = TDS[(Id, String, VARCHAR(100), \"\"), (Entity Tag, String, VARCHAR(8192), \"\"), (Entity Tag Id, String, VARCHAR(8192), \"\"), (Orders/Id, String, VARCHAR(100), \"\")]\n" +
                         "      resultColumns = [(\"Id\", VARCHAR(100)), (\"Entity Tag\", \"\"), (\"Entity Tag Id\", \"\"), (\"Orders/Id\", VARCHAR(100))]\n" +
                         "      sql = select \"root\".ID as \"Id\", \"ss_flatten_0\".VALUE['tag']::varchar as \"Entity Tag\", \"ss_flatten_0\".VALUE['tagId']::varchar as \"Entity Tag Id\", \"blocks_1\".ID as \"Orders/Id\" from Semistructured.Blocks as \"root\" inner join lateral flatten(input => \"root\".BLOCKDATA['relatedEntities'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\" left outer join (select \"orders_0\".ID, \"orders_0\".IDENTIFIER, \"orders_0\".QUANTITY, \"orders_0\".SIDE, \"orders_0\".PRICE, \"blocks_2\".leftJoinKey_0 as leftJoinKey_0 from (select \"ss_flatten_1\".VALUE as flattened_prop, \"root\".ID as leftJoinKey_0 from Semistructured.Blocks as \"root\" inner join lateral flatten(input => \"root\".BLOCKDATA['relatedEntities'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_1\") as \"blocks_2\" inner join Semistructured.Orders as \"orders_0\" on (to_varchar(get_path(\"blocks_2\".flattened_prop, 'tag')) = 'order' and to_varchar(get_path(\"blocks_2\".flattened_prop, 'tagId')) = \"orders_0\".ID)) as \"blocks_1\" on (\"root\".ID = \"blocks_1\".leftJoinKey_0)\n" +
                         "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                         "    )\n";
-        String TDSType = "  type = TDS[(Id, String, VARCHAR(100), \"\"), (Entity Tag, String, VARCHAR(65536), \"\"), (Entity Tag Id, String, VARCHAR(65536), \"\"), (Orders/Id, String, VARCHAR(100), \"\")]\n";
+        String TDSType = "  type = TDS[(Id, String, VARCHAR(100), \"\"), (Entity Tag, String, VARCHAR(8192), \"\"), (Entity Tag Id, String, VARCHAR(8192), \"\"), (Orders/Id, String, VARCHAR(100), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 

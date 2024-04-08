@@ -42,7 +42,7 @@ public class TestExtractFromSemiStructuredJoin extends AbstractTestSemiStructure
         String memSQLExpected =
                 "Relational\n" +
                 "(\n" +
-                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Last Name, String, VARCHAR(100), \"\"), (Firm/Legal Name, String, VARCHAR(65536), \"\")]\n" +
+                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Last Name, String, VARCHAR(100), \"\"), (Firm/Legal Name, String, VARCHAR(8192), \"\")]\n" +
                 "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Last Name\", VARCHAR(100)), (\"Firm/Legal Name\", \"\")]\n" +
                 "  sql = select `root`.FIRSTNAME as `First Name`, `root`.LASTNAME as `Last Name`, `firm_table_0`.FIRM_DETAILS::$legalName as `Firm/Legal Name` from PERSON_SCHEMA.PERSON_TABLE as `root` left outer join FIRM_SCHEMA.FIRM_TABLE as `firm_table_0` on (json_extract_bigint(`root`.FIRM, 'ID') = json_extract_bigint(`firm_table_0`.FIRM_DETAILS, 'ID'))\n" +
                 "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
