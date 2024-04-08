@@ -143,10 +143,10 @@ public class PostgresTestArtifacts
         "\"BATCH_ID\" INTEGER," +
         "PRIMARY KEY (\"ID\", \"NAME\"))";
     public static String expectedBaseTableCreateQueryWithNoPKs = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
-            "\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE,\"biz_date\" DATE,\"digest\" VARCHAR,\"batch_id\" INTEGER)";
+            "\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE PRECISION,\"biz_date\" DATE,\"digest\" VARCHAR,\"batch_id\" INTEGER)";
 
     public static String expectedBaseStagingTableCreateQueryWithNoPKs = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging\"(" +
-            "\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE,\"biz_date\" DATE,\"digest\" VARCHAR)";
+            "\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE PRECISION,\"biz_date\" DATE,\"digest\" VARCHAR)";
 
     public static String expectedLockInfoTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main_legend_persistence_lock\"" +
             "(\"insert_ts_utc\" TIMESTAMP,\"last_used_ts_utc\" TIMESTAMP,\"table_name\" VARCHAR UNIQUE)";
@@ -185,30 +185,30 @@ public class PostgresTestArtifacts
     public static String expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
             "\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"biz_date\" DATE," +
             "\"digest\" VARCHAR," +
-            "\"batch_update_time\" DATETIME NOT NULL," +
+            "\"batch_update_time\" TIMESTAMP NOT NULL," +
             "\"batch_id\" INTEGER," +
             "PRIMARY KEY (\"id\", \"name\", \"batch_update_time\"))";
 
     public static String expectedBaseTablePlusDigestPlusUpdateTimestampCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"(" +
         "\"ID\" INTEGER NOT NULL," +
         "\"NAME\" VARCHAR NOT NULL," +
-        "\"AMOUNT\" DOUBLE," +
+        "\"AMOUNT\" DOUBLE PRECISION," +
         "\"BIZ_DATE\" DATE," +
         "\"DIGEST\" VARCHAR," +
-        "\"BATCH_UPDATE_TIME\" DATETIME NOT NULL," +
+        "\"BATCH_UPDATE_TIME\" TIMESTAMP NOT NULL," +
         "\"BATCH_ID\" INTEGER," +
         "PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_UPDATE_TIME\"))";
 
     public static String expectedBaseTablePlusDigestPlusUpdateTimestampAndBatchNumberCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
         "\"id\" INTEGER NOT NULL," +
         "\"name\" VARCHAR NOT NULL," +
-        "\"amount\" DOUBLE," +
+        "\"amount\" DOUBLE PRECISION," +
         "\"biz_date\" DATE," +
         "\"digest\" VARCHAR," +
-        "\"batch_update_time\" DATETIME NOT NULL," +
+        "\"batch_update_time\" TIMESTAMP NOT NULL," +
         "\"batch_number\" INTEGER," +
         "PRIMARY KEY (\"id\", \"name\", \"batch_update_time\"))";
 
@@ -279,7 +279,7 @@ public class PostgresTestArtifacts
     public static String expectedBaseTempStagingTablePlusDigestWithCountAndDataSplit = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging_temp_staging_lp_yosulf\"" +
         "(\"id\" INTEGER NOT NULL," +
         "\"name\" VARCHAR NOT NULL," +
-        "\"amount\" DOUBLE," +
+        "\"amount\" DOUBLE PRECISION," +
         "\"biz_date\" DATE," +
         "\"digest\" VARCHAR," +
         "\"legend_persistence_count\" INTEGER," +
