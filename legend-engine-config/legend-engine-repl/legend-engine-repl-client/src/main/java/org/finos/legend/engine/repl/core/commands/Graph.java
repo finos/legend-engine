@@ -57,7 +57,7 @@ public class Graph implements Command
             MutableList<String> showArgs = all.subList(1, all.size());
             if (showArgs.isEmpty())
             {
-                PureModelContextData d = this.client.getLegendInterface().parse(this.client.buildState().makeString("\n"));
+                PureModelContextData d = this.client.getModelState().parse();
                 ListIterate.forEach(
                         ListIterate.collect(
                                 ListIterate.select(d.getElements(), c -> !c._package.equals("__internal__")),
@@ -73,7 +73,7 @@ public class Graph implements Command
             }
             else
             {
-                PureModelContextData d = this.client.getLegendInterface().parse(this.client.buildState().makeString("\n"));
+                PureModelContextData d = this.client.getModelState().parse();
                 PackageableElement element = ListIterate.select(d.getElements(), c -> c.getPath().equals(showArgs.getFirst())).getFirst();
                 Section section = LazyIterate.selectInstancesOf(d.getElements(), SectionIndex.class).flatCollect(c -> c.sections).select(c -> c.elements.contains(PureGrammarComposerUtility.convertPath(element.getPath()))).getFirst();
                 PureGrammarComposer composer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
@@ -97,7 +97,7 @@ public class Graph implements Command
     {
         if (inScope.startsWith("graph"))
         {
-            PureModelContextData d = this.client.getLegendInterface().parse(this.client.buildState().makeString("\n"));
+            PureModelContextData d = this.client.getModelState().parse();
             return ListIterate.collect(ListIterate.select(d.getElements(), c -> !c._package.equals("__internal__")), c -> new org.jline.reader.Candidate(PureGrammarComposerUtility.convertPath(c.getPath())));
         }
         return null;

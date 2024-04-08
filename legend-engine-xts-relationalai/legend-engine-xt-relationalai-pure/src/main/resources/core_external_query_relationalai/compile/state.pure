@@ -1,8 +1,8 @@
-import meta::external::store::rel::utils::collection::*;
 import meta::external::store::rel::compile::*;
-import meta::external::store::rel::metamodel::*;
 import meta::external::store::rel::compile::utils::*;
+import meta::external::store::rel::metamodel::*;
 import meta::external::store::rel::utils::*;
+import meta::external::store::rel::utils::collection::*;
 
 
 /**
@@ -10,13 +10,13 @@ import meta::external::store::rel::utils::*;
   */
 Class meta::external::store::rel::compile::CompilationState {
   // The program generated thus far.
-  program: Program[1];
+  program: RelProgram[1];
   // The current expression. This expression is used to
   // indicate the output of the subsequent step. This is a
-  // convenient helper attribute so that steps do not have to 
+  // convenient helper attribute so that steps do not have to
   // manually inspect `program` to retrieve the relevant result
   // of the previous compilation step.
-  current: Expr[0..1];
+  current: RelExpr[0..1];
   // A variable factory for generating unique identifiers.
   variableFactory: IdentifierFactory[1];
 
@@ -44,20 +44,20 @@ function meta::external::store::rel::compile::CompilationState(debugContext: Deb
 
 function meta::external::store::rel::compile::step(
   state: Result<CompilationState|0..1>[1],
-  logic: FunctionDefinition<{Expr[1]->Result<Expr|0..1>[1]}>[1]
+  logic: FunctionDefinition<{RelExpr[1]->Result<RelExpr|0..1>[1]}>[1]
 ): Result<CompilationState|0..1>[1] {
   $state->andThen({inner: CompilationState[1] |
     $inner.current
       ->okOr(| errorTrace('Expected expression in current state.'))
       ->andThen($logic)
-      ->then({expr: Expr[1] | ^$inner(current=$expr)});
+      ->then({expr: RelExpr[1] | ^$inner(current=$expr)});
   });
 }
 
-function meta::external::store::rel::compile::current(state: Result<CompilationState|0..1>[1]): Result<Expr|0..1>[1] {
+function meta::external::store::rel::compile::current(state: Result<CompilationState|0..1>[1]): Result<RelExpr|0..1>[1] {
   $state->andThen(inner: CompilationState[1] | $inner->current());
 }
 
-function meta::external::store::rel::compile::current(state: CompilationState[1]): Result<Expr|0..1>[1] {
+function meta::external::store::rel::compile::current(state: CompilationState[1]): Result<RelExpr|0..1>[1] {
   $state.current->okOr(| errorTrace('Current expression empty.'));
 }

@@ -277,12 +277,6 @@ public class TestPlanExecutionForIn extends AlloyTestServer
         //executePlan with freemarker placeholders in sql Query
         String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where ((\\\"root\\\".fullName in ('user1','user2','user3') and \\\"root\\\".firmName = 'abcd<@efg') and (\\\"root\\\".birthTime is null))\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[]}}";
         Assert.assertEquals(expectedResult, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, queryParameters)));
-
-        //check if old flow works as expected
-        System.setProperty(overridePropertyForTemplateModel, "true");
-        //in old flow, processing "<@" would fail ideally (this was our status quo)
-        Assert.assertThrows(RuntimeException.class, () -> RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, queryParameters)));
-        System.clearProperty(overridePropertyForTemplateModel);
     }
 
     @Test

@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.42.4-SNAPSHOT</version>
+    <version>4.43.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -92,6 +92,7 @@
 
         <!-- Misc -->
         <module>legend-engine-xts-authentication</module>
+        <module>legend-engine-xts-protocol-java-generation</module>
         <module>legend-engine-config</module>
 
         <!-- Analytics -->
@@ -104,7 +105,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.2.2</legend.pure.version>
+        <legend.pure.version>5.3.0</legend.pure.version>
         <legend.shared.version>0.25.4</legend.shared.version>
 
         <!-- SONAR -->
@@ -142,6 +143,7 @@
         <postgres.version>9.4.1208.jre7</postgres.version>
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
         <snowflake.version>3.13.5</snowflake.version>
+        <duckdb.version>0.10.0</duckdb.version>
 
         <!-- Dependency versions -->
         <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
@@ -227,6 +229,9 @@
         <nexus.staging.maven.plugin.version>1.6.13</nexus.staging.maven.plugin.version>
         <versions.maven.plugin.version>2.7</versions.maven.plugin.version>
         <google.maven.download.plugin.version>1.8.1</google.maven.download.plugin.version>
+
+        <!--NPM registry -->
+        <npm.registry.url>https://registry.npmjs.org</npm.registry.url>
     </properties>
 
     <scm>
@@ -1116,6 +1121,23 @@
                 <artifactId>legend-engine-xt-relationalStore-sqlserver-connection</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-duckdb-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-duckdb-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-duckdb-execution</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-spanner-execution</artifactId>
@@ -2645,6 +2667,16 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-runtime-java-extension-interpreted-functions-relation</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-runtime-java-extension-interpreted-dsl-tds</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-runtime-java-extension-compiled-functions-relation</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
@@ -3411,6 +3443,11 @@
                 <groupId>net.snowflake</groupId>
                 <artifactId>snowflake-jdbc</artifactId>
                 <version>${snowflake.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.duckdb</groupId>
+                <artifactId>duckdb_jdbc</artifactId>
+                <version>${duckdb.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.databricks</groupId>

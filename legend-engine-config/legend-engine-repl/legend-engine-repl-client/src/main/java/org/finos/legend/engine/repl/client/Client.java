@@ -17,14 +17,19 @@ package org.finos.legend.engine.repl.client;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.block.predicate.checked.CheckedPredicate;
+import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.repl.autocomplete.CompleterExtension;
-import org.finos.legend.engine.repl.core.Command;
-import org.finos.legend.engine.repl.core.ReplExtension;
-import org.finos.legend.engine.repl.core.commands.*;
 import org.finos.legend.engine.repl.client.jline3.JLine3Completer;
 import org.finos.legend.engine.repl.client.jline3.JLine3Highlighter;
-import org.finos.legend.engine.repl.core.legend.LegendInterface;
 import org.finos.legend.engine.repl.client.jline3.JLine3Parser;
+import org.finos.legend.engine.repl.core.Command;
+import org.finos.legend.engine.repl.core.ReplExtension;
+import org.finos.legend.engine.repl.core.commands.Debug;
+import org.finos.legend.engine.repl.core.commands.Execute;
+import org.finos.legend.engine.repl.core.commands.Ext;
+import org.finos.legend.engine.repl.core.commands.Graph;
+import org.finos.legend.engine.repl.core.commands.Help;
+import org.finos.legend.engine.repl.core.legend.LegendInterface;
 import org.finos.legend.engine.repl.core.legend.LocalLegendInterface;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.jline.reader.LineReader;
@@ -42,6 +47,9 @@ public class Client
     private boolean debug = false;
     private MutableList<ReplExtension> replExtensions = Lists.mutable.empty();
     private MutableList<CompleterExtension> completerExtensions = Lists.mutable.empty();
+    private ModelState state;
+    private final PlanExecutor planExecutor;
+
 
     public static void main(String[] args) throws Exception
     {
@@ -52,15 +60,31 @@ public class Client
 
     public Client(MutableList<ReplExtension> replExtensions, MutableList<CompleterExtension> completerExtensions) throws Exception
     {
-        replExtensions.forEach(c -> c.setClient(this));
         this.replExtensions = replExtensions;
+
         this.completerExtensions = completerExtensions;
+
+        this.planExecutor = PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build();
+
+        this.state = new ModelState(this.legendInterface, this.replExtensions);
+
+        replExtensions.forEach(e -> e.initialize(this));
 
         this.terminal = TerminalBuilder.terminal();
 
         this.terminal.writer().println("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
 
-        this.commands = replExtensions.flatCollect(ReplExtension::getExtraCommands).withAll(Lists.mutable.with(new Ext(this), new Debug(this), new Graph(this), new Execute(this)));
+        this.commands = replExtensions
+                .flatCollect(ReplExtension::getExtraCommands)
+                .withAll(
+                        Lists.mutable.with(
+                                new Ext(this),
+                                new Debug(this),
+                                new Graph(this),
+                                new Execute(this, planExecutor)
+                        )
+                );
+
         this.commands.add(0, new Help(this, this.commands));
 
         this.reader = LineReaderBuilder.builder()
@@ -74,6 +98,7 @@ public class Client
         this.terminal.flush();
         ((Execute) this.commands.getLast()).execute("1+1");
         this.terminal.writer().println("Ready!\n");
+
     }
 
     public void loop()
@@ -160,22 +185,23 @@ public class Client
         this.debug = debug;
     }
 
+    public ModelState getModelState()
+    {
+        return this.state;
+    }
+
     public MutableList<ReplExtension> getReplExtensions()
     {
         return this.replExtensions;
     }
 
+    public PlanExecutor getPlanExecutor()
+    {
+        return this.planExecutor;
+    }
+
     public MutableList<CompleterExtension> getCompleterExtensions()
     {
         return this.completerExtensions;
-    }
-
-    public MutableList<String> buildState()
-    {
-        MutableList<String> res = Lists.mutable.empty();
-
-        res.addAll(this.replExtensions.flatCollect(ReplExtension::getExtraState));
-
-        return res;
     }
 }

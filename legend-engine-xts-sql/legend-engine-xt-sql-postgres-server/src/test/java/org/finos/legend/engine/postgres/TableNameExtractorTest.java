@@ -15,56 +15,57 @@
 
 package org.finos.legend.engine.postgres;
 
-import com.google.common.collect.Iterables;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
 import org.finos.legend.engine.protocol.sql.metamodel.QualifiedName;
 import org.junit.Test;
 
 import java.util.List;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TableNameExtractorTest
 {
-    private static final TableNameExtractor extractor = new TableNameExtractor();
-
-
     @Test
     public void testGetSchemaAndTable()
     {
-        List<QualifiedName> qualifiedNames = getQualifiedNames("SELECT * FROM schema1.table1");
-        assertEquals(1, qualifiedNames.size());
-        QualifiedName qualifiedName = Iterables.getOnlyElement(qualifiedNames);
-        assertEquals(Lists.mutable.of("schema1", "table1"), qualifiedName.parts);
+        test("SELECT * FROM schema1.table1", Lists.fixedSize.of("schema1.table1"), new TableNameExtractor());
     }
 
     @Test
     public void testSetQuery()
     {
-        List<QualifiedName> qualifiedNames = getQualifiedNames("SET A=B");
-        assertEquals(0, qualifiedNames.size());
+        test("SET A=B", Lists.fixedSize.empty(), new TableNameExtractor());
     }
 
     @Test
     public void testSelectWithoutTable()
     {
-        List<QualifiedName> qualifiedNames = getQualifiedNames("SELECT 1");
-        assertEquals(0, qualifiedNames.size());
+        test("SELECT 1", FastList.newList(), new TableNameExtractor());
     }
 
     @Test
-    public void testFunctionCall()
+    public void testExtractingDifferentTypes()
     {
-        List<QualifiedName> qualifiedNames = getQualifiedNames("SELECT * FROM service('/my/service')");
-        assertEquals(1, qualifiedNames.size());
-        QualifiedName qualifiedName = Iterables.getOnlyElement(qualifiedNames);
-        assertEquals(Lists.mutable.of("service"), qualifiedName.parts);
+        test("SELECT * FROM service('/my/service') UNION SELECT * from myTable", Lists.fixedSize.of("service", "myTable"), new TableNameExtractor());
+        test("SELECT * FROM service('/my/service') UNION SELECT * from myTable", Lists.fixedSize.of("myTable"), new TableNameExtractor(true, false));
+        test("SELECT * FROM service('/my/service') UNION SELECT * from myTable", Lists.fixedSize.of("service"), new TableNameExtractor(false, true));
+        test("SELECT * FROM service('/my/service') UNION SELECT * from myTable", Lists.fixedSize.empty(), new TableNameExtractor(false, false));
     }
 
-    private static List<QualifiedName> getQualifiedNames(String query)
+    private void test(String sql, List<String> expected, TableNameExtractor extractor)
     {
-        SqlBaseParser parser = SQLGrammarParser.getSqlBaseParser(query, "query");
-        return parser.singleStatement().accept(extractor);
+        SqlBaseParser parser = SQLGrammarParser.getSqlBaseParser(sql, "query");
+        List<QualifiedName> qualifiedNames = parser.singleStatement().accept(extractor);
+
+        List<String> result = ListIterate.collect(qualifiedNames, q -> StringUtils.join(q.parts, "."));
+
+        assertEquals(expected.size(), result.size());
+        assertTrue(ListIterate.allSatisfy(expected, result::contains));
     }
 }

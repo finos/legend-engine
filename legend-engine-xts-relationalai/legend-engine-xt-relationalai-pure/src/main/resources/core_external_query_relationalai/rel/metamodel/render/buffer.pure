@@ -11,10 +11,12 @@ Class meta::external::store::rel::metamodel::render::buffer::RelQueryBuffer {
   indentLevel: Integer[1];
   /** true if the next string appended to the buffer should start on a newline. */
   startNewLine: Boolean[1];
+    /** true if the next string appended to the buffer should be prepended with a space. */
+  appendSpace: Boolean[1];
 }
 
 function meta::external::store::rel::metamodel::render::buffer::emptyBuffer(configNoIndent: Boolean[1]): RelQueryBuffer[1] {
-  ^RelQueryBuffer(configIndentString='    ',configNoIndent=$configNoIndent,contents='',indentLevel=0,startNewLine=false)
+  ^RelQueryBuffer(configIndentString='    ',configNoIndent=$configNoIndent,contents='',indentLevel=0,startNewLine=false,appendSpace=false)
 }
 
 function meta::external::store::rel::metamodel::render::buffer::emptyBuffer(): RelQueryBuffer[1] {
@@ -33,20 +35,44 @@ function meta::external::store::rel::metamodel::render::buffer::indent(buffer: R
   ^$buffer(indentLevel=$buffer.indentLevel+1);
 }
 
+function meta::external::store::rel::metamodel::render::buffer::unindent(buffer: RelQueryBuffer[1]): RelQueryBuffer[1] {
+  ^$buffer(indentLevel=max($buffer.indentLevel-1,0));
+}
+
+/**
+  * Set the buffer so that the next string appended (if any) will begin on a newline.
+  * Repeated `newline()` applications result in a single newline.
+  */
 function meta::external::store::rel::metamodel::render::buffer::newline(buffer: RelQueryBuffer[1]): RelQueryBuffer[1] {
-  ^$buffer(startNewLine=!$buffer.configNoIndent);
+  ^$buffer(startNewLine=true);
+}
+
+/**
+  * Set the buffer so that the next string appended (if any) will have a space charatcer prepended.
+  * A space will not be apended to the buffer if a `newline()` has been applied at the same position.
+  * Repeated `space()` applications result in at most one space.
+  */
+function meta::external::store::rel::metamodel::render::buffer::space(buffer: RelQueryBuffer[1]): RelQueryBuffer[1] {
+  ^$buffer(appendSpace=true);
+}
+
+function meta::external::store::rel::metamodel::render::buffer::newlineOrSpace(buffer: RelQueryBuffer[1]): RelQueryBuffer[1] {
+  ^$buffer(startNewLine=true,appendSpace=true);
 }
 
 function meta::external::store::rel::metamodel::render::buffer::append(buffer: RelQueryBuffer[1], string: String[1]): RelQueryBuffer[1] {
   let newContents =
-    if ($buffer.startNewLine,
-      | format('%s\n%s%s ', [$buffer.contents, $buffer.configIndentString->repeat($buffer.indentLevel)->joinStrings(), $string]),
-      | $buffer.contents + $string
+    if ($buffer.startNewLine && !$buffer.configNoIndent,
+      | format('%s\n%s%s', [$buffer.contents, $buffer.configIndentString->repeat($buffer.indentLevel)->joinStrings(), $string]),
+      | if ( $buffer.appendSpace,
+           | format('%s %s', [$buffer.contents, $string]),
+           | $buffer.contents + $string
+           )
       );
-  ^$buffer(contents=$newContents,startNewLine=false);
+  ^$buffer(contents=$newContents,startNewLine=false,appendSpace=false);
 }
 
-function meta::external::store::rel::metamodel::render::buffer::append<T>(buffer: RelQueryBuffer[1], elems: T[*], f: FunctionDefinition<{RelQueryBuffer[1], T[1]->RelQueryBuffer[1]}>[1], sep: String[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::buffer::append<T>(buffer: RelQueryBuffer[1], elems: T[*], sep: String[1], f: FunctionDefinition<{RelQueryBuffer[1], T[1]->RelQueryBuffer[1]}>[1]): RelQueryBuffer[1] {
   let last = $elems->last()->toOne();
   let init = $elems->init();
   if ($elems->isEmpty(),
@@ -56,6 +82,6 @@ function meta::external::store::rel::metamodel::render::buffer::append<T>(buffer
     );
 }
 
-function meta::external::store::rel::metamodel::render::buffer::append<T>(buffer: RelQueryBuffer[1], elems: T[*], f: FunctionDefinition<{RelQueryBuffer[1], T[1]->RelQueryBuffer[1]}>[1], begin: String[1], sep: String[1], end: String[1]): RelQueryBuffer[1] {
-  $buffer->append($begin)->append($elems, $f, $sep)->append($end)
+function meta::external::store::rel::metamodel::render::buffer::append<T>(buffer: RelQueryBuffer[1], elems: T[*], begin: String[1], sep: String[1], end: String[1], f: FunctionDefinition<{RelQueryBuffer[1], T[1]->RelQueryBuffer[1]}>[1]): RelQueryBuffer[1] {
+  $buffer->append($begin)->append($elems, $sep, $f)->append($end)
 }

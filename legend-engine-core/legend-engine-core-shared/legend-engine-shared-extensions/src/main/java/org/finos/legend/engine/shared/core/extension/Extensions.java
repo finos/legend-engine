@@ -35,6 +35,12 @@ public class Extensions
                 .withAll(loadExtensions("org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension"))
                 .withAll(loadExtensions("org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension"))
                 .withAll(loadExtensions("org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension"))
+                
+                .withAll(loadExtensions("org.finos.legend.engine.language.pure.grammar.from.IRelationalGrammarParserExtension"))
+                .withAll(loadExtensions("org.finos.legend.engine.language.pure.grammar.to.IRelationalGrammarComposerExtension"))
+
+                .withAll(loadExtensions("org.finos.legend.engine.language.pure.grammar.from.IRelationalGrammarParserExtension"))
+                .withAll(loadExtensions("org.finos.legend.engine.language.pure.grammar.to.IRelationalGrammarComposerExtension"))
 
                 // ExternalFormat Extension
                 .withAll(loadExtensions("org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension"))

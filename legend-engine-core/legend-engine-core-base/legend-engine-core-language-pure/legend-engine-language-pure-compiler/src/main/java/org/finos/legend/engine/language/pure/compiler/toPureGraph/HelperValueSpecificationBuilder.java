@@ -50,6 +50,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.proper
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.PrimitiveType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.TypeParameter;
@@ -176,6 +177,11 @@ public class HelperValueSpecificationBuilder
             }
             else
             {
+                if (inferredType instanceof PrimitiveType)
+                {
+                    throw new EngineException("The property '" + property + "' can't be accessed on primitive types. Inferred primitive type is " + inferredType, sourceInformation, EngineErrorType.COMPILATION);
+                }
+
                 if (!(inferredType instanceof Class)) //is an enum
                 {
                     inferredType = context.pureModel.getType("meta::pure::metamodel::type::Enum");

@@ -22,7 +22,6 @@ import org.eclipse.collections.api.multimap.list.ImmutableListMultimap;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
-import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.plan.execution.concurrent.ConcurrentExecutionNodeExecutorPool;
 import org.finos.legend.engine.plan.execution.concurrent.ParallelGraphFetchExecutionExecutorPool;
 import org.finos.legend.engine.plan.execution.graphFetch.GraphFetchExecutionConfiguration;
@@ -78,17 +77,15 @@ public class PlanExecutor
     private ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool;
     private GraphFetchExecutionConfiguration graphFetchExecutionConfiguration;
     private BiFunction<Identity, ExecutionState, ExecutionNodeExecutor> executionNodeExecutorBuilder;
-    private final CredentialProviderProvider credentialProviderProvider;
     private final boolean logSQLWithParamValues;
 
 
-    private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, CredentialProviderProvider credentialProviderProvider, GraphFetchExecutionConfiguration graphFetchExecutionConfiguration, boolean logSQLWithParamValues)
+    private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, GraphFetchExecutionConfiguration graphFetchExecutionConfiguration, boolean logSQLWithParamValues)
     {
         EngineUrlStreamHandlerFactory.initialize();
         this.isJavaCompilationAllowed = isJavaCompilationAllowed;
         this.extraExecutors = extraExecutors;
         this.planExecutorInfo = PlanExecutorInfo.fromStoreExecutors(this.extraExecutors);
-        this.credentialProviderProvider = credentialProviderProvider;
         this.graphFetchExecutionConfiguration = graphFetchExecutionConfiguration;
         this.logSQLWithParamValues = logSQLWithParamValues;
     }
@@ -373,7 +370,7 @@ public class PlanExecutor
 
     private ExecutionState buildDefaultExecutionState(SingleExecutionPlan executionPlan, Map<String, Result> vars, PlanExecutionContext planExecutionContext)
     {
-        ExecutionState executionState = new ExecutionState(vars, executionPlan.templateFunctions, this.extraExecutors.collect(StoreExecutor::buildStoreExecutionState), this.isJavaCompilationAllowed, null, this.credentialProviderProvider, this.graphFetchExecutionConfiguration, this.logSQLWithParamValues);
+        ExecutionState executionState = new ExecutionState(vars, executionPlan.templateFunctions, this.extraExecutors.collect(StoreExecutor::buildStoreExecutionState), this.isJavaCompilationAllowed, null, this.graphFetchExecutionConfiguration, this.logSQLWithParamValues);
 
         if (planExecutionContext != null)
         {
@@ -435,7 +432,6 @@ public class PlanExecutor
         private boolean isJavaCompilationAllowed = DEFAULT_IS_JAVA_COMPILATION_ALLOWED;
         private final MutableList<StoreExecutor> storeExecutors = Lists.mutable.empty();
         private GraphFetchExecutionConfiguration graphFetchExecutionConfiguration = new GraphFetchExecutionConfiguration();
-        private CredentialProviderProvider credentialProviderProvider = CredentialProviderProvider.defaultProviderProvider();
         private boolean logSQLWithParamValues = true;
 
         private Builder()
@@ -474,12 +470,6 @@ public class PlanExecutor
             return this;
         }
 
-        public Builder withCredentialProviderProvider(CredentialProviderProvider credentialProviderProvider)
-        {
-            this.credentialProviderProvider = credentialProviderProvider;
-            return this;
-        }
-
         public Builder logSQLWithParamValues(boolean value)
         {
             this.logSQLWithParamValues = value;
@@ -488,7 +478,7 @@ public class PlanExecutor
 
         public PlanExecutor build()
         {
-            return new PlanExecutor(this.isJavaCompilationAllowed, this.storeExecutors.toImmutable(), this.credentialProviderProvider, this.graphFetchExecutionConfiguration, this.logSQLWithParamValues);
+            return new PlanExecutor(this.isJavaCompilationAllowed, this.storeExecutors.toImmutable(), this.graphFetchExecutionConfiguration, this.logSQLWithParamValues);
         }
     }
 

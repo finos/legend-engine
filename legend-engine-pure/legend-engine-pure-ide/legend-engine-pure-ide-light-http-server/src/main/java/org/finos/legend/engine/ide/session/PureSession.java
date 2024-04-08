@@ -22,7 +22,6 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.ide.SourceLocationConfiguration;
 import org.finos.legend.engine.ide.api.execution.test.CallBack;
 import org.finos.legend.engine.ide.helpers.response.IDEResponse;
-import org.finos.legend.engine.ide.session.SimpleFunction;
 import org.finos.legend.pure.m3.SourceMutation;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
@@ -47,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
@@ -66,6 +66,10 @@ public class PureSession
     public Message message = new Message("");
 
     public MutableList<RepositoryCodeStorage> repos;
+    private final Map<String, Boolean> pureRuntimeOptions = new ConcurrentHashMap<>();
+
+    private final String PURE_OPTION_PREFIX = "pure.option.";
+
 
     public PureSession(SourceLocationConfiguration sourceLocationConfiguration, MutableList<RepositoryCodeStorage> repos)
     {
@@ -79,8 +83,28 @@ public class PureSession
 
         this.functionExecution = new FunctionExecutionInterpreted(VoidExecutionActivityListener.VOID_EXECUTION_ACTIVITY_LISTENER);
 
+        for (String property : System.getProperties().stringPropertyNames())
+        {
+            if (property.startsWith(PURE_OPTION_PREFIX))
+            {
+                setPureRuntimeOption(property.substring(PURE_OPTION_PREFIX.length()), Boolean.getBoolean(property));
+            }
+        }
+
         this.codeStorage = new CompositeCodeStorage(this.repos.toArray(new RepositoryCodeStorage[0]));
-        this.pureRuntime = new PureRuntimeBuilder(this.codeStorage).withMessage(this.message).setUseFastCompiler(true).build();
+        this.pureRuntime = new PureRuntimeBuilder(this.codeStorage)
+                .withMessage(this.message)
+                .setUseFastCompiler(true)
+                .withOptions(new RuntimeOptions()
+                {
+                    @Override
+                    public boolean isOptionSet(String name)
+                    {
+                        return getPureRuntimeOption(name);
+                    }
+                })
+                .build();
+
         this.functionExecution.init(this.pureRuntime, this.message);
         this.codeStorage.initialize(this.message);
     }
@@ -98,6 +122,22 @@ public class PureSession
     public FunctionExecution getFunctionExecution()
     {
         return this.functionExecution;
+    }
+
+    public boolean getPureRuntimeOption(String optionName)
+    {
+        Boolean value = this.pureRuntimeOptions.get(optionName);
+        return value != null && value;
+    }
+
+    public Map<String, Boolean> getAllPureRuntimeOptions()
+    {
+        return this.pureRuntimeOptions;
+    }
+
+    public void setPureRuntimeOption(String optionName, boolean value)
+    {
+        this.pureRuntimeOptions.put(optionName, value);
     }
 
     public TestRunner newTestRunner(int testRunId, TestCollection collection)
