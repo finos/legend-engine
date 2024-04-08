@@ -58,8 +58,6 @@ import org.finos.legend.engine.entitlement.services.EntitlementServiceExtension;
 import org.finos.legend.engine.entitlement.services.EntitlementServiceExtensionLoader;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
-import org.finos.legend.engine.external.shared.format.generations.loaders.CodeGenerators;
-import org.finos.legend.engine.external.shared.format.generations.loaders.SchemaGenerators;
 import org.finos.legend.engine.external.shared.format.model.api.ExternalFormats;
 import org.finos.legend.engine.functionActivator.api.FunctionActivatorAPI;
 import org.finos.legend.engine.generation.artifact.api.ArtifactGenerationExtensionApi;
@@ -107,11 +105,6 @@ import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDe
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.PureProtocol;
 import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
-import org.finos.legend.engine.query.graphQL.api.format.generation.api.GraphQLGenerationService;
-import org.finos.legend.engine.external.format.jsonSchema.schema.generations.api.JSONSchemaGenerationService;
-import org.finos.legend.engine.external.format.daml.generation.api.DAMLGenerationService;
-import org.finos.legend.engine.external.format.protobuf.deprecated.generation.api.ProtobufGenerationService;
-import org.finos.legend.engine.external.format.avro.schema.generations.api.AvroGenerationService;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.query.graphQL.api.debug.GraphQLDebug;
 import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
@@ -352,17 +345,6 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register((DynamicFeature) (resourceInfo, context) -> context.register(new InflateInterceptor()));
         environment.jersey().register(new Compile(modelManager));
 
-        // Generation and Import
-        MutableList<GenerationExtension> genExtensions = Iterate.addAllTo(ServiceLoader.load(GenerationExtension.class), Lists.mutable.empty());
-        environment.jersey().register(new CodeGenerators(modelManager, genExtensions.select(p -> p.getMode() == GenerationMode.Code).collect(GenerationExtension::getGenerationDescription).select(Objects::nonNull)));
-        environment.jersey().register(new SchemaGenerators(modelManager, genExtensions.select(p -> p.getMode() == GenerationMode.Schema).collect(GenerationExtension::getGenerationDescription).select(Objects::nonNull)));
-        // generator apis
-        environment.jersey().register(new GraphQLGenerationService(modelManager));
-        environment.jersey().register(new DAMLGenerationService(modelManager));
-        environment.jersey().register(new ProtobufGenerationService(modelManager));
-        environment.jersey().register(new GraphQLGenerationService(modelManager));
-        environment.jersey().register(new JSONSchemaGenerationService(modelManager));
-        environment.jersey().register(new AvroGenerationService(modelManager));
 
         // Execution
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));

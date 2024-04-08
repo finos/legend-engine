@@ -29,8 +29,6 @@
 
 
     <modules>
-        <module>legend-engine-xt-morphir</module>
         <module>legend-engine-xt-morphir-pure</module>
-        <module>legend-engine-xt-morphir-http-api</module>
     </modules>
 </project>

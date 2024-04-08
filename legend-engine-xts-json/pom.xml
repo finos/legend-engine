@@ -33,10 +33,6 @@
         <module>legend-engine-xt-json-pure</module>
         <module>legend-engine-xt-json-runtime</module>
         <module>legend-engine-xt-json-javaPlatformBinding-test</module>
-        <module>legend-engine-xt-json-http-api</module>
-
-        <!--  Deprecated Flow  -->
-        <module>legend-engine-external-format-jsonSchema</module>
 
     </modules>
 </project>

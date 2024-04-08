@@ -33,6 +33,5 @@
         <module>legend-engine-xt-protobuf-grammar</module>
         <module>legend-engine-xt-protobuf-protocol</module>
         <module>legend-engine-xt-protobuf-pure</module>
-        <module>legend-engine-xt-protobuf-http-api</module>
     </modules>
 </project>

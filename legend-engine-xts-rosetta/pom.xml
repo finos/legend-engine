@@ -29,7 +29,6 @@
 
 
     <modules>
-        <module>legend-engine-xt-rosetta</module>
         <module>legend-engine-xt-rosetta-pure</module>
     </modules>
 </project>
