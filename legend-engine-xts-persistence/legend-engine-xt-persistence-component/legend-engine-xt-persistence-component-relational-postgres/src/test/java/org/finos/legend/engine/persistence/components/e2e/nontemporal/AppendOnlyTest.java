@@ -454,7 +454,7 @@ class AppendOnlyTest extends BaseTest
         loadBasicStagingDataWithColumnsThanMain(dataPass2);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets.withStagingDataset(stagingTable), schema, expectedDataPass2, expectedStats, fixedClock_2000_01_02, " order by \"batch_id\", \"income\"");
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_02, " order by \"batch_id\", \"income\"");
     }
 
     /*

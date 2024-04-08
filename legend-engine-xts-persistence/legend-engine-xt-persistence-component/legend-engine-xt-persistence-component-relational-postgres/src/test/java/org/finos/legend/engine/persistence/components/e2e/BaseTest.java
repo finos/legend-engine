@@ -407,6 +407,46 @@ public class BaseTest
         postgresSink.executeStatement(loadSql);
     }
 
+    protected void loadStagingDataWithFilter(String path)
+    {
+        postgresTestContainer.copyFileToContainer(path, path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "COPY \"TEST\".\"staging\"" +
+            "(\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"digest\", \"batch\")" +
+            " FROM '/" + path + "' CSV";
+        postgresSink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataWithFilterWithVersion(String path)
+    {
+        postgresTestContainer.copyFileToContainer(path, path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "COPY \"TEST\".\"staging\"" +
+            "(\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"digest\", \"version\", \"batch\")" +
+            " FROM '/" + path + "' CSV";
+        postgresSink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataWithDeleteInd(String path)
+    {
+        postgresTestContainer.copyFileToContainer(path, path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "COPY \"TEST\".\"staging\"" +
+            "(\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"digest\", \"delete_indicator\")" +
+            " FROM '/" + path + "' CSV";
+        postgresSink.executeStatement(loadSql);
+    }
+
+    public static void loadStagingDataWithVersionAndBatch(String path)
+    {
+        postgresTestContainer.copyFileToContainer(path, path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "COPY \"TEST\".\"staging\"" +
+            "(\"id\", \"name\", \"version\", \"income\", \"expiry_date\", \"digest\", \"batch\")" +
+            " FROM '/" + path + "' CSV";
+        postgresSink.executeStatement(loadSql);
+    }
+
     protected void loadStagingDataForWithPartition(String path)
     {
         postgresTestContainer.copyFileToContainer(path, path);

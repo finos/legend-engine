@@ -233,7 +233,7 @@ class UnitemporalSnapshotWithBatchTimeTest extends BaseTest
         loadBasicStagingDataWithColumnsThanMain(dataPass2);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(4, 0, 1, 1, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets.withStagingDataset(stagingTable), schema, expectedDataPass2, expectedStats, fixedClock_2000_01_02, " order by \"id\", \"batch_time_in\"");
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_02, " order by \"id\", \"batch_time_in\"");
     }
 
     /*

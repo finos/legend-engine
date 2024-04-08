@@ -18,7 +18,9 @@ import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Merge;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Update;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ParseJsonFunction;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
@@ -29,6 +31,8 @@ import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper
 import org.finos.legend.engine.persistence.components.relational.postgres.sql.PostgresDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.postgres.sql.PostgresJdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.postgres.sql.visitor.FieldVisitor;
+import org.finos.legend.engine.persistence.components.relational.postgres.sql.visitor.ParseJsonFunctionVisitor;
+import org.finos.legend.engine.persistence.components.relational.postgres.sql.visitor.SQLMergeVisitor;
 import org.finos.legend.engine.persistence.components.relational.postgres.sql.visitor.SQLUpdateVisitor;
 import org.finos.legend.engine.persistence.components.relational.postgres.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
@@ -71,6 +75,8 @@ public class PostgresSink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(SchemaDefinition.class, new SchemaDefinitionVisitor());
         logicalPlanVisitorByClass.put(Field.class, new FieldVisitor());
         logicalPlanVisitorByClass.put(Update.class, new SQLUpdateVisitor());
+        logicalPlanVisitorByClass.put(Merge.class, new SQLMergeVisitor());
+        logicalPlanVisitorByClass.put(ParseJsonFunction.class, new ParseJsonFunctionVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
         // TODO: These two mappings have not been confirmed, to do with schema evolution
