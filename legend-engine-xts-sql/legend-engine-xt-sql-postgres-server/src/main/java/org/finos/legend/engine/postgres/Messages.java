@@ -66,11 +66,6 @@ public class Messages
     private static final byte[] METHOD_NAME_CLIENT_AUTH = "ClientAuthentication".getBytes(
             StandardCharsets.UTF_8);
 
-
-    @Inject
-    private static ErrorMessageFormatter errorMessageFormatter2;
-
-
     private ErrorMessageFormatter errorMessageFormatter;
 
     @Inject
@@ -78,8 +73,6 @@ public class Messages
     {
         this.errorMessageFormatter = errorMessageFormatter;
     }
-
-
 
 
     public ChannelFuture sendAuthenticationOK(Channel channel)

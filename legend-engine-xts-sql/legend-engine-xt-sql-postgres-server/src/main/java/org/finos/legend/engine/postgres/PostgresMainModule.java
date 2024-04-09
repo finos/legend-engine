@@ -72,7 +72,6 @@ public class PostgresMainModule extends AbstractModule
         bind(String.class).annotatedWith(Names.named("configPath")).toInstance(configPath);
         bind(OpenTelemetrySdk.class).annotatedWith(PrivateBindingAnnotation.class).to(OpenTelemetrySdk.class).asEagerSingleton();
         bind(ErrorMessageFormatter.class).to(ErrorMessageFormatterImpl.class);
-        requestStaticInjection(Messages.class);
         // install jul to slf4j bridge
         SLF4JBridgeHandler.install();
     }
