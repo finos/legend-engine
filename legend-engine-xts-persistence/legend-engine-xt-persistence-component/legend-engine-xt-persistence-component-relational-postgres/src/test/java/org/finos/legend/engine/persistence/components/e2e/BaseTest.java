@@ -54,6 +54,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.junit.Assume.assumeTrue;
+
 public class BaseTest
 {
     public static final String TEST_SCHEMA = "TEST";
@@ -77,23 +79,33 @@ public class BaseTest
     @BeforeAll
     public static void initialize()
     {
-        postgresTestContainer = PostgresTestContainer.build();
-        postgresTestContainer.start();
+        try
+        {
+            postgresTestContainer = PostgresTestContainer.build();
+            postgresTestContainer.start();
 
-        jdbcUrl = postgresTestContainer.getJdbcUrl();
-        user = postgresTestContainer.getUser();
-        password = postgresTestContainer.getPassword();
+            jdbcUrl = postgresTestContainer.getJdbcUrl();
+            user = postgresTestContainer.getUser();
+            password = postgresTestContainer.getPassword();
 
-        postgresSink = JdbcHelper.of(PostgresSink.createConnection(user, password, jdbcUrl));
-        // Closing connection pool created by other tests.
-        postgresSink.close();
-        postgresSink = JdbcHelper.of(PostgresSink.createConnection(user, password, jdbcUrl));
+            postgresSink = JdbcHelper.of(PostgresSink.createConnection(user, password, jdbcUrl));
+            // Closing connection pool created by other tests.
+            postgresSink.close();
+            postgresSink = JdbcHelper.of(PostgresSink.createConnection(user, password, jdbcUrl));
+        }
+        catch (Exception e)
+        {
+            assumeTrue("Cannot start PostgreSQLContainer", false);
+        }
     }
 
     @AfterAll
     public static void cleanUp()
     {
-        postgresSink.close();
+        if (postgresSink != null)
+        {
+            postgresSink.close();
+        }
 
         if (postgresTestContainer != null)
         {
