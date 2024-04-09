@@ -40,7 +40,9 @@ import org.junit.Test;
 
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TestQueryStoreManager
 {
@@ -150,6 +152,7 @@ public class TestQueryStoreManager
         public List<TaggedValue> taggedValues = Collections.emptyList();
         public List<StereotypePtr> stereotypes = Collections.emptyList();
         public List<QueryParameterValue> parameterValues = Collections.emptyList();
+        public Map<String, ?> gridConfigs;
 
         static TestQueryBuilder create(String id, String name, String owner)
         {
@@ -196,6 +199,12 @@ public class TestQueryStoreManager
             return this;
         }
 
+        TestQueryBuilder withGridConfigs(Map<String, ?> gridConfigs)
+        {
+            this.gridConfigs = gridConfigs;
+            return this;
+        }
+
         Query build()
         {
             Query query = new Query();
@@ -213,6 +222,7 @@ public class TestQueryStoreManager
             query.taggedValues = this.taggedValues;
             query.stereotypes = this.stereotypes;
             query.defaultParameterValues = this.parameterValues;
+            query.gridConfig = this.gridConfigs;
             return query;
         }
     }
@@ -543,6 +553,31 @@ public class TestQueryStoreManager
         Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue2)).build(), currentUser).size());
         Assert.assertEquals(3, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2)).build(), currentUser).size());
         Assert.assertEquals(3, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2, taggedValue3)).build(), currentUser).size());
+    }
+
+    @Test
+    public void testGetQueriesWithGridConfigs() throws Exception
+    {
+        String currentUser = "testUser";
+
+        Map<String, Object> gridConfig = new HashMap<>();
+        gridConfig.put("dummyValue", "value");
+        gridConfig.put("isPivotModeEnabled", true);
+        gridConfig.put("myNullValue", null);
+        gridConfig.put("columns", Collections.emptyList());
+        Map<String, Object> inner = new HashMap<>();
+        inner.put("myCol", "val");
+        gridConfig.put("config", inner);
+        Query testQuery1 = TestQueryBuilder.create("1", "query1", currentUser).withGridConfigs(gridConfig).build();
+        queryStoreManager.createQuery(testQuery1, currentUser);
+        Query query = queryStoreManager.getQuery("1");
+        Map<String, ?> gridConfigs = query.gridConfig;
+        Assert.assertNotNull(gridConfigs);
+        Assert.assertEquals(gridConfigs.get("dummyValue"), "value");
+        Assert.assertEquals(gridConfigs.get("isPivotModeEnabled"), true);
+        Assert.assertNotNull(gridConfigs.get("config"));
+        Map<String, ?> innerResolved = (Map<String, ?>) gridConfigs.get("config");
+        Assert.assertEquals(innerResolved.get("myCol"), "val");
     }
 
     @Test

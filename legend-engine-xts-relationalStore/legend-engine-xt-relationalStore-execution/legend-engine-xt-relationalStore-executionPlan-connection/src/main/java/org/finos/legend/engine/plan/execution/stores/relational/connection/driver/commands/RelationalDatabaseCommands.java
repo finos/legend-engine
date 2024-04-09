@@ -29,6 +29,11 @@ public abstract class RelationalDatabaseCommands
 
     public abstract <T> T accept(RelationalDatabaseCommandsVisitor<T> visitor);
 
+    public String load(String tableName, String location)
+    {
+        throw new RuntimeException("Load not implemented for " + this.getClass().getSimpleName());
+    }
+
     public abstract IngestionMethod getDefaultIngestionMethod();
 
 //    public void buildTempTableFromResult(RelationalExecutionConfiguration config, Connection connection, StreamingResult result, String tableName)

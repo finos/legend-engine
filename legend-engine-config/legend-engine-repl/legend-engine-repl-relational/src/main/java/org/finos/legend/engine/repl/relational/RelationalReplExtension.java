@@ -17,17 +17,21 @@ package org.finos.legend.engine.repl.relational;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.result.Result;
-import org.finos.legend.engine.plan.execution.stores.StoreType;
-import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
+import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.core.ReplExtension;
-import org.finos.legend.engine.repl.core.commands.Execute;
 import org.finos.legend.engine.repl.relational.commands.DB;
 import org.finos.legend.engine.repl.relational.commands.Load;
+import org.finos.legend.engine.repl.relational.local.LocalConnectionManagement;
+import org.finos.legend.engine.repl.relational.local.LocalConnectionType;
 
-import java.sql.Connection;
+import org.finos.legend.engine.repl.relational.commands.Show;
+import org.finos.legend.engine.repl.relational.httpServer.ReplGridServer;
+
+import java.awt.*;
+import java.sql.SQLException;
 
 import static org.finos.legend.engine.repl.relational.grid.Grid.prettyGridPrint;
 import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
@@ -35,10 +39,22 @@ import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getT
 public class RelationalReplExtension implements ReplExtension
 {
     private Client client;
+    public ReplGridServer replGridServer;
+
+    private LocalConnectionManagement localConnectionManagement;
 
     static
     {
-        System.setProperty("legend.test.h2.port", "1975");
+        int port = 1024 + (int)(Math.random() * 10000);
+        System.setProperty("legend.test.h2.port", String.valueOf(port));
+        try
+        {
+            AlloyH2Server.startServer(port);
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -47,54 +63,47 @@ public class RelationalReplExtension implements ReplExtension
         return "relational";
     }
 
-    public void setClient(Client client)
+    private boolean canShowGrid()
+    {
+        return Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
+    }
+
+    public void initialize(Client client)
     {
         this.client = client;
+        this.localConnectionManagement = new LocalConnectionManagement(client);
+        this.localConnectionManagement.addLocalConnection(LocalConnectionType.H2, "MyTestH2");
+        this.localConnectionManagement.addLocalConnection(LocalConnectionType.DuckDB, "DuckDuck");
+
+        try
+        {
+            if (canShowGrid())
+            {
+                this.replGridServer = new ReplGridServer(this.client);
+                this.replGridServer.initializeServer();
+            }
+        }
+        catch (Exception e)
+        {
+            this.client.getTerminal().writer().println(e.getMessage());
+        }
+    }
+
+    @Override
+    public MutableList<String> generateDynamicContent(String code)
+    {
+        return localConnectionManagement.generateDynamicContent(code);
     }
 
     @Override
     public MutableList<Command> getExtraCommands()
     {
-        return Lists.mutable.with(new DB(this.client, this), new Load(this.client, this));
-    }
-
-    @Override
-    public MutableList<String> getExtraState()
-    {
-        MutableList<String> res = Lists.mutable.empty();
-
-        res.add("###Relational\n" +
-                "Database test::TestDatabase" +
-                "(" +
-                getTables(getConnection()).collect(table -> "Table " + table.name + "(" + table.columns.collect(c -> (c.name.contains(" ") ? "\"" + c.name + "\"" : c.name) + " " + c.type).makeString(",") + ")").makeString("\n") +
-                ")\n");
-
-        res.add("###Connection\n" +
-                "RelationalDatabaseConnection test::TestConnection\n" +
-                "{\n" +
-                "   store: test::TestDatabase;" +
-                "   specification: LocalH2{};" +
-                "   type: H2;" +
-                "   auth: DefaultH2;" +
-                "}\n");
-
-        res.add("###Runtime\n" +
-                "Runtime test::TestRuntime\n" +
-                "{\n" +
-                "   mappings : [];" +
-                "   connections:\n" +
-                "   [\n" +
-                "       test::TestDatabase : [connection: test::TestConnection]\n" +
-                "   ];\n" +
-                "}\n");
-
-        return res;
-    }
-
-    public Connection getConnection()
-    {
-        RelationalStoreExecutor r = (RelationalStoreExecutor) ((Execute) this.client.commands.getLast()).getPlanExecutor().getExecutorsOfType(StoreType.Relational).getFirst();
-        return r.getStoreState().getRelationalExecutor().getConnectionManager().getTestDatabaseConnection();
+        MutableList<Command> extraCommands = Lists.mutable.with(new DB(this.client, this), new Load(this.client, this));
+        if (canShowGrid())
+        {
+            extraCommands.add(new Show(this.client, this.replGridServer));
+        }
+        return extraCommands;
     }
 
     @Override

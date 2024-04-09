@@ -46,10 +46,17 @@ public class Execute implements Command
 
     private final PlanExecutor planExecutor;
 
-    public Execute(Client client)
+    private PureModelContextData currentPMCD;
+
+    public Execute(Client client, PlanExecutor planExecutor)
     {
         this.client = client;
-        this.planExecutor = PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build();
+        this.planExecutor = planExecutor;
+    }
+
+    public PureModelContextData getCurrentPMCD()
+    {
+        return currentPMCD;
     }
 
     @Override
@@ -71,7 +78,7 @@ public class Execute implements Command
         try
         {
             MutableList<Candidate> list = Lists.mutable.empty();
-            CompletionResult result = new org.finos.legend.engine.repl.autocomplete.Completer(this.client.buildState().makeString("\n"), this.client.getCompleterExtensions()).complete(inScope);
+            CompletionResult result = new org.finos.legend.engine.repl.autocomplete.Completer(this.client.getModelState().getText(), this.client.getCompleterExtensions()).complete(inScope);
             if (result.getEngineException() == null)
             {
                 list.addAll(result.getCompletion().collect(this::buildCandidate));
@@ -105,7 +112,9 @@ public class Execute implements Command
         String code = "###Pure\n" +
                 "function a::b::c::d():Any[*]\n{\n" + txt + ";\n}";
 
-        PureModelContextData d = this.client.getLegendInterface().parse(this.client.buildState().makeString("\n") + code);
+        PureModelContextData d = this.client.getModelState().parseWithTransient(code);
+        this.currentPMCD = d;
+
         if (this.client.isDebug())
         {
             try

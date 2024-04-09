@@ -40,7 +40,10 @@ public class JdbcTransactionManager
 
     public void close() throws SQLException
     {
-        this.statement.close();
+        if (this.statement != null)
+        {
+            this.statement.close();
+        }
     }
 
     public void beginTransaction() throws SQLException

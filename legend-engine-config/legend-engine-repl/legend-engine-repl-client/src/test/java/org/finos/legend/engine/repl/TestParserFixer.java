@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.repl;
 
-import org.checkerframework.checker.units.qual.A;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -46,6 +46,12 @@ public class H2Commands extends RelationalDatabaseCommands
     }
 
     @Override
+    public String load(String tableName, String location)
+    {
+        return "CREATE TABLE " + tableName + " AS SELECT * FROM CSVREAD('" + location + "');";
+    }
+
+    @Override
     public <T> T accept(RelationalDatabaseCommandsVisitor<T> visitor)
     {
         return visitor.visit(this);
@@ -68,4 +74,5 @@ public class H2Commands extends RelationalDatabaseCommands
         String sql = northwindProcRaw.replace("{$NORTHWIND_SQL}", northwindSqlString);
         return sql;
     }
+
 }
