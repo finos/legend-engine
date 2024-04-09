@@ -25,16 +25,22 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import java.nio.charset.StandardCharsets;
 import java.sql.ParameterMetaData;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import java.util.SortedSet;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 import org.finos.legend.engine.postgres.types.PGType;
 import org.finos.legend.engine.postgres.types.PGTypes;
+import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
 import org.slf4j.Logger;
 
 /**
@@ -191,11 +197,23 @@ public class Messages
                 METHOD_NAME_CLIENT_AUTH, errorCode);
     }
 
-    static ChannelFuture sendErrorResponse(Channel channel, /*AccessControl accessControl,*/
-                                           Throwable throwable)
+
+    private static String buildErrorMessage(Throwable throwable)
     {
-        //final PGError error = PGError.fromThrowable(SQLExceptions.prepareForClientTransmission(accessControl, throwable));
-        final PGError error = PGError.fromThrowable(throwable);
+        TextMapSetter<Map> TEXT_MAP_SETTER = (map, key, value) -> Objects.requireNonNull(map).put(key, value);
+        Map<String, String> keys = new HashMap<>();
+        OpenTelemetryUtil.getPropagators().inject(Context.current(), keys, TEXT_MAP_SETTER);
+
+        StringBuilder errorMessage = new StringBuilder(throwable.getMessage());
+        keys.entrySet().stream().forEach(e -> errorMessage.append("\n").append(e.getKey()).append(": ").append(e.getValue()));
+        return errorMessage.toString();
+    }
+
+    static ChannelFuture sendErrorResponse(Channel channel, Throwable throwable)
+    {
+        String errorMessage = buildErrorMessage(throwable);
+        LOGGER.error(errorMessage, throwable);
+        final PGError error =   new PGError(PGErrorStatus.INTERNAL_ERROR, errorMessage, throwable);
 
         ByteBuf buffer = channel.alloc().buffer();
         buffer.writeByte('E');
