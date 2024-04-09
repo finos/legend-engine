@@ -16,6 +16,7 @@ package org.finos.legend.engine.postgres;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import java.sql.Connection;
 import java.sql.Date;
@@ -27,19 +28,24 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+
 import java.util.TimeZone;
 import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.auth.NoPasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.handler.legend.LegendExecutionService;
 import org.finos.legend.engine.postgres.handler.legend.LegendHttpClient;
+
 import static org.finos.legend.engine.postgres.handler.legend.LegendResultSet.TIMESTAMP_FORMATTER;
+
 import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+
 import static org.finos.legend.engine.postgres.handler.legend.LegendDataType.*;
 
 
@@ -57,7 +63,9 @@ public class PostgresServerTypeMappingTest
         LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);
-        testPostgresServer = new TestPostgresServer(serverConfig, legendSessionFactory, (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()));
+        testPostgresServer = new TestPostgresServer(serverConfig, legendSessionFactory,
+                (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()),
+                new Messages((exception) -> exception.getMessage()));
         testPostgresServer.startUp();
         //stub to handle miscellaneous message that we don't care about
         wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/executeQueryString"))

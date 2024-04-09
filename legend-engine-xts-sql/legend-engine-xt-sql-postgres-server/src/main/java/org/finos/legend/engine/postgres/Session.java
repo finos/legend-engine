@@ -38,7 +38,6 @@ import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
 import org.finos.legend.engine.postgres.handler.SessionHandler;
-import org.finos.legend.engine.postgres.utils.ExceptionUtil;
 import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.slf4j.Logger;
@@ -121,7 +120,7 @@ public class Session implements AutoCloseable
             }
             catch (Exception e)
             {
-                throw new RuntimeException(e);
+                PostgresServerException.wrapException(e);
             }
         }
         parsed.put(p.name, p);
@@ -141,7 +140,7 @@ public class Session implements AutoCloseable
         SessionHandler sessionHandler = singleStatementContext.accept(dispatcher);
         if (sessionHandler == null)
         {
-            throw new RuntimeException(String.format("Unable to determine session handler for query[%s]", query));
+            throw new PostgresServerException(String.format("Unable to determine session handler for query[%s]", query));
         }
         return sessionHandler;
     }
@@ -182,7 +181,7 @@ public class Session implements AutoCloseable
             }
             catch (Exception e)
             {
-                throw new RuntimeException(e);
+                throw PostgresServerException.wrapException(e);
             }
         }
     }
@@ -244,10 +243,10 @@ public class Session implements AutoCloseable
                     }
                     catch (Exception e)
                     {
-                        throw ExceptionUtil.wrapException(e);
+                        throw PostgresServerException.wrapException(e);
                     }
                 default:
-                    throw new AssertionError("Unsupported type: " + type);
+                    throw new PostgresServerException("Unsupported type: " + type);
             }
         }
         finally
@@ -292,7 +291,7 @@ public class Session implements AutoCloseable
                 Portal portal = portals.get(name);
                 if (portal == null)
                 {
-                    throw new IllegalArgumentException("Portal not found: " + name);
+                    throw new PostgresServerException("Portal not found: " + name);
                 }
                 if (parsed.containsKey(portal.prep.name))
                 {
@@ -311,7 +310,7 @@ public class Session implements AutoCloseable
                 Prepared prepared = parsed.remove(name);
                 if (prepared == null)
                 {
-                    throw new IllegalArgumentException("Prepared not found: " + name);
+                    throw new PostgresServerException("Prepared not found: " + name);
                 }
                 try
                 {
@@ -319,7 +318,7 @@ public class Session implements AutoCloseable
                 }
                 catch (Exception e)
                 {
-                    throw new RuntimeException(e);
+                    throw PostgresServerException.wrapException(e);
                 }
                 parsed.remove(prepared.name);
                 return;
@@ -342,7 +341,7 @@ public class Session implements AutoCloseable
                 return;*/
             }
             default:
-                throw new IllegalArgumentException("Invalid type: " + type + ", valid types are: [P, S]");
+                throw new PostgresServerException("Invalid type: " + type + ", valid types are: [P, S]");
         }
     }
 
@@ -383,7 +382,7 @@ public class Session implements AutoCloseable
         catch (Exception e)
         {
             span.recordException(e);
-            throw ExceptionUtil.wrapException(e);
+            throw PostgresServerException.wrapException(e);
         }
         finally
         {
@@ -420,7 +419,7 @@ public class Session implements AutoCloseable
         catch (Exception e)
         {
             span.recordException(e);
-            throw ExceptionUtil.wrapException(e);
+            throw PostgresServerException.wrapException(e);
         }
         finally
         {
@@ -448,7 +447,7 @@ public class Session implements AutoCloseable
         Prepared prepared = parsed.get(statementName);
         if (prepared == null)
         {
-            throw new IllegalArgumentException("No statement found with name: " + statementName);
+            throw new PostgresServerException("No statement found with name: " + statementName);
         }
         return prepared;
     }
@@ -458,7 +457,7 @@ public class Session implements AutoCloseable
         Portal portal = portals.get(portalName);
         if (portal == null)
         {
-            throw new IllegalArgumentException("Cannot find portal: " + portalName);
+            throw new PostgresServerException("Cannot find portal: " + portalName);
         }
         return portal;
     }

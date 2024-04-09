@@ -88,7 +88,7 @@ public class ExecutionDispatcher extends SqlBaseParserBaseVisitor<SessionHandler
                 }
                 else
                 {
-                    throw new RuntimeException("Conflicting handlers for query");
+                    throw new PostgresServerException("Conflicting handlers for query");
                 }
             }
         }

@@ -52,11 +52,16 @@ class ResultSetReceiver
     private final FormatCodes.FormatCode[] formatCodes;
 
     private CompletableFuture<Void> completionFuture = new CompletableFuture<>();
+    
+    private Messages messages;
+    
+    
+    
 
     private long rowCount = 0;
 
     ResultSetReceiver(String query, DelayableWriteChannel channel, DelayedWrites delayedWrites,
-                      boolean isSimpleQuery, FormatCodes.FormatCode[] formatCodes)
+                      boolean isSimpleQuery, FormatCodes.FormatCode[] formatCodes, Messages messages)
     {
         this.query = query;
         this.channel = channel;
@@ -64,6 +69,7 @@ class ResultSetReceiver
         this.delayedWrites = delayedWrites;
         this.formatCodes = formatCodes;
         this.directChannel = this.channel.bypassDelay();
+        this.messages = messages;
     }
 
 
@@ -79,7 +85,7 @@ class ResultSetReceiver
                 {
                     span.addEvent("simpleQuery-sendRowDescription");
                     //Simple query requires to send description
-                    Messages.sendRowDescription(directChannel, rs.getMetaData(), formatCodes);
+                    messages.sendRowDescription(directChannel, rs.getMetaData(), formatCodes);
                 }
                 PostgresResultSetMetaData metaData = rs.getMetaData();
                 List<PGType<?>> columnTypes = new ArrayList<>(metaData.getColumnCount());
@@ -93,9 +99,9 @@ class ResultSetReceiver
                 while (rs.next())
                 {
                     rowCount++;
-                    Messages.sendDataRow(directChannel, rs, columnTypes, null);
+                    messages.sendDataRow(directChannel, rs, columnTypes, null);
                     if (rowCount % 10000 == 0)
-                    {   //TODO REMOVE FLASH FROM Messages.sendDataRow
+                    {   //TODO REMOVE FLASH FROM essages.sendDataRow
                         directChannel.flush();
                         span.addEvent("sentRows", Attributes.of(AttributeKey.longKey("numberOfRows"), rowCount));
                     }
@@ -116,7 +122,7 @@ class ResultSetReceiver
         Span span = tracer.spanBuilder("ResultSet Receiver Finish Handling").startSpan();
         try (Scope scope = span.makeCurrent())
         {
-            ChannelFuture sendCommandComplete = Messages.sendCommandComplete(directChannel, query, rowCount);
+            ChannelFuture sendCommandComplete = messages.sendCommandComplete(directChannel, query, rowCount);
             channel.writePendingMessages(delayedWrites);
             channel.flush();
             sendCommandComplete.addListener(future -> completionFuture.complete(null));
@@ -134,7 +140,7 @@ class ResultSetReceiver
         Span span = tracer.spanBuilder("ResultSet Receiver Failure").startSpan();
         try (Scope scope = span.makeCurrent())
         {
-            ChannelFuture sendErrorResponse = Messages.sendErrorResponse(directChannel, throwable);
+            ChannelFuture sendErrorResponse = messages.sendErrorResponse(directChannel, throwable);
             channel.writePendingMessages(delayedWrites);
             channel.flush();
             sendErrorResponse.addListener(f -> completionFuture.completeExceptionally(throwable));

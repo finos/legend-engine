@@ -35,6 +35,7 @@ import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
+import jakarta.inject.Inject;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
@@ -44,6 +45,7 @@ import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.transport.Netty4OpenChannelsHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 public class PostgresServer
 {
@@ -57,12 +59,17 @@ public class PostgresServer
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
-    public PostgresServer(ServerConfig serverConfig, SessionsFactory sessionsFactory, AuthenticationProvider authenticationProvider)
+    private Messages messages;
+
+
+    @Inject
+    public PostgresServer(ServerConfig serverConfig, SessionsFactory sessionsFactory, AuthenticationProvider authenticationProvider, Messages messages)
     {
         this.port = serverConfig.getPort();
         this.sessionsFactory = sessionsFactory;
         this.authenticationProvider = authenticationProvider;
         this.gssConfig = serverConfig.getGss();
+        this.messages = messages;
     }
 
     public void run()
@@ -86,7 +93,7 @@ public class PostgresServer
                         protected void initChannel(SocketChannel ch)
                         {
                             PostgresWireProtocol postgresWireProtocol = new PostgresWireProtocol(sessionsFactory,
-                                    authenticationProvider, gssConfig, () -> null);
+                                    authenticationProvider, gssConfig, () -> null, messages);
                             ChannelPipeline pipeline = ch.pipeline();
                             pipeline.addLast("open_channels", openChannelsHandler);
                             pipeline.addLast("frame-decoder", postgresWireProtocol.decoder);
