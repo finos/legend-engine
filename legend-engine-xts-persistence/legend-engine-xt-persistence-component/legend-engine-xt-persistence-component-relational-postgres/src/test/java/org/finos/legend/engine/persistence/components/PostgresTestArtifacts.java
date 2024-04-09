@@ -109,7 +109,7 @@ public class PostgresTestArtifacts
     public static String expectedBaseTablePlusDigestCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
             "\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"biz_date\" DATE," +
             "\"digest\" VARCHAR," +
             "\"batch_id\" INTEGER," +
@@ -126,7 +126,7 @@ public class PostgresTestArtifacts
     public static String expectedBaseTablePlusDigestPlusVersionCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
         "\"id\" INTEGER NOT NULL," +
         "\"name\" VARCHAR NOT NULL," +
-        "\"amount\" DOUBLE," +
+        "\"amount\" DOUBLE PRECISION," +
         "\"biz_date\" DATE," +
         "\"digest\" VARCHAR," +
         "\"version\" INTEGER," +
@@ -136,7 +136,7 @@ public class PostgresTestArtifacts
     public static String expectedBaseTablePlusDigestPlusVersionCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"(" +
         "\"ID\" INTEGER NOT NULL," +
         "\"NAME\" VARCHAR NOT NULL," +
-        "\"AMOUNT\" DOUBLE," +
+        "\"AMOUNT\" DOUBLE PRECISION," +
         "\"BIZ_DATE\" DATE," +
         "\"DIGEST\" VARCHAR," +
         "\"VERSION\" INTEGER," +
@@ -176,7 +176,7 @@ public class PostgresTestArtifacts
     public static String expectedBaseTablePlusDigestCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"(" +
             "\"ID\" INTEGER NOT NULL," +
             "\"NAME\" VARCHAR NOT NULL," +
-            "\"AMOUNT\" DOUBLE," +
+            "\"AMOUNT\" DOUBLE PRECISION," +
             "\"BIZ_DATE\" DATE," +
             "\"DIGEST\" VARCHAR," +
             "\"BATCH_ID\" INTEGER," +

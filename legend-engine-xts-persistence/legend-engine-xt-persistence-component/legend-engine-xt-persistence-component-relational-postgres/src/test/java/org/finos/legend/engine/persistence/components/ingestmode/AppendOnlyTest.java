@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.ingestmode.nontemporal;
+package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.PostgresTestArtifacts;
 import org.finos.legend.engine.persistence.components.common.StatisticName;

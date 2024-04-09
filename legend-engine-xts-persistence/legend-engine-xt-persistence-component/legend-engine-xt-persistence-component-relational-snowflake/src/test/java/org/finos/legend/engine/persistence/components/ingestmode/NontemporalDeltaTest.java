@@ -17,7 +17,6 @@ package org.finos.legend.engine.persistence.components.ingestmode;
 import org.finos.legend.engine.persistence.components.AnsiTestArtifacts;
 import org.finos.legend.engine.persistence.components.SnowflakeTestArtifacts;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
-import org.finos.legend.engine.persistence.components.ingestmode.nontemporal.NontemporalDeltaTest;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
@@ -26,7 +25,7 @@ import org.junit.jupiter.api.Assertions;
 
 import java.util.List;
 
-public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
+public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.components.ingestmode.nontemporal.NontemporalDeltaTest
 {
 
     @Override
