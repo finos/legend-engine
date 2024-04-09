@@ -628,12 +628,13 @@ public class TestUtils
             .build();
     }
 
-    public static CsvExternalDatasetReference getBasicCsvDatasetReferenceTableWithDataSplits(String dataPath)
+    public static DatasetDefinition getDatasetWithDataSplits()
     {
-        return CsvExternalDatasetReference.builder()
-                .schema(getStagingSchemaWithDataSplits())
-                .csvDataPath(dataPath)
-                .build();
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchemaWithDataSplits())
+            .build();
     }
 
     public static CsvExternalDatasetReference getCsvDatasetReferenceTable(String dataPath, String database, String name, String group, String alias)
