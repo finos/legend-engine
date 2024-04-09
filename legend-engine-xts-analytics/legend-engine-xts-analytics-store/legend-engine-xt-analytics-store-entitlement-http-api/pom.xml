@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-xts-analytics-store</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.42.4</version>
+        <version>4.42.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-xt-analytics-store-entitlement-http-api</artifactId>
