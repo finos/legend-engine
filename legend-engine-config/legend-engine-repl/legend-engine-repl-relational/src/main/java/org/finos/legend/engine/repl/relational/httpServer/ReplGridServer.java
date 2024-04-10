@@ -247,7 +247,8 @@ public class ReplGridServer
 
         server.setExecutor(null);
         server.start();
-        System.out.println("REPL Grid Server has started");
+        serverPortAddress = server.getAddress();
+        System.out.println("REPL Grid Server has started at port " + serverPortAddress.getPort());
     }
 
     public static String executeLambda(LegendInterface legendInterface, PureModelContextData currentRequestPMCD, Function func, ValueSpecification funcBody) throws IOException
