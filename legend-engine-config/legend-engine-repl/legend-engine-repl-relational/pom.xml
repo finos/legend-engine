@@ -149,6 +149,11 @@
         </dependency>
         <!-- DuckDB -->
 
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
+
         <!-- TODO -> Itemize... Only using ErrorManagement import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException; -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
