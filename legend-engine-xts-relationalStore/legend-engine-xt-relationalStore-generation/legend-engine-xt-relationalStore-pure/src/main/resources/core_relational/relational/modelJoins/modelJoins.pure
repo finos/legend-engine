@@ -79,8 +79,8 @@ function <<access.private>> meta::external::store::relational::modelJoins::trans
 {
   let functionOperator = $expressionSequence.functionName->toOne();
   let joinName = $sourceId + '_' + $targetId + '_GeneratedRelationalJoin';
-  let sourceMainTableAlias = $classMappings->getClassMappingAtId($sourceId).mainTableAlias->map(alias|^$alias(name=$alias.relation->cast(@Table).name));
-  let targetMainTableAlias = $classMappings->getClassMappingAtId($targetId).mainTableAlias->map(alias|^$alias(name=$alias.relation->cast(@Table).name));
+  let sourceMainTableAlias = $classMappings->getClassMappingAtId($sourceId).mainTableAlias->map(alias|^$alias(name=$alias.relation->cast(@NamedRelation).name));
+  let targetMainTableAlias = $classMappings->getClassMappingAtId($targetId).mainTableAlias->map(alias|^$alias(name=$alias.relation->cast(@NamedRelation).name));
   let sourceDatabase = $sourceMainTableAlias.database->toOne();
   let targetDatabase = $targetMainTableAlias.database->toOne();
   let aggregatedDatabase = ^Database(includes=[$sourceDatabase, $targetDatabase]);
