@@ -25,12 +25,16 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.repl.autocomplete.CompletionItem;
 import org.finos.legend.engine.repl.autocomplete.CompletionResult;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.core.ReplExtension;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.jline.reader.Candidate;
@@ -38,6 +42,8 @@ import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
+
+import java.util.HashMap;
 
 public class Execute implements Command
 {
@@ -144,7 +150,8 @@ public class Execute implements Command
         }
 
         // Execute
-        Result res = this.planExecutor.execute(planStr);
+        Identity identity = this.resolveIdentityFromLocalSubject();
+        Result res = this.planExecutor.execute((SingleExecutionPlan) PlanExecutor.readExecutionPlan(planStr), new HashMap<>(), identity.getName(), identity, null);
         if (res instanceof ConstantResult)
         {
             return ((ConstantResult) res).getValue().toString();
@@ -160,6 +167,22 @@ public class Execute implements Command
             {
                 throw new RuntimeException(res.getClass() + " not supported!");
             }
+        }
+    }
+
+    private Identity resolveIdentityFromLocalSubject()
+    {
+        try
+        {
+            return IdentityFactoryProvider.getInstance().makeIdentity(SubjectTools.getLocalSubject());
+        }
+        catch (Exception e)
+        {
+            if (this.client.isDebug())
+            {
+                this.client.getTerminal().writer().println("Couldn't resolve identity from local subject");
+            }
+            return IdentityFactoryProvider.getInstance().getAnonymousIdentity();
         }
     }
 
