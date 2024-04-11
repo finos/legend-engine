@@ -30,12 +30,12 @@ public class TestSnowflakeSimpleSemiStructuredMapping extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(Firm Legal Name, String, VARCHAR(8192), \"\")]\n" +
+                "      type = TDS[(Firm Legal Name, String, VARCHAR(65536), \"\")]\n" +
                 "      resultColumns = [(\"Firm Legal Name\", \"\")]\n" +
                 "      sql = select \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Legal Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(Firm Legal Name, String, VARCHAR(8192), \"\")]\n";
+        String TDSType = "  type = TDS[(Firm Legal Name, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -47,12 +47,12 @@ public class TestSnowflakeSimpleSemiStructuredMapping extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, VARCHAR(8192), \"\")]\n" +
+                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, VARCHAR(65536), \"\")]\n" +
                 "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Legal Name\", \"\")]\n" +
                 "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Legal Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, VARCHAR(8192), \"\")]\n";
+        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -64,12 +64,12 @@ public class TestSnowflakeSimpleSemiStructuredMapping extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(Out Col, String, VARCHAR(8192), \"\")]\n" +
+                "      type = TDS[(Out Col, String, VARCHAR(65536), \"\")]\n" +
                 "      resultColumns = [(\"Out Col\", \"\")]\n" +
                 "      sql = select concat(\"root\".FIRSTNAME, ' : ', \"root\".FIRM_DETAILS['legalName']::varchar) as \"Out Col\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(Out Col, String, VARCHAR(8192), \"\")]\n";
+        String TDSType = "  type = TDS[(Out Col, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -81,12 +81,12 @@ public class TestSnowflakeSimpleSemiStructuredMapping extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(Manager First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, VARCHAR(8192), \"\")]\n" +
+                "      type = TDS[(Manager First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, VARCHAR(65536), \"\")]\n" +
                 "      resultColumns = [(\"Manager First Name\", VARCHAR(100)), (\"Firm Legal Name\", \"\")]\n" +
                 "      sql = select \"person_table_1\".FIRSTNAME as \"Manager First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Legal Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_1\" on (\"root\".MANAGERID = \"person_table_1\".ID)\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(Manager First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, VARCHAR(8192), \"\")]\n";
+        String TDSType = "  type = TDS[(Manager First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -98,12 +98,12 @@ public class TestSnowflakeSimpleSemiStructuredMapping extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(Out Col, String, VARCHAR(8192), \"\")]\n" +
+                "      type = TDS[(Out Col, String, VARCHAR(65536), \"\")]\n" +
                 "      resultColumns = [(\"Out Col\", \"\")]\n" +
                 "      sql = select concat(case when \"person_table_1\".FIRSTNAME is null then 'NULL' else \"person_table_1\".FIRSTNAME end, ' : ', \"root\".FIRM_DETAILS['legalName']::varchar) as \"Out Col\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_1\" on (\"root\".MANAGERID = \"person_table_1\".ID)\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(Out Col, String, VARCHAR(8192), \"\")]\n";
+        String TDSType = "  type = TDS[(Out Col, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -115,12 +115,12 @@ public class TestSnowflakeSimpleSemiStructuredMapping extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(Firm Address Name, String, VARCHAR(8192), \"\")]\n" +
+                "      type = TDS[(Firm Address Name, String, VARCHAR(65536), \"\")]\n" +
                 "      resultColumns = [(\"Firm Address Name\", \"\")]\n" +
                 "      sql = select \"root\".FIRM_DETAILS['address']['name']::varchar as \"Firm Address Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(Firm Address Name, String, VARCHAR(8192), \"\")]\n";
+        String TDSType = "  type = TDS[(Firm Address Name, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -132,12 +132,12 @@ public class TestSnowflakeSimpleSemiStructuredMapping extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(Firm Legal Name, String, VARCHAR(8192), \"\"), (Firm Address Name, String, VARCHAR(8192), \"\")]\n" +
+                "      type = TDS[(Firm Legal Name, String, VARCHAR(65536), \"\"), (Firm Address Name, String, VARCHAR(65536), \"\")]\n" +
                 "      resultColumns = [(\"Firm Legal Name\", \"\"), (\"Firm Address Name\", \"\")]\n" +
                 "      sql = select \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Legal Name\", \"root\".FIRM_DETAILS['address']['name']::varchar as \"Firm Address Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(Firm Legal Name, String, VARCHAR(8192), \"\"), (Firm Address Name, String, VARCHAR(8192), \"\")]\n";
+        String TDSType = "  type = TDS[(Firm Legal Name, String, VARCHAR(65536), \"\"), (Firm Address Name, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -149,12 +149,12 @@ public class TestSnowflakeSimpleSemiStructuredMapping extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(Firm Legal Name And Address Name, String, VARCHAR(8192), \"\")]\n" +
+                "      type = TDS[(Firm Legal Name And Address Name, String, VARCHAR(65536), \"\")]\n" +
                 "      resultColumns = [(\"Firm Legal Name And Address Name\", \"\")]\n" +
                 "      sql = select concat(\"root\".FIRM_DETAILS['legalName']::varchar, \"root\".FIRM_DETAILS['address']['name']::varchar) as \"Firm Legal Name And Address Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(Firm Legal Name And Address Name, String, VARCHAR(8192), \"\")]\n";
+        String TDSType = "  type = TDS[(Firm Legal Name And Address Name, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -183,12 +183,12 @@ public class TestSnowflakeSimpleSemiStructuredMapping extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(Address, String, VARCHAR(8192), \"\"), (Names, String, VARCHAR(200), \"\")]\n" +
+                "      type = TDS[(Address, String, VARCHAR(65536), \"\"), (Names, String, VARCHAR(200), \"\")]\n" +
                 "      resultColumns = [(\"Address\", \"\"), (\"Names\", \"\")]\n" +
                 "      sql = select \"root\".FIRM_DETAILS['address']['name']::varchar as \"Address\", listagg(\"root\".FIRSTNAME, ';') as \"Names\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" group by \"Address\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(Address, String, VARCHAR(8192), \"\"), (Names, String, VARCHAR(200), \"\")]\n";
+        String TDSType = "  type = TDS[(Address, String, VARCHAR(65536), \"\"), (Names, String, VARCHAR(200), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -217,12 +217,12 @@ public class TestSnowflakeSimpleSemiStructuredMapping extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (First Address Street, String, VARCHAR(8192), \"\")]\n" +
+                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (First Address Street, String, VARCHAR(65536), \"\")]\n" +
                 "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"First Address Street\", \"\")]\n" +
                 "      sql = select \"root\".FIRSTNAME as \"First Name\", case when \"root\".FIRM_DETAILS['address']['street']::varchar is null then 'NULL' else \"root\".FIRM_DETAILS['address']['street']::varchar end as \"First Address Street\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (First Address Street, String, VARCHAR(8192), \"\")]\n";
+        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (First Address Street, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -234,12 +234,12 @@ public class TestSnowflakeSimpleSemiStructuredMapping extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (First Address Line, String, VARCHAR(8192), \"\")]\n" +
+                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (First Address Line, String, VARCHAR(65536), \"\")]\n" +
                 "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"First Address Line\", \"\")]\n" +
                 "      sql = select \"root\".FIRSTNAME as \"First Name\", case when \"root\".FIRM_DETAILS['address']['lines'][2]['details']::varchar is null then 'NULL' else \"root\".FIRM_DETAILS['address']['lines'][2]['details']::varchar end as \"First Address Line\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (First Address Line, String, VARCHAR(8192), \"\")]\n";
+        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (First Address Line, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -251,12 +251,12 @@ public class TestSnowflakeSimpleSemiStructuredMapping extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, VARCHAR(8192), \"\"), (Firm Employee Count, Integer, BIGINT, \"\"), (Firm MNC, Boolean, BIT, \"\"), (Firm Est Date, StrictDate, DATE, \"\"), (Firm Last Update, DateTime, TIMESTAMP, \"\"), (Firm Address Street, String, VARCHAR(8192), \"\"), (Firm Entity Type, simple::model::EntityType, \"\", \"\")]\n" +
+                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, VARCHAR(65536), \"\"), (Firm Employee Count, Integer, BIGINT, \"\"), (Firm MNC, Boolean, BIT, \"\"), (Firm Est Date, StrictDate, DATE, \"\"), (Firm Last Update, DateTime, TIMESTAMP, \"\"), (Firm Address Street, String, VARCHAR(65536), \"\"), (Firm Entity Type, simple::model::EntityType, \"\", \"\")]\n" +
                 "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Legal Name\", \"\"), (\"Firm Employee Count\", \"\"), (\"Firm MNC\", \"\"), (\"Firm Est Date\", \"\"), (\"Firm Last Update\", \"\"), (\"Firm Address Street\", \"\"), (\"Firm Entity Type\", \"\")]\n" +
                 "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Legal Name\", \"root\".FIRM_DETAILS['employeeCount'] as \"Firm Employee Count\", \"root\".FIRM_DETAILS['mnc'] as \"Firm MNC\", \"root\".FIRM_DETAILS['estDate']::date as \"Firm Est Date\", \"root\".FIRM_DETAILS['lastUpdate']::timestamp as \"Firm Last Update\", \"root\".FIRM_DETAILS['address']['street']::varchar as \"Firm Address Street\", \"root\".FIRM_DETAILS['entityType']::varchar as \"Firm Entity Type\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, VARCHAR(8192), \"\"), (Firm Employee Count, Integer, BIGINT, \"\"), (Firm MNC, Boolean, BIT, \"\"), (Firm Est Date, StrictDate, DATE, \"\"), (Firm Last Update, DateTime, TIMESTAMP, \"\"), (Firm Address Street, String, VARCHAR(8192), \"\"), (Firm Entity Type, simple::model::EntityType, \"\", \"\")]\n";
+        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, VARCHAR(65536), \"\"), (Firm Employee Count, Integer, BIGINT, \"\"), (Firm MNC, Boolean, BIT, \"\"), (Firm Est Date, StrictDate, DATE, \"\"), (Firm Last Update, DateTime, TIMESTAMP, \"\"), (Firm Address Street, String, VARCHAR(65536), \"\"), (Firm Entity Type, simple::model::EntityType, \"\", \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -268,12 +268,12 @@ public class TestSnowflakeSimpleSemiStructuredMapping extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Other Name 0, String, VARCHAR(8192), \"\"), (Firm Other Name 1, String, VARCHAR(8192), \"\")]\n" +
+                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Other Name 0, String, VARCHAR(65536), \"\"), (Firm Other Name 1, String, VARCHAR(65536), \"\")]\n" +
                 "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Other Name 0\", \"\"), (\"Firm Other Name 1\", \"\")]\n" +
                 "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['otherNames'][0]::varchar as \"Firm Other Name 0\", \"root\".FIRM_DETAILS['otherNames'][1]::varchar as \"Firm Other Name 1\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Other Name 0, String, VARCHAR(8192), \"\"), (Firm Other Name 1, String, VARCHAR(8192), \"\")]\n";
+        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Other Name 0, String, VARCHAR(65536), \"\"), (Firm Other Name 1, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -285,12 +285,12 @@ public class TestSnowflakeSimpleSemiStructuredMapping extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address Line 0, String, VARCHAR(8192), \"\"), (Firm Address Line 1, String, VARCHAR(8192), \"\"), (Firm Address Line 2, String, VARCHAR(8192), \"\"), (Firm Address Line 3, String, VARCHAR(8192), \"\")]\n" +
+                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address Line 0, String, VARCHAR(65536), \"\"), (Firm Address Line 1, String, VARCHAR(65536), \"\"), (Firm Address Line 2, String, VARCHAR(65536), \"\"), (Firm Address Line 3, String, VARCHAR(65536), \"\")]\n" +
                 "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address Line 0\", \"\"), (\"Firm Address Line 1\", \"\"), (\"Firm Address Line 2\", \"\"), (\"Firm Address Line 3\", \"\")]\n" +
                 "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['address']['lines'][0]['details']::varchar as \"Firm Address Line 0\", \"root\".FIRM_DETAILS['address']['lines'][1]['details']::varchar as \"Firm Address Line 1\", \"root\".FIRM_DETAILS['address']['lines'][2]['details']::varchar as \"Firm Address Line 2\", \"root\".FIRM_DETAILS['address']['lines'][3]['details']::varchar as \"Firm Address Line 3\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address Line 0, String, VARCHAR(8192), \"\"), (Firm Address Line 1, String, VARCHAR(8192), \"\"), (Firm Address Line 2, String, VARCHAR(8192), \"\"), (Firm Address Line 3, String, VARCHAR(8192), \"\")]\n";
+        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address Line 0, String, VARCHAR(65536), \"\"), (Firm Address Line 1, String, VARCHAR(65536), \"\"), (Firm Address Line 2, String, VARCHAR(65536), \"\"), (Firm Address Line 3, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -302,12 +302,12 @@ public class TestSnowflakeSimpleSemiStructuredMapping extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, VARCHAR(8192), \"\"), (Manager Firm Name, String, VARCHAR(8192), \"\"), (Manager Manager Firm Name, String, VARCHAR(8192), \"\"), (Manager Manager Manager Firm Name, String, VARCHAR(8192), \"\")]\n" +
+                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, VARCHAR(65536), \"\"), (Manager Firm Name, String, VARCHAR(65536), \"\"), (Manager Manager Firm Name, String, VARCHAR(65536), \"\"), (Manager Manager Manager Firm Name, String, VARCHAR(65536), \"\")]\n" +
                 "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Name\", \"\"), (\"Manager Firm Name\", \"\"), (\"Manager Manager Firm Name\", \"\"), (\"Manager Manager Manager Firm Name\", \"\")]\n" +
                 "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Name\", \"person_table_1\".FIRM_DETAILS['legalName']::varchar as \"Manager Firm Name\", \"person_table_2\".FIRM_DETAILS['legalName']::varchar as \"Manager Manager Firm Name\", \"person_table_3\".FIRM_DETAILS['legalName']::varchar as \"Manager Manager Manager Firm Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_1\" on (\"root\".MANAGERID = \"person_table_1\".ID) left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_2\" on (\"person_table_1\".MANAGERID = \"person_table_2\".ID) left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_3\" on (\"person_table_2\".MANAGERID = \"person_table_3\".ID)\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, VARCHAR(8192), \"\"), (Manager Firm Name, String, VARCHAR(8192), \"\"), (Manager Manager Firm Name, String, VARCHAR(8192), \"\"), (Manager Manager Manager Firm Name, String, VARCHAR(8192), \"\")]\n";
+        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, VARCHAR(65536), \"\"), (Manager Firm Name, String, VARCHAR(65536), \"\"), (Manager Manager Firm Name, String, VARCHAR(65536), \"\"), (Manager Manager Manager Firm Name, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -319,12 +319,12 @@ public class TestSnowflakeSimpleSemiStructuredMapping extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                         "    (\n" +
-                        "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, VARCHAR(8192), \"\"), (Manager Firm Name, String, VARCHAR(8192), \"\"), (Manager Manager Firm Name, String, VARCHAR(8192), \"\"), (Manager Manager Manager Firm Name, String, VARCHAR(8192), \"\")]\n" +
+                        "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, VARCHAR(65536), \"\"), (Manager Firm Name, String, VARCHAR(65536), \"\"), (Manager Manager Firm Name, String, VARCHAR(65536), \"\"), (Manager Manager Manager Firm Name, String, VARCHAR(65536), \"\")]\n" +
                         "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Name\", \"\"), (\"Manager Firm Name\", \"\"), (\"Manager Manager Firm Name\", \"\"), (\"Manager Manager Manager Firm Name\", \"\")]\n" +
                         "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Name\", \"person_table_1\".FIRM_DETAILS['legalName']::varchar as \"Manager Firm Name\", \"person_table_2\".FIRM_DETAILS['legalName']::varchar as \"Manager Manager Firm Name\", \"person_table_3\".FIRM_DETAILS['legalName']::varchar as \"Manager Manager Manager Firm Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_1\" on (\"root\".MANAGERID = \"person_table_1\".ID) left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_2\" on (\"person_table_1\".MANAGERID = \"person_table_2\".ID) left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_3\" on (\"person_table_2\".MANAGERID = \"person_table_3\".ID)\n" +
                         "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                         "    )\n";
-        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, VARCHAR(8192), \"\"), (Manager Firm Name, String, VARCHAR(8192), \"\"), (Manager Manager Firm Name, String, VARCHAR(8192), \"\"), (Manager Manager Manager Firm Name, String, VARCHAR(8192), \"\")]\n";
+        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, VARCHAR(65536), \"\"), (Manager Firm Name, String, VARCHAR(65536), \"\"), (Manager Manager Firm Name, String, VARCHAR(65536), \"\"), (Manager Manager Manager Firm Name, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
