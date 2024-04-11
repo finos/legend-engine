@@ -26,7 +26,6 @@ public class TestTrinoConnectionGrammarCompiler
         test("###Connection\n" +
                 "RelationalDatabaseConnection simple::TrinoConnection\n" +
                 "{\n" +
-                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
                 "  type: Trino;\n" +
                 "  specification: Trino\n" +
                 "  {\n" +

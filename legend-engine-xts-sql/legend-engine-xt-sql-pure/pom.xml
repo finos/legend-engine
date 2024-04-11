@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-sql</artifactId>
-        <version>4.40.4-SNAPSHOT</version>
+        <version>4.43.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -93,7 +93,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-compiler</artifactId>
+                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -146,7 +146,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-runtime-java-extension-dsl-mapping</artifactId>
+                        <artifactId>legend-pure-runtime-java-extension-compiled-dsl-mapping</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
                     <dependency>
@@ -176,7 +176,12 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-compiler</artifactId>
+                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -205,7 +210,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-dsl-mapping</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-dsl-mapping</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
@@ -238,6 +243,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-dsl-store-java</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -246,7 +255,12 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-compiler</artifactId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-legendCompiler</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
@@ -317,6 +331,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-sql-grammar-integration</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->

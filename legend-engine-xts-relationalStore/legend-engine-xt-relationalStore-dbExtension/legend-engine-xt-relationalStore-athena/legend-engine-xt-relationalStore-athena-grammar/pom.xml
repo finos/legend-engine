@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-athena</artifactId>
-        <version>4.40.4-SNAPSHOT</version>
+        <version>4.43.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -159,7 +159,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-functions-json</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-functions-json</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST - For TC build only - Remove for OSS - investigate why we need this dependency -->

@@ -48,7 +48,7 @@ function <<access.private>> meta::external::store::rel::mapping::execution(
   let result = $query
     ->entryPointPExpr($newTrace)
     ->andThen(node: PExpr[1] |
-      println($node->meta::external::store::rel::compile::ir::utils::describe());
+      //println($node->meta::external::store::rel::compile::ir::utils::describe());
       //$debug->debug(| 'PURE Expression plan:');
       $debug->debug(| $node->meta::external::store::rel::compile::ir::utils::describe());
       $node->compile(emptySubstitution(), emptyColumnAccessRewrite(), $state, $newTrace);
@@ -58,8 +58,13 @@ function <<access.private>> meta::external::store::rel::mapping::execution(
       $debug->debug(| $state.cols.names);
       $state.current
         ->okOr(| errorTrace('No current expression.', $newTrace))
-        ->andThen({expr: Expr[1] |
+        ->andThen({expr: RelExpr[1] |
           let type = $query.genericType.rawType;
+
+          let outputRelation =
+            $config.outputRelationPrefix
+              ->map(s: String[1] | format('%s:%s', [$s, 'output']))
+              ->orElse('output');
 
           /*
            * We distinguish three cases.
@@ -81,7 +86,7 @@ function <<access.private>> meta::external::store::rel::mapping::execution(
               ^$state(program=
                 $state
                   .program
-                  ->with(rel('output')->def($expr))
+                  ->with(rel($outputRelation)->def($expr))
               )
               ->ok(),
             class: Class<Any>[1] |
@@ -93,7 +98,7 @@ function <<access.private>> meta::external::store::rel::mapping::execution(
                   ^$state(program=
                     $state
                       .program
-                      ->with(rel('output')->def($expr))
+                      ->with(rel($outputRelation)->def($expr))
                   )
                   ->ok()
                 }),
@@ -110,7 +115,7 @@ function <<access.private>> meta::external::store::rel::mapping::execution(
 
                   let output =
                     def(
-                      rel('output'),
+                      rel($outputRelation),
                       if ($outputBody->isEmpty(), | reltrue(), {|
                         $outputBody
                           ->toOneMany()
@@ -136,12 +141,12 @@ function <<access.private>> meta::external::store::rel::mapping::execution(
                   ->andThen(set: RelSetImplementation[1] |
                     $set
                       ->propertyOutputs($newTrace)
-                      ->them(rules: Pair<Label,Rule>[*] |
+                      ->them(rules: Pair<Label,RelRule>[*] |
                         ^$state(
                           program=$state
                             .program
                             ->with([
-                              rel('output')
+                              rel($outputRelation)
                                 ->appl(label('query'))
                                 ->headAtom(var('x'))
                                 ->def($expr->atom(var('x')))
@@ -186,7 +191,7 @@ function <<access.private>> meta::external::store::rel::mapping::execution(
 function <<access.private>> meta::external::store::rel::mapping::propertyOutputs(
   set: RelSetImplementation[1],
   trace: Trace[1]
-): Result<Pair<Label, Rule>|*>[1] {
+): Result<Pair<Label, RelRule>|*>[1] {
   let newTrace = $trace->stage('propertyOutputs(RelSetImplementation[1])');
   $set.propertyMappings
     ->tryCastm(@RelPropertyMapping, $newTrace)

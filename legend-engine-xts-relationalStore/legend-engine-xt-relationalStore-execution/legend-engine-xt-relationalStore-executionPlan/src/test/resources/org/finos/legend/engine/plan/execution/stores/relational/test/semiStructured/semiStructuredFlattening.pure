@@ -109,12 +109,29 @@ Mapping flatten::mapping::H2Mapping
   }
 )
 
+Mapping flatten::mapping::H2ParseJsonMapping
+(
+  flatten::model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [flatten::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [flatten::store::H2DB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [flatten::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [flatten::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    firm: Binding flatten::store::FirmBinding : parseJson([flatten::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS),
+    manager[flatten_model_Person]: [flatten::store::H2DB]@manager
+  }
+)
+
 ###Runtime
 Runtime flatten::runtime::H2Runtime
 {
     mappings :
     [
-        flatten::mapping::H2Mapping
+        flatten::mapping::H2Mapping,
+        flatten::mapping::H2ParseJsonMapping
     ];
     connections :
     [

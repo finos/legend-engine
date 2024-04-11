@@ -201,9 +201,10 @@ public class BigQueryEndToEndTest
         List<String> milestoningSqlList = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
         List<String> postActionsSql = operations.postActionsSql();
+        List<String> postCleanupSql = operations.postCleanupSql();
 
         // Perform ingestion
-        ingest(preActionsSqlList, milestoningSqlList, metadataIngestSql, postActionsSql);
+        ingest(preActionsSqlList, milestoningSqlList, metadataIngestSql, postActionsSql, postCleanupSql);
     }
 
     void verifyStagingFilters(RelationalIngestor ingestor, RelationalConnection connection, Datasets datasets) throws JsonProcessingException
@@ -231,12 +232,13 @@ public class BigQueryEndToEndTest
         runQueries(Arrays.asList(sql));
     }
 
-    void ingest(List<String> preActionsSqlList, List<String> milestoningSqlList, List<String> metadataIngestSql, List<String> postActionsSql) throws IOException, InterruptedException
+    void ingest(List<String> preActionsSqlList, List<String> milestoningSqlList, List<String> metadataIngestSql, List<String> postActionsSql, List<String> postCleanupSql) throws IOException, InterruptedException
     {
         runQueries(preActionsSqlList);
         runQueries(milestoningSqlList);
         runQueries(metadataIngestSql);
         runQueries(postActionsSql);
+        runQueries(postCleanupSql);
     }
 
     void createTable(org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset stagingTable) throws InterruptedException, IOException

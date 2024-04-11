@@ -13,6 +13,7 @@
     "platform_functions_json",
     "platform_store_relational",
     "core_java_platform_binding",
+    "core_java_platform_binding_external_format",
     "core_external_format_json",
     "core_external_format_json_java_platform_binding"
   ]

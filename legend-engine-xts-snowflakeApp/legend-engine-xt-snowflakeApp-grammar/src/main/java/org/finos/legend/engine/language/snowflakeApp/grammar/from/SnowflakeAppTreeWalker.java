@@ -78,7 +78,7 @@ public class SnowflakeAppTreeWalker
                 functionContext.functionIdentifier().getText(),
                 walkerSourceInformation.getSourceInformation(functionContext.functionIdentifier())
         );
-        SnowflakeAppParserGrammar.OwnershipContext ownerContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.ownership(), "ownership", snowflakeApp.sourceInformation);
+        SnowflakeAppParserGrammar.OwnershipContext ownerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.ownership(), "ownership", snowflakeApp.sourceInformation);
         snowflakeApp.ownership = new DeploymentOwner(PureGrammarParserUtility.fromGrammarString(ownerContext.STRING().getText(), true));
         SnowflakeAppParserGrammar.DescriptionContext descriptionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.description(), "description", snowflakeApp.sourceInformation);
         if (descriptionContext != null)

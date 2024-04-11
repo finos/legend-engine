@@ -1,5 +1,6 @@
 import meta::external::store::rel::mapping::*;
 import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::metamodel::render::expr::*;
 import meta::external::store::rel::utils::*;
 import meta::pure::mapping::*;
 import meta::pure::store::*;
@@ -7,13 +8,21 @@ import meta::pure::store::*;
 
 Class meta::external::store::rel::mapping::RelSetImplementation extends InstanceSetImplementation {
   // We demand an expression that defines the class we are implementing.
-  classExpr: Expr[1];
+  classExpr: RelExpr[1];
 }
 
-function meta::external::store::rel::mapping::relInstanceSet<T>(
+function meta::external::store::rel::mapping::simpleId(set: RelSetImplementation[1]): String[1] {
+  $set.id->split('_')->reverse()->at(0)
+}
+
+function meta::external::store::rel::mapping::simpleSuperSetId(set: RelSetImplementation[1]): String[1] {
+  $set.superSetImplementationId->orElse('(no super set id)')->split('_')->reverse()->at(0)
+}
+
+function meta::external::store::rel::mapping::relSetImplementation<T>(
   owner: Mapping[1],
   sourceClass: Class<T>[1],
-  classExpr: Expr[1]
+  classExpr: RelExpr[1]
 ): RelSetImplementation[1] {
   ^RelSetImplementation(
     id=$sourceClass->elementToPath('_'),
@@ -26,7 +35,37 @@ function meta::external::store::rel::mapping::relInstanceSet<T>(
 }
 
 Class meta::external::store::rel::mapping::RelPropertyMapping extends PropertyMapping {
-  target: Expr[1];
+  target: RelExpr[1];
+}
+
+function meta::external::store::rel::mapping::describe(propertyMapping: RelPropertyMapping[1]): String[1] {
+  let owner = $propertyMapping.owner->cast(@RelSetImplementation)->map(s | $s->simpleId())->orElse('(no owner)');
+  let property = $propertyMapping.property;
+  let target = $propertyMapping.target->renderExpr();
+  format('PropertyMapping[owner: %s, property: %s, target: %s]', [$owner, $property, $target]);
+}
+
+function meta::external::store::rel::mapping::describe(set: RelSetImplementation[1]): String[1] {
+  let id = $set->simpleId();
+  let superSetImplementationId = $set->simpleSuperSetId();
+  /*
+   * Print sets in some order for readability of output.
+   */
+  let propertyMappings =
+    $set.propertyMappings
+      ->map(m | $m->cast(@RelPropertyMapping))
+      ->sortBy(m: RelPropertyMapping[1] | $m.property.name->toOne())
+      ->map(m: RelPropertyMapping[1] | $m->describe())
+      ->concatenateCollection();
+  format('Set[id: %s, superSetImplementationId: %s, properties: %s]', [$id, $superSetImplementationId, $propertyMappings]);
+}
+
+function meta::external::store::rel::mapping::describe(set: RelSetImplementation[0..1]): String[1] {
+  $set->map(s | $s->describe())->orElse('[NO SET]')
+}
+
+function meta::external::store::rel::mapping::describeLazy(set: RelSetImplementation[0..1]): FunctionDefinition<{->String[1]}>[1] {
+  {| $set->describe() }
 }
 
 /////////////////////////
@@ -35,7 +74,7 @@ Class meta::external::store::rel::mapping::RelPropertyMapping extends PropertyMa
 
 function <<access.private>> meta::external::store::rel::mapping::propertyMapping(
   property: Property<Nil,Any|*>[1],
-  target: Expr[1],
+  target: RelExpr[1],
   owner: RelSetImplementation[0..1],
   store: Store[0..1]
 ): RelPropertyMapping[1] {
@@ -72,7 +111,7 @@ function <<access.private>> meta::external::store::rel::mapping::propertyMapping
 function meta::external::store::rel::mapping::propertyMapping<T>(
   sourceClass: Class<T>[1],
   property: String[1],
-  target: Expr[1],
+  target: RelExpr[1],
   owner: RelSetImplementation[0..1],
   store: Store[0..1]
 ): RelPropertyMapping[0..1] {
@@ -88,14 +127,11 @@ function meta::external::store::rel::mapping::propertyMapping<T>(
     )
 }
 
-function <<access.private>> meta::external::store::rel::mapping::withPropertyMapping(
+function <<access.private>> meta::external::store::rel::mapping::addPropertyMapping(
   setImpl: RelSetImplementation[1],
   propertyMapping: RelPropertyMapping[1]
 ): RelSetImplementation[1] {
-  $setImpl->mutateAdd(
-    'propertyMappings',
-    $propertyMapping
-  );
+  $setImpl->mutateAdd('propertyMappings', $propertyMapping);
 
   if (!$propertyMapping.store->in($setImpl.stores),
     | $setImpl->mutateAdd('stores', $propertyMapping.store),
@@ -106,10 +142,10 @@ function <<access.private>> meta::external::store::rel::mapping::withPropertyMap
 function meta::external::store::rel::mapping::withPropertyMapping(
   setImpl: RelSetImplementation[1],
   source: Property<Nil,Any|*>[1],
-  target: Expr[1],
-  store: Store[0..1]
+  target: RelExpr[1],
+  store: Store[1]
 ): RelSetImplementation[1] {
-  $setImpl->withPropertyMapping(propertyMapping($source, $target, $setImpl, $store));
+  $setImpl->addPropertyMapping(propertyMapping($source, $target, $setImpl, $store));
 }
 
 function meta::external::store::rel::mapping::addSetImplementation(

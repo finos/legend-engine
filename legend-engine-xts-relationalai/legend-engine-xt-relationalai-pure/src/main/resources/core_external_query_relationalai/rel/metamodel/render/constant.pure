@@ -38,11 +38,11 @@ function meta::external::store::rel::metamodel::render::constant::toRelLiteral(c
   )
 }
 
-function meta::external::store::rel::metamodel::render::constant::toRelLiteral(dontCare: DontCare[1]): String[1] {
+function meta::external::store::rel::metamodel::render::constant::toRelLiteral(dontCare: RelDontCare[1]): String[1] {
   '_'
 }
 
-function meta::external::store::rel::metamodel::render::constant::toRelLiteral(constant: Constant[1]): String[1] {
+function meta::external::store::rel::metamodel::render::constant::toRelLiteral(constant: RelConstant[1]): String[1] {
   $constant->match([
     c: RelString[1]   | $c->toRelLiteral(),
     c: RelInteger[1]  | $c->toRelLiteral(),

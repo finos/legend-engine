@@ -106,7 +106,7 @@ public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result
             String composedDbCommand = mongoDBQueryJsonComposer.parseDatabaseCommand(dbCommand);
             String placeholderReplacedDbCommand = FreeMarkerExecutor.process(composedDbCommand, this.executionState);
 
-            CredentialProviderProvider credentialProviderProvider = this.executionState.getCredentialProviderProvider();
+            CredentialProviderProvider credentialProviderProvider = ((MongoDBStoreExecutionState) this.executionState.getStoreExecutionState(StoreType.NonRelational_MongoDB)).getStoreExecutionConfiguration().getCredentialProviderProvider();
 
             return new MongoDBExecutor(credentialProviderProvider).executeMongoDBQuery(placeholderReplacedDbCommand, mongoDBConnection, identity);
         }

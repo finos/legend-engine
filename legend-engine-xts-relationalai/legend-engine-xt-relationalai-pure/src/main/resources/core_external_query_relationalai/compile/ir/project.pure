@@ -1,4 +1,5 @@
 import meta::external::store::rel::compile::ir::*;
+import meta::external::store::rel::compile::ir::tds::*;
 import meta::external::store::rel::compile::ir::typeinfo::*;
 import meta::external::store::rel::compile::ir::utils::*;
 import meta::external::store::rel::mapping::*;
@@ -12,7 +13,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseP
   func: FunctionExpression[1],
   typeInfo: TranspileTypeInfo[1],
   trace: Trace[1]
-): Result<PExpr|0..1>[1] {
+): Result<PExprProject|0..1>[1] {
   assert($func.func == project_T_MANY__Path_MANY__TabularDataSet_1_);
 
   let newTrace = $trace->stage('handleCaseProject1(FunctionExpression[1],Trace[1])');
@@ -56,19 +57,14 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseP
                           ->tryCast(@meta::pure::metamodel::path::PropertyPathElement, $newTrace)
                           ->andThen(p: meta::pure::metamodel::path::PropertyPathElement[1] | $p.property->tryCast(@Property<Nil,Any|*>, $newTrace))
                           ->andThen({property: Property<Nil,Any|*>[1] |
-                            $property
-                              .genericType
-                              .rawType
-                              ->okOr(| errorTrace(format('No type information for property `%s`.', $property.name), $newTrace))
-                              ->then({type: Type[1] |
-                                $set.parent
-                                  ->meta::pure::mapping::classMappingById($type->elementToPath('_'))
-                                  ->map(next | $next->cast(@RelSetImplementation))
-                                  ->okOr(| errorTrace('No set available.', $newTrace))
-                                  ->then(next: RelSetImplementation[1] |
-                                    $expr->propertyAccess($property, $next)
-                                  )
-                              })
+                            $typeInfo
+                              ->mappingForProperty($property)
+                              ->okOr(|
+                                errorTrace(format('No mapping for property `%s`.', $property.name), $newTrace)
+                              )
+                              ->then(propertyMapping: RelPropertyMapping[1] |
+                                $expr->propertyAccess($propertyMapping);
+                              )
                           });
                       });
                   }, ok(setAccess($set, 'x')))
@@ -106,7 +102,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseP
   func: FunctionExpression[1],
   typeInfo: TranspileTypeInfo[1],
   trace: Trace[1]
-): Result<PExpr|0..1>[1] {
+): Result<PExprProject|0..1>[1] {
   assert($func.func == project_T_MANY__ColumnSpecification_MANY__TabularDataSet_1_ ||
          $func.func == project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_);
 
@@ -149,14 +145,14 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseP
 function <<access.private>> meta::external::store::rel::compile::ir::handleCaseProject3(
   func: FunctionExpression[1],
   typeInfo: TranspileTypeInfo[1],
-  tracex: Trace[1]
-): Result<PExpr|0..1>[1] {
+  trace: Trace[1]
+): Result<PExprProject|0..1>[1] {
   assert($func.func == project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_);
 
-  let newTrace = $tracex->stage('handleCaseProject3(FunctionExpression[1],Trace[1])');
+  let newTrace = $trace->stage('handleCaseProject3(FunctionExpression[1],Trace[1])');
 
   let param0 = $func.parametersValues->at(0);
-  // Second argument is the function (what is this??).
+  // Second argument is the function. (TODO: document what this is.)
   let param1 = $func.parametersValues->at(1);
   // Third argument is the column names.
   let param2 = $func.parametersValues->at(2);
@@ -211,11 +207,75 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseP
           ->andThem(fexprs: PExprScope[*] |
             // Type Result<Project>
             $param2->tryCast(@InstanceValue, $newTrace)->then(param: InstanceValue[1] |
-              // Type guareteed by function signature.
+              // Type guaranteed by function signature.
               let columnNames = $param.values->cast(@String);
               $parent->project($columnNames->zip($fexprs));
             )
           )
       });
   });
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseRestrict(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  assert($func.func == restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseRestrict(FunctionExpression[1],TranspileTypeInfo[1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
+
+  // First argument is the table.
+  let param0 = $func.parametersValues->at(0);
+  // Second argument is the column specification.
+  let param1 = $func.parametersValues->at(1);
+
+
+  $param0
+    ->valueSpecToPExpr($typeInfo, $newTrace)
+    ->andThen(parent: PExpr[1] |
+      $param1->tryCast(@InstanceValue, $newTrace)->then(param: InstanceValue[1] |
+        // Type guaranteed by function signature.
+        let columnNames = $param.values->cast(@String);
+
+        /*
+         * Here we eagerly push restricts inwards to avoid generating intermediate tables
+         * with more columns than necessary in order to be certain that we do not materialize
+         * a column in an intermediate table which is not later used.
+         *
+         * An alternative design would be to have an optimization phase, to rewrite the PExpr
+         * AST, which would do the same operation, and also remove other unused columns from
+         * intermediate tables where possible.
+         */
+        $parent->match([
+          { project: PExprProject[1] |
+              /*
+               * Handle simple case of a `restrict` immediately following a `project` by
+               * pushing the restriction into the projection.
+               */
+              let newProjections = $project.projections->filter(p: Pair<String,PExprScope>[1] |
+                $columnNames->contains($p.first)
+              );
+              ^$project(projections=$newProjections);
+          },
+          {
+            join: PExprTDSJoin[1] |
+              /*
+               * If a `join` is immediately followed by a `restrict` then the `restrict` is
+               * used to specify the output columns of the join. 
+               */
+              ^$join(columnNames=$columnNames);
+          },
+          { other: PExpr[1] |
+            /*
+             * All other cases are handled by projecting out columns in the final output.
+             */
+            $parent->restrict($columnNames)
+          }
+        ]);
+      )
+    );
 }

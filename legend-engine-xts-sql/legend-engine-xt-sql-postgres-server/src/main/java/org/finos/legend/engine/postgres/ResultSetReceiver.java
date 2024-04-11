@@ -23,6 +23,11 @@ package org.finos.legend.engine.postgres;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -31,11 +36,12 @@ import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 import org.finos.legend.engine.postgres.types.PGType;
 import org.finos.legend.engine.postgres.types.PGTypes;
+import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
 import org.slf4j.Logger;
 
 class ResultSetReceiver
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(Messages.class);
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ResultSetReceiver.class);
 
 
     private final String query;
@@ -47,7 +53,7 @@ class ResultSetReceiver
 
     private CompletableFuture<Void> completionFuture = new CompletableFuture<>();
 
-    private final long rowCount = 0;
+    private long rowCount = 0;
 
     ResultSetReceiver(String query, DelayableWriteChannel channel, DelayedWrites delayedWrites,
                       boolean isSimpleQuery, FormatCodes.FormatCode[] formatCodes)
@@ -63,49 +69,80 @@ class ResultSetReceiver
 
     public void sendResultSet(PostgresResultSet rs) throws Exception
     {
-        int rowCount = 0;
-        if (rs != null)
+        Tracer tracer = OpenTelemetryUtil.getTracer();
+        Span span = tracer.spanBuilder("ResultSet Receiver Send ResultSet").startSpan();
+        try (Scope scope = span.makeCurrent())
         {
-            if (isSimpleQuery)
+            if (rs != null)
             {
-                //Simple query requires to send description
-                Messages.sendRowDescription(directChannel, rs.getMetaData(), formatCodes);
-            }
-            PostgresResultSetMetaData metaData = rs.getMetaData();
-            List<PGType> columnTypes = new ArrayList<>(metaData.getColumnCount());
-            for (int i = 0; i < metaData.getColumnCount(); i++)
-            {
-                PGType pgType = PGTypes.get(metaData.getColumnType(i + 1), metaData.getScale(i + 1));
-                columnTypes.add(pgType);
-            }
-            while (rs.next())
-            {
-                rowCount++;
-                Messages.sendDataRow(directChannel, rs, columnTypes, null);
-                if (rowCount % 1000 == 0)
-                {   //TODO REMOVE FLASH FROM Messages.sendDataRow
-                    directChannel.flush();
+                if (isSimpleQuery)
+                {
+                    span.addEvent("simpleQuery-sendRowDescription");
+                    //Simple query requires to send description
+                    Messages.sendRowDescription(directChannel, rs.getMetaData(), formatCodes);
                 }
+                PostgresResultSetMetaData metaData = rs.getMetaData();
+                List<PGType<?>> columnTypes = new ArrayList<>(metaData.getColumnCount());
+                for (int i = 0; i < metaData.getColumnCount(); i++)
+                {
+                    PGType<?> pgType = PGTypes.get(metaData.getColumnType(i + 1), metaData.getScale(i + 1));
+                    columnTypes.add(pgType);
+                }
+                //TODO add column types to the span
+                span.addEvent("startSendingData");
+                while (rs.next())
+                {
+                    rowCount++;
+                    Messages.sendDataRow(directChannel, rs, columnTypes, null);
+                    if (rowCount % 10000 == 0)
+                    {   //TODO REMOVE FLASH FROM Messages.sendDataRow
+                        directChannel.flush();
+                        span.addEvent("sentRows", Attributes.of(AttributeKey.longKey("numberOfRows"), rowCount));
+                    }
+                }
+                span.addEvent("finishedSendingData", Attributes.of(AttributeKey.longKey("numberOfRows"), rowCount));
             }
+        }
+        finally
+        {
+            span.end();
         }
         LOGGER.info("Query complete with row count {}", rowCount);
     }
 
     public void allFinished()
     {
-        ChannelFuture sendCommandComplete = Messages.sendCommandComplete(directChannel, query, rowCount);
-        channel.writePendingMessages(delayedWrites);
-        channel.flush();
-        sendCommandComplete.addListener(future -> completionFuture.complete(null));
+        Tracer tracer = OpenTelemetryUtil.getTracer();
+        Span span = tracer.spanBuilder("ResultSet Receiver Finish Handling").startSpan();
+        try (Scope scope = span.makeCurrent())
+        {
+            ChannelFuture sendCommandComplete = Messages.sendCommandComplete(directChannel, query, rowCount);
+            channel.writePendingMessages(delayedWrites);
+            channel.flush();
+            sendCommandComplete.addListener(future -> completionFuture.complete(null));
+        }
+        finally
+        {
+            span.end();
+        }
     }
 
 
     public void fail(Throwable throwable)
     {
-        ChannelFuture sendErrorResponse = Messages.sendErrorResponse(directChannel, throwable);
-        channel.writePendingMessages(delayedWrites);
-        channel.flush();
-        sendErrorResponse.addListener(f -> completionFuture.completeExceptionally(throwable));
+        Tracer tracer = OpenTelemetryUtil.getTracer();
+        Span span = tracer.spanBuilder("ResultSet Receiver Failure").startSpan();
+        try (Scope scope = span.makeCurrent())
+        {
+            ChannelFuture sendErrorResponse = Messages.sendErrorResponse(directChannel, throwable);
+            channel.writePendingMessages(delayedWrites);
+            channel.flush();
+            sendErrorResponse.addListener(f -> completionFuture.completeExceptionally(throwable));
+        }
+        finally
+        {
+            span.end();
+        }
     }
 
     public CompletableFuture<Void> completionFuture()

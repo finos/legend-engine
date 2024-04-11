@@ -1,0 +1,24 @@
+
+/*
+ * Measuring the time a function takes (for development purposes).
+ */
+function meta::external::store::rel::utils::reportDuration<T|n>(message: String[1], f: FunctionDefinition<{->T[n]}>[1]): T[n] {
+  let timeBegin = now();
+  let result = $f->eval();
+  let timeEnd = now();
+  let duration = $timeBegin->dateDiff($timeEnd, DurationUnit.MILLISECONDS);
+  println(format('%s took: %s milliseconds', [$message, $duration]));
+  $result;
+}
+
+/*
+ * Measuring the time a function takes (for development purposes).
+ */
+function meta::external::store::rel::utils::reportDuration<S,T|m,n>(arg: S[m], message: String[1], f: FunctionDefinition<{S[m]->T[n]}>[1]): T[n] {
+  let timeBegin = now();
+  let result = $f->eval($arg);
+  let timeEnd = now();
+  let duration = $timeBegin->dateDiff($timeEnd, DurationUnit.MILLISECONDS);
+  println(format('%s took: %s milliseconds', [$message, $duration]));
+  $result;
+}

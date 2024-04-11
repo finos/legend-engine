@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.40.4-SNAPSHOT</version>
+        <version>4.43.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -29,7 +29,7 @@
 
 
     <modules>
-        <module>legend-engine-xt-data-space-api</module>
+        <module>legend-engine-xt-data-space-http-api</module>
         <module>legend-engine-xt-data-space-compiler</module>
         <module>legend-engine-xt-data-space-generation</module>
         <module>legend-engine-xt-data-space-grammar</module>

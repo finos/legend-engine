@@ -5,6 +5,7 @@ import meta::external::store::rel::test::query::util::*;
 Class meta::external::store::rel::test::query::models::basicmodel::Person {
   firstName: String[1];
   lastName: String[1];
+  email: String[0..1];
 }
 
 Class meta::external::store::rel::test::query::models::basicmodel::Employee extends Person {
@@ -22,7 +23,7 @@ Association meta::external::store::rel::test::query::models::basicmodel::Employm
 
 function meta::external::store::rel::test::query::models::basicmodel::schema(): RAISchema[1] {
   RAITestSchema()
-    ->includeClass(Person)
-    ->includeClass(Employee)
-    ->includeClass(Firm);
+    ->includeSingleClass(Person)
+    ->includeSingleClass(Employee)
+    ->includeSingleClass(Firm);
 }

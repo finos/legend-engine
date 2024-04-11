@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-service</artifactId>
-        <version>4.40.4-SNAPSHOT</version>
+        <version>4.43.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -71,7 +71,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
+            <artifactId>legend-engine-pure-platform-dsl-store-java</artifactId>
         </dependency>
 
         <dependency>
@@ -154,7 +154,12 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-configuration</artifactId>
+            <artifactId>legend-engine-configuration-contract-extension-pure</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->

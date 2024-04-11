@@ -30,29 +30,69 @@ function meta::external::store::rel::compile::ir::typeinfo::union(
 }
 
 /**
-  * Return the set implementation id (i.e., the class name) for each set implementation held in the type info.
+  * Returns the set implementation id (i.e., the class name) for each set implementation held in the type info.
   */
 function meta::external::store::rel::compile::ir::typeinfo::describe(
   typeInfo: TranspileTypeInfo[1]
 ): String[1] {
+  /*
+   * Print sets in some order for readability of output.
+   */
+  let orderedSets = $typeInfo.sets->sortBy(s: RelSetImplementation[1] | $s.id);
   if ( $typeInfo.sets->isEmpty(),
      | '(no set implemtations)',
-     | $typeInfo.sets->map(s: RelSetImplementation[1] | $s.id)->makeString('[', ', ',']')
-     )
+     | format('Type info for %s sets: %s', [$orderedSets->size(), $orderedSets->map(s: RelSetImplementation[1] | $s->describe())->makeString('[\n', ',\n','\n]')])
+     );
 }
 
 /**
-  * Returns the sets from the type info for the given class.
+  * Lazily returns the set implementation id (i.e., the class name) for each set implementation held in the type info.
+  */
+function meta::external::store::rel::compile::ir::typeinfo::describeLazy(
+  typeInfo: TranspileTypeInfo[1]
+): FunctionDefinition<{->String[1]}>[1] {
+  {| describe($typeInfo) }
+}
+
+/**
+  * Returns the set from the type info for the given class.
   */
 function meta::external::store::rel::compile::ir::typeinfo::setForClass(
   typeInfo: TranspileTypeInfo[1],
   class: Class<Any>[1]
 ): RelSetImplementation[0..1] {
-  $typeInfo.sets->filter(set: RelSetImplementation[1] |
+  let sets = $typeInfo.sets->filter(set: RelSetImplementation[1] |
     $set.class == $class
-  )->first()
+  );
+  assert($sets->size() <= 1, 'Each class must correspond to at most one set implemenation.');
+  $sets->first();
 }
 
+/**
+  * Returns the property mapping from the type info for the given property.
+  */
+function meta::external::store::rel::compile::ir::typeinfo::mappingForProperty(
+  typeInfo: TranspileTypeInfo[1],
+  property: Property<Nil, Any|*>[1]
+): RelPropertyMapping[0..1] {
+  let propMappings =
+    $typeInfo.sets
+      ->map(set: RelSetImplementation[1] |
+        $set.propertyMappings
+          ->map(m: meta::pure::mapping::PropertyMapping[1] | $m->cast(@RelPropertyMapping))
+      )
+      ->filter(mapping: RelPropertyMapping[1] |
+        /*
+         * Choose the property mapping that corresponds to the property owner class.
+         * In general, when a class with a property has subclasses, there can be a property
+         * mapping for that property for each subclass and the superclass.
+         */
+        $mapping.property->equal($property) &&
+        $mapping.owner->cast(@meta::pure::mapping::SetImplementation).class->equal($property.owner);
+      );
+  assert($propMappings->size() <= 1, 'Each property must correspond to at most one property mapping.');
+  $propMappings->first();
+}
 
 /**
   * Construct a P-Expression type from the given type.

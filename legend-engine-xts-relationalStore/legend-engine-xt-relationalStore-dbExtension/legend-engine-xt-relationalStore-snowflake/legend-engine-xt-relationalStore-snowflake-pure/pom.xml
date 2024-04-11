@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-snowflake</artifactId>
-        <version>4.40.4-SNAPSHOT</version>
+        <version>4.43.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -54,7 +54,7 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-functions-pure</artifactId>
+                        <artifactId>legend-pure-m2-functions-base-pure</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
                     <dependency>
@@ -187,7 +187,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-store-relational</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-store-relational</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
@@ -205,6 +205,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-dsl-store-java</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -251,6 +255,11 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

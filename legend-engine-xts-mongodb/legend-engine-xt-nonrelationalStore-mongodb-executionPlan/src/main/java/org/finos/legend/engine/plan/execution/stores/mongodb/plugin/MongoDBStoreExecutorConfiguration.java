@@ -40,7 +40,7 @@ public class MongoDBStoreExecutorConfiguration implements StoreExecutorConfigura
 
     public static class Builder
     {
-        private CredentialProviderProvider credentialProviderProvider = CredentialProviderProvider.builder().build();
+        private CredentialProviderProvider credentialProviderProvider = CredentialProviderProvider.defaultProviderProvider();
 
         public Builder withCredentialProviderProvider(CredentialProviderProvider credentialProviderProvider)
         {
@@ -51,7 +51,7 @@ public class MongoDBStoreExecutorConfiguration implements StoreExecutorConfigura
         public MongoDBStoreExecutorConfiguration build()
         {
             MongoDBStoreExecutorConfiguration mongoDBStoreExecutionConfiguration = new MongoDBStoreExecutorConfiguration();
-            mongoDBStoreExecutionConfiguration.credentialProviderProvider = credentialProviderProvider;
+            mongoDBStoreExecutionConfiguration.credentialProviderProvider = this.credentialProviderProvider;
             return mongoDBStoreExecutionConfiguration;
         }
     }

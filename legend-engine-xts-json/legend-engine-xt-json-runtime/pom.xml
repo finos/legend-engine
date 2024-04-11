@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-json</artifactId>
-        <version>4.40.4-SNAPSHOT</version>
+        <version>4.43.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -58,7 +58,6 @@
                     </dependency>
                 </dependencies>
             </plugin>
-
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
@@ -73,6 +72,18 @@
                             <sources>
                                 <source>${project.basedir}/target/generated-test-sources/</source>
                             </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>executionEnforcement</id>
+                        <configuration>
+                            <skip>false</skip>
                         </configuration>
                     </execution>
                 </executions>
@@ -165,7 +176,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-shared-format-model</artifactId>
+            <artifactId>legend-engine-external-format-example</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
@@ -186,7 +197,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-shared-format-model</artifactId>
+            <artifactId>legend-engine-external-format-core</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -216,7 +227,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-store-relational</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-store-relational</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->

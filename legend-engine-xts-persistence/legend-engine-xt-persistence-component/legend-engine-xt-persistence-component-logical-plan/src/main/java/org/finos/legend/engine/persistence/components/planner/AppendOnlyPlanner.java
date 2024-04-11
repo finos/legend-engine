@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.planner;
 
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
@@ -30,6 +31,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.And
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Exists;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Not;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
@@ -105,12 +107,13 @@ class AppendOnlyPlanner extends Planner
     @Override
     public LogicalPlan buildLogicalPlanForIngest(Resources resources)
     {
-        List<Value> dataFields = getDataFields();
+        Pair<List<Value>, List<DataType>> dataFieldsWithTypes = getDataFieldsWithTypes();
+        List<Value> dataFields = dataFieldsWithTypes.getOne();
         List<Value> fieldsToSelect = new ArrayList<>(dataFields);
         List<Value> fieldsToInsert = new ArrayList<>(dataFields);
 
         // Add digest generation (if applicable)
-        ingestMode().digestGenStrategy().accept(new DigestGenerationHandler(mainDataset(), fieldsToSelect, fieldsToInsert));
+        ingestMode().digestGenStrategy().accept(new DigestGenerationHandler(mainDataset(), fieldsToSelect, fieldsToInsert, dataFieldsWithTypes.getTwo()));
 
         // Add auditing (if applicable)
         if (ingestMode().auditing().accept(AUDIT_ENABLED))

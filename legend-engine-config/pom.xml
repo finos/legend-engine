@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.40.4-SNAPSHOT</version>
+        <version>4.43.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -30,11 +30,7 @@
         <module>legend-engine-configuration</module>
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
-        <module>legend-engine-pure-code-compiled-core-configuration</module>
         <module>legend-engine-server</module>
-        <module>legend-engine-server-integration-tests</module>
-        <module>legend-engine-server-support-core</module>
-        <module>legend-engine-connection-integration-tests</module>
         <module>legend-engine-repl</module>
     </modules>
 </project>

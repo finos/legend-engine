@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-test</artifactId>
-        <version>4.40.4-SNAPSHOT</version>
+        <version>4.43.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -52,7 +52,7 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-compiler</artifactId>
+                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -72,7 +72,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-javaPlatformBinding-pure</artifactId>
+                        <artifactId>legend-engine-xt-javaPlatformBinding-externalFormat-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -120,7 +120,12 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-compiler</artifactId>
+                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -140,7 +145,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-javaPlatformBinding-pure</artifactId>
+                        <artifactId>legend-engine-xt-javaPlatformBinding-externalFormat-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -202,7 +207,12 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-compiler</artifactId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-legendCompiler</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -218,7 +228,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-javaPlatformBinding-pure</artifactId>
+            <artifactId>legend-engine-xt-javaPlatformBinding-externalFormat-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -273,6 +283,11 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->

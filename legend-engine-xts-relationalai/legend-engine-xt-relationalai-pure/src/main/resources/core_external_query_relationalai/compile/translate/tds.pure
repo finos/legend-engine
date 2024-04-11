@@ -9,7 +9,7 @@ import meta::external::store::rel::trace::*;
 import meta::external::store::rel::utils::*;
 
 function meta::external::store::rel::compile::tds::compile(
-  join: Join[1],
+  join: PExprTDSJoin[1],
   substitution: VariableSubstitution[1],
   mapping: ColumnAccessRewrite[1],
   state: CompilationState[1],
@@ -60,9 +60,23 @@ function meta::external::store::rel::compile::tds::compile(
                 )
               );
 
-              let projections =
+              /*
+               * Filter the columns originating from the left and right expression.
+               */
+              let filteredLeftColumns =
                 $leftState.cols.names
-                  ->map({col: String[1] |
+                  ->filter(name: String[1] |
+                     $join.columnNames->isEmpty() || $join.columnNames->contains($name)
+                  );
+              let filteredRightColumns =
+                $rightState.cols.names
+                  ->filter(name: String[1] |
+                     $join.columnNames->isEmpty() || $join.columnNames->contains($name)
+                  );
+
+              let projections =
+                $filteredLeftColumns
+                  ->map(col: String[1] |
                     def(
                       $target
                         ->appl(label($col)),
@@ -73,11 +87,11 @@ function meta::external::store::rel::compile::tds::compile(
                       ]
                       ->product()
                       ->from(vars(['i', 'k']))
-                    );
-                  })
+                    )
+                  )
                   ->concatenate(
-                    $rightState.cols.names
-                      ->map({col: String[1] |
+                    $filteredRightColumns
+                      ->map(col: String[1] |
                         def(
                           $target
                             ->appl(label($col)),
@@ -88,13 +102,13 @@ function meta::external::store::rel::compile::tds::compile(
                           ]
                           ->product()
                           ->from(vars(['i', 'k']))
-                        );
-                      })
+                        )
+                      )
                   );
 
               ^$joinedState(
                 program=$joinedState.program->with($joinRule->concatenate($projections)),
-                cols=columns($leftState.cols.names->concatenate($rightState.cols.names)),
+                cols=columns($filteredLeftColumns->concatenate($filteredRightColumns)),
                 current=rel($target)
               );
             });
@@ -103,7 +117,7 @@ function meta::external::store::rel::compile::tds::compile(
 }
 
 function meta::external::store::rel::compile::tds::compile(
-  filter: TDSFilter[1],
+  filter: PExprTDSFilter[1],
   substitution: VariableSubstitution[1],
   rewrite: ColumnAccessRewrite[1],
   state: CompilationState[1],

@@ -84,6 +84,7 @@ public class LogicalPlanUtils
 {
     public static final String INFINITE_BATCH_TIME = "9999-12-31 23:59:59";
     public static final String DEFAULT_META_TABLE = "batch_metadata";
+    public static final String DEFAULT_SINK_CLEAN_UP_AUDIT_TABLE = "sink_cleanup_audit";
     public static final String DATA_SPLIT_LOWER_BOUND_PLACEHOLDER = "{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}";
     public static final String DATA_SPLIT_UPPER_BOUND_PLACEHOLDER = "{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}";
     public static final String UNDERSCORE = "_";

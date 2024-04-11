@@ -39,6 +39,7 @@ public enum FunctionName
     GENERATE_ARRAY,
     PARSE_DATETIME,
     OBJECT_CONSTRUCT,
+    ARRAY_CONSTRUCT,
     TO_VARIANT,
     TO_JSON,
     CONVERT,

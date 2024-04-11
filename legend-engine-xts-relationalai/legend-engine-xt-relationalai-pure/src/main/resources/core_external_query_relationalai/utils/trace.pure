@@ -1,3 +1,4 @@
+import meta::external::store::rel::utils::*;
 import meta::external::store::rel::trace::*;
 
 /**
@@ -9,7 +10,8 @@ Class meta::external::store::rel::trace::Trace {
 
 Class meta::external::store::rel::trace::Stage {
   <<equality.Key>> stageName: String[1];
-  messages: String[*];
+  /** Each message is a sgtring label and a delayed-evaluated string message. */
+  messages: Pair<String,FunctionDefinition<{->String[1]}>>[*];
 }
 
 function meta::external::store::rel::trace::emptyTrace(): Trace[1] {
@@ -26,22 +28,17 @@ function meta::external::store::rel::trace::stage(trace: Trace[1], stageName: St
 /**
   * Append a message to the current stage.
   */
-function meta::external::store::rel::trace::detail(trace: Trace[1], label: String[1], message: String[0..1]): Trace[1] {
+function meta::external::store::rel::trace::detailLazy(trace: Trace[1], label: String[1], message: FunctionDefinition<{->String[1]}>[1]): Trace[1] {
   let headStage = $trace.stages->at(0);
   let headStageMessages = $headStage.messages;
-  let headMessage =
-    if ( $message->isEmpty(),
-       | $label + ': (none)',
-       | $label + ': ' + $message->toOne()
-       );
-  ^$trace(stages=$trace.stages->tail()->add(0, ^$headStage(messages=$headStageMessages->add($headMessage))));
+  ^$trace(stages=$trace.stages->tail()->add(0, ^$headStage(messages=$headStageMessages->add(pair($label, $message)))));
 }
 
 /**
   * Append a message to the current stage.
   */
-function meta::external::store::rel::trace::detail(trace: Trace[1], label: String[1], elem: Any[0..1]): Trace[1] {
-  detail($trace, $label, $elem->map(e: Any[1] | $e->toString()));
+function meta::external::store::rel::trace::detail(trace: Trace[1], label: String[1], elem: Any[1]): Trace[1] {
+  detailLazy($trace, $label, {| $elem->toString() });
 }
 
 function meta::external::store::rel::trace::traceLog(trace: Trace[0..1]): String[*] {
@@ -55,11 +52,20 @@ function meta::external::store::rel::trace::traceLog(trace: Trace[0..1]): String
             ->toNumbered()
             ->map(p: Pair<Integer,Stage>[1] |
               let stage = $p.second;
-              let messages = $stage.messages;
+              let messages =
+                $stage.messages
+                  ->map(lazyMessage: Pair<String,FunctionDefinition<{->String[1]}>>[1] |
+                    let label = $lazyMessage.first;
+                    let messageEval = $lazyMessage.second->eval();
+                    if ($messageEval->isEmpty(),
+                      | format('%s: (none)', $label),
+                      | format('%s: %s', [$label, $messageEval->toOne()])
+                      );
+                  );
               let line = format('stage %s: %s', [$p.first, $stage.stageName]);
-              if ( $messages->isEmpty(),
+              if ($messages->isEmpty(),
                 | $line,
-                | $line + $messages->makeString('\n    ', '\n    ', '');
+                | format('%s\n%s', [$line, $messages->concatenateMessages()])
                 );
             )
             ->reverse()

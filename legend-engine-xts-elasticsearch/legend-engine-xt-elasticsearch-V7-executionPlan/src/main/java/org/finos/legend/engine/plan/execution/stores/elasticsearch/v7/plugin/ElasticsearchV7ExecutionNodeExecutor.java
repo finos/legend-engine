@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.connection.ElasticsearchHttpContextUtil;
 import org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.result.ExecutionRequestVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
@@ -51,8 +52,7 @@ public class ElasticsearchV7ExecutionNodeExecutor implements ExecutionNodeVisito
             Elasticsearch7RequestExecutionNode esNode = (Elasticsearch7RequestExecutionNode) executionNode;
             Elasticsearch7StoreConnection connection = esNode.connection;
 
-            HttpClientContext httpClientContext = ElasticsearchHttpContextUtil.authToHttpContext(this.identity, this.executionState.getCredentialProviderProvider(), connection.authSpec, this.state.getProviders());
-
+            HttpClientContext httpClientContext = ElasticsearchHttpContextUtil.authToHttpContext(this.identity, ((ElasticsearchV7StoreExecutionState)this.executionState.getStoreExecutionState(StoreType.ESv7)).getStoreExecutionConfiguration().getCredentialProviderProvider(), connection.authSpec, this.state.getProviders());
             RequestBase request = null;
             try
             {

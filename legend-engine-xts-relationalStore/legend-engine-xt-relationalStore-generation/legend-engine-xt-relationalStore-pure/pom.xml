@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-generation</artifactId>
-        <version>4.40.4-SNAPSHOT</version>
+        <version>4.43.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -39,7 +39,7 @@
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-store-java</dependency>
-                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-dsl-store</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-store</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
@@ -69,7 +69,7 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-functions-pure</artifactId>
+                        <artifactId>legend-pure-m2-functions-base-pure</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
                     <dependency>
@@ -195,13 +195,13 @@
 
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-runtime-java-extension-store-relational</artifactId>
+                        <artifactId>legend-pure-runtime-java-extension-compiled-store-relational</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
 
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-runtime-java-extension-functions-relation</artifactId>
+                        <artifactId>legend-pure-runtime-java-extension-compiled-functions-relation</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
 
@@ -323,15 +323,15 @@
 
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-store-relational</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-store-relational</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-functions-json</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-shared-functions-json</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-functions-relation</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-functions-relation</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -339,30 +339,30 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-dsl-store</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-dsl-store</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-dsl-mapping</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-dsl-mapping</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-dsl-diagram</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-dsl-diagram</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-dsl-path</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-dsl-path</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-dsl-tds</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-dsl-tds</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-dsl-graph</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-dsl-graph</artifactId>
             <scope>runtime</scope>
         </dependency>
 
@@ -380,6 +380,11 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>

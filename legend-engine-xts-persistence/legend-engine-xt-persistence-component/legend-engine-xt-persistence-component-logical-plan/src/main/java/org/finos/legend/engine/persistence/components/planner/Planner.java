@@ -19,6 +19,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType;
 import org.finos.legend.engine.persistence.components.common.Resources;
@@ -34,6 +35,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThan;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
@@ -233,6 +235,29 @@ public abstract class Planner
     protected Dataset tempStagingDatasetWithoutPks()
     {
         return tempStagingDatasetWithoutPks.orElseThrow(IllegalStateException::new);
+    }
+
+    protected Pair<List<Value>, List<DataType>> getDataFieldsWithTypes()
+    {
+        List<Value> dataFields = new ArrayList<>();
+        List<DataType> fieldTypes = new ArrayList<>();
+
+        Optional<String> dedupField = ingestMode.deduplicationStrategy().accept(DeduplicationVisitors.EXTRACT_DEDUP_FIELD);
+        Optional<String> dataSplitField = ingestMode.dataSplitField();
+
+        for (int i = 0; i < stagingDataset().schemaReference().fieldValues().size(); i++)
+        {
+            FieldValue fieldValue = stagingDataset().schemaReference().fieldValues().get(i);
+            if ((dedupField.isPresent() && dedupField.get().equalsIgnoreCase(fieldValue.fieldName())) ||
+                (dataSplitField.isPresent() && dataSplitField.get().equalsIgnoreCase(fieldValue.fieldName())))
+            {
+                continue;
+            }
+            dataFields.add(fieldValue);
+            fieldTypes.add(stagingDataset().schema().fields().get(i).type().dataType());
+        }
+
+        return Tuples.pair(dataFields, fieldTypes);
     }
 
     protected List<Value> getDataFields()

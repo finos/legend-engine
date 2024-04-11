@@ -275,7 +275,8 @@ class BulkLoadPlanner extends Planner
         List<Value> fieldsToInsert = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
 
         // Add digest
-        ingestMode().digestGenStrategy().accept(new DigestGenerationHandler(mainDataset(), fieldsToSelect, fieldsToInsert));
+        List<DataType> fieldTypes = stagingDataset().schema().fields().stream().map(field -> field.type().dataType()).collect(Collectors.toList());
+        ingestMode().digestGenStrategy().accept(new DigestGenerationHandler(mainDataset(), fieldsToSelect, fieldsToInsert, fieldTypes));
 
         // Add batch_id field
         fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build());
@@ -303,7 +304,8 @@ class BulkLoadPlanner extends Planner
         List<Value> fieldsToInsertIntoMain = new ArrayList<>(externalDataset.schemaReference().fieldValues());
 
         // Add digest
-        ingestMode().digestGenStrategy().accept(new DigestGenerationHandler(mainDataset(), fieldsToSelect, fieldsToInsertIntoMain));
+        List<DataType> fieldTypes = externalDataset.schema().fields().stream().map(field -> field.type().dataType()).collect(Collectors.toList());
+        ingestMode().digestGenStrategy().accept(new DigestGenerationHandler(mainDataset(), fieldsToSelect, fieldsToInsertIntoMain, fieldTypes));
 
         // Add batch_id field
         fieldsToInsertIntoMain.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build());
@@ -335,6 +337,10 @@ class BulkLoadPlanner extends Planner
         if (!transformWhileCopy)
         {
             operations.add(Create.of(false, externalDataset));
+        }
+        if (options().enableConcurrentSafety())
+        {
+            operations.add(Create.of(true, lockInfoDataset().orElseThrow(IllegalStateException::new).get()));
         }
         return LogicalPlan.of(operations);
     }

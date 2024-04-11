@@ -22,10 +22,17 @@ public class ElasticsearchV7StoreExecutor implements StoreExecutor
 {
     private final ElasticsearchV7StoreState state = new ElasticsearchV7StoreState();
 
+    private final ElasticsearchV7StoreExecutorConfiguration elasticsearchV7StoreExecutorConfiguration;
+
+    public ElasticsearchV7StoreExecutor(ElasticsearchV7StoreExecutorConfiguration elasticsearchV7StoreExecutorConfiguration)
+    {
+        this.elasticsearchV7StoreExecutorConfiguration = elasticsearchV7StoreExecutorConfiguration;
+    }
+
     @Override
     public StoreExecutionState buildStoreExecutionState()
     {
-        return new ElasticsearchV7StoreExecutionState(this.state);
+        return new ElasticsearchV7StoreExecutionState(this.state, this.elasticsearchV7StoreExecutorConfiguration);
     }
 
     @Override
