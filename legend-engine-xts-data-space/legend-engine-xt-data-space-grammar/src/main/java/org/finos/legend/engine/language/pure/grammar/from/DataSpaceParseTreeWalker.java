@@ -245,7 +245,11 @@ public class DataSpaceParseTreeWalker
         DataSpaceTemplateExecutable executable = new DataSpaceTemplateExecutable();
         executable.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
 
-        // Name
+        // ID
+        DataSpaceParserGrammar.ExecutableTemplateQueryIdContext executableTemplateQueryIdContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executableTemplateQueryId(), "id", executable.sourceInformation);
+        executable.id = executableTemplateQueryIdContext.VALID_STRING() != null ? executableTemplateQueryIdContext.VALID_STRING().getText() : executableTemplateQueryIdContext.DECIMAL() != null ? executableTemplateQueryIdContext.DECIMAL().getText() : executableTemplateQueryIdContext.INTEGER().getText();
+
+        // Title
         DataSpaceParserGrammar.ExecutableTitleContext executableTitleContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executableTitle(), "title", executable.sourceInformation);
         executable.title = PureGrammarParserUtility.fromGrammarString(executableTitleContext.STRING().getText(), true);
 
