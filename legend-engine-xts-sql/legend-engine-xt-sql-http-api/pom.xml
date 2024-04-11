@@ -39,6 +39,12 @@
                             <skip>false</skip>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>default</id>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>

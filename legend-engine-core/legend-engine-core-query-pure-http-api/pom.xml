@@ -37,6 +37,12 @@
                             <skip>false</skip>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>default</id>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
@@ -103,7 +109,6 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-executionPlan-execution-authorizer</artifactId>
         </dependency>
-
         <!-- ENGINE -->
 
         <!-- JACKSON -->

@@ -44,7 +44,7 @@ public class DuckDBCommands extends RelationalDatabaseCommands
     @Override
     public String load(String tableName, String location)
     {
-        return "CREATE TABLE " + tableName + " AS SELECT * FROM '" + location + "';";
+        return "CREATE TABLE " + tableName + " AS SELECT * FROM read_csv('" + location + "', header=true);";
     }
 
     @Override
