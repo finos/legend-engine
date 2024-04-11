@@ -829,7 +829,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testIfEnumParameterInPr
    let resultForIf = $generatedPlanForIf->planToString(meta::relational::extension::relationalExtensions());
    let expected = 'Sequence\n'+
                   '(\n'+
-                  '  type = TDS[(name, String, VARCHAR(8192), ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
+                  '  type = TDS[(name, String, VARCHAR(65536), ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
                   '  (\n'+
                   '    FunctionParametersValidationNode\n'+
                   '    (\n'+
@@ -837,7 +837,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testIfEnumParameterInPr
                   '    )\n'+
                   '    Relational\n'+
                   '    (\n'+
-                  '      type = TDS[(name, String, VARCHAR(8192), ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
+                  '      type = TDS[(name, String, VARCHAR(65536), ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
                   '      resultColumns = [("name", ""), ("active", INT)]\n'+
                   '      sql = select case when \'${yesOrNo}\' = \'NO\' then \'InActive User\' else "root".name end as "name", "root".active as "active" from employeeTable as "root"\n'+
                   '      connection = TestDatabaseConnection(type = "H2")\n'+
@@ -856,7 +856,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testIfEnumParameterWith
    let resultForIf = $generatedPlanForIf->planToString(meta::relational::extension::relationalExtensions());
    let expected = 'Sequence\n'+
                   '(\n'+
-                  '  type = TDS[(name, String, VARCHAR(8192), ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
+                  '  type = TDS[(name, String, VARCHAR(65536), ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
                   '  (\n'+
                   '    FunctionParametersValidationNode\n'+
                   '    (\n'+
@@ -864,7 +864,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testIfEnumParameterWith
                   '    )\n'+
                   '    Relational\n'+
                   '    (\n'+
-                  '      type = TDS[(name, String, VARCHAR(8192), ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
+                  '      type = TDS[(name, String, VARCHAR(65536), ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
                   '      resultColumns = [("name", ""), ("active", INT)]\n'+
                   '      sql = select case when (${optionalVarPlaceHolderOperationSelector(yesOrNo, equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo), \'"root".active in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)})\', \'"root".active = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)}\'), \'0 = 1\')}) then "root".name else \'InActive User\' end as "name", "root".active as "active" from employeeTable as "root"\n'+
                   '      connection = TestDatabaseConnection(type = "H2")\n'+
@@ -883,7 +883,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testIfOpFilterEnumValue
    let resultForIf = $generatedPlanForIf->planToString(meta::relational::extension::relationalExtensions());
    let expected = 'Relational\n'+
                   '(\n'+
-                  '  type = TDS[(name, String, VARCHAR(8192), ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
+                  '  type = TDS[(name, String, VARCHAR(65536), ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
                   '  resultColumns = [("name", ""), ("active", INT)]\n'+
                   '  sql = select case when "root".active = 0 then \'InActive User\' else "root".name end as "name", "root".active as "active" from employeeTable as "root"\n'+
                   '  connection = TestDatabaseConnection(type = "H2")\n'+
@@ -899,7 +899,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testOptionalEnumParamet
    let resultForIf = $generatedPlanForIf->planToString(meta::relational::extension::relationalExtensions());
    let expected = 'Sequence\n'+
                   '(\n'+
-                  '  type = TDS[(name, String, VARCHAR(8192), ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
+                  '  type = TDS[(name, String, VARCHAR(65536), ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
                   '  (\n'+
                   '    FunctionParametersValidationNode\n'+
                   '    (\n'+
@@ -907,7 +907,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testOptionalEnumParamet
                   '    )\n'+
                   '    Relational\n'+
                   '    (\n'+
-                  '      type = TDS[(name, String, VARCHAR(8192), ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
+                  '      type = TDS[(name, String, VARCHAR(65536), ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
                   '      resultColumns = [("name", ""), ("active", INT)]\n'+
                   '      sql = select case when (${optionalVarPlaceHolderOperationSelector(yesOrNo![], equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo![]), \'"root".active in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo![])})\', \'"root".active = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo![])}\'), \'0 = 1\')}) then \'InActive User\' else "root".name end as "name", "root".active as "active" from employeeTable as "root"\n'+
                   '      connection = TestDatabaseConnection(type = "H2")\n'+
@@ -1986,7 +1986,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionSimp
    let expected =
       'Relational\n'+
       '(\n'+
-      '  type = TDS[(legalName, String, VARCHAR(8192), ""), (Firm Instance Count, Integer, INT, "")]\n'+
+      '  type = TDS[(legalName, String, VARCHAR(65536), ""), (Firm Instance Count, Integer, INT, "")]\n'+
       '  resultColumns = [("legalName", VARCHAR(200)), ("Firm Instance Count", "")]\n'+
       '  sql = select "root".name as "legalName", count("root".name) OVER (Partition By "root".name ) as "Firm Instance Count" from Firm as "root"\n'+
       '  connection = TestDatabaseConnection(type = "H2")\n'+
@@ -2011,7 +2011,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionDeep
    let expected =
       'Relational\n'+
       '(\n'+
-      '  type = TDS[(firstName, String, VARCHAR(8192), ""), (lastName, String, VARCHAR(8192), "")]\n'+
+      '  type = TDS[(firstName, String, VARCHAR(65536), ""), (lastName, String, VARCHAR(65536), "")]\n'+
       '  resultColumns = [("firstName", ""), ("lastName", "")]\n'+
       '  sql = select concat(substring("root".fullname, 0, LOCATE(\' \', "root".fullname)), \'XX\') as "firstName", concat(substring("root".fullname, (LOCATE(\' \', "root".fullname) + 1), char_length("root".fullname)), \'ZZ\') as "lastName" from SPerson as "root"\n'+
       '  connection = TestDatabaseConnection(type = "H2")\n'+
@@ -2031,7 +2031,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionJoin
    let expected =
       'Relational\n'+
       '(\n'+
-      '  type = TDS[(legalName, String, VARCHAR(8192), ""), (lastName, String, VARCHAR(8192), "")]\n'+
+      '  type = TDS[(legalName, String, VARCHAR(65536), ""), (lastName, String, VARCHAR(65536), "")]\n'+
       '  resultColumns = [("legalName", VARCHAR(200)), ("lastName", "")]\n'+
       '  sql = select "root".name as "legalName", substring("person_0".fullname, (LOCATE(\' \', "person_0".fullname) + 1), char_length("person_0".fullname)) as "lastName" from Firm as "root" left outer join Person as "person_0" on ("person_0".firm = "root".name)\n'+
       '  connection = TestDatabaseConnection(type = "H2")\n'+
@@ -2053,7 +2053,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionAgg(
    let expected =
       'Relational\n'+
       '(\n'+
-      '  type = TDS[(FirstName, String, VARCHAR(8192), ""), (PersonCount, Integer, INT, "")]\n'+
+      '  type = TDS[(FirstName, String, VARCHAR(65536), ""), (PersonCount, Integer, INT, "")]\n'+
       '  resultColumns = [("FirstName", ""), ("PersonCount", "")]\n'+
       '  sql = select substring("root".fullname, 0, LOCATE(\' \', "root".fullname)) as "FirstName", count(substring("root".fullname, (LOCATE(\' \', "root".fullname) + 1), char_length("root".fullname))) as "PersonCount" from SPerson as "root" group by "FirstName"\n'+
       '  connection = TestDatabaseConnection(type = "H2")\n'+
@@ -2081,7 +2081,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionMult
    let expected =
       'Relational\n'+
       '(\n'+
-      '  type = TDS[(FirstName, String, VARCHAR(8192), ""), (PersonCount, Integer, INT, ""), (PersonCountViaSize, Integer, INT, "")]\n'+
+      '  type = TDS[(FirstName, String, VARCHAR(65536), ""), (PersonCount, Integer, INT, ""), (PersonCountViaSize, Integer, INT, "")]\n'+
       '  resultColumns = [("FirstName", ""), ("PersonCount", ""), ("PersonCountViaSize", "")]\n'+
       '  sql = select substring("root".fullname, 0, LOCATE(\' \', "root".fullname)) as "FirstName", count(substring("root".fullname, (LOCATE(\' \', "root".fullname) + 1), char_length("root".fullname))) as "PersonCount", count(substring("root".fullname, 0, LOCATE(\' \', "root".fullname))) as "PersonCountViaSize" from SPerson as "root" group by "FirstName"\n'+
       '  connection = TestDatabaseConnection(type = "H2")\n'+

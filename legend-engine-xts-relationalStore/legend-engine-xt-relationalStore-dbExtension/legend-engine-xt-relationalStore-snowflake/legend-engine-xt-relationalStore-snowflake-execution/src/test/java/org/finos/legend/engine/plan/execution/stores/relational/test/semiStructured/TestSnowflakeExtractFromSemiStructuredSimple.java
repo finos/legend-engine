@@ -30,12 +30,12 @@ public class TestSnowflakeExtractFromSemiStructuredSimple extends AbstractTestSn
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(Id, Integer, INT, \"\"), (Dot Only, StrictDate, DATE, \"\"), (Bracket Only, DateTime, TIMESTAMP, \"\"), (Dot & Bracket, String, VARCHAR(8192), \"\")]\n" +
+                "      type = TDS[(Id, Integer, INT, \"\"), (Dot Only, StrictDate, DATE, \"\"), (Bracket Only, DateTime, TIMESTAMP, \"\"), (Dot & Bracket, String, VARCHAR(65536), \"\")]\n" +
                 "      resultColumns = [(\"Id\", INT), (\"Dot Only\", \"\"), (\"Bracket Only\", \"\"), (\"Dot & Bracket\", \"\")]\n" +
                 "      sql = select \"root\".ID as \"Id\", to_date(get_path(\"root\".FIRM_DETAILS, 'dates.estDate')) as \"Dot Only\", to_timestamp(get_path(\"root\".FIRM_DETAILS, '[\"dates\"][\"last Update\"]')) as \"Bracket Only\", to_varchar(get_path(\"root\".FIRM_DETAILS, 'address.lines[1][\"details\"]')) as \"Dot & Bracket\" from FIRM_SCHEMA.FIRM_TABLE as \"root\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(Id, Integer, INT, \"\"), (Dot Only, StrictDate, DATE, \"\"), (Bracket Only, DateTime, TIMESTAMP, \"\"), (Dot & Bracket, String, VARCHAR(8192), \"\")]\n";
+        String TDSType = "  type = TDS[(Id, Integer, INT, \"\"), (Dot Only, StrictDate, DATE, \"\"), (Bracket Only, DateTime, TIMESTAMP, \"\"), (Dot & Bracket, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
     
@@ -47,12 +47,12 @@ public class TestSnowflakeExtractFromSemiStructuredSimple extends AbstractTestSn
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(Id, Integer, INT, \"\"), (Second Line of Address, String, VARCHAR(8192), \"\")]\n" +
+                "      type = TDS[(Id, Integer, INT, \"\"), (Second Line of Address, String, VARCHAR(65536), \"\")]\n" +
                 "      resultColumns = [(\"Id\", INT), (\"Second Line of Address\", \"\")]\n" +
                 "      sql = select \"root\".ID as \"Id\", to_varchar(get_path(\"root\".FIRM_DETAILS, 'address.lines[1][\"details\"]')) as \"Second Line of Address\" from FIRM_SCHEMA.FIRM_TABLE as \"root\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(Id, Integer, INT, \"\"), (Second Line of Address, String, VARCHAR(8192), \"\")]\n";
+        String TDSType = "  type = TDS[(Id, Integer, INT, \"\"), (Second Line of Address, String, VARCHAR(65536), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
     
@@ -81,12 +81,12 @@ public class TestSnowflakeExtractFromSemiStructuredSimple extends AbstractTestSn
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(Id, Integer, INT, \"\"), (Legal Name, String, VARCHAR(8192), \"\"), (Est Date, StrictDate, DATE, \"\"), (Mnc, Boolean, BIT, \"\"), (Employee Count, Integer, BIGINT, \"\"), (Last Update, DateTime, TIMESTAMP, \"\")]\n" +
+                "      type = TDS[(Id, Integer, INT, \"\"), (Legal Name, String, VARCHAR(65536), \"\"), (Est Date, StrictDate, DATE, \"\"), (Mnc, Boolean, BIT, \"\"), (Employee Count, Integer, BIGINT, \"\"), (Last Update, DateTime, TIMESTAMP, \"\")]\n" +
                 "      resultColumns = [(\"Id\", INT), (\"Legal Name\", \"\"), (\"Est Date\", \"\"), (\"Mnc\", \"\"), (\"Employee Count\", \"\"), (\"Last Update\", \"\")]\n" +
                 "      sql = select \"root\".ID as \"Id\", to_varchar(get_path(\"root\".FIRM_DETAILS, 'legalName')) as \"Legal Name\", to_date(get_path(\"root\".FIRM_DETAILS, 'dates.estDate')) as \"Est Date\", to_boolean(get_path(\"root\".FIRM_DETAILS, 'mnc')) as \"Mnc\", to_number(get_path(\"root\".FIRM_DETAILS, 'employeeCount')) as \"Employee Count\", to_timestamp(get_path(\"root\".FIRM_DETAILS, '[\"dates\"][\"last Update\"]')) as \"Last Update\" from FIRM_SCHEMA.FIRM_TABLE as \"root\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(Id, Integer, INT, \"\"), (Legal Name, String, VARCHAR(8192), \"\"), (Est Date, StrictDate, DATE, \"\"), (Mnc, Boolean, BIT, \"\"), (Employee Count, Integer, BIGINT, \"\"), (Last Update, DateTime, TIMESTAMP, \"\")]\n";
+        String TDSType = "  type = TDS[(Id, Integer, INT, \"\"), (Legal Name, String, VARCHAR(65536), \"\"), (Est Date, StrictDate, DATE, \"\"), (Mnc, Boolean, BIT, \"\"), (Employee Count, Integer, BIGINT, \"\"), (Last Update, DateTime, TIMESTAMP, \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
