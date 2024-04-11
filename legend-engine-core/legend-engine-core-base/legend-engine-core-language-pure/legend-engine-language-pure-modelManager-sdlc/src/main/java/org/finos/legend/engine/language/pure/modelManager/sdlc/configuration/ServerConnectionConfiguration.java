@@ -25,6 +25,7 @@ public class ServerConnectionConfiguration
 {
     public String host;
     public Integer port;
+    public String scheme = "http";
     public String prefix = "";
     public MetadataServerPac4jConfiguration pac4j;
 
@@ -39,8 +40,15 @@ public class ServerConnectionConfiguration
         this.port = port;
     }
 
+    public ServerConnectionConfiguration(String scheme, String host, Integer port)
+    {
+        this.host = host;
+        this.port = port;
+        this.scheme = scheme;
+    }
+
     public String getBaseUrl()
     {
-        return "http://" + host + ":" + port + prefix;
+        return scheme + "://" + host + ":" + port + prefix;
     }
 }
