@@ -19,10 +19,6 @@ import org.finos.legend.engine.postgres.auth.IdentityType;
 
 public class ServerConfig
 {
-    public ServerConfig()
-    {
-    }
-
     private HandlerConfig handler;
     private Integer port;
     private AuthenticationMethodType authenticationMethod;

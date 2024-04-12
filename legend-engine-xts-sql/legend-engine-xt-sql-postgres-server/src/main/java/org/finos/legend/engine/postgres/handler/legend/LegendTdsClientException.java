@@ -19,11 +19,6 @@ import org.finos.legend.engine.postgres.PostgresServerException;
 
 public class LegendTdsClientException extends PostgresServerException
 {
-    public LegendTdsClientException(Throwable cause)
-    {
-        super(cause);
-    }
-
     public LegendTdsClientException(String message)
     {
         super(message);

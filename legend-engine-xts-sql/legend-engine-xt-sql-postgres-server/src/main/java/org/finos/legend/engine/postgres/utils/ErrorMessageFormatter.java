@@ -16,5 +16,5 @@ package org.finos.legend.engine.postgres.utils;
 
 public interface ErrorMessageFormatter
 {
-    public String format(Throwable e);
+    String format(Throwable e);
 }

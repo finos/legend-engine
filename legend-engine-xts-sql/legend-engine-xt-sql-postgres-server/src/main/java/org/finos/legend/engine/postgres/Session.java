@@ -120,7 +120,7 @@ public class Session implements AutoCloseable
             }
             catch (Exception e)
             {
-                PostgresServerException.wrapException(e);
+                throw PostgresServerException.wrapException(e);
             }
         }
         parsed.put(p.name, p);

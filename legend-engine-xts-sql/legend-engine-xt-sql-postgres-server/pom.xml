@@ -423,6 +423,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!--Google Guice has dependency on guava version 33.1.0+-->
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>

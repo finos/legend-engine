@@ -22,7 +22,7 @@ import org.finos.legend.engine.postgres.config.ServerConfig;
 public class ErrorMessageFormatterImpl implements ErrorMessageFormatter
 {
     public static final String X_B_3_TRACE_ID = "X-B3-TraceId";
-    private String traceURLEndpoint;
+    private final String traceURLEndpoint;
 
     @Inject
     public ErrorMessageFormatterImpl(ServerConfig serverConfig)

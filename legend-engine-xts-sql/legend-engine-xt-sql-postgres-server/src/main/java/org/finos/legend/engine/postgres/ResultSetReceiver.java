@@ -53,7 +53,7 @@ class ResultSetReceiver
 
     private CompletableFuture<Void> completionFuture = new CompletableFuture<>();
     
-    private Messages messages;
+    private final Messages messages;
     
     
     

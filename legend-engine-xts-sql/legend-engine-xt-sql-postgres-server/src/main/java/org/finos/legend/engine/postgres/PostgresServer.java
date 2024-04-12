@@ -59,7 +59,7 @@ public class PostgresServer
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
-    private Messages messages;
+    private final Messages messages;
 
 
     @Inject

@@ -33,6 +33,7 @@ import io.opentelemetry.semconv.ResourceAttributes;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Retention;
 import org.apache.commons.lang3.StringUtils;
 import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
@@ -79,7 +80,7 @@ public class PostgresMainModule extends AbstractModule
 
     @Provides
     @Singleton
-    public ServerConfig provideSeverConfig(@Named("configPath") String configPath) throws Exception
+    public ServerConfig provideSeverConfig(@Named("configPath") String configPath) throws IOException
     {
         ObjectMapper objectMapper = new ObjectMapper();
         ServerConfig serverConfig = objectMapper.readValue(new File(configPath), ServerConfig.class);
