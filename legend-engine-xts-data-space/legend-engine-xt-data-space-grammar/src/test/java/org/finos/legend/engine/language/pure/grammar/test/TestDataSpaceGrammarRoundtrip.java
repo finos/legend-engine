@@ -143,6 +143,7 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "      executable: model::MyExecutable;\n" +
                 "    },\n" +
                 "    {\n" +
+                "      id: 1;\n" +
                 "      title: 'Template 1';\n" +
                 "      description: 'description';\n" +
                 "      query: |model::Firm.all()->project([x|$x.id, x|$x.employees.firstName], ['Id', 'Employees/First Name']);\n" +
@@ -571,6 +572,7 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "        },\n" +
                 "        {\n" +
                 "          \"_type\": \"dataSpaceTemplateExecutable\",\n" +
+                "          \"id\": \"1\",\n" +
                 "          \"title\": \"Template 1\",\n" +
                 "          \"description\": \"description\",\n" +
                 "          \"query\": {\n" +
@@ -732,6 +734,7 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "      executable: model::MyExecutable;\n" +
                 "    },\n" +
                 "    {\n" +
+                "      id: 1;\n" +
                 "      title: 'Template 1';\n" +
                 "      description: 'description';\n" +
                 "      query: |model::Firm.all()->project([x|$x.id, x|$x.employees.firstName], ['Id', 'Employees/First Name']);\n" +

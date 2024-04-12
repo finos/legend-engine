@@ -7294,7 +7294,7 @@ function meta::relational::functions::pureToSqlQuery::applyJoinWithExplodeInCond
   assert($explodeOp.parameters->size() == 3, 'explodeSemiStructured takes exactly 3 arguments, passed: ', $explodeOp.parameters->size());
   assert($explodeOp.parameters->at(0)->instanceOf(TableAliasColumn), 'Input to explodeSemiStructured must be defined as a column in table in join: ' + $join.name); // This condition needs to be relaxed to support nested explosion
   let columnToExplode = $explodeOp.parameters->at(0)->cast(@TableAliasColumn);
-  let pathToExplode   = $explodeOp.parameters->at(1);
+  let pathToExplode   = $explodeOp.parameters->at(1)->cast(@Literal).value->cast(@String);
   let pureReturnType  = $explodeOp.parameters->at(2)->cast(@Literal).value->cast(@String)->explodeReturnType();
 
   let tableToExplodeAlias = $columnToExplode.alias;
@@ -7308,7 +7308,13 @@ function meta::relational::functions::pureToSqlQuery::applyJoinWithExplodeInCond
 
   // create a subquery for the flattened relation by doing a lateral join between tableToFlatten and the flattened array.
   let leftAlias = $toExplodeRootTreeNode.alias;
-  let arrayFlattening = ^SemiStructuredArrayFlatten(navigation = ^SemiStructuredPropertyAccess(property = $pathToExplode, operand = ^$columnToExplode(alias = $toExplodeRootTreeNode.alias)));
+
+  let pathNavigation = meta::relational::functions::sqlQueryToString::parseSemiStructuredPathNavigation($pathToExplode);
+  
+  let initialNavigation = if($pathNavigation->at(0)->isDigit(), | ^SemiStructuredArrayElementAccess(operand=^$columnToExplode(alias = $toExplodeRootTreeNode.alias),index=^Literal(value = $pathNavigation->at(0))), |  ^SemiStructuredPropertyAccess(property=^Literal(value = $pathNavigation->at(0)->substring(1, $pathNavigation->at(0)->length()-1)), operand=^$columnToExplode(alias = $toExplodeRootTreeNode.alias)));
+  let semiStructuredNavigation = $pathNavigation->slice(1, $pathNavigation->size())->fold({property, navigation | if($property->isDigit(), | ^SemiStructuredArrayElementAccess(operand=$navigation,index=^Literal(value = $property)), |  ^SemiStructuredPropertyAccess(property=^Literal(value = $property->substring(1, $property->length()-1)), operand=$navigation)) }, $initialNavigation ); 
+
+  let arrayFlattening = ^SemiStructuredArrayFlatten(navigation = $semiStructuredNavigation);
   let rightAlias = ^TableAlias(relationalElement = $arrayFlattening, name = 'arrayFlatten_0');
   let joinName = 'join_arrayFlatten_' + $arrayFlattening->buildUniqueName(false, true, $extensions);
   let lateralJoin = ^Join(

@@ -398,9 +398,10 @@ public class DataSpaceAnalyticsHelper
                     executableAnalysisResult.title = executable._title();
                     executableAnalysisResult.description = executable._description();
                     DataSpaceTemplateExecutableInfo templateExecutableInfo = new DataSpaceTemplateExecutableInfo();
+                    templateExecutableInfo.id = ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._id();
 
                     // get V1 lambda
-                    DataSpaceTemplateExecutable executableV1 = (DataSpaceTemplateExecutable) dataSpaceProtocol.executables.stream().filter(e ->  e instanceof DataSpaceTemplateExecutable && e.title.equals(executable._title()) && e.description.equals(executable._description())).findFirst().get();
+                    DataSpaceTemplateExecutable executableV1 = (DataSpaceTemplateExecutable) dataSpaceProtocol.executables.stream().filter(e -> e instanceof DataSpaceTemplateExecutable && ((DataSpaceTemplateExecutable) e).id.equals(((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._id())).findFirst().get();
                     templateExecutableInfo.query = executableV1.query.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withIndentation(getTabSize(1)).build());
 
                     org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContext = ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey() == null ? dataSpace._defaultExecutionContext() :

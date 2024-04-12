@@ -38,4 +38,10 @@ public class PureServerConnectionConfiguration extends ServerConnectionConfigura
         super(host, port);
         this.allowedOverrideUrls = allowedOverrideUrls;
     }
+
+    public PureServerConnectionConfiguration(String scheme, String host, Integer port, List<String> allowedOverrideUrls)
+    {
+        super(scheme,host, port);
+        this.allowedOverrideUrls = allowedOverrideUrls;
+    }
 }

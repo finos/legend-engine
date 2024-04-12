@@ -15,6 +15,7 @@
 package org.finos.legend.engine.repl.relational.client;
 
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.relational.RelationalReplExtension;
 import org.finos.legend.engine.repl.relational.autocomplete.RelationalCompleterExtension;
@@ -23,6 +24,6 @@ public class RClient
 {
     public static void main(String[] args) throws Exception
     {
-        new Client(Lists.mutable.with(new RelationalReplExtension()), Lists.mutable.with(new RelationalCompleterExtension())).loop();
+        new Client(Lists.mutable.with(new RelationalReplExtension()), Lists.mutable.with(new RelationalCompleterExtension()), PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build()).loop();
     }
 }

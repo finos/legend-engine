@@ -197,6 +197,7 @@ public class TestSDLCLoader
         serverConfiguration.sdlc.host = "localhost";
         serverConfiguration.sdlc.port = rule.port();
         serverConfiguration.sdlc.prefix = "/sdlc";
+        serverConfiguration.sdlc.scheme = "http";
 
         return new SDLCLoader(serverConfiguration, Subject::new);
     }
