@@ -247,6 +247,27 @@ public class HelperValueSpecificationGrammarComposer
         return fullPath;
     }
 
+    public static String getFunctionDescriptor(Function function)
+    {
+        StringBuilder builder = new StringBuilder();
+        String packageName = function._package;
+        String functionName = getFunctionNameWithNoPackage(function);
+        String functionSignature = LazyIterate.collect(function.parameters, HelperValueSpecificationGrammarComposer::getFunctionDescriptorParameterSignature).select(Objects::nonNull).makeString(",");
+        String returnTypeSignature = getClassSignature(function.returnType);
+        String returnMultiplicitySignature = HelperDomainGrammarComposer.renderMultiplicity(function.returnMultiplicity);
+        builder.append(packageName)
+                .append("::")
+                .append(functionName)
+                .append("(")
+                .append(functionSignature)
+                .append("):")
+                .append(returnTypeSignature)
+                .append("[")
+                .append(returnMultiplicitySignature)
+                .append("]");
+        return builder.toString();
+    }
+
     public static String getFunctionName(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function fn)
     {
         int signatureIndex = fn.name.indexOf(getFunctionSignature(fn));
@@ -270,6 +291,11 @@ public class HelperValueSpecificationGrammarComposer
     private static String getParameterSignature(Variable p)
     {
         return p._class != null ? getClassSignature(p._class) + "_" + getMultiplicitySignature(p.multiplicity) : null;
+    }
+
+    private static String getFunctionDescriptorParameterSignature(Variable p)
+    {
+        return p._class != null ? getClassSignature(p._class) + "[" + HelperDomainGrammarComposer.renderMultiplicity(p.multiplicity) + "]" : null;
     }
 
     private static String getClassSignature(String _class)
