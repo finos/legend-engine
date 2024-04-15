@@ -2874,6 +2874,40 @@ function meta::external::language::java::factory::knownPackage(pkg: meta::extern
    )))))))));
 }
 
+function meta::external::language::java::factory::isKnownPackage(pkg: meta::external::language::java::metamodel::Package[1]):Boolean[1]
+{
+     let pkgName = $pkg->packageToString();
+
+   if($pkg->instanceOf(KnownPackage),
+      | true,
+      |
+   if($pkgName == 'java.lang',
+      | true,
+      |
+   if($pkgName == 'java.util',
+      | true,
+      |
+   if($pkgName == 'java.util.function',
+      | true,
+      |
+   if($pkgName == 'java.util.stream',
+      | true,
+      |
+   if($pkgName == 'java.io',
+      | true,
+      |
+   if($pkgName == 'java.net',
+      | true,
+      |
+   if($pkgName == 'java.math',
+      | true,
+      |
+   if($pkgName == 'java.time',
+      | true,
+      | false
+   )))))))));
+}
+
 function meta::external::language::java::factory::javaLangPackage(): meta::external::language::java::factory::KnownPackage[1]
 {
    ^meta::external::language::java::factory::KnownPackage(
