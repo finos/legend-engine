@@ -20,6 +20,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
@@ -37,6 +38,7 @@ import org.immutables.value.Value.Default;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -49,8 +51,6 @@ import java.util.Set;
         optionalAcceptNullable = true,
         strictBuilder = true
 )
-
-
 public abstract class RelationalSchemaEvolutionServiceAbstract
 {
     //---------- FIELDS ----------
@@ -87,7 +87,7 @@ public abstract class RelationalSchemaEvolutionServiceAbstract
     private static final Logger LOGGER = LoggerFactory.getLogger(RelationalSchemaEvolutionService.class);
 
     // ------API-----
-    public List<String> evolve(DatasetReference mainDatasetReference, SchemaDefinition stagingSchema, RelationalConnection connection)
+    public SchemaEvolutionServiceResult evolve(DatasetReference mainDatasetReference, SchemaDefinition stagingSchema, RelationalConnection connection)
     {
         LOGGER.info("Invoked evolve method, will evolve the target dataset");
 
@@ -96,31 +96,55 @@ public abstract class RelationalSchemaEvolutionServiceAbstract
         executor.setSqlLogging(sqlLogging());
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
 
-        // TODO: 2. Handle case conversion
-        // Scope: main dataset table names; staging dataset column names
+        // 2. Handle case conversion
+        IngestMode ingestMode = ApiUtils.applyCase(ingestMode(), caseConversion());
+        mainDatasetReference = ApiUtils.applyCase(mainDatasetReference, caseConversion());
+        stagingSchema = ApiUtils.applyCase(stagingSchema, caseConversion());
 
         // 3. Check if main dataset exists
         if (!executor.datasetExists(mainDatasetReference))
         {
-            throw new IllegalStateException("Schema Evolution failed. Dataset is not found: " + mainDatasetReference.datasetReference().name());
+            return SchemaEvolutionServiceResult.builder()
+                .status(SchemaEvolutionStatus.FAILED)
+                .message("Dataset is not found: " + mainDatasetReference.datasetReference().name().orElseThrow(IllegalStateException::new))
+                .build();
         }
 
         // 4. Derive main dataset schema
         Dataset mainDataset = executor.constructDatasetFromDatabase(mainDatasetReference);
 
         // 5. Generate schema evolution operations
-        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), ingestMode(), schemaEvolutionCapabilitySet());
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), ingestMode, schemaEvolutionCapabilitySet());
         SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainDataset, stagingSchema);
         LogicalPlan schemaEvolutionLogicalPlan = schemaEvolutionResult.logicalPlan();
-        SqlPlan schemaEvolutionSqlPlan = transformer.generatePhysicalPlan(schemaEvolutionLogicalPlan);
-        List<String> schemaEvolutionSqls = schemaEvolutionSqlPlan.getSqlList();
 
         // 6. Execute schema evolution operations
-        if (!schemaEvolutionSqls.isEmpty())
+        List<String> executedSqls = new ArrayList<>();
+        if (!schemaEvolutionLogicalPlan.ops().isEmpty())
         {
-            executor.executePhysicalPlan(schemaEvolutionSqlPlan);
+            for (Operation op : schemaEvolutionLogicalPlan.ops())
+            {
+                // Recreating a logical plan per operation such that we can keep track of executed SQLs in case of partial failure
+                SqlPlan singleOperationAlterSqlPlan = transformer.generatePhysicalPlan(LogicalPlan.of(Collections.singletonList(op)));
+                try
+                {
+                    executor.executePhysicalPlan(singleOperationAlterSqlPlan);
+                }
+                catch (Exception e)
+                {
+                    return SchemaEvolutionServiceResult.builder()
+                        .status(executedSqls.isEmpty() ? SchemaEvolutionStatus.FAILED : SchemaEvolutionStatus.PARTIALLY_FAILED)
+                        .addAllExecutedSchemaEvolutionSqls(executedSqls)
+                        .message(e.getMessage())
+                        .build();
+                }
+                executedSqls.addAll(singleOperationAlterSqlPlan.getSqlList());
+            }
         }
 
-        return schemaEvolutionSqls;
+        return SchemaEvolutionServiceResult.builder()
+            .status(SchemaEvolutionStatus.SUCCEEDED)
+            .addAllExecutedSchemaEvolutionSqls(executedSqls)
+            .build();
     }
 }

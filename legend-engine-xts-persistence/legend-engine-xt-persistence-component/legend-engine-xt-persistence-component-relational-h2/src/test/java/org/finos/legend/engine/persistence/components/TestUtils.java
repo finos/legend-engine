@@ -1226,6 +1226,23 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getSchemaEvolutionAddColumnMainTableUpperCase()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName.toUpperCase())
+            .name(mainTableName.toUpperCase())
+            .schema(SchemaDefinition.builder()
+                .addFields(id.withName(idName.toUpperCase()))
+                .addFields(name.withName(nameName.toUpperCase()))
+                .addFields(startTime.withName(startTimeName.toUpperCase()))
+                .addFields(expiryDate.withName(expiryDateName.toUpperCase()))
+                .addFields(digest.withName(digestName.toUpperCase()))
+                .addFields(batchUpdateTimestamp.withName(batchUpdateTimeName.toUpperCase()))
+                .addFields(batchId.withName(batchIdName.toUpperCase()))
+                .build())
+            .build();
+    }
+
     public static DatasetDefinition expectedMainTableSchema()
     {
         return DatasetDefinition.builder()
