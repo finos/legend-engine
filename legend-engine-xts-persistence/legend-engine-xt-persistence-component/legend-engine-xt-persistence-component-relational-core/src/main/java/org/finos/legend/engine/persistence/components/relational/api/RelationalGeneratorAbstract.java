@@ -266,7 +266,7 @@ public abstract class RelationalGeneratorAbstract
         {
             // Get logical plan and physical plan for schema evolution and update datasets
             SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), ingestMode, schemaEvolutionCapabilitySet());
-            SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(datasets.mainDataset(), datasets.stagingDataset());
+            SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(datasets.mainDataset(), datasets.stagingDataset().schema());
             LogicalPlan schemaEvolutionLogicalPlan = schemaEvolutionResult.logicalPlan();
 
             schemaEvolutionSqlPlan = Optional.of(transformer.generatePhysicalPlan(schemaEvolutionLogicalPlan));

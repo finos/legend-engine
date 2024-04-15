@@ -424,7 +424,7 @@ public abstract class RelationalIngestorAbstract
                 Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
                 schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ADD_COLUMN);
                 SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), this.ingestMode(), schemaEvolutionCapabilitySet);
-                org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(existingMetadataDataset, desiredMetadataDataset);
+                org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(existingMetadataDataset, desiredMetadataDataset.schema());
                 LogicalPlan schemaEvolutionLogicalPlan = schemaEvolutionResult.logicalPlan();
                 Optional<SqlPlan> schemaEvolutionSqlPlan = Optional.of(transformer.generatePhysicalPlan(schemaEvolutionLogicalPlan));
                 if (schemaEvolutionSqlPlan.isPresent() && !schemaEvolutionSqlPlan.get().getSqlList().isEmpty())
