@@ -42,7 +42,6 @@ import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 import org.finos.legend.engine.postgres.types.PGType;
 import org.finos.legend.engine.postgres.types.PGTypes;
 import org.finos.legend.engine.postgres.utils.ErrorMessageFormatter;
-import org.finos.legend.engine.postgres.utils.ErrorMessageFormatterImpl;
 import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
 import org.slf4j.Logger;
 
@@ -66,7 +65,7 @@ public class Messages
     private static final byte[] METHOD_NAME_CLIENT_AUTH = "ClientAuthentication".getBytes(
             StandardCharsets.UTF_8);
 
-    private ErrorMessageFormatter errorMessageFormatter;
+    private final ErrorMessageFormatter errorMessageFormatter;
 
     @Inject
     public Messages(ErrorMessageFormatter errorMessageFormatter)
