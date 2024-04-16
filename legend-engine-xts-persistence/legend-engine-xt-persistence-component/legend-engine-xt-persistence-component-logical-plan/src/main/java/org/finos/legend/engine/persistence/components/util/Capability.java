@@ -17,6 +17,7 @@ package org.finos.legend.engine.persistence.components.util;
 public enum Capability
 {
     MERGE,
+    ALIAS_IN_HAVING,
     ADD_COLUMN,
     IMPLICIT_DATA_TYPE_CONVERSION,
     EXPLICIT_DATA_TYPE_CONVERSION,

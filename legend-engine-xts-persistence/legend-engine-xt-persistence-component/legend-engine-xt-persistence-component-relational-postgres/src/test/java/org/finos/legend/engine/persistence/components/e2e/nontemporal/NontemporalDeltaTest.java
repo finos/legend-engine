@@ -227,7 +227,7 @@ class NontemporalDeltaTest extends BaseTest
         String dataPass1 = basePathForInput + "input/less_columns_in_staging/data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "expected/less_columns_in_staging/expected_pass1.csv";
         // 1. Load staging table
-        loadBasicStagingDataWithColumnsThanMain(dataPass1);
+        loadBasicStagingDataWithLessColumnsThanMain(dataPass1);
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
@@ -239,7 +239,7 @@ class NontemporalDeltaTest extends BaseTest
         String dataPass2 = basePathForInput + "input/less_columns_in_staging/data_pass2.csv";
         String expectedDataPass2 = basePathForExpected + "expected/less_columns_in_staging/expected_pass2.csv";
         // 1. Load staging table
-        loadBasicStagingDataWithColumnsThanMain(dataPass2);
+        loadBasicStagingDataWithLessColumnsThanMain(dataPass2);
         // 2. Execute plans and verify results
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, " order by \"id\", \"income\"");
     }
@@ -914,7 +914,7 @@ class NontemporalDeltaTest extends BaseTest
                 .build();
 
         String path = basePathForInput + "input/with_staging_filter/with_all_version/greater_than/data1.csv";
-        loadStagingDataWithVersionAndBatch(path);
+        loadDedupAndVersioningStagingDataWithVersionAndBatch(path);
 
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
@@ -1001,7 +1001,7 @@ class NontemporalDeltaTest extends BaseTest
                 .addDatasetFilters(DatasetFilter.of("batch", FilterType.EQUAL_TO, 1))
                 .build();
         String path = basePathForInput + "input/with_staging_filter/with_all_version/digest_based/data1.csv";
-        loadStagingDataWithVersionAndBatch(path);
+        loadDedupAndVersioningStagingDataWithVersionAndBatch(path);
 
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
@@ -1074,7 +1074,7 @@ class NontemporalDeltaTest extends BaseTest
                 .build(), NumericalValue.of(1L)))
             .build();
         String path = basePathForInput + "input/with_staging_filter/with_all_version/digest_based/data1.csv";
-        loadStagingDataWithVersionAndBatch(path);
+        loadDedupAndVersioningStagingDataWithVersionAndBatch(path);
 
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
