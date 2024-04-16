@@ -53,9 +53,3 @@ Runtime test::Runtime
     ]
   ];
 }
-
-###Mapping
-Mapping test::EmptyMapping
-(
-
-)
