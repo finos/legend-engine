@@ -1,4 +1,4 @@
-// Copyright 2024 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,31 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package org.finos.legend.engine.persistence.components.relational.api;
 
-import org.finos.legend.engine.persistence.components.relational.SqlPlan;
-import org.immutables.value.Value.Immutable;
-import org.immutables.value.Value.Style;
-
-import java.util.List;
-
-@Immutable
-@Style(
-    typeAbstract = "*Abstract",
-    typeImmutable = "*",
-    jdkOnly = true,
-    optionalAcceptNullable = true,
-    strictBuilder = true
-)
-public abstract class SinkCleanupGeneratorResultAbstract
+public enum SinkCleanupStatus
 {
-
-    public abstract SqlPlan dropSqlPlan();
-
-    public List<String> dropSql()
-    {
-        return dropSqlPlan().getSqlList();
-    }
+    SUCCEEDED, FAILED
 }

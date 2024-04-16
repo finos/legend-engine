@@ -30,7 +30,7 @@ import java.util.Optional;
 )
 public abstract class SinkCleanupIngestorResultAbstract
 {
-    public abstract IngestStatus status();
+    public abstract SinkCleanupStatus status();
 
     public abstract Optional<String> message();
 

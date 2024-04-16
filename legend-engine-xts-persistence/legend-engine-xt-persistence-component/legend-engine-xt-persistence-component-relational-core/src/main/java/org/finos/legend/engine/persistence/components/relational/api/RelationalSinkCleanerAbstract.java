@@ -16,11 +16,8 @@ package org.finos.legend.engine.persistence.components.relational.api;
 
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.*;
-import org.finos.legend.engine.persistence.components.logicalplan.values.*;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
@@ -89,10 +86,7 @@ public abstract class RelationalSinkCleanerAbstract
         //Sink clean-up SQL's
         LogicalPlan dropLogicalPlan = buildLogicalPlanForDropActions();
         SqlPlan dropSqlPlan = transformer.generatePhysicalPlan(dropLogicalPlan);
-        LogicalPlan cleanupLogicalPlan = buildLogicalPlanForMetadataCleanup();
-        SqlPlan cleanupSqlPlan = transformer.generatePhysicalPlan(cleanupLogicalPlan);
         return SinkCleanupGeneratorResult.builder()
-                .cleanupSqlPlan(cleanupSqlPlan)
                 .dropSqlPlan(dropSqlPlan)
                 .build();
     }
@@ -107,6 +101,7 @@ public abstract class RelationalSinkCleanerAbstract
         SinkCleanupGeneratorResult result = generateOperationsForSinkCleanup();
 
         //3. Execute sink cleanup operations
+        LOGGER.info("Executing SQL's for sink cleanup");
         return executeSinkCleanup(result);
     }
 
@@ -138,6 +133,7 @@ public abstract class RelationalSinkCleanerAbstract
         List<Operation> operations = new ArrayList<>();
         operations.add(Drop.of(true, mainDataset(), false));
         operations.add(buildDropPlanForLockTable());
+        operations.add(Drop.of(true, metadataDataset().get(), false));
         return LogicalPlan.of(operations);
     }
 
@@ -161,57 +157,19 @@ public abstract class RelationalSinkCleanerAbstract
         return Drop.of(true, lockInfoDataset.get(), false);
     }
 
-    private LogicalPlan buildLogicalPlanForMetadataCleanup()
-    {
-        List<Operation> operations = new ArrayList<>();
-        operations.add(buildDeleteCondition());
-        return LogicalPlan.of(operations);
-    }
-
-    private Operation buildDeleteCondition()
-    {
-        StringValue mainTableName = getMainTable();
-        FieldValue tableNameFieldValue = FieldValue.builder().datasetRef(metadataDataset().get().datasetReference()).fieldName(metadataDataset().tableNameField()).build();
-        FunctionImpl tableNameInUpperCase = FunctionImpl.builder().functionName(FunctionName.UPPER).addValue(tableNameFieldValue).build();
-        StringValue mainTableNameInUpperCase = StringValue.builder()
-                .value(mainTableName.value().map(field -> field.toUpperCase()))
-                .alias(mainTableName.alias()).build();
-        Condition whereCondition = Equals.of(tableNameInUpperCase, mainTableNameInUpperCase);
-        return Delete.of(metadataDataset().get(), whereCondition);
-    }
-
-    private StringValue getMainTable()
-    {
-        return StringValue.of(mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new));
-    }
-
     private SinkCleanupIngestorResult executeSinkCleanup(SinkCleanupGeneratorResult result)
     {
         SinkCleanupIngestorResult ingestorResult;
         try
         {
             executor.executePhysicalPlan(result.dropSqlPlan());
-                try
-                {
-                    executor.begin();
-                    LOGGER.info("Executing SQL's for sink cleanup");
-                    executor.executePhysicalPlan(result.cleanupSqlPlan());
-                    executor.commit();
-                    ingestorResult = SinkCleanupIngestorResult.builder().status(IngestStatus.SUCCEEDED).build();
-                }
-                catch (Exception e)
-                {
-                    executor.revert();
-                    ingestorResult = SinkCleanupIngestorResult.builder()
-                            .status(IngestStatus.FAILED)
-                            .message(e.toString())
-                            .build();
-                }
-            }
+            ingestorResult = SinkCleanupIngestorResult.builder()
+                    .status(SinkCleanupStatus.SUCCEEDED).build();
+        }
         catch (Exception e)
         {
             ingestorResult = SinkCleanupIngestorResult.builder()
-                    .status(IngestStatus.FAILED)
+                    .status(SinkCleanupStatus.FAILED)
                     .message(e.toString())
                     .build();
         }

@@ -16,10 +16,7 @@
 package org.finos.legend.engine.persistence.components;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
-import org.finos.legend.engine.persistence.components.relational.api.ApiUtils;
-import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
-import org.finos.legend.engine.persistence.components.relational.api.RelationalSinkCleaner;
-import org.finos.legend.engine.persistence.components.relational.api.SinkCleanupIngestorResult;
+import org.finos.legend.engine.persistence.components.relational.api.*;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
@@ -61,15 +58,15 @@ public class RelationalSinkCleanerTest extends BaseTest
         Assertions.assertEquals(tableBeforeSinkCleanup.get(0).get("batch_metadata_count"), 1L);
         Assertions.assertTrue(h2Sink.doesTableExist(mainTable));
         Assertions.assertTrue(h2Sink.doesTableExist(lockDataset.get()));
+        Assertions.assertTrue(h2Sink.doesTableExist(metadata.get()));
 
         SinkCleanupIngestorResult result = sinkCleaner.executeOperationsForSinkCleanup(JdbcConnection.of(h2Sink.connection()));
-        Assertions.assertEquals(result.status(), IngestStatus.SUCCEEDED);
+        Assertions.assertEquals(result.status(), SinkCleanupStatus.SUCCEEDED);
 
-        List<Map<String, Object>> tableAfterSinkCleanup = h2Sink.executeQuery("select count(*) as batch_metadata_count from \"batch_metadata\" where table_name = 'main'");
-        Assertions.assertEquals(tableAfterSinkCleanup.get(0).get("batch_metadata_count"), 0L);
 
         Assertions.assertFalse(h2Sink.doesTableExist(mainTable));
         Assertions.assertFalse(h2Sink.doesTableExist(lockDataset.get()));
+        Assertions.assertFalse(h2Sink.doesTableExist(metadata.get()));
     }
 
     @Test
@@ -101,40 +98,19 @@ public class RelationalSinkCleanerTest extends BaseTest
         Assertions.assertEquals(tableBeforeSinkCleanup.get(0).get("batch_metadata_count"), 1L);
         Assertions.assertTrue(h2Sink.doesTableExist(mainTable));
         Assertions.assertTrue(h2Sink.doesTableExist(lockDataset.get()));
+        Assertions.assertTrue(h2Sink.doesTableExist(metadata.get()));
 
         SinkCleanupIngestorResult result = sinkCleaner.executeOperationsForSinkCleanup(JdbcConnection.of(h2Sink.connection()));
-        Assertions.assertEquals(result.status(), IngestStatus.SUCCEEDED);
-
-        List<Map<String, Object>> tableAfterSinkCleanup = h2Sink.executeQuery("select count(*) as batch_metadata_count from \"batch_metadata\" where table_name = 'main'");
-        Assertions.assertEquals(tableAfterSinkCleanup.get(0).get("batch_metadata_count"), 0L);
+        Assertions.assertEquals(result.status(), SinkCleanupStatus.SUCCEEDED);
 
         Assertions.assertFalse(h2Sink.doesTableExist(mainTable));
         Assertions.assertFalse(h2Sink.doesTableExist(lockDataset.get()));
+        Assertions.assertFalse(h2Sink.doesTableExist(metadata.get()));
     }
 
     private void createLockTable(String lockTable)
     {
         h2Sink.executeStatement("CREATE TABLE TEST." + lockTable + " (ID INT PRIMARY KEY, NAME VARCHAR(255), BIRTH DATETIME)");
-    }
-
-    @Test
-    void testExecuteSinkCleanupWithFailureStatus()
-    {
-        MetadataDataset metadata = MetadataDataset.builder().metadataDatasetName("batch_metadata").build();
-        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
-        createSampleMainTableWithData(mainTable.name());
-        createBatchMetadataTableWithData(metadata.metadataDatasetName(), mainTable.name());
-        RelationalSinkCleaner sinkCleaner = RelationalSinkCleaner.builder()
-                .relationalSink(H2Sink.get())
-                .mainDataset(mainTable)
-                .executionTimestampClock(fixedClock_2000_01_01)
-                .requestedBy("lh_dev")
-                .metadataDataset(metadata.withMetadataDatasetName("batch_metadata2"))
-                .build();
-
-        SinkCleanupIngestorResult result = sinkCleaner.executeOperationsForSinkCleanup(JdbcConnection.of(h2Sink.connection()));
-        Assertions.assertEquals(result.status(), IngestStatus.FAILED);
-        Assertions.assertTrue(result.message().get().contains("Table \"batch_metadata2\" not found"));
     }
 
     private void createBatchMetadataTableWithData(String metaTableName, String mainTableName)
