@@ -83,7 +83,7 @@ Class meta::pure::router::TDSRoutedValueSpecification extends RoutedValueSpecifi
 {
    id:String[1];
    runtime:Runtime[1];
-   mapping:Mapping[1];
+   mapping:Mapping[0..1];
    store:meta::pure::store::Store[1];
    executionContext:meta::pure::runtime::ExecutionContext[1];
 }

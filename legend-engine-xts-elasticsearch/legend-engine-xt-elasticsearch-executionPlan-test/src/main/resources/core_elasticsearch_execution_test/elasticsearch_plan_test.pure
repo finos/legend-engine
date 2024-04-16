@@ -230,7 +230,7 @@ function meta::external::store::elasticsearch::executionTest::testCase::tds::run
   let toCompile = $config.model->replace('%_url_%', 'http://%s:%d'->format([$url.host, $url.port])) + '\n\n' +
     '###Pure \n\n ' +
     'function test::test(' +  $varDefinitions + '): TabularDataSet[1] {\n' +
-    '  indexToTDS(test::Store, \'omdb-common\')->from(test::EmptyMapping, test::Runtime)->' + $toTest + ';' +
+    '  indexToTDS(test::Store, \'omdb-common\')->from(test::Runtime)->' + $toTest + ';' +
     '}';
 
   // $toCompile->println();
