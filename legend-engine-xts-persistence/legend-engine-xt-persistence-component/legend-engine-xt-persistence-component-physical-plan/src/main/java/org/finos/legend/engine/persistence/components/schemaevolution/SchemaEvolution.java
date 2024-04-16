@@ -155,7 +155,6 @@ public class SchemaEvolution
                     {
                         throw new IncompatibleSchemaChangeException(String.format("Non-nullable field \"%s\" in staging dataset cannot be added, as it is backward-incompatible change.", stagingFieldName));
                     }
-
                 }
                 else
                 {

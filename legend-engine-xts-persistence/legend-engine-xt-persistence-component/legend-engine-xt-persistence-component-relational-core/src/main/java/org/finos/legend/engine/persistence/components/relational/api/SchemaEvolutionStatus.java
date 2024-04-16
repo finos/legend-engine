@@ -16,5 +16,5 @@ package org.finos.legend.engine.persistence.components.relational.api;
 
 public enum SchemaEvolutionStatus
 {
-    SUCCEEDED, FAILED, PARTIALLY_FAILED
+    SUCCEEDED, FAILED, PARTIALLY_SUCCEEDED
 }

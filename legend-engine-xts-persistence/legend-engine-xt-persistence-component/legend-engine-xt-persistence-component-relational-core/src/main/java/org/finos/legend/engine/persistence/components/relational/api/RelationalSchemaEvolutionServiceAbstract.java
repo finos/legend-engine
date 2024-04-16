@@ -92,6 +92,7 @@ public abstract class RelationalSchemaEvolutionServiceAbstract
         LOGGER.info("Invoked evolve method, will evolve the target dataset");
 
         // 1. Initialize executor and transformer
+        LOGGER.info("Initializing executor and transformer");
         Executor<SqlGen, TabularData, SqlPlan> executor = relationalSink().getRelationalExecutor(connection);
         executor.setSqlLogging(sqlLogging());
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
@@ -102,6 +103,7 @@ public abstract class RelationalSchemaEvolutionServiceAbstract
         stagingSchema = ApiUtils.applyCase(stagingSchema, caseConversion());
 
         // 3. Check if main dataset exists
+        LOGGER.info("Checking if target dataset exists");
         if (!executor.datasetExists(mainDatasetReference))
         {
             return SchemaEvolutionServiceResult.builder()
@@ -111,14 +113,17 @@ public abstract class RelationalSchemaEvolutionServiceAbstract
         }
 
         // 4. Derive main dataset schema
+        LOGGER.info("Constructing target dataset schema from database");
         Dataset mainDataset = executor.constructDatasetFromDatabase(mainDatasetReference);
 
         // 5. Generate schema evolution operations
+        LOGGER.info("Generating schema evolution operations");
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), ingestMode, schemaEvolutionCapabilitySet());
         SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainDataset, stagingSchema);
         LogicalPlan schemaEvolutionLogicalPlan = schemaEvolutionResult.logicalPlan();
 
         // 6. Execute schema evolution operations
+        LOGGER.info("Starting schema evolution execution");
         List<String> executedSqls = new ArrayList<>();
         if (!schemaEvolutionLogicalPlan.ops().isEmpty())
         {
@@ -129,19 +134,21 @@ public abstract class RelationalSchemaEvolutionServiceAbstract
                 try
                 {
                     executor.executePhysicalPlan(singleOperationAlterSqlPlan);
+                    executedSqls.addAll(singleOperationAlterSqlPlan.getSqlList());
                 }
                 catch (Exception e)
                 {
+                    LOGGER.info("Encountered error in executing schema evolution");
                     return SchemaEvolutionServiceResult.builder()
-                        .status(executedSqls.isEmpty() ? SchemaEvolutionStatus.FAILED : SchemaEvolutionStatus.PARTIALLY_FAILED)
+                        .status(executedSqls.isEmpty() ? SchemaEvolutionStatus.FAILED : SchemaEvolutionStatus.PARTIALLY_SUCCEEDED)
                         .addAllExecutedSchemaEvolutionSqls(executedSqls)
                         .message(e.getMessage())
                         .build();
                 }
-                executedSqls.addAll(singleOperationAlterSqlPlan.getSqlList());
             }
         }
 
+        LOGGER.info("Schema evolution completed");
         return SchemaEvolutionServiceResult.builder()
             .status(SchemaEvolutionStatus.SUCCEEDED)
             .addAllExecutedSchemaEvolutionSqls(executedSqls)
