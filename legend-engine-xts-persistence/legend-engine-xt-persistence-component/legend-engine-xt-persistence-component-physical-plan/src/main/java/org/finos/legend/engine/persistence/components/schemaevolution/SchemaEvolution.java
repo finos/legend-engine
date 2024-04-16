@@ -142,12 +142,20 @@ public class SchemaEvolution
             if (matchedMainField == null)
             {
                 // Add the new column in the main table if database supports ADD_COLUMN capability and
-                // if user capability supports ADD_COLUMN or is empty (since empty means no overriden preference)
+                // if user capability supports ADD_COLUMN
                 if (sink.capabilities().contains(Capability.ADD_COLUMN)
                         && (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.ADD_COLUMN)))
                 {
-                    operations.add(Alter.of(mainDataset, Alter.AlterOperation.ADD, stagingField, Optional.empty()));
-                    modifiedFields.add(stagingField);
+                    if (stagingField.nullable())
+                    {
+                        operations.add(Alter.of(mainDataset, Alter.AlterOperation.ADD, stagingField, Optional.empty()));
+                        modifiedFields.add(stagingField);
+                    }
+                    else
+                    {
+                        throw new IncompatibleSchemaChangeException(String.format("Non-nullable field \"%s\" in staging dataset cannot be added, as it is backward-incompatible change.", stagingFieldName));
+                    }
+
                 }
                 else
                 {
