@@ -63,7 +63,7 @@ public class ReplGridServer
     private static final PlanExecutor planExecutor = PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build();
     private PureModelContextData currentPMCD;
     private Client client;
-    private InetSocketAddress serverPortAddress = new InetSocketAddress(0);
+    private int port;
 
     public ReplGridServer(Client client)
     {
@@ -72,7 +72,7 @@ public class ReplGridServer
 
     public String getGridUrl()
     {
-        return "http://localhost:" + serverPortAddress.getPort() + "/repl/grid";
+        return "http://localhost:" + this.port + "/repl/grid";
     }
 
     public static class GridServerResult
@@ -104,6 +104,8 @@ public class ReplGridServer
 
     public void initializeServer() throws Exception
     {
+        InetSocketAddress serverPortAddress = new InetSocketAddress(0);
+
         HttpServer server = HttpServer.create(serverPortAddress, 0);
 
         server.createContext("/licenseKey", new HttpHandler()
@@ -248,6 +250,7 @@ public class ReplGridServer
         server.setExecutor(null);
         server.start();
         serverPortAddress = server.getAddress();
+        this.port = serverPortAddress.getPort();
         System.out.println("REPL Grid Server has started at port " + serverPortAddress.getPort());
     }
 
