@@ -14,10 +14,10 @@
 
 function <<test.Test, test.AlloyOnly>> meta::relational::relation::executeDatabaseTests():Boolean[1]
 {
-    meta::pure::functions::relation::tests::executeTests(meta::relational::relation::testUtils::testTDSDatabaseRun_Function_1__Any_1_);
+    meta::pure::functions::relation::tests::executeTests(meta::relational::relation::testUtils::testTDSDatabaseRun_Function_1__Any_MANY_);
 }
 
 function meta::relational::relation::executeSingleTest():Boolean[1]
 {
-    meta::pure::functions::relation::tests::filter::testSimpleFilterShared(meta::relational::relation::testUtils::testTDSDatabaseRun_Function_1__Any_1_);
+    meta::pure::functions::relation::tests::filter::testSimpleFilterShared(meta::relational::relation::testUtils::testTDSDatabaseRun_Function_1__Any_MANY_);
 }

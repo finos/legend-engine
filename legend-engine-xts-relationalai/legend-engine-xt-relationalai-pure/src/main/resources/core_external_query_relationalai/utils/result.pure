@@ -107,14 +107,14 @@ function meta::external::store::rel::utils::orDefaultValue<T|m>(result: Result<T
 function meta::external::store::rel::utils::unwrap<T>(result: Result<T|0..1>[1]): T[1] {
   if($result.errors->isEmpty(),
     | $result.values->toOne(),
-    | fail($result->failMessage()); $result.values->toOne();
+    | fail($result->failMessage())
   )
 }
 
 function meta::external::store::rel::utils::unwrapm<T>(result: Result<T|*>[1]): T[*] {
   if($result.errors->isEmpty(),
     | $result.values,
-    | fail($result->failMessage()); $result.values;
+    | fail($result->failMessage())
   )
 }
 
