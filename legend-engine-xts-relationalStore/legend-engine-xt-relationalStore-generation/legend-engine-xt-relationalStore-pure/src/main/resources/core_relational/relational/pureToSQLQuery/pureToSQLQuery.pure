@@ -2425,7 +2425,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   let propMapping = $leftSideOp.currentPropertyMapping;
 
   let binding = $propMapping->cast(@SemiStructuredRelationalPropertyMapping).transformer->cast(@BindingTransformer<Any>).binding->toOne();
-  let typeConfigDescriptor = $extensions.availableExternalFormats->meta::external::format::shared::utils::getExternalFormatContractForContentType($binding.contentType).typeConfigDescriptor->toOne();  
+  let typeConfigDescriptor = $extensions.availableExternalFormats->meta::external::format::shared::utils::getExternalFormatContractForContentType($binding.contentType).polymorphicTypesConfigDescriptor->toOne();  
   let typeConfig = $typeConfigDescriptor.typeConfigFromBindingGenerator->eval($binding);
 
   let checkCol = if($state.inFilter,|$leftSelect.filteringOperation, |$leftSelect.columns)->toOne();
@@ -2482,7 +2482,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
         | 'Expected semi structured property mappings. Got: ' + $propertyMappings->map(x | $x->genericType().rawType->toOne()->elementToPath())->joinStrings('[', ', ', ']'));
 
   let binding = $propertyMappings->at(0)->cast(@SemiStructuredRelationalPropertyMapping).transformer->cast(@BindingTransformer<Any>).binding->toOne();
-  let typeConfigDescriptor = $extensions.availableExternalFormats->meta::external::format::shared::utils::getExternalFormatContractForContentType($binding.contentType).typeConfigDescriptor->toOne();  
+  let typeConfigDescriptor = $extensions.availableExternalFormats->meta::external::format::shared::utils::getExternalFormatContractForContentType($binding.contentType).polymorphicTypesConfigDescriptor->toOne();  
   let typeConfig = $typeConfigDescriptor.typeConfigFromBindingGenerator->eval($binding); 
 
   let checkCol = if($state.inFilter,|$leftSideSelect.filteringOperation, |$leftSideSelect.columns)->toOne();
@@ -2526,7 +2526,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
           | 'Expected semi structured property mappings. Got: ' + $propertyMappings->map(x | $x->genericType().rawType->toOne()->elementToPath())->joinStrings('[', ', ', ']'));
 
   let binding = $propertyMappings->at(0)->cast(@SemiStructuredRelationalPropertyMapping).transformer->cast(@BindingTransformer<Any>).binding->toOne();
-  let typeConfigDescriptor = $extensions.availableExternalFormats->meta::external::format::shared::utils::getExternalFormatContractForContentType($binding.contentType).typeConfigDescriptor->toOne();  
+  let typeConfigDescriptor = $extensions.availableExternalFormats->meta::external::format::shared::utils::getExternalFormatContractForContentType($binding.contentType).polymorphicTypesConfigDescriptor->toOne();  
   let typeConfig = $typeConfigDescriptor.typeConfigFromBindingGenerator->eval($binding);  
   let typeIdentifierKey = $typeConfigDescriptor.typeKeyNameFromTypeConfig->eval($typeConfig);        
 

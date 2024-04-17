@@ -52,7 +52,9 @@ Class meta::external::format::shared::ExternalFormatContract<T>
         | $this.externalFormatBindingValidator->toOne()->eval($binding););
   }:BindingDetail[1];
 
-  typeConfigDescriptor             : ExternalFormatTypeConfigDescriptor[0..1];
+  externalizeConfig                : Class<ExternalFormatExternalizeConfig>[0..1];
+  internalizeConfig                : Class<ExternalFormatInternalizeConfig>[0..1];
+  polymorphicTypesConfigDescriptor : PolymorphicTypesConfigDescriptor[0..1];
 
   internalizeReturnsChecked        : Boolean[1] = false;              // By default we assume external format would NOT wrap internalize response into checked structure
   sourceRecordSerializeTree        : RootGraphFetchTree<Any>[0..1];   // If external Format choses to return checked wrapped response for internalize, it needs to provide serialized representation of its source record metamodel
@@ -112,11 +114,11 @@ Class <<typemodifiers.abstract>> meta::external::format::shared::ExternalFormatI
 
 }
 
-Class meta::external::format::shared::ExternalFormatTypeConfigDescriptor
+Class meta::external::format::shared::PolymorphicTypesConfigDescriptor
 {
-  typeConfigFromBindingGenerator: Function<{Binding[1]->TypeConfig[1]}>[1];
-  typeKeyNameFromTypeConfig: Function<{TypeConfig[1]->String[1]}>[1];
-  typeNameForClassFromTypeConfig: Function<{TypeConfig[1],Class<Any>[1]->String[1]}>[1];
+  typeConfigFromBindingGenerator: Function<{Binding[1]->PolymorphicTypesConfig[1]}>[1];
+  typeKeyNameFromTypeConfig: Function<{PolymorphicTypesConfig[1]->String[1]}>[1];
+  typeNameForClassFromTypeConfig: Function<{PolymorphicTypesConfig[1],Class<Any>[1]->String[1]}>[1];
 }
 
 function <<access.private>> meta::external::format::shared::checkSuperType(actualType: Class<Any>[1], expectedType: Class<Any>[1]):Boolean[1]

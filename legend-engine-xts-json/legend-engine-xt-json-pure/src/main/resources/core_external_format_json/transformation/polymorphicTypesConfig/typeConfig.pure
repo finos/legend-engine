@@ -15,23 +15,23 @@
 import meta::external::format::json::schema::fromSchema::*;
 import meta::external::format::shared::binding::*;
 import meta::external::format::json::metamodel::*;
-import meta::external::format::json::TypeConfig::*;
+import meta::external::format::json::PolymorphicTypesConfig::*;
 
 
-function meta::external::format::json::TypeConfig::jsonTypeConfigDescriptor(): meta::external::format::shared::ExternalFormatTypeConfigDescriptor[1]
+function meta::external::format::json::PolymorphicTypesConfig::jsonTypeConfigDescriptor(): meta::external::format::shared::PolymorphicTypesConfigDescriptor[1]
 {
-  ^meta::external::format::shared::ExternalFormatTypeConfigDescriptor
+  ^meta::external::format::shared::PolymorphicTypesConfigDescriptor
   (
-    typeConfigFromBindingGenerator = extractTypeConfigFromBinding_Binding_1__TypeConfig_1_,
-    typeKeyNameFromTypeConfig      = getTypeKeyName_TypeConfig_1__String_1_,
-    typeNameForClassFromTypeConfig = getTypeNameForClass_TypeConfig_1__Class_1__String_1_
+    typeConfigFromBindingGenerator = extractTypeConfigFromBinding_Binding_1__PolymorphicTypesConfig_1_,
+    typeKeyNameFromTypeConfig      = getTypeKeyName_PolymorphicTypesConfig_1__String_1_,
+    typeNameForClassFromTypeConfig = getTypeNameForClass_PolymorphicTypesConfig_1__Class_1__String_1_
   );
 }
 
-function meta::external::format::json::TypeConfig::extractTypeConfigFromBinding(binding:Binding[1]): TypeConfig[1]
+function meta::external::format::json::PolymorphicTypesConfig::extractTypeConfigFromBinding(binding:Binding[1]): PolymorphicTypesConfig[1]
 {
   if($binding.schemaSet->isEmpty(),
-    | ^meta::external::format::json::metamodel::TypeConfig(),
+    | ^meta::external::format::json::metamodel::PolymorphicTypesConfig(),
     |
       let rootSchemaId = $binding.schemaId->toOne('must specify the root schemaId to extract typeConfig from');
       let schemaDetail = $binding.schemaSet->toOne().schemas->filter(s|$s.id == $rootSchemaId)->toOne('expected exactly one schema with id ' + $rootSchemaId).detail->cast(@JsonSchema);
@@ -39,14 +39,14 @@ function meta::external::format::json::TypeConfig::extractTypeConfigFromBinding(
   );
 }
 
-function meta::external::format::json::TypeConfig::getTypeKeyName(config: meta::external::format::shared::metamodel::TypeConfig[1]): String[1]
+function meta::external::format::json::PolymorphicTypesConfig::getTypeKeyName(config: meta::external::format::shared::metamodel::PolymorphicTypesConfig[1]): String[1]
 {
-  $config->cast(@TypeConfig).typeKeyName;
+  $config->cast(@PolymorphicTypesConfig).typeKeyName;
 }
 
-function meta::external::format::json::TypeConfig::getTypeNameForClass(config: meta::external::format::shared::metamodel::TypeConfig[1], clazz: Class<Any>[1]): String[1]
+function meta::external::format::json::PolymorphicTypesConfig::getTypeNameForClass(config: meta::external::format::shared::metamodel::PolymorphicTypesConfig[1], clazz: Class<Any>[1]): String[1]
 {
-  let jsonConfig = $config->cast(@TypeConfig);
+  let jsonConfig = $config->cast(@PolymorphicTypesConfig);
   let fullName = $clazz->elementToPath();
   let override = if($jsonConfig.fullyQualifiedTypeNameOverride->isNotEmpty(), | $jsonConfig.fullyQualifiedTypeNameOverride->toOne()->get($fullName), | []);
   if($override->isNotEmpty(),

@@ -161,17 +161,17 @@ function <<access.private>>  meta::external::format::json::schema::fromSchema::i
   $spec->isNotEmpty() && $spec->toOne()->cast(@JSONString).value == meta::json::schema::generation::JSONSchemaSpecification.LEGEND_JSON->toString();
 }
 
-function <<access.private>> meta::external::format::json::schema::fromSchema::getTypeConfigFromLegendJsonSpecification(parsedSchema: JSONObject[1]): meta::external::format::json::metamodel::TypeConfig[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::getTypeConfigFromLegendJsonSpecification(parsedSchema: JSONObject[1]): meta::external::format::json::metamodel::PolymorphicTypesConfig[1]
 {
   let jsonConfig = $parsedSchema.keyValuePairs->getValueForKey('typeConfig')->cast(@JSONObject)->head()->toOne('missing required property: typeConfig for LegendJson specification');
-  let typeConfig = meta::json::fromJSON($jsonConfig, meta::external::format::json::metamodel::TypeConfig)->cast(@meta::external::format::json::metamodel::TypeConfig)->toOne();
+  let typeConfig = meta::json::fromJSON($jsonConfig, meta::external::format::json::metamodel::PolymorphicTypesConfig)->cast(@meta::external::format::json::metamodel::PolymorphicTypesConfig)->toOne();
   $typeConfig;
 }
 
-function meta::external::format::json::schema::fromSchema::getTypeConfigFromSchema(schema: JsonSchema[1]): meta::external::format::json::metamodel::TypeConfig[1]
+function meta::external::format::json::schema::fromSchema::getTypeConfigFromSchema(schema: JsonSchema[1]): meta::external::format::json::metamodel::PolymorphicTypesConfig[1]
 {
   let parsedSchema = $schema.content->meta::json::parseJSON()->cast(@JSONObject);
-  if($parsedSchema->isLegendJsonSpecification(), | getTypeConfigFromLegendJsonSpecification($parsedSchema), | ^meta::external::format::json::metamodel::TypeConfig());
+  if($parsedSchema->isLegendJsonSpecification(), | getTypeConfigFromLegendJsonSpecification($parsedSchema), | ^meta::external::format::json::metamodel::PolymorphicTypesConfig());
 }
 
 function <<access.private>> meta::external::format::json::schema::fromSchema::getInnerSchemaFromLegendJsonSpecification(parsedSchema: JSONObject[1]): JSONObject[0..1]
