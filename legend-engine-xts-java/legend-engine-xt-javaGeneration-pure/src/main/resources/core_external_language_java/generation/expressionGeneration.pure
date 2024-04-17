@@ -265,8 +265,6 @@ function <<access.private>> meta::external::language::java::transform::processCo
       }
    );
 
-
-
    if(!($conventions.visitedFunctions->contains($fe)),
       |let newCon = ^$conventions(visitedFunctions += $fe->cast(@FunctionExpression));
       let name = $fe.func->elementToPath();
@@ -284,18 +282,7 @@ function <<access.private>> meta::external::language::java::transform::processCo
                                 ->filter(c | !meta::external::language::java::transform::isProvidedClass($conventions, $c))
                                 ->map(c | $c->addModifiers(['public', 'interface'])
                                             ->usingKnownPackages($conventions->knownPackages()));
-                                            //->imports($conventions->standardImports()));
-
-            // println('***********');
-            // println('Classes provided');
-            //    $conventions.providedTypes->values().simpleName->println();
-
-            // println('Classes used');
-            // println($classesUsed.simpleName);
-            // println('***********************');
-            // fail();
             
-
             let withImports = javaClass('public', $signature.class)
                     ->usingKnownPackages($conventions->knownPackages())
                     ->imports($conventions->standardImports());
@@ -313,65 +300,6 @@ function <<access.private>> meta::external::language::java::transform::processCo
       |j_invoke($signature.class, $signature.method.name, $castArgs, $signature.method.returnType);
    );
 }
-
-// function <<access.private>> meta::external::language::java::transform::generateClass(cls : meta::pure::metamodel::type::Class<Any>[1], conventions: Conventions[1], debug: meta::pure::tools::DebugContext[1]) : meta::external::language::java::metamodel::Class[*]
-// {
-  
-//    let typeInfo = meta::pure::executionPlan::platformBinding::typeInfo::newTypeInfoSet()->enrichTypeInfos($cls, []);
-    
-//    let props = $typeInfo->meta::pure::executionPlan::platformBinding::typeInfo::allProperties($cls);
-   
-//    let proto = $conventions->implClassName($cls)->addModifiers(['public']);
-
-//    let clsTypeInfo = $typeInfo.typeInfos->filter(t | $t->instanceOf(meta::pure::executionPlan::platformBinding::typeInfo::ClassTypeInfo))
-//                                         ->cast(@meta::pure::executionPlan::platformBinding::typeInfo::ClassTypeInfo)
-//                                         ->filter(c | $c.class() == $cls);
-
-//             assert($clsTypeInfo->size() == 1, 'Error: found multiple type infos for class');
-
-//             //let nestedDeps = generateInterfacesAndEnums($conventions, $typeInfo, $debug);
-
-//             let interface = $clsTypeInfo->toOne()->generateInterfaceForClass($conventions,$debug);
-//             let implementationWithProps = $props->fold({p,c| let var = $conventions->fieldName($p);
-//                                            let javaType = $conventions->pureTypeToJavaType($p);
-//                                            let f = javaField(['private'], $javaType, $var);
-//                                            let param = j_parameter($javaType, $var);
-
-//                                            $c->addField($f)
-//                                              ->addMethod(javaMethod('public', $javaType, $conventions->getterName($p), [], 'return ' + $var+';'))
-//                                              ->addMethod(javaMethod('public', $proto, $conventions->setterName($p),  j_parameter($javaType, $var), 
-//                                                            j_block([j_this($c)->j_field($f)->j_assign($param),
-//                                                                     j_this($c)->j_return()
-//                                                                    ])
-//                                                         ));
-//                                            }, $proto)
-//                               ->addConstructor(javaConstructor(['public'], [], ''))
-//                               // interface generation adds this method, so we need to add to implementation too - TODO This should not happen
-//                               ->addMethod(javaMethod('public', javaString(), $conventions->className(IReferencedObject).methods->toOne().name, [], j_return(j_null())))
-//                               ->implements($interface)
-//                               ->usingKnownPackages($conventions->knownPackages())
-//                               ->imports($conventions->standardImports())
-//                               ->imports($interface);  
-
-//               [$interface, $implementationWithProps];
-
-// }
-
-// function <<access.private>> meta::external::language::java::transform::enrichTypeInfos(infos:meta::pure::executionPlan::platformBinding::typeInfo::TypeInfoSet[1], for:meta::pure::metamodel::type::Class<Any>[1], seen:meta::pure::metamodel::type::Class<Any>[*]): meta::pure::executionPlan::platformBinding::typeInfo::TypeInfoSet[1]
-// {
-//    if($seen->contains($for),
-//       | $infos,
-//       {|
-//          let withCls = $infos
-//             ->meta::pure::executionPlan::platformBinding::typeInfo::addForClassWithAllProperties($for)
-//             ->meta::pure::executionPlan::platformBinding::typeInfo::addForClassWithAllPropertiesViaAssociations($for);
-
-//          let nowSeen = $seen->concatenate($for);
-//          $withCls->meta::pure::executionPlan::platformBinding::typeInfo::forClass($for).supertypes->fold({super, inf| $inf->enrichTypeInfos($super, $nowSeen)}, $withCls);
-//       }
-//    );
-// }
-
 
 function <<access.private>> meta::external::language::java::transform::debugAndReturn(c:Code[1], debug:DebugContext[1]):Code[1]
 {
