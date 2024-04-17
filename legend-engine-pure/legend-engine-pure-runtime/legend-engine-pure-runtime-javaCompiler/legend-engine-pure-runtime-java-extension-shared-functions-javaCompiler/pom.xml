@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-runtime-javaCompiler</artifactId>
-        <version>4.43.4</version>
+        <version>4.43.5-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-javaCompiler</artifactId>
