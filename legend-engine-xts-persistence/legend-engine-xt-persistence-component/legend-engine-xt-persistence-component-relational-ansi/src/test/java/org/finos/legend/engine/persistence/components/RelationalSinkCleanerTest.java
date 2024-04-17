@@ -36,10 +36,10 @@ public class RelationalSinkCleanerTest extends IngestModeTest
             .addFields(batchIdIn)
             .addFields(batchIdOut)
             .build();
-    private final MetadataDataset metadata = MetadataDataset.builder().metadataDatasetName("batch_metadata").build();
+    private final MetadataDataset metadata = MetadataDataset.builder().metadataDatasetName("batch_metadata").metadataDatasetGroupName("mydb").build();
     private final String dropMainTableQuery = "DROP TABLE IF EXISTS \"mydb\".\"main\"";
     private final String dropLockTableQuery = "DROP TABLE IF EXISTS \"mydb\".\"main_legend_persistence_lock\"";
-    private final String deleteFromMetadataTableQuery = "DELETE FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'";
+    private final String dropMetadataTableQuery = "DROP TABLE IF EXISTS \"mydb\".\"batch_metadata\"";
 
 
     @BeforeEach
@@ -63,11 +63,10 @@ public class RelationalSinkCleanerTest extends IngestModeTest
                 .build();
         SinkCleanupGeneratorResult result = sinkCleaner.generateOperationsForSinkCleanup();
 
-        List<String> cleanupSql = result.cleanupSql();
-        Assertions.assertEquals(2, result.dropSql().size());
+        Assertions.assertEquals(3, result.dropSql().size());
         Assertions.assertEquals(dropMainTableQuery, result.dropSql().get(0));
         Assertions.assertEquals(dropLockTableQuery, result.dropSql().get(1));
-        Assertions.assertEquals(deleteFromMetadataTableQuery, cleanupSql.get(0));
+        Assertions.assertEquals(dropMetadataTableQuery, result.dropSql().get(2));
     }
 
     @Test
@@ -83,10 +82,9 @@ public class RelationalSinkCleanerTest extends IngestModeTest
                 .build();
         SinkCleanupGeneratorResult result = sinkCleaner.generateOperationsForSinkCleanup();
 
-        List<String> cleanupSql = result.cleanupSql();
-        Assertions.assertEquals(2, result.dropSql().size());
+        Assertions.assertEquals(3, result.dropSql().size());
         Assertions.assertEquals(dropMainTableQuery, result.dropSql().get(0));
         Assertions.assertEquals("DROP TABLE IF EXISTS \"mydb\".\"lock_table\"", result.dropSql().get(1));
-        Assertions.assertEquals(deleteFromMetadataTableQuery, cleanupSql.get(0));
+        Assertions.assertEquals(dropMetadataTableQuery, result.dropSql().get(2));
     }
 }
