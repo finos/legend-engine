@@ -41,7 +41,7 @@ public class MemSqlFunctionGenerator
 
     public static MemSqlFunctionArtifact generateArtifact(PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, PureModelContext inputModel, Function<PureModel,RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        Pair<Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification_Impl, RichIterable<String>> artifactDetails = extractArtifactDetails(pureModel, activator, routerExtensions);
+        Pair<Root_meta_pure_alloy_connections_alloy_specification_StaticDatasourceSpecification_Impl, RichIterable<String>> artifactDetails = extractArtifactDetails(pureModel, activator, routerExtensions);
 
         String sqlExpressions = core_memsqlfunction_generation_generation.Root_meta_external_function_activator_memSqlFunction_generation_generateArtifact_MemSqlFunction_1__Extension_MANY__String_1_(activator, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
 
@@ -60,7 +60,7 @@ public class MemSqlFunctionGenerator
         return new MemSqlFunctionArtifact(activator._functionName(), Lists.mutable.of(sqlExpressions));
     }
 
-    private static Pair<Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification_Impl, RichIterable<String>> extractArtifactDetails(PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    private static Pair<Root_meta_pure_alloy_connections_alloy_specification_StaticDatasourceSpecification_Impl, RichIterable<String>> extractArtifactDetails(PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         PackageableFunction<?> function = activator._function();
         Root_meta_pure_executionPlan_ExecutionPlan executionPlan = PlanGenerator.generateExecutionPlanAsPure((FunctionDefinition<?>) function, null, null, null, pureModel, PlanPlatform.JAVA, null, routerExtensions.apply(pureModel));
@@ -68,7 +68,7 @@ public class MemSqlFunctionGenerator
                 collectAllNodes(executionPlan._rootExecutionNode()).selectInstancesOf(Root_meta_relational_mapping_SQLExecutionNode.class);
 
         Root_meta_external_store_relational_runtime_RelationalDatabaseConnection relationalDatabaseConnection = (Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) sqlExecutionNodes.getAny()._connection();
-        Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification_Impl memSqlDatasourceSpecification = ((Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification_Impl) relationalDatabaseConnection._datasourceSpecification());
+        Root_meta_pure_alloy_connections_alloy_specification_StaticDatasourceSpecification_Impl memSqlDatasourceSpecification = ((Root_meta_pure_alloy_connections_alloy_specification_StaticDatasourceSpecification_Impl) relationalDatabaseConnection._datasourceSpecification());
 
         return Tuples.pair(
                 memSqlDatasourceSpecification,
