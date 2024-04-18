@@ -26,6 +26,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.protocol.hostedService.deployment.*;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -50,6 +51,11 @@ public class HostedServiceDeploymentManager implements  DeploymentManager<Hosted
         return element instanceof HostedServiceArtifact;
     }
 
+    public List<HostedServiceDeploymentConfiguration> selectConfig(List<FunctionActivatorDeploymentConfiguration> availableConfigs)
+    {
+        return Lists.mutable.withAll(availableConfigs).selectInstancesOf(HostedServiceDeploymentConfiguration.class);
+    }
+
     public HostedServiceDeploymentResult deploy(Identity identity, HostedServiceArtifact artifact)
     {
         return doDeploy(identity, (HostedServiceDeploymentConfiguration) artifact.deploymentConfiguration, artifact);
@@ -62,6 +68,7 @@ public class HostedServiceDeploymentManager implements  DeploymentManager<Hosted
         if (artifact.version == null)
         {
             deployConf = c.select(conf -> conf.destination.equals(HostedServiceDestination.Sandbox)).getFirst();
+            artifact.deploymentConfiguration = deployConf;
         }
         else
         {
@@ -96,8 +103,10 @@ public class HostedServiceDeploymentManager implements  DeploymentManager<Hosted
                 }
                 else
                 {
+                    HostedServiceDeploymentResult responseResult = mapper.readValue(EntityUtils.toString(response.getEntity()), HostedServiceDeploymentResult.class);
+                    result.deployed = responseResult.deployed;
                     result.successful = true;
-                    result.deploymentLocation = buildDeployStub(deployConf, artifact);
+                    result.deploymentLocation = responseResult.deploymentLocation;
                 }
                 return "done";
             });

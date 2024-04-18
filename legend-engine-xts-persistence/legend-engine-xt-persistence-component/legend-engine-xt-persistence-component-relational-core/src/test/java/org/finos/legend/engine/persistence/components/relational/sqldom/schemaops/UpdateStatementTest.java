@@ -102,16 +102,14 @@ public class UpdateStatementTest
                     null,
                     Collections.singletonList(new Field(joinTable.getAlias(), "col1", BaseTest.QUOTE_IDENTIFIER, null)),
                     Collections.singletonList(joinTable),
-                    pkMatchCondition,
-                    Collections.emptyList()),
+                    pkMatchCondition),
                 BaseTest.QUOTE_IDENTIFIER)),
             new Pair<>(new Field("col2", BaseTest.QUOTE_IDENTIFIER), new SelectValue(
                 new SelectStatement(
                     null,
                     Collections.singletonList(new Field(joinTable.getAlias(), "col2", BaseTest.QUOTE_IDENTIFIER, null)),
                     Collections.singletonList(joinTable),
-                    pkMatchCondition,
-                    Collections.emptyList()),
+                    pkMatchCondition),
                 BaseTest.QUOTE_IDENTIFIER)));
 
         Condition whereCondition = new ExistsCondition(
@@ -119,8 +117,7 @@ public class UpdateStatementTest
                 null,
                 Collections.singletonList(new All(BaseTest.QUOTE_IDENTIFIER)),
                 Collections.singletonList(joinTable),
-                pkMatchCondition,
-                Collections.emptyList()));
+                pkMatchCondition));
 
         UpdateStatement query = new UpdateStatement(table, setPairs, whereCondition);
 

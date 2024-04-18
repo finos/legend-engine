@@ -415,6 +415,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
                                      values = $iv.values->evaluateAndDeactivate()->map(v |
                                         $v->match([
                                            l: LambdaFunction<Any>[1] | ^$l(expressionSequence = $l.expressionSequence->evaluateAndDeactivate()->map(p | $p->changeThisVariableInValueSpecification($newVarName))),
+                                           v: ValueSpecification[1]  | $v->changeThisVariableInValueSpecification($newVarName),
                                            a: Any[1] | $a
                                         ])
                                      )

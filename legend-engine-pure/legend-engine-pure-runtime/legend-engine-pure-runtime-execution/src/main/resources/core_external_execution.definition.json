@@ -1,9 +1,0 @@
-{
-  "name": "core_external_execution",
-  "pattern": "(meta::legend)(::.*)?",
-  "dependencies": [
-    "platform",
-    "platform_dsl_mapping",
-    "core"
-  ]
-}

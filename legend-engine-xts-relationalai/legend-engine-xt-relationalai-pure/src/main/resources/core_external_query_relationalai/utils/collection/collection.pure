@@ -1,0 +1,58 @@
+import meta::external::store::rel::utils::*;
+import meta::external::store::rel::utils::collection::*;
+
+Class meta::external::store::rel::utils::collection::BiMap<K, V> {
+  to: Map<K, V>[1];
+  from: Map<V, K>[1];
+}
+
+function meta::external::store::rel::utils::collection::BiMap<K,V>(key: K[1], value: V[1]): BiMap<K, V>[1] {
+  let to = ^Map<K, V>();
+  let from = ^Map<V,K>();
+  ^BiMap<K,V>(to=$to, from=$from);
+}
+
+function meta::external::store::rel::utils::collection::put<K, V>(map: BiMap<K,V>[1], key: K[1], value: V[1]): BiMap<K,V>[1] {
+  ^BiMap<K,V>(to=$map.to->put($key, $value), from=$map.from->put($value, $key));
+}
+
+function meta::external::store::rel::utils::collection::putAll<K, V>(map: BiMap<K, V>[1], keyValues: Pair<K, V>[*]): BiMap<K,V>[1] {
+  $keyValues->fold({pair, accum |
+    $accum->put($pair.first, $pair.second);
+  },
+  $map);
+}
+
+function meta::external::store::rel::utils::collection::getValue<K, V>(map: BiMap<K, V>[1], key: K[1]): V[0..1] {
+  $map.to->get($key);
+}
+
+function meta::external::store::rel::utils::collection::getKey<K, V>(map: BiMap<K, V>[1], value: V[1]): K[0..1] {
+  $map.from->get($value);
+}
+
+function meta::external::store::rel::utils::collection::keyValues<K, V>(map: BiMap<K,V>[1]): Pair<K, V>[*] {
+  $map.to->keyValues();
+}
+
+function meta::external::store::rel::utils::collection::keys<K, V>(map: BiMap<K, V>[1]): K[*] {
+  $map.to->keys();
+}
+
+function meta::external::store::rel::utils::collection::values<K, V>(map: BiMap<K, V>[1]): V[*] {
+  $map.to->values();
+}
+
+function meta::external::store::rel::utils::collection::valueKeys<K, V>(map: BiMap<K,V>[1]): Pair<V, K>[*] {
+  $map.from->keyValues();
+}
+
+Class meta::external::store::rel::utils::collection::Triple<S, T, U|n,m,p> {
+  first: S[n];
+  second: T[m];
+  third: U[p];
+}
+
+function meta::external::store::rel::utils::collection::triple<S,T,U|n,m,p>(first: S[n], second: T[m], third: U[p]): Triple<S,T,U|n,m,p>[1] {
+  ^Triple<S,T,U|n,m,p>(first=$first, second=$second, third=$third);
+}

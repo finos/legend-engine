@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-sqlserver</artifactId>
-        <version>4.40.2-SNAPSHOT</version>
+        <version>4.43.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-xt-relationalStore-sqlserver-execution-tests</artifactId>
@@ -112,7 +112,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-test-server</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-test-http-server</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -127,7 +127,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-extensions</artifactId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-pureExtensions</artifactId>
             <scope>test</scope>
         </dependency>
 

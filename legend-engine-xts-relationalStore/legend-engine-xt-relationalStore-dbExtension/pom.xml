@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-relationalStore</artifactId>
-        <version>4.40.2-SNAPSHOT</version>
+        <version>4.43.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -29,6 +29,7 @@
     <modules>
         <module>legend-engine-xt-relationalStore-athena</module>
         <module>legend-engine-xt-relationalStore-bigquery</module>
+        <module>legend-engine-xt-relationalStore-duckdb</module>
         <module>legend-engine-xt-relationalStore-memsql</module>
         <module>legend-engine-xt-relationalStore-postgres</module>
         <module>legend-engine-xt-relationalStore-spanner</module>
@@ -43,9 +44,8 @@
         <module>legend-engine-xt-relationalStore-databricks</module>
         <module>legend-engine-xt-relationalStore-sparksql</module>
 
-
         <module>legend-engine-xt-relationalStore-test-reports</module>
-        <module>legend-engine-xt-relationalStore-test-server</module>
+        <module>legend-engine-xt-relationalStore-test-http-server</module>
         <module>legend-engine-xt-relationalStore-dbExtension-archetype</module>
     </modules>
 </project>

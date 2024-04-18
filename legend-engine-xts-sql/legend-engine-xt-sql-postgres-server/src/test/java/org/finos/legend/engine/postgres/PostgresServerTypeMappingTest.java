@@ -140,15 +140,17 @@ public class PostgresServerTypeMappingTest
     @Test
     public void testFloat() throws Exception
     {
-        validate(FLOAT, "5.5", "float4", 5.5F);
-        validate(FLOAT, "null", "float4", null);
+        validate(FLOAT, "5.5", "float8", 5.5D);
+        validate(FLOAT, "null", "float8", null);
+        validate(FLOAT, "2645198855588.533433343434", "float8", 2645198855588.533433343434D);
     }
 
     @Test
     public void testInteger() throws Exception
     {
-        validate(INTEGER, "5", "int4", 5);
-        validate(INTEGER, "null", "int4", null);
+        validate(INTEGER, "5", "int8", 5L);
+        validate(INTEGER, "2645198855588", "int8", 2645198855588L);
+        validate(INTEGER, "null", "int8", null);
     }
 
     @Test

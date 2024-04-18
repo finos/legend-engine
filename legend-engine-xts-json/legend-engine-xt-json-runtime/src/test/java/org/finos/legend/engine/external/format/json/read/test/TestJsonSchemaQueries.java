@@ -22,10 +22,8 @@ import org.finos.legend.engine.external.shared.format.model.transformation.fromM
 import org.finos.legend.engine.external.shared.runtime.test.TestExternalFormatQueries;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
-import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
-import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.core_external_format_json_externalFormatContract;
 import org.finos.legend.pure.generated.core_external_format_json_java_platform_binding_legendJavaPlatformBinding_descriptor;

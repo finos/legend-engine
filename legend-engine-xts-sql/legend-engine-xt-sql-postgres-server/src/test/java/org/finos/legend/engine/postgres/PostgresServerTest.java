@@ -82,7 +82,7 @@ public class PostgresServerTest
             Assert.assertEquals("Employee Type", resultSetMetaData.getColumnName(3));
             Assert.assertEquals("Full Name", resultSetMetaData.getColumnName(4));
             Assert.assertEquals("Derived Name", resultSetMetaData.getColumnName(5));
-            Assert.assertEquals("int4", resultSetMetaData.getColumnTypeName(1));
+            Assert.assertEquals("int8", resultSetMetaData.getColumnTypeName(1));
             Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(2));
             Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(3));
             Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(4));

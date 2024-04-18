@@ -1896,6 +1896,22 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
                 return ComparisonOperator.GREATER_THAN;
             case SqlBaseLexer.GTE:
                 return ComparisonOperator.GREATER_THAN_OR_EQUAL;
+            case SqlBaseLexer.REGEX_MATCH:
+                return ComparisonOperator.REGEX_MATCH;
+            case SqlBaseLexer.REGEX_MATCH_CI:
+                return ComparisonOperator.REGEX_MATCH_CI;
+            case SqlBaseLexer.REGEX_NO_MATCH:
+                return ComparisonOperator.REGEX_NO_MATCH;
+            case SqlBaseLexer.REGEX_NO_MATCH_CI:
+                return ComparisonOperator.REGEX_NO_MATCH_CI;
+            case SqlBaseLexer.OP_LIKE:
+                return ComparisonOperator.LIKE;
+            case SqlBaseLexer.OP_ILIKE:
+                return ComparisonOperator.ILIKE;
+            case SqlBaseLexer.OP_NOT_LIKE:
+                return ComparisonOperator.NOT_LIKE;
+            case SqlBaseLexer.OP_NOT_ILIKE:
+                return ComparisonOperator.NOT_ILIKE;
             //TODO handle other operators
             default:
                 throw new UnsupportedOperationException("Unsupported operator: " + symbol.getText());

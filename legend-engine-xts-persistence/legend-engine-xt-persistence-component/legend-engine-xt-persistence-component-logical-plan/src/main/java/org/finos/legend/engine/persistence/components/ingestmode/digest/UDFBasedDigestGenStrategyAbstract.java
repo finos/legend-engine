@@ -14,8 +14,10 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.digest;
 
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.immutables.value.Value;
 
+import java.util.Map;
 import java.util.Set;
 
 @Value.Immutable
@@ -33,6 +35,8 @@ public interface UDFBasedDigestGenStrategyAbstract extends DigestGenStrategy
     String digestField();
 
     Set<String> fieldsToExcludeFromDigest();
+
+    Map<DataType, String> typeConversionUdfNames();
 
     @Override
     default <T> T accept(DigestGenStrategyVisitor<T> visitor)

@@ -237,6 +237,58 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
                 "David,A7,1,O6\n", h2Result.replace("\r\n", "\n"));
     }
 
+    @Test
+    public void testSemiStructuredMultiLevelFlattenMerging()
+    {
+        String queryFunction = "flatten::semiStructuredMultiLevelFlattenMerging__TabularDataSet_1_";
+
+        String h2Result = this.executeFunction(queryFunction, h2Mapping, h2Runtime);
+        Assert.assertEquals("Peter,A1,1,S1,\n" +
+                "Peter,A1,2,,C1\n" +
+                "Peter,A11,1,S1,\n" +
+                "Peter,A11,2,,C2\n" +
+                "John,A2,1,S2,\n" +
+                "John,A2,2,,C2\n" +
+                "John,A22,1,S1,\n" +
+                "John,A22,2,,C3\n" +
+                "John,A3,1,S3,\n" +
+                "John,A3,2,,C1\n" +
+                "John,A32,1,S1,\n" +
+                "John,A32,2,,C1\n" +
+                "Anthony,A4,1,S1,\n" +
+                "Anthony,A4,2,,C3\n" +
+                "Fabrice,A5,1,S4,\n" +
+                "Fabrice,A5,2,,C2\n" +
+                "Fabrice,A52,1,S1,\n" +
+                "Fabrice,A52,2,,C4\n" +
+                "Oliver,A6,1,S5,\n" +
+                "Oliver,A6,2,,C4\n" +
+                "David,A7,1,S1,\n" +
+                "David,A7,2,,C1\n", h2Result.replace("\r\n", "\n"));
+    }
+
+    @Test
+    public void testSemiStructuredFlatteningWithParseJsonMapping()
+    {
+        String queryFunction = "flatten::semiStructuredPrimitivePropertyFlattening__TabularDataSet_1_";
+
+        String h2Result = this.executeFunction(queryFunction, "flatten::mapping::H2ParseJsonMapping", h2Runtime);
+        Assert.assertEquals("Peter,Firm X,O1\n" +
+                "Peter,Firm X,O2\n" +
+                "John,Firm X,O1\n" +
+                "John,Firm X,O2\n" +
+                "John,Firm X,O1\n" +
+                "John,Firm X,O2\n" +
+                "Anthony,Firm X,O1\n" +
+                "Anthony,Firm X,O2\n" +
+                "Fabrice,Firm A,O3\n" +
+                "Fabrice,Firm A,O4\n" +
+                "Oliver,Firm B,O5\n" +
+                "Oliver,Firm B,O6\n" +
+                "David,Firm B,O5\n" +
+                "David,Firm B,O6\n", h2Result.replace("\r\n", "\n"));
+    }
+
     @Override
     public String modelResourcePath()
     {

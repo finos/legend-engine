@@ -82,9 +82,8 @@ public class LegendResultSet implements PostgresResultSet
                     return ((LocalDate) temporalAccessor).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
                 }
             case INTEGER:
-                return ((Number) value).intValue();
+                return ((Number) value).longValue();
             case FLOAT:
-                return ((Number) value).floatValue();
             case NUMBER:
                 return ((Number) value).doubleValue();
             case BOOLEAN:

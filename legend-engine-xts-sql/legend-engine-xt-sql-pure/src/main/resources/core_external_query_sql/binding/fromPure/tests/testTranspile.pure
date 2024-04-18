@@ -1781,7 +1781,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testStringFunctions():Boolean[1]
 {
   test(
-        'SELECT ascii(String) AS "ASCII", chr(Integer) AS "CHR", concat(String, \'abc\') AS "CONCAT", String || \'abc\' AS "CONCAT2", regexp_like(String, \'test\') AS "MATCH", ' +
+        'SELECT ascii(String) AS "ASCII", chr(Integer) AS "CHR", concat(String, \'abc\') AS "CONCAT", String || \'abc\' AS "CONCAT2", regexp_like(String, \'^test$\') AS "MATCH", ' +
         'char_length(String) AS "CHAR_LENGTH", length(String) AS "LENGTH", ltrim(String) AS "LTRIM", ltrim(String, \' \') AS "LTRIM2", md5(String) AS "MD5", upper(String) AS "UPPER", ' +
         'lower(String) AS "LOWER", repeat(String, 2) AS "REPEAT", replace(String, \'A\', \'a\') AS "REPLACE", starts_with(String, \'a\') AS "STARTSWITH", strpos(String, \'abc\') AS "STRPOS",' +
         'reverse(String) AS "REVERSE", rtrim(String) AS "RTRIM", rtrim(String, \' \') AS "RTRIM2", sha256(String) AS "SHA256", split_part(String, \',\', 1) AS "SPLITPART", ' +
@@ -1845,7 +1845,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testStringFunctionsNullable():Boolean[1]
 {
   test(
-      'SELECT ascii(NULL) AS "ASCII", chr(NULL) AS "CHR", regexp_like(NULL, \'test\') AS "MATCH", char_length(NULL) AS "CHAR_LENGTH", length(NULL) AS "LENGTH", ltrim(NULL) AS "LTRIM", ' +
+      'SELECT ascii(NULL) AS "ASCII", chr(NULL) AS "CHR", regexp_like(NULL, \'^test$\') AS "MATCH", char_length(NULL) AS "CHAR_LENGTH", length(NULL) AS "LENGTH", ltrim(NULL) AS "LTRIM", ' +
       'ltrim(NULL, \' \') AS "LTRIM2", md5(NULL) AS "MD5", upper(NULL) AS "UPPER", lower(NULL) AS "LOWER", replace(NULL, \'A\', \'a\') AS "REPLACE", starts_with(NULL, \'a\') AS "STARTSWITH", ' +
       'strpos(NULL, \'abc\') AS "STRPOS", reverse(NULL) AS "REVERSE", rtrim(NULL) AS "RTRIM", rtrim(NULL, \' \') AS "RTRIM2", sha256(NULL) AS "SHA256", substring(NULL, 1) AS "SUBSTRING", ' +
       'substr(NULL, 1, 2) AS "SUBSTR", btrim(NULL) AS "TRIM", btrim(NULL, \' \') AS "TRIM2", lpad(NULL, 2) AS "LPAD", lpad(String, NULL) AS "LPAD2", lpad(String, 2, NULL) AS "LPAD3",' +
@@ -2266,6 +2266,31 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       })
 }
 
+//PATTERN MATCHING
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testPatternMatching():Boolean[1]
+{
+  test(
+    'SELECT ' +
+    'String ~~ \'b\' AS "LIKE", ' +
+    'String !~~ \'b\' AS "NOT_LIKE", ' +
+    'String ~ \'^b$\' AS "REGEX_MATCHES", ' +
+    'String !~ \'^b$\' AS "REGEX_NOT_MATCHES" ' +
+    'FROM service."/service/service1"',
+
+    {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | equal($row.getString('String'), 'b'), 'LIKE'),
+                col(row:TDSRow[1] | not(equal($row.getString('String'), 'b')), 'NOT_LIKE'),
+                col(row:TDSRow[1] | matches($row.getString('String'), 'b'), 'REGEX_MATCHES'),
+                col(row:TDSRow[1] | not(matches($row.getString('String'), 'b')), 'REGEX_NOT_MATCHES')
+              ])
+      })
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testFromScopingSimple():Boolean[1]
 {
   test(
@@ -2419,12 +2444,12 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testPlaceholderParameters():Boolean[1]
 {
   test(
-    'SELECT * FROM service."/service/service1" where Integer = ? and String = $2',
+    'SELECT * FROM service."/service/service1" where Integer = ? and String = $2 and StrictDate = $3',
 
-    {_1:Integer[1], _2:String[1] | FlatInput.all()->project(
+    {_1:Integer[1], _2:String[1], _3:StrictDate[1] | FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
-        ->filter(row:TDSRow[1] | $row.getInteger('Integer') == $_1 && $row.getString('String') == $_2)
+        ->filter(row:TDSRow[1] | $row.getInteger('Integer') == $_1 && $row.getString('String') == $_2 && $row.getStrictDate('StrictDate') == $_3)
       }
   )
 }
@@ -2550,6 +2575,14 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.LESS_THAN_OR_EQUAL, right = ^IntegerLiteral(value = 2)), '1 <= 2');
   doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.GREATER_THAN, right = ^IntegerLiteral(value = 2)), '1 > 2');
   doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.GREATER_THAN_OR_EQUAL, right = ^IntegerLiteral(value = 2)), '1 >= 2');
+  doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.REGEX_MATCH, right = ^StringLiteral(value = 'def')), 'abc ~ def');
+  doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.REGEX_MATCH_CI, right = ^StringLiteral(value = 'def')), 'abc ~* def');
+  doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.REGEX_NO_MATCH, right = ^StringLiteral(value = 'def')), 'abc !~ def');
+  doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.REGEX_NO_MATCH_CI, right = ^StringLiteral(value = 'def')), 'abc !~* def');
+  doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.LIKE, right = ^StringLiteral(value = 'def')), 'abc ~~ def');
+  doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.ILIKE, right = ^StringLiteral(value = 'def')), 'abc ~~* def');
+  doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.NOT_LIKE, right = ^StringLiteral(value = 'def')), 'abc !~~ def');
+  doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.NOT_ILIKE, right = ^StringLiteral(value = 'def')), 'abc !~~* def');
 
   doNameTest(^Extract(field = ExtractField.DOW, expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'date'))), 'EXTRACT(\'dow\' FROM date)');
 

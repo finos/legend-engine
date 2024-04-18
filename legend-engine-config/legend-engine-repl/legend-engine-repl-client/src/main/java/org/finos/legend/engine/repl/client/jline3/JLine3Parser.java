@@ -44,7 +44,15 @@ public class JLine3Parser implements Parser
         @Override
         public String word()
         {
-            return result.words.get(wordIndex());
+            int index = wordIndex();
+            if (result.words.size() > index)
+            {
+                return result.words.get(index);
+            }
+            else
+            {
+                return "";
+            }
         }
 
         @Override

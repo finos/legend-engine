@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-dbExtension</artifactId>
-        <version>4.40.2-SNAPSHOT</version>
+        <version>4.43.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-xt-relationalStore-test-reports</artifactId>
@@ -79,7 +79,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-executionPlan-execution-api</artifactId>
+            <artifactId>legend-engine-executionPlan-execution-http-api</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -119,7 +119,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-compiler-api</artifactId>
+            <artifactId>legend-engine-language-pure-compiler-http-api</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -139,7 +139,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-grammar-api</artifactId>
+            <artifactId>legend-engine-language-pure-grammar-http-api</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -149,7 +149,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-api</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-http-api</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -199,7 +199,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-query-pure</artifactId>
+            <artifactId>legend-engine-core-query-pure-http-api</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -219,7 +219,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-server</artifactId>
+            <artifactId>legend-engine-server-http-server</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

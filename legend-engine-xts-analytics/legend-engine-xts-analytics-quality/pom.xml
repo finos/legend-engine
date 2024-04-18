@@ -2,7 +2,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-analytics</artifactId>
-        <version>4.40.2-SNAPSHOT</version>
+        <version>4.43.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -16,6 +16,7 @@
     </properties>
 
     <modules>
+        <module>legend-engine-xt-analytics-quality-http-api</module>
         <module>legend-engine-xt-analytics-quality-pure</module>
     </modules>
 

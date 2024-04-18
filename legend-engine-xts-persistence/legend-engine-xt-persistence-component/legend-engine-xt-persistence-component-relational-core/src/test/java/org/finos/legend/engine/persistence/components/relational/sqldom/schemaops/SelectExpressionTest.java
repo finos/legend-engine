@@ -19,6 +19,7 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.common.J
 import org.finos.legend.engine.persistence.components.relational.sqldom.quantifiers.DistinctQuantifier;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.conditions.Condition;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.conditions.comparison.EqualityCondition;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.conditions.comparison.GreaterThanCondition;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.conditions.comparison.NotEqualCondition;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.conditions.logical.AndCondition;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.select.SelectExpression;
@@ -55,8 +56,7 @@ class SelectExpressionTest
                 new DistinctQuantifier(),
                 Arrays.asList(item1, item2),
                 Collections.singletonList(table),
-                null,
-                Collections.emptyList());
+                null);
 
         String sql1 = BaseTest.genSqlIgnoringErrors(selectExpression);
         String expected = "SELECT DISTINCT \"item1\",\"item2\" as \"my_item\" FROM \"mydb\".\"mytable\"";
@@ -73,8 +73,7 @@ class SelectExpressionTest
                 null,
                 Collections.singletonList(new All(BaseTest.QUOTE_IDENTIFIER)),
                 Collections.singletonList(table),
-                null,
-                Collections.emptyList());
+                null);
         selectStatement.setLimit(10);
 
         String sql1 = BaseTest.genSqlIgnoringErrors(selectStatement);
@@ -99,8 +98,7 @@ class SelectExpressionTest
                 null,
                 Arrays.asList(item1, item2),
                 Collections.singletonList(table),
-                condition,
-                Collections.emptyList());
+                condition);
 
         String sql1 = BaseTest.genSqlIgnoringErrors(selectExpression);
         String expected = "SELECT \"item1\",\"item2\" as \"my_item\" FROM \"mydb\".\"mytable\" WHERE (\"item1\" = 100) AND (\"item2\" <> 50)";
@@ -127,8 +125,7 @@ class SelectExpressionTest
                 new DistinctQuantifier(),
                 Arrays.asList(item1, item2, item3),
                 Collections.singletonList(table),
-                null,
-                Collections.emptyList());
+                null);
 
         String sql1 = BaseTest.genSqlIgnoringErrors(selectExpression);
         String expected = "SELECT DISTINCT A.\"id\",A.\"item2\",B.\"item3\" as \"my_item\" FROM \"mydb\".\"left\" as A INNER JOIN \"mydb\".\"right\" as B ON A.\"id\" = B.\"id\"";
@@ -144,8 +141,7 @@ class SelectExpressionTest
                 new DistinctQuantifier(),
                 Collections.emptyList(),
                 Collections.singletonList(table),
-                null,
-                Collections.emptyList());
+                null);
         try
         {
             BaseTest.genSql(selectExpression);
@@ -164,19 +160,47 @@ class SelectExpressionTest
 
         Field item1 = new Field(null, "item1", BaseTest.QUOTE_IDENTIFIER, null);
         Field item2 = new Field(null, "item2", BaseTest.QUOTE_IDENTIFIER, "my_item");
-        Condition condition = new NotEqualCondition(item2, new NumericalValue(50L, BaseTest.QUOTE_IDENTIFIER));
+        Condition whereCondition = new NotEqualCondition(item2, new NumericalValue(50L, BaseTest.QUOTE_IDENTIFIER));
+        Condition havingCondition = new GreaterThanCondition(new Field("count", BaseTest.QUOTE_IDENTIFIER), new NumericalValue(1L, BaseTest.QUOTE_IDENTIFIER));
         Function countFunction = new Function(FunctionName.COUNT, Collections.singletonList(item1), BaseTest.QUOTE_IDENTIFIER);
+        countFunction.setAlias("count");
 
         SelectExpression selectExpression =
             new SelectStatement(
                 null,
                 Arrays.asList(countFunction, item2),
                 Collections.singletonList(table),
-                condition,
-                Collections.singletonList(item2));
+                whereCondition,
+                Collections.singletonList(item2),
+                havingCondition);
 
         String sql = BaseTest.genSqlIgnoringErrors(selectExpression);
-        String expected = "SELECT COUNT(\"item1\"),\"item2\" as \"my_item\" FROM \"mydb\".\"mytable\" WHERE \"item2\" <> 50 GROUP BY \"item2\"";
+        String expected = "SELECT COUNT(\"item1\") as \"count\",\"item2\" as \"my_item\" FROM \"mydb\".\"mytable\" WHERE \"item2\" <> 50 GROUP BY \"item2\" HAVING \"count\" > 1";
+        assertEquals(expected, sql);
+    }
+
+    @Test
+    void genSqlForSelectWithoutConditionAndGroupBy()
+    {
+        Table table = new Table("mydb", null, "mytable", null, BaseTest.QUOTE_IDENTIFIER);
+
+        Field item1 = new Field(null, "item1", BaseTest.QUOTE_IDENTIFIER, null);
+        Field item2 = new Field(null, "item2", BaseTest.QUOTE_IDENTIFIER, "my_item");
+        Condition havingCondition = new GreaterThanCondition(new Field("count", BaseTest.QUOTE_IDENTIFIER), new NumericalValue(1L, BaseTest.QUOTE_IDENTIFIER));
+        Function countFunction = new Function(FunctionName.COUNT, Collections.singletonList(item1), BaseTest.QUOTE_IDENTIFIER);
+        countFunction.setAlias("count");
+
+        SelectExpression selectExpression =
+                new SelectStatement(
+                        null,
+                        Arrays.asList(countFunction, item2),
+                        Collections.singletonList(table),
+                        null,
+                        Collections.singletonList(item2),
+                        havingCondition);
+
+        String sql = BaseTest.genSqlIgnoringErrors(selectExpression);
+        String expected = "SELECT COUNT(\"item1\") as \"count\",\"item2\" as \"my_item\" FROM \"mydb\".\"mytable\" GROUP BY \"item2\" HAVING \"count\" > 1";
         assertEquals(expected, sql);
     }
 }

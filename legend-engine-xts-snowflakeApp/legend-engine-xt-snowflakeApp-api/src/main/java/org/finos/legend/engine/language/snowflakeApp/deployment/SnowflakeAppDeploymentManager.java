@@ -21,6 +21,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.language.snowflakeApp.api.SnowflakeAppDeploymentTool;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppArtifact;
 import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
 import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppContent;
@@ -70,6 +71,11 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
     {
         this.planExecutor = planExecutor;
         connectionManager = ((RelationalStoreState)planExecutor.getExtraExecutors().select(c -> c instanceof RelationalStoreExecutor).getFirst().getStoreState()).getRelationalExecutor().getConnectionManager();
+    }
+
+    public List<SnowflakeAppDeploymentConfiguration> selectConfig(List<FunctionActivatorDeploymentConfiguration> availableConfigs)
+    {
+        return org.eclipse.collections.api.factory.Lists.mutable.withAll(availableConfigs).selectInstancesOf(SnowflakeAppDeploymentConfiguration.class);
     }
 
     @Override

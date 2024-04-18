@@ -29,26 +29,32 @@ public class PostgresServerSimpleTestClient
     public static void main(String[] args) throws Exception
     {
 
-        try (
-                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:9998/postgres",
-                        "dummy", "dummy");
-                PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"");
-                ResultSet resultSet = statement.executeQuery()
-        )
+        for (int j = 0; j < 10; j++)
         {
 
-
-            int columnCount = resultSet.getMetaData().getColumnCount();
-            while (resultSet.next())
+            try (
+                    Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:9998/postgres",
+                            "dummy", "dummy");
+                    PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"");
+                    ResultSet resultSet = statement.executeQuery()
+            )
             {
-                for (int i = 1; i < +columnCount; i++)
+
+
+                int columnCount = resultSet.getMetaData().getColumnCount();
+                while (resultSet.next())
                 {
-                    System.out.println(resultSet.getMetaData().getColumnName(i) + " : " + resultSet.getObject(i));
+                    for (int i = 1; i < +columnCount; i++)
+                    {
+                        System.out.println(resultSet.getMetaData().getColumnName(i) + " : " + resultSet.getObject(i));
+                    }
+                    System.out.println("\n");
                 }
-                System.out.println("\n");
+
             }
 
         }
+
     }
 
 

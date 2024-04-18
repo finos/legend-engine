@@ -118,8 +118,8 @@ Database simple::store::semistructured
 
   Join Block_Order(extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tag', 'VARCHAR') = 'order'
     and extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tagId', 'VARCHAR') = Semistructured.Orders.ID)
-  Join Block_Trade(extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tag', 'VARCHAR') = 'trade'
-    and extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tagId', 'VARCHAR') = Semistructured.Trades.ID)
+  Join Block_Trade(extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'relatedEntities.trades', 'SEMISTRUCTURED'), 'tag', 'VARCHAR') = 'trade'
+    and extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'relatedEntities.trades', 'SEMISTRUCTURED'), 'tagId', 'VARCHAR') = Semistructured.Trades.ID)
   Join Order_Product(Semistructured.Orders.IDENTIFIER = Semistructured.Product.IDENTIFIER)
 )
 
