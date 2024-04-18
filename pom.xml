@@ -102,7 +102,6 @@
         <!-- Application -->
         <module>legend-engine-xts-mastery</module>
         <module>legend-engine-application-query</module>
-        <!--        <module>legend-engine-xts-data-push</module>-->
     </modules>
 
     <properties>

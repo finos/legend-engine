@@ -18,17 +18,18 @@ import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.MemSqlDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 import org.finos.legend.engine.shared.core.vault.Vault;
 
-public class MemSQLStaticWithUserPasswordFlow implements DatabaseAuthenticationFlow<MemSqlDatasourceSpecification, UserNamePasswordAuthenticationStrategy>
+public class MemSQLStaticWithUserPasswordFlow implements DatabaseAuthenticationFlow<StaticDatasourceSpecification, UserNamePasswordAuthenticationStrategy>
 {
     @Override
-    public Class<MemSqlDatasourceSpecification> getDatasourceClass()
+    public Class<StaticDatasourceSpecification> getDatasourceClass()
     {
-        return MemSqlDatasourceSpecification.class;
+        return StaticDatasourceSpecification.class;
     }
 
     @Override
@@ -44,13 +45,12 @@ public class MemSQLStaticWithUserPasswordFlow implements DatabaseAuthenticationF
     }
 
     @Override
-    public Credential makeCredential(Identity identity, MemSqlDatasourceSpecification datasourceSpecification, UserNamePasswordAuthenticationStrategy authStrategy)
+    public Credential makeCredential(Identity identity, StaticDatasourceSpecification datasourceSpecification, UserNamePasswordAuthenticationStrategy authStrategy)
     {
         String userNameVaultKey = authStrategy.baseVaultReference == null ? authStrategy.userNameVaultReference : authStrategy.baseVaultReference + authStrategy.userNameVaultReference;
         String passwordVaultKey = authStrategy.baseVaultReference == null ? authStrategy.passwordVaultReference : authStrategy.baseVaultReference + authStrategy.passwordVaultReference;
         String userName = Vault.INSTANCE.getValue(userNameVaultKey);
         String password = Vault.INSTANCE.getValue(passwordVaultKey);
-
         return new PlaintextUserPasswordCredential(userName, password);
     }
 }
