@@ -435,7 +435,7 @@ function <<access.private>> meta::external::format::xml::transformation::toPure:
 {
    $debug->log(|'--- Inlining Collection Classes');
    
-   let classInfos = $context.genInfos->values()->map(i| $i->findClasses())->removeDuplicates({c1,c2| $c1.name == $c2.name});
+   let classInfos = $context.genInfos->values()->map(i| $i->findClasses())->removeDuplicatesBy(c | $c.name);
    let inlineable = $classInfos->filter({ci| 
       $debug->log(|'   Examining class (pass 1) ' + $ci.name->qNameToString());
       let props     = $ci.properties;
@@ -577,7 +577,7 @@ function <<access.private>> meta::external::format::xml::transformation::toPure:
       pair($ei, $enum);
    })->newMap();
    
-   let classInfos = $context.genInfos->values()->map(i| $i->findClasses())->removeDuplicates({c1,c2| $c1.name == $c2.name});
+   let classInfos = $context.genInfos->values()->map(i| $i->findClasses())->removeDuplicatesBy(c | $c.name);
    let classNames = $classInfos->map(ci| $context->typeName($ci.rawName));
    assert($classNames->isDistinct(), | 'Class names are not unique: ' + $classNames->joinStrings(','));
 
@@ -2001,4 +2001,3 @@ function <<access.private>> meta::external::format::xml::transformation::toPure:
 {
    $factory->func(or_Boolean_1__Boolean_1__Boolean_1_, [$arg1, $arg2]);
 }
-

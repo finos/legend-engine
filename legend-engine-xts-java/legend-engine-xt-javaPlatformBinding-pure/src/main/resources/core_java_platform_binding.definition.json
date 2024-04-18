@@ -1,9 +1,10 @@
 {
     "name" : "core_java_platform_binding",
-    "pattern" : "(meta::pure::executionPlan::platformBinding::legendJava|meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava|meta::external::format::shared::executionPlan::platformBinding::legendJava)(::.*)?",
+    "pattern" : "(meta::pure::executionPlan::platformBinding::legendJava|meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava)(::.*)?",
     "dependencies": [
         "platform",
         "platform_functions",
+        "platform_dsl_store",
         "platform_dsl_mapping",
         "platform_dsl_graph",
         "core_functions",

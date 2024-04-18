@@ -9,6 +9,7 @@
     "core",
     "core_external_format_json",
     "core_external_language_java",
-    "core_java_platform_binding"
+    "core_java_platform_binding",
+    "core_java_platform_binding_external_format"
   ]
 }

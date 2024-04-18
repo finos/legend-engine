@@ -151,6 +151,13 @@ Database meta::external::store::relational::modelJoins::test::EntityDatabase
       ENTITY_ID VARCHAR(32) PRIMARY KEY,
       name VARCHAR(32) NOT NULL
     )
+
+    View LegalEntity_View
+    (
+      ~groupBy (Entity.LegalEntity.ENTITY_ID)
+      ENTITY_ID: Entity.LegalEntity.ENTITY_ID,
+      name: Entity.LegalEntity.name
+    )
   )
 )
 
@@ -170,7 +177,7 @@ Database meta::external::store::relational::modelJoins::test::LocalTradesDatabas
   )
 
   Join Entity_Trade(
-    case(isNull(toString(toString(Trades.Trade.ENTITY_ID_FK))), toString(Trades.Trade.ENTITY_ID_FK), toString(Trades.Trade.ENTITY_ID_FK)) = Entity.LegalEntity.ENTITY_ID and case(isNull(Trades.Trade.ENTITY_NAME_FK),'Unknown',Trades.Trade.ENTITY_NAME_FK) = Entity.LegalEntity.name
+    case(isNull(toString(toString(Trades.Trade.ENTITY_ID_FK))), toString(Trades.Trade.ENTITY_ID_FK), toString(Trades.Trade.ENTITY_ID_FK)) = Entity.LegalEntity_View.ENTITY_ID and case(isNull(Trades.Trade.ENTITY_NAME_FK),'Unknown',Trades.Trade.ENTITY_NAME_FK) = Entity.LegalEntity_View.name
   )
 )
 
@@ -200,11 +207,11 @@ Mapping meta::external::store::relational::modelJoins::test::LegalEntityMapping
   {
     ~primaryKey
     (
-      [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity.ENTITY_ID
+      [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity_View.ENTITY_ID
     )
-    ~mainTable [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity
-    entityId: [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity.ENTITY_ID,
-    name: [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity.name
+    ~mainTable [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity_View
+    entityId: [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity_View.ENTITY_ID,
+    name: [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity_View.name
   }
 )
 

@@ -132,7 +132,7 @@ public class TestUtils
     public static Field nullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
     public static Field decimalIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.DECIMAL, 10, 2)).fieldAlias(incomeName).build();
     public static Field startTime = Field.builder().name(startTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(startTimeName).build();
-    public static Field startTimeTimestamp = Field.builder().name(startTimeName).type(FieldType.of(DataType.TIMESTAMP, null, 6)).primaryKey(true).fieldAlias(startTimeName).build();
+    public static Field startTimeTimestamp = Field.builder().name(startTimeName).type(FieldType.of(DataType.TIMESTAMP, 6, null)).primaryKey(true).fieldAlias(startTimeName).build();
     public static Field expiryDate = Field.builder().name(expiryDateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).fieldAlias(expiryDateName).build();
     public static Field expiryDatePk = Field.builder().name(expiryDateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(expiryDateName).build();
     public static Field date = Field.builder().name(dateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(dateName).build();
@@ -1495,6 +1495,34 @@ public class TestUtils
         newFields.add(field);
 
         return dataset.withSchema(dataset.schema().withFields(newFields));
+    }
+
+    public static void assertEquals(List<Map<String, Object>> expectedList, List<Map<String, Object>> actualList)
+    {
+        if (expectedList.size() != actualList.size())
+        {
+            Assertions.fail("Size of expected List does not match actual List");
+        }
+
+        for (int i = 0; i < actualList.size(); i++)
+        {
+            Map<String, Object> expected = expectedList.get(i);
+            Map<String, Object> actual = actualList.get(i);
+            for (Map.Entry entry : expected.entrySet())
+            {
+                Object actualObj = actual.get(entry.getKey());
+                Object expectedObj = entry.getValue();
+                if (expectedObj == null && actualObj != null)
+                {
+                    Assertions.fail(String.format("Values mismatch. key: %s, actual value: %s, expected value: %s", entry.getKey(), actualObj, expectedObj));
+                }
+                if (expectedObj != null && !expectedObj.toString().equals(actualObj.toString()))
+                {
+                    Assertions.fail(String.format("Values mismatch. key: %s, actual value: %s, expected value: %s", entry.getKey(), actualObj, expectedObj));
+                }
+
+            }
+        }
     }
 
     private static List<String[]> readCsvData(String path) throws IOException

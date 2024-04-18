@@ -14,11 +14,16 @@
 
 package org.finos.legend.engine.persistence.components.relational.h2;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
+import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.CsvExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
@@ -29,19 +34,24 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Stage
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.LoadCsv;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.HashFunction;
+import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataFileNameField;
+import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataRowNumberField;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ParseJsonFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
-import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ToArrayFunction;
+import org.finos.legend.engine.persistence.components.logicalplan.values.TryCastFunction;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
-import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
-import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
+import org.finos.legend.engine.persistence.components.relational.api.DataError;
+import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
+import org.finos.legend.engine.persistence.components.relational.api.ApiUtils;
+import org.finos.legend.engine.persistence.components.relational.api.ErrorCategory;
 import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
-import org.finos.legend.engine.persistence.components.relational.h2.logicalplan.values.ToArrayFunction;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2JdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.CopyVisitor;
@@ -49,6 +59,8 @@ import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.DigestUdfVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.HashFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.LoadCsvVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.MetadataFileNameFieldVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.MetadataRowNumberFieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.ParseJsonFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.FieldVisitor;
@@ -57,16 +69,18 @@ import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesFieldValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesSelectionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.ToArrayFunctionVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.TryCastFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
+import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
-import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
+import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -76,10 +90,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_ID_PATTERN;
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_START_TS_PATTERN;
+import static org.finos.legend.engine.persistence.components.util.ValidationCategory.TYPE_CONVERSION;
+import static org.finos.legend.engine.persistence.components.util.ValidationCategory.NULL_VALUE;
 
 public class H2Sink extends AnsiSqlSink
 {
@@ -100,6 +118,7 @@ public class H2Sink extends AnsiSqlSink
         capabilities.add(Capability.DATA_TYPE_LENGTH_CHANGE);
         capabilities.add(Capability.DATA_TYPE_SCALE_CHANGE);
         capabilities.add(Capability.TRANSFORM_WHILE_COPY);
+        capabilities.add(Capability.DRY_RUN);
         CAPABILITIES = Collections.unmodifiableSet(capabilities);
 
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
@@ -116,6 +135,9 @@ public class H2Sink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(StagedFilesFieldValue.class, new StagedFilesFieldValueVisitor());
         logicalPlanVisitorByClass.put(DigestUdf.class, new DigestUdfVisitor());
         logicalPlanVisitorByClass.put(ToArrayFunction.class, new ToArrayFunctionVisitor());
+        logicalPlanVisitorByClass.put(TryCastFunction.class, new TryCastFunctionVisitor());
+        logicalPlanVisitorByClass.put(MetadataFileNameField.class, new MetadataFileNameFieldVisitor());
+        logicalPlanVisitorByClass.put(MetadataRowNumberField.class, new MetadataRowNumberFieldVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
         Map<DataType, Set<DataType>> implicitDataTypeMapping = new HashMap<>();
@@ -188,22 +210,6 @@ public class H2Sink extends AnsiSqlSink
     }
 
     @Override
-    public Optional<Optimizer> optimizerForCaseConversion(CaseConversion caseConversion)
-    {
-        switch (caseConversion)
-        {
-            case TO_LOWER:
-                return Optional.of(new LowerCaseOptimizer());
-            case TO_UPPER:
-                return Optional.of(new UpperCaseOptimizer());
-            case NONE:
-                return Optional.empty();
-            default:
-                throw new IllegalArgumentException("Unrecognized case conversion: " + caseConversion);
-        }
-    }
-
-    @Override
     public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, PlaceholderValue> placeHolderKeyValues)
     {
         executor.executePhysicalPlan(ingestSqlPlan, placeHolderKeyValues);
@@ -235,5 +241,105 @@ public class H2Sink extends AnsiSqlSink
             .build();
 
         return result;
+    }
+
+    public List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount, CaseConversion caseConversion)
+    {
+        try
+        {
+            return performDryRunWithValidationQueries(datasets, transformer, executor, dryRunSqlPlan, dryRunValidationSqlPlan, sampleRowCount, caseConversion);
+        }
+        catch (Exception e)
+        {
+            return parseH2Exceptions(e);
+        }
+    }
+
+    private List<DataError> parseH2Exceptions(Exception e)
+    {
+        String errorMessage = e.getMessage();
+        String errorMessageWithoutLineBreak = ApiUtils.removeLineBreaks(errorMessage);
+
+        if (errorMessage.contains("IO Exception"))
+        {
+            Optional<String> fileName = extractProblematicValueFromErrorMessage(errorMessage);
+            Map<String, Object> errorDetails = buildErrorDetails(fileName, Optional.empty(), Optional.empty());
+            return Collections.singletonList(DataError.builder().errorCategory(ErrorCategory.FILE_NOT_FOUND).errorMessage(ErrorCategory.FILE_NOT_FOUND.getDefaultErrorMessage()).putAllErrorDetails(errorDetails).build());
+        }
+
+        return Collections.singletonList(DataError.builder().errorCategory(ErrorCategory.UNKNOWN).errorMessage(errorMessageWithoutLineBreak).build());
+    }
+
+    public List<DataError> performDryRunWithValidationQueries(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount, CaseConversion caseConversion)
+    {
+        executor.executePhysicalPlan(dryRunSqlPlan);
+
+        int dataErrorsTotalCount = 0;
+        Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory = new HashMap<>();
+        for (ValidationCategory validationCategory : ValidationCategory.values())
+        {
+            dataErrorsByCategory.put(validationCategory, new LinkedList<>());
+        }
+
+        List<String> allFields = datasets.stagingDataset().schemaReference().fieldValues().stream().map(FieldValue::fieldName).collect(Collectors.toList());
+
+        List<Pair<Set<FieldValue>, SqlPlan>> queriesForNull = dryRunValidationSqlPlan.getOrDefault(NULL_VALUE, new ArrayList<>());
+        List<Pair<Set<FieldValue>, SqlPlan>> queriesForDatatype = dryRunValidationSqlPlan.getOrDefault(TYPE_CONVERSION, new ArrayList<>());
+
+        // Execute queries for null values
+        dataErrorsTotalCount += findNullValuesDataErrors(executor, queriesForNull, dataErrorsByCategory, allFields, caseConversion);
+
+        // Execute queries for datatype conversion
+        for (Pair<Set<FieldValue>, SqlPlan> pair : queriesForDatatype)
+        {
+            try
+            {
+                executor.executePhysicalPlanAndGetResults(pair.getTwo());
+            }
+            catch (RuntimeException e)
+            {
+                Optional<String> problematicValue = extractProblematicValueFromErrorMessage(e.getCause().getMessage());
+                if (problematicValue.isPresent())
+                {
+                    // This loop will only be executed once as there is always only one element in the set
+                    for (FieldValue validatedColumn : pair.getOne())
+                    {
+                        List<TabularData> results = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(LogicalPlanFactory.getLogicalPlanForSelectAllFieldsWithStringFieldEquals(validatedColumn, problematicValue.get())), sampleRowCount);
+                        if (!results.isEmpty())
+                        {
+                            List<Map<String, Object>> resultSets = results.get(0).getData();
+                            for (Map<String, Object> row : resultSets)
+                            {
+                                DataError dataError = constructDataError(allFields, row, TYPE_CONVERSION, validatedColumn.fieldName(), caseConversion);
+                                dataErrorsByCategory.get(TYPE_CONVERSION).add(dataError);
+                                dataErrorsTotalCount++;
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+
+        return getDataErrorsWithFairDistributionAcrossCategories(sampleRowCount, dataErrorsTotalCount, dataErrorsByCategory);
+    }
+
+    private Optional<String> extractProblematicValueFromErrorMessage(String errorMessage)
+    {
+        errorMessage = errorMessage.substring(0, errorMessage.indexOf("; SQL statement"));
+        Optional<String> value = Optional.empty();
+        if (errorMessage.contains("Data conversion error"))
+        {
+            value = ApiUtils.findToken(errorMessage, "Data conversion error converting \"(.*)\"", 1);
+        }
+        else if (errorMessage.contains("Cannot parse"))
+        {
+            value = ApiUtils.findToken(errorMessage, "Cannot parse \"(.*)\" constant \"(.*)\"", 2);
+        }
+        else if (errorMessage.contains("IO Exception"))
+        {
+            value = ApiUtils.findToken(errorMessage, "IO Exception: \"IOException reading (.*)\"", 1);
+        }
+        return value;
     }
 }

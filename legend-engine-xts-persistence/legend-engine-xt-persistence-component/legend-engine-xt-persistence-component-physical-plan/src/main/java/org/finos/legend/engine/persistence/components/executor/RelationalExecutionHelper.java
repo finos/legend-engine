@@ -42,6 +42,8 @@ public interface RelationalExecutionHelper
 
     void executeStatements(List<String> sqls);
 
+    List<Map<String, Object>> executeQuery(String sql, int rows);
+
     List<Map<String, Object>> executeQuery(String sql);
 
     void close();

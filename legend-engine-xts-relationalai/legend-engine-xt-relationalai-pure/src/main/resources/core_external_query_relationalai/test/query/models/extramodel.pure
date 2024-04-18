@@ -1,0 +1,18 @@
+import meta::external::store::rel::test::query::models::extramodel::*;
+
+Class  meta::external::store::rel::test::query::models::extramodel::TestRootClass {
+  field1: String[1];
+  field2: TestSuperClass[1..*];
+}
+
+Class meta::external::store::rel::test::query::models::extramodel::TestSuperClass {
+  fieldSuper: Integer[0..1];
+}
+
+Class meta::external::store::rel::test::query::models::extramodel::TestSubClassA extends TestSuperClass {
+  fieldSubA: String[0..1];
+}
+
+Class meta::external::store::rel::test::query::models::extramodel::TestSubClassB extends TestSuperClass {
+  fieldSubB: String[1];
+}

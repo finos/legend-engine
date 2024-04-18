@@ -62,7 +62,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.BIGINT;
@@ -72,31 +71,28 @@ import static org.finos.legend.engine.persistence.components.logicalplan.dataset
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.FLOAT;
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INT;
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INTEGER;
+import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.VARCHAR;
 import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_BULK_LOAD_EVENT_ID;
 import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_FILE_PATHS;
 import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_FILE_PATTERNS;
 import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_STAGING_FILTERS;
+import static org.finos.legend.engine.persistence.components.util.TableNameGenUtils.TEMP_STAGING_DATASET_ALIAS;
+import static org.finos.legend.engine.persistence.components.util.TableNameGenUtils.TEMP_STAGING_DATASET_QUALIFIER;
 
 
 public class LogicalPlanUtils
 {
     public static final String INFINITE_BATCH_TIME = "9999-12-31 23:59:59";
     public static final String DEFAULT_META_TABLE = "batch_metadata";
+    public static final String DEFAULT_SINK_CLEAN_UP_AUDIT_TABLE = "sink_cleanup_audit";
     public static final String DATA_SPLIT_LOWER_BOUND_PLACEHOLDER = "{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}";
     public static final String DATA_SPLIT_UPPER_BOUND_PLACEHOLDER = "{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}";
     public static final String UNDERSCORE = "_";
     public static final String TEMP_DATASET_BASE_NAME = "legend_persistence_temp";
-    public static final String TEMP_STAGING_DATASET_BASE_NAME = "legend_persistence_temp_staging";
     public static final String TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME = "legend_persistence_tempWithDeleteIndicator";
 
     private LogicalPlanUtils()
     {
-    }
-
-    public static String generateTableNameWithSuffix(String tableName, String suffix)
-    {
-        UUID uuid = UUID.randomUUID();
-        return tableName + UNDERSCORE + suffix + UNDERSCORE + uuid;
     }
 
     public static Value INFINITE_BATCH_ID()
@@ -408,17 +404,33 @@ public class LogicalPlanUtils
         int iter = 1;
         for (Field field : dataset.schema().fields())
         {
-            StagedFilesFieldValue fieldValue = StagedFilesFieldValue.builder()
-                    .columnNumber(columnNumbersPresent ? field.columnNumber().get() : iter++)
-                    .datasetRefAlias(dataset.datasetReference().alias())
-                    .alias(field.fieldAlias().isPresent() ? field.fieldAlias().get() : field.name())
-                    .elementPath(field.elementPath())
-                    .fieldType(field.type())
-                    .fieldName(field.name())
-                    .build();
-            stagedFilesFields.add(fieldValue);
+            stagedFilesFields.add(getStagedFilesFieldValueWithType(dataset, field, field.type(), columnNumbersPresent, iter++));
         }
         return stagedFilesFields;
+    }
+
+    public static List<Value> extractStagedFilesFieldValuesWithVarCharType(Dataset dataset)
+    {
+        List<Value> stagedFilesFields = new ArrayList<>();
+        boolean columnNumbersPresent = dataset.schema().fields().stream().allMatch(field -> field.columnNumber().isPresent());
+        int iter = 1;
+        for (Field field : dataset.schema().fields())
+        {
+            stagedFilesFields.add(getStagedFilesFieldValueWithType(dataset, field, FieldType.builder().dataType(VARCHAR).build(), columnNumbersPresent, iter++));
+        }
+        return stagedFilesFields;
+    }
+
+    public static StagedFilesFieldValue getStagedFilesFieldValueWithType(Dataset dataset, Field field, FieldType fieldType, boolean columnNumbersPresent, int counter)
+    {
+        return StagedFilesFieldValue.builder()
+            .columnNumber(columnNumbersPresent ? field.columnNumber().get() : counter)
+            .datasetRefAlias(dataset.datasetReference().alias())
+            .alias(field.fieldAlias().isPresent() ? field.fieldAlias().get() : field.name())
+            .elementPath(field.elementPath())
+            .fieldType(fieldType)
+            .fieldName(field.name())
+            .build();
     }
 
     public static Dataset getTempDataset(Datasets datasets)
@@ -455,10 +467,10 @@ public class LogicalPlanUtils
         }
     }
 
-    public static Dataset getTempStagingDatasetDefinition(Dataset stagingDataset, IngestMode ingestMode)
+    public static Dataset getTempStagingDatasetDefinition(Dataset stagingDataset, IngestMode ingestMode, String ingestRunId)
     {
-        String alias = stagingDataset.datasetReference().alias().orElse(TEMP_STAGING_DATASET_BASE_NAME);
-        String datasetName = stagingDataset.datasetReference().name().orElseThrow(IllegalStateException::new) + UNDERSCORE + TEMP_STAGING_DATASET_BASE_NAME;
+        String alias = stagingDataset.datasetReference().alias().orElse(TEMP_STAGING_DATASET_ALIAS);
+        String datasetName = TableNameGenUtils.generateTableName(stagingDataset.datasetReference().name().orElseThrow(IllegalStateException::new), TEMP_STAGING_DATASET_QUALIFIER, ingestRunId);
         SchemaDefinition tempStagingSchema = ingestMode.versioningStrategy().accept(new DeriveTempStagingSchemaDefinition(stagingDataset.schema(), ingestMode.deduplicationStrategy()));
         return DatasetDefinition.builder()
                 .schema(tempStagingSchema)

@@ -22,6 +22,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.manag
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreState;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionArtifact;
 import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionContent;
 import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionDeploymentConfiguration;
@@ -56,6 +57,12 @@ public class MemSqlFunctionDeploymentManager implements DeploymentManager<MemSql
     public boolean canDeploy(FunctionActivatorArtifact activatorArtifact)
     {
         return activatorArtifact instanceof MemSqlFunctionArtifact;
+    }
+
+    @Override
+    public List<MemSqlFunctionDeploymentConfiguration> selectConfig(List<FunctionActivatorDeploymentConfiguration> availableConfigs)
+    {
+        return Lists.mutable.withAll(availableConfigs).select(e -> e instanceof MemSqlFunctionDeploymentConfiguration).collect(e -> (MemSqlFunctionDeploymentConfiguration) e);
     }
 
     @Override

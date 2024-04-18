@@ -59,6 +59,7 @@
         {
           "_type": "dataSpaceTemplateExecutable",
           "title": "Template 1",
+          "id": "1",
           "description": "description",
           "query": {
             "_type": "lambda",

@@ -18,16 +18,16 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-analytics</artifactId>
-        <version>4.40.2-SNAPSHOT</version>
+        <version>4.43.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-xts-analytics-class</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - XTS - Analytics</name>
+    <name>Legend Engine - XTS - Analytics - Class</name>
 
     <modules>
         <module>legend-engine-xt-analytics-class-pure</module>
-        <module>legend-engine-xt-analytics-class-api</module>
+        <module>legend-engine-xt-analytics-class-http-api</module>
     </modules>
 </project>

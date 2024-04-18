@@ -109,12 +109,29 @@ Mapping flatten::mapping::H2Mapping
   }
 )
 
+Mapping flatten::mapping::H2ParseJsonMapping
+(
+  flatten::model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [flatten::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [flatten::store::H2DB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [flatten::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [flatten::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    firm: Binding flatten::store::FirmBinding : parseJson([flatten::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS),
+    manager[flatten_model_Person]: [flatten::store::H2DB]@manager
+  }
+)
+
 ###Runtime
 Runtime flatten::runtime::H2Runtime
 {
     mappings :
     [
-        flatten::mapping::H2Mapping
+        flatten::mapping::H2Mapping,
+        flatten::mapping::H2ParseJsonMapping
     ];
     connections :
     [
@@ -294,5 +311,17 @@ function flatten::semiStructuredMultiFlatten(): TabularDataSet[1]
         col(x | $x.firm.addresses.name, 'Firm Address Name'),
         col(x | $x.firm.addresses->subType(@flatten::model::AddressWithLines).lines->at(0).lineno, 'Firm Address Line 0 No'),
         col(x | $x.firm.otherNames, 'Firm Other Name')
+    ])
+}
+
+function flatten::semiStructuredMultiLevelFlattenMerging(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.addresses.name, 'Firm Address Name'),
+        col(x | $x.firm.addresses->subType(@flatten::model::AddressWithLines).lines.lineno, 'Firm Address Line No'),
+        col(x | $x.firm.addresses->subType(@flatten::model::AddressWithLines).lines->subType(@flatten::model::StreetAddressLine).street, 'Firm Address Street'),
+        col(x | $x.firm.addresses->subType(@flatten::model::AddressWithLines).lines->subType(@flatten::model::CityAddressLine).city, 'Firm Address City')
     ])
 }

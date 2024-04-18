@@ -82,10 +82,20 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                                                                   sourceDataType = if($p.second.relationalType->isNotEmpty(),
                                                                                       | $p.second.relationalType,
                                                                                       | $p.second.propertyMapping->match([
-                                                                                          rpm: RelationalPropertyMapping[0..1] | $rpm->getRelationalTypeFromRelationalPropertyMapping($p.first),
-                                                                                          cpm: meta::pure::router::clustering::CrossSetImplementationPrimtivePropertyMapping[0..1] | $cpm.sourcePropertyMapping->match([rpm: RelationalPropertyMapping[0..1] | $rpm->getRelationalTypeFromRelationalPropertyMapping($p.first), pm: PropertyMapping[0..1] | []]),
-                                                                                          pm: PropertyMapping[0..1] | []
-                                                                                        ]))
+                                                                                          rpm0: RelationalPropertyMapping[0] | meta::relational::mapping::inferSourceDataType($p.second.type->toOne()),
+                                                                                          rpm1: RelationalPropertyMapping[1] | 
+                                                                                                                                let relationalType = $rpm1->meta::relational::mapping::getRelationalTypeFromRelationalPropertyMapping($p.first);
+                                                                                                                                if ($relationalType->isEmpty(), | meta::relational::mapping::inferSourceDataType($p.second.type->toOne()), | $relationalType);,
+                                                                                          cpm: meta::pure::router::clustering::CrossSetImplementationPrimtivePropertyMapping[0..1] | $cpm.sourcePropertyMapping->match([
+                                                                                                                                    rpm0: RelationalPropertyMapping[0] | meta::relational::mapping::inferSourceDataType($p.second.type->toOne()),
+                                                                                                                                    rpm1: RelationalPropertyMapping[1] | 
+                                                                                                                                                                          let relationalType = $rpm1->meta::relational::mapping::getRelationalTypeFromRelationalPropertyMapping($p.first);
+                                                                                                                                                                          if ($relationalType->isEmpty(), | meta::relational::mapping::inferSourceDataType($p.second.type->toOne()), | $relationalType);,
+                                                                                                                                    pm: PropertyMapping[0..1] | []]
+                                                                                                                                  ),
+                                                                                          pm: PropertyMapping[0..1] | [];
+                                                                                        ])
+                                                                                      )
                                                                 );
                                                           )
                                   );
@@ -145,14 +155,9 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
    ]);
 }
 
-function <<access.private>> meta::relational::mapping::getRelationalTypeFromRelationalPropertyMapping(r:RelationalPropertyMapping[0..1], propertyName:String[1]):meta::relational::metamodel::datatype::DataType[0..1]
+function <<access.private>> meta::relational::mapping::getRelationalTypeFromRelationalPropertyMapping(r:RelationalPropertyMapping[1], propertyName:String[1]):meta::relational::metamodel::datatype::DataType[0..1]
 {
-
-   if($r->isEmpty(),
-      | [] //TO FIX: support all existing tests  before introducing a fail  fail( 'Unsupported plan execution - check that you are setting Path Types - no type found for column '+$propertyName  );,
-     ,| $r->toOne().relationalOperationElement->inferRelationalType(false);
-     )->cast(@meta::relational::metamodel::datatype::DataType);
-
+  $r->toOne().relationalOperationElement->inferRelationalType(false)->cast(@meta::relational::metamodel::datatype::DataType)
 }
 
 function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], connection:DatabaseConnection[1], enumMapSupportFunctions:String[*], extensions:Extension[*]):ExecutionNode[1]
@@ -739,3 +744,25 @@ function meta::relational::mapping::getPropertyTargetSetImplementation(sourceSet
    ]);
 }
 
+function meta::relational::mapping::pureTypeToRelationalTypeMap(): Map<Type, meta::relational::metamodel::datatype::DataType>[1]
+{
+  meta::relational::transform::fromPure::pureTypeToDataTypeMap()
+    ->put(String, ^meta::relational::metamodel::datatype::Varchar(size = 65536))
+    ->put(Integer, ^meta::relational::metamodel::datatype::BigInt())
+}
+
+function meta::relational::mapping::inferSourceDataType(type: Any[1]): meta::relational::metamodel::datatype::DataType[0..1]
+{
+  if ($type->instanceOf(PrimitiveType),
+    | 
+      let inferedSourceDataType = meta::relational::mapping::pureTypeToRelationalTypeMap()->get($type);
+      if (
+        $inferedSourceDataType->isEmpty(),
+          | [],
+          | $inferedSourceDataType->cast(@meta::relational::metamodel::datatype::DataType)->toOne());,
+      | if ($type->instanceOf(EnumerationMapping),
+        | meta::relational::mapping::pureTypeToRelationalTypeMap()->get(String)->cast(@meta::relational::metamodel::datatype::DataType)->toOne(),
+        | []
+      )
+    );
+}

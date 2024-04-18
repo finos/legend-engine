@@ -132,7 +132,7 @@ function meta::analytics::lineage::flow::merge(flows:Flow[*]):Flow[1]
       functions = $flows.functions->removeDuplicates(),
       databases = $flows.databases->removeDuplicates(),
       tables = $flows.tables->removeDuplicates(),
-      systems = $flows.systems->removeDuplicates({a,b|$a.appId == $b.appId}),
+      systems = $flows.systems->removeDuplicatesBy(a | $a.appId),
       packages = $flows.packages->removeDuplicates(),
       classes = $flows.classes->removeDuplicates(),
       properties = $flows.properties->removeDuplicates(),

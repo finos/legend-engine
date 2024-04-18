@@ -150,10 +150,10 @@ public class LegendTdsResultParser
                     value = null;
                     break;
                 case VALUE_NUMBER_INT:
-                    value = parser.getIntValue();
+                    value = parser.getLongValue();
                     break;
                 case VALUE_NUMBER_FLOAT:
-                    value = parser.getFloatValue();
+                    value = parser.getDoubleValue();
                     break;
                 case VALUE_TRUE:
                     value = parser.getBooleanValue();

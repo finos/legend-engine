@@ -47,7 +47,7 @@ function <<access.private>>  meta::external::function::activator::snowflakeApp::
 {
   [
   pair(Integer, 'number'),
-  pair(Float, 'number'),
+  pair(Float, 'FLOAT'),
   pair(Number, 'number'),
   pair(String, 'VARCHAR'),
   pair(Date, 'date'),

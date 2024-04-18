@@ -129,17 +129,20 @@ public class JdbcHelper implements RelationalExecutionHelper
     @Override
     public void closeTransactionManager()
     {
-        try
+        if (this.transactionManager != null)
         {
-            this.transactionManager.close();
-        }
-        catch (SQLException e)
-        {
-            throw new RuntimeException(e);
-        }
-        finally
-        {
-            this.transactionManager = null;
+            try
+            {
+                this.transactionManager.close();
+            }
+            catch (SQLException e)
+            {
+                throw new RuntimeException(e);
+            }
+            finally
+            {
+                this.transactionManager = null;
+            }
         }
     }
 
@@ -263,7 +266,7 @@ public class JdbcHelper implements RelationalExecutionHelper
         String databaseName = dataset.datasetReference().database().orElse(null);
         try
         {
-            if (!(typeMapping instanceof  JdbcPropertiesToLogicalDataTypeMapping))
+            if (!(typeMapping instanceof JdbcPropertiesToLogicalDataTypeMapping))
             {
                 throw new IllegalStateException("Only JdbcPropertiesToLogicalDataTypeMapping allowed in constructDatasetFromDatabase");
             }
@@ -452,6 +455,42 @@ public class JdbcHelper implements RelationalExecutionHelper
                     }
                 }
                 throw new RuntimeException(e);
+            }
+            finally
+            {
+                if (txManager != null)
+                {
+                    try
+                    {
+                        txManager.close();
+                    }
+                    catch (SQLException e)
+                    {
+                        LOGGER.error("Error closing transaction manager.", e);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public List<Map<String, Object>> executeQuery(String sql, int rows)
+    {
+        if (this.transactionManager != null)
+        {
+            return this.transactionManager.convertResultSetToList(sql, rows);
+        }
+        else
+        {
+            JdbcTransactionManager txManager = null;
+            try
+            {
+                txManager = new JdbcTransactionManager(connection);
+                return txManager.convertResultSetToList(sql, rows);
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException("Error executing SQL query: " + sql, e);
             }
             finally
             {

@@ -26,6 +26,7 @@ import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunc
 import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionDeploymentConfiguration;
 import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionDeploymentResult;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_bigQueryFunction_BigQueryFunctionDeploymentConfiguration;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification;
@@ -40,6 +41,11 @@ import java.util.List;
 public class BigQueryFunctionDeploymentManager implements DeploymentManager<BigQueryFunctionArtifact, BigQueryFunctionDeploymentResult, BigQueryFunctionDeploymentConfiguration>
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryFunctionDeploymentManager.class);
+
+    public List<BigQueryFunctionDeploymentConfiguration> selectConfig(List<FunctionActivatorDeploymentConfiguration> availableConfigs)
+    {
+        return Lists.mutable.withAll(availableConfigs).selectInstancesOf(BigQueryFunctionDeploymentConfiguration.class);
+    }
 
     @Override
     public boolean canDeploy(FunctionActivatorArtifact activatorArtifact)

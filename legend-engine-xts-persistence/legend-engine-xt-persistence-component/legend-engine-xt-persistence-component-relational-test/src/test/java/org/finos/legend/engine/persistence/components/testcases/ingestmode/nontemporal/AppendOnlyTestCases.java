@@ -81,6 +81,7 @@ public abstract class AppendOnlyTestCases extends BaseTest
                 .relationalSink(getRelationalSink())
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
+                .ingestRunId(ingestRunId)
                 .build();
         List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
         verifyAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecords(operations, dataSplitRangesOneToTwo);
@@ -98,6 +99,7 @@ public abstract class AppendOnlyTestCases extends BaseTest
                 .cleanupStagingData(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
+                .ingestRunId(ingestRunId)
                 .build();
 
         GeneratorResult queries = generator.generateOperations(scenario.getDatasets());
@@ -135,6 +137,7 @@ public abstract class AppendOnlyTestCases extends BaseTest
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
+                .ingestRunId(ingestRunId)
                 .build();
 
         List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
@@ -152,6 +155,7 @@ public abstract class AppendOnlyTestCases extends BaseTest
             .relationalSink(getRelationalSink())
             .caseConversion(CaseConversion.TO_UPPER)
             .executionTimestampClock(fixedClock_2000_01_01)
+            .ingestRunId(ingestRunId)
             .build();
 
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
@@ -171,6 +175,7 @@ public abstract class AppendOnlyTestCases extends BaseTest
             .ingestMode(scenario.getIngestMode())
             .relationalSink(getRelationalSink())
             .executionTimestampClock(fixedClock_2000_01_01)
+            .ingestRunId(ingestRunId)
             .build();
 
         GeneratorResult operations = generator.generateOperations(datasets);
@@ -188,6 +193,7 @@ public abstract class AppendOnlyTestCases extends BaseTest
             .relationalSink(getRelationalSink())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
+            .ingestRunId(ingestRunId)
             .build();
 
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
@@ -205,6 +211,7 @@ public abstract class AppendOnlyTestCases extends BaseTest
             .relationalSink(getRelationalSink())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
+            .ingestRunId(ingestRunId)
             .build();
 
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
@@ -276,6 +283,7 @@ public abstract class AppendOnlyTestCases extends BaseTest
             .relationalSink(getRelationalSink())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
+            .ingestRunId(ingestRunId)
             .build();
 
         List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
@@ -283,6 +291,24 @@ public abstract class AppendOnlyTestCases extends BaseTest
     }
 
     public abstract void verifyAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecordsUdfDigestGeneration(List<GeneratorResult> generatorResults, List<DataSplitRange> dataSplitRanges);
+
+    @Test
+    public void testAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecordsUdfDigestGenerationTypeConversionUdf()
+    {
+        TestScenario scenario = scenarios.WITH_AUDITING__FAIL_ON_DUPS__ALL_VERSION__NO_FILTER_EXISTING_RECORDS__UDF_DIGEST_GENERATION__TYPE_CONVERSION_UDF();
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(scenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .ingestRunId(ingestRunId)
+            .build();
+
+        List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
+        verifyAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecordsUdfDigestGenerationTypeConversionUdf(operations, dataSplitRangesOneToTwo);
+    }
+
+    public abstract void verifyAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecordsUdfDigestGenerationTypeConversionUdf(List<GeneratorResult> generatorResults, List<DataSplitRange> dataSplitRanges);
 
     public abstract RelationalSink getRelationalSink();
 }

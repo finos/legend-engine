@@ -785,15 +785,18 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  executables:\n" +
                 "  [\n" +
                 "    {\n" +
+                "      id: 1;\n" +
                 "      title: 'Template 1';\n" +
                 "      query: src: model::sub::element[1]|$src;\n" +
                 "      executionContextKey: 'Context 1';\n" +
                 "    },\n" +
                 "    {\n" +
+                "      id: 2;\n" +
                 "      title: 'Template 2';\n" +
                 "      query: src: model::sub::element[1]|$src;\n" +
                 "    },\n" +
                 "    {\n" +
+                "      id: 3;\n" +
                 "      title: 'Template 3';\n" +
                 "      description: 'an example of a template query';\n" +
                 "      query: src: model::sub::element[1]|$src;\n" +
@@ -836,16 +839,18 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  executables:\n" +
                 "  [\n" +
                 "    {\n" +
+                "      id: 1;\n" +
                 "      title: 'Template 1';\n" +
                 "      query: src: model::sub::element[1]|$src;\n" +
                 "      executionContextKey: 'Context 1';\n" +
                 "    },\n" +
                 "    {\n" +
+                "      id: 2;\n" +
                 "      title: 'Template 2';\n" +
                 "      query: src: model::sub::element[1]|$srssc;\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION error at [41:42-47]: Can't find variable class for variable 'srssc' in the graph");
+                "}\n", "COMPILATION error at [43:42-47]: Can't find variable class for variable 'srssc' in the graph");
 
         test("Class model::element {}\n" +
                 "Class model::sub::element {}\n" +
@@ -882,16 +887,18 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  executables:\n" +
                 "  [\n" +
                 "    {\n" +
+                "      id: 1;\n" +
                 "      title: 'Template 1';\n" +
                 "      query: src: model::sub::element[1]|$src;\n" +
                 "      executionContextKey: 'Context 1';\n" +
                 "    },\n" +
                 "    {\n" +
+                "      id: 1;\n" +
                 "      title: 'Template 1';\n" +
                 "      query: src: model::sub::element[1]|$srssc;\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION error at [20:1-44:1]: Data space executable title, Template 1, is not unique");
+                "}\n", "COMPILATION error at [20:1-46:1]: Data space executable id, 1, is not unique");
 
         test("Class model::element {}\n" +
                 "Class model::sub::element {}\n" +
@@ -928,16 +935,18 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  executables:\n" +
                 "  [\n" +
                 "    {\n" +
+                "      id: 1;\n" +
                 "      title: 'Template 1';\n" +
                 "      query: src: model::sub::element[1]|$src;\n" +
                 "      executionContextKey: 'random 1';\n" +
                 "    },\n" +
                 "    {\n" +
+                "      id: 2;\n" +
                 "      title: 'Template 2';\n" +
                 "      query: src: model::sub::element[1]|$srssc;\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION error at [20:1-44:1]: Data space template executable's executionContextKey, random 1, is not valid. Please specify one from [Context 1]");
+                "}\n", "COMPILATION error at [20:1-46:1]: Data space template executable's executionContextKey, random 1, is not valid. Please specify one from [Context 1]");
     }
 
     @Test

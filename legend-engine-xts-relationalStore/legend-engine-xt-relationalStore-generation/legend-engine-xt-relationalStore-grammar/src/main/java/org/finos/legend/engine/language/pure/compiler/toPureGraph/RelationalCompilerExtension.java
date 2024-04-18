@@ -114,9 +114,9 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.RelationalOperationElement;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAlias;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasAccessor;
-import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.DataType;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.*;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Double;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Integer;
-import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Varchar;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.NamedRelation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Relation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
@@ -684,12 +684,15 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         {
             if (store instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database)
             {
-                Assert.assertTrue(accessor.path.size() > 1, () -> "Please provide a table");
+                if (accessor.path.size() <= 1)
+                {
+                    throw new EngineException("Error in the accessor definition. Please provide a table.", accessor.sourceInformation, EngineErrorType.COMPILATION);
+                }
                 org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database ds = (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database) store;
                 org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Schema schema = ds._schemas().getFirst();
                 if (schema == null)
                 {
-                    throw new EngineException("The database " + store._name() + " has not schemas", accessor.sourceInformation, EngineErrorType.COMPILATION);
+                    throw new EngineException("The database " + store._name() + " has no schemas", accessor.sourceInformation, EngineErrorType.COMPILATION);
                 }
                 Table table = schema._tables().select(c -> c.getName().equals(accessor.path.get(1))).getFirst();
                 if (table == null)
@@ -733,9 +736,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
 
 
             }
-
-
-            return (ValueSpecification) null;
+            return null;
         });
     }
 
@@ -749,6 +750,18 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         else if (c instanceof Integer)
         {
             primitiveType = "Integer";
+        }
+        else if (c instanceof BigInt)
+        {
+            primitiveType = "Integer";
+        }
+        else if (c instanceof Bit)
+        {
+            primitiveType = "Boolean";
+        }
+        else if (c instanceof Double)
+        {
+            primitiveType = "Float";
         }
         else
         {

@@ -1,0 +1,47 @@
+import meta::external::store::rel::test::query::*;
+import meta::external::store::rel::test::query::util::*;
+import meta::external::store::rel::mapping::*;
+import meta::external::store::rel::mapping::schema::*;
+import meta::external::store::rel::metamodel::store::*;
+import meta::external::store::rel::runtime::*;
+import meta::external::store::rel::test::query::models::extramodel::*;
+import meta::external::store::rel::utils::assert::*;
+
+function <<test.Test>> meta::external::store::rel::test::query::extra::testProjectMatch(): Any[*] {
+  /*
+   * Here we include the same class twice to ensure that `includeSingleClass` is idempotent.
+   */
+  let schema =
+    RAITestSchema()
+      ->includeSingleClass(TestRootClass)
+      ->includeSingleClass(TestSubClassA)
+      ->includeSingleClass(TestSubClassB)
+      ->includeSingleClass(TestSubClassA);
+
+  let rai = $schema->TestConnection();
+
+  assertEqualRel(
+    [
+      'def tbl1[:base] = x from x in TestRootClass',
+      'def tbl1[:TestCol1, x] = tbl1(:base, x), TestRootClass:field1[x]',
+      'def tbl1[:TestCol2, x] = tbl1(:base, x), exists(x1: x1 = TestRootClass:field2[x][0] and (if TestSubClassA(x1) then TestSubClassA:fieldSubA[x1] else if TestSubClassB(x1) then TestSubClassB:fieldSubB[x1] else false end end))',
+      'def output = tbl1[:TestCol1, i], tbl1[:TestCol2, i] from i'
+    ],
+    $rai
+      ->query(|
+        TestRootClass.all()->project([
+          x | $x.field1,
+          x | $x.field2->at(0)->match([
+            f: TestSubClassA[1] |
+              $f.fieldSubA,
+            f: TestSubClassB[1] |
+              $f.fieldSubB
+            ])
+          ],
+          ['TestCol1','TestCol2']
+        )
+      )
+      ->rel()
+  );
+
+}

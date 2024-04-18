@@ -71,4 +71,10 @@ public interface ExternalDatasetAbstract extends Dataset
                 .collect(Collectors.toList()))
             .build();
     }
+
+    @Value.Derived
+    default SchemaDefinition schema()
+    {
+        return stagedFilesDataset().schema();
+    }
 }

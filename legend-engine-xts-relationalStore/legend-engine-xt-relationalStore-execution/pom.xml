@@ -18,23 +18,39 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-relationalStore</artifactId>
-        <version>4.40.2-SNAPSHOT</version>
+        <version>4.43.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-xt-relationalStore-execution</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - XT - Relational Store - Execution Plan</name>
+    <name>Legend Engine - XT - Relational Store - Execution</name>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>executionEnforcement</id>
+                        <configuration>
+                            <skip>false</skip>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
     <modules>
         <module>legend-engine-xt-relationalStore-executionPlan</module>
+        <module>legend-engine-xt-relationalStore-executionPlan-http-api</module>
         <module>legend-engine-xt-relationalStore-executionPlan-authorizer</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection</module>
-        <module>legend-engine-xt-relationalStore-executionPlan-connection-api</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection-authentication</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection-authentication-default</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection-tests</module>
-
         <module>legend-engine-xt-relationalStore-h2-1.4.200-execution</module>
     </modules>
 </project>

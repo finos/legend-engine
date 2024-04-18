@@ -58,9 +58,8 @@ public class LegendResultSetMetaData implements PostgresResultSetMetaData
             case DATE_TIME:
                 return Types.TIMESTAMP;
             case INTEGER:
-                return Types.INTEGER;
+                return Types.BIGINT;
             case FLOAT:
-                return Types.FLOAT;
             case NUMBER:
                 return Types.DOUBLE;
             case BOOLEAN:

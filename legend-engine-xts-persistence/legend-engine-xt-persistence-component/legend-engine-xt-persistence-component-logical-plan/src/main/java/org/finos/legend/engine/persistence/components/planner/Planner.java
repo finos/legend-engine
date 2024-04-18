@@ -18,9 +18,11 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType;
 import org.finos.legend.engine.persistence.components.common.Resources;
-import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitor;
@@ -32,6 +34,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.*;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThan;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
@@ -43,6 +47,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.*;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
@@ -52,6 +57,7 @@ import org.finos.legend.engine.persistence.components.util.LockInfoUtils;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataUtils;
+import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,6 +66,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.UUID;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.INCOMING_RECORD_COUNT;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_DELETED;
@@ -124,6 +131,18 @@ public abstract class Planner
         {
             return MetadataUtils.MetaTableStatus.DONE.toString();
         }
+
+        @Default
+        default int sampleRowCount()
+        {
+            return 20;
+        }
+
+        @Default
+        default String ingestRunId()
+        {
+            return UUID.randomUUID().toString();
+        }
     }
 
     private final Datasets datasets;
@@ -172,7 +191,7 @@ public abstract class Planner
         Optional<Dataset> tempStagingDataset = Optional.empty();
         if (isTempTableNeededForStaging)
         {
-            tempStagingDataset = Optional.of(LogicalPlanUtils.getTempStagingDatasetDefinition(originalStagingDataset(), ingestMode));
+            tempStagingDataset = Optional.of(LogicalPlanUtils.getTempStagingDatasetDefinition(originalStagingDataset(), ingestMode, options().ingestRunId()));
         }
         return tempStagingDataset;
     }
@@ -218,6 +237,29 @@ public abstract class Planner
         return tempStagingDatasetWithoutPks.orElseThrow(IllegalStateException::new);
     }
 
+    protected Pair<List<Value>, List<DataType>> getDataFieldsWithTypes()
+    {
+        List<Value> dataFields = new ArrayList<>();
+        List<DataType> fieldTypes = new ArrayList<>();
+
+        Optional<String> dedupField = ingestMode.deduplicationStrategy().accept(DeduplicationVisitors.EXTRACT_DEDUP_FIELD);
+        Optional<String> dataSplitField = ingestMode.dataSplitField();
+
+        for (int i = 0; i < stagingDataset().schemaReference().fieldValues().size(); i++)
+        {
+            FieldValue fieldValue = stagingDataset().schemaReference().fieldValues().get(i);
+            if ((dedupField.isPresent() && dedupField.get().equalsIgnoreCase(fieldValue.fieldName())) ||
+                (dataSplitField.isPresent() && dataSplitField.get().equalsIgnoreCase(fieldValue.fieldName())))
+            {
+                continue;
+            }
+            dataFields.add(fieldValue);
+            fieldTypes.add(stagingDataset().schema().fields().get(i).type().dataType());
+        }
+
+        return Tuples.pair(dataFields, fieldTypes);
+    }
+
     protected List<Value> getDataFields()
     {
         List<Value> dataFields = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
@@ -255,6 +297,26 @@ public abstract class Planner
     }
 
     public abstract LogicalPlan buildLogicalPlanForIngest(Resources resources);
+
+    public LogicalPlan buildLogicalPlanForDryRun(Resources resources)
+    {
+        return LogicalPlan.of(Collections.emptyList());
+    }
+
+    public Map<ValidationCategory, List<Pair<Set<FieldValue>, LogicalPlan>>> buildLogicalPlanForDryRunValidation(Resources resources)
+    {
+        return Collections.emptyMap();
+    }
+
+    public LogicalPlan buildLogicalPlanForDryRunPreActions(Resources resources)
+    {
+        return LogicalPlan.of(Collections.emptyList());
+    }
+
+    public LogicalPlan buildLogicalPlanForDryRunPostCleanup(Resources resources)
+    {
+        return LogicalPlan.of(Collections.emptyList());
+    }
 
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {
@@ -380,41 +442,65 @@ public abstract class Planner
         return postRunStatisticsResult;
     }
 
-    public Map<DedupAndVersionErrorStatistics, LogicalPlan> buildLogicalPlanForDeduplicationAndVersioningErrorChecks(Resources resources)
+    public Map<DedupAndVersionErrorSqlType, LogicalPlan> buildLogicalPlanForDeduplicationAndVersioningErrorChecks(Resources resources)
     {
-        Map<DedupAndVersionErrorStatistics, LogicalPlan> dedupAndVersioningErrorChecks = new HashMap<>();
+        Map<DedupAndVersionErrorSqlType, LogicalPlan> dedupAndVersioningErrorChecks = new HashMap<>();
         addMaxDuplicatesErrorCheck(dedupAndVersioningErrorChecks);
         addDataErrorCheck(dedupAndVersioningErrorChecks);
         return dedupAndVersioningErrorChecks;
     }
 
-    protected void addMaxDuplicatesErrorCheck(Map<DedupAndVersionErrorStatistics, LogicalPlan> dedupAndVersioningErrorChecks)
+    protected void addMaxDuplicatesErrorCheck(Map<DedupAndVersionErrorSqlType, LogicalPlan> dedupAndVersioningErrorChecks)
     {
         if (ingestMode.deduplicationStrategy() instanceof FailOnDuplicates)
         {
+            FieldValue count = FieldValue.builder().datasetRef(tempStagingDataset().datasetReference()).fieldName(COUNT).build();
             FunctionImpl maxCount = FunctionImpl.builder()
                     .functionName(FunctionName.MAX)
-                    .addValue(FieldValue.builder().datasetRef(tempStagingDataset().datasetReference()).fieldName(COUNT).build())
-                    .alias(DedupAndVersionErrorStatistics.MAX_DUPLICATES.name())
+                    .addValue(count)
+                    .alias(DedupAndVersionErrorSqlType.MAX_DUPLICATES.name())
                     .build();
             Selection selectMaxDupsCount = Selection.builder()
                     .source(tempStagingDataset())
                     .addFields(maxCount)
                     .build();
             LogicalPlan maxDuplicatesCountPlan = LogicalPlan.builder().addOps(selectMaxDupsCount).build();
-            dedupAndVersioningErrorChecks.put(DedupAndVersionErrorStatistics.MAX_DUPLICATES, maxDuplicatesCountPlan);
+            dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.MAX_DUPLICATES, maxDuplicatesCountPlan);
+
+            /*
+            select pks from tempStagingDataset where COUNT > 1
+            */
+            List<FieldValue> rowsToSelect = this.primaryKeys.stream().map(field -> FieldValue.builder().fieldName(field).build()).collect(Collectors.toList());
+            if (rowsToSelect.size() > 0)
+            {
+                rowsToSelect.add(FieldValue.builder().fieldName(COUNT).build());
+                Selection selectDuplicatesRows = Selection.builder()
+                        .source(tempStagingDataset())
+                        .addAllFields(rowsToSelect)
+                        .condition(GreaterThan.of(count, ObjectValue.of(1)))
+                        .limit(options().sampleRowCount())
+                        .build();
+                LogicalPlan selectDuplicatesRowsPlan = LogicalPlan.builder().addOps(selectDuplicatesRows).build();
+                dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.DUPLICATE_ROWS, selectDuplicatesRowsPlan);
+            }
         }
     }
 
-    protected void addDataErrorCheck(Map<DedupAndVersionErrorStatistics, LogicalPlan> dedupAndVersioningErrorChecks)
+    protected void addDataErrorCheck(Map<DedupAndVersionErrorSqlType, LogicalPlan> dedupAndVersioningErrorChecks)
     {
         List<String> remainingColumns = getDigestOrRemainingColumns();
         if (ingestMode.versioningStrategy().accept(VersioningVisitors.IS_TEMP_TABLE_NEEDED))
         {
-            LogicalPlan logicalPlan = ingestMode.versioningStrategy().accept(new DeriveDataErrorCheckLogicalPlan(primaryKeys, remainingColumns, tempStagingDataset()));
-            if (logicalPlan != null)
+            LogicalPlan logicalPlanForDataErrorCheck = ingestMode.versioningStrategy().accept(new DeriveMaxDataErrorLogicalPlan(primaryKeys, remainingColumns, tempStagingDataset()));
+            if (logicalPlanForDataErrorCheck != null)
             {
-                dedupAndVersioningErrorChecks.put(DedupAndVersionErrorStatistics.MAX_DATA_ERRORS, logicalPlan);
+                dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.MAX_DATA_ERRORS, logicalPlanForDataErrorCheck);
+            }
+
+            LogicalPlan logicalPlanForDataErrors = ingestMode.versioningStrategy().accept(new DeriveDataErrorRowsLogicalPlan(primaryKeys, remainingColumns, tempStagingDataset(), options().sampleRowCount()));
+            if (logicalPlanForDataErrors != null)
+            {
+                dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.DATA_ERROR_ROWS, logicalPlanForDataErrors);
             }
         }
     }

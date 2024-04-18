@@ -164,39 +164,39 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                     }
 
                     // executables
-                    HashSet<String> executableTitles = new HashSet<>();
+                    HashSet<String> executableIds = new HashSet<>();
                     metamodel._executables(dataSpace.executables != null ? ListIterate.collect(dataSpace.executables, executable ->
                     {
-                        if (executableTitles.add(executable.title))
+                        if (executable instanceof DataSpacePackageableElementExecutable)
                         {
-                            if (executable instanceof DataSpacePackageableElementExecutable)
+                            return new Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpacePackageableElementExecutable"))
+                                    ._title(executable.title)
+                                    ._description(executable.description)
+                                    ._executable(context.pureModel.getPackageableElement(((DataSpacePackageableElementExecutable) executable).executable.path, ((DataSpacePackageableElementExecutable) executable).executable.sourceInformation));
+                        }
+                        else if (executable instanceof DataSpaceTemplateExecutable)
+                        {
+                            if (executableIds.add(((DataSpaceTemplateExecutable) executable).id))
                             {
-                                return new Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpacePackageableElementExecutable"))
+                                if (((DataSpaceTemplateExecutable) executable).executionContextKey != null && !dataSpace.executionContexts.stream().map(c -> c.name).collect(Collectors.toList()).contains(((DataSpaceTemplateExecutable) executable).executionContextKey))
+                                {
+                                    throw new EngineException("Data space template executable's executionContextKey, " + ((DataSpaceTemplateExecutable) executable).executionContextKey + ", is not valid. Please specify one from " + dataSpace.executionContexts.stream().map(c -> c.name).collect(Collectors.toList()).toString(), dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                                }
+                                return new Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceTemplateExecutable"))
+                                        ._id(((DataSpaceTemplateExecutable) executable).id)
                                         ._title(executable.title)
                                         ._description(executable.description)
-                                        ._executable(context.pureModel.getPackageableElement(((DataSpacePackageableElementExecutable) executable).executable.path, ((DataSpacePackageableElementExecutable) executable).executable.sourceInformation));
-                            }
-                            else if (executable instanceof DataSpaceTemplateExecutable)
-                            {
-                                    if (((DataSpaceTemplateExecutable) executable).executionContextKey != null && !dataSpace.executionContexts.stream().map(c -> c.name).collect(Collectors.toList()).contains(((DataSpaceTemplateExecutable) executable).executionContextKey))
-                                    {
-                                        throw new EngineException("Data space template executable's executionContextKey, " + ((DataSpaceTemplateExecutable) executable).executionContextKey + ", is not valid. Please specify one from " + dataSpace.executionContexts.stream().map(c -> c.name).collect(Collectors.toList()).toString(), dataSpace.sourceInformation, EngineErrorType.COMPILATION);
-                                    }
-                                    return new Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceTemplateExecutable"))
-                                            ._title(executable.title)
-                                            ._description(executable.description)
-                                            ._query(HelperValueSpecificationBuilder.buildLambda(((DataSpaceTemplateExecutable) executable).query, context))
-                                            ._executionContextKey(((DataSpaceTemplateExecutable) executable).executionContextKey);
-
+                                        ._query(HelperValueSpecificationBuilder.buildLambda(((DataSpaceTemplateExecutable) executable).query, context))
+                                        ._executionContextKey(((DataSpaceTemplateExecutable) executable).executionContextKey);
                             }
                             else
                             {
-                                throw new EngineException("Data space executables could only be template or executable", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                                throw new EngineException("Data space executable id, " + ((DataSpaceTemplateExecutable) executable).id + ", is not unique", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                             }
                         }
                         else
                         {
-                            throw new EngineException("Data space executable title, " + executable.title +  ", is not unique", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                            throw new EngineException("Data space executables could only be template or executable", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                         }
                     }) : null);
 
