@@ -35,7 +35,7 @@ public class MemSQLManager extends DatabaseManager
     @Override
     public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategy authenticationStrategy)
     {
-        return "jdbc:mariadb://" + host + ":" + port + "/" + databaseName + "?permitMysqlScheme";
+        return "jdbc:mysql://" + host + ":" + port + "/" + databaseName + "?permitMysqlScheme";
     }
 
     @Override
