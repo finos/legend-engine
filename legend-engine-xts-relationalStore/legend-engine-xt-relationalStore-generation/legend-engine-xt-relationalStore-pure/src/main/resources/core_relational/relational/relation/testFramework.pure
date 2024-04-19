@@ -333,7 +333,7 @@ function meta::relational::relation::testUtils::processTDS(tds:TDS<Any>[1], stat
 
 
 
-function meta::relational::relation::testUtils::testTDSDatabaseRun(f:Function<{->Any[*]}>[1]):Any[*]
+function meta::relational::relation::testUtils::testTDSDatabaseRun(f:Function<{->Any[1]}>[1]):Any[1]
 {
     // //For debug
     // meta::pure::executionPlan::executionPlan($f->meta::relational::relation::testUtils::reprocess().first, ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions(), debug());
