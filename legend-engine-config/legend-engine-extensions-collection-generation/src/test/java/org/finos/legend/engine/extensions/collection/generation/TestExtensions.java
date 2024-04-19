@@ -34,6 +34,7 @@ import org.finos.legend.engine.language.bigqueryFunction.grammar.from.BigQueryFu
 import org.finos.legend.engine.language.bigqueryFunction.grammar.to.BigQueryFunctionGrammarComposer;
 import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLGrammarParserExtension;
 import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureGrammarComposerExtension;
+import org.finos.legend.engine.language.memsqlFunction.compiler.toPureGraph.MemSqlFunctionCompilerExtension;
 import org.finos.legend.engine.language.hostedService.compiler.toPureGraph.HostedServiceCompilerExtension;
 import org.finos.legend.engine.language.hostedService.generation.deployment.HostedServiceArtifactGenerationExtension;
 import org.finos.legend.engine.language.hostedService.grammar.from.HostedServiceGrammarParserExtension;
@@ -386,6 +387,7 @@ public class TestExtensions
                 .with(SnowflakeAppCompilerExtension.class)
                 .with(HostedServiceCompilerExtension.class)
                 .with(BigQueryFunctionCompilerExtension.class)
+                .with(MemSqlFunctionCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DataSpaceCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.TextCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.CoreCompilerExtension.class)

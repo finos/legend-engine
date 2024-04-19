@@ -67,6 +67,12 @@
             <artifactId>mariadb-java-client</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-memsql-protocol</artifactId>
+            <version>4.43.5-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
         <!-- DRIVER -->
     </dependencies>
 </project>
