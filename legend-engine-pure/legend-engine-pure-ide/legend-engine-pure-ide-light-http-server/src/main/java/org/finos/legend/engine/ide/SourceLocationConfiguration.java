@@ -23,8 +23,12 @@ import java.util.List;
 )
 public class SourceLocationConfiguration
 {
-    public String welcomeFileDirectory;
-    public String coreFilesLocation;
+    //TODO: remove these are they are redundant
+    @Deprecated
     public String ideFilesLocation;
+    @Deprecated
+    public String coreFilesLocation;
+
+    public String welcomeFileDirectory;
     public List<String> directories;
 }
