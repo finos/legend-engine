@@ -43,15 +43,16 @@ This is controlled in the sourceLocationConfiguration section:
     "directories" : ["."]
   },
 ```
-The welcomeFileDirectory specifies the directory where the welcome file should be loaded from/stored to allowing you to keep multiple welcome files and load as needed. Note only one welcome file is loaded at startup.
-The directories folder specifies the location to search for code repositories. This directory is traversed and all code repositories are loaded in mutable state allowing you to make edits. 
-By default this location is the current directory in which the Pure IDE Light is executed from. 
+The welcomeFileDirectory specifies the directory where the welcome file should be loaded from/stored to allowing you to keep multiple welcome files on your local file system and choose via configuration which one to use.
+The directories folder specifies locations to search for code repositories. These directories are traversed and all code repositories are loaded in an editable state.
+If no directories are specified this defaults to the current directory in which the Pure IDE Light process is executed from. 
 
 If you specify a specific extension folder (for example legend-engine-xts-java) then the code repositories under this folder will be loaded as mutable *and* all its required dependencies too. 
 All other modules will be loaded via the class loader mechanism (and hence not editable). 
 
 #### Specifying required repositories to load
-You can further control which repositories are loaded in mutable state by using the requiredRepositories configuration:
+You can limit the IDE from loading all classpath repositories dynamically found by the service loader by using the requiredRepositories configuration.
+This will load only the repositories specified and any required dependencies needed. 
 
 ```
   "requiredRepositories" : ["core_external_language_java"]
@@ -68,7 +69,7 @@ In particular:
 3. ShowLocalPlan - print out the execution plan into the console (needs PlanLocal to be enabled)
 4. ExecPlan - when executing a query use the generatePlan/executePlan endpoints on engine server rather than execute. If PlanLocal is true then the plan will be generated in the IDE and then sent to executePlan for execution, if not then the plan is generated via generatePlan before being sent to the executePlan endpoint.
 
-These options can be set at startup via Java VM properties, for example:
+These options can be set at startup via Java VM properties, for example setting the following when starting up the IDE:
 
 ```
 -Dpure.option.PlanLocal
@@ -78,4 +79,4 @@ These options can also be enabled/disabled using REST endpoints that are documen
 
 For example to enable the PlanLocal setting you can execute http://127.0.0.1:9200/pureRuntimeOptions/setPureRuntimeOption/PlanLocal/true
 
-Note that GUI support via the Pure IDE Light to enable/disable/view these options is planned to be supported soon.
+TODO: Add support in UI to set/view these options

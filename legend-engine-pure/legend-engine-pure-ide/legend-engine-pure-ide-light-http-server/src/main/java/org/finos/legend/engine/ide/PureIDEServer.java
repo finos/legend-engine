@@ -164,9 +164,11 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
     protected MutableList<RepositoryCodeStorage> buildRepositories(SourceLocationConfiguration sourceLocationConfiguration)
     {
         Map<CodeRepository, Path> codeRepositoryPathMap = new HashMap<>();
-        List<String> directoriesToSearch = sourceLocationConfiguration.directories != null ? sourceLocationConfiguration.directories : Lists.mutable.of(".");
+        List<String> directoriesToSearch = sourceLocationConfiguration.directories != null && !sourceLocationConfiguration.directories.isEmpty()
+                                            ? sourceLocationConfiguration.directories
+                                            : Lists.mutable.of(".");
 
-        for (String path : sourceLocationConfiguration.directories)
+        for (String path : directoriesToSearch)
         {
             Map<CodeRepository, Path> p = findCodeRepositoriesAndMapToPath(path);
             codeRepositoryPathMap.putAll(p);
