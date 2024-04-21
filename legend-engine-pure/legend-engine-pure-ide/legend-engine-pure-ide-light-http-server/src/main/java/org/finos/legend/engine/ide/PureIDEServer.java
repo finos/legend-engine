@@ -191,7 +191,7 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
         return result;
     }
 
-    //TODO: This should probably in CodeRepositoryProviderHelper in legend-pure
+    //TODO: This should probably be moved to CodeRepositoryProviderHelper in legend-pure
     protected Map<CodeRepository, Path> findCodeRepositoriesAndMapToPath(String path)
     {
         Map<CodeRepository, Path> result = new HashMap<>();
