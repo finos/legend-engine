@@ -25,7 +25,7 @@ public class TestMemSqlFunctionCompilationFromGrammar extends TestCompilationFro
         return "Class anything::Name {}\n" +
                 "###Mapping\n" +
                 "Mapping anything::somethingelse ()\n" +
-                "###MemSql\n" +
+                "###MemSql \n" +
                 "MemSqlFunction anything::Name\n" +
                 "{" +
                 "   functionName : 'name';\n" +

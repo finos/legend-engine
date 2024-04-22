@@ -77,7 +77,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-bigqueryFunction-grammar</artifactId>
+            <artifactId>legend-engine-xt-memsqlFunction-grammar</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
