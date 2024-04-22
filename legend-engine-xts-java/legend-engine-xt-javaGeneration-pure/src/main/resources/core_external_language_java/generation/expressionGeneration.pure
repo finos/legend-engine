@@ -280,7 +280,7 @@ function <<access.private>> meta::external::language::java::transform::processCo
                                 ->typesToClasses()
                                 ->filter(c | !meta::external::language::java::factory::isKnownPackage($c.package))
                                 ->filter(c | !meta::external::language::java::transform::isProvidedClass($conventions, $c))
-                                ->map(c | $c->addModifiers(['public', 'interface'])
+                                ->map(c | $c->addModifiers(['public'])
                                             ->usingKnownPackages($conventions->knownPackages()));
             
             let withImports = javaClass('public', $signature.class)

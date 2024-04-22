@@ -3549,7 +3549,9 @@ function <<access.private>> meta::external::language::java::factory::project::me
          });
          let methods = $existing.methods->concatenate($newlyDefinedMethods);
 
-         $base->replaceClass(^$existing(additionalImports=$imports, superType=$superType, interfaces=$interfaces, fields=$fields, methods=$methods));
+         let modifiers = $existing.modifiers->concatenate($class.modifiers)->removeDuplicates();
+
+         $base->replaceClass(^$existing(additionalImports=$imports, superType=$superType, interfaces=$interfaces, fields=$fields, methods=$methods, modifiers=$modifiers));
       }
    );
 }
