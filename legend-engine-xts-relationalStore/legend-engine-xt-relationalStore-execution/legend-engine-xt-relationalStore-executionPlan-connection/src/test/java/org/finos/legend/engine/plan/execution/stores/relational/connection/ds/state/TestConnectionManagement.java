@@ -61,7 +61,7 @@ public abstract class TestConnectionManagement
 
     Connection requestConnection(String user, DataSourceSpecification dataSourceSpecification)
     {
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting(user);
+        Identity identity = new Identity(user);
         return requestConnection(identity, dataSourceSpecification);
     }
 
@@ -78,7 +78,7 @@ public abstract class TestConnectionManagement
     {
         if (shouldExist)
         {
-            Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting(user);
+            Identity identity = new Identity(user);
             String poolName = connectionStateManager.poolNameFor(identity, key);
             DataSourceWithStatistics dataSourceSpecification = connectionStateManager.getDataSourceByPoolName(poolName);
             Assert.assertEquals("State mismatch for pool=" + poolName, shouldExist, dataSourceSpecification != null);

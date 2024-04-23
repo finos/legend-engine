@@ -31,7 +31,7 @@ public class TestTranslator extends TestGraphQLRoundtrip
     @Override
     protected void check(String value)
     {
-        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), DeploymentMode.TEST);
+        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), Identity.getAnonymousIdentity().getName(), DeploymentMode.TEST);
         GraphQLGrammarParser parser = GraphQLGrammarParser.newInstance();
         Document document = parser.parseDocument(value);
         Assert.assertEquals(value, org.finos.legend.pure.generated.core_external_query_graphql_serialization_serialization.Root_meta_external_query_graphQL_serialization_graphQLtoString_Document_1__String_1_(new ProtocolToMetamodelTranslator().translate(document, pureModel), pureModel.getExecutionSupport()));

@@ -94,7 +94,7 @@ public class TestConnectionStateManager extends TestConnectionManagement
 
         CollectorRegistry collectorRegistry = CollectorRegistry.defaultRegistry;
         DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1"));
-        Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user1");
+        Identity user1 = new Identity("user1");
 
         ConnectionStateManager.ConnectionStateHousekeepingTask houseKeeper = new ConnectionStateManager.ConnectionStateHousekeepingTask(Duration.ofMinutes(5).getSeconds());
 
@@ -118,7 +118,7 @@ public class TestConnectionStateManager extends TestConnectionManagement
     {
         CollectorRegistry collectorRegistry = CollectorRegistry.defaultRegistry;
         DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1"));
-        Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user1");
+        Identity user1 = new Identity("user1");
 
         ConnectionStateManager.ConnectionStateHousekeepingTask houseKeeper = new ConnectionStateManager.ConnectionStateHousekeepingTask(Duration.ofMinutes(5).getSeconds());
         String pool1 = connectionStateManager.poolNameFor(user1, ds1.getConnectionKey());
@@ -158,7 +158,7 @@ public class TestConnectionStateManager extends TestConnectionManagement
     {
         CollectorRegistry collectorRegistry = CollectorRegistry.defaultRegistry;
         DataSourceSpecification ds2 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T2"));
-        Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user2");
+        Identity user2 = new Identity("user2");
         ConnectionStateManager.ConnectionStateHousekeepingTask houseKeeper = new ConnectionStateManager.ConnectionStateHousekeepingTask(Duration.ofMinutes(5).getSeconds());
 
         //create a new instance of pool entry with ds2 and user2
@@ -200,7 +200,7 @@ public class TestConnectionStateManager extends TestConnectionManagement
     {
         CollectorRegistry collectorRegistry = CollectorRegistry.defaultRegistry;
         DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1"));
-        Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user1");
+        Identity user1 = new Identity("user1");
 
         ConnectionStateManager.ConnectionStateHousekeepingTask houseKeeper = new ConnectionStateManager.ConnectionStateHousekeepingTask(Duration.ofMinutes(5).getSeconds());
         String pool1 = connectionStateManager.poolNameFor(user1, ds1.getConnectionKey());
@@ -228,8 +228,8 @@ public class TestConnectionStateManager extends TestConnectionManagement
     @Test
     public void testDataSourceRegistrationSequentialCalls()
     {
-        Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user1");
-        Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user2");
+        Identity user1 = new Identity("user1");
+        Identity user2 = new Identity("user2");
 
         DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Collections.emptyList());
         assertPoolExists(false, user1.getName(), ds1.getConnectionKey());
@@ -257,9 +257,9 @@ public class TestConnectionStateManager extends TestConnectionManagement
     @Test
     public void testDataSourceEviction() throws SQLException
     {
-        Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user1");
-        Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user2");
-        Identity user3 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user3");
+        Identity user1 = new Identity("user1");
+        Identity user2 = new Identity("user2");
+        Identity user3 = new Identity("user3");
 
         DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1"));
         DataSourceSpecification ds2 = buildLocalDataSourceSpecification(Collections.emptyList());
@@ -314,9 +314,9 @@ public class TestConnectionStateManager extends TestConnectionManagement
     @Test
     public void testDataSourceEvictionWithUnclosedConnection() throws SQLException
     {
-        Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user1");
-        Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user2");
-        Identity user3 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user3");
+        Identity user1 = new Identity("user1");
+        Identity user2 = new Identity("user2");
+        Identity user3 = new Identity("user3");
 
         DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1"));
         DataSourceSpecification ds2 = buildLocalDataSourceSpecification(Collections.emptyList());
@@ -382,9 +382,9 @@ public class TestConnectionStateManager extends TestConnectionManagement
     @Test
     public void canGetAggregatedStats()
     {
-        Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user1");
-        Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user2");
-        Identity user3 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user3");
+        Identity user1 = new Identity("user1");
+        Identity user2 = new Identity("user2");
+        Identity user3 = new Identity("user3");
 
         DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Collections.emptyList());
 
@@ -405,9 +405,9 @@ public class TestConnectionStateManager extends TestConnectionManagement
     @Test
     public void testShutdown() throws IOException
     {
-        Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user1");
-        Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user2");
-        Identity user3 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user3");
+        Identity user1 = new Identity("user1");
+        Identity user2 = new Identity("user2");
+        Identity user3 = new Identity("user3");
 
         DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Collections.emptyList());
 
