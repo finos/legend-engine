@@ -3511,7 +3511,15 @@ function <<access.private>> meta::external::language::java::factory::project::me
       {| $base->addClass($srcDirPath, $class)},
       {|
          let existing = $base->getClass($srcDirPath, $classFullName)->toOne();
-         
+         if ($existing->instanceOf(meta::external::language::java::metamodel::Enumeration) && $class->instanceOf(meta::external::language::java::metamodel::Class),
+          | $base,
+          | if ($existing->instanceOf(meta::external::language::java::metamodel::Class) && $class->instanceOf(meta::external::language::java::metamodel::Enumeration),
+            | $base->replaceClass($class),
+            |  
+         let x = if($class.simpleName == 'TestEnum', | println('existing'); println($existing); println('class'); println($class); println('======'); '';, |'';);
+
+        // let blah = if($class.simpleName == 'Duration', | println('booyah'); println('class'); println($class,2); println('existing:'); println($existing,2); println('------');   '';, | '';);
+
          let imports = $existing.additionalImports->concatenate($class.additionalImports)->removeDuplicates();
 
          let superType = if($existing.superType->isEmpty(),
@@ -3550,8 +3558,14 @@ function <<access.private>> meta::external::language::java::factory::project::me
          let methods = $existing.methods->concatenate($newlyDefinedMethods);
 
          let modifiers = $existing.modifiers->concatenate($class.modifiers)->removeDuplicates();
+         let f = ^$existing(additionalImports=$imports, superType=$superType, interfaces=$interfaces, fields=$fields, methods=$methods, modifiers=$modifiers);
+        let x1 = if($class.simpleName == 'TestEnum', | println('result'); println($f); println('======'); '';, |'';);
 
-         $base->replaceClass(^$existing(additionalImports=$imports, superType=$superType, interfaces=$interfaces, fields=$fields, methods=$methods, modifiers=$modifiers));
+         $base->replaceClass($f);
+         
+         ));
+
+        
       }
    );
 }
