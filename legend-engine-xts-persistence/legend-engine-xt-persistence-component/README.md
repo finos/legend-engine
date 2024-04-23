@@ -65,6 +65,14 @@ the latest version from Maven Central.
       <version>[PICK THE LATEST VERSION FROM MAVEN CENTRAL]</version>
     </dependency>
 
+#### Using the Postgres executor
+
+    <dependency>
+      <groupId>org.finos.legend.engine</groupId>
+      <artifactId>legend-engine-xt-persistence-component-relational-postgres</artifactId>
+      <version>[PICK THE LATEST VERSION FROM MAVEN CENTRAL]</version>
+    </dependency>
+
 **Step 2:** Create the Ingest mode object based on ingestion scheme (Details and examples for each scheme [below](#ingest-modes))
 
     UnitemporalDelta ingestMode = UnitemporalDelta.builder()
@@ -228,6 +236,7 @@ Example:
         executor.begin();
         IngestorResult result = ingestor.ingest(datasets);
         // Do more stuff if needed
+
         executor.commit();
 
         datasets = ingestor.cleanup(datasets);
