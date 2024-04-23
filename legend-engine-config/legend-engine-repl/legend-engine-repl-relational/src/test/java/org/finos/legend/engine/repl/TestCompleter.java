@@ -26,12 +26,12 @@ public class TestCompleter
     @Test
     public void testRelationAccessor()
     {
-        Assert.assertEquals("[a::A , >{a::A]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>")));
-        Assert.assertEquals("[a::other , >{a::other], [a::ABC , >{a::ABC]", checkResultNoException(new Completer("###Relational\nDatabase a::ABC(Table t(col VARCHAR(200)))\nDatabase a::other(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a")));
-        Assert.assertEquals("[a::ABC , >{a::ABC]", checkResultNoException(new Completer("###Relational\nDatabase a::ABC(Table t(col VARCHAR(200)))\nDatabase a::other(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A")));
-        Assert.assertEquals("[a::ABC , >{a::ABC]", checkResultNoException(new Completer("###Relational\nDatabase a::ABC(Table t(col VARCHAR(200)))\nDatabase a::other(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::ABC")));
+        Assert.assertEquals("[a::A , {a::A]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>")));
+        Assert.assertEquals("[a::other , ::other], [a::ABC , ::ABC]", checkResultNoException(new Completer("###Relational\nDatabase a::ABC(Table t(col VARCHAR(200)))\nDatabase a::other(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a")));
+        Assert.assertEquals("[a::ABC , BC]", checkResultNoException(new Completer("###Relational\nDatabase a::ABC(Table t(col VARCHAR(200)))\nDatabase a::other(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A")));
+        Assert.assertEquals("[a::ABC , ]", checkResultNoException(new Completer("###Relational\nDatabase a::ABC(Table t(col VARCHAR(200)))\nDatabase a::other(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::ABC")));
         Assert.assertEquals("[t , t}]", checkResultNoException(new Completer("###Relational\nDatabase a::ABC(Table t(col VARCHAR(200)))\nDatabase a::other(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::ABC.")));
-        Assert.assertEquals("[tab , tab}]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table co(val INTEGER) Table tab(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t")));
+        Assert.assertEquals("[tab , ab}]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table co(val INTEGER) Table tab(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t")));
         Assert.assertEquals("", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table tab(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.x")));
         Assert.assertEquals("", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table co(val INTEGER) Table tab(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.tab}#")));
     }
@@ -40,7 +40,7 @@ public class TestCompleter
     public void testAutocompleteFunctionParameter()
     {
         Assert.assertEquals("[test::test , test::test)]", checkResultNoException(new Completer(db + connection + runtime, Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{test::TestDatabase.tb}#->from(")));
-        Assert.assertEquals("[test::test , test::test)]", checkResultNoException(new Completer(db + connection + runtime, Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{test::TestDatabase.tb}#->from(te")));
+        Assert.assertEquals("[test::test , st::test)]", checkResultNoException(new Completer(db + connection + runtime, Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{test::TestDatabase.tb}#->from(te")));
         Assert.assertEquals("", checkResultNoException(new Completer(db + connection + runtime, Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{test::TestDatabase.tb}#->from(zte")));
     }
 
@@ -55,7 +55,7 @@ public class TestCompleter
     public void testArrowRelation()
     {
         Assert.assertEquals("[distinct , distinct], [drop , drop], [select , select], [extend , extend], [filter , filter], [from , from], [groupBy , groupBy], [join , join], [limit , limit], [rename , rename], [size , size], [slice , slice], [sort , sort]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->")));
-        Assert.assertEquals("[select , select], [size , size], [slice , slice], [sort , sort]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->s")));
+        Assert.assertEquals("[select , elect], [size , ize], [slice , lice], [sort , ort]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->s")));
     }
 
     @Test
@@ -88,7 +88,7 @@ public class TestCompleter
     @Test
     public void testMultiLevelFunction()
     {
-        Assert.assertEquals("[select , select]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->select(~[col])->join(#>{a::A.t}#->selec")));
+        Assert.assertEquals("[select , t]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->select(~[col])->join(#>{a::A.t}#->selec")));
         Assert.assertEquals("[col , col]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->select(~[col])->join(#>{a::A.t}#->select(~")));
     }
 
@@ -99,9 +99,9 @@ public class TestCompleter
     public void testDotInFilterDeepRelation()
     {
         Assert.assertEquals("[col , col]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(x|'x'+[1,2]->map(z|$z+$x.")));
-        Assert.assertEquals("[col , col]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(x|'x'+[1,2]->map(z|$z+$x.co")));
+        Assert.assertEquals("[col , l]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(x|'x'+[1,2]->map(z|$z+$x.co")));
         Assert.assertEquals("", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(x|'x'+[1,2]->map(z|$z+$x.z")));
-        Assert.assertEquals("['na col' , 'na col']", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(\"na col\" VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(x|$x.'na")));
+        Assert.assertEquals("['na col' ,  col']", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(\"na col\" VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(x|$x.'na")));
     }
 
 
@@ -112,7 +112,7 @@ public class TestCompleter
     public void testRenameFirstParam()
     {
         Assert.assertEquals("[col , col]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->rename(~")));
-        Assert.assertEquals("[col , col]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->rename(~co")));
+        Assert.assertEquals("[col , l]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->rename(~co")));
         Assert.assertEquals("", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->rename(~x")));
         Assert.assertEquals("", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->rename(~col,~")));
         Assert.assertEquals("[col , col]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->rename(~")));
@@ -140,7 +140,7 @@ public class TestCompleter
         Assert.assertEquals("[col , col], [val , val]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->groupBy(~[")));
         Assert.assertEquals("[col , col], [val , val]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->groupBy(~[col,")));
         Assert.assertEquals("[col , col], [val , val]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->groupBy(~col, ~z:x|$x.")));
-        Assert.assertEquals("[val , val]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->groupBy(~col, ~[z:x|$x.v")));
+        Assert.assertEquals("[val , al]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->groupBy(~col, ~[z:x|$x.v")));
         Assert.assertEquals("[sum , sum], [mean , mean], [average , average], [min , min], [max , max], [count , count], [percentile , percentile], [variancePopulation , variancePopulation], [varianceSample , varianceSample], [stdDevPopulation , stdDevPopulation], [stdDevSample , stdDevSample]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->groupBy(~col, ~[z:x|$x.val:y|$y->")));
     }
 
@@ -151,7 +151,7 @@ public class TestCompleter
     @Test
     public void testJoin()
     {
-        Assert.assertEquals("[a::A , >{a::A]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->join(#>")));
+        Assert.assertEquals("[a::A , {a::A]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->join(#>")));
         Assert.assertEquals("[t , t}]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->join(#>{a::A.")));
         Assert.assertEquals("[JoinKind , JoinKind.]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->join(#>{a::A.t}#, ")));
         Assert.assertEquals("[LEFT , LEFT], [INNER , INNER]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->join(#>{a::A.t}#, JoinKind.")));
@@ -167,10 +167,10 @@ public class TestCompleter
     @Test
     public void testSelect()
     {
-        Assert.assertEquals("[col , col]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->select(~c")));
+        Assert.assertEquals("[col , ol]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->select(~c")));
         Assert.assertEquals("[col , col], [val , val]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->select(~[col,")));
-        Assert.assertEquals("[from , from]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(\"col space\" VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->select(~'col space')->fro")));
-        Assert.assertEquals("[from , from]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(\"col space\" VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->select(~['col space'])->fro")));
+        Assert.assertEquals("[from , m]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(\"col space\" VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->select(~'col space')->fro")));
+        Assert.assertEquals("[from , m]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(\"col space\" VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->select(~['col space'])->fro")));
     }
 
 

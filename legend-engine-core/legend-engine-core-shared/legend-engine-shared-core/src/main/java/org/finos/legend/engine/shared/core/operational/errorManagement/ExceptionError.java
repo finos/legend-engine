@@ -47,7 +47,7 @@ public class ExceptionError
         this.message = message;
     }
 
-    ExceptionError(int code, Throwable t)
+    public ExceptionError(int code, Throwable t)
     {
         this.status = "error";
         StringWriter out = new StringWriter();
