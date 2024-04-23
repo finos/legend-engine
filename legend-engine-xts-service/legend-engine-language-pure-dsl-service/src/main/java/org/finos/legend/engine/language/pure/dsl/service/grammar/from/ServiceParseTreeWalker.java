@@ -574,7 +574,11 @@ public class ServiceParseTreeWalker
     {
         SingleExecutionParameters singleExecParams = new SingleExecutionParameters();
         singleExecParams.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        singleExecParams.key = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+        singleExecParams.key = PureGrammarParserUtility.fromIdentifier(ctx.identifier());'
+        if (singleExecParams.key.contains(" "))
+        {
+            throw new EngineException("Execution param key cannot contain spaces. Invalid Key: " + singleExecParams.key);
+        }
         ServiceParserGrammar.ServiceMappingContext mappingContext = PureGrammarParserUtility.validateAndExtractRequiredField(Collections.singletonList(ctx.serviceMapping()), "mapping", singleExecParams.sourceInformation);
         singleExecParams.mapping = PureGrammarParserUtility.fromQualifiedName(mappingContext.qualifiedName().packagePath() == null ? Collections.emptyList() : mappingContext.qualifiedName().packagePath().identifier(), mappingContext.qualifiedName().identifier());
         singleExecParams.mappingSourceInformation = walkerSourceInformation.getSourceInformation(mappingContext.qualifiedName());
