@@ -37,16 +37,16 @@ public class MemSqlFunctionGrammarComposer implements PureGrammarComposerExtensi
     {
         if (element instanceof MemSqlFunction)
         {
-            return renderBigQueryFunction((MemSqlFunction) element);
+            return renderMemSqlFunction((MemSqlFunction) element);
         }
         return "/* Can't transform element '" + element.getPath() + "' in this section */";
     }
 
-    private static String renderBigQueryFunction(MemSqlFunction app)
+    private static String renderMemSqlFunction(MemSqlFunction app)
     {
         String packageName = app._package == null || app._package.isEmpty() ? app.name : app._package + "::" + app.name;
 
-        return "BigQueryFunction " + renderAnnotations(app.stereotypes, app.taggedValues) + packageName + "\n" +
+        return "MemSqlFunction " + renderAnnotations(app.stereotypes, app.taggedValues) + packageName + "\n" +
                 "{\n" +
                 "   functionName : '" + app.functionName + "';\n" +
                 "   function : " + app.function + ";\n" +
@@ -69,7 +69,7 @@ public class MemSqlFunctionGrammarComposer implements PureGrammarComposerExtensi
             {
                 if (element instanceof MemSqlFunction)
                 {
-                    return renderBigQueryFunction((MemSqlFunction) element);
+                    return renderMemSqlFunction((MemSqlFunction) element);
                 }
                 return "/* Can't transform element '" + element.getPath() + "' in this section */";
             }).makeString("\n\n");
