@@ -47,7 +47,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
-                .createStagingDataset(true)
+                .skipMainAndMetadataDatasetCreation(true)
                 .enableConcurrentSafety(true)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
@@ -65,7 +65,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
-                .createStagingDataset(true)
+                .skipMainAndMetadataDatasetCreation(true)
                 .enableConcurrentSafety(true)
                 .ingestRunId(ingestRunId)
                 .build();

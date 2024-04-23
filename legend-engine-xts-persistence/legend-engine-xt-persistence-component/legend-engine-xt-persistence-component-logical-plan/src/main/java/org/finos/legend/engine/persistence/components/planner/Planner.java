@@ -111,7 +111,7 @@ public abstract class Planner
         }
 
         @Default
-        default boolean createStagingDataset()
+        default boolean skipMainAndMetadataDatasetCreation()
         {
             return false;
         }
@@ -361,12 +361,11 @@ public abstract class Planner
     public LogicalPlan buildLogicalPlanForPreActions(Resources resources)
     {
         List<Operation> operations = new ArrayList<>();
-        operations.add(Create.of(true, mainDataset()));
-        if (options().createStagingDataset())
+        if (!options().skipMainAndMetadataDatasetCreation())
         {
-            operations.add(Create.of(true, originalStagingDataset()));
+            operations.add(Create.of(true, mainDataset()));
+            operations.add(Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()));
         }
-        operations.add(Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()));
         if (options().enableConcurrentSafety())
         {
             operations.add(Create.of(true, lockInfoDataset().orElseThrow(IllegalStateException::new).get()));

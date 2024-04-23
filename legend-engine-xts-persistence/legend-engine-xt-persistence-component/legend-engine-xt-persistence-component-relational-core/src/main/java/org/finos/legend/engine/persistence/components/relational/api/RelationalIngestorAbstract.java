@@ -107,7 +107,7 @@ public abstract class RelationalIngestorAbstract
     }
 
     @Default
-    public boolean createStagingDataset()
+    public boolean skipMainAndMetadataDatasetCreation()
     {
         return false;
     }
@@ -668,7 +668,7 @@ public abstract class RelationalIngestorAbstract
                 .relationalSink(relationalSink())
                 .cleanupStagingData(cleanupStagingData())
                 .collectStatistics(collectStatistics())
-                .createStagingDataset(createStagingDataset())
+                .skipMainAndMetadataDatasetCreation(skipMainAndMetadataDatasetCreation())
                 .enableSchemaEvolution(enableSchemaEvolution())
                 .addAllSchemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet())
                 .enableConcurrentSafety(enableConcurrentSafety())

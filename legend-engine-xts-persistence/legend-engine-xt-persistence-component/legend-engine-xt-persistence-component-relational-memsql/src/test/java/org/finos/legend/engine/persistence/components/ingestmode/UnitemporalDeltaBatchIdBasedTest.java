@@ -52,10 +52,6 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
                 "WHERE (sink.`batch_id_out` = 999999999) " +
                 "AND (sink.`digest` = stage.`digest`) AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)))))";
 
-        Assertions.assertEquals(MemsqlTestArtifacts.expectedMainTableBatchIdBasedCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(MemsqlTestArtifacts.expectedStagingTableWithDigestCreateQuery, preActionsSql.get(1));
-        Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(2));
-
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));

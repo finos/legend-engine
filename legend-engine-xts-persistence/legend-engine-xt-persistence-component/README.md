@@ -112,19 +112,19 @@ Mandatory Params:
 
 Optional Params:
 
-| parameters          | Description                                                                                                                                                                           | Default Value     |
-|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
-| cleanupStagingData | clean staging table after completion of ingestion                                                                                                                                     | true              |
-| collectStatistics | Collect Statistics from ingestion                                                                                                                                                     | false             |
-| enableSchemaEvolution | Enable Schema Evolution to happen                                                                                                                                                     | false             |
-| caseConversion | Convert SQL objects like table, db, column names to upper or lower case.<br> Values supported - TO_UPPER, TO_LOWER, NONE                                                              | NONE              |
-| executionTimestampClock | Clock to use to derive the time                                                                                                                                                       | Clock.systemUTC() |
-| batchStartTimestampPattern | Pattern for batchStartTimestamp. If this pattern is provided, it will replace the batchStartTimestamp values                                                                          | None              |
-| batchEndTimestampPattern | Pattern for batchEndTimestamp. If this pattern is provided, it will replace the batchEndTimestamp values                                                                              | None              |
-| batchIdPattern | Pattern for batch id. If this pattern is provided, it will replace the next batch id                                                                                                  | None              |
-| createStagingDataset | Enables creation of staging Dataset                                                                                                                                                   | false             |
-| schemaEvolutionCapabilitySet | A set that enables fine grained schema evolution capabilities - ADD_COLUMN, DATA_TYPE_CONVERSION, DATA_TYPE_SIZE_CHANGE, COLUMN_NULLABILITY_CHANGE                                    | Empty set         |
-| infiniteBatchIdValue | Value to be used for Infinite batch id                                                                                                                                                | 999999999         |
+| parameters          | Description                                                                                                                                                           | Default Value     |
+|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
+| cleanupStagingData | clean staging table after completion of ingestion                                                                                                                     | true              |
+| collectStatistics | Collect Statistics from ingestion                                                                                                                                     | false             |
+| enableSchemaEvolution | Enable Schema Evolution to happen                                                                                                                                     | false             |
+| caseConversion | Convert SQL objects like table, db, column names to upper or lower case.<br> Values supported - TO_UPPER, TO_LOWER, NONE                                              | NONE              |
+| executionTimestampClock | Clock to use to derive the time                                                                                                                                       | Clock.systemUTC() |
+| batchStartTimestampPattern | Pattern for batchStartTimestamp. If this pattern is provided, it will replace the batchStartTimestamp values                                                          | None              |
+| batchEndTimestampPattern | Pattern for batchEndTimestamp. If this pattern is provided, it will replace the batchEndTimestamp values                                                              | None              |
+| batchIdPattern | Pattern for batch id. If this pattern is provided, it will replace the next batch id                                                                                  | None              |
+| skipMainAndMetadataDatasetCreation | skip main and metadata dataset creation                                                                                                                               | false             |
+| schemaEvolutionCapabilitySet | A set that enables fine grained schema evolution capabilities - ADD_COLUMN, DATA_TYPE_CONVERSION, DATA_TYPE_SIZE_CHANGE, COLUMN_NULLABILITY_CHANGE                    | Empty set         |
+| infiniteBatchIdValue | Value to be used for Infinite batch id                                                                                                                                | 999999999         |
 | enableConcurrentSafety | Enables safety for concurrent ingestion on the same table. If enabled, the library creates a special lock table to block other concurrent ingestion on the same table | false             |
 
 **Step 4.2:** Use the generator object to extract the queries
@@ -191,7 +191,7 @@ Optional Params:
 | caseConversion | Convert SQL objects like table, db, column names to upper or lower case.<br> Values supported - TO_UPPER, TO_LOWER, NONE | NONE              |
 | executionTimestampClock | Clock to use to derive the time                                                                                          | Clock.systemUTC() |
 | createDatasets | A flag to enable or disable dataset creation in Executor mode                                                            | true              |
-| createStagingDataset | Enables creation of staging Dataset                                                                                                                | false             |
+| skipMainAndMetadataDatasetCreation | skip main and metadata dataset creation                                                                                                                | false             |
 | schemaEvolutionCapabilitySet | A set that enables fine grained schema evolution capabilities - ADD_COLUMN, DATA_TYPE_CONVERSION, DATA_TYPE_SIZE_CHANGE, COLUMN_NULLABILITY_CHANGE | Empty set         |
 | enableConcurrentSafety | Enables safety for concurrent ingestion on the same table. If enabled, the library creates a special lock table to block other concurrent ingestion on the same table | false             |
 

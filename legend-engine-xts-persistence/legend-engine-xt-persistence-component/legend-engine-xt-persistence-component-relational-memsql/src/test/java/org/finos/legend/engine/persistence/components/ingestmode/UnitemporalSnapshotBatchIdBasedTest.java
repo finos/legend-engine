@@ -54,10 +54,6 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
                 "FROM `mydb`.`staging` as stage " +
                 "WHERE NOT (stage.`digest` IN (SELECT sink.`digest` FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = 999999999)))";
 
-        Assertions.assertEquals(MemsqlTestArtifacts.expectedMainTableBatchIdBasedCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(MemsqlTestArtifacts.expectedStagingTableWithDigestCreateQuery, preActionsSql.get(1));
-        Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(2));
-
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
@@ -86,9 +82,6 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
                 "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
                 "WHERE NOT (stage.`digest` IN (SELECT sink.`digest` FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = 999999999)))";
 
-        Assertions.assertEquals(MemsqlTestArtifacts.expectedMainTableBatchIdBasedCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(MemsqlTestArtifacts.expectedStagingTableWithDigestCreateQuery, preActionsSql.get(1));
-        Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(2));
         Assertions.assertEquals(MemsqlTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
         Assertions.assertEquals(MemsqlTestArtifacts.expectedInsertIntoBaseTempStagingPlusDigestWithFilterDuplicates, deduplicationAndVersioningSql.get(1));
         Assertions.assertEquals(MemsqlTestArtifacts.maxDupsErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorSqlType.MAX_DUPLICATES));

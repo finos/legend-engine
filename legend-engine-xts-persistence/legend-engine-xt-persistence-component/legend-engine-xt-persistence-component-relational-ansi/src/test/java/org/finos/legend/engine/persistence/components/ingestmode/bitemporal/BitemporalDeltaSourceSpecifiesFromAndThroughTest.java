@@ -56,10 +56,7 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
                 "WHERE (sink.\"batch_id_out\" = 999999999) " +
                 "AND (sink.\"digest\" = stage.\"digest\") AND ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"validity_from_target\" = stage.\"validity_from_reference\"))))";
 
-        Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalMainTableCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalStagingTableCreateQuery, preActionsSql.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(2));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedLockInfoTableCreateQuery, preActionsSql.get(3));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedLockInfoTableCreateQuery, preActionsSql.get(0));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
