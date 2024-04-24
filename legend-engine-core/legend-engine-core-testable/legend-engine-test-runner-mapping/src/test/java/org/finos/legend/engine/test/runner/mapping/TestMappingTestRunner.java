@@ -48,7 +48,7 @@ public class TestMappingTestRunner
     {
         URL url = Objects.requireNonNull(getClass().getClassLoader().getResource("modelToModelMappingTests1.json"));
         PureModelContextData pureModelContextData = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(url, PureModelContextData.class);
-        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(pureModelContextData, Identity.getAnonymousIdentity().getName(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
 
         RichMappingTestResult testResult = runTest(pureModelContextData, pureModel);
 
@@ -69,7 +69,7 @@ public class TestMappingTestRunner
     {
         URL url = Objects.requireNonNull(getClass().getClassLoader().getResource("modelToModelMappingTests2.json"));
         PureModelContextData pureModelContextData = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(url, PureModelContextData.class);
-        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(pureModelContextData, Identity.getAnonymousIdentity().getName(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
 
         RichMappingTestResult testResult = runTest(pureModelContextData, pureModel);
 
@@ -99,6 +99,6 @@ public class TestMappingTestRunner
     {
         URL url = Objects.requireNonNull(getClass().getClassLoader().getResource("modelToModelMappingTests1.json"));
         PureModelContextData pureModelContextData = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(url, PureModelContextData.class);
-        new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+        new PureModel(pureModelContextData, Identity.getAnonymousIdentity().getName(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
     }
 }

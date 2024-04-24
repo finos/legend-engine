@@ -37,7 +37,7 @@ public class PlanExecutionContext
 
     public PlanExecutionContext(SingleExecutionPlan singleExecutionPlan, List<GraphFetchCache> graphFetchCaches) throws JavaCompileException
     {
-        this.externalJavaCompiler = JavaHelper.compilePlan(singleExecutionPlan, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
+        this.externalJavaCompiler = JavaHelper.compilePlan(singleExecutionPlan, Identity.getAnonymousIdentity());
         this.graphFetchCaches = graphFetchCaches;
     }
 

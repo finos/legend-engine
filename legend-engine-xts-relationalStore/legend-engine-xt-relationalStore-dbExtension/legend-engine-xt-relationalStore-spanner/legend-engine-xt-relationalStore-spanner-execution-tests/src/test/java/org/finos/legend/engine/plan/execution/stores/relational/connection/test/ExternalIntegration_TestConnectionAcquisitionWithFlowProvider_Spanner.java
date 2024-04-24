@@ -97,7 +97,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Spann
     public void testSpannerGCPADCConnection_identity() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.SpannerWithGCPADCSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection(IdentityFactoryProvider.getInstance().getAnonymousIdentity(), systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection(Identity.getAnonymousIdentity(), systemUnderTest);
         testConnection(connection, 5, TEST_QUERY);
     }
 

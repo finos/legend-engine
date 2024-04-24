@@ -182,7 +182,7 @@ public class Execute implements Command
             {
                 this.client.getTerminal().writer().println("Couldn't resolve identity from local subject");
             }
-            return IdentityFactoryProvider.getInstance().getAnonymousIdentity();
+            return Identity.getAnonymousIdentity();
         }
     }
 

@@ -81,7 +81,7 @@ public class TestDatasourceCreation
     {
         ConcurrentMutableMap datasourceSpecifications = null;
 
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting("testuser1");
+        Identity identity = new Identity("testuser1");
 
         // User gets connection to db1
         RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db1");
@@ -112,7 +112,7 @@ public class TestDatasourceCreation
     {
         ConcurrentMutableMap datasourceSpecifications = null;
 
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting("testuser1");
+        Identity identity = new Identity("testuser1");
 
         // User gets connection to db1
         RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db2");
@@ -150,7 +150,7 @@ public class TestDatasourceCreation
     {
         ConcurrentMutableMap datasourceSpecifications = null;
 
-        Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("testuser1");
+        Identity identity1 = new Identity("testuser1");
 
         // User gets connection to db1
         RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db4");
@@ -169,7 +169,7 @@ public class TestDatasourceCreation
         // We have a single data source for user1
         DataSourceWithStatistics datasource1 = this.getDatasourceByPool(key1);
 
-        Identity identity2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("testuser2");
+        Identity identity2 = new Identity("testuser2");
 
         // User gets another connection to db2
         RelationalDatabaseConnection database2 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db5");

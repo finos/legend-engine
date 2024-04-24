@@ -40,7 +40,7 @@ public class TestArtifactGenerationExtensionApi
     public void testArtifactGenerationApi() throws IOException
     {
         ArtifactGenerationExtensionInput context = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("org/finos/legend/engine/generation/artifact/api/SimpleModel.json")), ArtifactGenerationExtensionInput.class);
-        ArtifactGenerationExtensionOutput runnerResult = api.run(context, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
+        ArtifactGenerationExtensionOutput runnerResult = api.run(context, Identity.getAnonymousIdentity());
         List<SerializedArtifactExtensionResult> values = runnerResult.values;
         Assert.assertEquals(1, values.size());
         SerializedArtifactExtensionResult value = values.get(0);

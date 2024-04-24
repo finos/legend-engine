@@ -72,7 +72,7 @@ public class TestLocalH2ConnectionState extends DbSpecificTests
         ConnectionStateManager stateManager = ConnectionStateManager.getInstance();
         assertEquals("mismatch in state count", 0, stateManager.size());
 
-        Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+        Identity identity1 = new Identity("identity1");
         RelationalDatabaseConnection db1 = this.buildLocalH2DatasourceSpec();
 
         List<Connection> connections = IntStream.range(0, 10)

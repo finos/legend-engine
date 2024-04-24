@@ -66,7 +66,7 @@ public class ConnectionPoolTestUtils
     private static List<DataSourceWithStatistics> getAllConnectionPoolsForUser(String identityName, Set<ConnectionKey> connectionKeys)
     {
         ConnectionStateManager connectionStateManager = ConnectionStateManager.getInstance();
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting(identityName);
+        Identity identity = new Identity(identityName);
         Stream<String> poolNames = connectionKeys.stream().map(key -> connectionStateManager.poolNameFor(identity, key));
         List<DataSourceWithStatistics> connectionPoolsForUser = poolNames
                 .map(poolName -> connectionStateManager.get(poolName))
