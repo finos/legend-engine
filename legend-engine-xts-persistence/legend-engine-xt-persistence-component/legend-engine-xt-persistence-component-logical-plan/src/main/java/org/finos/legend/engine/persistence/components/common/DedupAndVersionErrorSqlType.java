@@ -18,6 +18,8 @@ public enum DedupAndVersionErrorSqlType
 {
     MAX_DUPLICATES,
     DUPLICATE_ROWS,
+    MAX_PK_DUPLICATES,
+    PK_DUPLICATE_ROWS,
     MAX_DATA_ERRORS,
     DATA_ERROR_ROWS;
 }

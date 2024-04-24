@@ -19,6 +19,9 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equ
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.values.*;
+import org.finos.legend.engine.persistence.components.logicalplan.values.All;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +33,7 @@ public class DatasetVersioningHandler implements VersioningStrategyVisitor<Datas
     Dataset dataset;
     List<String> primaryKeys;
 
+    public static final String PK_COUNT = "legend_persistence_pk_count";
     private static final String RANK = "legend_persistence_rank";
 
     public DatasetVersioningHandler(Dataset dataset, List<String> primaryKeys)
@@ -41,7 +45,49 @@ public class DatasetVersioningHandler implements VersioningStrategyVisitor<Datas
     @Override
     public Dataset visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
     {
-        return this.dataset;
+        if (!noVersioningStrategy.failOnDuplicatePrimaryKeys())
+        {
+            return this.dataset;
+        }
+
+
+
+
+        List<FieldValue> partitionFields = primaryKeys.stream()
+            .map(field -> FieldValue.builder().fieldName(field).datasetRef(dataset.datasetReference()).build())
+            .collect(Collectors.toList());
+        Value count = WindowFunction.builder()
+            .windowFunction(FunctionImpl.builder().functionName(FunctionName.COUNT).addValue(All.INSTANCE).alias(PK_COUNT).build())
+            .addAllPartitionByFields(partitionFields)
+            .alias(PK_COUNT)
+            .build();
+        List<Value> allColumnsWithCount = new ArrayList<>(dataset.schemaReference().fieldValues());
+
+        allColumnsWithCount.add(count);
+        Selection selectionWithCount = Selection.builder()
+            .source(dataset)
+            .addAllFields(allColumnsWithCount)
+            .build();
+        return selectionWithCount;
+
+
+
+
+/*
+        List<Value> allColumnsWithPkCount = new ArrayList<>(dataset.schemaReference().fieldValues());
+        allColumnsWithPkCount.add(FunctionImpl.builder().functionName(FunctionName.COUNT).addValue(All.INSTANCE).alias(PK_COUNT).build());
+
+        List<Value> primaryKeyFieldValues = primaryKeys.stream().map(pkName -> FieldValue.builder().fieldName(pkName).datasetRef(dataset.datasetReference()).build()).collect(Collectors.toList());
+
+        Selection selectionWithGroupByPks = Selection.builder()
+            .source(dataset)
+            .addAllFields(allColumnsWithPkCount)
+            .groupByFields(primaryKeyFieldValues)
+            .build();
+
+        return selectionWithGroupByPks;
+
+ */
     }
 
     @Override

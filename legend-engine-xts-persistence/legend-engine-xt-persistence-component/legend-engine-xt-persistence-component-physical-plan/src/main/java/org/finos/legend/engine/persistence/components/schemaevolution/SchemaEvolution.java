@@ -40,6 +40,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.validitymilesto
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTimeAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTimeAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.ValidityDerivationVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
@@ -373,6 +374,7 @@ public class SchemaEvolution
             Set<String> dedupAndVersioningFields = new HashSet<>();
             ingestMode.dataSplitField().ifPresent(dedupAndVersioningFields::add);
             ingestMode.deduplicationStrategy().accept(DeduplicationVisitors.EXTRACT_DEDUP_FIELD).ifPresent(dedupAndVersioningFields::add);
+            ingestMode.versioningStrategy().accept(VersioningVisitors.EXTRACT_DEDUP_FIELD).ifPresent(dedupAndVersioningFields::add);
             return dedupAndVersioningFields;
         }
     };

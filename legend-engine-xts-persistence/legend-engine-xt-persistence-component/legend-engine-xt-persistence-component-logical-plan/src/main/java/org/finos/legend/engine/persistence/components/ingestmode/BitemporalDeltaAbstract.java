@@ -76,6 +76,10 @@ public interface BitemporalDeltaAbstract extends IngestMode, BitemporalMilestone
             @Override
             public Void visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
             {
+                if (noVersioningStrategy.failOnDuplicatePrimaryKeys())
+                {
+                    throw new IllegalStateException("Cannot build BitemporalDelta, no versioning (fail on duplicate primary keys) is not supported");
+                }
                 return null;
             }
 

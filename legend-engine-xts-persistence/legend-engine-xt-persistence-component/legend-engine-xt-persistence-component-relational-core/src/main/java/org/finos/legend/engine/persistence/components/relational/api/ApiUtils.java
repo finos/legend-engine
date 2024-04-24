@@ -190,7 +190,7 @@ public class ApiUtils
         {
             Dataset stagingDataset = planner.stagingDataset();
             String dataSplitField = ingestMode.dataSplitField().get();
-            LogicalPlan logicalPlanForMaxOfField = LogicalPlanFactory.getLogicalPlanForMaxOfField(stagingDataset, dataSplitField);
+            LogicalPlan logicalPlanForMaxOfField = LogicalPlanFactory.getLogicalPlanForMaxOfField(stagingDataset, dataSplitField, MAX_OF_FIELD);
             List<TabularData> tabularData = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForMaxOfField));
             Map<String, Object> row = getFirstRowForFirstResult(tabularData);
             Long maxDataSplit = retrieveValueAsLong(row.get(MAX_OF_FIELD)).orElseThrow(IllegalStateException::new);
@@ -245,12 +245,16 @@ public class ApiUtils
 
         for (Map<String, Object> dataError: dataErrors)
         {
-            dataErrorList.add(DataError.builder()
-                    .errorMessage(errorCategory.getDefaultErrorMessage())
-                    .errorCategory(errorCategory)
-                    .errorRecord(buildErrorRecord(allFields, dataError))
-                    .putAllErrorDetails(buildErrorDetails(dataError, caseCorrectedErrorField, errorDetailsKey))
-                    .build());
+            DataError error = DataError.builder()
+                .errorMessage(errorCategory.getDefaultErrorMessage())
+                .errorCategory(errorCategory)
+                .errorRecord(buildErrorRecord(allFields, dataError))
+                .putAllErrorDetails(buildErrorDetails(dataError, caseCorrectedErrorField, errorDetailsKey))
+                .build();
+            if (!dataErrorList.contains(error))
+            {
+                dataErrorList.add(error);
+            }
         }
         return dataErrorList;
     }

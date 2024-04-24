@@ -14,7 +14,12 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.versioning;
 
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
+
 import java.util.Optional;
+
+import static org.finos.legend.engine.persistence.components.ingestmode.versioning.DatasetVersioningHandler.PK_COUNT;
 
 public class VersioningVisitors
 {
@@ -46,6 +51,58 @@ public class VersioningVisitors
         @Override
         public Boolean visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
         {
+            return noVersioningStrategy.failOnDuplicatePrimaryKeys();
+        }
+
+        @Override
+        public Boolean visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
+        {
+            return maxVersionStrategy.performStageVersioning();
+        }
+
+        @Override
+        public Boolean visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
+        {
+            return allVersionsStrategyAbstract.performStageVersioning();
+        }
+    };
+
+    public static final VersioningStrategyVisitor<Optional<String>> EXTRACT_DEDUP_FIELD = new VersioningStrategyVisitor<Optional<String>>()
+    {
+
+        @Override
+        public Optional<String> visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
+        {
+            if (noVersioningStrategy.failOnDuplicatePrimaryKeys())
+            {
+                return Optional.of(PK_COUNT);
+            }
+            else
+            {
+                return Optional.empty();
+            }
+        }
+
+        @Override
+        public Optional<String> visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
+        {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<String> visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
+        {
+            return Optional.empty();
+        }
+    };
+
+
+    public static final VersioningStrategyVisitor<Boolean> IS_DATA_ERROR_CHECK_NEEDED = new VersioningStrategyVisitor<Boolean>()
+    {
+
+        @Override
+        public Boolean visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
+        {
             return false;
         }
 
@@ -59,6 +116,28 @@ public class VersioningVisitors
         public Boolean visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
         {
             return allVersionsStrategyAbstract.performStageVersioning();
+        }
+    };
+
+    public static final VersioningStrategyVisitor<Boolean> IS_DUPLICATE_PK_CHECK_NEEDED = new VersioningStrategyVisitor<Boolean>()
+    {
+
+        @Override
+        public Boolean visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
+        {
+            return noVersioningStrategy.failOnDuplicatePrimaryKeys();
+        }
+
+        @Override
+        public Boolean visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
+        {
+            return false;
+        }
+
+        @Override
+        public Boolean visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
+        {
+            return false;
         }
     };
 
@@ -83,6 +162,35 @@ public class VersioningVisitors
         }
     };
 
+    public static class ValidateDedupAndVersioningCombination implements VersioningStrategyVisitor<Void>
+    {
+        final DeduplicationStrategy deduplicationStrategy;
 
+        public ValidateDedupAndVersioningCombination(DeduplicationStrategy deduplicationStrategy)
+        {
+            this.deduplicationStrategy = deduplicationStrategy;
+        }
 
+        @Override
+        public Void visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
+        {
+            if (noVersioningStrategy.failOnDuplicatePrimaryKeys() && !(this.deduplicationStrategy instanceof FailOnDuplicates))
+            {
+                throw new IllegalStateException("Cannot build IngestMode, fail on duplicates must be selected with fail on duplicate primary keys");
+            }
+            return null;
+        }
+
+        @Override
+        public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
+        {
+            return null;
+        }
+
+        @Override
+        public Void visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
+        {
+            return null;
+        }
+    }
 }
