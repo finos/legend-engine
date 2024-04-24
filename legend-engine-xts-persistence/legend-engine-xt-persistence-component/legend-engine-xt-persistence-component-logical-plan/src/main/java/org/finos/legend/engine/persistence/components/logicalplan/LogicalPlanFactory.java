@@ -109,11 +109,11 @@ public class LogicalPlanFactory
         return LogicalPlan.builder().addOps(selection).build();
     }
 
-    public static LogicalPlan getLogicalPlanForMaxOfField(Dataset dataset, String fieldName, String alias)
+    public static LogicalPlan getLogicalPlanForMaxOfField(Dataset dataset, String fieldName)
     {
         FieldValue field = FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(fieldName).build();
         Selection selection = Selection.builder()
-                .addFields(FunctionImpl.builder().functionName(FunctionName.MAX).addValue(field).alias(alias).build())
+                .addFields(FunctionImpl.builder().functionName(FunctionName.MAX).addValue(field).alias(MAX_OF_FIELD).build())
                 .source(dataset).build();
         return LogicalPlan.builder().addOps(selection).build();
     }

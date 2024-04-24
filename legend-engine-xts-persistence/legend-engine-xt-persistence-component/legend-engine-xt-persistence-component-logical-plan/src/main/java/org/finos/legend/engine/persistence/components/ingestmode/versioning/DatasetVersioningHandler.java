@@ -19,8 +19,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equ
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.values.*;
-import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +30,6 @@ public class DatasetVersioningHandler implements VersioningStrategyVisitor<Datas
     Dataset dataset;
     List<String> primaryKeys;
 
-    public static final String PK_COUNT = "legend_persistence_pk_count";
     private static final String RANK = "legend_persistence_rank";
 
     public DatasetVersioningHandler(Dataset dataset, List<String> primaryKeys)

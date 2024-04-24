@@ -24,8 +24,8 @@ import org.finos.legend.engine.persistence.components.importer.Importer;
 import org.finos.legend.engine.persistence.components.importer.Importers;
 import org.finos.legend.engine.persistence.components.ingestmode.*;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetDeduplicationHandler;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.DatasetVersioningHandler;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DeriveDataErrorRowsLogicalPlan;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DeriveDuplicatePkRowsLogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
@@ -485,7 +485,7 @@ public abstract class RelationalIngestorAbstract
                     String errorMessage = "Encountered duplicate primary keys, Failing the batch as Fail on Duplicate Primary Keys is selected";
                     LOGGER.error(errorMessage);
                     List<DataError> dataErrors = ApiUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), duplicatePkRows.getData(),
-                        ErrorCategory.DUPLICATE_PRIMARY_KEYS, caseConversion(), DatasetVersioningHandler.PK_COUNT, NUM_PK_DUPLICATES);
+                        ErrorCategory.DUPLICATE_PRIMARY_KEYS, caseConversion(), DeriveDuplicatePkRowsLogicalPlan.DUPLICATE_PK_COUNT, NUM_PK_DUPLICATES);
                     throw new DataQualityException(errorMessage, dataErrors);
                 }
             }

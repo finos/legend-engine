@@ -178,7 +178,7 @@ public abstract class Planner
         this.batchEndTimestamp = BatchEndTimestamp.INSTANCE;
 
         // Validation
-        // 1. Validate if the combination of deduplication and versioning are valid
+        // 1. Validate if the combination of deduplication and versioning is valid
         ingestMode.versioningStrategy().accept(new VersioningVisitors.ValidateDedupAndVersioningCombination(ingestMode.deduplicationStrategy()));
         // 2. MaxVersion & AllVersion strategies must have primary keys
         ingestMode.versioningStrategy().accept(new ValidatePrimaryKeysForVersioningStrategy(primaryKeys, this::validatePrimaryKeysNotEmpty));
@@ -459,14 +459,14 @@ public abstract class Planner
         {
             FieldValue count = FieldValue.builder().datasetRef(tempStagingDataset().datasetReference()).fieldName(COUNT).build();
             FunctionImpl maxCount = FunctionImpl.builder()
-                .functionName(FunctionName.MAX)
-                .addValue(count)
-                .alias(DedupAndVersionErrorSqlType.MAX_DUPLICATES.name())
-                .build();
+                    .functionName(FunctionName.MAX)
+                    .addValue(count)
+                    .alias(DedupAndVersionErrorSqlType.MAX_DUPLICATES.name())
+                    .build();
             Selection selectMaxDupsCount = Selection.builder()
-                .source(tempStagingDataset())
-                .addFields(maxCount)
-                .build();
+                    .source(tempStagingDataset())
+                    .addFields(maxCount)
+                    .build();
             LogicalPlan maxDuplicatesCountPlan = LogicalPlan.builder().addOps(selectMaxDupsCount).build();
             dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.MAX_DUPLICATES, maxDuplicatesCountPlan);
 
@@ -478,11 +478,11 @@ public abstract class Planner
             {
                 rowsToSelect.add(FieldValue.builder().fieldName(COUNT).build());
                 Selection selectDuplicatesRows = Selection.builder()
-                    .source(tempStagingDataset())
-                    .addAllFields(rowsToSelect)
-                    .condition(GreaterThan.of(count, ObjectValue.of(1)))
-                    .limit(options().sampleRowCount())
-                    .build();
+                        .source(tempStagingDataset())
+                        .addAllFields(rowsToSelect)
+                        .condition(GreaterThan.of(count, ObjectValue.of(1)))
+                        .limit(options().sampleRowCount())
+                        .build();
                 LogicalPlan selectDuplicatesRowsPlan = LogicalPlan.builder().addOps(selectDuplicatesRows).build();
                 dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.DUPLICATE_ROWS, selectDuplicatesRowsPlan);
             }
@@ -510,7 +510,7 @@ public abstract class Planner
     protected void addDataErrorCheck(Map<DedupAndVersionErrorSqlType, LogicalPlan> dedupAndVersioningErrorChecks)
     {
         List<String> remainingColumns = getDigestOrRemainingColumns();
-        if (ingestMode.versioningStrategy().accept(VersioningVisitors.IS_DATA_ERROR_CHECK_NEEDED))
+        if (ingestMode.versioningStrategy().accept(VersioningVisitors.IS_TEMP_TABLE_NEEDED))
         {
             LogicalPlan logicalPlanForDataErrorCheck = ingestMode.versioningStrategy().accept(new DeriveMaxDataErrorLogicalPlan(primaryKeys, remainingColumns, tempStagingDataset()));
             if (logicalPlanForDataErrorCheck != null)

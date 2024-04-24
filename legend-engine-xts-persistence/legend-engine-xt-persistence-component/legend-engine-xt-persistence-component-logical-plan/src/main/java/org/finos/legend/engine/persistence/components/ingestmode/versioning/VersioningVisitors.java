@@ -65,28 +65,6 @@ public class VersioningVisitors
         }
     };
 
-    public static final VersioningStrategyVisitor<Boolean> IS_DATA_ERROR_CHECK_NEEDED = new VersioningStrategyVisitor<Boolean>()
-    {
-
-        @Override
-        public Boolean visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
-        {
-            return false;
-        }
-
-        @Override
-        public Boolean visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
-        {
-            return maxVersionStrategy.performStageVersioning();
-        }
-
-        @Override
-        public Boolean visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
-        {
-            return allVersionsStrategyAbstract.performStageVersioning();
-        }
-    };
-
     public static final VersioningStrategyVisitor<Boolean> IS_DUPLICATE_PK_CHECK_NEEDED = new VersioningStrategyVisitor<Boolean>()
     {
 
