@@ -19,8 +19,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.deduplication.F
 
 import java.util.Optional;
 
-import static org.finos.legend.engine.persistence.components.ingestmode.versioning.DatasetVersioningHandler.PK_COUNT;
-
 public class VersioningVisitors
 {
 
@@ -51,7 +49,7 @@ public class VersioningVisitors
         @Override
         public Boolean visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
         {
-            return noVersioningStrategy.failOnDuplicatePrimaryKeys();
+            return false;
         }
 
         @Override
@@ -66,36 +64,6 @@ public class VersioningVisitors
             return allVersionsStrategyAbstract.performStageVersioning();
         }
     };
-
-    public static final VersioningStrategyVisitor<Optional<String>> EXTRACT_DEDUP_FIELD = new VersioningStrategyVisitor<Optional<String>>()
-    {
-
-        @Override
-        public Optional<String> visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
-        {
-            if (noVersioningStrategy.failOnDuplicatePrimaryKeys())
-            {
-                return Optional.of(PK_COUNT);
-            }
-            else
-            {
-                return Optional.empty();
-            }
-        }
-
-        @Override
-        public Optional<String> visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
-        {
-            return Optional.empty();
-        }
-
-        @Override
-        public Optional<String> visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
-        {
-            return Optional.empty();
-        }
-    };
-
 
     public static final VersioningStrategyVisitor<Boolean> IS_DATA_ERROR_CHECK_NEEDED = new VersioningStrategyVisitor<Boolean>()
     {

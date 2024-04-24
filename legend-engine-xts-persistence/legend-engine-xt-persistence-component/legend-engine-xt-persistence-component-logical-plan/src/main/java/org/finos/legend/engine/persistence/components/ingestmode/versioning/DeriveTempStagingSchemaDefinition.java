@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetDeduplicationHandler.COUNT;
-import static org.finos.legend.engine.persistence.components.ingestmode.versioning.DatasetVersioningHandler.PK_COUNT;
 
 public class DeriveTempStagingSchemaDefinition implements VersioningStrategyVisitor<SchemaDefinition>
 {
@@ -51,14 +50,6 @@ public class DeriveTempStagingSchemaDefinition implements VersioningStrategyVisi
     @Override
     public SchemaDefinition visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
     {
-        if (noVersioningStrategy.failOnDuplicatePrimaryKeys())
-        {
-            Field pkCount = Field.builder().name(PK_COUNT)
-                .type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty()))
-                .primaryKey(false)
-                .build();
-            schemaFields.add(pkCount);
-        }
         return schemaDefBuilder.addAllFields(schemaFields).build();
     }
 

@@ -374,7 +374,6 @@ public class SchemaEvolution
             Set<String> dedupAndVersioningFields = new HashSet<>();
             ingestMode.dataSplitField().ifPresent(dedupAndVersioningFields::add);
             ingestMode.deduplicationStrategy().accept(DeduplicationVisitors.EXTRACT_DEDUP_FIELD).ifPresent(dedupAndVersioningFields::add);
-            ingestMode.versioningStrategy().accept(VersioningVisitors.EXTRACT_DEDUP_FIELD).ifPresent(dedupAndVersioningFields::add);
             return dedupAndVersioningFields;
         }
     };

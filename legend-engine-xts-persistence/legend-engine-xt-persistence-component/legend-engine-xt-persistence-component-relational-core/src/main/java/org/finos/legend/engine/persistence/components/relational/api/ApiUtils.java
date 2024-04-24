@@ -245,16 +245,12 @@ public class ApiUtils
 
         for (Map<String, Object> dataError: dataErrors)
         {
-            DataError error = DataError.builder()
+            dataErrorList.add(DataError.builder()
                 .errorMessage(errorCategory.getDefaultErrorMessage())
                 .errorCategory(errorCategory)
                 .errorRecord(buildErrorRecord(allFields, dataError))
                 .putAllErrorDetails(buildErrorDetails(dataError, caseCorrectedErrorField, errorDetailsKey))
-                .build();
-            if (!dataErrorList.contains(error))
-            {
-                dataErrorList.add(error);
-            }
+                .build());
         }
         return dataErrorList;
     }

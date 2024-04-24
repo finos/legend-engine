@@ -112,7 +112,6 @@ public class TestDedupAndVersioning extends BaseTest
                     .build();
 
     String[] schemaWithCount = new String[]{idName, nameName, incomeName, expiryDateName, digestName, "legend_persistence_count"};
-    String[] schemaWithCountAndPkCount = new String[]{idName, nameName, incomeName, expiryDateName, digestName, "legend_persistence_count", "legend_persistence_pk_count"};
     String[] schemaWithVersion = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName};
     String[] schemaWithVersionAndCount = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName, "legend_persistence_count"};
     String[] schemaWithVersionCountAndDataSplit = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName, "legend_persistence_count", DATA_SPLIT};
@@ -654,7 +653,7 @@ public class TestDedupAndVersioning extends BaseTest
         String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data5_fail_on_dups_no_versioning_fail_on_dups_pk.csv";
         String ingestRunId = performDedupAndVersioining(datasets, ingestMode);
         // Validate tempTableExists
-        verifyResults(expectedDataPath, schemaWithCountAndPkCount, ingestRunId);
+        verifyResults(expectedDataPath, schemaWithCount, ingestRunId);
 
 
         // Duplicate PK scenario, should throw error
@@ -675,8 +674,8 @@ public class TestDedupAndVersioning extends BaseTest
             row2.put("name", "Cathy");
             row2.put("id", 3);
 
-            DataError dataError1 = buildDataError(ErrorCategory.DUPLICATE_PRIMARY_KEYS, row1, buildErrorDetailsMap("num_pk_duplicates", 3));
-            DataError dataError2 = buildDataError(ErrorCategory.DUPLICATE_PRIMARY_KEYS, row2, buildErrorDetailsMap("num_pk_duplicates", 2));
+            DataError dataError1 = buildDataError(ErrorCategory.DUPLICATE_PRIMARY_KEYS, row1, buildErrorDetailsMap("num_pk_duplicates", 3L));
+            DataError dataError2 = buildDataError(ErrorCategory.DUPLICATE_PRIMARY_KEYS, row2, buildErrorDetailsMap("num_pk_duplicates", 2L));
             Assertions.assertEquals("Encountered duplicate primary keys, Failing the batch as Fail on Duplicate Primary Keys is selected", e.getMessage());
             Assertions.assertEquals(Arrays.asList(dataError1, dataError2), e.getDataErrors());
         }

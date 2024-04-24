@@ -75,7 +75,6 @@ import static org.finos.legend.engine.persistence.components.common.StatisticNam
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_UPDATED;
 
 import static org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetDeduplicationHandler.COUNT;
-import static org.finos.legend.engine.persistence.components.ingestmode.versioning.DatasetVersioningHandler.PK_COUNT;
 import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.SUPPORTED_DATA_TYPES_FOR_VERSIONING_COLUMNS;
 import static org.immutables.value.Value.Default;
 import static org.immutables.value.Value.Immutable;
@@ -246,15 +245,13 @@ public abstract class Planner
         List<DataType> fieldTypes = new ArrayList<>();
 
         Optional<String> dedupField = ingestMode.deduplicationStrategy().accept(DeduplicationVisitors.EXTRACT_DEDUP_FIELD);
-        Optional<String> dedupFieldForVersioning = ingestMode.versioningStrategy().accept(VersioningVisitors.EXTRACT_DEDUP_FIELD);
         Optional<String> dataSplitField = ingestMode.dataSplitField();
 
         for (int i = 0; i < stagingDataset().schemaReference().fieldValues().size(); i++)
         {
             FieldValue fieldValue = stagingDataset().schemaReference().fieldValues().get(i);
             if ((dedupField.isPresent() && dedupField.get().equalsIgnoreCase(fieldValue.fieldName())) ||
-                (dataSplitField.isPresent() && dataSplitField.get().equalsIgnoreCase(fieldValue.fieldName())) ||
-                (dedupFieldForVersioning.isPresent() && dedupFieldForVersioning.get().equalsIgnoreCase(fieldValue.fieldName())))
+                (dataSplitField.isPresent() && dataSplitField.get().equalsIgnoreCase(fieldValue.fieldName())))
             {
                 continue;
             }
@@ -269,7 +266,6 @@ public abstract class Planner
     {
         List<Value> dataFields = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
         Optional<String> dedupField = ingestMode.deduplicationStrategy().accept(DeduplicationVisitors.EXTRACT_DEDUP_FIELD);
-        Optional<String> dedupFieldForVersioning = ingestMode.versioningStrategy().accept(VersioningVisitors.EXTRACT_DEDUP_FIELD);
 
         if (ingestMode().dataSplitField().isPresent())
         {
@@ -278,10 +274,6 @@ public abstract class Planner
         if (dedupField.isPresent())
         {
             LogicalPlanUtils.removeField(dataFields, dedupField.get());
-        }
-        if (dedupFieldForVersioning.isPresent())
-        {
-            LogicalPlanUtils.removeField(dataFields, dedupFieldForVersioning.get());
         }
         return dataFields;
     }
@@ -465,13 +457,34 @@ public abstract class Planner
     {
         if (ingestMode.deduplicationStrategy() instanceof FailOnDuplicates)
         {
-            LogicalPlan maxDuplicatesCountPlan = LogicalPlanFactory.getLogicalPlanForMaxOfField(tempStagingDataset(), COUNT, DedupAndVersionErrorSqlType.MAX_DUPLICATES.name());
+            FieldValue count = FieldValue.builder().datasetRef(tempStagingDataset().datasetReference()).fieldName(COUNT).build();
+            FunctionImpl maxCount = FunctionImpl.builder()
+                .functionName(FunctionName.MAX)
+                .addValue(count)
+                .alias(DedupAndVersionErrorSqlType.MAX_DUPLICATES.name())
+                .build();
+            Selection selectMaxDupsCount = Selection.builder()
+                .source(tempStagingDataset())
+                .addFields(maxCount)
+                .build();
+            LogicalPlan maxDuplicatesCountPlan = LogicalPlan.builder().addOps(selectMaxDupsCount).build();
             dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.MAX_DUPLICATES, maxDuplicatesCountPlan);
 
-            Optional<LogicalPlan> selectDuplicatesRowsPlan = getSelectPksWithCountMoreThanOne(COUNT);
-            if (selectDuplicatesRowsPlan.isPresent())
+            /*
+            select pks from tempStagingDataset where COUNT > 1
+            */
+            List<FieldValue> rowsToSelect = this.primaryKeys.stream().map(field -> FieldValue.builder().fieldName(field).build()).collect(Collectors.toList());
+            if (rowsToSelect.size() > 0)
             {
-                dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.DUPLICATE_ROWS, selectDuplicatesRowsPlan.get());
+                rowsToSelect.add(FieldValue.builder().fieldName(COUNT).build());
+                Selection selectDuplicatesRows = Selection.builder()
+                    .source(tempStagingDataset())
+                    .addAllFields(rowsToSelect)
+                    .condition(GreaterThan.of(count, ObjectValue.of(1)))
+                    .limit(options().sampleRowCount())
+                    .build();
+                LogicalPlan selectDuplicatesRowsPlan = LogicalPlan.builder().addOps(selectDuplicatesRows).build();
+                dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.DUPLICATE_ROWS, selectDuplicatesRowsPlan);
             }
         }
     }
@@ -480,36 +493,18 @@ public abstract class Planner
     {
         if (ingestMode.versioningStrategy().accept(VersioningVisitors.IS_DUPLICATE_PK_CHECK_NEEDED))
         {
-            LogicalPlan maxPkDuplicatesCountPlan = LogicalPlanFactory.getLogicalPlanForMaxOfField(tempStagingDataset(), PK_COUNT, DedupAndVersionErrorSqlType.MAX_PK_DUPLICATES.name());
-            dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.MAX_PK_DUPLICATES, maxPkDuplicatesCountPlan);
-
-            Optional<LogicalPlan> selectDuplicatesRowsPlan = getSelectPksWithCountMoreThanOne(PK_COUNT);
-            if (selectDuplicatesRowsPlan.isPresent())
+            LogicalPlan logicalPlanForMaxDuplicatePkCount = ingestMode.versioningStrategy().accept(new DeriveMaxDuplicatePkCountLogicalPlan(primaryKeys, tempStagingDataset()));
+            if (logicalPlanForMaxDuplicatePkCount != null)
             {
-                dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.PK_DUPLICATE_ROWS, selectDuplicatesRowsPlan.get());
+                dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.MAX_PK_DUPLICATES, logicalPlanForMaxDuplicatePkCount);
+            }
+
+            LogicalPlan logicalPlanForDuplicatePkRows = ingestMode.versioningStrategy().accept(new DeriveDuplicatePkRowsLogicalPlan(primaryKeys, tempStagingDataset(), options().sampleRowCount()));
+            if (logicalPlanForDuplicatePkRows != null)
+            {
+                dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.PK_DUPLICATE_ROWS, logicalPlanForDuplicatePkRows);
             }
         }
-    }
-
-    /*
-    select pks from tempStagingDataset where COUNT > 1
-    */
-    private Optional<LogicalPlan> getSelectPksWithCountMoreThanOne(String countName)
-    {
-        FieldValue count = FieldValue.builder().datasetRef(tempStagingDataset().datasetReference()).fieldName(countName).build();
-        List<FieldValue> rowsToSelect = this.primaryKeys.stream().map(field -> FieldValue.builder().fieldName(field).build()).collect(Collectors.toList());
-        if (rowsToSelect.size() > 0)
-        {
-            rowsToSelect.add(FieldValue.builder().fieldName(countName).build());
-            Selection selectDuplicatesRows = Selection.builder()
-                .source(tempStagingDataset())
-                .addAllFields(rowsToSelect)
-                .condition(GreaterThan.of(count, ObjectValue.of(1)))
-                .limit(options().sampleRowCount())
-                .build();
-            return Optional.of(LogicalPlan.builder().addOps(selectDuplicatesRows).build());
-        }
-        return Optional.empty();
     }
 
     protected void addDataErrorCheck(Map<DedupAndVersionErrorSqlType, LogicalPlan> dedupAndVersioningErrorChecks)
@@ -627,11 +622,9 @@ public abstract class Planner
                 .filter(fieldName -> !primaryKeys.contains(fieldName))
                 .collect(Collectors.toList());
         Optional<String> dedupField = ingestMode.deduplicationStrategy().accept(DeduplicationVisitors.EXTRACT_DEDUP_FIELD);
-        Optional<String> dedupFieldForVersioning = ingestMode.versioningStrategy().accept(VersioningVisitors.EXTRACT_DEDUP_FIELD);
         Optional<String> versioningField = ingestMode.versioningStrategy().accept(VersioningVisitors.EXTRACT_VERSIONING_FIELD);
         nonPkDataFields.removeIf(field -> ingestMode().dataSplitField().isPresent() && field.equals(ingestMode().dataSplitField().get()));
         nonPkDataFields.removeIf(field -> dedupField.isPresent() && field.equals(dedupField.get()));
-        nonPkDataFields.removeIf(field -> dedupFieldForVersioning.isPresent() && field.equals(dedupFieldForVersioning.get()));
         nonPkDataFields.removeIf(field -> versioningField.isPresent() && field.equals(versioningField.get()));
         return nonPkDataFields;
     }
