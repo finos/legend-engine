@@ -31,7 +31,7 @@ public class TestSemiStructuredJoinChainMapping extends AbstractTestSemiStructur
         String memSQLExpected =
                 "Relational\n" +
                 "(\n" +
-                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Manager Firm Legal Name, String, VARCHAR(65536), \"\")]\n" +
+                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Manager Firm Legal Name, String, VARCHAR(8192), \"\")]\n" +
                 "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Manager Firm Legal Name\", \"\")]\n" +
                 "  sql = select `root`.FIRSTNAME as `First Name`, `person_table_1`.FIRM_DETAILS::$legalName as `Manager Firm Legal Name` from PERSON_SCHEMA.PERSON_TABLE as `root` left outer join PERSON_SCHEMA.PERSON_TABLE as `person_table_1` on (`root`.MANAGERID = `person_table_1`.ID)\n" +
                 "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
@@ -48,7 +48,7 @@ public class TestSemiStructuredJoinChainMapping extends AbstractTestSemiStructur
         String memSQLExpected =
                 "Relational\n" +
                 "(\n" +
-                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Manager Firm Legal Name, String, VARCHAR(65536), \"\"), (Manager Manager Firm Legal Name, String, VARCHAR(65536), \"\"), (Manager Manager Firm Legal Name Dup1, String, VARCHAR(65536), \"\"), (Manager Manager Firm Legal Name Dup2, String, VARCHAR(65536), \"\")]\n" +
+                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Manager Firm Legal Name, String, VARCHAR(8192), \"\"), (Manager Manager Firm Legal Name, String, VARCHAR(8192), \"\"), (Manager Manager Firm Legal Name Dup1, String, VARCHAR(8192), \"\"), (Manager Manager Firm Legal Name Dup2, String, VARCHAR(8192), \"\")]\n" +
                 "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Manager Firm Legal Name\", \"\"), (\"Manager Manager Firm Legal Name\", \"\"), (\"Manager Manager Firm Legal Name Dup1\", \"\"), (\"Manager Manager Firm Legal Name Dup2\", \"\")]\n" +
                 "  sql = select `root`.FIRSTNAME as `First Name`, `person_table_1`.FIRM_DETAILS::$legalName as `Manager Firm Legal Name`, `person_table_2`.FIRM_DETAILS::$legalName as `Manager Manager Firm Legal Name`, `person_table_3`.FIRM_DETAILS::$legalName as `Manager Manager Firm Legal Name Dup1`, `person_table_5`.FIRM_DETAILS::$legalName as `Manager Manager Firm Legal Name Dup2` from PERSON_SCHEMA.PERSON_TABLE as `root` left outer join PERSON_SCHEMA.PERSON_TABLE as `person_table_1` on (`root`.MANAGERID = `person_table_1`.ID) left outer join PERSON_SCHEMA.PERSON_TABLE as `person_table_2` on (`person_table_1`.MANAGERID = `person_table_2`.ID) left outer join PERSON_SCHEMA.PERSON_TABLE as `person_table_3` on (`person_table_1`.MANAGERID = `person_table_3`.ID) left outer join PERSON_SCHEMA.PERSON_TABLE as `person_table_4` on (`root`.MANAGERID = `person_table_4`.ID) left outer join PERSON_SCHEMA.PERSON_TABLE as `person_table_5` on (`person_table_4`.MANAGERID = `person_table_5`.ID)\n" +
                 "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
