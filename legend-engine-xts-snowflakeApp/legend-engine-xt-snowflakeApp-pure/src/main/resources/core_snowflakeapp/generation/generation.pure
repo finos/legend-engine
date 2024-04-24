@@ -37,10 +37,11 @@ function  meta::external::function::activator::snowflakeApp::generation::generat
 function  <<access.private>> meta::external::function::activator::snowflakeApp::generation::generateInputParamsStub(f:Function<Any>[1]):String[1]
 {  
   let params = $f->functionType().parameters->evaluateAndDeactivate();   
-  assertEmpty($params->filter(p | $p.multiplicity != PureOne), 'not implemented, only multiplicity PureOne for snowflake app params is supported: ' + $params->filter(p | $p.multiplicity != PureOne)->map(p|$p.name)->joinStrings(', '));  
-  assertEmpty($params->filter(p | $p.genericType.rawType->toOne()->instanceOf(Enumeration)), 'not implemented, enum type for snowflake app params is not supported : ' + $params->filter(p | $p.genericType.rawType->toOne()->instanceOf(Enumeration))->map(p|$p.name)->joinStrings(', '));    
+  assertEmpty($params->filter(p | $p.multiplicity != PureOne), 'not implemented, only multiplicity PureOne for snowflake app params is supported: ' + $params->filter(p | $p.multiplicity != PureOne)->map(p|$p.name)->joinStrings(', '));
   let typeMap = PureTypeToSnowflakeTypeMap();
-  '(' + $params->map(p|'"' + $p.name + '" ' + $typeMap->get($p.genericType.rawType->toOne())->toOne('Relational type missing for type: ' + $p.genericType.rawType->toOne()->toString()))->joinStrings(',') + ')';    
+  
+  '(' + $params->map(p|'"' + $p.name + '" ' + if($p.genericType.rawType->toOne()->instanceOf(Enumeration), | 'VARCHAR', | $typeMap->get($p.genericType.rawType->toOne())->toOne('Relational type missing for type: ' + $p.genericType.rawType->toOne()->toString()))
+)->joinStrings(',') + ')';    
 }
 
 function <<access.private>>  meta::external::function::activator::snowflakeApp::generation::PureTypeToSnowflakeTypeMap():Map<PrimitiveType, String>[1]
