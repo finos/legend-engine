@@ -119,7 +119,6 @@
             <artifactId>legend-engine-executionPlan-execution</artifactId>
         </dependency>
         <!-- ENGINE -->
-
         <!-- MemSql -->
 <!--        <dependency>-->
 <!--            <groupId>com.singlestore</groupId>-->
