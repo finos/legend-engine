@@ -151,8 +151,11 @@ public class ReplGridServer
                     try
                     {
                         String[] path = exchange.getRequestURI().getPath().split("/repl/");
-                        Path currentPath = Paths.get("").toAbsolutePath();
-                        byte[] response = Files.readAllBytes(Paths.get(currentPath.toString() + "/legend-engine-config/legend-engine-repl/legend-engine-repl-relational/target/web-content/package/dist/repl/" + (path[1].equals("grid") ? "index.html" : path[1])));
+                        String resourcePath = "/web-content/package/dist/repl/" + (path[1].equals("grid") ? "index.html" : path[1]);
+                        InputStreamReader inputStreamReader = new InputStreamReader(ReplGridServer.class.getResourceAsStream(resourcePath), StandardCharsets.UTF_8);
+                        BufferedReader bufferReader = new BufferedReader(inputStreamReader);
+                        String responseString = bufferReader.lines().collect(Collectors.joining());
+                        byte[] response = responseString.getBytes(StandardCharsets.UTF_8);
                         exchange.sendResponseHeaders(200, response.length);
                         OutputStream os = exchange.getResponseBody();
                         os.write(response);
