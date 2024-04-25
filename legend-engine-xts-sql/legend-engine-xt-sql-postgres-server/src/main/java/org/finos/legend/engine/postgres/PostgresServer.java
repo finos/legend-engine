@@ -34,11 +34,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-
-import jakarta.inject.Inject;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-
 import org.finos.legend.engine.postgres.auth.AuthenticationProvider;
 import org.finos.legend.engine.postgres.config.GSSConfig;
 import org.finos.legend.engine.postgres.config.ServerConfig;
@@ -61,8 +58,6 @@ public class PostgresServer
 
     private final Messages messages;
 
-
-    @Inject
     public PostgresServer(ServerConfig serverConfig, SessionsFactory sessionsFactory, AuthenticationProvider authenticationProvider, Messages messages)
     {
         this.port = serverConfig.getPort();
