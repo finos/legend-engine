@@ -15,7 +15,9 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
-public class LegendTdsClientException extends RuntimeException
+import org.finos.legend.engine.postgres.PostgresServerException;
+
+public class LegendTdsClientException extends PostgresServerException
 {
     public LegendTdsClientException(String message)
     {

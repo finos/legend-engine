@@ -40,6 +40,7 @@ import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 import org.finos.legend.engine.postgres.types.PGType;
 import org.finos.legend.engine.postgres.types.PGTypes;
+import org.finos.legend.engine.postgres.utils.ErrorMessageFormatter;
 import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
 import org.slf4j.Logger;
 
@@ -58,17 +59,20 @@ import org.slf4j.Logger;
 public class Messages
 {
 
-    private Messages()
-    {
-    }
-
-    //private static final Logger LOGGER = LogManager.getLogger(Messages.class);
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(Messages.class);
 
     private static final byte[] METHOD_NAME_CLIENT_AUTH = "ClientAuthentication".getBytes(
             StandardCharsets.UTF_8);
 
-    public static ChannelFuture sendAuthenticationOK(Channel channel)
+    private final ErrorMessageFormatter errorMessageFormatter;
+
+    public Messages(ErrorMessageFormatter errorMessageFormatter)
+    {
+        this.errorMessageFormatter = errorMessageFormatter;
+    }
+
+
+    public ChannelFuture sendAuthenticationOK(Channel channel)
     {
         ByteBuf buffer = channel.alloc().buffer(9);
         buffer.writeByte('R');
@@ -90,7 +94,7 @@ public class Messages
      * @param rowCount : number of rows in the result set or number of rows affected by the DML
      *                 statement
      */
-    static ChannelFuture sendCommandComplete(Channel channel, String query, long rowCount)
+    ChannelFuture sendCommandComplete(Channel channel, String query, long rowCount)
     {
         query = query.trim().split(" ", 2)[0].toUpperCase(Locale.ENGLISH);
         String commandTag;
@@ -140,7 +144,7 @@ public class Messages
      * transaction block); 'T' if in a transaction block; or 'E' if in a failed transaction block
      * (queries will be rejected until block is ended).
      */
-    static ChannelFuture sendReadyForQuery(Channel channel)
+    ChannelFuture sendReadyForQuery(Channel channel)
     {
         ByteBuf buffer = channel.alloc().buffer(6);
         buffer.writeByte('Z');
@@ -167,7 +171,7 @@ public class Messages
      * session_authorization, - DateStyle, - IntervalStyle, - TimeZone, - integer_datetimes, -
      * standard_conforming_string
      */
-    static void sendParameterStatus(Channel channel, final String name, final String value)
+    void sendParameterStatus(Channel channel, final String name, final String value)
     {
         byte[] nameBytes = name.getBytes(StandardCharsets.UTF_8);
         byte[] valueBytes = value.getBytes(StandardCharsets.UTF_8);
@@ -186,7 +190,7 @@ public class Messages
         }
     }
 
-    static void sendAuthenticationError(Channel channel, String message)
+    void sendAuthenticationError(Channel channel, String message)
     {
         LOGGER.warn(message);
         byte[] msg = (message != null ? message : "Unknown Auth Error").getBytes(StandardCharsets.UTF_8);
@@ -198,7 +202,7 @@ public class Messages
     }
 
 
-    private static String buildErrorMessage(Throwable throwable)
+    private String buildErrorMessage(Throwable throwable)
     {
         TextMapSetter<Map> TEXT_MAP_SETTER = (map, key, value) -> Objects.requireNonNull(map).put(key, value);
         Map<String, String> keys = new HashMap<>();
@@ -209,11 +213,13 @@ public class Messages
         return errorMessage.toString();
     }
 
-    static ChannelFuture sendErrorResponse(Channel channel, Throwable throwable)
+    ChannelFuture sendErrorResponse(Channel channel, Throwable throwable)
     {
-        String errorMessage = buildErrorMessage(throwable);
+        //wrap exception to add tracing if available
+        throwable = PostgresServerException.wrapException(throwable);
+        String errorMessage = errorMessageFormatter.format(throwable);
         LOGGER.error(errorMessage, throwable);
-        final PGError error =   new PGError(PGErrorStatus.INTERNAL_ERROR, errorMessage, throwable);
+        final PGError error = new PGError(PGErrorStatus.INTERNAL_ERROR, errorMessage, throwable);
 
         ByteBuf buffer = channel.alloc().buffer();
         buffer.writeByte('E');
@@ -280,14 +286,14 @@ public class Messages
      * See https://www.postgresql.org/docs/9.2/static/protocol-error-fields.html for a list of error
      * codes
      */
-    private static ChannelFuture sendErrorResponse(Channel channel,
-                                                   String message,
-                                                   byte[] msg,
-                                                   byte[] severity,
-                                                   byte[] lineNumber,
-                                                   byte[] fileName,
-                                                   byte[] methodName,
-                                                   byte[] errorCode)
+    private ChannelFuture sendErrorResponse(Channel channel,
+                                            String message,
+                                            byte[] msg,
+                                            byte[] severity,
+                                            byte[] lineNumber,
+                                            byte[] fileName,
+                                            byte[] methodName,
+                                            byte[] errorCode)
     {
         int length = 4 +
                 1 + (severity.length + 1) +
@@ -348,8 +354,8 @@ public class Messages
      * above length.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    static void sendDataRow(Channel channel, PostgresResultSet rs, List<PGType<?>> columnTypes,
-                            FormatCodes.FormatCode[] formatCodes) throws Exception
+    void sendDataRow(Channel channel, PostgresResultSet rs, List<PGType<?>> columnTypes,
+                     FormatCodes.FormatCode[] formatCodes) throws Exception
     {
         int length = 4 + 2;
         assert columnTypes.size() == rs.getMetaData().getColumnCount()
@@ -393,7 +399,7 @@ public class Messages
 
                     default:
                         buffer.release();
-                        throw new AssertionError("Unrecognized formatCode: " + formatCode);
+                        throw new PostgresServerException("Unrecognized formatCode: " + formatCode);
                 }
             }
         }
@@ -402,13 +408,13 @@ public class Messages
         channel.writeAndFlush(buffer);
     }
 
-    static void writeCString(ByteBuf buffer, byte[] valBytes)
+    void writeCString(ByteBuf buffer, byte[] valBytes)
     {
         buffer.writeBytes(valBytes);
         buffer.writeByte(0);
     }
 
-    static void writeByteArray(ByteBuf buffer, byte[] valBytes)
+    void writeByteArray(ByteBuf buffer, byte[] valBytes)
     {
         buffer.writeBytes(valBytes);
     }
@@ -433,7 +439,7 @@ public class Messages
      * @param channel    The channel to write the parameter description to.
      * @param parameters A {@link SortedSet} containing the parameters from index 1 upwards.
      */
-    static void sendParameterDescription(Channel channel, ParameterMetaData parameters) throws SQLException
+    void sendParameterDescription(Channel channel, ParameterMetaData parameters) throws SQLException
     {
         final int messageByteSize = 4 + 2 + parameters.getParameterCount() * 4;
         ByteBuf buffer = channel.alloc().buffer(messageByteSize);
@@ -470,9 +476,9 @@ public class Messages
      * <p>
      * See https://www.postgresql.org/docs/current/static/protocol-message-formats.html
      */
-    static void sendRowDescription(Channel channel,
-                                   PostgresResultSetMetaData resultSetMetaData,
-                                   FormatCodes.FormatCode[] formatCodes) throws Exception
+    void sendRowDescription(Channel channel,
+                            PostgresResultSetMetaData resultSetMetaData,
+                            FormatCodes.FormatCode[] formatCodes) throws Exception
     {
         int length = 4 + 2;
         int columnSize = 4 + 2 + 4 + 2 + 4 + 2;
@@ -527,12 +533,12 @@ public class Messages
     /**
      * ParseComplete | '1' | int32 len |
      */
-    static void sendParseComplete(Channel channel)
+    void sendParseComplete(Channel channel)
     {
         sendShortMsg(channel, '1', "sentParseComplete");
     }
 
-    static void sendGssOutToken(Channel channel, byte[] outputToken)
+    void sendGssOutToken(Channel channel, byte[] outputToken)
     {
         int integerLength = 8;
         int gssSuccessFlag = 8;
@@ -552,7 +558,7 @@ public class Messages
     /**
      * BindComplete | '2' | int32 len |
      */
-    static void sendBindComplete(Channel channel)
+    void sendBindComplete(Channel channel)
     {
         sendShortMsg(channel, '2', "sentBindComplete");
     }
@@ -560,7 +566,7 @@ public class Messages
     /**
      * EmptyQueryResponse | 'I' | int32 len |
      */
-    static void sendEmptyQueryResponse(Channel channel)
+    void sendEmptyQueryResponse(Channel channel)
     {
         sendShortMsg(channel, 'I', "sentEmptyQueryResponse");
     }
@@ -568,7 +574,7 @@ public class Messages
     /**
      * NoData | 'n' | int32 len |
      */
-    static void sendNoData(Channel channel)
+    void sendNoData(Channel channel)
     {
         sendShortMsg(channel, 'n', "sentNoData");
     }
@@ -576,7 +582,7 @@ public class Messages
     /**
      * Send a message that just contains the msgType and the msg length
      */
-    private static void sendShortMsg(Channel channel, char msgType, final String traceLogMsg)
+    private void sendShortMsg(Channel channel, char msgType, final String traceLogMsg)
     {
         ByteBuf buffer = channel.alloc().buffer(5);
         buffer.writeByte(msgType);
@@ -589,7 +595,7 @@ public class Messages
         }
     }
 
-    static void sendPortalSuspended(Channel channel)
+    void sendPortalSuspended(Channel channel)
     {
         sendShortMsg(channel, 's', "sentPortalSuspended");
     }
@@ -597,7 +603,7 @@ public class Messages
     /**
      * CloseComplete | '3' | int32 len |
      */
-    static void sendCloseComplete(Channel channel)
+    void sendCloseComplete(Channel channel)
     {
         sendShortMsg(channel, '3', "sentCloseComplete");
     }
@@ -613,7 +619,7 @@ public class Messages
      *
      * @param channel The channel to write to.
      */
-    static void sendAuthenticationCleartextPassword(Channel channel)
+    void sendAuthenticationCleartextPassword(Channel channel)
     {
         ByteBuf buffer = channel.alloc().buffer(9);
         buffer.writeByte('R');
@@ -627,7 +633,7 @@ public class Messages
         }
     }
 
-    static void sendAuthenticationKerberos(Channel channel)
+    void sendAuthenticationKerberos(Channel channel)
     {
         int integerLength = 8;
         int authReqGss = 7;
@@ -651,7 +657,7 @@ public class Messages
     /**
      * CancelRequest | 'K' | int32 request code | int32 pid | int32 secret key |
      */
-    static void sendKeyData(Channel channel, int pid, int secretKey)
+    void sendKeyData(Channel channel, int pid, int secretKey)
     {
         ByteBuf buffer = channel.alloc().buffer(13);
         buffer.writeByte('K');
