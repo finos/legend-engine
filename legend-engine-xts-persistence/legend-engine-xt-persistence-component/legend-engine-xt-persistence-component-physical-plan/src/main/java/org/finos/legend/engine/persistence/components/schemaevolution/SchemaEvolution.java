@@ -26,6 +26,10 @@ import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnap
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoadAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationVisitors;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenStrategyVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTimeAbstract;
@@ -36,7 +40,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.validitymilesto
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTimeAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTimeAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.ValidityDerivationVisitor;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
@@ -382,6 +385,7 @@ public class SchemaEvolution
             Set<String> fieldsToIgnore = new HashSet<>();
             fieldsToIgnore.add(appendOnly.batchIdField());
             appendOnly.auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).ifPresent(fieldsToIgnore::add);
+            appendOnly.digestGenStrategy().accept(EXTRACT_DIGEST_FIELD_TO_IGNORE).ifPresent(fieldsToIgnore::add);
             return fieldsToIgnore;
         }
 
@@ -436,7 +440,11 @@ public class SchemaEvolution
         @Override
         public Set<String> visitBulkLoad(BulkLoadAbstract bulkLoad)
         {
-            return Collections.emptySet();
+            Set<String> fieldsToIgnore = new HashSet<>();
+            fieldsToIgnore.add(bulkLoad.batchIdField());
+            bulkLoad.auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).ifPresent(fieldsToIgnore::add);
+            bulkLoad.digestGenStrategy().accept(EXTRACT_DIGEST_FIELD_TO_IGNORE).ifPresent(fieldsToIgnore::add);
+            return fieldsToIgnore;
         }
     };
 
@@ -508,6 +516,27 @@ public class SchemaEvolution
                 }
             });
             return fieldsToIgnore;
+        }
+    };
+
+    private static final DigestGenStrategyVisitor<Optional<String>> EXTRACT_DIGEST_FIELD_TO_IGNORE = new DigestGenStrategyVisitor<Optional<String>>()
+    {
+        @Override
+        public Optional<String> visitNoDigestGenStrategy(NoDigestGenStrategyAbstract noDigestGenStrategy)
+        {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<String> visitUDFBasedDigestGenStrategy(UDFBasedDigestGenStrategyAbstract udfBasedDigestGenStrategy)
+        {
+            return Optional.of(udfBasedDigestGenStrategy.digestField());
+        }
+
+        @Override
+        public Optional<String> visitUserProvidedDigestGenStrategy(UserProvidedDigestGenStrategyAbstract userProvidedDigestGenStrategy)
+        {
+            return Optional.empty();
         }
     };
 }

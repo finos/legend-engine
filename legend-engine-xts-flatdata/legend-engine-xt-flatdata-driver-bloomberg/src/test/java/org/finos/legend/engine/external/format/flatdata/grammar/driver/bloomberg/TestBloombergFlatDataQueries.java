@@ -36,7 +36,7 @@ public class TestBloombergFlatDataQueries extends TestExternalFormatQueries
     public static void setup()
     {
         ExecutionSupport executionSupport = Compiler
-                .compile(PureModelContextData.newPureModelContextData(), null, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName()).getExecutionSupport();
+                .compile(PureModelContextData.newPureModelContextData(), null, Identity.getAnonymousIdentity().getName()).getExecutionSupport();
         formatExtensions = Collections
                 .singletonList(core_external_format_flatdata_externalFormatContract.Root_meta_external_format_flatdata_extension_flatDataFormatExtension__Extension_1_(executionSupport));
         formatDescriptors = Collections.singletonList(core_external_format_flatdata_java_platform_binding_legendJavaPlatformBinding_descriptor.Root_meta_external_format_flatdata_executionPlan_platformBinding_legendJava_flatDataJavaBindingDescriptor__ExternalFormatLegendJavaPlatformBindingDescriptor_1_(executionSupport));

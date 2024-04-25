@@ -46,7 +46,7 @@ public class ExternalIntegration_TestConnectionObjectProtocol_Snowflake extends 
     @Test
     public void testSnowflakePublicConnection_identity() throws Exception
     {
-        testSnowflakePublicConnection(c -> c.getConnectionUsingIdentity(IdentityFactoryProvider.getInstance().getAnonymousIdentity()));
+        testSnowflakePublicConnection(c -> c.getConnectionUsingIdentity(Identity.getAnonymousIdentity()));
     }
 
     private void testSnowflakePublicConnection(Function<DataSourceSpecification, Connection> toDBConnection) throws Exception

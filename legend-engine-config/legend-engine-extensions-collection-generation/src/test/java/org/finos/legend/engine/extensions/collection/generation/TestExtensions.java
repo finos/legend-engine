@@ -34,10 +34,13 @@ import org.finos.legend.engine.language.bigqueryFunction.grammar.from.BigQueryFu
 import org.finos.legend.engine.language.bigqueryFunction.grammar.to.BigQueryFunctionGrammarComposer;
 import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLGrammarParserExtension;
 import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureGrammarComposerExtension;
+import org.finos.legend.engine.language.memsqlFunction.compiler.toPureGraph.MemSqlFunctionCompilerExtension;
 import org.finos.legend.engine.language.hostedService.compiler.toPureGraph.HostedServiceCompilerExtension;
 import org.finos.legend.engine.language.hostedService.generation.deployment.HostedServiceArtifactGenerationExtension;
 import org.finos.legend.engine.language.hostedService.grammar.from.HostedServiceGrammarParserExtension;
 import org.finos.legend.engine.language.hostedService.grammar.to.HostedServiceGrammarComposer;
+import org.finos.legend.engine.language.memsqlFunction.grammar.from.MemSqlFunctionGrammarParserExtension;
+import org.finos.legend.engine.language.memsqlFunction.grammar.to.MemSqlFunctionGrammarComposer;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.AuthenticationGrammarParserExtension;
@@ -46,8 +49,6 @@ import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGe
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtensionLoader;
 import org.finos.legend.engine.language.pure.dsl.generation.grammar.from.GenerationParserExtension;
 import org.finos.legend.engine.language.pure.dsl.generation.grammar.to.GenerationGrammarComposerExtension;
-import org.finos.legend.engine.language.pure.dsl.mastery.grammar.from.MasteryParserExtension;
-import org.finos.legend.engine.language.pure.dsl.mastery.grammar.to.MasteryGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.dsl.persistence.cloud.grammar.from.PersistenceCloudParserExtension;
 import org.finos.legend.engine.language.pure.dsl.persistence.cloud.grammar.to.PersistenceCloudComposerExtension;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.PersistenceParserExtension;
@@ -87,6 +88,7 @@ import org.finos.legend.engine.language.sql.grammar.integration.SQLPureGrammarCo
 import org.finos.legend.engine.language.stores.elasticsearch.v7.from.ElasticsearchGrammarParserExtension;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionProtocolExtension;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceProtocolExtension;
+import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionProtocolExtension;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.code.core.ElasticsearchLegendPureCoreExtension;
@@ -229,7 +231,7 @@ public class TestExtensions
     @Test
     public void testPureModel()
     {
-        PureModel pureModel = new PureModel(PureModelContextData.newPureModelContextData(), IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(PureModelContextData.newPureModelContextData(), Identity.getAnonymousIdentity().getName(), DeploymentMode.PROD);
         MutableSet<String> expectedClassifiers = Iterate.flatCollect(PureProtocolExtensionLoader.extensions(), ext -> ext.getExtraProtocolToClassifierPathMap().values(), Sets.mutable.empty());
         Assert.assertEquals(
                 Lists.fixedSize.empty(),
@@ -280,12 +282,12 @@ public class TestExtensions
                 .with(SnowflakeAppProtocolExtension.class)
                 .with(HostedServiceProtocolExtension.class)
                 .with(BigQueryFunctionProtocolExtension.class)
+                .with(MemSqlFunctionProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.DiagramProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.GenerationProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.PersistenceProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.PersistenceCloudProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.PersistenceRelationalProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.MasteryProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.RelationalProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.BigQueryProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.SpannerProtocolExtension.class)
@@ -325,10 +327,10 @@ public class TestExtensions
                 .with(SnowflakeAppGrammarParserExtension.class)
                 .with(HostedServiceGrammarParserExtension.class)
                 .with(BigQueryFunctionGrammarParserExtension.class)
+                .with(MemSqlFunctionGrammarParserExtension.class)
                 .with(DiagramParserExtension.class)
                 .with(ExternalFormatGrammarParserExtension.class)
                 .with(GenerationParserExtension.class)
-                .with(MasteryParserExtension.class)
                 .with(PersistenceParserExtension.class)
                 .with(PersistenceCloudParserExtension.class)
                 .with(PersistenceRelationalParserExtension.class)
@@ -353,10 +355,10 @@ public class TestExtensions
                 .with(SnowflakeAppGrammarComposer.class)
                 .with(HostedServiceGrammarComposer.class)
                 .with(BigQueryFunctionGrammarComposer.class)
+                .with(MemSqlFunctionGrammarComposer.class)
                 .with(DiagramGrammarComposerExtension.class)
                 .with(ExternalFormatGrammarComposerExtension.class)
                 .with(GenerationGrammarComposerExtension.class)
-                .with(MasteryGrammarComposerExtension.class)
                 .with(PersistenceComposerExtension.class)
                 .with(PersistenceCloudComposerExtension.class)
                 .with(PersistenceRelationalComposerExtension.class)
@@ -386,13 +388,13 @@ public class TestExtensions
                 .with(SnowflakeAppCompilerExtension.class)
                 .with(HostedServiceCompilerExtension.class)
                 .with(BigQueryFunctionCompilerExtension.class)
+                .with(MemSqlFunctionCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DataSpaceCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.TextCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.CoreCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.generation.compiler.toPureGraph.GenerationCompilerExtensionImpl.class)
                 .with(org.finos.legend.engine.language.pure.dsl.service.compiler.toPureGraph.ServiceCompilerExtensionImpl.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ExternalFormatCompilerExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.mastery.compiler.toPureGraph.MasteryCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph.PersistenceCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.persistence.cloud.compiler.toPureGraph.PersistenceCloudCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.persistence.relational.compiler.toPureGraph.PersistenceRelationalCompilerExtension.class)
@@ -516,7 +518,6 @@ public class TestExtensions
                 .with("core_function_activator")
                 .with("core_external_compiler")
                 .with("core_persistence")
-                .with("core_mastery")
                 .with("core_external_language_daml")
                 .with("core_external_language_haskell")
                 .with("core_persistence_cloud")
@@ -539,6 +540,7 @@ public class TestExtensions
                 .with("core_authentication")
                 .with("core_snowflakeapp")
                 .with("core_bigqueryfunction")
+                .with("core_memsqlfunction")
                 .with("core_hostedservice")
                 .with("core_text_metamodel")
                 .with("core_external_language_java")

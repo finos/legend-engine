@@ -53,11 +53,11 @@ public class H2JdbcPropertiesToLogicalDataTypeMapping implements JdbcPropertiesT
             case DATE:
                 return FieldType.builder().dataType(DataType.DATE).build();
             case TIME:
-                return FieldType.builder().dataType(DataType.TIME).scale(decimalDigits).build();
+                return FieldType.builder().dataType(DataType.TIME).length(decimalDigits).build();
             case TIMESTAMP:
-                return FieldType.builder().dataType(DataType.TIMESTAMP).scale(decimalDigits).build();
+                return FieldType.builder().dataType(DataType.TIMESTAMP).length(decimalDigits).build();
             case TIMESTAMP_WITH_TIME_ZONE:
-                return FieldType.builder().dataType(DataType.TIMESTAMP_TZ).scale(decimalDigits).build();
+                return FieldType.builder().dataType(DataType.TIMESTAMP_TZ).length(decimalDigits).build();
             case JSON:
                 return FieldType.builder().dataType(DataType.JSON).build();
             default:

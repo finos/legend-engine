@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-bigqueryFunction</artifactId>
-        <version>4.43.2-SNAPSHOT</version>
+        <version>4.44.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -99,6 +99,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-bigqueryFunction-compiler</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-memsqlFunction-compiler</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>

@@ -53,18 +53,18 @@ public class Client
 
     public static void main(String[] args) throws Exception
     {
-        new Client(Lists.mutable.empty(), Lists.mutable.empty()).loop();
+        new Client(Lists.mutable.empty(), Lists.mutable.empty(), PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build()).loop();
     }
 
     public MutableList<Command> commands;
 
-    public Client(MutableList<ReplExtension> replExtensions, MutableList<CompleterExtension> completerExtensions) throws Exception
+    public Client(MutableList<ReplExtension> replExtensions, MutableList<CompleterExtension> completerExtensions, PlanExecutor planExecutor) throws Exception
     {
         this.replExtensions = replExtensions;
 
         this.completerExtensions = completerExtensions;
 
-        this.planExecutor = PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build();
+        this.planExecutor = planExecutor;
 
         this.state = new ModelState(this.legendInterface, this.replExtensions);
 

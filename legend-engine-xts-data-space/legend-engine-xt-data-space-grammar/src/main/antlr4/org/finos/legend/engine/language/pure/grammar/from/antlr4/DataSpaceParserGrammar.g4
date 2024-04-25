@@ -27,6 +27,7 @@ identifier:                         VALID_STRING | STRING
                                     | DATA_SPACE_EXECUTABLES
                                     | DATA_SPACE_EXECUTABLE
                                     | DATA_SPACE__TEMPLATE_QUERY
+                                    | DATA_SPACE__TEMPLATE_QUERY__ID
                                     | DATA_SPACE__EXECUTION_CONTEXT_KEY
                                     | DATA_SPACE_SUPPORT_INFO
                                     | DATA_SPACE_SUPPORT_DOC_URL
@@ -83,7 +84,6 @@ title:                              DATA_SPACE__TITLE COLON STRING SEMI_COLON
 ;
 description:                        DATA_SPACE__DESCRIPTION COLON STRING SEMI_COLON
 ;
-
 executionContexts:                  DATA_SPACE_EXECUTION_CONTEXTS COLON BRACKET_OPEN ( executionContext (COMMA executionContext)* )? BRACKET_CLOSE SEMI_COLON
 ;
 executionContext:                   BRACE_OPEN
@@ -143,6 +143,7 @@ executable:                         BRACE_OPEN
                                             | executableDescription
                                             | executablePath
                                             | executableTemplateQuery
+                                            | executableTemplateQueryId
                                             | executableExecutionContextKey
                                         )*
                                     BRACE_CLOSE
@@ -154,6 +155,8 @@ executableDescription:              DATA_SPACE__DESCRIPTION COLON STRING SEMI_CO
 executablePath:                     DATA_SPACE_EXECUTABLE COLON qualifiedName SEMI_COLON
 ;
 executableTemplateQuery:            DATA_SPACE__TEMPLATE_QUERY COLON combinedExpression SEMI_COLON
+;
+executableTemplateQueryId:          DATA_SPACE__TEMPLATE_QUERY__ID COLON (VALID_STRING | INTEGER | DECIMAL) SEMI_COLON
 ;
 executableExecutionContextKey:      DATA_SPACE__EXECUTION_CONTEXT_KEY COLON STRING SEMI_COLON
 ;

@@ -165,10 +165,23 @@ public class QueryStoreManager
         validateNonEmptyQueryField(query.groupId, "Query project group ID is missing or empty");
         validateNonEmptyQueryField(query.artifactId, "Query project artifact ID is missing or empty");
         validateNonEmptyQueryField(query.versionId, "Query project version is missing or empty");
-        validateNonEmptyQueryField(query.mapping, "Query mapping is missing or empty");
-        validateNonEmptyQueryField(query.runtime, "Query runtime is missing or empty");
+        if (query.executionContext instanceof QueryExplicitExecutionContext)
+        {
+            QueryExplicitExecutionContext queryExplicitExecutionContext = (QueryExplicitExecutionContext) query.executionContext;
+            validateNonEmptyQueryField(queryExplicitExecutionContext.mapping, "Query mapping is missing or empty");
+            validateNonEmptyQueryField(queryExplicitExecutionContext.runtime, "Query runtime is missing or empty");
+        }
+        else if (query.executionContext instanceof QueryDataSpaceExecutionContext)
+        {
+            QueryDataSpaceExecutionContext queryDataSpaceExecutionContext = (QueryDataSpaceExecutionContext) query.executionContext;
+            validateNonEmptyQueryField(queryDataSpaceExecutionContext.dataSpacePath, "Query data Space execution context dataSpace path is missing or empty");
+        }
+        else
+        {
+            validateNonEmptyQueryField(query.mapping, "Query mapping is missing or empty");
+            validateNonEmptyQueryField(query.runtime, "Query runtime is missing or empty");
+        }
         validateNonEmptyQueryField(query.content, "Query content is missing or empty");
-
         validate(SourceVersion.isName(query.groupId), "Query project group ID is invalid");
         validate(VALID_ARTIFACT_ID_PATTERN.matcher(query.artifactId).matches(), "Query project artifact ID is invalid");
         // TODO: we can potentially create a pattern check for version

@@ -600,8 +600,35 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "      title: 'Template 1';\n" +
                 "      query: src: meta::transform::tests::Address[1]|$src.a;\n" +
                 "      executionContextKey: 'Context 1';\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n", "PARSER error at [18:5-22:5]: Field 'id' is required");
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      title: 'Exec 1';\n" +
+                "      executable: model::MyExecutable;\n" +
                 "    },\n" +
                 "    {\n" +
+                "      id: 123;\n" +
+                "      title: 'Template 1';\n" +
+                "      query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "      executionContextKey: 'Context 1';\n" +
+                "    },\n" +
+                "    {\n" +
+                "      id: my_id;\n" +
                 "      title: 'Template 2';\n" +
                 "      query: src: meta::transform::tests::Address[1]|$src.a;\n" +
                 "      executionContextKey: 'Context 1';\n" +
@@ -627,12 +654,14 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "      executable: model::MyExecutable;\n" +
                 "    },\n" +
                 "    {\n" +
+                "      id: 1;\n" +
                 "      title: 'Template 1';\n" +
                 "      query: src: meta::transform::tests::Address[1]|$src.a;\n" +
                 "      executionContextKey: 'Context 1';\n" +
                 "    },\n" +
                 "    {\n" +
-                "      title: 'Template 2';\n" +
+                "      id: 2Id;\n" +
+                "      title: 'Template 1';\n" +
                 "      query: src: meta::transform::tests::Address[1]|$src.a;\n" +
                 "    }\n" +
                 "  ];\n" +
@@ -656,11 +685,13 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "      executable: model::MyExecutable;\n" +
                 "    },\n" +
                 "    {\n" +
+                "      id: 1;\n" +
                 "      title: 'Template 1';\n" +
                 "      query: src: meta::transform::tests::Address[1]|$src.a;\n" +
                 "      executionContextKey: 'Context 1';\n" +
                 "    },\n" +
                 "    {\n" +
+                "      id: 2d;\n" +
                 "      title: 'Template 2';\n" +
                 "      query: domain::COVIDData.all()->project([x|$x.cases], ['Cases']);\n" +
                 "    }\n" +

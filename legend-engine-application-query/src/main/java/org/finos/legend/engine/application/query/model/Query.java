@@ -31,8 +31,11 @@ public class Query
     public String artifactId;
     public String versionId;
     public String originalVersionId;
+    @Deprecated
     public String mapping;
+    @Deprecated
     public String runtime;
+    public QueryExecutionContext executionContext;
     public String content;
     public Long lastUpdatedAt;
     public Long createdAt;

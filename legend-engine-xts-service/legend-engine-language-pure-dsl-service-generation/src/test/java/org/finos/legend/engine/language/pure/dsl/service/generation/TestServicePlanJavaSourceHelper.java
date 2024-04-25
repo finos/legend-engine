@@ -70,7 +70,7 @@ public class TestServicePlanJavaSourceHelper
                 .map(this::loadModelDataFromResource)
                 .flatMap(pureModelContextData ->
                 {
-                    PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), DeploymentMode.TEST);
+                    PureModel pureModel = new PureModel(pureModelContextData, Identity.getAnonymousIdentity().getName(), DeploymentMode.TEST);
                     return pureModelContextData.getElementsOfType(Service.class).stream().map(s -> ServicePlanGenerator.generateServiceExecutionPlan(s, null, pureModel, "vX_X_X", PlanPlatform.JAVA, core_java_platform_binding_legendJavaPlatformBinding_store_m2m_m2mLegendJavaPlatformBindingExtension.Root_meta_pure_mapping_modelToModel_executionPlan_platformBinding_legendJava_inMemoryExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers));
                 })
                 .collect(Collectors.toList());

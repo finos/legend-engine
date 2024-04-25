@@ -55,7 +55,7 @@ public abstract class AbstractTestSemiStructured
     public AbstractTestSemiStructured()
     {
         this.contextData = PureGrammarParser.newInstance().parseModel(readModelContentFromResource(this.modelResourcePath()));
-        this.pureModel = Compiler.compile(contextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
+        this.pureModel = Compiler.compile(contextData, null, Identity.getAnonymousIdentity().getName());
     }
 
     public abstract String modelResourcePath();

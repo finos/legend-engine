@@ -19,5 +19,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 public class DataSpaceTemplateExecutable extends DataSpaceExecutable
 {
     public Lambda query;
+    public String id;
     public String executionContextKey;
 }

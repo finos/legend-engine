@@ -6427,7 +6427,7 @@ function meta::relational::functions::pureToSqlQuery::processEquals(
          let filteringOperation = if($leftVal->hasReferenceToEnum() || $rightVal->hasReferenceToEnum(),
                                       |let firstVal  = ^EnumProcessingHolder(param = $leftParam, processedParam = $leftVal, currentPropertyMapping = $left);
                                        let secondVal = ^EnumProcessingHolder(param = $rightParam, processedParam = $rightVal, currentPropertyMapping = $right);
-                                       processEqualsForEnum($firstVal, $secondVal, $context);,
+                                       processEqualsForEnum($firstVal, $secondVal, $context, $state);,
                                       |if($leftVal->hasOptionalVarPlaceHolderValue() && $rightVal->hasOptionalVarPlaceHolderValue(),
                                           |^FreeMarkerOperationHolder(name = 'optionalVarPlaceHolderOpSelector', parameters = [$leftVal,
                                                                                                                               ^FreeMarkerOperationHolder(name = 'optionalVarPlaceHolderOpSelector', parameters = [$rightVal, ^DynaFunction(name = 'equal', parameters = [$leftVal,$rightVal]),^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 0)])]),
@@ -6517,7 +6517,7 @@ function meta::relational::functions::pureToSqlQuery::validateParamHasDataTypeRe
    assert($type->isEmpty() || $type->toOne()->instanceOf(DataType) || ($type->toOne() == Enum) || ($type->toOne() == Nil), | 'Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type ' + if($type->isEmpty(),|'',|$type->toOne()->toString()));
 }
 
-function meta::relational::functions::pureToSqlQuery::processEqualsForEnum(firstVal : EnumProcessingHolder[1], secondVal : EnumProcessingHolder[1], context : DebugContext[1]) : RelationalOperationElement[1]
+function meta::relational::functions::pureToSqlQuery::processEqualsForEnum(firstVal : EnumProcessingHolder[1], secondVal : EnumProcessingHolder[1], context : DebugContext[1], state: State[1]) : RelationalOperationElement[1]
 {
   let hasOnlyEnumValues = [$firstVal, $secondVal]->forAll(e|$e.processedParam->hasEnumValue());
 
@@ -6530,8 +6530,22 @@ function meta::relational::functions::pureToSqlQuery::processEqualsForEnum(first
                                                                                                                                             $pm->cast(@RelationalPropertyMapping).transformer->toOne()->instanceOf(EnumerationMapping);)->toOne();
           let hasEnumVarAndEnumVal = $enumVar.first.values->isNotEmpty() && $enumVar.second.values.processedParam->toOne()->hasEnumValue();
           if($hasEnumVarAndEnumProp,
-              | let enumParamFreeMarker = generateFreeMarkerForEnumParam($enumVar.second.values.currentPropertyMapping->toOne(), $enumVar.first.values.processedParam->toOne());
-                generateFreeMarkerOpSelectorForEnumParam($enumParamFreeMarker, $enumVar.second.values.processedParam->toOne(), $enumVar.first.values.processedParam->toOne());,
+              | 
+                let mapping = $enumVar.second.values.currentPropertyMapping->toOne().currentPropertyMapping->cast(@RelationalPropertyMapping);
+                if($state.pushDownEnumTransformations && $mapping.transformer ->isNotEmpty() && $mapping.transformer->toOne()->instanceOf(EnumerationMapping),  
+                    | 
+                      let caseParams = $mapping.transformer->cast(@EnumerationMapping<Any>).enumValueMappings
+                                                      ->map(ev  |   if($ev.sourceValues->size() == 1,
+                                                                      | ^DynaFunction(name = 'equal', parameters=[$enumVar.second.values.processedParam->toOne(), ^Literal(value=$ev.sourceValues->at(0))]),
+                                                                      | ^DynaFunction(name = 'in', parameters = [$enumVar.second.values.processedParam->toOne(), ^LiteralList(values=$ev.sourceValues->map(v|^Literal(value=$v)))]);
+                                                                    )->concatenate(^Literal(value=$ev.enum.name));
+                                                            );
+                      let second = ^DynaFunction(name = 'case', parameters =   $caseParams->concatenate(^DynaFunction(name = 'sqlNull')));
+                      ^DynaFunction(name = 'equal', parameters = [$enumVar.first.values.processedParam->toOne(), $second]);,
+                    | 
+                      let enumParamFreeMarker = generateFreeMarkerForEnumParam($enumVar.second.values.currentPropertyMapping->toOne(), $enumVar.first.values.processedParam->toOne());
+                      generateFreeMarkerOpSelectorForEnumParam($enumParamFreeMarker, $enumVar.second.values.processedParam->toOne(), $enumVar.first.values.processedParam->toOne());
+                  );,
               | if($hasEnumVarAndEnumVal,
                     | let literal = $enumVar.first.values.processedParam->cast(@Literal).value->cast(@VarPlaceHolder);
                       ^DynaFunction(name = 'equal', parameters = [^Literal(value=^VarPlaceHolder(name=$literal.name->toOne(),type = $literal.type->toOne(),multiplicity = $literal.multiplicity->toOne())), ^Literal(value = $enumVar.second.values.processedParam->cast(@Literal).value->toOne()->toString())]);,
