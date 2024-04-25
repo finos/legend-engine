@@ -493,13 +493,13 @@ public abstract class Planner
     {
         if (ingestMode.versioningStrategy().accept(VersioningVisitors.IS_DUPLICATE_PK_CHECK_NEEDED))
         {
-            LogicalPlan logicalPlanForMaxDuplicatePkCount = ingestMode.versioningStrategy().accept(new DeriveMaxDuplicatePkCountLogicalPlan(primaryKeys, tempStagingDataset()));
+            LogicalPlan logicalPlanForMaxDuplicatePkCount = ingestMode.versioningStrategy().accept(new DeriveMaxDuplicatePkCountLogicalPlan(primaryKeys, stagingDataset()));
             if (logicalPlanForMaxDuplicatePkCount != null)
             {
                 dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.MAX_PK_DUPLICATES, logicalPlanForMaxDuplicatePkCount);
             }
 
-            LogicalPlan logicalPlanForDuplicatePkRows = ingestMode.versioningStrategy().accept(new DeriveDuplicatePkRowsLogicalPlan(primaryKeys, tempStagingDataset(), options().sampleRowCount()));
+            LogicalPlan logicalPlanForDuplicatePkRows = ingestMode.versioningStrategy().accept(new DeriveDuplicatePkRowsLogicalPlan(primaryKeys, stagingDataset(), options().sampleRowCount()));
             if (logicalPlanForDuplicatePkRows != null)
             {
                 dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.PK_DUPLICATE_ROWS, logicalPlanForDuplicatePkRows);
