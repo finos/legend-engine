@@ -122,7 +122,7 @@ public class VersioningVisitors
         {
             if (noVersioningStrategy.failOnDuplicatePrimaryKeys() && !(this.deduplicationStrategy instanceof FailOnDuplicates))
             {
-                throw new IllegalStateException("Cannot build IngestMode, fail on duplicates must be selected with fail on duplicate primary keys");
+                throw new IllegalStateException("For failOnDuplicatePrimaryKeys, FailOnDuplicates must be selected as the DeduplicationStrategy");
             }
             return null;
         }

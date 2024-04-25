@@ -681,6 +681,30 @@ public class TestDedupAndVersioning extends BaseTest
         }
     }
 
+    @Test
+    void testInvalidCombination()
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingTable = getStagingTableWithoutVersion();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+        IngestMode ingestMode = AppendOnly.builder()
+            .auditing(DateTimeAuditing.builder().dateTimeField("append_time").build())
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField("digest").build())
+            .deduplicationStrategy(AllowDuplicates.builder().build())
+            .versioningStrategy(NoVersioningStrategy.builder().failOnDuplicatePrimaryKeys(true).build())
+            .build();
+
+        try
+        {
+            performDedupAndVersioining(datasets, ingestMode);
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("For failOnDuplicatePrimaryKeys, FailOnDuplicates must be selected as the DeduplicationStrategy", e.getMessage());
+        }
+    }
+
 
     public static DatasetDefinition getStagingTableWithoutVersion()
     {

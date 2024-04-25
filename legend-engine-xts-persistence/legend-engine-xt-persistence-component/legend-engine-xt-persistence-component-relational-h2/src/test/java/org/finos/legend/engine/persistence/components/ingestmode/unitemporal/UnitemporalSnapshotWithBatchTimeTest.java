@@ -18,9 +18,11 @@ import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.FailEmptyBatch;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOp;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTime;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
@@ -211,6 +213,8 @@ class UnitemporalSnapshotWithBatchTimeTest extends BaseTest
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)
                 .build())
+            .versioningStrategy(NoVersioningStrategy.builder().failOnDuplicatePrimaryKeys(true).build())
+            .deduplicationStrategy(FailOnDuplicates.builder().build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();

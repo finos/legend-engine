@@ -25,6 +25,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.Dige
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionColumnBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionComparator;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -146,6 +147,8 @@ class UnitemporalDeltaTest extends BaseTest
                 .deleteField(deleteIndicatorName)
                 .addAllDeleteValues(Arrays.asList(deleteIndicatorValues))
                 .build())
+            .versioningStrategy(NoVersioningStrategy.builder().failOnDuplicatePrimaryKeys(true).build())
+            .deduplicationStrategy(FailOnDuplicates.builder().build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
