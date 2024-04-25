@@ -27,7 +27,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapSetter;
-import jakarta.inject.Inject;
 import java.nio.charset.StandardCharsets;
 import java.sql.ParameterMetaData;
 import java.sql.SQLException;
@@ -67,7 +66,6 @@ public class Messages
 
     private final ErrorMessageFormatter errorMessageFormatter;
 
-    @Inject
     public Messages(ErrorMessageFormatter errorMessageFormatter)
     {
         this.errorMessageFormatter = errorMessageFormatter;

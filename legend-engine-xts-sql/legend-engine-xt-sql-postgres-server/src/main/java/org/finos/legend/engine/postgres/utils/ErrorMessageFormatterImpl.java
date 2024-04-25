@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.postgres.utils;
 
-import jakarta.inject.Inject;
 import java.util.Map;
 import org.finos.legend.engine.postgres.PostgresServerException;
 import org.finos.legend.engine.postgres.config.ServerConfig;
@@ -24,7 +23,6 @@ public class ErrorMessageFormatterImpl implements ErrorMessageFormatter
     public static final String X_B_3_TRACE_ID = "X-B3-TraceId";
     private final String traceURLEndpoint;
 
-    @Inject
     public ErrorMessageFormatterImpl(ServerConfig serverConfig)
     {
         traceURLEndpoint = serverConfig.getOtelConfig().getTraceURLEndpoint();
