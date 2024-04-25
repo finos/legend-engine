@@ -110,7 +110,8 @@ public class PostgresServerTypeMappingTest
     public void testBooleanInvalidData() throws Exception
     {
         expectedException.expect(Exception.class);
-        expectedException.expectMessage("ERROR: Failed to handle value '1234' in column 'column1'. Expected value format 'BOOLEAN'");
+        expectedException.expectMessage("ERROR: Unexpected data type for value '1234....' in column 'column1'." +
+                " Expected data type 'java.lang.Boolean', actual data type 'java.lang.Long'");
         validate(BOOLEAN, "1234", "bool", null);
     }
 
@@ -131,8 +132,8 @@ public class PostgresServerTypeMappingTest
         //invalid date format
         String timeStamp = "20200607T04:15:27.000000000+0000";
         expectedException.expect(Exception.class);
-        expectedException.expectMessage("ERROR: Failed to handle value '20200607T04:15:27.000000000+0000' in column 'column1'." +
-                " Expected value format 'Date (YYYY-MM-DD) or Timestamp (YYYY-MM-DDThh:mm:ss.000000000+0000)'");
+        expectedException.expectMessage("ERROR: Unexpected value '20200....' in column 'column1'." +
+                " Expected data type 'java.lang.String', value format 'Date (YYYY-MM-DD) or Timestamp (YYYY-MM-DDThh:mm:ss.000000000+0000)");
         validate(DATE_TIME, "\"" + timeStamp + "\"", null, null);
     }
 
@@ -151,8 +152,8 @@ public class PostgresServerTypeMappingTest
         //invalid date format
         String timeStamp = "2020-Jun-07T04:15:27.000000000+0000";
         expectedException.expect(Exception.class);
-        expectedException.expectMessage("ERROR: Failed to handle value '2020-Jun-07T04:15:27.000000000+0000' in column 'column1'." +
-                " Expected value format 'Date (YYYY-MM-DD) or Timestamp (YYYY-MM-DDThh:mm:ss.000000000+0000)'");
+        expectedException.expectMessage("ERROR: Unexpected value '2020-....' in column 'column1'." +
+                " Expected data type 'java.lang.String', value format 'Date (YYYY-MM-DD) or Timestamp (YYYY-MM-DDThh:mm:ss.000000000+0000)");
         validate(DATE, "\"" + timeStamp + "\"", null, null);
     }
 
@@ -172,8 +173,8 @@ public class PostgresServerTypeMappingTest
         //invalid date format
         String timeStamp = "20200607";
         expectedException.expect(Exception.class);
-        expectedException.expectMessage("ERROR: Failed to handle value '20200607' in column 'column1'." +
-                " Expected value format 'Date (YYYY-MM-DD) or Timestamp (YYYY-MM-DDThh:mm:ss.000000000+0000)'");
+        expectedException.expectMessage("ERROR: Unexpected value '20200....' in column 'column1'. " +
+                "Expected data type 'java.lang.String', value format 'Date (YYYY-MM-DD) or Timestamp (YYYY-MM-DDThh:mm:ss.000000000+0000)'");
         validate(DATE, "\"" + timeStamp + "\"", null, null);
     }
 
@@ -197,8 +198,8 @@ public class PostgresServerTypeMappingTest
         //invalid date format
         String date = "20200607";
         expectedException.expect(Exception.class);
-        expectedException.expectMessage("ERROR: Failed to handle value '20200607' in column 'column1'." +
-                " Expected value format 'Date (YYYY-MM-DD)");
+        expectedException.expectMessage("ERROR: Unexpected value '20200....' in column 'column1'." +
+                " Expected data type 'java.lang.String', value format 'Date (YYYY-MM-DD)'");
         validate(STRICT_DATE, "\"" + date + "\"", null, null);
     }
 
@@ -215,9 +216,9 @@ public class PostgresServerTypeMappingTest
     public void testFloatInvalidData() throws Exception
     {
         expectedException.expect(Exception.class);
-        expectedException.expectMessage("ERROR: Failed to handle value 'foo' in column 'column1'." +
-                " Expected value format 'DECIMAL (FLOAT/DOUBLE)");
-        validate(FLOAT, "\"foo\"", null, null);
+        expectedException.expectMessage("ERROR: Unexpected data type for value 'foooo....' in column 'column1'." +
+                " Expected data type 'java.lang.Number', actual data type 'java.lang.String'");
+        validate(FLOAT, "\"fooooo\"", null, null);
     }
 
     @Test
@@ -232,8 +233,8 @@ public class PostgresServerTypeMappingTest
     public void testIntegerInvalidData() throws Exception
     {
         expectedException.expect(Exception.class);
-        expectedException.expectMessage("ERROR: Failed to handle value 'foo' in column 'column1'." +
-                " Expected value format 'INTEGER");
+        expectedException.expectMessage("ERROR: Unexpected data type for value 'foo....' in column 'column1'. " +
+                "Expected data type 'java.lang.Number', actual data type 'java.lang.String'");
         validate(INTEGER, "\"foo\"", null, null);
     }
 
@@ -247,8 +248,8 @@ public class PostgresServerTypeMappingTest
     public void testNumberAsIntegerInvalidData() throws Exception
     {
         expectedException.expect(Exception.class);
-        expectedException.expectMessage("ERROR: Failed to handle value 'foo' in column 'column1'." +
-                " Expected value format 'DECIMAL (FLOAT/DOUBLE)");
+        expectedException.expectMessage("ERROR: Unexpected data type for value 'foo....' in column 'column1'. " +
+                "Expected data type 'java.lang.Number', actual data type 'java.lang.String'");
         validate(NUMBER, "\"foo\"", null, null);
     }
 

@@ -15,6 +15,7 @@
 package org.finos.legend.engine.postgres.handler.legend;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -25,7 +26,6 @@ import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
 import java.util.List;
-import java.util.Objects;
 import org.finos.legend.engine.postgres.PostgresServerException;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
@@ -66,68 +66,94 @@ public class LegendResultSet implements PostgresResultSet
     {
         LegendColumn legendColumn = legendExecutionResult.getLegendColumns().get(i - 1);
         Object value = currentRow.get(i - 1);
-        if (value == null)
-        {
-            return null;
-        }
         switch (legendColumn.getType())
         {
 
             //2020-06-07T04:15:27.000000000+0000
             case STRICT_DATE:
-                return extractValue(value, legendColumn, "Date (YYYY-MM-DD)", f ->
-                {
-                    LocalDate localDate = DATE_FORMAT.parse((String) value, LocalDate::from);
-                    long toEpochMilli = localDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
-                    return toEpochMilli;
-                });
+                return extractValue(value, legendColumn, String.class, "Date (YYYY-MM-DD)",
+                        f ->
+                        {
+                            LocalDate localDate = DATE_FORMAT.parse((String) value, LocalDate::from);
+                            long toEpochMilli = localDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
+                            return toEpochMilli;
+                        });
             case DATE:
             case DATE_TIME:
-                return extractValue(value, legendColumn, "Date (YYYY-MM-DD) or Timestamp (YYYY-MM-DDThh:mm:ss.000000000+0000)", f ->
-                {
-                    TemporalAccessor temporalAccessor = TIMESTAMP_FORMATTER.parseBest((String) value, Instant::from, LocalDate::from);
-                    if (temporalAccessor instanceof Instant)
-                    {    //if date is a valid time stamp
-                        return ((Instant) temporalAccessor).toEpochMilli();
-                    }
-                    else
-                    {
-                        //if date is a date parse as date and convert to time tamp
-                        return ((LocalDate) temporalAccessor).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
-                    }
-                });
+                return extractValue(value, legendColumn, String.class, "Date (YYYY-MM-DD) or Timestamp (YYYY-MM-DDThh:mm:ss.000000000+0000)",
+                        f ->
+                        {
+                            TemporalAccessor temporalAccessor = TIMESTAMP_FORMATTER.parseBest((String) value, Instant::from, LocalDate::from);
+                            if (temporalAccessor instanceof Instant)
+                            {    //if date is a valid time stamp
+                                return ((Instant) temporalAccessor).toEpochMilli();
+                            }
+                            else
+                            {
+                                //if date is a date parse as date and convert to time tamp
+                                return ((LocalDate) temporalAccessor).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
+                            }
+                        });
             case INTEGER:
-                return extractValue(value, legendColumn, "INTEGER", f ->
-                {
-                    return ((Number) value).longValue();
-                });
+                return extractValue(value, legendColumn, Number.class, "INTEGER",
+                        f ->
+                        {
+                            return ((Number) value).longValue();
+                        });
             case FLOAT:
             case NUMBER:
-                return extractValue(value, legendColumn, "DECIMAL (FLOAT/DOUBLE)", f ->
-                {
-                    return ((Number) value).doubleValue();
-                });
+                return extractValue(value, legendColumn, Number.class, "DECIMAL (FLOAT/DOUBLE)",
+                        f ->
+                        {
+                            return ((Number) value).doubleValue();
+                        });
             case BOOLEAN:
-                return extractValue(value, legendColumn, "BOOLEAN", f ->
-                {
-                    return (Boolean) value;
-                });
+                return extractValue(value, legendColumn, Boolean.class, "BOOLEAN",
+                        f ->
+                        {
+                            return (Boolean) value;
+                        });
             default:
                 return value;
         }
     }
 
-    private Object extractValue(Object value, LegendColumn column, String expectedFormat, Function<Object, Object> function)
+    private Object extractValue(Object value, LegendColumn column, Class expectedClassType, String expectedFormat, Function<Object, Object> function)
     {
+        if (value == null)
+        {
+            return null;
+        }
+
+        if (!expectedClassType.isInstance(value))
+        {
+            throw new PostgresServerException(String.format("Unexpected data type for value '%s' in column '%s'. Expected data type '%s', actual data type '%s'",
+                    obfuscateValue(value), column.getName(), expectedClassType.getName(), value.getClass().getName()));
+        }
+
         try
         {
             return function.apply(value);
         }
         catch (Exception e)
         {
-            throw new PostgresServerException(String.format("Failed to handle value '%s' in column '%s'." +
-                    " Expected value format '%s'", value, column.getName(), expectedFormat), e);
+            throw new PostgresServerException(String.format("Unexpected value '%s' in column '%s'." +
+                    " Expected data type '%s', value format '%s'", obfuscateValue(value), column.getName(), expectedClassType.getName(), expectedFormat), e);
         }
+    }
+
+    private String obfuscateValue(Object value)
+    {
+        if (value == null)
+        {
+            return "";
+        }
+        String stringValue = value.toString();
+        if (stringValue.length() <= 5)
+        {
+            return stringValue + "....";
+        }
+        return stringValue.substring(0, 5) + "....";
     }
 
 
