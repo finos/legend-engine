@@ -433,7 +433,7 @@ public class CompileContext
             case 0:
             {
                 // Since we have tried to find basic function initially, this means the function builder is not found, we report error
-                String message = "Can't resolve the builder for function '" + functionName + "' - stack:" + processingContext.getStack();
+                String message = "Can't resolve function '" + functionName + "' - stack:" + processingContext.getStack();
                 LOGGER.error(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.GRAPH_MISSING_FUNCTION, message).toString());
                 throw new EngineException(message, sourceInformation, EngineErrorType.COMPILATION);
             }
@@ -443,7 +443,7 @@ public class CompileContext
             }
             default:
             {
-                throw new EngineException(results.keysView().makeString("Can't resolve the builder for function '" + functionName + "' - multiple matches found [", ", ", "]"), sourceInformation, EngineErrorType.COMPILATION);
+                throw new EngineException(results.keysView().makeString("Can't resolve function '" + functionName + "' - multiple matches found [", ", ", "]"), sourceInformation, EngineErrorType.COMPILATION);
             }
         }
     }

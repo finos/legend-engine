@@ -1475,7 +1475,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     public void testUnknownFunction()
     {
         test("Class test::Person[$this.lastName->ranDoMFuncTion()]{lastName:String[1];}",
-                "COMPILATION error at [1:36-49]: Can't resolve the builder for function 'ranDoMFuncTion' - stack:[Class 'test::Person' Fourth Pass, Constraint 0, new lambda, Applying ranDoMFuncTion]");
+                "COMPILATION error at [1:36-49]: Can't resolve function 'ranDoMFuncTion' - stack:[Class 'test::Person' Fourth Pass, Constraint 0, new lambda, Applying ranDoMFuncTion]");
     }
 
     @Test

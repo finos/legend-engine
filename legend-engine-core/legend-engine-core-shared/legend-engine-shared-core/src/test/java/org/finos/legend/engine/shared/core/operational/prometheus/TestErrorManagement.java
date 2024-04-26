@@ -275,7 +275,7 @@ public class TestErrorManagement
     @Test
     public void testServiceExceptionCategorizationMatchingMethodPrioritizationOfExceptionOutlineToKeywords()
     {
-        MetricsHandler.observeError(LoggingEventType.DSB_EXECUTE_ERROR, new EngineException("Can't resolve the builder for function 'get/Login/Kerberos"), TEST_SERVICE_PATH);
+        MetricsHandler.observeError(LoggingEventType.DSB_EXECUTE_ERROR, new EngineException("Can't resolve function 'get/Login/Kerberos"), TEST_SERVICE_PATH);
         String[] labels = {"EngineException", "ServerExecutionError", "DsbExecute", TEST_SERVICE_PATH};
         assertEquals(METRIC_REGISTRY.getSampleValue(METRIC_NAME, COUNTER_LABEL_NAMES, labels), 1, DELTA);
     }

@@ -115,7 +115,7 @@
       },
       {
         "ExceptionName": "EngineException",
-        "MessageRegex": "Can't resolve the builder for function|Can't find service",
+        "MessageRegex": "Can't resolve function|Can't find service",
         "Priority": "primary"
       },
       {
