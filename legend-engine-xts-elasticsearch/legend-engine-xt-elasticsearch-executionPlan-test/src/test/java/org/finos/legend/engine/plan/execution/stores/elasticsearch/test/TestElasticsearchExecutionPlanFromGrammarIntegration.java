@@ -47,6 +47,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.testcontainers.DockerClientFactory;
 
@@ -142,9 +143,59 @@ public class TestElasticsearchExecutionPlanFromGrammarIntegration
 
             String resultPlanJson = objectmapper.writeValueAsString(originalPlan);
 
-            //assert that streaming results does not modify the plan 
+            //assert that streaming results does not modify the plan
             Assert.assertEquals(initialPlanJson, resultPlanJson);
 
+        }
+    }
+
+    @Test
+    public void testElasticPlanForFunctionWithMappingAndRuntimePropertyExecution() throws IOException
+    {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        )
+        {
+            SingleExecutionPlan originalPlan = getPlanFromFunctionGrammar("abc::abc::functionWithMappingAndRuntimeProperty__TabularDataSet_1_");
+
+            //create a deep copy of the original plan that we pass into the execute call
+            ObjectMapper objectmapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+            String initialPlanJson = objectmapper.writeValueAsString(originalPlan);
+
+
+            //execute plan
+            TDSResult result = (TDSResult) PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build().execute(originalPlan);
+
+            result.stream(outputStream, SerializationFormat.DEFAULT); //this should trigger tryAdvance -- streaming results in batches
+
+            String resultPlanJson = objectmapper.writeValueAsString(originalPlan);
+
+            //assert that streaming results does not modify the plan
+            Assert.assertEquals(initialPlanJson, resultPlanJson);
+        }
+    }
+
+    @Test
+    public void testElasticPlanForFunctionWithRuntimePropertyExecution() throws IOException
+    {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        )
+        {
+            SingleExecutionPlan originalPlan = getPlanFromFunctionGrammar("abc::abc::functionWithRuntimeProperty__TabularDataSet_1_");
+
+            //create a deep copy of the original plan that we pass into the execute call
+            ObjectMapper objectmapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+            String initialPlanJson = objectmapper.writeValueAsString(originalPlan);
+
+
+            //execute plan
+            TDSResult result = (TDSResult) PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build().execute(originalPlan);
+
+            result.stream(outputStream, SerializationFormat.DEFAULT); //this should trigger tryAdvance -- streaming results in batches
+
+            String resultPlanJson = objectmapper.writeValueAsString(originalPlan);
+
+            //assert that streaming results does not modify the plan
+            Assert.assertEquals(initialPlanJson, resultPlanJson);
         }
     }
 }
