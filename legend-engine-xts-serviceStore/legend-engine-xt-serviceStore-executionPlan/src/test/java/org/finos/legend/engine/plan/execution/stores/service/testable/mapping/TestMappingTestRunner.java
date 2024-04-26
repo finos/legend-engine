@@ -235,7 +235,7 @@ public class TestMappingTestRunner
                 ")\n";
 
         PureModelContextData modelDataWithReferenceData = PureGrammarParser.newInstance().parseModel(grammar);
-        PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+        PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
         Mapping mappingToTest = (Mapping) pureModelWithReferenceData.getPackageableElement("testServiceStoreTestSuites::ServiceStoreMapping");
         List<TestResult> mappingTestResults = mappingTestableRunnerExtension.executeAllTest(mappingToTest, pureModelWithReferenceData, modelDataWithReferenceData);
         Assert.assertEquals(2, mappingTestResults.size());

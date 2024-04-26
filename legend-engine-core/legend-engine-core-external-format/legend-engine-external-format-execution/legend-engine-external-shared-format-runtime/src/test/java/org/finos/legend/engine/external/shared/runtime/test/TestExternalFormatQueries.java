@@ -71,7 +71,7 @@ public abstract class TestExternalFormatQueries
     {
         try
         {
-            PureModel model = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+            PureModel model = Compiler.compile(modelData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
             PureGrammarParser parser = PureGrammarParser.newInstance();
             Lambda lambdaProtocol = parser.parseLambda(query);
@@ -245,7 +245,7 @@ public abstract class TestExternalFormatQueries
             ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
             String json = objectMapper.writeValueAsString(modelData);
             modelData = objectMapper.readValue(json, PureModelContextData.class);
-            PureModel model = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+            PureModel model = Compiler.compile(modelData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
             PureGrammarParser parser = PureGrammarParser.newInstance();
             Lambda lambdaProtocol = parser.parseLambda(query);

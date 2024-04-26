@@ -42,7 +42,7 @@ public abstract class TestPersistenceBase
     protected RunTestsResult testPersistence(String persistenceSpec)
     {
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(persistenceSpec);
-        PureModel model = Compiler.compile(contextData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+        PureModel model = Compiler.compile(contextData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
         PackageableElement packageableElement = model.getPackageableElement("test::TestPersistence");
         Root_meta_pure_persistence_metamodel_Persistence purePersistence = (Root_meta_pure_persistence_metamodel_Persistence) packageableElement;
         // Invoke

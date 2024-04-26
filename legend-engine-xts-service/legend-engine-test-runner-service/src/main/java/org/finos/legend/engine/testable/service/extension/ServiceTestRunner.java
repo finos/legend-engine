@@ -241,7 +241,7 @@ public class ServiceTestRunner implements TestRunner
                     try
                     {
                         SingleExecutionPlan execPlan = compositeExecutionPlan.executionPlans.get(key);
-                        JavaHelper.compilePlan(execPlan, Identity.getAnonymousIdentity());
+                        JavaHelper.compilePlan(execPlan, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
                         org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult testResult = executeServiceTest((ServiceTest) test, execPlan);
                         testResult.testable = getElementFullPath(pureService, pureModel.getExecutionSupport());
                         testResult.testSuiteId = suite.id;
@@ -325,7 +325,7 @@ public class ServiceTestRunner implements TestRunner
 
             ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(testPureSingleExecution, null, pureModel, pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
             SingleExecutionPlan singleExecutionPlan = (SingleExecutionPlan) executionPlan;
-            JavaHelper.compilePlan(singleExecutionPlan, Identity.getAnonymousIdentity());
+            JavaHelper.compilePlan(singleExecutionPlan, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
 
             for (Test test : suite.tests)
             {

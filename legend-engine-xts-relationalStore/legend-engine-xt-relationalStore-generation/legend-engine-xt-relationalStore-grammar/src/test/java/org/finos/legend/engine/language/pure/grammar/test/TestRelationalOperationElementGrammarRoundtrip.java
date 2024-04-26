@@ -49,7 +49,7 @@ public class TestRelationalOperationElementGrammarRoundtrip
         }
         catch (Exception e)
         {
-            LogInfo errorResponse = new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.PARSE_ERROR, e);
+            LogInfo errorResponse = new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.PARSE_ERROR, e);
             Assert.assertNotNull("No source information provided in error", errorResponse.sourceInformation);
             MatcherAssert.assertThat(EngineException.buildPrettyErrorMessage(errorResponse.message, errorResponse.sourceInformation, EngineErrorType.PARSER),
                     CoreMatchers.startsWith(expectedErrorMsg));

@@ -165,7 +165,7 @@ public class PureModel implements IPureModel
 
     public PureModel(PureModelContextData pureModelContextData, CompilerExtensions extensions, String user, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter, Metadata metaData)
     {
-        user = user == null ? Identity.getAnonymousIdentity().getName() : user;
+        user = user == null ? IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName() : user;
         long start = System.nanoTime();
 
         if (classLoader == null)
@@ -327,7 +327,7 @@ public class PureModel implements IPureModel
 
     private static PureModel getCorePureModel()
     {
-        return new PureModel(PureModelContextData.newBuilder().build(), CompilerExtensions.fromExtensions(Lists.mutable.empty()), Identity.getAnonymousIdentity().getName(), null, null, new PureModelProcessParameter(), null);
+        return new PureModel(PureModelContextData.newBuilder().build(), CompilerExtensions.fromExtensions(Lists.mutable.empty()), IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), null, null, new PureModelProcessParameter(), null);
     }
 
     private void modifyRootClassifier()

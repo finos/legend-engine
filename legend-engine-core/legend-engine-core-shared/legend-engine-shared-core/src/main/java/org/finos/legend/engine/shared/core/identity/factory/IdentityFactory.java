@@ -30,6 +30,10 @@ public interface IdentityFactory extends LegendExtension
 
     Identity makeIdentity(MutableList<CommonProfile> profiles);
 
+    Identity makeIdentityForTesting(String name);
+
+    Identity getAnonymousIdentity();
+
     /*
         A helper function to translate from Identity to Profile.
         Legend code base makes use of both Identity and Profile.

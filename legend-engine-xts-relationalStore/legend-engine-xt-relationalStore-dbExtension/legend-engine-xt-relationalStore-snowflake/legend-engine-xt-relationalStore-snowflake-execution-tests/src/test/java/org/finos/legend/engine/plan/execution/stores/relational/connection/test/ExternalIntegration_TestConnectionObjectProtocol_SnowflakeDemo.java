@@ -43,7 +43,7 @@ public class ExternalIntegration_TestConnectionObjectProtocol_SnowflakeDemo exte
     public void testUsingKeyPairWithSFWest() throws Exception
     {
         Class.forName("net.snowflake.client.jdbc.SnowflakeDriver");
-        testSnowflakePublicConnectionWithSFWest(c -> c.getConnectionUsingIdentity(Identity.getAnonymousIdentity()));
+        testSnowflakePublicConnectionWithSFWest(c -> c.getConnectionUsingIdentity(IdentityFactoryProvider.getInstance().getAnonymousIdentity()));
     }
 
     public void testSnowflakePublicConnectionWithSFWest(Function<DataSourceSpecification, Connection> toDBConnection) throws Exception
@@ -83,7 +83,7 @@ public class ExternalIntegration_TestConnectionObjectProtocol_SnowflakeDemo exte
     public void testUsingKeyPairWithSFEast() throws Exception
     {
         Class.forName("net.snowflake.client.jdbc.SnowflakeDriver");
-        testSnowflakePublicConnectionWithSFEast(c -> c.getConnectionUsingIdentity(Identity.getAnonymousIdentity()));
+        testSnowflakePublicConnectionWithSFEast(c -> c.getConnectionUsingIdentity(IdentityFactoryProvider.getInstance().getAnonymousIdentity()));
     }
 
     public void testSnowflakePublicConnectionWithSFEast(Function<DataSourceSpecification, Connection> toDBConnection) throws Exception

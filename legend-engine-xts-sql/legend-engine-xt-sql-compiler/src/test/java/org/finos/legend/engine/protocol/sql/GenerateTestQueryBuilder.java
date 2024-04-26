@@ -27,7 +27,7 @@ public class GenerateTestQueryBuilder
 {
     public static void main(String[] args)
     {
-        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), Identity.getAnonymousIdentity().getName(), DeploymentMode.TEST);
+        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), DeploymentMode.TEST);
         String query = "SELECT id FROM alloy.\"/alloy/bi/getTableauUsage\" LIMIT 1";
         SQLGrammarParser parser = SQLGrammarParser.newInstance();
         Node node = parser.parseStatement(query);

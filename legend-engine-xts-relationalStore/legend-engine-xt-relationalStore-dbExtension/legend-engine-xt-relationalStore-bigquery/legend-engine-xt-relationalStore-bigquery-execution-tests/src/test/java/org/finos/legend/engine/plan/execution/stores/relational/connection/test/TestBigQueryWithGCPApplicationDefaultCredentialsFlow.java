@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 
 public class TestBigQueryWithGCPApplicationDefaultCredentialsFlow
 {
-    private Identity identity1 = new Identity("identity1");
+    private Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
 
     @Test
     public void testFlow() throws Exception

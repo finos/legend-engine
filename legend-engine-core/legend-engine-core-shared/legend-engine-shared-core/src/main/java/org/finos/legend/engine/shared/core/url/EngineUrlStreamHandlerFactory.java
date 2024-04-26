@@ -52,12 +52,12 @@ public class EngineUrlStreamHandlerFactory implements URLStreamHandlerFactory
             {
                 URL.setURLStreamHandlerFactory(INSTANCE);
                 factoryInitialized = State.INITIALIZED;
-                LOGGER.info(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.URL_FACTORY_REGISTERED, "Registered Alloy URL Factory").toString());
+                LOGGER.info(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.URL_FACTORY_REGISTERED, "Registered Alloy URL Factory").toString());
             }
             catch (Error e)
             {
                 factoryInitialized = State.INITIALIZATION_FAILED;
-                LOGGER.info(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.URL_FACTORY_REGISTER_FAILED, "Unable to register Alloy URL Factory.  URL creation via direct constructors will fail for Alloy protocols").toString());
+                LOGGER.info(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.URL_FACTORY_REGISTER_FAILED, "Unable to register Alloy URL Factory.  URL creation via direct constructors will fail for Alloy protocols").toString());
             }
         }
     }

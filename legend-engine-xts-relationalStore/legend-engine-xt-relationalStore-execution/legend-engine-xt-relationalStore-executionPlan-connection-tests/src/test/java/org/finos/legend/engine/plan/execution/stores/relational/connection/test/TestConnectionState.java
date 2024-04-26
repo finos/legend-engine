@@ -75,7 +75,7 @@ public class TestConnectionState
     @Test
     public void connectionStateCreation() throws Exception
     {
-        Identity identity = new Identity("testuser1");
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting("testuser1");
 
         // User gets connection to db1
         RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db1");
@@ -91,7 +91,7 @@ public class TestConnectionState
     @Test
     public void connectionStateUpdate() throws Exception
     {
-        Identity identity = new Identity("testuser1");
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting("testuser1");
 
         // User gets connection to db1
         RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db1");
@@ -118,7 +118,7 @@ public class TestConnectionState
     @Test
     public void connectionStateReset() throws Exception
     {
-        Identity identity = new Identity("testuser1");
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting("testuser1");
 
         // User gets connection to db1
         RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db1");

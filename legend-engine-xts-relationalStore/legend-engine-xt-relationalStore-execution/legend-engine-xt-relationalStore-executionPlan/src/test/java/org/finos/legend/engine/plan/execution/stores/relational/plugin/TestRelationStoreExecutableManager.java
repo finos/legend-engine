@@ -64,7 +64,7 @@ public class TestRelationStoreExecutableManager
         Mockito.when(mockResultSet.getMetaData()).thenReturn(mockMetadata);
         Mockito.when(mockDatabaseConnection.accept(any())).thenReturn(false);
         StoreExecutableManager.INSTANCE.registerManager();
-        RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("TEST", "comment")), mockExecutionNode, FastList.newListWith(new SQLResultColumn("test", "INTEGER")), null, null, mockConnection, Identity.getAnonymousIdentity(), null, null, new RequestContext(session, "ref"));
+        RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("TEST", "comment")), mockExecutionNode, FastList.newListWith(new SQLResultColumn("test", "INTEGER")), null, null, mockConnection, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), null, null, new RequestContext(session, "ref"));
         Assert.assertEquals(1, StoreExecutableManager.INSTANCE.getExecutables(session).size());
         result.close();
         Assert.assertTrue(StoreExecutableManager.INSTANCE.getExecutables(session).isEmpty());
@@ -87,7 +87,7 @@ public class TestRelationStoreExecutableManager
         Mockito.when(mockResultSet.getMetaData()).thenReturn(mockMetadata);
         Mockito.when(mockDatabaseConnection.accept(any())).thenReturn(false);
         StoreExecutableManager.INSTANCE.registerManager();
-        RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("TEST", "comment")), mockExecutionNode, FastList.newListWith(new SQLResultColumn("test", "INTEGER")), null, null, mockConnection, Identity.getAnonymousIdentity(), null, null);
+        RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("TEST", "comment")), mockExecutionNode, FastList.newListWith(new SQLResultColumn("test", "INTEGER")), null, null, mockConnection, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), null, null);
         assert (StoreExecutableManager.INSTANCE.getActiveSessionCount() == 0);
         result.close();
 
@@ -110,7 +110,7 @@ public class TestRelationStoreExecutableManager
         Mockito.when(mockResultSet.getMetaData()).thenReturn(mockMetadata);
         StoreExecutableManager.INSTANCE.registerManager();
 
-        new SQLExecutionResult(FastList.newListWith(new RelationalExecutionActivity("TEST", "comment")), mockExecutionNode, "Test", "GMT", mockConnection, Identity.getAnonymousIdentity(), null, null, new RequestContext(session, "ref"));
+        new SQLExecutionResult(FastList.newListWith(new RelationalExecutionActivity("TEST", "comment")), mockExecutionNode, "Test", "GMT", mockConnection, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), null, null, new RequestContext(session, "ref"));
         Assert.assertEquals(0, StoreExecutableManager.INSTANCE.getExecutables(session).size());
         Assert.assertTrue(StoreExecutableManager.INSTANCE.getExecutables(session).isEmpty());
         StoreExecutableManager.INSTANCE.reset();
@@ -131,7 +131,7 @@ public class TestRelationStoreExecutableManager
         Mockito.when(mockStatement.executeQuery(anyString())).thenReturn(mockResultSet);
         Mockito.when(mockResultSet.getMetaData()).thenReturn(mockMetadata);
         StoreExecutableManager.INSTANCE.registerManager();
-        SQLExecutionResult result = new SQLExecutionResult(FastList.newListWith(new RelationalExecutionActivity("TEST", "comment")), mockExecutionNode, "Test", "GMT", mockConnection, Identity.getAnonymousIdentity(), null, null);
+        SQLExecutionResult result = new SQLExecutionResult(FastList.newListWith(new RelationalExecutionActivity("TEST", "comment")), mockExecutionNode, "Test", "GMT", mockConnection, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), null, null);
         assert (StoreExecutableManager.INSTANCE.getActiveSessionCount() == 0);
 
     }

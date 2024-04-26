@@ -59,7 +59,7 @@ public class TestDataGenerationTest
     {
         String testGenerationInput = getResourceAsString(testGenerationInputPath);
         TestDataGenerationInput input = objectMapper.readValue(testGenerationInput, TestDataGenerationInput.class);
-        PureModel pureModel = modelManager.loadModel(input.model, input.clientVersion == null ? PureClientVersions.production : input.clientVersion, Identity.getAnonymousIdentity(), null);
+        PureModel pureModel = modelManager.loadModel(input.model, input.clientVersion == null ? PureClientVersions.production : input.clientVersion, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), null);
         List<EmbeddedData> testData = TestDataGenerationService.generateEmbeddedData(input.query, pureModel.getMapping(input.mapping), pureModel);
         Assert.assertEquals(objectMapper.writeValueAsString(testData), expectedResult);
     }

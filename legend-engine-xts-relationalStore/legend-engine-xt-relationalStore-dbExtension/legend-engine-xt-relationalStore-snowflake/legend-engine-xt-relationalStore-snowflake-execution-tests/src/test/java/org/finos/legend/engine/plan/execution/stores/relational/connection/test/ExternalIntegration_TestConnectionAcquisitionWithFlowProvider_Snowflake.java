@@ -109,7 +109,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
     public void testSnowflakePublicConnection_identity() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.snowflakeWithKeyPairSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection(Identity.getAnonymousIdentity(), systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection(IdentityFactoryProvider.getInstance().getAnonymousIdentity(), systemUnderTest);
         testConnection(connection, "select * from INTEGRATION_DB1.INTEGRATION_SCHEMA1.test");
     }
 

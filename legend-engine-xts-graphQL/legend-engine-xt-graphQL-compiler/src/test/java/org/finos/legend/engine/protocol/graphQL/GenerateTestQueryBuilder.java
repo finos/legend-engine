@@ -27,7 +27,7 @@ public class GenerateTestQueryBuilder
 {
     public static void main(String[] args)
     {
-        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), Identity.getAnonymousIdentity().getName(), DeploymentMode.TEST);
+        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), DeploymentMode.TEST);
         String introspection = "query MyQuery {\n" +
                 "  firmByLegalName(legalName: \"ork\") {\n" +
                 "    legalName\n" +

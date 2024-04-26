@@ -61,9 +61,9 @@ public class SchemaGenerators
     {
         try
         {
-            PureModel pureModel = this.modelManager.loadModelAndData(PureModelContextData.newPureModelContextData(), null, Identity.getAnonymousIdentity(), null).getTwo();
+            PureModel pureModel = this.modelManager.loadModelAndData(PureModelContextData.newPureModelContextData(), null, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), null).getTwo();
             List<FileGenerationDescription> descriptions = schemaConfigurationDescriptions.stream().map(e -> FileGenerationDescription.newDescription(e, pureModel)).collect(Collectors.toList());
-            return ManageConstantResult.manageResult(Identity.getAnonymousIdentity().getName(), descriptions);
+            return ManageConstantResult.manageResult(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), descriptions);
         }
         catch (Exception ex)
         {

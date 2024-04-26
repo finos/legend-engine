@@ -84,7 +84,7 @@ public class ServiceStoreTestUtils
     public static SingleExecutionPlan buildPlanForQuery(String grammar, String mapping, String runtime)
     {
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(grammar);
-        PureModel pureModel = Compiler.compile(contextData, null, Identity.getAnonymousIdentity().getName());
+        PureModel pureModel = Compiler.compile(contextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         MutableList<Root_meta_pure_extension_Extension> extensions = Lists.mutable.empty();
         extensions.addAllIterable(

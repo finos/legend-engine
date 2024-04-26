@@ -29,7 +29,7 @@ import static org.junit.Assert.assertEquals;
 public class TestDatabricksWithApiTokenFlow
 {
     private InMemoryVaultForTesting inMemoryVault = new InMemoryVaultForTesting();
-    private Identity identity = new Identity("identity1");
+    private Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
 
     @Before
     public void setup()

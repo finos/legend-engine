@@ -156,7 +156,7 @@ public abstract class AlloyTestServer
 
     protected String executePlan(SingleExecutionPlan plan,String user)
     {
-        RelationalResult result = (RelationalResult) planExecutor.execute((SingleExecutionPlan) plan, Maps.mutable.empty(), user,Identity.getAnonymousIdentity());
+        RelationalResult result = (RelationalResult) planExecutor.execute((SingleExecutionPlan) plan, Maps.mutable.empty(), user,IdentityFactoryProvider.getInstance().getAnonymousIdentity());
         return result.flush(new RelationalResultToJsonDefaultSerializer(result));
     }
 
@@ -174,7 +174,7 @@ public abstract class AlloyTestServer
         {
             updateRuntimeWithTimeZone(contextData.getElementsOfType(PackageableRuntime.class).get(0), timeZone);
         }
-        PureModel pureModel = Compiler.compile(contextData, null, Identity.getAnonymousIdentity().getName());
+        PureModel pureModel = Compiler.compile(contextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
         Function fetchFunctionExpressions = contextData.getElementsOfType(Function.class).get(0);
 
         return PlanGenerator.generateExecutionPlan(

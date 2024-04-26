@@ -46,7 +46,7 @@ public class TestConnectionObjectProtocol_H2 extends DbSpecificTests
     @Test
     public void testLocalTestConnection_identity() throws Exception
     {
-        testLocalTestConnection(c -> c.getConnectionUsingIdentity(Identity.getAnonymousIdentity()));
+        testLocalTestConnection(c -> c.getConnectionUsingIdentity(IdentityFactoryProvider.getInstance().getAnonymousIdentity()));
     }
 
     private void testLocalTestConnection(Function<DataSourceSpecification, Connection> toDBConnection, AuthenticationStrategy authenticationStrategy) throws Exception
@@ -85,7 +85,7 @@ public class TestConnectionObjectProtocol_H2 extends DbSpecificTests
     @Test
     public void testEmbeddedH2Connection_identity() throws Exception
     {
-        testEmbeddedH2Connection(c -> c.getConnectionUsingIdentity(Identity.getAnonymousIdentity()));
+        testEmbeddedH2Connection(c -> c.getConnectionUsingIdentity(IdentityFactoryProvider.getInstance().getAnonymousIdentity()));
     }
 
     private void testEmbeddedH2Connection(Function<DataSourceSpecification, Connection> toDBConnection) throws Exception

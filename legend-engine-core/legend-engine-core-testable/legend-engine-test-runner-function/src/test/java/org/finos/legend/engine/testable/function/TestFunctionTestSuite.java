@@ -191,7 +191,7 @@ public class TestFunctionTestSuite
         FunctionTestableRunnerExtension functionTestableRunnerExtension = new FunctionTestableRunnerExtension();
         String pureModelString = getResourceAsString("testable/" + grammar);
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString);
-        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement element = pureModel.getPackageableElement(fullPath);
         Assert.assertTrue(element instanceof  org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition);
         ConcreteFunctionDefinition<?> functionMetamodel = (ConcreteFunctionDefinition<?>) element;

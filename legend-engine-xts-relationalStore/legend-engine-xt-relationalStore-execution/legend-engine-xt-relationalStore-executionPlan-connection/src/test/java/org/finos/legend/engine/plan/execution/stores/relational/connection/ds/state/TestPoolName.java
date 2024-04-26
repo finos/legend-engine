@@ -48,8 +48,8 @@ public class TestPoolName extends TestConnectionManagement
     @Test
     public void testPoolNameIncludesCredentialType()
     {
-        Identity user1 = new Identity("pool1");
-        Identity user2 = new Identity("pool2");
+        Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("pool1");
+        Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("pool2");
         DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Collections.singletonList("DROP TABLE IF EXISTS T1;"));
 
         String pool1 = connectionStateManager.poolNameFor(user1, ds1.getConnectionKey());

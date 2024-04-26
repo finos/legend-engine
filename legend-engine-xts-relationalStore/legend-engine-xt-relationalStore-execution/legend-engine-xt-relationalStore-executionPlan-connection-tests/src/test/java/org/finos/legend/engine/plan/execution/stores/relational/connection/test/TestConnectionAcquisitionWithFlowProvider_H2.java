@@ -79,7 +79,7 @@ public class TestConnectionAcquisitionWithFlowProvider_H2 extends DbSpecificTest
     public void testLocalTestConnection_identity() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.localH2WithUserPasswordSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection(Identity.getAnonymousIdentity(), systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection(IdentityFactoryProvider.getInstance().getAnonymousIdentity(), systemUnderTest);
         testConnection(connection, "SELECT * FROM PersonTable");
     }
 

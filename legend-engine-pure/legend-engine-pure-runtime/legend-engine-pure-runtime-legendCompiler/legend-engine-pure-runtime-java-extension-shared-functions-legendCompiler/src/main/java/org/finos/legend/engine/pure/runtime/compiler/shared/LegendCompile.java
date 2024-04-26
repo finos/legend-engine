@@ -23,7 +23,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
-import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.m3.coreinstance.Package;
@@ -40,7 +39,7 @@ public class LegendCompile
         // Parse
         PureModelContextData data = PureGrammarParser.newInstance().parseModel(code);
         // Compile
-        PureModel pm = org.finos.legend.engine.language.pure.compiler.Compiler.compile(data, DeploymentMode.PROD, Identity.getAnonymousIdentity().getName(), "", metadata);
+        PureModel pm = org.finos.legend.engine.language.pure.compiler.Compiler.compile(data, DeploymentMode.PROD, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), "", metadata);
         // Extract Compiled created elements
         return extractCreatedElementFromCompiledGraph(data, pm);
     }
@@ -50,7 +49,7 @@ public class LegendCompile
         // Parse
         PureModelContextData data = PureGrammarParser.newInstance().parseModel("function a::f():Any[*]{" + code + "}");
         // Compile
-        PureModel pm = org.finos.legend.engine.language.pure.compiler.Compiler.compile(data, DeploymentMode.PROD, Identity.getAnonymousIdentity().getName(), "", metadata);
+        PureModel pm = org.finos.legend.engine.language.pure.compiler.Compiler.compile(data, DeploymentMode.PROD, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), "", metadata);
         // Extract Compiled created elements
         return ((ConcreteFunctionDefinition<?>) extractCreatedElementFromCompiledGraph(data, pm).getFirst())._expressionSequence().getFirst();
     }

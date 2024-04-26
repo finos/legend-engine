@@ -234,7 +234,7 @@ public class HelperModelBuilder
             }
             catch (Exception e)
             {
-                LOGGER.warn(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.GRAPH_EXPRESSION_ERROR, "Can't build constraint '" + c.name + "' of class '" + context.pureModel.buildPackageString(_package, _name) + "- stack: " + ctx.getStack()).toString());
+                LOGGER.warn(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.GRAPH_EXPRESSION_ERROR, "Can't build constraint '" + c.name + "' of class '" + context.pureModel.buildPackageString(_package, _name) + "- stack: " + ctx.getStack()).toString());
                 if (e instanceof EngineException)
                 {
                     throw e;
@@ -254,7 +254,7 @@ public class HelperModelBuilder
             catch (Exception e)
             {
                 mf = null;
-                LOGGER.warn(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.GRAPH_EXPRESSION_ERROR, "Can't build the message function for constraint '" + c.name + "' of class '" + context.pureModel.buildPackageString(_package, _name) + "' - stack: " + ctx.getStack()).toString());
+                LOGGER.warn(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.GRAPH_EXPRESSION_ERROR, "Can't build the message function for constraint '" + c.name + "' of class '" + context.pureModel.buildPackageString(_package, _name) + "' - stack: " + ctx.getStack()).toString());
                 /* We let these through as a warning because there are invalid message functions that are not properly caught by the PURE compiler .
                    For example:
                       ~message: 'String ' + $this.maybe

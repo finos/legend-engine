@@ -878,7 +878,7 @@ public class TestServiceRunner
     {
         SimpleRelationalServiceWithUserRunner simpleRelationalServiceWithUserRunner = new SimpleRelationalServiceWithUserRunner();
 
-        Identity identity = new Identity("peter");
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting("peter");
 
         ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
                 .newInstance()
@@ -1065,7 +1065,7 @@ public class TestServiceRunner
         AbstractXStoreServiceRunner(String servicePath, SingleExecutionPlan plan) throws JavaCompileException
         {
             super(servicePath, plan, false);
-            compiler = JavaHelper.compilePlan(plan, Identity.getAnonymousIdentity());
+            compiler = JavaHelper.compilePlan(plan, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
         }
 
         @Override
@@ -1161,7 +1161,7 @@ public class TestServiceRunner
             InputStreamReader inputStreamReader = new InputStreamReader(Objects.requireNonNull(TestServiceRunner.class.getResourceAsStream(modelCodeResource)));
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
             PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(bufferedReader.lines().collect(Collectors.joining("\n")));
-            PureModel pureModel = Compiler.compile(contextData, null, Identity.getAnonymousIdentity().getName());
+            PureModel pureModel = Compiler.compile(contextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
             Function fetchFunction = contextData.getElementsOfType(Function.class).stream().filter(x -> fetchFunctionName.equals(x._package + "::" + x.name)).findFirst().orElseThrow(() -> new IllegalArgumentException("Unknown function"));
 

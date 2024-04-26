@@ -69,7 +69,7 @@ public class GenerateDiff
         pureModelContextDataBuilder.addElements(newEntities);
         PureModelContextData pureModelContextData = pureModelContextDataBuilder.build();
         executionSupport = new CompiledExecutionSupport(new JavaCompilerState(null, classLoader), new CompiledProcessorSupport(classLoader, MetadataLazy.fromClassLoader(classLoader, CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName)), Sets.mutable.empty()), null, new CompositeCodeStorage(new VersionControlledClassLoaderCodeStorage(classLoader, Lists.mutable.of(CodeRepositoryProviderHelper.findPlatformCodeRepository()), null)), null, null, new ConsoleCompiled(), new FunctionCache(), new ClassCache(), null, Sets.mutable.empty(), CompiledExtensionLoader.extensions());
-        pureModel = new PureModel(pureModelContextData, Identity.getAnonymousIdentity().getName(), classLoader, DeploymentMode.PROD);
+        pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), classLoader, DeploymentMode.PROD);
         JavaSourceCodeGenerator javaSourceCodeGenerator = new JavaSourceCodeGenerator(pureModel.getExecutionSupport().getProcessorSupport(), new EmptyCodeStorage(), false, null, false, pureModel.getExecutionSupport().getCompiledExtensions(), "ChangeTokens", null, false);
         MutableSet<String> allTypes = pureModel.getModelClasses().collect(a ->
                 core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_fullPackageName_PackageableElement_1__String_1__String_1_((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) a, "::", pureModel.getExecutionSupport())).toSet();

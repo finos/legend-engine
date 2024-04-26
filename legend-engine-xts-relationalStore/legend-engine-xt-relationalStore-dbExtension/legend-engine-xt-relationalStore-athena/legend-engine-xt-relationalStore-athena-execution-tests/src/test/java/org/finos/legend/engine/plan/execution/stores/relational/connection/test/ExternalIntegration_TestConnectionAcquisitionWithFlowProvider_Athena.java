@@ -56,7 +56,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Athen
     public void testConnectivity() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = getTestConnection();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection(Identity.getAnonymousIdentity(), systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection(IdentityFactoryProvider.getInstance().getAnonymousIdentity(), systemUnderTest);
         testConnection(connection, 1, "select 1");
     }
 

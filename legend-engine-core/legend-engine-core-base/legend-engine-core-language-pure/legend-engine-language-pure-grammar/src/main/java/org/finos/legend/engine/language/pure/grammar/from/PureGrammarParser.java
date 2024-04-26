@@ -184,7 +184,7 @@ public class PureGrammarParser
                 String message = e instanceof UnsupportedOperationException && (e.getMessage() == null || e.getMessage().isEmpty())
                         ? "Unsupported syntax"
                         : e instanceof NullPointerException ? "An exception of type 'NullPointerException' occurred, please notify developer" : e.getMessage();
-                LOGGER.error(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.GRAMMAR_PARSING_ERROR, message).toString(), e);
+                LOGGER.error(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.GRAMMAR_PARSING_ERROR, message).toString(), e);
                 throw new EngineException(message, sectionSourceInformation, EngineErrorType.PARSER, e);
             }
         }
