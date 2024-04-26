@@ -113,3 +113,28 @@ Class meta::relational::metamodel::UnSetOperation extends AlterOperation
 {
   propertyName: String[1];
 }
+
+Class meta::relational::metamodel::RelationalMapper extends meta::pure::metamodel::PackageableElement, meta::relational::runtime::PostProcessorParameter
+{
+  databaseMappers : DatabaseMapper[*];
+  schemaMappers   : SchemaMapper[*];
+  tableMappers    : TableMapper[*];
+}
+
+Class meta::relational::metamodel::DatabaseMapper
+{
+  database : String[1];
+  schemas: Schema[*];
+}
+
+Class meta::relational::metamodel::SchemaMapper
+{
+  from : Schema[1];
+  to   : String[1];
+}
+
+Class meta::relational::metamodel::TableMapper
+{
+  from : Table[1];
+  to   : String[1];
+}

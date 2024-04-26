@@ -102,6 +102,7 @@ public class PureModelContextData extends PureModelContext
             @Deprecated @JsonProperty("connections") Collection<? extends PackageableElement> connections,
             @Deprecated @JsonProperty("fileGenerations") Collection<? extends PackageableElement> fileGenerations,
             @Deprecated @JsonProperty("generationSpecifications") Collection<? extends PackageableElement> generationSpecifications,
+            @Deprecated @JsonProperty("relationalMapper") Collection<? extends PackageableElement> relationalMapper,
             @Deprecated @JsonProperty("serializableModelSpecifications") Collection<? extends PackageableElement> serializableModelSpecifications)
     {
         MutableList<PackageableElement> allElements = (elements == null) ? Lists.mutable.empty() : Lists.mutable.withAll(elements);
@@ -129,6 +130,7 @@ public class PureModelContextData extends PureModelContext
         Optional.ofNullable(connections).ifPresent(allElements::addAll);
         Optional.ofNullable(fileGenerations).ifPresent(allElements::addAll);
         Optional.ofNullable(generationSpecifications).ifPresent(allElements::addAll);
+        Optional.ofNullable(relationalMapper).ifPresent(allElements::addAll);
         Optional.ofNullable(serializableModelSpecifications).ifPresent(allElements::addAll);
         return newPureModelContextData(serializer, origin, allElements);
     }

@@ -20,6 +20,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
@@ -27,13 +28,17 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.post
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.postProcessor.PostProcessorParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.Mapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.SchemaNameMapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.TableNameMapper;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.RelationalMapperPostProcessor;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
+import java.util.Collections;
 import java.util.List;
 
 public class PostProcessorParseTreeWalker
@@ -60,6 +65,22 @@ public class PostProcessorParseTreeWalker
         MapperPostProcessor processor = new MapperPostProcessor();
         processor.mappers = mappers;
 
+        return processor;
+    }
+
+    public RelationalMapperPostProcessor visitRelationalMapperPostProcessor(PostProcessorSpecificationSourceCode code, PostProcessorParserGrammar.RelationalMapperPostProcessorContext ctx)
+    {
+        MutableList<PackageableElementPointer> relationalMappers = ListIterate.collect(ctx.qualifiedName(), pathCtx ->
+        {
+            PackageableElementPointer pointer = new PackageableElementPointer();
+            pointer.type = PackageableElementType.QUERYPOSTPROCESSOR;
+            pointer.path = PureGrammarParserUtility.fromQualifiedName(pathCtx.packagePath() == null ? Collections.emptyList() : pathCtx.packagePath().identifier(), pathCtx.identifier());
+            pointer.sourceInformation = code.getWalkerSourceInformation().getSourceInformation(pathCtx);
+            return pointer;
+        });
+
+        RelationalMapperPostProcessor processor = new RelationalMapperPostProcessor();
+        processor.relationalMappers = relationalMappers;
         return processor;
     }
 

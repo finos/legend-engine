@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,27 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.context;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper;
 
-public enum PackageableElementType
+import java.util.Collections;
+import java.util.List;
+
+public class DatabaseMapper
 {
-    PACKAGE,
-    PROFILE,
-    CLASS,
-    ASSOCIATION,
-    ENUMERATION,
-    FUNCTION,
-    STORE,
-    RUNTIME,
-    MAPPING,
-    SERVICE,
-    PERSISTENCE,
-    PERSISTENCE_CONTEXT,
-    FLATTEN,
-    DATASTORESPEC,
-    DATASPACE,
-    DIAGRAM,
-    FILE_GENERATION,
-    DATA,
-    QUERYPOSTPROCESSOR
+    public String databaseName;
+    public List<SchemaPtr> schemas = Collections.emptyList();
 }

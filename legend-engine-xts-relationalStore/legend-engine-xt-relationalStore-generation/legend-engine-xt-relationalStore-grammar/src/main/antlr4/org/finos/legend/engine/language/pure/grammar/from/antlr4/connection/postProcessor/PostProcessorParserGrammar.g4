@@ -49,3 +49,10 @@ schemaMapper:                    SCHEMA BRACE_OPEN
                                     mapperFrom | mapperTo
                                  )* BRACE_CLOSE
 ;
+
+// -------------------------------------- RELATIONAL MAPPER -------------------------------------
+relationalMapperPostProcessor:   RELATIONAL_MAPPER
+                                 BRACE_OPEN
+                                     (qualifiedName (COMMA qualifiedName)*)?
+                                 BRACE_CLOSE
+;
