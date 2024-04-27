@@ -26,7 +26,6 @@ import org.finos.legend.engine.persistence.components.transformer.VisitorContext
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class DeleteVisitor implements LogicalPlanVisitor<Delete>
 {

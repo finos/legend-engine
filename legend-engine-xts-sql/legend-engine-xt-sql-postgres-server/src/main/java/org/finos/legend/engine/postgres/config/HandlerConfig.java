@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.postgres.config;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.postgres.SessionsFactory;
 

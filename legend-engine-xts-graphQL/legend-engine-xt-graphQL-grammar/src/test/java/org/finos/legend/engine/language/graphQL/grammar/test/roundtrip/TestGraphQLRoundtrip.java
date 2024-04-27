@@ -19,7 +19,6 @@ import org.finos.legend.engine.language.graphQL.grammar.from.GraphQLParserExcept
 import org.finos.legend.engine.language.graphQL.grammar.to.GraphQLGrammarComposer;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestGraphQLRoundtrip

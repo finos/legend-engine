@@ -12,13 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.TimeZone;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.VectorSchemaRoot;
-import org.apache.arrow.vector.ipc.ArrowFileWriter;
 import org.apache.arrow.vector.ipc.ArrowStreamReader;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.external.format.arrow.ArrowRuntimeExtension;
@@ -34,7 +31,6 @@ import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 

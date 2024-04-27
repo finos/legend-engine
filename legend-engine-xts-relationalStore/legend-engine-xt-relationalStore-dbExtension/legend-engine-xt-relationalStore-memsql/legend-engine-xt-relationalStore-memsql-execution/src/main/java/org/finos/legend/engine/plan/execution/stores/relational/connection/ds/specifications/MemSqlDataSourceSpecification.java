@@ -18,8 +18,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.MemSqlDatasourceSpecificationKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.StaticDataSourceSpecificationKey;
-import org.finos.legend.engine.shared.core.vault.Vault;
 
 import java.util.Optional;
 import java.util.Properties;

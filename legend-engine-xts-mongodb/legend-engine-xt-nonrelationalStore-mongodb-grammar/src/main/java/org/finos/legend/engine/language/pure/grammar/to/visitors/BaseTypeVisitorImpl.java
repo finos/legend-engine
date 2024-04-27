@@ -41,8 +41,6 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.TimeStampType;
 
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.language.pure.grammar.to.ComposerUtility.appendTabString;
-import static org.finos.legend.engine.language.pure.grammar.to.ComposerUtility.getTabString;
 
 public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
 {

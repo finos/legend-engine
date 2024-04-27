@@ -37,7 +37,6 @@ import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.handler.legend.LegendExecutionService;
 import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
 import org.finos.legend.engine.postgres.handler.legend.LegendTdsTestClient;
-import org.finos.legend.engine.postgres.utils.ErrorMessageFormatter;
 import org.finos.legend.engine.query.sql.api.execute.SqlExecuteTest;
 import org.junit.AfterClass;
 import org.junit.Assert;

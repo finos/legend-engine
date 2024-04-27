@@ -18,7 +18,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authent
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionVisitor;
 
-import java.util.Collections;
 import java.util.Map;
 
 public class ServiceStoreConnection extends Connection

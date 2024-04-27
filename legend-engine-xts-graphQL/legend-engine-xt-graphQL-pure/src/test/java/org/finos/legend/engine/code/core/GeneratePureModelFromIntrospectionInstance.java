@@ -15,7 +15,6 @@
 package org.finos.legend.engine.code.core;
 
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.graphQL.introspection.model.__Schema;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;

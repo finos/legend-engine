@@ -25,7 +25,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.validitymilesto
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.ValidityMilestoning;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;

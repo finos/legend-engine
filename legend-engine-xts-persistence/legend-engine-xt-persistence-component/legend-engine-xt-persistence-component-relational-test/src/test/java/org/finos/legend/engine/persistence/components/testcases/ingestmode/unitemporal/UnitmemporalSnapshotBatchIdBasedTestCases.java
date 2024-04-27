@@ -16,9 +16,7 @@ package org.finos.legend.engine.persistence.components.testcases.ingestmode.unit
 
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.common.Datasets;
-import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
-import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;

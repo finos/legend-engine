@@ -47,7 +47,6 @@ import org.finos.legend.engine.repl.autocomplete.handlers.SelectHandler;
 import org.finos.legend.engine.repl.autocomplete.handlers.SortHandler;
 import org.finos.legend.engine.repl.autocomplete.parser.ParserFixer;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;

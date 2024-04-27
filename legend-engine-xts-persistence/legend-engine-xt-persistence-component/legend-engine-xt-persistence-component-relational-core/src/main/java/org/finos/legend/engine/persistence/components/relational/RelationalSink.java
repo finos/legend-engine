@@ -39,7 +39,6 @@ import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
 import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public abstract class RelationalSink implements Sink
 {

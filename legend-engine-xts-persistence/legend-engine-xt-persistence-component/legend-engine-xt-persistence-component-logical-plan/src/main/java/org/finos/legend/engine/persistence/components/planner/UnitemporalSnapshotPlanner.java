@@ -30,7 +30,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Not
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
-import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Update;

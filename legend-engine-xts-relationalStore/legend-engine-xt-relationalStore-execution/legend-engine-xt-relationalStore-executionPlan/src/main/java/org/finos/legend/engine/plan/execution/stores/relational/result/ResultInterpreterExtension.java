@@ -20,7 +20,6 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.shared.core.extension.LegendModuleSpecificExtension;
-import org.finos.legend.engine.shared.core.extension.LegendPlanExtension;
 
 import java.util.List;
 import java.util.Map;

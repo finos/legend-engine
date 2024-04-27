@@ -16,7 +16,6 @@ package org.finos.legend.engine.external.shared.format.model.transformation.toMo
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;

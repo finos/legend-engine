@@ -27,7 +27,6 @@ import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.protocol.hostedService.deployment.model.GenerationInfoData;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
-import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.hostedService.deployment.model.lineage.Lineage;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedService;

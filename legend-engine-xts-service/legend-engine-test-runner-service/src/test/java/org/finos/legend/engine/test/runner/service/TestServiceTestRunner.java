@@ -26,7 +26,6 @@ import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.test.runner.shared.TestResult;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.net.URL;

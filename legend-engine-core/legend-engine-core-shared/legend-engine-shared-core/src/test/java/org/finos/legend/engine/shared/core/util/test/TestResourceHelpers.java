@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.shared.core.util.test;
 
-import org.finos.legend.engine.shared.core.util.LimitedByteArrayOutputStream;
 import org.finos.legend.engine.shared.core.util.ResourceHelpers;
 import org.junit.Assert;
 import org.junit.Test;

@@ -17,7 +17,6 @@ package org.finos.legend.engine.postgres.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.FileInputStream;
-import org.finos.legend.engine.postgres.SessionsFactory;
 import org.finos.legend.engine.postgres.auth.AuthenticationMethodType;
 import org.finos.legend.engine.postgres.auth.IdentityType;
 import org.junit.Assert;

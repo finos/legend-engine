@@ -15,15 +15,12 @@
 package org.finos.legend.engine.entitlement.services;
 
 import org.eclipse.collections.api.block.function.Function0;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.entitlement.model.entitlementReport.DatasetEntitlementReport;
 import org.finos.legend.engine.entitlement.model.specification.DatasetSpecification;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.shared.core.extension.LegendConnectionExtension;
-import org.finos.legend.engine.shared.core.extension.LegendExtension;
 import org.finos.legend.engine.shared.core.extension.LegendModuleSpecificExtension;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;

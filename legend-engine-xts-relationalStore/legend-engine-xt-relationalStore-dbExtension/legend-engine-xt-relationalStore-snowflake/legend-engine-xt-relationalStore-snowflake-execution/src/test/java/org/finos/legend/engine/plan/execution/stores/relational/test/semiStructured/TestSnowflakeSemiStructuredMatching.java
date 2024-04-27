@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.test.semiStructured;
 
-import org.eclipse.collections.impl.multimap.set.SynchronizedSetMultimap;
 import org.junit.Assert;
 import org.junit.Test;
 

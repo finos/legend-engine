@@ -14,13 +14,6 @@
 
 package org.finos.legend.engine.postgres;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.File;
-import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
-import org.finos.legend.engine.postgres.config.ServerConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.bridge.SLF4JBridgeHandler;
 
 public class TestPostgresServerLauncher
 {
