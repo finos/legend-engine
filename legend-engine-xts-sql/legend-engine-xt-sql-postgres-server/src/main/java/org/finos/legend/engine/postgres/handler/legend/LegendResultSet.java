@@ -15,7 +15,6 @@
 package org.finos.legend.engine.postgres.handler.legend;
 
 import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;

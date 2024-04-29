@@ -16,8 +16,6 @@ package org.finos.legend.engine.plan.execution.graphFetch;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.HashMap;
-import java.util.Map;
 
 
 public class ParallelGraphFetchExecutionConfig

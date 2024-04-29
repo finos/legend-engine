@@ -27,8 +27,6 @@ import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
-import org.finos.legend.engine.ide.ServerConfiguration;
-import org.finos.legend.engine.ide.SourceLocationConfiguration;
 import org.finos.legend.engine.ide.api.*;
 import org.finos.legend.engine.ide.api.concept.Concept;
 import org.finos.legend.engine.ide.api.concept.MovePackageableElements;

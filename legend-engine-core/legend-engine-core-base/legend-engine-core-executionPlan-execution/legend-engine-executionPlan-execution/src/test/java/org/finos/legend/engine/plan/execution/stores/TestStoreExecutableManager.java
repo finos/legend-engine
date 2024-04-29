@@ -15,7 +15,6 @@
 package org.finos.legend.engine.plan.execution.stores;
 
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class TestStoreExecutableManager

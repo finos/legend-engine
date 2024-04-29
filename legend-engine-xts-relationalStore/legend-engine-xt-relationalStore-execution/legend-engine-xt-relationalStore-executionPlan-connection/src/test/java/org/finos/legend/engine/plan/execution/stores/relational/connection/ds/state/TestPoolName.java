@@ -16,7 +16,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.s
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.junit.Before;
 import org.junit.Test;
 

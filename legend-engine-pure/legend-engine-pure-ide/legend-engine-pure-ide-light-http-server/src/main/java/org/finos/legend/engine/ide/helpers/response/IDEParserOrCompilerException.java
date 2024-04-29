@@ -15,7 +15,6 @@
 package org.finos.legend.engine.ide.helpers.response;
 
 import org.eclipse.collections.api.map.MutableMap;
-import org.finos.legend.engine.ide.helpers.response.IDEExceptionResponse;
 
 public class IDEParserOrCompilerException extends IDEExceptionResponse
 {

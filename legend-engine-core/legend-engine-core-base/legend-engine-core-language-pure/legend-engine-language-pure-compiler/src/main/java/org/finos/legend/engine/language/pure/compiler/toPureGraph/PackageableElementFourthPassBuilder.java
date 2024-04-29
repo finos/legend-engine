@@ -44,9 +44,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Ge
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.slf4j.Logger;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class PackageableElementFourthPassBuilder implements PackageableElementVisitor<PackageableElement>
 {

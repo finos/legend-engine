@@ -15,7 +15,6 @@
 package org.finos.legend.engine.language.pure.grammar.from.domain;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;

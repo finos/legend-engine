@@ -19,7 +19,6 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.ConnectionParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.RelationalDatabaseConnectionParserGrammar;
-import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
 import org.junit.Test;
 
 import java.util.List;

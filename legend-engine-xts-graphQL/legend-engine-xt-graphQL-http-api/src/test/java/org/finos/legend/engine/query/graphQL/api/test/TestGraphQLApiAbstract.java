@@ -46,7 +46,6 @@ import org.finos.legend.engine.query.graphQL.api.execute.SerializedNamedPlans;
 import org.finos.legend.engine.query.graphQL.api.execute.model.error.GraphQLErrorMain;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
-import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionError;
 import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

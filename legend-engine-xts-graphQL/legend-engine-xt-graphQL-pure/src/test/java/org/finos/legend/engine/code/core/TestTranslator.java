@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.code.core;
 
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.graphQL.grammar.from.GraphQLGrammarParser;
 import org.finos.legend.engine.language.graphQL.grammar.test.roundtrip.TestGraphQLRoundtrip;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;

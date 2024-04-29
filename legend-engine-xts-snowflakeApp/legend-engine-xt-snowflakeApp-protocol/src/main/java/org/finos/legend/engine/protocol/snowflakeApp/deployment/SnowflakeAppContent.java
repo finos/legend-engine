@@ -21,7 +21,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
 {

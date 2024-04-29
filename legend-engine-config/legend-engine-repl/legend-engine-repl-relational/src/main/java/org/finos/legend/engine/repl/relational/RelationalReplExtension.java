@@ -34,7 +34,6 @@ import java.awt.*;
 import java.sql.SQLException;
 
 import static org.finos.legend.engine.repl.relational.grid.Grid.prettyGridPrint;
-import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
 
 public class RelationalReplExtension implements ReplExtension
 {

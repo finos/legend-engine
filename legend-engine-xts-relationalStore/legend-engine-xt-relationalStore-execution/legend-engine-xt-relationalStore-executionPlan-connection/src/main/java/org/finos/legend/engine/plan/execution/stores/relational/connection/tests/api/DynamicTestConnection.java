@@ -17,7 +17,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.shared.core.extension.LegendConnectionExtension;
-import org.finos.legend.engine.shared.core.extension.LegendExtension;
 
 //Connections that are started on the fly by legend test server
 public interface DynamicTestConnection extends LegendConnectionExtension
