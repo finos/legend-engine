@@ -676,7 +676,7 @@ public class TestDedupAndVersioning extends BaseTest
 
             DataError dataError1 = buildDataError(ErrorCategory.DUPLICATE_PRIMARY_KEYS, row1, buildErrorDetailsMap("num_pk_duplicates", 3L));
             DataError dataError2 = buildDataError(ErrorCategory.DUPLICATE_PRIMARY_KEYS, row2, buildErrorDetailsMap("num_pk_duplicates", 2L));
-            Assertions.assertEquals("Encountered duplicate primary keys, Failing the batch as Fail on Duplicate Primary Keys is selected", e.getMessage());
+            Assertions.assertEquals("Encountered multiple rows with duplicate primary keys, Failing the batch as Fail on Duplicate Primary Keys is selected", e.getMessage());
             Assertions.assertEquals(Arrays.asList(dataError1, dataError2), e.getDataErrors());
         }
     }

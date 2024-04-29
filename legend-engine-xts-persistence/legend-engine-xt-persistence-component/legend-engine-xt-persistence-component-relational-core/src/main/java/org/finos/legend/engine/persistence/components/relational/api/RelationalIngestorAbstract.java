@@ -482,7 +482,7 @@ public abstract class RelationalIngestorAbstract
                 {
                     // Find the pk-duplicate rows
                     TabularData duplicatePkRows = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(PK_DUPLICATE_ROWS)).get(0);
-                    String errorMessage = "Encountered duplicate primary keys, Failing the batch as Fail on Duplicate Primary Keys is selected";
+                    String errorMessage = "Encountered multiple rows with duplicate primary keys, Failing the batch as Fail on Duplicate Primary Keys is selected";
                     LOGGER.error(errorMessage);
                     List<DataError> dataErrors = ApiUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), duplicatePkRows.getData(),
                         ErrorCategory.DUPLICATE_PRIMARY_KEYS, caseConversion(), DeriveDuplicatePkRowsLogicalPlan.DUPLICATE_PK_COUNT, NUM_PK_DUPLICATES);
