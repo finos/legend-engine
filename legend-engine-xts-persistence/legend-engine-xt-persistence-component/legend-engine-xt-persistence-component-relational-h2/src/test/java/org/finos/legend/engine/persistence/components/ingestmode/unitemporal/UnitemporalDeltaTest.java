@@ -126,14 +126,13 @@ class UnitemporalDeltaTest extends BaseTest
     @Test
     void testMilestoningWithDeleteIndicator() throws Exception
     {
-
         DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getStagingTableWithDeleteIndicator();
 
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
 
         // Create staging table
-        createStagingTable(stagingTable);
+        createStagingTableWithoutPks(stagingTable);
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestName)
@@ -180,6 +179,20 @@ class UnitemporalDeltaTest extends BaseTest
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
+
+        // ------------ Perform Pass4 (Duplicate PKs) -------------------------
+        String dataPass4 = basePathForInput + "with_delete_ind/staging_data_pass3.csv";
+        // 1. Load staging table
+        loadStagingDataWithDeleteInd(dataPass4);
+        try
+        {
+            executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered multiple rows with duplicate primary keys, Failing the batch as Fail on Duplicate Primary Keys is selected", e.getMessage());
+        }
     }
 
     @Test
