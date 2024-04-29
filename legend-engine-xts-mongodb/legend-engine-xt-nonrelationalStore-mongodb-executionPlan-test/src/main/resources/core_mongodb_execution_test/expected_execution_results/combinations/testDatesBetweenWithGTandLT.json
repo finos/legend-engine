@@ -1,0 +1,10 @@
+{
+  "values":   {
+    "firstName": "Chev",
+    "lastName": "Gehrts",
+    "age": 38
+  },
+  "builder":   {
+    "_type": "json"
+  }
+}

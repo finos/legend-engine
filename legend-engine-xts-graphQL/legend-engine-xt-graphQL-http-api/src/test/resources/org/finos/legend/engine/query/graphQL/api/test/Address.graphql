@@ -1,0 +1,11 @@
+type Address {
+  street: String!
+}
+input Address_bool_exp {
+  street: String_comparison_exp
+  _and: [Address_bool_exp!]
+  _or: [Address_bool_exp!]
+}
+input Address_exists_exp {
+  _exists: Address_bool_exp
+}

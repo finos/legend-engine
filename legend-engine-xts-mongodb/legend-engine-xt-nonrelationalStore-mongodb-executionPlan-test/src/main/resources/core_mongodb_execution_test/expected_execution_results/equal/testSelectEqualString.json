@@ -1,0 +1,59 @@
+{
+  "values":   {
+    "firstName": "Gelya",
+    "lastName": "Bowhay",
+    "legallyCompetent": true,
+    "firm":     {
+      "legalName": "Babblestorm",
+      "address":       {
+        "lastUpdated": "2022-01-01T21:10:00.000",
+        "city": "Boston",
+        "buildingNumber": 145,
+        "isActive": true
+      },
+      "public": false,
+      "dateFounded": "1998-07-05T18:09:35.000",
+      "department": [
+        {
+          "dateCreated": "2013-01-01T21:10:22.000",
+          "name": "Sales",
+          "isActive": true,
+          "numberOfEmployees": 2
+        },
+        {
+          "dateCreated": "2012-11-01T21:10:22.000",
+          "name": "Engineering",
+          "isActive": true,
+          "numberOfEmployees": 4
+        },
+        {
+          "dateCreated": "2011-11-01T21:10:22.000",
+          "name": "Product",
+          "isActive": true,
+          "numberOfEmployees": 4
+        }
+      ],
+      "numberOfEmployees": 10
+    },
+    "address":     {
+      "lastUpdated": "2018-01-01T21:10:00.000",
+      "city": "Washington",
+      "buildingNumber": 40,
+      "isActive": true
+    },
+    "otherPhoneNumbers": [
+"+1 347 336 3704"
+    ],
+    "department":     {
+      "dateCreated": "2013-01-01T21:10:22.000",
+      "name": "Sales",
+      "isActive": true,
+      "numberOfEmployees": 2
+    },
+    "birthDate": "1983-05-05T00:12:12.000",
+    "age": 25
+  },
+  "builder":   {
+    "_type": "json"
+  }
+}

@@ -1,0 +1,138 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::eqIgnoreCase::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::gte::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::gt::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::lte::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::lt::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::expressions::field::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::eq::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::exists::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::in::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::contains::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operations::contains::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operations::exists::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operations::in::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operations::eq::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::expressions::or::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::expressions::and::*;
+import meta::external::query::graphQL::metamodel::sdl::*;
+import meta::external::query::graphQL::metamodel::sdl::value::*;
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::*;
+import meta::pure::graphFetch::*;
+import meta::pure::functions::lang::*;
+import meta::pure::functions::multiplicity::*;
+
+/*
+  FINAL STATE HELPER FUNCTIONS
+*/
+
+/*
+
+ traverseValue() -> processObjectFields() -> operator processor() -> traverseValue()
+
+*/
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::getOperatorMap(): Map<String,Function<{ObjectField[1], String[1], Map<Any,Any>[1], DebugContext[1]->Node[*]}>>[1]
+{
+  newMap(
+    [
+      ^Pair<String,Function<{ObjectField[1], String[1], Map<Any,Any>[1], DebugContext[1]->Node[*]}>>(first='_and',second=meta::external::query::graphQL::transformation::queryToPure::dynamic::expressions::and::objectFieldToAndExpression_ObjectField_1__String_1__Map_1__DebugContext_1__Node_MANY_),
+      ^Pair<String,Function<{ObjectField[1], String[1], Map<Any,Any>[1], DebugContext[1]->Node[*]}>>(first='_or',second=meta::external::query::graphQL::transformation::queryToPure::dynamic::expressions::or::objectFieldToOrExpression_ObjectField_1__String_1__Map_1__DebugContext_1__Node_MANY_),
+      ^Pair<String,Function<{ObjectField[1], String[1], Map<Any,Any>[1], DebugContext[1]->Node[*]}>>(first='_eq',second=meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::eq::objectFieldToEqOperator_ObjectField_1__String_1__Map_1__DebugContext_1__Node_MANY_),
+      ^Pair<String,Function<{ObjectField[1], String[1], Map<Any,Any>[1], DebugContext[1]->Node[*]}>>(first='_exists',second=meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::exists::objectFieldToExistsOperator_ObjectField_1__String_1__Map_1__DebugContext_1__Node_MANY_),
+      ^Pair<String,Function<{ObjectField[1], String[1], Map<Any,Any>[1], DebugContext[1]->Node[*]}>>(first='_in',second=meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::in::objectFieldToInOperator_ObjectField_1__String_1__Map_1__DebugContext_1__Node_MANY_),
+      ^Pair<String,Function<{ObjectField[1], String[1], Map<Any,Any>[1], DebugContext[1]->Node[*]}>>(first='_contains',second=meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::contains::objectFieldToContainsOperator_ObjectField_1__String_1__Map_1__DebugContext_1__Node_MANY_),
+      ^Pair<String,Function<{ObjectField[1], String[1], Map<Any,Any>[1], DebugContext[1]->Node[*]}>>(first='_lt',second=meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::lt::objectFieldToLtOperator_ObjectField_1__String_1__Map_1__DebugContext_1__Node_MANY_),
+      ^Pair<String,Function<{ObjectField[1], String[1], Map<Any,Any>[1], DebugContext[1]->Node[*]}>>(first='_lte',second=meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::lte::objectFieldToLteOperator_ObjectField_1__String_1__Map_1__DebugContext_1__Node_MANY_),
+      ^Pair<String,Function<{ObjectField[1], String[1], Map<Any,Any>[1], DebugContext[1]->Node[*]}>>(first='_gt',second=meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::gt::objectFieldToGtOperator_ObjectField_1__String_1__Map_1__DebugContext_1__Node_MANY_),
+      ^Pair<String,Function<{ObjectField[1], String[1], Map<Any,Any>[1], DebugContext[1]->Node[*]}>>(first='_gte',second=meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::gte::objectFieldToGteOperator_ObjectField_1__String_1__Map_1__DebugContext_1__Node_MANY_),
+      ^Pair<String,Function<{ObjectField[1], String[1], Map<Any,Any>[1], DebugContext[1]->Node[*]}>>(first='_eqIgnoreCase',second=meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::eqIgnoreCase::objectFieldToEqIgnoreCaseOperator_ObjectField_1__String_1__Map_1__DebugContext_1__Node_MANY_)      
+    ]
+  );
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseValue(v: Value[1], prefix: String[1], m: Map<String,Function<{ObjectField[1], String[1], Map<Any,Any>[1], DebugContext[1]->Node[*]}>>[1], debug: DebugContext[1]): Node[*]
+{
+  $v->match([
+    o : ObjectValue[1]  |   $o.fields->traverseObjectFields($prefix, $m, ^$debug(space=$debug.space + ' ')),
+    i : IntValue[1]     |   ^Literal(name = $prefix, type = Integer),
+    s : StringValue[1]  |   ^Literal(name = $prefix, type = String),
+    b : BooleanValue[1] |   ^Literal(name = $prefix, type = Boolean),
+    f : FloatValue[1]   |   ^Literal(name = $prefix, type = Float),
+    l : ListValue[1]    |   $l.values->fold({a,b | $b->concatenate($a->traverseValue($prefix + $b->size()->toString(), $m, ^$debug(space = $debug.space + ' ')))}, []);,
+    e:  EnumValue[1]    |   ^Literal(name = $prefix, type = Enum),
+    a : Any[1]          |   fail('Value of type ' + $a->type()->toOne()->toString() + ' not supported'); [];
+  ]);
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseObjectFields(obj: ObjectField[*], prefix: String[1], m: Map<String,Function<{ObjectField[1], String[1], Map<Any,Any>[1], DebugContext[1]->Node[*]}>>[1], debug: DebugContext[1]): Node[*]
+{
+  $obj->fold({a,b | 
+    $b->concatenate(
+      $m->get($a.name)
+        ->orElse(meta::external::query::graphQL::transformation::queryToPure::dynamic::expressions::field::objectFieldToFieldExpression_ObjectField_1__String_1__Map_1__DebugContext_1__Node_MANY_)
+        ->eval($a, $prefix, $m, $debug)
+    )}, []
+  );
+}
+
+/*
+  FINAL STATE HELPER FUNCTIONS
+*/
+
+Class meta::external::query::graphQL::transformation::queryToPure::dynamic::IntermediateClass
+{
+  vars: VariableExpression[*];
+  valueSpecifications: ValueSpecification[*];
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::nodesToValueSpecification(nodes: Node[*], fieldNames: String[*], cl: Class<Any>[1], vars: VariableExpression[*], count: Integer[1]): IntermediateClass[*]
+{
+  $nodes->map(node |
+    $node->match([
+      f: FieldExpression[1]         |   processFieldExpression($f, $fieldNames, $cl, $vars, $count),
+                                  
+      a: AndExpression[1]           |   processAndExpression($a, $fieldNames, $cl, $vars, $count),
+      
+      o: OrExpression[1]            |   processOrExpression($o, $fieldNames, $cl, $vars, $count),
+      
+      e: EqOperator[1]              |   processEqOperator($e, $fieldNames, $cl, $vars, $count),
+
+      eqic: EqIgnoreCaseOperator[1] |   processEqIgnoreCaseOperator($eqic, $fieldNames, $cl, $vars, $count),
+
+      i: InOperator[1]              |   processInOperator($i, $fieldNames, $cl, $vars, $count),
+
+      ex: ExistsOperator[1]         |   processExistsOperator($ex, $fieldNames, $cl, $vars, $count),
+
+      co: ContainsOperator[1]       |   processContainsOperator($co, $fieldNames, $cl, $vars, $count),
+
+      lt: LtOperator[1]             |   processLtOperator($lt, $fieldNames, $cl, $vars, $count),
+      
+      lte: LteOperator[1]           |   processLteOperator($lte, $fieldNames, $cl, $vars, $count),
+      
+      gt: GtOperator[1]             |   processGtOperator($gt, $fieldNames, $cl, $vars, $count),
+      
+      gte: GteOperator[1]           |   processGteOperator($gte, $fieldNames, $cl, $vars, $count),
+      
+      l: Literal[1]                 |   let var = ^VariableExpression(multiplicity = PureOne, genericType = ^GenericType(rawType = $l.type), name = $l.name)->evaluateAndDeactivate();
+                                        ^IntermediateClass(vars = $vars->concatenate($var), valueSpecifications = $var);
+    ])
+  );
+}

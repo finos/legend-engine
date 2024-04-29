@@ -1,0 +1,8 @@
+{
+  "name": "core_external_extensions",
+  "pattern": "(meta::pure::extension::runtime)(::.*)?",
+  "dependencies": [
+    "platform",
+    "core"
+  ]
+}

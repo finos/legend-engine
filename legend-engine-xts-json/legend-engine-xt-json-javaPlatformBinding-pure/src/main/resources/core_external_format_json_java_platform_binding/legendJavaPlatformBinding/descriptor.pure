@@ -1,0 +1,44 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::shared::executionPlan::platformBinding::legendJava::*;
+
+import meta::external::format::json::contract::*;
+import meta::external::format::json::executionPlan::*;
+import meta::external::format::json::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::*;
+import meta::external::format::json::executionPlan::platformBinding::legendJava::externalize::*;
+
+function meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor():ExternalFormatLegendJavaPlatformBindingDescriptor[1]
+{
+  ^ExternalFormatLegendJavaPlatformBindingDescriptor
+  (
+    externalFormatContract     = jsonSchemaFormatContract(),
+    enginePlatformDependencies = meta::external::format::json::executionPlan::platformBinding::legendJava::extendJavaEngineDependencies_Conventions_1__Conventions_1_,
+    externalizeDescriptor      = getExternalFormatExternalizeJavaBindingDescriptor(),
+    internalizeDescriptor      = getExternalFormatInternalizeJavaBindingDescriptor()
+  )
+}
+
+function meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaDataExtensionJavaPlatformBinding(): meta::pure::extension::Extension[1]
+{
+  meta::pure::executionPlan::platformBinding::platformBindingExtension('PlatformBinding - LegendJava - ExternalFormatJSON', [
+    meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+      // Bindings
+      meta::external::format::shared::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension([
+        meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor()
+      ])
+    ])
+  ])
+}

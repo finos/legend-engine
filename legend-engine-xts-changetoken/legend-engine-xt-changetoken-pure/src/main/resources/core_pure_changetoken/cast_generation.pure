@@ -1,0 +1,63 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::factory::*;
+import meta::pure::changetoken::*;
+import meta::external::language::java::metamodel::*;
+import meta::pure::changetoken::cast_generation::*;
+import meta::json::*;
+import meta::pure::changetoken::cast_generation::collapse::*;
+import meta::pure::changetoken::cast_generation::expand::*;
+
+function meta::pure::changetoken::cast_generation::versionsToJson(versions:Versions[1], typeKeyName:String[1]):String[1]
+{
+  let raw = $versions->toJSONElement([], 100, config(true, true, true, true, $typeKeyName, true));
+  let output = $raw->collapse($typeKeyName);
+  $output->toCompactJSONString();
+}
+
+function meta::pure::changetoken::cast_generation::jsonToVersions(jsonString:String[1], typeKeyName:String[1]):Versions[1]
+{
+  let raw = $jsonString->parseJSON();
+  let input = $raw->expand($typeKeyName);
+  $input->fromJSON(Versions, ^JSONDeserializationConfig(typeKeyName=$typeKeyName, failOnUnknownProperties=true))->cast(@Versions)->toOne();
+}
+
+function meta::pure::changetoken::cast_generation::generateCastFromVersions(
+  alwaysStampAtRootVersion: Boolean[1],
+  optionalStampAllVersions: Boolean[1],
+  obsoleteJsonAsString: Boolean[1],
+  typeKeyName: String[1],
+  versionKeyName: String[0..1],
+  versions:Versions[1], outputClassName:String[1]):Project[1]
+{
+  // generated class  
+  let class = javaClass(['public'], javaPackage('org.finos.legend.engine.generated.meta.pure.changetoken.cast_generation'), $outputClassName);
+  
+  newProject()->addClass(
+    $class
+      ->generateMainUpcast($alwaysStampAtRootVersion, $optionalStampAllVersions, $obsoleteJsonAsString, $typeKeyName, $versionKeyName, $versions)
+      ->generateMainDowncast($alwaysStampAtRootVersion, $optionalStampAllVersions, $obsoleteJsonAsString, $typeKeyName, $versionKeyName, $versions)
+      ->generateMainVersions($versions)
+      ->generateMainUtils()
+  );
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::objectNode():meta::external::language::java::metamodel::Type[1] { javaMap(javaString(), javaObject()); }
+function <<access.private>> meta::pure::changetoken::cast_generation::arrayNode():meta::external::language::java::metamodel::Type[1] { javaList(javaObject()); }
+function <<access.private>> meta::pure::changetoken::cast_generation::javaRawMap():meta::external::language::java::metamodel::Type[1] { javaClass('java.util.Map'); }
+function <<access.private>> meta::pure::changetoken::cast_generation::AbstractMap_SimpleEntry():meta::external::language::java::metamodel::Type[1] { javaClass('java.util.AbstractMap.SimpleEntry'); }
+function <<access.private>> meta::pure::changetoken::cast_generation::simpleEntry():meta::external::language::java::metamodel::Type[1] { ^ParameterizedType(rawType=AbstractMap_SimpleEntry(), typeArguments=[javaString()->toBoxed(), javaObject()->toBoxed()]); }

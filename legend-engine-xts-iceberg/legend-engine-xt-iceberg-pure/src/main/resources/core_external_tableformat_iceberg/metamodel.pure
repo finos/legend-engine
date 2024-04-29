@@ -1,0 +1,124 @@
+import meta::external::catalog::iceberg::metamodel::*;
+
+Class meta::external::catalog::iceberg::metamodel::Type
+{
+}
+
+// nested types
+
+Class meta::external::catalog::iceberg::metamodel::NestedType extends meta::external::catalog::iceberg::metamodel::Type
+{
+}
+
+Class meta::external::catalog::iceberg::metamodel::StructType extends meta::external::catalog::iceberg::metamodel::NestedType
+{
+  fields: meta::external::catalog::iceberg::metamodel::NestedField[1..*];
+}
+
+Class meta::external::catalog::iceberg::metamodel::ListType extends meta::external::catalog::iceberg::metamodel::NestedType
+{
+  elementField: meta::external::catalog::iceberg::metamodel::NestedField[1];
+}
+
+Class meta::external::catalog::iceberg::metamodel::MapType extends meta::external::catalog::iceberg::metamodel::NestedType
+{
+  keyField: meta::external::catalog::iceberg::metamodel::NestedField[1];
+  valueField: meta::external::catalog::iceberg::metamodel::NestedField[1];
+}
+
+Class meta::external::catalog::iceberg::metamodel::NestedField
+{
+  id: Integer[1];
+  name: String[1];
+  type: meta::external::catalog::iceberg::metamodel::Type[1];
+  required: Boolean[1];
+  doc: String[1];
+}
+
+// primitive types
+
+Class meta::external::catalog::iceberg::metamodel::PrimitiveType extends meta::external::catalog::iceberg::metamodel::Type
+{
+}
+
+Class meta::external::catalog::iceberg::metamodel::BooleanType extends meta::external::catalog::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class
+{doc.doc = '32-bit signed integer'}
+meta::external::catalog::iceberg::metamodel::IntegerType extends meta::external::catalog::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class
+{doc.doc = '64-bit signed integer'}
+meta::external::catalog::iceberg::metamodel::LongType extends meta::external::catalog::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class
+{doc.doc = '32-bit IEEE 754 floating point'}
+meta::external::catalog::iceberg::metamodel::FloatType extends meta::external::catalog::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class
+{doc.doc = '64-bit IEEE 754 floating point'}
+meta::external::catalog::iceberg::metamodel::DoubleType extends meta::external::catalog::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class
+{doc.doc = 'Fixed point decimal'}
+meta::external::catalog::iceberg::metamodel::DecimalType extends meta::external::catalog::iceberg::metamodel::PrimitiveType
+[
+  precisionMaxLength: $this.precision <= 38
+]
+{
+  scale: Integer[1];
+  precision: Integer[1];
+}
+
+Class
+{doc.doc = 'Calendar date without timezone or time'}
+meta::external::catalog::iceberg::metamodel::DateType extends meta::external::catalog::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class
+{doc.doc = 'Time of day without date or timezone'}
+meta::external::catalog::iceberg::metamodel::TimeType extends meta::external::catalog::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class
+{doc.doc = 'Timestamp without timezone. These represent a date and time of day regardless of zone. Values are independent of zone adjustment and stored with microsecond precision'}
+meta::external::catalog::iceberg::metamodel::TimestampType extends meta::external::catalog::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class
+{doc.doc = 'Timestamp with timzeone. These represent a point in time. Values are stored in UTC, do not retain source timezone, and have microsecond precision'}
+meta::external::catalog::iceberg::metamodel::TimestampTzType extends meta::external::catalog::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class
+{doc.doc = 'Arbitrary length character sequences'}
+meta::external::catalog::iceberg::metamodel::StringType extends meta::external::catalog::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class
+{doc.doc = 'Fixed-length byte array'}
+meta::external::catalog::iceberg::metamodel::FixedType extends meta::external::catalog::iceberg::metamodel::PrimitiveType
+{
+  length: Integer[1];
+}
+
+Class
+{doc.doc = 'Arbitrary length byte array'}
+meta::external::catalog::iceberg::metamodel::BinaryType extends meta::external::catalog::iceberg::metamodel::PrimitiveType
+{
+}

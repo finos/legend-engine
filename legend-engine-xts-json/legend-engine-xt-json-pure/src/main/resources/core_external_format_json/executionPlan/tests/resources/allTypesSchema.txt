@@ -1,0 +1,22 @@
+###ExternalFormat
+SchemaSet meta::external::format::json::executionPlan::test::types::AllTypesSchemaSet
+{
+  format: JSON;
+  schemas: [
+    {
+      id: AllTypes;
+      location: 'meta/external/format/json/executionPlan/test/types/AllTypes.json';
+      content: '{\n  "$schema": "http://json-schema.org/draft-07/schema#",\n  "title": "meta::external::format::json::executionPlan::test::types::AllTypes",\n  "type": "object",\n  "properties": {\n    "string": {\n      "type": "string"\n    },\n    "optionalString": {\n      "type": "string"\n    },\n    "repeatedString": {\n      "type": "array",\n      "items": {\n        "type": "string"\n      }\n    },\n    "integer": {\n      "type": "integer"\n    },\n    "optionalInteger": {\n      "type": "integer"\n    },\n    "repeatedInteger": {\n      "type": "array",\n      "items": {\n        "type": "integer"\n      }\n    },\n    "float": {\n      "type": "number"\n    },\n    "optionalFloat": {\n      "type": "number"\n    },\n    "repeatedFloat": {\n      "type": "array",\n      "items": {\n        "type": "number"\n      }\n    },\n    "decimal": {\n      "type": "number"\n    },\n    "optionalDecimal": {\n      "type": "number"\n    },\n    "repeatedDecimal": {\n      "type": "array",\n      "items": {\n        "type": "number"\n      }\n    },\n    "boolean": {\n      "type": "boolean"\n    },\n    "optionalBoolean": {\n      "type": "boolean"\n    },\n    "repeatedBoolean": {\n      "type": "array",\n      "items": {\n        "type": "boolean"\n      }\n    },\n    "date": {\n      "type": "string",\n      "format": "date-time"\n    },\n    "optionalDate": {\n      "type": "string",\n      "format": "date-time"\n    },\n    "repeatedDate": {\n      "type": "array",\n      "items": {\n        "type": "string",\n        "format": "date-time"\n      }\n    },\n    "strictDate": {\n      "type": "string",\n      "format": "date"\n    },\n    "optionalStrictDate": {\n      "type": "string",\n      "format": "date"\n    },\n    "repeatedStrictDate": {\n      "type": "array",\n      "items": {\n        "type": "string",\n        "format": "date"\n      }\n    },\n    "dateTime": {\n      "type": "string",\n      "format": "date-time"\n    },\n    "optionalDateTime": {\n      "type": "string",\n      "format": "date-time"\n    },\n    "repeatedDateTime": {\n      "type": "array",\n      "items": {\n        "type": "string",\n        "format": "date-time"\n      }\n    },\n    "enum": {\n      "$ref": "#/definitions/meta::external::format::json::executionPlan::test::types::Gender"\n    },\n    "optionalEnum": {\n      "$ref": "#/definitions/meta::external::format::json::executionPlan::test::types::Gender"\n    },\n    "repeatedEnum": {\n      "type": "array",\n      "items": {\n        "$ref": "#/definitions/meta::external::format::json::executionPlan::test::types::Gender"\n      }\n    }\n  },\n  "required": [\n    "string",\n    "integer",\n    "float",\n    "decimal",\n    "boolean",\n    "date",\n    "strictDate",\n    "dateTime",\n    "enum"\n  ],\n  "definitions": {\n    "meta::external::format::json::executionPlan::test::types::Gender": {\n      "$schema": "http://json-schema.org/draft-07/schema#",\n      "title": "meta::external::format::json::executionPlan::test::types::Gender",\n      "enum": [\n        "MALE",\n        "FEMALE",\n        "OTHER"\n      ],\n      "type": "string"\n    }\n  }\n}';
+    }
+  ];
+}
+
+Binding meta::external::format::json::executionPlan::test::types::AllTypesBinding
+{
+  schemaSet: meta::external::format::json::executionPlan::test::types::AllTypesSchemaSet;
+  contentType: 'application/json';
+  modelIncludes: [
+    meta::external::format::json::executionPlan::test::types::Gender,
+    meta::external::format::json::executionPlan::test::types::AllTypes
+  ];
+}

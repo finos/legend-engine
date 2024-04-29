@@ -1,0 +1,8 @@
+{
+  "name": "core_diagram_metamodel",
+  "pattern": "(meta::pure::metamodel::diagram)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_dsl_diagram"
+  ]
+}

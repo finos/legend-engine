@@ -1,0 +1,144 @@
+###Diagram
+Diagram domain::COVIDDataDiagram
+{
+  classView 6b69f44b-f729-46aa-b244-ec5ee8164142
+  {
+    class: domain::COVIDData;
+    position: (280.0,159.0);
+    rectangle: (205.8291015625,128.0);
+  }
+  classView 159e797e-ae75-437d-ba9c-253f99a48826
+  {
+    class: domain::Demographics;
+    position: (698.0,238.0);
+    rectangle: (111.68994140625,58.0);
+  }
+  classView f6bd8a50-8d18-4bd9-9a8d-7fad88d02b07
+  {
+    class: domain::Class1;
+    position: (360.844970703125,49.0);
+    rectangle: (137.390625,58.0);
+  }
+  classView 690e89d4-23e9-46e8-8543-c89c22cc9e15
+  {
+    class: domain::Class2;
+    position: (696.844970703125,95.0);
+    rectangle: (133.68994140625,44.0);
+  }
+  propertyView
+  {
+    property: domain::COVIDData.demographics;
+    source: 6b69f44b-f729-46aa-b244-ec5ee8164142;
+    target: 159e797e-ae75-437d-ba9c-253f99a48826;
+    points: [(382.91455078125,223.0),(753.844970703125,267.0)];
+  }
+  propertyView
+  {
+    property: domain::Class2.fromClass1;
+    source: 690e89d4-23e9-46e8-8543-c89c22cc9e15;
+    target: f6bd8a50-8d18-4bd9-9a8d-7fad88d02b07;
+    points: [(763.68994140625,117.0),(429.540283203125,78.0)];
+  }
+  propertyView
+  {
+    property: domain::Class1.fromClass2;
+    source: f6bd8a50-8d18-4bd9-9a8d-7fad88d02b07;
+    target: 690e89d4-23e9-46e8-8543-c89c22cc9e15;
+    points: [(429.540283203125,78.0),(763.68994140625,117.0)];
+  }
+}
+
+
+###DataSpace
+DataSpace domain::COVIDDatapace
+{
+  executionContexts:
+  [
+    {
+      name: 'dummyContext';
+      mapping: mapping::CovidDataMapping;
+      defaultRuntime: runtime::MyRuntime;
+    },
+    {
+      name: 'dummyContext2';
+      mapping: mapping::CovidDataMapping;
+      defaultRuntime: runtime::MyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'dummyContext';
+  title: 'COVID Sample Data';
+  description: 'Not over yet?';
+  diagrams:
+  [
+    {
+      title: '';
+      diagram: domain::COVIDDataDiagram;
+    }
+  ];
+}
+
+
+###Pure
+Class domain::COVIDData
+{
+  id: Integer[1];
+  fips: String[0..1];
+  date: StrictDate[0..1];
+  caseType: String[0..1];
+  cases: Float[0..1];
+  lastReportedFlag: Boolean[0..1];
+  demographics: domain::Demographics[0..1];
+}
+
+Class domain::Demographics
+{
+  fips: String[0..1];
+  state: String[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> domain::Class2
+{
+  propClass2: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> domain::Class1
+{
+  propClass1: String[1];
+}
+
+Association domain::Class12Assoc
+{
+  fromClass1: domain::Class1[1];
+  fromClass2: domain::Class2[1];
+}
+
+
+###Mapping
+Mapping mapping::CovidDataMapping
+(
+)
+
+
+###Connection
+JsonModelConnection runtime::connection::MyConnection
+{
+  class: domain::COVIDData;
+  url: 'data:application/json,%7B%7D';
+}
+
+
+###Runtime
+Runtime runtime::MyRuntime
+{
+  mappings:
+  [
+    mapping::CovidDataMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection_1: runtime::connection::MyConnection
+    ]
+  ];
+}

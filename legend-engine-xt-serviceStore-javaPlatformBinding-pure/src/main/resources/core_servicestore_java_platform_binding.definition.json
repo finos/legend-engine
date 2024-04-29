@@ -1,5 +1,0 @@
-{
-    "name" : "core_servicestore_java_platform_binding",
-    "pattern" : "(meta::external::store::service::executionPlan::platformBinding::legendJava)(::.*)?",
-    "dependencies" : ["platform", "core", "core_external_format_json", "core_servicestore", "core_external_language_java", "core_java_platform_binding"]
-}

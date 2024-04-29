@@ -1,0 +1,13 @@
+###Mapping
+Mapping model::dummyMapping2
+(
+)
+
+###Runtime
+Runtime model::dummyRuntime
+{
+  mappings:
+  [
+    model::dummyMapping2
+  ];
+}

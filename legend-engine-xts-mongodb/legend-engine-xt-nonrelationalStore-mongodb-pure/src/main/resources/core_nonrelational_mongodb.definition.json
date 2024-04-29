@@ -1,0 +1,16 @@
+{
+  "name": "core_nonrelational_mongodb",
+  "pattern": "(meta::external::store::mongodb|meta::protocols::pure)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_dsl_mapping",
+    "platform_dsl_store",
+    "platform_dsl_graph",
+    "platform_dsl_path",
+    "platform_functions",
+    "platform_functions_json",
+    "core_functions",
+    "core",
+    "core_authentication"
+  ]
+}

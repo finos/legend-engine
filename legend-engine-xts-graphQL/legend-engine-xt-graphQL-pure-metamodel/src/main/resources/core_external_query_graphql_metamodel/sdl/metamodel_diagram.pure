@@ -1,0 +1,914 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
+{
+    TypeView cview_1(
+        type=meta::external::query::graphQL::metamodel::sdl::Document,
+        position=(437.00000, 136.00000),
+        width=146.43333,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::external::query::graphQL::metamodel::sdl::ExecutableDocument,
+        position=(404.00000, 228.00000),
+        width=210.68994,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::external::query::graphQL::metamodel::sdl::Definition,
+        position=(890.00000, 143.00000),
+        width=75.33333,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_17(
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::RootOperationTypeDefinition,
+        position=(373.34783, 834.04348),
+        width=193.78174,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_21(
+        type=meta::external::query::graphQL::metamodel::sdl::executable::FragmentDefinition,
+        position=(1521.00000, 418.00000),
+        width=153.81667,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_14(
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::DirectiveDefinition,
+        position=(-143.65217, 721.04348),
+        width=304.04492,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_12(
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::InterfaceTypeDefinition,
+        position=(-85.65217, 626.04348),
+        width=152.46289,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_13(
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::FieldDefinition,
+        position=(219.34783, 597.04348),
+        width=253.38333,
+        height=128.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_11(
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::ScalarTypeDefinition,
+        position=(-46.65217, 519.04348),
+        width=138.47070,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::EnumTypeDefinition,
+        position=(112.34783, 519.04348),
+        width=184.36666,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_10(
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::EnumValueDefinition,
+        position=(359.34783, 525.04348),
+        width=140.01667,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_7(
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::UnionTypeDefinition,
+        position=(627.34783, 511.04348),
+        width=138.00293,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::ObjectTypeDefinition,
+        position=(543.34783, 596.04348),
+        width=145.21667,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_15(
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition,
+        position=(597.34783, 699.04348),
+        width=147.71667,
+        height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_19(
+        type=meta::external::query::graphQL::metamodel::sdl::executable::VariableDefinition,
+        position=(1085.00000, 420.00000),
+        width=142.67578,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::external::query::graphQL::metamodel::sdl::executable::ExecutableDefinition,
+        position=(1334.00000, 338.00000),
+        width=341.00000,
+        height=34.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_22(
+        type=meta::external::query::graphQL::metamodel::sdl::executable::Selection,
+        position=(1384.00000, 521.00000),
+        width=234.00000,
+        height=67.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_24(
+        type=meta::external::query::graphQL::metamodel::sdl::executable::InLineFragment,
+        position=(1517.00000, 634.00000),
+        width=159.94385,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_20(
+        type=meta::external::query::graphQL::metamodel::sdl::executable::OperationDefinition,
+        position=(1331.00000, 414.00000),
+        width=153.81667,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_28(
+        type=meta::external::query::graphQL::metamodel::sdl::value::IntValue,
+        position=(926.00000, 908.00000),
+        width=106.80762,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_27(
+        type=meta::external::query::graphQL::metamodel::sdl::value::ListValue,
+        position=(879.00000, 964.00000),
+        width=72.68750,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_29(
+        type=meta::external::query::graphQL::metamodel::sdl::value::BooleanValue,
+        position=(983.00000, 957.00000),
+        width=113.52686,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_30(
+        type=meta::external::query::graphQL::metamodel::sdl::value::Variable,
+        position=(1048.00000, 908.00000),
+        width=102.51611,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_33(
+        type=meta::external::query::graphQL::metamodel::sdl::value::StringValue,
+        position=(1222.00000, 956.00000),
+        width=101.90918,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_31(
+        type=meta::external::query::graphQL::metamodel::sdl::value::EnumValue,
+        position=(1111.00000, 957.00000),
+        width=101.90918,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_32(
+        type=meta::external::query::graphQL::metamodel::sdl::value::FloatValue,
+        position=(1165.00000, 907.00000),
+        width=96.40918,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_18(
+        type=meta::external::query::graphQL::metamodel::sdl::value::Value,
+        position=(896.00000, 808.00000),
+        width=407.00000,
+        height=69.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_34(
+        type=meta::external::query::graphQL::metamodel::sdl::value::NullValue,
+        position=(1274.00000, 913.00000),
+        width=74.01758,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::Type,
+        position=(-81.65217, 452.04348),
+        width=1038.00000,
+        height=33.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_23(
+        type=meta::external::query::graphQL::metamodel::sdl::executable::Field,
+        position=(1350.00000, 625.00000),
+        width=148.33333,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_25(
+        type=meta::external::query::graphQL::metamodel::sdl::executable::FragmentSpread,
+        position=(1440.00000, 732.00000),
+        width=138.00293,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_26(
+        type=meta::external::query::graphQL::metamodel::sdl::executable::Argument,
+        position=(1142.00000, 678.00000),
+        width=102.51611,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_16(
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::SchemaDefinition,
+        position=(-233.65217, 835.04348),
+        width=347.66667,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::TypeSystemDefinition,
+        position=(-232.65217, 384.04348),
+        width=1186.00000,
+        height=34.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_35(
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::InputObjectTypeDefinition,
+        position=(803.67392, 514.50000),
+        width=169.10352,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_2,
+        target=cview_1,
+        points=[(509.34498,250.00000),(510.21667,158.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_4,
+        target=cview_3,
+        points=[(260.34783,401.04348),(349.12752,353.52349),(887.38255,212.58389),(927.66667,158.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_5,
+        target=cview_3,
+        points=[(1504.50000,355.00000),(1504.83221,297.14765),(958.52349,205.87248),(927.66667,158.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_6,
+        target=cview_4,
+        points=[(337.34783,468.54348),(336.84783,411.04348)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_7,
+        target=cview_6,
+        points=[(696.34929,547.04348),(696.34783,480.04348)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_5(
+        source=cview_8,
+        target=cview_6,
+        points=[(576.34783,619.04348),(575.34783,481.04348)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_6(
+        source=cview_9,
+        target=cview_6,
+        points=[(204.53116,555.04348),(204.34783,482.04348)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_7(
+        source=cview_11,
+        target=cview_6,
+        points=[(22.58319,548.04348),(22.84783,466.54348)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_8(
+        source=cview_12,
+        target=cview_6,
+        points=[(-69.63739,638.04348),(-68.65217,466.04348)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_9(
+        source=cview_14,
+        target=cview_4,
+        points=[(-116.62137,744.04348),(-117.65217,415.04348)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_10(
+        source=cview_16,
+        target=cview_4,
+        points=[(-176.65217,856.04348),(-175.65217,398.04348)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_11(
+        source=cview_20,
+        target=cview_5,
+        points=[(1407.90834,457.00000),(1411.00000,361.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_12(
+        source=cview_21,
+        target=cview_5,
+        points=[(1597.90834,461.00000),(1598.00000,360.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_13(
+        source=cview_23,
+        target=cview_22,
+        points=[(1415.00000,642.00000),(1415.00000,574.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_14(
+        source=cview_24,
+        target=cview_22,
+        points=[(1568.03026,650.00000),(1568.00000,571.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_15(
+        source=cview_25,
+        target=cview_22,
+        points=[(1509.00146,761.00000),(1510.00000,575.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_16(
+        source=cview_27,
+        target=cview_18,
+        points=[(916.00208,970.00000),(917.00000,872.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_17(
+        source=cview_28,
+        target=cview_18,
+        points=[(979.40380,930.00000),(979.00000,867.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_18(
+        source=cview_29,
+        target=cview_18,
+        points=[(1041.02176,960.00000),(1041.00000,871.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_19(
+        source=cview_30,
+        target=cview_18,
+        points=[(1099.25806,930.00000),(1099.50000,842.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_20(
+        source=cview_31,
+        target=cview_18,
+        points=[(1159.02125,966.00000),(1159.00000,872.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_21(
+        source=cview_32,
+        target=cview_18,
+        points=[(1213.20458,929.00000),(1214.00000,864.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_22(
+        source=cview_33,
+        target=cview_18,
+        points=[(1270.02125,970.00000),(1269.00000,874.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_23(
+        source=cview_34,
+        target=cview_18,
+        points=[(1292.00045,921.00000),(1292.00000,870.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_24(
+        source=cview_35,
+        target=cview_6,
+        points=[(888.22567,543.50000),(887.67392,478.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::external::query::graphQL::metamodel::sdl::Document.definitions,
+        source=cview_1,
+        target=cview_3,
+        points=[(510.21667,158.00000),(927.66667,158.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::external::query::graphQL::metamodel::sdl::typeSystem::EnumTypeDefinition.values,
+        source=cview_9,
+        target=cview_10,
+        points=[(204.53116,555.04348),(429.35617,554.04348)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::external::query::graphQL::metamodel::sdl::typeSystem::ObjectTypeDefinition.fields,
+        source=cview_8,
+        target=cview_13,
+        points=[(567.34783,624.04348),(472.34783,625.04348)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::external::query::graphQL::metamodel::sdl::typeSystem::InterfaceTypeDefinition.fields,
+        source=cview_12,
+        target=cview_13,
+        points=[(-9.42072,662.04348),(346.03950,661.04348)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_4(
+        property=meta::external::query::graphQL::metamodel::sdl::typeSystem::FieldDefinition.argumentDefinitions,
+        source=cview_13,
+        target=cview_15,
+        points=[(457.34783,710.04348),(623.34783,710.04348)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_5(
+        property=meta::external::query::graphQL::metamodel::sdl::typeSystem::DirectiveDefinition.argumentDefinitions,
+        source=cview_14,
+        target=cview_15,
+        points=[(149.37863,766.04348),(625.34783,766.04348)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_6(
+        property=meta::external::query::graphQL::metamodel::sdl::typeSystem::SchemaDefinition.rootOperationTypeDefinitions,
+        source=cview_16,
+        target=cview_17,
+        points=[(-59.81883,864.04348),(470.23869,863.04348)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_7(
+        property=meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition.defaultValue,
+        source=cview_15,
+        target=cview_18,
+        points=[(671.20616,749.04348),(859.00000,748.00000),(858.00000,813.00000),(907.00000,814.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_8(
+        property=meta::external::query::graphQL::metamodel::sdl::executable::VariableDefinition.defaultValue,
+        source=cview_19,
+        target=cview_18,
+        points=[(1156.33789,456.00000),(1059.00000,458.00000),(1057.00000,769.00000),(1339.00000,771.00000),(1340.00000,813.00000),(1301.00000,813.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_9(
+        property=meta::external::query::graphQL::metamodel::sdl::executable::OperationDefinition.variables,
+        source=cview_20,
+        target=cview_19,
+        points=[(1407.90834,457.00000),(1156.33789,456.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_10(
+        property=meta::external::query::graphQL::metamodel::sdl::executable::OperationDefinition.selectionSet,
+        source=cview_20,
+        target=cview_22,
+        points=[(1344.00000,483.00000),(1302.00000,483.00000),(1302.00000,534.00000),(1386.00000,533.50000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_11(
+        property=meta::external::query::graphQL::metamodel::sdl::executable::FragmentDefinition.selectionSet,
+        source=cview_21,
+        target=cview_22,
+        points=[(1597.90834,461.00000),(1705.00000,461.00000),(1705.00000,537.00000),(1614.00000,537.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_12(
+        property=meta::external::query::graphQL::metamodel::sdl::executable::Field.selectionSet,
+        source=cview_23,
+        target=cview_22,
+        points=[(1386.00000,631.00000),(1301.50000,631.00000),(1301.00000,580.00000),(1389.00000,580.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_13(
+        property=meta::external::query::graphQL::metamodel::sdl::executable::InLineFragment.selectionSet,
+        source=cview_24,
+        target=cview_22,
+        points=[(1596.97193,663.00000),(1695.50000,665.00000),(1695.00000,581.00000),(1618.00000,581.00000),(1501.00000,554.50000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_14(
+        property=meta::external::query::graphQL::metamodel::sdl::executable::Argument.value,
+        source=cview_26,
+        target=cview_18,
+        points=[(1241.01639,718.00000),(1388.50000,718.00000),(1389.00000,868.00000),(1299.00000,868.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_15(
+        property=meta::external::query::graphQL::metamodel::sdl::executable::Field.arguments,
+        source=cview_23,
+        target=cview_26,
+        points=[(1392.00000,686.00000),(1239.01639,687.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_16(
+        property=meta::external::query::graphQL::metamodel::sdl::value::ListValue.values,
+        source=cview_27,
+        target=cview_18,
+        points=[(915.34375,979.00000),(858.00000,979.00000),(858.00000,865.00000),(907.00000,865.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_17(
+        property=meta::external::query::graphQL::metamodel::sdl::typeSystem::InputObjectTypeDefinition.fields,
+        source=cview_35,
+        target=cview_15,
+        points=[(876.67392,563.50000),(876.67392,720.50000),(717.67392,720.50000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

@@ -1,0 +1,66 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+function meta::external::query::sql::schema::typeToPrimitiveType(dt : Type[1]) : meta::external::query::sql::schema::metamodel::PrimitiveType[1]
+{
+   let type = newMap(
+      [
+         pair(Boolean, meta::external::query::sql::schema::metamodel::PrimitiveType.Boolean),
+         pair(StrictDate, meta::external::query::sql::schema::metamodel::PrimitiveType.StrictDate),
+         pair(Number, meta::external::query::sql::schema::metamodel::PrimitiveType.Number),
+         pair(String, meta::external::query::sql::schema::metamodel::PrimitiveType.String),
+         pair(LatestDate, meta::external::query::sql::schema::metamodel::PrimitiveType.LatestDate),
+         pair(Float, meta::external::query::sql::schema::metamodel::PrimitiveType.Float),
+         pair(DateTime, meta::external::query::sql::schema::metamodel::PrimitiveType.DateTime),
+         pair(Date, meta::external::query::sql::schema::metamodel::PrimitiveType.Date),
+         pair(Integer, meta::external::query::sql::schema::metamodel::PrimitiveType.Integer),
+         pair(Decimal, meta::external::query::sql::schema::metamodel::PrimitiveType.Decimal)
+      ]
+   )->get($dt);
+   if($type->isEmpty(), |fail('Unknown primitive type: ' + $dt.name->toOne()), |[]);
+   $type->toOne();
+}
+
+function meta::external::query::sql::schema::tdsColToSchemaCol(col: TDSColumn[1]): meta::external::query::sql::schema::metamodel::SchemaColumn[1]
+{
+  let columnName = $col.name;
+  if($col.type->isEmpty(), |fail('Column type is empty for col: ' + $columnName), |[]);
+  let tdsType = $col.type->toOne();
+  let columnPrimitiveType = $col.type->match([
+    s:PrimitiveType[1]      | ^meta::external::query::sql::schema::metamodel::PrimitiveSchemaColumn(type=$tdsType->meta::external::query::sql::schema::typeToPrimitiveType(),name=$columnName),
+    e:Enumeration<Any>[1]   | ^meta::external::query::sql::schema::metamodel::EnumSchemaColumn(type=$tdsType->meta::pure::functions::meta::elementToPath(),name=$columnName),
+    a:Any[*]                | fail('Unsupported type on column: ' + $columnName + ' (' + $tdsType->meta::pure::functions::meta::elementToPath() + '), only primitive types and enums are supported');
+  ])->cast(@meta::external::query::sql::schema::metamodel::SchemaColumn);
+}
+
+function meta::external::query::sql::tdsColsToSchema(cols: TDSColumn[*]): meta::external::query::sql::schema::metamodel::Schema[1]
+{
+    $cols->meta::external::query::sql::toSchema([]);
+}
+
+function meta::external::query::sql::toSchema(cols: TDSColumn[*], positionals:VariableExpression[*]): meta::external::query::sql::schema::metamodel::Schema[1]
+{
+  let schemaCols = $cols->map(v:TDSColumn[1]  | $v->meta::external::query::sql::schema::tdsColToSchemaCol());
+  let enums = $cols
+    ->map(c:TDSColumn[1] | $c.type->match([
+      e:Enumeration<Any>[1] | ^meta::external::query::sql::schema::metamodel::Enum(type=$e->meta::pure::functions::meta::elementToPath(), values=$e->enumValues()->map( v:Enum[1]   | $v->id())),
+      a:Any[*]              | []
+    ]))
+    ->distinct();
+
+  let parameters = $positionals->map(p | ^meta::external::query::sql::schema::metamodel::Parameter(name = $p.name, type = $p.genericType.rawType->toOne()->meta::external::query::sql::schema::typeToPrimitiveType()));
+
+  ^meta::external::query::sql::schema::metamodel::Schema(columns = $schemaCols, enums = $enums, parameters = $parameters);
+}

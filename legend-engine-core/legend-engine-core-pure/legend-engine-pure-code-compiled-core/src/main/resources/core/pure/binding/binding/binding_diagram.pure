@@ -1,0 +1,95 @@
+###Diagram
+Diagram meta::external::format::shared::binding::BindingDiagram(width=0.0, height=0.0)
+{
+    TypeView cview_4(
+        type=meta::external::format::shared::binding::validation::BindingDetail,
+        position=(451.00000, 83.00000),
+        width=97.38477,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::external::format::shared::binding::validation::SuccessfulBindingDetail,
+        position=(230.00000, 235.00000),
+        width=279.79443,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::external::format::shared::binding::validation::FailedBindingDetail,
+        position=(568.00000, 233.00000),
+        width=150.21143,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::external::format::shared::binding::BindingTransformer,
+        position=(833.00000, 156.00000),
+        width=149.59375,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::external::format::shared::binding::Binding,
+        position=(1121.00000, 151.00000),
+        width=171.63135,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_5,
+        target=cview_4,
+        points=[(643.10571,255.00000),(499.69238,105.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_6,
+        target=cview_4,
+        points=[(369.89722,264.00000),(499.69238,105.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::external::format::shared::binding::BindingTransformer.binding,
+        source=cview_2,
+        target=cview_1
+,        points=[(907.79688,192.00000),(1206.81567,194.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

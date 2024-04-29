@@ -1,0 +1,27 @@
+{
+  "_type": "databaseCommand",
+  "aggregate": "person",
+  "pipeline": [
+    {
+      "$match": {
+        "$expr": {
+          "$and": [
+            {
+              "$eq": [
+                "$fName",
+                "Zemlak-Hegmann"
+              ]
+            },
+            {
+              "$gt": [
+                "$age",
+                20
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "cursor": {}
+}

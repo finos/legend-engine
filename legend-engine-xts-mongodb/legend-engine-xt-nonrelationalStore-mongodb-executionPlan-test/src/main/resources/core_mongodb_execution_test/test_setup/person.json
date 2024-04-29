@@ -1,0 +1,298 @@
+{
+  "insert": "person",
+  "documents": [
+    {
+      "firstName": "Gelya",
+      "lastName": "Bowhay",
+      "age": 25,
+      "birthDate": new ISODate("1983-05-05T12:12:12.000+1200"),
+      "legallyCompetent": true,
+      "otherPhoneNumbers": [
+        "+1 347 336 3704"
+      ],
+      "address": {
+        "city": "Washington",
+        "buildingNumber": 40,
+        "isActive": true,
+        "lastUpdated": new ISODate("2018-01-01T21:10:00.000Z")
+      },
+      "department": {
+        "name": "Sales",
+        "numberOfEmployees": 2,
+        "dateCreated": new ISODate("2013-01-01T21:10:22.000Z"),
+        "isActive": true
+      },
+      "firm": {
+        "legalName": "Babblestorm",
+        "numberOfEmployees": 10,
+        "dateFounded": new ISODate("1998-07-05T18:09:35.000Z"),
+        "address": {
+          "city": "Boston",
+          "buildingNumber": 145,
+          "isActive": true,
+          "lastUpdated": new ISODate("2022-01-01T21:10:00.000Z")
+        },
+        "public": false,
+        "department": [
+          {
+            "name": "Sales",
+            "numberOfEmployees": 2,
+            "dateCreated": new ISODate("2013-01-01T21:10:22.000Z"),
+            "isActive": true
+          },
+          {
+            "name": "Engineering",
+            "numberOfEmployees": 4,
+            "dateCreated": new ISODate("2012-11-01T21:10:22.000Z"),
+            "isActive": true
+          },
+          {
+            "name": "Product",
+            "numberOfEmployees": 4,
+            "dateCreated": new ISODate("2011-11-01T21:10:22.000Z"),
+            "isActive": true
+          }
+        ]
+      }
+    },
+    {
+      "firstName": "Jefferey",
+      "lastName": "Raye",
+      "age": 45,
+      "birthDate": new Date(1684154899000),
+      "legallyCompetent": true,
+      "otherPhoneNumbers": [
+        "+44 774 643 2334",
+        "+1 515 165 0534"
+      ],
+      "address": {
+        "city": "Hyattsville",
+        "buildingNumber": 33,
+        "isActive": false,
+        "lastUpdated": new ISODate("2023-01-01T21:10:00.000Z")
+      },
+      "department": {
+        "name": "Engineering",
+        "numberOfEmployees": 40,
+        "dateCreated": new ISODate("2015-05-05T21:10:22.000Z"),
+        "isActive": true
+      },
+      "firm": {
+        "legalName": "Yodoo",
+        "numberOfEmployees": 100,
+        "dateFounded": new ISODate("2015-01-11T00:36:08.000Z"),
+        "address": {
+          "city": "Pueblo",
+          "buildingNumber": 382,
+          "isActive": true,
+          "lastUpdated": new ISODate("2013-01-01T21:10:00.000Z")
+        },
+        "public": false,
+        "department": [
+          {
+            "name": "Engineering",
+            "numberOfEmployees": 40,
+            "dateCreated": new ISODate("2015-05-05T21:10:22.000Z"),
+            "isActive": true
+          },
+          {
+            "name": "Business",
+            "numberOfEmployees": 60,
+            "dateCreated": new ISODate("2015-05-05T21:10:22.000Z"),
+            "isActive": true
+          },
+          {
+            "name": "Sales",
+            "numberOfEmployees": 10,
+            "dateCreated": new ISODate("2011-05-05T21:10:22.000Z"),
+            "isActive": false
+          }
+        ]
+      }
+    },
+    {
+      "firstName": "Coralie",
+      "lastName": "Batie",
+      "age": 23,
+      "birthDate": new ISODate("1980-04-04T12:12:12.000+0500"),
+      "legallyCompetent": false,
+      "otherPhoneNumbers": [
+        "+1 571 689 6039",
+        "+1 303 278 3547",
+        "+1 414 760 1884"
+      ],
+      "department": {
+        "name": "Communication",
+        "numberOfEmployees": 5,
+        "dateCreated": new ISODate("2017-09-11T21:10:22.000Z"),
+        "isActive": true
+      },
+      "address": {
+        "city": "Little Rock",
+        "buildingNumber": 99,
+        "isActive": true,
+        "lastUpdated": new ISODate("2022-06-06T21:10:00.000Z")
+      },
+      "firm": {
+        "legalName": "Devpoint",
+        "numberOfEmployees": 50,
+        "dateFounded": new ISODate("2018-01-14T00:36:08.000Z"),
+        "address": {
+          "city": "Saint Paul",
+          "buildingNumber": 974,
+          "isActive": true,
+          "lastUpdated": new ISODate("2022-01-01T21:10:00.000Z")
+        },
+        "public": false,
+        "department": [
+          {
+            "name": "Communication",
+            "numberOfEmployees": 5,
+            "dateCreated": new ISODate("2017-09-11T21:10:22.000Z"),
+            "isActive": true
+          },
+          {
+            "name": "Engineering",
+            "numberOfEmployees": 40,
+            "dateCreated": new ISODate("2013-12-13T21:10:22.000Z"),
+            "isActive": true
+          },
+          {
+            "name": "Sales",
+            "numberOfEmployees": 6,
+            "dateCreated": new ISODate("2014-12-14T21:10:22.000Z"),
+            "isActive": true
+          }
+        ]
+      }
+    },
+    {
+      "firstName": "Franz",
+      "lastName": "Stiant",
+      "age": 68,
+      "birthDate": new ISODate("1985-04-04T17:18:23Z"),
+      "legallyCompetent": false,
+      "otherPhoneNumbers": [
+        "+1 405 332 4537",
+        "+1 814 987 3881"
+      ],
+      "address": {
+        "city": "Sacramento",
+        "buildingNumber": 540,
+        "isActive": true,
+        "lastUpdated": new ISODate("2007-01-01T08:10:00.000Z")
+      },
+      "department": {
+        "name": "HR",
+        "numberOfEmployees": 30,
+        "dateCreated": new ISODate("1995-01-01T21:10:22.000Z"),
+        "isActive": true
+      },
+      "firm": {
+        "legalName": "Voolia",
+        "numberOfEmployees": 2000,
+        "dateFounded": new ISODate("1993-10-07T04:40:27.000Z"),
+        "address": {
+          "city": "London",
+          "buildingNumber": 40,
+          "isActive": true,
+          "lastUpdated": new ISODate("2018-01-01T21:10:00.000Z")
+        },
+        "public": true,
+        "department": [
+          {
+            "name": "HR",
+            "numberOfEmployees": 30,
+            "dateCreated": new ISODate("1995-01-01T21:10:22.000Z"),
+            "isActive": true
+          },
+          {
+            "name": "Engineering",
+            "numberOfEmployees": 450,
+            "dateCreated": new ISODate("1996-11-01T21:10:22.000Z"),
+            "isActive": true
+          },
+          {
+            "name": "Product",
+            "numberOfEmployees": 220,
+            "dateCreated": new ISODate("2013-11-16T21:10:22.000Z"),
+            "isActive": true
+          },
+          {
+            "name": "Sales",
+            "numberOfEmployees": 100,
+            "dateCreated": new ISODate("2000-11-16T21:10:22.000Z"),
+            "isActive": true
+          },
+          {
+            "name": "Marketing",
+            "numberOfEmployees": 200,
+            "dateCreated": new ISODate("2014-11-16T21:10:22.000Z"),
+            "isActive": true
+          },
+          {
+            "name": "Communications",
+            "numberOfEmployees": 100,
+            "dateCreated": new ISODate("2002-11-16T21:10:22.000Z"),
+            "isActive": false
+          }
+        ]
+      }
+    },
+    {
+      "firstName": "Chev",
+      "lastName": "Gehrts",
+      "age": 38,
+      "birthDate": new ISODate("1970-04-04T17:18:23Z"),
+      "legallyCompetent": false,
+      "otherPhoneNumbers": [
+        "+44 425 338 0548",
+        "+1 904 162 3004"
+      ],
+      "address": {
+        "city": "Phoenix",
+        "buildingNumber": 214,
+        "isActive": false,
+        "lastUpdated": new ISODate("1999-01-01T21:10:00.000Z")
+      },
+      "department": {
+        "name": "HR",
+        "numberOfEmployees": 20,
+        "dateCreated": new ISODate("2007-01-01T21:10:22.000Z"),
+        "isActive": true
+      },
+      "firm": {
+        "legalName": "Gabspot",
+        "numberOfEmployees": 150,
+        "dateFounded": new ISODate("1974-02-14T05:55:00.000Z"),
+        "address": {
+          "city": "Dallas",
+          "buildingNumber": 974,
+          "isActive": true,
+          "lastUpdated": new ISODate("2018-01-01T21:10:00.000Z")
+        },
+        "public": false,
+        "department": [
+          {
+            "name": "HR",
+            "numberOfEmployees": 20,
+            "dateCreated": new ISODate("2007-01-01T21:10:22.000Z"),
+            "isActive": true
+          },
+          {
+            "name": "Engineering",
+            "numberOfEmployees": 100,
+            "dateCreated": new ISODate("2008-11-01T21:10:22.000Z"),
+            "isActive": true
+          },
+          {
+            "name": "Product",
+            "numberOfEmployees": 30,
+            "dateCreated": new ISODate("2013-11-01T21:10:22.000Z"),
+            "isActive": true
+          }
+        ]
+      }
+    }
+  ]
+}

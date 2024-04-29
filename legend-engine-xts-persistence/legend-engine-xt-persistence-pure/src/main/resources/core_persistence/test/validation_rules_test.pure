@@ -1,0 +1,205 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::shared::*;
+
+import meta::pure::extension::*;
+
+import meta::pure::functions::collection::*;
+
+import meta::pure::persistence::metamodel::*;
+import meta::pure::persistence::metamodel::persister::*;
+import meta::pure::persistence::test::example::*;
+import meta::pure::persistence::validation::*;
+
+import meta::relational::extension::*;
+
+/**********
+ * tds service and output tests
+ **********/
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndOutput_tdsService_tdsRoot(): Boolean[1]
+{
+  let persistence = TdsServiceWithTdsRootServiceOutput();
+  let result = validateServiceAndOutput($persistence.service, $persistence.serviceOutputTargets->at(0).serviceOutput, extensions());
+  assert($result.valid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndOutput_tdsService_graphFetchRoot(): Boolean[1]
+{
+  let persistence = TdsServiceWithGraphFetchRootServiceOutput();
+  let result = validateServiceAndOutput($persistence.service, $persistence.serviceOutputTargets->at(0).serviceOutput, extensions());
+  assert($result.invalid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndOutput_tdsService_graphFetchPath(): Boolean[1]
+{
+  let persistence = TdsServiceWithGraphFetchPathServiceOutput();
+  let result = validateServiceAndOutput($persistence.service, $persistence.serviceOutputTargets->at(0).serviceOutput, extensions());
+  assert($result.invalid());
+}
+
+/**********
+ * tds service tests
+ **********/
+
+function <<test.Test>> meta::pure::persistence::test::validateTarget_tdsService_flatPersistence(): Boolean[1]
+{
+  let persistence = TdsServiceWithFlatPersistence();
+  let result = validateTarget($persistence.persister->cast(@BatchPersister).targetShape);
+  assert($result.valid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_tdsService_flatPersistence(): Boolean[1]
+{
+  let persistence = TdsServiceWithFlatPersistence();
+  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape, extensions());
+  assert($result.valid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateTarget_tdsService_multiFlatPersistence(): Boolean[1]
+{
+  let persistence = TdsServiceWithMultiFlatPersistence();
+  let result = validateTarget($persistence.persister->cast(@BatchPersister).targetShape);
+  assert($result.valid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_tdsService_multiFlatPersistence(): Boolean[1]
+{
+  let persistence = TdsServiceWithMultiFlatPersistence();
+  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape, extensions());
+  assert($result.invalid());
+  assertEq('Multi flat target requires a service that ends with a "graphFetch()->serialize()" expression that has 1) only complex properties off the root node and 2) only primitive properties off nodes at depth 1', $result.reasons->at(0));
+}
+
+/**********
+ * flat graph fetch service and output tests
+ **********/
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndOutput_flatM2mService_tdsRoot(): Boolean[1]
+{
+  let persistence = FlatM2mServiceWithTdsRootServiceOutput();
+  let result = validateServiceAndOutput($persistence.service, $persistence.serviceOutputTargets->at(0).serviceOutput, extensions());
+  assert($result.invalid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndOutput_flatM2mService_graphFetchRoot(): Boolean[1]
+{
+  let persistence = FlatM2mServiceWithGraphFetchRootServiceOutput();
+  let result = validateServiceAndOutput($persistence.service, $persistence.serviceOutputTargets->at(0).serviceOutput, extensions());
+  assert($result.valid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndOutput_flatM2mService_graphFetchPath(): Boolean[1]
+{
+  let persistence = FlatM2mServiceWithGraphFetchPathServiceOutput();
+  let result = validateServiceAndOutput($persistence.service, $persistence.serviceOutputTargets->at(0).serviceOutput, extensions());
+  assert($result.invalid());
+}
+
+/**********
+ * flat graph fetch service tests
+ **********/
+
+function <<test.Test>> meta::pure::persistence::test::validateTarget_flatM2mService_flatPersistence(): Boolean[1]
+{
+  let persistence = FlatM2mServiceWithFlatPersistence();
+  let result = validateTarget($persistence.persister->cast(@BatchPersister).targetShape);
+  assert($result.valid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_flatM2mService_flatPersistence(): Boolean[1]
+{
+  let persistence = FlatM2mServiceWithFlatPersistence();
+  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape, extensions());
+  assert($result.valid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateTarget_flatM2mService_multiFlatPersistence(): Boolean[1]
+{
+  let persistence = FlatM2mServiceWithMultiFlatPersistence();
+  let result = validateTarget($persistence.persister->cast(@BatchPersister).targetShape);
+  assert($result.valid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_flatM2mService_multiFlatPersistence(): Boolean[1]
+{
+  let persistence = FlatM2mServiceWithMultiFlatPersistence();
+  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape, extensions());
+  assert($result.invalid());
+  assertEq('Multi flat target requires a service that ends with a "graphFetch()->serialize()" expression that has 1) only complex properties off the root node and 2) only primitive properties off nodes at depth 1', $result.reasons->at(0));
+}
+
+/**********
+ * nested graph fetch service and output tests
+ **********/
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndOutput_nestedM2mService_tdsRoot(): Boolean[1]
+{
+  let persistence = NestedM2mServiceWithTdsRootServiceOutput();
+  let result = validateServiceAndOutput($persistence.service, $persistence.serviceOutputTargets->at(0).serviceOutput, extensions());
+  assert($result.invalid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndOutput_nestedM2mService_graphFetchRoot(): Boolean[1]
+{
+  let persistence = NestedM2mServiceWithGraphFetchRootServiceOutput();
+  let result = validateServiceAndOutput($persistence.service, $persistence.serviceOutputTargets->at(0).serviceOutput, extensions());
+  assert($result.invalid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndOutput_nestedM2mService_graphFetchPath(): Boolean[1]
+{
+  let persistence = NestedM2mServiceWithGraphFetchPathServiceOutput();
+  let result = validateServiceAndOutput($persistence.service, $persistence.serviceOutputTargets->at(0).serviceOutput, extensions());
+  assert($result.valid());
+}
+
+/**********
+ * nested graph fetch service tests
+ **********/
+
+function <<test.Test>> meta::pure::persistence::test::validateTarget_nestedM2mService_flatPersistence(): Boolean[1]
+{
+  let persistence = NestedM2mServiceWithFlatPersistence();
+  let result = validateTarget($persistence.persister->cast(@BatchPersister).targetShape);
+  assert($result.valid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_nestedM2mService_flatPersistence(): Boolean[1]
+{
+  let persistence = NestedM2mServiceWithFlatPersistence();
+  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape, extensions());
+  assert($result.invalid());
+  assertEq('Flat target requires a service that returns a TDS or ends with a "graphFetch()->serialize()" expression that has only primitive properties off the root node', $result.reasons->at(0));
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateTarget_nestedM2mService_multiFlatPersistence(): Boolean[1]
+{
+  let persistence = NestedM2mServiceWithMultiFlatPersistence();
+  let result = validateTarget($persistence.persister->cast(@BatchPersister).targetShape);
+  assert($result.valid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_nestedM2mService_multiFlatPersistence(): Boolean[1]
+{
+  let persistence = NestedM2mServiceWithMultiFlatPersistence();
+  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape, extensions());
+  assert($result.valid());
+}
+
+function meta::pure::persistence::validation::extensions(): Extension[*]
+{
+  defaultExtensions()->add(externalFormatExtension())->concatenate(relationalExtensions());
+}

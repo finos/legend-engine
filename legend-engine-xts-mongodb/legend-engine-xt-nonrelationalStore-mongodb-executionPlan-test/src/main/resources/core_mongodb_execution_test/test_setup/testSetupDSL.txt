@@ -1,0 +1,137 @@
+###MongoDB
+Database test::mongodb::mydatabase
+(
+    Collection person
+    (
+        validationLevel: strict;
+        validationAction: warn;
+        jsonSchema: {
+            "bsonType": "object",
+            "title": "Record of Firm",
+            "properties": {
+                "firstName": {
+                    "bsonType": "string",
+                    "description": "firstName of the person",
+                    "minLength": 2
+                },
+                "lastName": {
+                    "bsonType": "string",
+                    "description": "lastName of the person",
+                    "minLength": 2
+                },
+                "age": {
+                    "bsonType": "int",
+                    "description": "age of the person",
+                    "minLength": 2
+                },
+                "firm": {
+                    "bsonType": "object",
+                    "description": "firm of the person",
+                    "properties": {
+                        "legalName": {
+                            "bsonType": "string",
+                            "description": "legal name of the firm"
+                        },
+                        "address": {
+                          "bsonType": "string",
+                          "description": "address of the firm"
+                        }
+                    }
+                }
+            },
+            "additionalProperties": false
+        };
+    )
+)
+
+###Runtime
+Runtime test::mongodb::runtime::TestMongoDBRuntime
+{
+    mappings :
+    [
+        test::mongodb::TestPersonMapping
+    ];
+    connections :
+    [
+        test::mongodb::mydatabase :
+        [
+            connection_1 : test::mongodb::testConnection
+        ]
+    ];
+}
+
+###ExternalFormat
+Binding meta::external::store::mongodb::showcase::store::PersonCollectionBinding
+{
+    contentType   : 'application/json';
+    modelIncludes : [
+        meta::external::store::mongodb::executionTest::domain::Person,
+        meta::external::store::mongodb::executionTest::domain::Firm,
+        meta::external::store::mongodb::executionTest::domain::Address,
+        meta::external::store::mongodb::executionTest::domain::Department
+    ];
+}
+
+###Mapping
+Mapping test::mongodb::TestPersonMapping
+(
+    *meta::external::store::mongodb::executionTest::domain::Person[Person]: MongoDB
+    {
+        ~mainCollection [test::mongodb::mydatabase] person
+        ~binding meta::external::store::mongodb::showcase::store::PersonCollectionBinding
+    }
+)
+
+###Connection
+MongoDBConnection test::mongodb::testConnection
+{
+    database: userDatabase;
+    store: test::mongodb::mydatabase;
+    serverURLs: [__HOST_TOKEN__:__PORT_TOKEN__];
+    authentication: # UserPassword {
+        username: 'sa';
+        password: SystemPropertiesSecret
+        {
+            systemPropertyName: 'mongo_pwd';
+        };
+    }#;
+}
+
+###Service
+Service test::mongodb::service::PersonService
+{
+    pattern: '/api/allPersons';
+    documentation: '';
+    autoActivateUpdates: true;
+    execution: Single
+    {
+        query: |meta::external::store::mongodb::executionTest::domain::Person.all()->graphFetch(#{meta::external::store::mongodb::executionTest::domain::Person{firstName,lastName,firm{legalName}}}#)->serialize(#{meta::external::store::mongodb::executionTest::domain::Person{firstName,lastName,firm{legalName}}}#);
+        mapping: test::mongodb::TestPersonMapping;
+        runtime: test::mongodb::runtime::TestMongoDBRuntime;
+    }
+    testSuites:
+    [
+        testSuite_1:
+        {
+            tests:
+            [
+                test_1:
+                {
+                    asserts:
+                    [
+                        assertion_1:
+                        EqualToJson
+                        #{
+                            expected:
+                            ExternalFormat
+                            #{
+                                contentType: 'application/json';
+                                data: '[]';
+                            }#;
+                        }#
+                    ]
+                }
+            ]
+        }
+    ]
+}

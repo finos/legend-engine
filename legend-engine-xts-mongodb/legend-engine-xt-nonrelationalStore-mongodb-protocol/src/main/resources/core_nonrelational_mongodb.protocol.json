@@ -1,0 +1,7 @@
+{
+  "purePackage": "meta::external::store::mongodb::metamodel",
+  "javaPackage": "org.finos.legend.engine.protocol.mongodb.schema.metamodel",
+  "elementsToBeExcluded": [
+    "meta::external::store::mongodb::metamodel::pure"
+  ]
+}

@@ -1,0 +1,656 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(width=0.0, height=0.0)
+{
+    TypeView ServiceStore_$_0(
+        type=meta::external::store::service::metamodel::ServiceStore,
+        position=(310.00000, -12.00000),
+        width=308.56201,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView ServiceStoreElement_$_1(
+        type=meta::external::store::service::metamodel::ServiceStoreElement,
+        position=(353.00000, 155.00000),
+        width=223.56982,
+        height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::external::store::service::metamodel::ServiceGroup,
+        position=(115.24883, 336.50000),
+        width=308.56201,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::external::store::service::metamodel::Service,
+        position=(533.24883, 333.50000),
+        width=149.54541,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView RootServiceInstanceSetImplementation_$_13(
+        type=meta::external::store::service::metamodel::mapping::RootServiceInstanceSetImplementation,
+        position=(1668.00000, -6.00000),
+        width=246.06055,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView ServiceRequestBuildInfo_$_15(
+        type=meta::external::store::service::metamodel::mapping::ServiceRequestBuildInfo,
+        position=(1717.03028, 453.00000),
+        width=162.03125,
+        height=36.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView ServiceRequestParametersBuildInfo_$_17(
+        type=meta::external::store::service::metamodel::mapping::ServiceRequestParametersBuildInfo,
+        position=(1924.03028, 564.00000),
+        width=227.41016,
+        height=36.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView ServiceRequestBodyBuildInfo_$_16(
+        type=meta::external::store::service::metamodel::mapping::ServiceRequestBodyBuildInfo,
+        position=(1548.03028, 556.00000),
+        width=192.03125,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView ServiceRequestParameterBuildInfo_$_18(
+        type=meta::external::store::service::metamodel::mapping::ServiceRequestParameterBuildInfo,
+        position=(1928.03028, 691.00000),
+        width=226.70117,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView ServiceMapping_$_14(
+        type=meta::external::store::service::metamodel::mapping::ServiceMapping,
+        position=(1729.00000, 338.00000),
+        width=133.07227,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView ComplexTypeReference_$_10(
+        type=meta::external::store::service::metamodel::ComplexTypeReference,
+        position=(18.00000, 638.00000),
+        width=155.82617,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView BooleanTypeReference_$_6(
+        type=meta::external::store::service::metamodel::BooleanTypeReference,
+        position=(85.00000, 792.00000),
+        width=152.48633,
+        height=36.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView FloatTypeReference_$_7(
+        type=meta::external::store::service::metamodel::FloatTypeReference,
+        position=(258.00000, 790.00000),
+        width=133.81250,
+        height=36.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView TypeReference_$_5(
+        type=meta::external::store::service::metamodel::TypeReference,
+        position=(360.00000, 624.00000),
+        width=105.14844,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView ServiceParameter_$_4(
+        type=meta::external::store::service::metamodel::ServiceParameter,
+        position=(608.00000, 481.00000),
+        width=174.66602,
+        height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_7(
+        type=meta::external::store::service::metamodel::IntegerTypeReference,
+        position=(402.24883, 792.50000),
+        width=145.15625,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView StringTypeReference_$_9(
+        type=meta::external::store::service::metamodel::StringTypeReference,
+        position=(564.00000, 791.00000),
+        width=139.81250,
+        height=36.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView SerializationFormat_$_12(
+        type=meta::external::store::service::metamodel::SerializationFormat,
+        position=(623.00000, 628.00000),
+        width=139.19531,
+        height=60.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::external::store::service::metamodel::SingleSecuritySchemeRequirement,
+        position=(860.24883, 546.50000),
+        width=222.73438,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::external::store::service::metamodel::MultiSecuritySchemeRequirement,
+        position=(1224.24883, 553.50000),
+        width=214.71875,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::external::store::service::metamodel::SecuritySchemeRequirement,
+        position=(1046.24883, 419.50000),
+        width=186.72852,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView SecurityScheme_$_11(
+        type=meta::external::store::service::metamodel::SecurityScheme,
+        position=(916.00000, 659.00000),
+        width=113.38086,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::external::store::service::metamodel::ApiKeySecurityScheme,
+        position=(816.24883, 781.50000),
+        width=167.90381,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_10(
+        type=meta::external::store::service::metamodel::HttpSecurityScheme,
+        position=(1006.24883, 781.50000),
+        width=156.92529,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=BooleanTypeReference_$_6,
+        target=TypeReference_$_5,
+        points=[(161.24316,810.00000),(412.87442,655.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=FloatTypeReference_$_7,
+        target=TypeReference_$_5,
+        points=[(324.15508,807.00000),(412.57422,653.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=StringTypeReference_$_9,
+        target=TypeReference_$_5,
+        points=[(633.90625,809.00000),(412.87442,655.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=ComplexTypeReference_$_10,
+        target=TypeReference_$_5,
+        points=[(95.91309,656.00000),(412.87422,655.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_1,
+        target=SecurityScheme_$_11,
+        points=[(900.20074,810.50000),(972.69043,681.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_5(
+        source=cview_5,
+        target=ServiceStoreElement_$_1,
+        points=[(269.52984,358.50000),(464.78491,205.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_6(
+        source=cview_6,
+        target=ServiceStoreElement_$_1,
+        points=[(608.02154,355.50000),(464.78491,205.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_7(
+        source=cview_7,
+        target=TypeReference_$_5,
+        points=[(474.82696,807.50000),(412.57422,653.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_8(
+        source=cview_8,
+        target=cview_3,
+        points=[(971.61602,568.50000),(1139.61309,441.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_9(
+        source=cview_9,
+        target=cview_3,
+        points=[(1331.60821,568.50000),(1139.61309,441.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_10(
+        source=cview_10,
+        target=SecurityScheme_$_11,
+        points=[(1084.71148,810.50000),(972.69043,681.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::external::store::service::metamodel::ServiceStoreElement.owner,
+        source=ServiceStoreElement_$_1,
+        target=ServiceStore_$_0,
+        points=[(464.78492,205.00000),(464.28101,24.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::external::store::service::metamodel::ServiceStore.elements,
+        source=ServiceStore_$_0,
+        target=ServiceStoreElement_$_1,
+        points=[(464.28101,24.00000),(464.78492,205.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::external::store::service::metamodel::ServiceParameter.type,
+        source=ServiceParameter_$_4,
+        target=TypeReference_$_5,
+        points=[(695.33301,531.00000),(412.87422,655.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::external::store::service::metamodel::ServiceParameter.serializationFormat,
+        source=ServiceParameter_$_4,
+        target=SerializationFormat_$_12,
+        points=[(695.33301,531.00000),(692.59766,658.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_4(
+        property=meta::external::store::service::metamodel::mapping::ServiceMapping.owner,
+        source=ServiceMapping_$_14,
+        target=RootServiceInstanceSetImplementation_$_13,
+        points=[(1795.53613,360.00000),(1791.03027,23.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_5(
+        property=meta::external::store::service::metamodel::mapping::RootServiceInstanceSetImplementation.servicesMapping,
+        source=RootServiceInstanceSetImplementation_$_13,
+        target=ServiceMapping_$_14,
+        points=[(1791.03027,23.00000),(1795.53613,360.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_6(
+        property=meta::external::store::service::metamodel::mapping::ServiceRequestBuildInfo.requestBodyBuildInfo,
+        source=ServiceRequestBuildInfo_$_15,
+        target=ServiceRequestBodyBuildInfo_$_16,
+        points=[(1798.04590,471.00000),(1644.04590,578.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_7(
+        property=meta::external::store::service::metamodel::mapping::ServiceMapping.requestBuildInfo,
+        source=ServiceMapping_$_14,
+        target=ServiceRequestBuildInfo_$_15,
+        points=[(1795.53613,360.00000),(1798.04590,471.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_8(
+        property=meta::external::store::service::metamodel::mapping::ServiceRequestBuildInfo.requestParametersBuildInfo,
+        source=ServiceRequestBuildInfo_$_15,
+        target=ServiceRequestParametersBuildInfo_$_17,
+        points=[(1798.04590,471.00000),(2037.73535,582.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_9(
+        property=meta::external::store::service::metamodel::mapping::ServiceRequestParametersBuildInfo.parameterBuildInfoList,
+        source=ServiceRequestParametersBuildInfo_$_17,
+        target=ServiceRequestParameterBuildInfo_$_18,
+        points=[(2037.73535,582.00000),(2041.38086,720.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_10(
+        property=meta::external::store::service::metamodel::ServiceGroup.elements,
+        source=cview_5,
+        target=ServiceStoreElement_$_1,
+        points=[(158.24883,339.50000),(158.24883,208.50000),(464.78491,205.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_11(
+        property=meta::external::store::service::metamodel::Service.response,
+        source=cview_6,
+        target=ComplexTypeReference_$_10,
+        points=[(608.02154,355.50000),(95.91309,667.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_12(
+        property=meta::external::store::service::metamodel::Service.parameters,
+        source=cview_6,
+        target=ServiceParameter_$_4,
+        points=[(608.02154,355.50000),(695.33301,531.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_13(
+        property=meta::external::store::service::metamodel::mapping::ServiceMapping.service,
+        source=ServiceMapping_$_14,
+        target=cview_6,
+        points=[(1795.53614,360.00000),(608.02154,355.50000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_14(
+        property=meta::external::store::service::metamodel::Service.security,
+        source=cview_6,
+        target=cview_3,
+        points=[(608.02154,355.50000),(1139.61309,441.50000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_15(
+        property=meta::external::store::service::metamodel::Service.requestBody,
+        source=cview_6,
+        target=TypeReference_$_5,
+        points=[(608.02154,355.50000),(412.57422,653.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_16(
+        property=meta::external::store::service::metamodel::SingleSecuritySchemeRequirement.securityScheme,
+        source=cview_8,
+        target=SecurityScheme_$_11,
+        points=[(971.61602,568.50000),(972.69043,681.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_17(
+        property=meta::external::store::service::metamodel::MultiSecuritySchemeRequirement.securitySchemes,
+        source=cview_9,
+        target=cview_8,
+        points=[(1331.60821,568.50000),(971.61602,568.50000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

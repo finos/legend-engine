@@ -1,0 +1,56 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::json::*;
+import meta::pure::changetoken::cast_generation::*;
+
+function <<access.private>> meta::pure::changetoken::cast_generation::inlineJsonValueWithUnescaping(type: String[1], isOptional: Boolean[1], isSingle: Boolean[1], jsonValue: JSONElement[1]): Code[1]
+{
+    let value = expandComplexString($jsonValue);
+    if($value->instanceOf(JSONNull) || $value->instanceOf(JSONString) && ($value->cast(@JSONString).value->length() == 0 || $value->cast(@JSONString).value->equalIgnoreCase('null')) && $isOptional,
+        | j_null(),
+        |
+    if($type->equalIgnoreCase('Boolean') && $isSingle,
+        | $value->match([b:JSONBoolean[1] | j_boolean($b.value), s:JSONString[1] | j_boolean($s.value)]),
+        |
+    if($type->equalIgnoreCase('Float') && $isSingle || $type->equalIgnoreCase('Double') && $isSingle,
+        | $value->match([f:JSONNumber[1] | $f.value->match([i:Integer[1] | j_int($i), f:Float[1] | j_double($f)]), s:JSONString[1] | j_double($s.value)]),
+        |
+    if($type->equalIgnoreCase('Integer') && $isSingle,
+        | $value->match([i:JSONNumber[1] | j_int($i.value->cast(@Integer)), s:JSONString[1] | j_int($s.value)]),
+        |
+    if($value->instanceOf(JSONString),
+        | j_string(stripMatchingQuotes($value->match([s:JSONString[1] | $s.value]))),
+        | inlineJsonValue($value);
+    )))));
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::expandComplexString(value: JSONElement[1]): JSONElement[1]
+{
+    if($value->instanceOf(JSONString) && (($value->cast(@JSONString).value->startsWith('{') && $value->cast(@JSONString).value->endsWith('}'))
+        || ($value->cast(@JSONString).value->startsWith('[') && $value->cast(@JSONString).value->endsWith(']'))),
+        | $value->cast(@JSONString).value->parseJSON(),
+        | $value
+    );
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::stripMatchingQuotes(s: String[1]): String[1]
+{
+    if($s->startsWith('"') && $s->endsWith('"'),
+        | $s->parseJSON()->cast(@JSONString).value,
+        | $s
+    );
+}

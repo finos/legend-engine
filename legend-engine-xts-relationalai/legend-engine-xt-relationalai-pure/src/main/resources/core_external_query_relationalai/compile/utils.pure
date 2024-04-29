@@ -1,0 +1,72 @@
+import meta::external::store::rel::compile::utils::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::utils::*;
+import meta::external::store::rel::utils::collection::*;
+
+Class meta::external::store::rel::compile::utils::IdentifierFactory {
+  produced: Integer[*];
+  prefix: String[0..1];
+}
+
+function meta::external::store::rel::compile::utils::next(factory: IdentifierFactory[1]): String[1] {
+  $factory.prefix
+    ->map(inner | $factory->next($inner))
+    ->else(| $factory->next('x'));
+}
+
+function meta::external::store::rel::compile::utils::next(factory: IdentifierFactory[1], prefix: String[1]): String[1] {
+  let new = max($factory.produced->else(| [0])) + 1;
+  $factory->mutateAdd('produced', $new);
+
+  $prefix + $new->toString();
+}
+
+function meta::external::store::rel::compile::utils::reset(factory: IdentifierFactory[1]): IdentifierFactory[1] {
+  ^$factory(produced=[]);
+}
+
+Class meta::external::store::rel::compile::utils::Columns {
+  names: String[*];
+  positions: BiMap<String, Integer>[1];
+
+  at(position: Integer[1]) {
+    $this.positions->getKey($position);
+  }: String[0..1];
+
+  position(name: String[1]) {
+    $this.positions->getValue($name);
+  }: Integer[0..1];
+
+  len() {
+    $this.names->size();
+  }: Integer[1];
+
+  has(name: String[1]) {
+    $this.position($name)->isEmpty();
+  }: Boolean[1];
+}
+
+function meta::external::store::rel::compile::utils::columns(): Columns[1] {
+  ^Columns(positions=BiMap(@String, @Integer))
+}
+
+function meta::external::store::rel::compile::utils::columns(names: String[*]): Columns[1] {
+  columns()->putAll($names);
+}
+
+function meta::external::store::rel::compile::utils::put(columns: Columns[1], column: String[1]): Columns[1] {
+  let cols = $columns.names->concatenate($column);
+  let positions = $columns.positions->put($column, $cols->size() - 1);
+
+  ^$columns(names=$cols, positions=$positions);
+}
+
+function meta::external::store::rel::compile::utils::putAll(columns: Columns[1], names: String[*]): Columns[1] {
+  $names->fold({elem, accum |
+    $accum->put($elem);
+  }, $columns);
+}
+
+function meta::external::store::rel::compile::utils::clear(columns: Columns[1]): Columns[1] {
+  ^$columns(names=[], positions=BiMap(@String, @Integer));
+}

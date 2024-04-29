@@ -1,0 +1,176 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::router::clustering::*;
+import meta::pure::router::metamodel::clustering::*;
+import meta::pure::mapping::*;
+import meta::core::runtime::*;
+import meta::pure::extension::*;
+import meta::pure::graphFetch::*;
+import meta::pure::executionPlan::*;
+
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::executionPlan::*;
+
+import meta::relational::mapping::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::mutation::executionPlan::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
+
+function <<access.private>> meta::relational::mutation::executionPlan::validateMappingIsSupportedForMutation(mapping: Mapping[1], mutatedType: Type[1]): RootRelationalInstanceSetImplementation[1]
+{
+  let classMapping = $mapping.classMappings->filter(m | $m.root && $m.class.name == $mutatedType.name);
+  assert($classMapping->size() == 1 && $classMapping->toOne()->instanceOf(RootRelationalInstanceSetImplementation), 'One root relational mapping required for mutated type!');
+  let rootMapping = $classMapping->toOne()->cast(@RootRelationalInstanceSetImplementation);
+  assert($rootMapping.propertyMappings->filter(pm | !$pm->validatePropertyMappingForMutation())->isEmpty(), 'Only relational property mappings against table columns allowed for mutation!');
+  $rootMapping;
+}
+
+function <<access.private>> meta::relational::mutation::executionPlan::validatePropertyMappingForMutation(propertyMapping: PropertyMapping[1]): Boolean[1]
+{
+  $propertyMapping->instanceOf(RelationalPropertyMapping) &&
+    $propertyMapping->cast(@RelationalPropertyMapping).relationalOperationElement->instanceOf(TableAliasColumn) &&
+      ($propertyMapping->cast(@RelationalPropertyMapping).transformer->isEmpty() || $propertyMapping->cast(@RelationalPropertyMapping).transformer->toOne()->instanceOf(BindingTransformer));
+}
+
+function <<access.private>> meta::relational::mutation::executionPlan::collectPropertyGraphFetchTrees(parent: GraphFetchTree[1]): PropertyGraphFetchTree[*]
+{
+  if($parent->instanceOf(PropertyGraphFetchTree),
+    | $parent.subTrees->map(tree | $tree->collectPropertyGraphFetchTrees())->concatenate($parent->cast(@PropertyGraphFetchTree)),
+    | $parent.subTrees->map(tree | $tree->collectPropertyGraphFetchTrees()));
+}
+
+function <<access.private>> meta::relational::mutation::executionPlan::validateGraphFetchTreeForMapping(rootMapping: RootRelationalInstanceSetImplementation[1], rootTree: RootGraphFetchTree<Any>[1]): String[*]
+{
+  let propertyNamesInTree = meta::relational::mutation::executionPlan::collectPropertyGraphFetchTrees($rootTree)->map(pt | $pt.property.name);
+  let propertyMappings = $rootMapping.propertyMappings->cast(@RelationalPropertyMapping);
+
+  let primaryKeyColumns = $rootMapping.primaryKey->map(pk | $pk->cast(@TableAliasColumn).column.name);
+  let primaryKeyProperties = $propertyMappings->filter(pm | $pm.relationalOperationElement->cast(@TableAliasColumn).column.name->in($primaryKeyColumns))->map(pm | $pm.property.name);
+  let primaryKeyPropertiesNotInTree = $primaryKeyProperties->filter(p | !$p->in($propertyNamesInTree));
+  assert($primaryKeyPropertiesNotInTree->isEmpty(), 'Graph fetch tree is incompatible with mapping! Primary key properties must be provided in tree: [' + $primaryKeyPropertiesNotInTree->joinStrings(', ') +']');
+  $propertyNamesInTree;
+}
+
+function meta::relational::mutation::executionPlan::planMutationExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionNode[1]
+{
+  let rootType = $sq.fe.genericType.rawType->toOne();
+
+  // validate mapping is allowed -- currently only simple relational mappings against table columns are supported
+  let rootMapping = validateMappingIsSupportedForMutation($mapping, $rootType);
+  // validate graph fetch tree -- cannot specify properties deeper than the mapping supports, must include primary key properties
+  let rootGraphFetchTree = $sq.fe.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@RootGraphFetchTree<Any>)->toOne();
+  let propertyNamesInTree = validateGraphFetchTreeForMapping($rootMapping, $rootGraphFetchTree);
+
+  let inScopePropertyMappings = $rootMapping.propertyMappings->cast(@RelationalPropertyMapping)->filter(pm | $pm.property.name->in($propertyNamesInTree));
+  let propertyMappingHasBindingFunction = {pm: RelationalPropertyMapping[1] | $pm.transformer->isNotEmpty() && $pm.transformer->toOne()->instanceOf(BindingTransformer)};
+
+  // Variable name for each record processed from stream
+  let generatedVariableName = 'generatedVariableSingleRecordFromStream';
+  let generatedVariableInput = ^VariableInput(multiplicity = PureOne, type = $rootType, name = $generatedVariableName);
+
+  // Uniquify the column names
+  let uniquifyColumnNames = {p: String[1] | 'generatedColumnName_' + $p->toUpper()->toOne()};
+
+  let columnValueGenerators = $inScopePropertyMappings
+    ->map(pm |
+      pair(
+        $pm,
+        ^PureExpressionPlatformExecutionNode(
+          resultType = if($propertyMappingHasBindingFunction->eval($pm),| ^ClassResultType(type = $pm.property.genericType.rawType->toOne()), | ^DataTypeResultType(type = $pm.property.genericType.rawType->toOne())),
+          requiredVariableInputs = $generatedVariableInput,
+          expression =
+            ^SimpleFunctionExpression(
+              multiplicity = $pm.property.multiplicity,
+              importGroup =  system::imports::coreImport,
+              func = $pm.property,
+              genericType = $pm.property.genericType,
+              parametersValues = [
+                ^VariableExpression(
+                  multiplicity = PureOne,
+                  name = $generatedVariableName,
+                  genericType = ^GenericType(rawType = $pm.property.owner->cast(@Class<Any>))
+                )
+              ]
+            )->evaluateAndDeactivate()
+        )
+      )
+    )
+    ->map(p |
+      let pm = $p.first;
+      pair(
+        $uniquifyColumnNames->eval($pm.relationalOperationElement->cast(@TableAliasColumn).column.name),
+        if($propertyMappingHasBindingFunction->eval($pm),
+          |
+            let bindingTransfomer = $pm.transformer->toOne()->cast(@BindingTransformer<Any>);
+            let propertyTree = $rootGraphFetchTree->collectPropertyGraphFetchTrees()->filter(pt | $pt.property == $pm.property)->toOne();
+            let tree = ^RootGraphFetchTree<Any>(class = $pm.property.genericType.rawType->toOne()->cast(@Class<Any>), subTrees = $propertyTree.subTrees);
+
+            ^ExternalFormatExternalizeExecutionNode(
+              resultType      = ^ResultType(type = String),
+              resultSizeRange = PureOne,
+              checked         = false,
+              tree            = $tree,
+              binding         = $bindingTransfomer.binding,
+              executionNodes  = $p.second);
+              ,
+          | $p.second
+        )
+      );
+    )
+    ->newMap();
+
+  let databaseColumnToFreeMarkerVariable =
+    $inScopePropertyMappings->map(pm |
+      pair(
+        $pm.relationalOperationElement->cast(@TableAliasColumn).column.name,
+        ^Literal(
+          value=
+            ^VarPlaceHolder(
+              name = $uniquifyColumnNames->eval($pm.relationalOperationElement->cast(@TableAliasColumn).column.name),
+              type = if($propertyMappingHasBindingFunction->eval($pm), | String, | $pm.property.genericType.rawType->toOne())
+            )
+        )
+      )
+    )->newMap();
+
+  let mainTable = $rootMapping.mainTableAlias.relationalElement->cast(@Table);
+  let dbConnection = $runtime.connectionStores.connection->at(0)->cast(@DatabaseConnection);
+
+  let upsertQuery =
+    ^UpsertSQLQuery(
+      data = $mainTable,
+      equalityStatements = $databaseColumnToFreeMarkerVariable
+    )->processOperation($dbConnection.type, $extensions);
+
+  let funcParams = $sq.fe->findVariableExpressionsInValueSpecification()->removeDuplicatesBy(v | $v.name);
+  let varInputs = $funcParams->filter(x| $sq.inScopeVars->get($x.name->toOne())->isNotEmpty())->map(v | ^VariableInput(name = $v.name->toOne(), type = $v.genericType->cast(@GenericType).rawType->toOne(), multiplicity = $v.multiplicity->toOne()));
+
+  // node for providing source values
+  let children = $sq.fe.parametersValues->at(0)->toOne()->cast(@ClusteredValueSpecification)->generateExecutionNodeFromCluster($sq.inScopeVars, $exeCtx, $extensions, $debug);
+
+  ^RelationalSaveNode(
+    resultType = ^ResultType(type=String),
+    requiredVariableInputs = $varInputs->toOne(),
+    generatedVariableName = $generatedVariableName,
+    connection = $dbConnection,
+    sqlQuery = $upsertQuery,
+    executionNodes = $children,
+    columnValueGenerators = $columnValueGenerators
+  );
+}

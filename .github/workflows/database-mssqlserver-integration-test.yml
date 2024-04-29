@@ -64,8 +64,8 @@ jobs:
         env:
           MAVEN_OPTS: -Xmx4g
         run: |
-          mvn clean install -DskipTests=true
+          mvn -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-sqlserver/legend-engine-xt-relationalStore-sqlserver-execution-tests -am clean install -DskipTests=true
       - name: Run Connection Protocol Integration Tests
         env:
           MAVEN_OPTS: -Xmx4g
-        run: mvn -pl legend-engine-xt-relationalStore-sqlserver-execution-tests  -Dtest="ExternalIntegration*SqlServer*" test
+        run: mvn -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-sqlserver/legend-engine-xt-relationalStore-sqlserver-execution-tests  -Dtest="ExternalIntegration*SqlServer*" test

@@ -1,0 +1,359 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::flatdata::executionPlan::test::*;
+import meta::external::format::flatdata::metamodel::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::executionPlan::*;
+import meta::external::format::shared::executionPlan::tests::*;
+import meta::external::format::shared::functions::*;
+import meta::external::format::shared::metamodel::*;
+import meta::external::format::shared::functions::*;
+import meta::pure::dataQuality::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::toString::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::*;
+import meta::external::store::model::*;
+import meta::pure::model::unit::*;
+import meta::core::runtime::*;
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testInternalizeExternalizeSimpleWithConstantString(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let query   = {| meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, 'First Name,Last Name\nJohn,Doe\nOlive,Yew')->externalize($binding, #{meta::external::format::flatdata::executionPlan::test::Person{firstName, lastName}}#)};
+
+  let result  = executeFlatdataBindingQuery($query, []);
+
+  assertEquals('First Name,Last Name\nJohn,Doe\nOlive,Yew', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testInternalizeExternalizeSimpleWithStringParameter(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let query   = {data:String[1] | meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, $data)->externalize($binding, #{meta::external::format::flatdata::executionPlan::test::Person{firstName, lastName}}#)};
+  let vars    = pair('data', 'First Name,Last Name\nJohn,Doe\nOlive,Yew');
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('First Name,Last Name\nJohn,Doe\nOlive,Yew', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testInternalizeExternalizeSimpleWithStringParameterUpdate(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let query   = {data:String[1] |
+                  let updatedData = $data + '\nPeter,Doe';
+                  meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, $updatedData)->externalize($binding, #{meta::external::format::flatdata::executionPlan::test::Person{firstName, lastName}}#);};
+  let vars    = pair('data', 'First Name,Last Name\nJohn,Doe\nOlive,Yew');
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('First Name,Last Name\nJohn,Doe\nOlive,Yew\nPeter,Doe', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testInternalizeExternalizeSimpleWithByteParameter(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let query   = {data:Byte[*] | meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, $data)->externalize($binding, #{meta::external::format::flatdata::executionPlan::test::Person{firstName, lastName}}#)};
+  let vars    = pair('data', convertStringToBytes('First Name,Last Name\nJohn,Doe\nOlive,Yew'));
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('First Name,Last Name\nJohn,Doe\nOlive,Yew', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testInternalizeWithGraphFetch(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let tree    = #{meta::external::format::flatdata::executionPlan::test::Person{firstName, lastName}}#;
+  let query   = {data:String[1]|meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, $data)->graphFetch($tree)->serialize($tree)};
+  let vars    = pair('data', 'First Name,Last Name\nJohn,Doe\nOlive,Yew');
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('{"builder":{"_type":"json"},"values":[{"firstName":"John","lastName":"Doe"},{"firstName":"Olive","lastName":"Yew"}]}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testInternalizeExternalizeWithGraphFetch(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let tree    = #{meta::external::format::flatdata::executionPlan::test::Person{firstName, lastName}}#;
+  let query   = {data:String[1]|meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, $data)->graphFetch($tree)->externalize($binding, $tree)};
+  let vars    = pair('data', 'First Name,Last Name\nJohn,Doe\nOlive,Yew');
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('First Name,Last Name\nJohn,Doe\nOlive,Yew', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testInternalizeWithGraphFetchChecked(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let tree    = #{meta::external::format::flatdata::executionPlan::test::Person{firstName, lastName}}#;
+  let query   = {data:String[1]|meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, $data)->graphFetchChecked($tree)->serialize($tree)};
+  let vars    = pair('data', 'First Name,Last Name\nJohn,Doe\nOlive,Yew');
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('{"builder":{"_type":"json"},"values":[{"defects":[],"source":{"number":1,"lineNumber":2,"record":"John,Doe","recordValues":[{"address":"First Name","rawValue":"John"},{"address":"Last Name","rawValue":"Doe"}]},"value":{"firstName":"John","lastName":"Doe"}},{"defects":[],"source":{"number":2,"lineNumber":3,"record":"Olive,Yew","recordValues":[{"address":"First Name","rawValue":"Olive"},{"address":"Last Name","rawValue":"Yew"}]},"value":{"firstName":"Olive","lastName":"Yew"}}]}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testInternalizeWithGraphFetchCheckedWithDefects(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let tree    = #{meta::external::format::flatdata::executionPlan::test::Person{firstName, lastName}}#;
+  let query   = {data:String[1]|meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, $data)->graphFetchChecked($tree)->serialize($tree)};
+  let vars    = pair('data', 'First Name,Last Name\nJ,Doe');
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[{"id":"0","externalId":null,"message":"Constraint :[0] violated in the Class Person","enforcementLevel":"Error","ruleType":"ClassConstraint","ruleDefinerPath":"meta::external::format::flatdata::executionPlan::test::Person","path":[]}],"source":{"number":1,"lineNumber":2,"record":"J,Doe","recordValues":[{"address":"First Name","rawValue":"J"},{"address":"Last Name","rawValue":"Doe"}]},"value":{"firstName":"J","lastName":"Doe"}}}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testInternalizeWithGraphFetchCheckedWithDefectsEnsuringTreeIsExpanded(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let tree    = #{meta::external::format::flatdata::executionPlan::test::Person{lastName}}#;  // firstName skipped on purpose to ensure tree is expanded
+  let query   = {data:String[1]|meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, $data)->graphFetchChecked($tree)->serialize($tree)};
+  let vars    = pair('data', 'First Name,Last Name\nJ,Doe');
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[{"id":"0","externalId":null,"message":"Constraint :[0] violated in the Class Person","enforcementLevel":"Error","ruleType":"ClassConstraint","ruleDefinerPath":"meta::external::format::flatdata::executionPlan::test::Person","path":[]}],"source":{"number":1,"lineNumber":2,"record":"J,Doe","recordValues":[{"address":"First Name","rawValue":"J"},{"address":"Last Name","rawValue":"Doe"}]},"value":{"lastName":"Doe"}}}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testInternalizeWithMissingData(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let tree    = #{meta::external::format::flatdata::executionPlan::test::Person{firstName, lastName}}#;
+  let query   = {data:String[1]|meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, $data)->graphFetchChecked($tree)->serialize($tree)};
+  let vars    = pair('data', 'First Name,Last Name\n,Doe\nOlive,Yew');
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('{"builder":{"_type":"json"},"values":[{"defects":[{"id":null,"externalId":null,"message":"Failed to read \'First Name\' not present in the source","enforcementLevel":"Critical","ruleType":"InvalidInput","ruleDefinerPath":"meta::external::format::flatdata::executionPlan::test::TestSchema","path":[]}],"source":{"number":1,"lineNumber":2,"record":",Doe","recordValues":[{"address":"First Name","rawValue":""},{"address":"Last Name","rawValue":"Doe"}]},"value":null},{"defects":[],"source":{"number":2,"lineNumber":3,"record":"Olive,Yew","recordValues":[{"address":"First Name","rawValue":"Olive"},{"address":"Last Name","rawValue":"Yew"}]},"value":{"firstName":"Olive","lastName":"Yew"}}]}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testInternalizeWithBadHeadings(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let tree    = #{meta::external::format::flatdata::executionPlan::test::Person{firstName, lastName}}#;
+  let query   = {data:String[1]|meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, $data)->graphFetchChecked($tree)->serialize($tree)};
+  let vars    = pair('data', 'First,Last\nJ,Doe');
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[{"id":null,"externalId":null,"message":"Heading First Name missing for mandatory column","enforcementLevel":"Critical","ruleType":"InvalidInput","ruleDefinerPath":"meta::external::format::flatdata::executionPlan::test::TestSchema","path":[]},{"id":null,"externalId":null,"message":"Heading Last Name missing for mandatory column","enforcementLevel":"Critical","ruleType":"InvalidInput","ruleDefinerPath":"meta::external::format::flatdata::executionPlan::test::TestSchema","path":[]},{"id":null,"externalId":null,"message":"Header row is invalid. Skipping all data in this section.","enforcementLevel":"Critical","ruleType":"InvalidInput","ruleDefinerPath":"meta::external::format::flatdata::executionPlan::test::TestSchema","path":[]}],"source":{"number":0,"lineNumber":1,"record":"First,Last","recordValues":[{"address":"First","rawValue":"First"},{"address":"Last","rawValue":"Last"}]},"value":null}}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testInternalizeExternalizeSimpleWithGraphFetchUnexpanded(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let tree    = #{meta::external::format::flatdata::executionPlan::test::Person{lastName}}#;
+  let query   = {data:String[1]|meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, $data)->graphFetchUnexpanded($tree)->serialize($tree)};
+
+  // Specifically having an entry which will cause failures if tree is expanded
+  let vars    = pair('data', 'First Name,Last Name\nJ,Doe\nOlive,Yew');
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('{"builder":{"_type":"json"},"values":[{"lastName":"Doe"},{"lastName":"Yew"}]}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testInternalizeExternalizeSimpleWithGraphFetchCheckedUnexpanded(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let tree    = #{meta::external::format::flatdata::executionPlan::test::Person{lastName}}#;
+  let query   = {data:String[1]|meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, $data)->graphFetchCheckedUnexpanded($tree)->serialize($tree)};
+
+  // Specifically having an entry which will cause failures if tree is expanded
+  let vars    = pair('data', 'First Name,Last Name\nJ,Doe\nOlive,Yew');
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('{"builder":{"_type":"json"},"values":[{"defects":[],"source":{"number":1,"lineNumber":2,"record":"J,Doe","recordValues":[{"address":"First Name","rawValue":"J"},{"address":"Last Name","rawValue":"Doe"}]},"value":{"lastName":"Doe"}},{"defects":[],"source":{"number":2,"lineNumber":3,"record":"Olive,Yew","recordValues":[{"address":"First Name","rawValue":"Olive"},{"address":"Last Name","rawValue":"Yew"}]},"value":{"lastName":"Yew"}}]}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testInternalizeExternalizeSimpleWithGraphFetchCheckedUnexpandedWithDefects(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let tree    = #{meta::external::format::flatdata::executionPlan::test::Person{firstName, lastName}}#;
+  let query   = {data:String[1]|meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, $data)->graphFetchCheckedUnexpanded($tree)->serialize($tree)};
+
+  // Specifically having an entry which will cause failures if tree is expanded
+  let vars    = pair('data', 'First Name,Last Name\nJ,Doe\nOlive,Yew');
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('{"builder":{"_type":"json"},"values":[{"defects":[{"id":"0","externalId":null,"message":"Constraint :[0] violated in the Class Person","enforcementLevel":"Error","ruleType":"ClassConstraint","ruleDefinerPath":"meta::external::format::flatdata::executionPlan::test::Person","path":[]}],"source":{"number":1,"lineNumber":2,"record":"J,Doe","recordValues":[{"address":"First Name","rawValue":"J"},{"address":"Last Name","rawValue":"Doe"}]},"value":{"firstName":"J","lastName":"Doe"}},{"defects":[],"source":{"number":2,"lineNumber":3,"record":"Olive,Yew","recordValues":[{"address":"First Name","rawValue":"Olive"},{"address":"Last Name","rawValue":"Yew"}]},"value":{"firstName":"Olive","lastName":"Yew"}}]}', $result);
+}
+
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testInternalizeWithChecked(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let tree    = #{meta::external::format::flatdata::executionPlan::test::Person{firstName, lastName}}#;
+  let query   = {data:String[1]|meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, $data)->checked()->serialize($tree)};
+  let vars    = pair('data', 'First Name,Last Name\nJohn,Doe\nOlive,Yew');
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('{"builder":{"_type":"json"},"values":[{"defects":[],"source":{"number":1,"lineNumber":2,"record":"John,Doe","recordValues":[{"address":"First Name","rawValue":"John"},{"address":"Last Name","rawValue":"Doe"}]},"value":{"firstName":"John","lastName":"Doe"}},{"defects":[],"source":{"number":2,"lineNumber":3,"record":"Olive,Yew","recordValues":[{"address":"First Name","rawValue":"Olive"},{"address":"Last Name","rawValue":"Yew"}]},"value":{"firstName":"Olive","lastName":"Yew"}}]}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testInternalizeWithCheckedWithDefects(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let tree    = #{meta::external::format::flatdata::executionPlan::test::Person{firstName, lastName}}#;
+  let query   = {data:String[1]|meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, $data)->checked()->serialize($tree)};
+  let vars    = pair('data', 'First Name,Last Name\nJ,Doe');
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[{"id":"0","externalId":null,"message":"Constraint :[0] violated in the Class Person","enforcementLevel":"Error","ruleType":"ClassConstraint","ruleDefinerPath":"meta::external::format::flatdata::executionPlan::test::Person","path":[]}],"source":{"number":1,"lineNumber":2,"record":"J,Doe","recordValues":[{"address":"First Name","rawValue":"J"},{"address":"Last Name","rawValue":"Doe"}]},"value":{"firstName":"J","lastName":"Doe"}}}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testExternalizeWithSmallerTree(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let tree    = #{meta::external::format::flatdata::executionPlan::test::Person{firstName, lastName}}#;
+  let query   = {data:String[1]|meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, $data)->graphFetch($tree)->externalize($binding, #{meta::external::format::flatdata::executionPlan::test::Person{firstName}}#)};
+  let vars    = pair('data', 'First Name,Last Name\nJohn,Doe\nOlive,Yew');
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('First Name\nJohn\nOlive', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testBindingAndM2MChainedSimple(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let tree    = #{meta::external::format::flatdata::executionPlan::test::TargetPerson{fullName}}#;
+  let query   = {data:String[1]| meta::external::format::flatdata::executionPlan::test::TargetPerson.all()->graphFetch($tree)->from(meta::external::format::flatdata::executionPlan::test::M2MMapping, getRuntimeWithModelQueryConnection(meta::external::format::flatdata::executionPlan::test::Person, $binding, $data))->externalize(getTargetPersonTestBinding(), $tree);};
+  let vars    = pair('data', 'First Name,Last Name\nJohn,Doe');
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('Full Name\nJohn Doe', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testBindingAndM2MChainedWithChecked(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let tree    = #{meta::external::format::flatdata::executionPlan::test::TargetPerson{fullName}}#;
+  let query   = {data:String[1]| meta::external::format::flatdata::executionPlan::test::TargetPerson.all()->graphFetchChecked($tree)->from(meta::external::format::flatdata::executionPlan::test::M2MMapping, getRuntimeWithModelQueryConnection(meta::external::format::flatdata::executionPlan::test::Person, $binding, $data))->serialize($tree);};
+  let vars    = pair('data', 'First Name,Last Name\nJohn,Doe');
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[],"source":{"defects":[],"source":{"number":1,"lineNumber":2,"record":"John,Doe","recordValues":[{"address":"First Name","rawValue":"John"},{"address":"Last Name","rawValue":"Doe"}]},"value":{"lastName":"Doe","firstName":"John"}},"value":{"fullName":"John Doe"}}}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testBindingAndM2MChainedSimpleWithInputDataModification(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let tree    = #{meta::external::format::flatdata::executionPlan::test::TargetPerson{fullName}}#;
+  let query   = {data:String[1]|
+                  let updatedData = $data + '\nOlive,Yew';
+                  meta::external::format::flatdata::executionPlan::test::TargetPerson.all()->graphFetch($tree)->from(meta::external::format::flatdata::executionPlan::test::M2MMapping, getRuntimeWithModelQueryConnection(meta::external::format::flatdata::executionPlan::test::Person, $binding, $updatedData))->externalize(getTargetPersonTestBinding(), $tree);};
+  let vars    = pair('data', 'First Name,Last Name\nJohn,Doe');
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('Full Name\nJohn Doe\nOlive Yew', $result);
+}
+
+// =========================================================================================================
+// Models
+// =========================================================================================================
+
+###Pure
+import meta::legend::*;
+import meta::external::format::shared::binding::*;
+
+Class meta::external::format::flatdata::executionPlan::test::Person
+[
+   $this.firstName->length() > 1
+]
+{
+   firstName : String[1];
+   lastName  : String[1];
+}
+
+Class meta::external::format::flatdata::executionPlan::test::TargetPerson
+{
+  fullName : String[1];
+}
+
+function meta::external::format::flatdata::executionPlan::test::getTestBinding():Binding[1]
+{
+  let schema =
+    '###ExternalFormat\n' +
+    'Binding meta::external::format::flatdata::executionPlan::test::TestBinding\n' +
+    '{\n' +
+    '  schemaSet: meta::external::format::flatdata::executionPlan::test::TestSchema;\n' +
+    '  contentType: \'application/x.flatdata\';\n' +
+    '  modelIncludes: [\n' +
+    '    meta::external::format::flatdata::executionPlan::test::Person\n' +
+    '  ];\n' +
+    '}\n\n' +
+    'SchemaSet meta::external::format::flatdata::executionPlan::test::TestSchema\n' +
+    '{\n' +
+    '  format: FlatData;\n' +
+    '  schemas: [\n' +
+    '    {\n' +
+    '      content: \'section Person: DelimitedWithHeadings {  delimiter: \\\',\\\';  scope.untilEof;   nullString: \\\'\\\';    Record  { \\\'First Name\\\' : STRING; \\\'Last Name\\\' : STRING; }}\';\n' +
+    '    }\n' +
+    '  ];\n' +
+    '}\n';
+
+  compileLegendGrammar($schema)->filter(ele | $ele->instanceOf(Binding))->cast(@Binding)->toOne();
+}
+
+function meta::external::format::flatdata::executionPlan::test::getTargetPersonTestBinding():Binding[1]
+{
+  let schema =
+    '###ExternalFormat\n' +
+    'Binding meta::external::format::flatdata::executionPlan::test::TargetPersonTestBinding\n' +
+    '{\n' +
+    '  schemaSet: meta::external::format::flatdata::executionPlan::test::TargetPersonTestSchema;\n' +
+    '  contentType: \'application/x.flatdata\';\n' +
+    '  modelIncludes: [\n' +
+    '    meta::external::format::flatdata::executionPlan::test::TargetPerson\n' +
+    '  ];\n' +
+    '}\n\n' +
+    'SchemaSet meta::external::format::flatdata::executionPlan::test::TargetPersonTestSchema\n' +
+    '{\n' +
+    '  format: FlatData;\n' +
+    '  schemas: [\n' +
+    '    {\n' +
+    '      content: \'section TargetPerson: DelimitedWithHeadings {  delimiter: \\\',\\\';  scope.untilEof;   Record  { \\\'Full Name\\\' : STRING; }}\';\n' +
+    '    }\n' +
+    '  ];\n' +
+    '}\n';
+
+  compileLegendGrammar($schema)->filter(ele | $ele->instanceOf(Binding))->cast(@Binding)->toOne();
+}
+
+###Mapping
+import meta::external::format::flatdata::executionPlan::test::*;
+
+Mapping meta::external::format::flatdata::executionPlan::test::M2MMapping
+(
+  TargetPerson: Pure
+  {
+    ~src Person
+    fullName : $src.firstName + ' ' + $src.lastName;
+  }
+)

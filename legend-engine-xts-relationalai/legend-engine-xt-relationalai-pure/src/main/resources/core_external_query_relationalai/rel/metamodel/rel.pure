@@ -1,0 +1,801 @@
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::metamodel::render::constant::*;
+import meta::external::store::rel::metamodel::render::expr::*;
+import meta::external::store::rel::metamodel::render::program::*;
+import meta::external::store::rel::utils::*;
+
+
+Class <<typemodifiers.abstract>> meta::external::store::rel::metamodel::Annotated {
+  annotation: Any[*];
+}
+
+/**
+  * Abstract type representing expressions.
+  */
+Class <<typemodifiers.abstract>> meta::external::store::rel::metamodel::RelExpr extends Annotated {
+  variables() {
+    []
+  }: RelVariable[*];
+}
+
+/**
+  * Type denoting a grouped expression which is rendered within
+  * parentheses.
+  */
+Class meta::external::store::rel::metamodel::RelExprGroup extends RelExpr {
+  parent: RelExpr[1];
+}
+
+/**
+  * Expression type directly represented via code.
+  */
+Class meta::external::store::rel::metamodel::RelFragment extends RelExpr {
+  code: String[1];
+}
+
+/**
+  * Type representing `_`.
+  */
+Class meta::external::store::rel::metamodel::RelDontCare extends RelExpr { }
+
+/**
+  * Abstract type representing bindings.
+  */
+Class <<typemodifiers.abstract>> meta::external::store::rel::metamodel::RelBinding extends Annotated { }
+
+/**
+  * Abstract type denoting constant values.
+  */
+Class <<typemodifiers.abstract>> meta::external::store::rel::metamodel::RelConstant extends RelExpr { }
+
+/**
+  * Type representing variables. A variables is both an expression
+  * and a binding.
+  */
+Class meta::external::store::rel::metamodel::RelVariable extends RelExpr, RelBinding {
+  identifier: String[1];
+
+  variables() {
+    [$this]
+  }: RelVariable[*];
+}
+
+Class meta::external::store::rel::metamodel::RelVariables extends RelBinding, RelExpr {
+  inner: RelVariable[1..*];
+}
+
+Class meta::external::store::rel::metamodel::RelInteger extends RelConstant {
+  value: Integer[1];
+}
+
+Class meta::external::store::rel::metamodel::RelFloat extends RelConstant {
+  value: Float[1];
+}
+
+Class meta::external::store::rel::metamodel::RelString extends RelConstant {
+  value: String[1];
+}
+
+Class meta::external::store::rel::metamodel::RelDate extends RelConstant {
+  value: StrictDate[1];
+}
+
+Class meta::external::store::rel::metamodel::RelDateTime extends RelConstant {
+  value: DateTime[1];
+}
+
+/**
+  * Type representing tuples.
+  */
+Class meta::external::store::rel::metamodel::RelTuple extends RelExpr {
+  arguments: RelExpr[*];
+}
+
+/**
+  * Type representing a relation's constructor, i.e., expressions that
+  * denote relations, for instance `{(1, 2); (3, 4)}`.
+  */
+Class meta::external::store::rel::metamodel::RelRelationCons extends RelExpr {
+  arguments: RelTuple[*];
+}
+
+/**
+  * Binding involving a `where` clause.
+  */
+Class meta::external::store::rel::metamodel::RelWhereBinding extends RelBinding {
+  parents: RelBinding[1..*];
+  where: RelExpr[1];
+}
+
+/**
+  * Binding involving an `in` clause.
+  */
+Class meta::external::store::rel::metamodel::RelInBinding extends RelBinding {
+  variable: RelVariable[1];
+  in: RelExpr[1];
+}
+
+/**
+  * Denotes a product of expressions.
+  */
+Class meta::external::store::rel::metamodel::RelProduct extends RelExpr {
+  exprs: RelExpr[1..*];
+
+  variables() {
+    $this.exprs->fold({e, accum |
+      $accum->concatenate($e.variables())
+    }, [])
+  }: RelVariable[*];
+}
+
+/**
+  * Denotes an intersection of two expressions.
+  */
+Class meta::external::store::rel::metamodel::RelIntersection extends RelExpr {
+  left: RelExpr[1];
+  right: RelExpr[1];
+
+  variables() {
+    $this.left.variables()->concatenate($this.right.variables())
+  }: RelVariable[*];
+}
+
+/**
+  * Denotes a union of expressions.
+  */
+Class meta::external::store::rel::metamodel::RelUnion extends RelExpr {
+  exprs: RelExpr[1..*];
+
+  variables() {
+    $this.exprs->fold({e, accum |
+      $accum->concatenate($e.variables())
+    }, [])
+  }: RelVariable[*];
+}
+
+/**
+  * Abstract type for denoting expressions that may occur
+  * on the left-hand side (the "head") of definitions.
+  */
+Class <<typemodifiers.abstract>> meta::external::store::rel::metamodel::RelHeadExpr extends RelExpr { }
+
+/**
+  * Conjunction of two formulas.
+  */
+Class meta::external::store::rel::metamodel::RelAnd extends RelExpr {
+  conjuncts: RelExpr[*];
+}
+
+/**
+  * Disjunction of two formulas.
+  */
+Class meta::external::store::rel::metamodel::RelOr extends RelExpr {
+  disjuncts: RelExpr[*];
+}
+
+/**
+  * Negation of an expression (!).
+  */
+Class meta::external::store::rel::metamodel::RelNot extends RelExpr {
+  inner: RelExpr[1];
+}
+
+/**
+  * Tests whether an expression is the emtpy relation.
+  */
+Class meta::external::store::rel::metamodel::RelEmpty extends RelExpr {
+  inner: RelExpr[1];
+}
+
+/**
+  * Formula stating that one formula implies the other.
+  */
+Class meta::external::store::rel::metamodel::RelImplies extends RelExpr {
+  antecedence: RelExpr[1];
+  consequence: RelExpr[1];
+}
+
+/**
+  * Existential quantification over an expression.
+  */
+Class meta::external::store::rel::metamodel::RelExists extends RelExpr {
+  bindings: RelBinding[1..*];
+  inner: RelExpr[1];
+}
+
+/**
+  * Universal quantification over an expression.
+  */
+Class meta::external::store::rel::metamodel::RelForAll extends RelExpr {
+  bindings: RelBinding[1..*];
+  inner: RelExpr[1];
+}
+
+/**
+  * Type denoting an equality expression.
+  */
+Class meta::external::store::rel::metamodel::RelEquals extends RelExpr {
+  left: RelExpr[1];
+  right: RelExpr[1];
+}
+
+/**
+  * Denotes an if-then-else expression.
+  */
+Class meta::external::store::rel::metamodel::RelIfThenElse extends RelExpr {
+  // The condition has to be boolean.
+  condition: RelExpr[1];
+  then: RelExpr[1];
+  else: RelExpr[1];
+}
+
+/**
+  * Type denoting relational applications that have relation names as heads.
+  */
+Class meta::external::store::rel::metamodel::RelNamedApplication extends RelHeadExpr {
+  head: RelHeadExpr[1];
+  arguments: RelExpr[*];
+}
+
+/**
+  * Denotes the name of a relation.
+  */
+Class meta::external::store::rel::metamodel::RelRelationName extends RelHeadExpr {
+  identifier: String[1];
+}
+
+
+/**
+  * A relational atom is a relational application that results in a formula (0-ary relation).
+  */
+Class meta::external::store::rel::metamodel::RelNamedAtom extends RelNamedApplication { }
+
+/**
+  * Type denoting arbitrary relational applications.
+  */
+Class meta::external::store::rel::metamodel::RelApplication extends RelExpr {
+  head: RelExpr[1];
+  arguments: RelExpr[*];
+}
+
+Class meta::external::store::rel::metamodel::RelAtom extends RelApplication { }
+
+/**
+  * Denotes relational abstraction.
+  */
+Class meta::external::store::rel::metamodel::RelAbstraction extends RelExpr {
+  bindings: RelBinding[1..*];
+  body: RelExpr[1];
+}
+
+/**
+  * Denotes composition (navigation).
+  */
+Class meta::external::store::rel::metamodel::RelComposition extends RelExpr {
+  from: RelExpr[1];
+  to: RelExpr[1];
+}
+
+/**
+  * Denotes a `from` expression.
+  */
+Class meta::external::store::rel::metamodel::RelFrom extends RelExpr {
+  bindings: RelBinding[*];
+  expr: RelExpr[1];
+}
+
+/**
+  * Denotes a `for` expression.
+  */
+Class meta::external::store::rel::metamodel::RelFor extends RelExpr {
+  bindings: RelBinding[*];
+  expr: RelExpr[1];
+}
+
+/**
+  * Abstract type representing elements or a program (rules and comments).
+  */
+Class <<typemodifiers.abstract>> meta::external::store::rel::metamodel::RelProgramElement extends Annotated { }
+
+Class meta::external::store::rel::metamodel::RelComment extends RelProgramElement { }
+
+Class meta::external::store::rel::metamodel::RelLineComment extends RelComment {
+  text: String[1];
+}
+
+/**
+  * Type representing a rule.
+  */
+Class meta::external::store::rel::metamodel::RelRule extends RelProgramElement {
+  head: RelHeadExpr[1];
+  body: RelExpr[1..*];
+  inline: Boolean[1];
+}
+
+/**
+  * Rule type representing entity definitions.
+  */
+Class meta::external::store::rel::metamodel::RelEntityDef extends RelRule {
+  name: RelRelationName[1];
+}
+
+/**
+  * Type representing an integrity constraint.
+  */
+Class meta::external::store::rel::metamodel::RelIC extends RelRule { }
+
+
+Class meta::external::store::rel::metamodel::RelModule {
+  identifier: String[0..1];
+  rules: RelRule[*];
+}
+
+Class meta::external::store::rel::metamodel::RelProgram {
+  identifier: String[0..1];
+  elements: RelProgramElement[*];
+
+  output() {
+    $this.elements
+      ->filter(e |
+        $e->match([
+          r: RelRule[1] | $r.head->identifier() == 'output',
+          _p: RelProgramElement[1] | false
+        ])
+      )
+      ->map(e | $e->cast(@RelRule))
+  }: RelRule[*];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::rel::metamodel::ConstType { }
+
+Class meta::external::store::rel::metamodel::RelationType {
+  positions: ConstType[*];
+  names: Map<Integer,String>[1];
+}
+
+Class meta::external::store::rel::metamodel::RelationTypeUnion extends RelationType {
+  union: RelationType[1..*];
+}
+
+Class meta::external::store::rel::metamodel::ConstTypeUnion extends ConstType {
+  union: ConstType[1..*];
+}
+
+Class meta::external::store::rel::metamodel::StringType extends ConstType { }
+
+Class meta::external::store::rel::metamodel::HashValueType extends ConstType { }
+
+Class meta::external::store::rel::metamodel::EntityType extends HashValueType {
+  class: Class<Any>[1];
+}
+
+Class meta::external::store::rel::metamodel::IntegerType extends ConstType { }
+
+Class meta::external::store::rel::metamodel::FloatType extends ConstType { }
+
+Class meta::external::store::rel::metamodel::LabelsType extends ConstType { }
+
+Class meta::external::store::rel::metamodel::Label extends RelConstant, ConstType {
+  identifier: String[1];
+}
+
+////////////////////////
+/// Constructor methods
+////////////////////////
+
+function meta::external::store::rel::metamodel::const(value: Integer[1]): RelInteger[1] {
+  ^RelInteger(value=$value)
+}
+
+function meta::external::store::rel::metamodel::const(value: Float[1]): RelFloat[1] {
+  ^RelFloat(value=$value)
+}
+
+function meta::external::store::rel::metamodel::const(value: String[1]): RelString[1] {
+  ^RelString(value=$value)
+}
+
+function meta::external::store::rel::metamodel::const(value: StrictDate[1]): RelDate[1] {
+  ^RelDate(value=$value)
+}
+
+function meta::external::store::rel::metamodel::const(value: DateTime[1]): RelDateTime[1] {
+  ^RelDateTime(value=$value)
+}
+
+function meta::external::store::rel::metamodel::const(value: Any[1]): RelConstant[1] {
+  $value->match([
+    v: String[1]     | $v->const(),
+    v: Integer[1]    | $v->const(),
+    v: Float[1]      | $v->const(),
+    v: StrictDate[1] | $v->const(),
+    v: DateTime[1]   | $v->const()
+  ])
+}
+
+function meta::external::store::rel::metamodel::label(identifier: String[1]): Label[1] {
+  ^Label(identifier=$identifier->escapeString('"'))
+}
+
+function meta::external::store::rel::metamodel::dontCare(): RelDontCare[1] {
+  ^RelDontCare()
+}
+
+function meta::external::store::rel::metamodel::stringType(): StringType[1] {
+  ^StringType()
+}
+
+function meta::external::store::rel::metamodel::hashValueType(): HashValueType[1] {
+  ^HashValueType()
+}
+
+function meta::external::store::rel::metamodel::entityType(class: Class<Any>[1]): EntityType[1] {
+  ^EntityType(class=$class)
+}
+
+function meta::external::store::rel::metamodel::integerType(): IntegerType[1] {
+  ^IntegerType()
+}
+
+function meta::external::store::rel::metamodel::labelsType(): LabelsType[1] {
+  ^LabelsType()
+}
+
+function meta::external::store::rel::metamodel::floatType(): FloatType[1] {
+  ^FloatType()
+}
+
+function meta::external::store::rel::metamodel::typeUnion(types: ConstType[1..*]): ConstTypeUnion[1] {
+  ^ConstTypeUnion(union=$types)
+}
+
+function meta::external::store::rel::metamodel::typeUnion(types: RelationType[1..*]): RelationTypeUnion[1] {
+  ^RelationTypeUnion(union=$types, names=^Map<Integer,String>())
+}
+
+function meta::external::store::rel::metamodel::relationType(positions: ConstType[1..*]): RelationType[1] {
+  ^RelationType(positions=$positions, names=^Map<Integer,String>())
+}
+
+function meta::external::store::rel::metamodel::relationType(positions: ConstType[1..*], names: Map<Integer,String>[1]): RelationType[1] {
+  ^RelationType(positions=$positions, names=$names)
+}
+
+function meta::external::store::rel::metamodel::tuple(arguments: RelExpr[*]): RelTuple[1] {
+  ^RelTuple(arguments=$arguments)
+}
+
+function meta::external::store::rel::metamodel::relation(tuples: RelTuple[*]): RelRelationCons[1] {
+  ^RelRelationCons(arguments=$tuples)
+}
+
+function meta::external::store::rel::metamodel::reltrue(): RelRelationCons[1] {
+  relation(tuple([]->cast(@RelExpr)))
+}
+
+function meta::external::store::rel::metamodel::relfalse(): RelRelationCons[1] {
+  relation([])
+}
+
+function meta::external::store::rel::metamodel::var(identifier: String[1]): RelVariable[1] {
+  ^RelVariable(identifier=$identifier)
+}
+
+function meta::external::store::rel::metamodel::vars(inner: RelVariable[1..*]): RelVariables[1] {
+  ^RelVariables(inner=$inner)
+}
+
+function meta::external::store::rel::metamodel::vars(inner: String[1..*]): RelVariables[1] {
+  vars($inner->map(v | var($v))->toOneMany())
+}
+
+function meta::external::store::rel::metamodel::atom(identifier: String[1], args: RelExpr[*]): RelNamedAtom[1] {
+  ^RelNamedAtom(head=^RelRelationName(identifier=$identifier), arguments=$args)
+}
+
+function meta::external::store::rel::metamodel::atom(identifier: String[1], args: String[*]): RelNamedAtom[1] {
+  atom($identifier, $args->map(v | var($v)))
+}
+
+function meta::external::store::rel::metamodel::atom(identifier: String[1]): RelNamedAtom[1] {
+  atom($identifier, []->cast(@RelExpr))
+}
+
+function meta::external::store::rel::metamodel::atom(expr: RelExpr[1], args: RelExpr[*]): RelAtom[1] {
+  ^RelAtom(head=$expr, arguments=$args)
+}
+
+function meta::external::store::rel::metamodel::headAtom(expr: RelHeadExpr[1], args: RelExpr[*]): RelNamedAtom[1] {
+  ^RelNamedAtom(head=$expr, arguments=$args)
+}
+
+function meta::external::store::rel::metamodel::rel(identifier: String[1]): RelRelationName[1] {
+  ^RelRelationName(identifier=$identifier)
+}
+
+function meta::external::store::rel::metamodel::appl(head: RelHeadExpr[1], args: RelExpr[*]): RelNamedApplication[1] {
+  ^RelNamedApplication(head=$head, arguments=$args)
+}
+
+function meta::external::store::rel::metamodel::appl(identifier: String[1], args: RelExpr[*]): RelNamedApplication[1] {
+  appl(rel($identifier), $args)
+}
+
+function meta::external::store::rel::metamodel::appl(expr: RelExpr[1], args: RelExpr[*]): RelApplication[1] {
+  ^RelApplication(head=$expr, arguments=$args)
+}
+
+function meta::external::store::rel::metamodel::in(variable: RelVariable[1], expr: RelExpr[1]): RelInBinding[1] {
+  ^RelInBinding(variable=$variable, in=$expr)
+}
+
+function meta::external::store::rel::metamodel::where(parents: RelBinding[1..*], where: RelExpr[1]): RelWhereBinding[1] {
+  ^RelWhereBinding(parents=$parents, where=$where)
+}
+
+function meta::external::store::rel::metamodel::abstract(body: RelExpr[1], bindings: RelBinding[1..*]): RelAbstraction[1] {
+  ^RelAbstraction(body=$body, bindings=$bindings)
+}
+
+function meta::external::store::rel::metamodel::abstract(body: RelExpr[1], variables: String[1..*]): RelAbstraction[1] {
+  abstract($body, $variables->map(v | var($v)))
+}
+
+function meta::external::store::rel::metamodel::and(left: RelExpr[1], right: RelExpr[1]): RelAnd[1] {
+  ^RelAnd(conjuncts=[$left, $right])
+}
+
+function meta::external::store::rel::metamodel::and(exprs: RelExpr[*]): RelExpr[1] {
+  if ($exprs->size() == 0, | reltrue(), {|
+    $exprs->slice(1, $exprs->size())
+      ->fold({e, accum |
+        $accum->and($e)
+      }, $exprs->at(0))
+  })
+}
+
+function meta::external::store::rel::metamodel::or(left: RelExpr[1], right: RelExpr[1]): RelOr[1] {
+  ^RelOr(disjuncts=[$left, $right])
+}
+
+function meta::external::store::rel::metamodel::not(inner: RelExpr[1]): RelNot[1] {
+  ^RelNot(inner=$inner)
+}
+
+function meta::external::store::rel::metamodel::empty(inner: RelExpr[1]): RelEmpty[1] {
+  ^RelEmpty(inner=$inner)
+}
+
+function meta::external::store::rel::metamodel::implies(antecedence: RelExpr[1], consequence: RelExpr[1]): RelImplies[1] {
+  ^RelImplies(antecedence=$antecedence, consequence=$consequence)
+}
+
+function meta::external::store::rel::metamodel::comma(left: RelExpr[1..*], right: RelExpr[*]): RelExpr[1..*] {
+  $left->concatenate($right)->toOneMany()
+}
+
+function meta::external::store::rel::metamodel::exists(bindings: RelBinding[1..*], expr: RelExpr[1]): RelExists[1] {
+  ^RelExists(bindings=$bindings,inner=$expr)
+}
+
+function meta::external::store::rel::metamodel::forAll(bindings: RelBinding[1..*], expr: RelExpr[1]): RelForAll[1] {
+  ^RelForAll(bindings=$bindings, inner=$expr)
+}
+
+function meta::external::store::rel::metamodel::equals(left: RelExpr[1], right: RelExpr[1]): RelEquals[1] {
+  ^RelEquals(left=$left, right=$right)
+}
+
+function meta::external::store::rel::metamodel::compose(from: RelExpr[1], to: RelExpr[1]): RelComposition[1] {
+  ^RelComposition(from=$from, to=$to)
+}
+
+function meta::external::store::rel::metamodel::from(expr: RelExpr[1], bindings: RelBinding[1..*]): RelFrom[1] {
+  ^RelFrom(bindings=$bindings, expr=$expr)
+}
+
+function meta::external::store::rel::metamodel::from(expr: RelExpr[1], variables: String[1..*]): RelFrom[1] {
+  from($expr, $variables->map(v | var($v)))
+}
+
+function meta::external::store::rel::metamodel::for(expr: RelExpr[1], bindings: RelBinding[1..*]): RelFor[1] {
+  ^RelFor(bindings=$bindings, expr=$expr)
+}
+
+function meta::external::store::rel::metamodel::for(expr: RelExpr[1], variables: String[1..*]): RelFor[1] {
+  for($expr, $variables->map(v | var($v)))
+}
+
+function meta::external::store::rel::metamodel::ifThenElse(condition: RelExpr[1], then: RelExpr[1], else: RelExpr[1]): RelIfThenElse[1] {
+  ^RelIfThenElse(condition=$condition, then=$then, else=$else)
+}
+
+function meta::external::store::rel::metamodel::product(exprs: RelExpr[1..*]): RelProduct[1] {
+  ^RelProduct(exprs=$exprs)
+}
+
+function meta::external::store::rel::metamodel::intersection(left: RelExpr[1], right: RelExpr[1]): RelIntersection[1] {
+  ^RelIntersection(left=$left,right=$right)
+}
+
+function meta::external::store::rel::metamodel::union(exprs: RelExpr[1..*]): RelUnion[1] {
+  ^RelUnion(exprs=$exprs)
+}
+
+function meta::external::store::rel::metamodel::parenthesise(parent: RelExpr[1]): RelExprGroup[1] {
+  ^RelExprGroup(parent=$parent)
+}
+
+function meta::external::store::rel::metamodel::fragment(code: String[1]): RelFragment[1] {
+  ^RelFragment(code=$code)
+}
+
+function meta::external::store::rel::metamodel::def(head: RelHeadExpr[1], body: RelExpr[1..*], inline: Boolean[1]): RelRule[1] {
+  ^RelRule(head=$head, body=$body, inline=$inline)
+}
+
+function meta::external::store::rel::metamodel::def(head: RelHeadExpr[1], body: RelExpr[1..*]): RelRule[1] {
+  def($head, $body, false)
+}
+
+function meta::external::store::rel::metamodel::def(head: String[1], body: RelExpr[1..*], inline: Boolean[1]): RelRule[1] {
+  def(rel($head), $body, $inline)
+}
+
+function meta::external::store::rel::metamodel::def(head: String[1], body: RelExpr[1..*]): RelRule[1] {
+  def($head, $body, false)
+}
+
+function meta::external::store::rel::metamodel::ic(head: RelHeadExpr[1], body: RelExpr[1..*], inline: Boolean[1]): RelIC[1] {
+  ^RelIC(head=$head, body=$body, inline=$inline)
+}
+
+function meta::external::store::rel::metamodel::ic(head: RelHeadExpr[1], body: RelExpr[1..*]): RelIC[1] {
+  ic($head, $body, false)
+}
+
+function meta::external::store::rel::metamodel::ic(head: String[1], body: RelExpr[1..*], inline: Boolean[1]): RelIC[1] {
+  ic(rel($head), $body, $inline)
+}
+
+function meta::external::store::rel::metamodel::ic(head: String[1], body: RelExpr[1..*]): RelIC[1] {
+  ic($head, $body, false)
+}
+
+function meta::external::store::rel::metamodel::defEntity(name: String[1], head: RelHeadExpr[1], body: RelExpr[1..*], inline: Boolean[1]): RelEntityDef[1] {
+  ^RelEntityDef(name=^RelRelationName(identifier=$name), head=$head, body=$body, inline=$inline)
+}
+
+function meta::external::store::rel::metamodel::defEntity(name: String[1], head: RelHeadExpr[1], body: RelExpr[1..*]): RelEntityDef[1] {
+  defEntity($name, $head, $body, false)
+}
+
+function meta::external::store::rel::metamodel::defEntity(name: String[1], head: String[1], body: RelExpr[1..*], inline: Boolean[1]): RelEntityDef[1] {
+  defEntity($name, rel($head), $body, $inline)
+}
+
+function meta::external::store::rel::metamodel::defEntity(name: String[1], head: String[1], body: RelExpr[1..*]): RelEntityDef[1] {
+  defEntity($name, rel($head), $body, false)
+}
+
+function meta::external::store::rel::metamodel::lineComment(text: String[1]): RelLineComment[1] {
+  ^RelLineComment(text=$text)
+}
+
+function meta::external::store::rel::metamodel::program(identifier: String[0..1], elements: RelProgramElement[*]): RelProgram[1] {
+  ^RelProgram(identifier=$identifier, elements=$elements)
+}
+
+function meta::external::store::rel::metamodel::program(elements: RelProgramElement[*]): RelProgram[1] {
+  program([], $elements)
+}
+
+function meta::external::store::rel::metamodel::program(identifier: String[0..1]): RelProgram[1] {
+  program($identifier, [])
+}
+
+function meta::external::store::rel::metamodel::program(): RelProgram[1] {
+  program([], [])
+}
+
+function meta::external::store::rel::metamodel::annotate(thing: Annotated[1], annotation: Any[*]): Annotated[1] {
+  ^$thing(annotation=$annotation)
+}
+
+function meta::external::store::rel::metamodel::annotate(var: RelVariable[1], annotation: Any[*]): RelVariable[1] {
+  ^$var(annotation=$annotation)
+}
+
+function meta::external::store::rel::metamodel::annotate(expr: RelExpr[1], annotation: Any[*]): RelExpr[1] {
+  ^$expr(annotation=$annotation)
+}
+
+function meta::external::store::rel::metamodel::annotate(exprs: RelProduct[1], annotation: Any[*]): RelProduct[1] {
+  ^$exprs(annotation=$annotation)
+}
+
+
+/////////////////////////
+/// Helper functions
+/////////////////////////
+
+function meta::external::store::rel::metamodel::identifier(expr: RelHeadExpr[1]): String[1] {
+  $expr->match([
+    rel: RelRelationName[1] | $rel.identifier,
+    expr: RelNamedApplication[1] | $expr.head->identifier()
+  ])
+}
+
+/////////////////////////
+/// Misc methods
+/////////////////////////
+
+function meta::external::store::rel::metamodel::toString(type: IntegerType[1]): String[1] {
+  'integer'
+}
+
+function meta::external::store::rel::metamodel::toString(type: StringType[1]): String[1] {
+  'string'
+}
+
+function meta::external::store::rel::metamodel::toString(type: FloatType[1]): String[1] {
+  'float'
+}
+
+function meta::external::store::rel::metamodel::toString(type: LabelsType[1]): String[1] {
+  'labels'
+}
+
+function meta::external::store::rel::metamodel::toString(type: HashValueType[1]): String[1] {
+  $type->match([
+    e: EntityType[1] | $e.class.name->toOne(),
+    other: HashValueType[1] | '#'
+  ])
+}
+
+function meta::external::store::rel::metamodel::toString(type: ConstType[1]): String[1] {
+  $type->match([
+    t: IntegerType[1] | $t->toString(),
+    t: StringType[1] | $t->toString(),
+    t: FloatType[1] | $t->toString(),
+    t: LabelsType[1] | $t->toString(),
+    t: HashValueType[1] | $t->toString(),
+    t: Label[1] | $t->toRelLiteral()
+  ])
+}
+
+function meta::external::store::rel::metamodel::toString(type: RelationType[1]): String[1] {
+  let accum = range(0, $type.positions->size())
+    ->fold({i, accum |
+      $accum->concatenate(
+        $type.names
+          ->get($i)
+          ->map(value: String[1] | $type.positions->at($i)->toString() + ': ' + $value)
+          ->else(| $type.positions->at($i)->toString())
+      )
+    }, []->cast(@String));
+
+    $accum->stringify(e | $e, ', ');
+}
+
+function meta::external::store::rel::metamodel::toString(types: ConstType[*]): String[1] {
+  $types->stringify(e | $e->toString(), ', ');
+}
+
+///////////////////
+// Utility methods
+///////////////////
+
+function <<access.private>> meta::external::store::rel::metamodel::render::expr::isAtomic(expr: RelExpr[1]): Boolean[1] {
+  /*
+   * Named atoms are atomic, as are expression groups (which are just expressions in parenthesis, so no
+   * additional parenthesis are required). We also treat equalities with a variable or literal argument
+   * as atomic because equality binds most tightly.
+   */
+  $expr->match([
+    e: RelNamedAtom[1] | true,
+    e: RelExprGroup[1] | true,
+    e: RelEquals[1]    | $e.left->instanceOf(RelVariable) || $e.left->instanceOf(RelConstant) || $e.right->instanceOf(RelVariable) || $e.right->instanceOf(RelConstant),
+    e: RelExpr[1]      | false
+  ])
+}

@@ -1,0 +1,26 @@
+import meta::external::function::activator::*;
+
+Class meta::external::function::activator::bigQueryFunction::BigQueryFunction extends FunctionActivator
+{
+  functionName : String[1];
+  description : String[0..1];
+  //owner : String[0..1];
+}
+
+Class meta::external::function::activator::bigQueryFunction::BigQueryFunctionDeploymentConfiguration extends DeploymentConfiguration
+{
+   target:  meta::external::store::relational::runtime::RelationalDatabaseConnection[1];
+}
+
+Class meta::external::function::activator::bigQueryFunction::BigQueryFunctionDeploymentResult extends DeploymentResult
+{
+
+}
+
+// This section needs to be code generated from the section above 
+Class meta::protocols::pure::vX_X_X::metamodel::function::activator::bigQueryFunction::BigQueryFunction extends meta::protocols::pure::vX_X_X::metamodel::function::activator::FunctionActivator
+{
+  functionName : String[1];
+  description : String[0..1];
+  owner : String[0..1];
+}

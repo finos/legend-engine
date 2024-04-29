@@ -1,0 +1,312 @@
+import meta::analytics::quality::model::*;
+import meta::analytics::quality::*;
+import meta::analytics::quality::model::domain::*;
+
+function meta::analytics::quality::model::domain::propertyRules():Rule<AbstractProperty<Any>>[*]
+{
+    [ meta::analytics::quality::model::domain::classPropertyShouldStartWithLowerLetter_AbstractProperty_1__CheckResult_MANY_,
+      meta::analytics::quality::model::domain::classPropertyShouldNotStartWithClassName_AbstractProperty_1__CheckResult_MANY_,
+      meta::analytics::quality::model::domain::classBooleanPropertyShouldStartWithIsOrHasOrEndsWithFlag_AbstractProperty_1__CheckResult_MANY_,
+      meta::analytics::quality::model::domain::classPropertyStartingWithIsOrHasShouldBeBoolean_AbstractProperty_1__CheckResult_MANY_,
+      meta::analytics::quality::model::domain::classPropertyEndingWithFlagShouldBeBoolean_AbstractProperty_1__CheckResult_MANY_,
+      meta::analytics::quality::model::domain::classPropertyWithToManyMultiplicityAreNamedCorrectly_AbstractProperty_1__CheckResult_MANY_,
+      meta::analytics::quality::model::domain::classPropertyWithToOneMultiplicityAreNamedCorrectly_AbstractProperty_1__CheckResult_MANY_,
+      meta::analytics::quality::model::domain::classPropertyIntegersWithToOneMultiplicityAreNamedCorrectly_AbstractProperty_1__CheckResult_MANY_
+      // meta::analytics::quality::qualifiedPropertiesShouldBeTested_AbstractProperty_1__CheckResult_MANY_
+   ]->map(rule|createRule($rule)->cast(@Rule<AbstractProperty<Any>>))
+
+}
+
+
+function
+         { rule.rule = 'Invalid Property Names',
+           rule.description ='Property name should start with lower letter and in camelCase',
+           rule.severity = 'Medium',
+           rule.category = 'Modelling'}
+
+meta::analytics::quality::model::domain::classPropertyShouldStartWithLowerLetter(p: AbstractProperty<Any>[1]):CheckResult[*]
+{
+   if($p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(),
+      | ^CheckResult(isValid=true, message='Skipping ' + $p.name->toOne() + ' as it is generated milestone property'),
+      |
+        let issues = if(!$p.name->toOne()->meta::pure::functions::string::substring(0,1)->isLowerCase(),
+                   | 'should start with lower case',
+                   | [])
+                  ->concatenate(if ($p.name->contains('_'),
+                     | 'should not contain \'_\'',
+                     | []
+                    ));
+
+         let message = if($issues->isEmpty(),
+                 | 'Property name (' + $p.name->toOne() + ') matches required standards',
+                 | 'Property name (' + $p.name->toOne() + ') does not match required standards: ' + $issues->joinStrings(';')
+                 );
+
+         ^CheckResult(isValid=$issues->isEmpty(), message=$message);
+      );
+
+}
+
+
+function
+         { rule.rule = 'Invalid Property Names(class name)',
+           rule.description ='Property name should not start with class name',
+           rule.severity = 'Medium',
+           rule.category = 'Modelling',
+           doc.doc = 'Returns true if the property names does not start with class name'}
+meta::analytics::quality::model::domain::classPropertyShouldNotStartWithClassName(p: AbstractProperty<Any>[1]):CheckResult[*]
+{
+   if($p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(),
+      | ^CheckResult(isValid=true, message='Skipping ' + $p.name->toOne() + ' as it is generated milestone property'),
+      |
+         let passed= !$p.name->toOne()->toLower()
+           ->meta::pure::functions::string::startsWith($p.owner.name->toOne()->toLower());
+
+          let message = if($passed,
+                 | 'Property name (' + $p.name->toOne() + ') matches required standards',
+                 | 'Property name (' + $p.name->toOne() + ') should not start with class name (' + $p.owner.name->toOne() + ')' + $p.name->toOne()
+                 );
+
+         ^CheckResult(isValid=$passed, message=$message);
+      );
+}
+
+
+
+function
+         { rule.rule = 'Invalid Boolean Property Name',
+           rule.description = 'Boolean property should start with \'is\' or \'has\' or ends with \'Flag\'',
+           rule.severity = 'Medium',
+           rule.category = 'Modelling',
+           doc.doc = 'Returns true if the boolean property starts with \'is\' or \'has\''}
+meta::analytics::quality::model::domain::classBooleanPropertyShouldStartWithIsOrHasOrEndsWithFlag(p: AbstractProperty<Any>[1]):CheckResult[*]
+{
+   if($p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(),
+      | ^CheckResult(isValid=true, message='Skipping ' + $p.name->toOne() + ' as it is generated milestone property'),
+      |
+         let passed = if($p.genericType->meta::pure::metamodel::serialization::grammar::printGenericType()->equal('Boolean'),
+            |$p.name->toOne()->meta::pure::functions::string::startsWith('is')
+               || $p.name->toOne()->meta::pure::functions::string::startsWith('has')
+                 || $p.name->toOne()->meta::pure::functions::string::endsWith('Flag')
+                 || $p.name->toOne()->meta::pure::functions::string::endsWith('Flags'),
+            |true;);
+
+          let message = if($passed,
+                 | 'Property name (' + $p.name->toOne() + ') matches required standards',
+                 | 'Property is of type boolean so the name (' + $p.name->toOne() + ') should start with \'is\' / \'has\' or end with \'Flag\' ' + $p.name->toOne()
+                 );
+
+         ^CheckResult(isValid=$passed, message=$message);
+      );
+}
+
+
+function
+         { rule.rule = 'Invalid Boolean Flag Property Type',
+           rule.description = 'Property name ending with Flag should be Boolean',
+           rule.severity = 'Medium',
+           rule.category = 'Modelling',
+           doc.doc = 'Returns true if the property name ending in Flag is Boolean type'}
+meta::analytics::quality::model::domain::classPropertyEndingWithFlagShouldBeBoolean(p: AbstractProperty<Any>[1]):CheckResult[*]
+{
+   if($p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(),
+      | ^CheckResult(isValid=true, message='Skipping ' + $p.name->toOne() + ' as it is generated milestone property'),
+      |
+         let passed = !$p.name->toOne()->toLower()->meta::pure::functions::string::endsWith('flag')
+            || $p.genericType->meta::pure::metamodel::serialization::grammar::printGenericType()->equal('Boolean');
+
+          let message = if($passed,
+                 | 'Property name (' + $p.name->toOne() + ') matches required standards',
+                 | 'Property name (' + $p.name->toOne() + ') ends with \'flag\' but is not a boolean' + $p.name->toOne()
+                 );
+
+         ^CheckResult(isValid=$passed, message=$message);
+      )
+}
+
+function
+         { rule.rule = 'Invalid Boolean Is Property Type',
+           rule.description = 'Property name starting with Is/Has should be Boolean',
+           rule.severity = 'Medium',
+           rule.category = 'Modelling',
+           doc.doc = 'Returns true if the property name starting with Is or Has is Boolean type'}
+meta::analytics::quality::model::domain::classPropertyStartingWithIsOrHasShouldBeBoolean(p: AbstractProperty<Any>[1]):CheckResult[*]
+{
+   let ignoreWords = [
+      'issue',
+      'issuance'
+
+   ];
+
+   if($p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype() ,
+      | ^CheckResult(isValid=true, message='Skipping ' + $p.name->toOne() + ' as it is generated milestone property'),
+      | if($p.genericType->meta::pure::metamodel::serialization::grammar::printGenericType()->equal('Boolean') || $ignoreWords->exists(w|$p.name->toOne()->toLower()->startsWith($w)),
+         | ^CheckResult(isValid=true, message='Skipping ' + $p.name->toOne() + ' already boolean or start of name to be ignored'),
+         |
+            let passed = !$p.name->toOne()->meta::pure::functions::string::startsWith('is') && !$p.name->toOne()->meta::pure::functions::string::startsWith('has');
+
+          let message = if($passed,
+                 | 'Property name (' + $p.name->toOne() + ') matches required standards',
+                 | 'Property name (' + $p.name->toOne() + ') starts with Is or Has but is not a boolean ' + $p.genericType->meta::pure::metamodel::serialization::grammar::printGenericType()->toOne()
+                 );
+
+         ^CheckResult(isValid=$passed, message=$message);
+      ));
+}
+
+// function
+//          <<rule.skipTests>>
+//          { rule.rule = 'Check qualfied properties are tested',
+//            rule.description = 'Checks that qualified properties are used within at least one test',
+//            rule.severity = 'High',
+//            rule.category = 'Testing',
+//            doc.doc = 'Returns true if the property is either tested or not a qualfied property'}
+// meta::analytics::quality::qualifiedPropertiesShouldBeTested(p: AbstractProperty<Any>[1]):CheckResult[*]
+// {
+//    if($p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(),
+//       | ^CheckResult(isValid=true, message='Skipping ' + $p.name->toOne() + ' as it is generated milestone property'),
+//       | if(!$p->instanceOf(QualifiedProperty),
+//          | ^CheckResult(isValid=true, message='Skipping ' + $p.name->toOne() + ' as it is not a qualified property'),
+//          |
+//             if($p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(),
+//                 | ^CheckResult(isValid=true, message='Skipping ' + $p.name->toOne() + ' as auto generated milestone property'),
+//                 | if($p->isFunctionTested(),
+//                    | ^CheckResult(isValid=true, message='Property ' + $p.name->toOne() + ' is tested'),
+//                    | ^CheckResult(isValid=false, message='Property ' + $p.name->toOne() + ' not found in any test')
+//                  )
+//                )
+//          )
+//       );
+// }
+
+function
+         { rule.rule = 'Invalid naming style for "to many" properties',
+           rule.description = 'Checks that properties with "to many" multiplicity reflect this in the name',
+           rule.severity = 'Low',
+           rule.category = 'Modelling',
+           doc.doc = 'Returns true if the property is named correctly'}
+meta::analytics::quality::model::domain::classPropertyWithToManyMultiplicityAreNamedCorrectly(p: AbstractProperty<Any>[1]):CheckResult[*]
+{
+   //http://grammar.ccc.commnet.edu/grammar/plurals.htm
+
+  let ignoreEndings = [
+      'cacti',
+      'children',
+      'criteria',
+      'deer',
+      'foci',
+      'fungi',
+      'geese',
+      'men',
+      'mice',
+      'nuclei',
+      'people',
+      'phenomena',
+      'syllabi',
+      'teeth',
+      'women'
+   ];
+
+   let result = if(!($p.multiplicity->isToOne() || $p.multiplicity->isZeroOne() || $p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype()),
+      | $p.name->toOne()->toLower()->endsWith('s') || $ignoreEndings->exists(w|$p.name->toOne()->toLower()->endsWith($w)),
+      | true
+      );
+
+
+   let message = if(!$result,
+                 | 'Property ' + $p.name->toOne() + ' has multiplicity ' + $p.multiplicity->makeString() + ' but name does not suggest multiplicity (i.e. should likely be plural)',
+                 | 'Property ' + $p.name->toOne() + ' is correctly named'
+                 );
+
+   ^CheckResult(isValid=$result, message=$message);
+}
+
+function
+         { rule.rule = 'Invalid naming style for singleton properties',
+           rule.description = 'Checks that singleton properties are not pluralised',
+           rule.severity = 'Low',
+           rule.category = 'Modelling',
+           doc.doc = 'Returns true if the property is named correctly'}
+meta::analytics::quality::model::domain::classPropertyWithToOneMultiplicityAreNamedCorrectly(p: AbstractProperty<Any>[1]):CheckResult[*]
+{
+   //http://grammar.ccc.commnet.edu/grammar/plurals.htm
+  let pluralEndings = [
+      'cacti',
+      'children',
+      'criteria',
+      'deer',
+      'statii',
+      'foci',
+      'fungi',
+      'geese',
+      'men',
+      'mice',
+      'nuclei',
+      'people',
+      'phenomena',
+      'syllabi',
+      'teeth',
+      'women'
+   ];
+
+   let ignoreEndings = [
+      'days',
+      'years',
+      'hours',
+      'seconds',
+      'units',
+      'ss',
+      'status',
+      'basis',
+      'plus',
+      'kerberos',
+      'previous',
+      'comments'
+
+   ];
+
+   let result = if((($p.multiplicity->isToOne() || $p.multiplicity->isZeroOne()) && !$p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype()),
+      | (!($p.name->toOne()->toLower()->endsWith('s') || $pluralEndings->exists(w|$p.name->toOne()->toLower()->endsWith($w))) || $ignoreEndings->exists(w|$p.name->toOne()->toLower()->endsWith($w))),
+      | true
+      );
+
+
+   let message = if(!$result,
+                 | 'Property ' + $p.name->toOne() + ' has multiplicity ' + $p.multiplicity->makeString() + ' but name suggests multiples (i.e. should not be plural)',
+                 | 'Property ' + $p.name->toOne() + ' is correctly named'
+                 );
+
+   ^CheckResult(isValid=$result, message=$message);
+}
+
+function
+         { rule.rule = 'Invalid naming style for singleton properties',
+           rule.description = 'Checks that singleton properties that look like counts are integers',
+           rule.severity = 'Low',
+           rule.category = 'Modelling',
+           doc.doc = 'Returns true if the property is named correctly'}
+meta::analytics::quality::model::domain::classPropertyIntegersWithToOneMultiplicityAreNamedCorrectly(p: AbstractProperty<Any>[1]):CheckResult[*]
+{
+   //http://grammar.ccc.commnet.edu/grammar/plurals.htm
+   // days/hours/seconds/units - OK if integer (no. of)
+  let pluralEndings = [
+      'days',
+      'years',
+      'hours',
+      'seconds',
+      'units'
+   ];
+
+   let result = if((($p.multiplicity->isToOne() || $p.multiplicity->isZeroOne()) && !$p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype() && ( $pluralEndings->exists(w|$p.name->toOne()->toLower()->endsWith($w)))),
+      |  ($p.genericType->meta::pure::metamodel::serialization::grammar::printGenericType()->equal('Integer')),
+      | true
+      );
+
+
+   let message = if(!$result,
+                 | 'Property ' + $p.name->toOne() + ' is of type ' + $p.genericType->meta::pure::metamodel::serialization::grammar::printGenericType()->makeString() + ', not integer, but name suggests it is a count',
+                 | 'Property ' + $p.name->toOne() + ' is correctly named'
+                 );
+
+   ^CheckResult(isValid=$result, message=$message);
+}

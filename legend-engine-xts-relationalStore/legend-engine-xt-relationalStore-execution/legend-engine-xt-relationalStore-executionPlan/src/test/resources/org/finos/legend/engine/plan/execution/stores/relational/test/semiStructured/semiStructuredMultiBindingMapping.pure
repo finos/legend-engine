@@ -1,0 +1,297 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class multiBinding::model::Address
+{
+  name: String[1];
+  lines: multiBinding::model::AddressLine[*];
+  street: String[0..1];
+}
+
+Class multiBinding::model::AddressLine
+{
+  details: String[1];
+}
+
+Class multiBinding::model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  address: multiBinding::model::Address[1];
+}
+
+Class multiBinding::model::Employee
+{
+  firstName: String[1];
+  lastName: String[1];
+  firm: multiBinding::model::Firm[1];
+  address: multiBinding::model::Address[1];
+}
+
+Class multiBinding::model::EmployeeWithManager extends multiBinding::model::Employee
+{
+  manager: multiBinding::model::Employee[0..1];
+  managerFirm: multiBinding::model::Firm[0..1];
+}
+
+Class multiBinding::model::Firm
+{
+  legalName: String[1];
+  address: multiBinding::model::Address[1];
+  employeeCount: Integer[1];
+  mnc: Boolean[1];
+  estDate: StrictDate[1];
+  lastUpdate: DateTime[1];
+  otherNames: String[*];
+  entityType: multiBinding::model::EntityType[1];
+}
+
+Enum multiBinding::model::EntityType
+{
+  Organization,
+  Company
+}
+
+
+###Relational
+Database multiBinding::store::H2DB
+(
+  Schema PERSON_SCHEMA
+  (
+    Table PERSON_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRM_DETAILS VARCHAR(1000),
+      ADDRESS_DETAILS VARCHAR(1000),
+      MANAGERID INTEGER
+    )
+  )
+
+  Join manager(PERSON_SCHEMA.PERSON_TABLE.MANAGERID = {target}.ID)
+)
+
+Database multiBinding::store::MemSQLDB
+(
+  Schema PERSON_SCHEMA
+  (
+    Table PERSON_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRM_DETAILS JSON,
+      ADDRESS_DETAILS JSON,
+      MANAGERID INTEGER
+    )
+  )
+
+  Join manager(PERSON_SCHEMA.PERSON_TABLE.MANAGERID = {target}.ID)
+)
+
+
+###ExternalFormat
+Binding multiBinding::store::FirmBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    multiBinding::model::Firm,
+    multiBinding::model::Address,
+    multiBinding::model::AddressLine
+  ];
+}
+
+Binding multiBinding::store::AddressBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    multiBinding::model::Address,
+    multiBinding::model::AddressLine
+  ];
+}
+
+###Mapping
+Mapping multiBinding::mapping::MemSQLMapping
+(
+  multiBinding::model::Employee: Relational
+  {
+    ~primaryKey
+    (
+      [multiBinding::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [multiBinding::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [multiBinding::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [multiBinding::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    firm: Binding multiBinding::store::FirmBinding : [multiBinding::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS,
+    address: Binding multiBinding::store::AddressBinding : [multiBinding::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.ADDRESS_DETAILS
+  }
+  
+  multiBinding::model::EmployeeWithManager: Relational
+  {
+    ~primaryKey
+    (
+      [multiBinding::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [multiBinding::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [multiBinding::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [multiBinding::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    firm: Binding multiBinding::store::FirmBinding : [multiBinding::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS,
+    address: Binding multiBinding::store::AddressBinding : [multiBinding::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.ADDRESS_DETAILS,
+    manager[multiBinding_model_Employee]: [multiBinding::store::MemSQLDB]@manager,
+    managerFirm: Binding multiBinding::store::FirmBinding : [multiBinding::store::MemSQLDB]@manager | [multiBinding::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS
+  }  
+  
+  multiBinding::model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [multiBinding::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [multiBinding::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [multiBinding::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [multiBinding::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    address: Binding multiBinding::store::AddressBinding : [multiBinding::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.ADDRESS_DETAILS
+  }
+)
+
+Mapping multiBinding::mapping::H2Mapping
+(
+  multiBinding::model::Employee: Relational
+  {
+    ~primaryKey
+    (
+      [multiBinding::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [multiBinding::store::H2DB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [multiBinding::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [multiBinding::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    firm: Binding multiBinding::store::FirmBinding : [multiBinding::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS,
+    address: Binding multiBinding::store::AddressBinding : [multiBinding::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.ADDRESS_DETAILS
+  }
+  
+  multiBinding::model::EmployeeWithManager: Relational
+  {
+    ~primaryKey
+    (
+      [multiBinding::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [multiBinding::store::H2DB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [multiBinding::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [multiBinding::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    firm: Binding multiBinding::store::FirmBinding : [multiBinding::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS,
+    address: Binding multiBinding::store::AddressBinding : [multiBinding::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.ADDRESS_DETAILS,
+    manager[multiBinding_model_Employee]: [multiBinding::store::H2DB]@manager,
+    managerFirm: Binding multiBinding::store::FirmBinding : [multiBinding::store::H2DB]@manager | [multiBinding::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS
+  }  
+  
+  multiBinding::model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [multiBinding::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [multiBinding::store::H2DB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [multiBinding::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [multiBinding::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    address: Binding multiBinding::store::AddressBinding : [multiBinding::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.ADDRESS_DETAILS
+  }
+)
+
+###Runtime
+Runtime multiBinding::runtime::MemSQLRuntime
+{
+    mappings :
+    [
+        multiBinding::mapping::MemSQLMapping
+    ];
+    connections :
+    [
+        multiBinding::store::MemSQLDB :
+        [
+            connection_1 : #{
+                RelationalDatabaseConnection {
+                    store: multiBinding::store::MemSQLDB;
+                    type: MemSQL;
+                    specification: LocalH2{};
+                    auth: Test;
+                }
+            }#
+        ]
+    ];
+}
+
+Runtime multiBinding::runtime::H2Runtime
+{
+    mappings :
+    [
+        multiBinding::mapping::H2Mapping
+    ];
+    connections :
+    [
+        multiBinding::store::H2DB :
+        [
+            connection_1 : #{
+                RelationalDatabaseConnection {
+                    store: multiBinding::store::H2DB;
+                    type: H2;
+                    specification: LocalH2{
+                        testDataSetupSqls: [
+                            'DROP SCHEMA IF EXISTS PERSON_SCHEMA CASCADE;',
+                            'CREATE SCHEMA PERSON_SCHEMA;',
+                            'CREATE TABLE PERSON_SCHEMA.PERSON_TABLE(ID INT PRIMARY KEY, FIRSTNAME VARCHAR(100), LASTNAME VARCHAR(100), FIRM_DETAILS VARCHAR(1000), ADDRESS_DETAILS VARCHAR(1000), MANAGERID INT);',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,ADDRESS_DETAILS,MANAGERID) VALUES (1,\'Peter\',\'Smith\',\'{"legalName": "Firm X", "employeeCount": 4, "mnc": true, "estDate": "2010-03-04", "lastUpdate": "2022-01-16T01:00:00", "entityType":"Organization", "otherNames": ["O1", "O2"], "address": {"name": "A1", "street": "S1", "lines": [{"details": "D1"}, {"details": "D2"}, {"details": "D3"}]}}\',\'{"name": "A4", "street": "S4", "lines": [{"details": "D7"}]}\',2);',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,ADDRESS_DETAILS,MANAGERID) VALUES (2,\'John\',\'Johnson\',\'{"legalName": "Firm X", "employeeCount": 4, "mnc": true, "estDate": "2010-03-04", "lastUpdate": "2022-01-16T01:00:00", "entityType":"Organization", "otherNames": ["O1", "O2"], "address": {"name": "A1", "street": "S1", "lines": [{"details": "D1"}, {"details": "D2"}, {"details": "D3"}]}}\',\'{"name": "A5", "street": "S5", "lines": [{"details": "D8"}]}\',4);',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,ADDRESS_DETAILS,MANAGERID) VALUES (3,\'John\',\'Hill\',\'{"legalName": "Firm X", "employeeCount": 4, "mnc": true, "estDate": "2010-03-04", "lastUpdate": "2022-01-16T01:00:00", "entityType":"Organization", "otherNames": ["O1", "O2"], "address": {"name": "A1", "street": "S1", "lines": [{"details": "D1"}, {"details": "D2"}, {"details": "D3"}]}}\',\'{"name": "A6", "street": "S6", "lines": [{"details": "D9"}, {"details": "D10"}]}\',2);',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,ADDRESS_DETAILS,MANAGERID) VALUES (4,\'Anthony\',\'Allen\',\'{"legalName": "Firm X", "employeeCount": 4, "mnc": true, "estDate": "2010-03-04", "lastUpdate": "2022-01-16T01:00:00", "entityType":"Organization", "otherNames": ["O1", "O2"], "address": {"name": "A1", "street": "S1", "lines": [{"details": "D1"}, {"details": "D2"}, {"details": "D3"}]}}\',\'{"name": "A7", "street": "S7", "lines": [{"details": "D11"}]}\',null)',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,ADDRESS_DETAILS,MANAGERID) VALUES (5,\'Fabrice\',\'Roberts\',\'{"legalName": "Firm A", "employeeCount": 1, "mnc": false, "estDate": "2012-11-13", "lastUpdate": "2022-02-14T03:00:00", "otherNames": ["O3", "O4"], "address": {"name": "A2", "lines": [{"details": "D4"}, {"details": "D5"}]}}\',\'{"name": "A8", "street": "S8", "lines": [{"details": "D12"}]}\',null)',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,ADDRESS_DETAILS,MANAGERID) VALUES (6,\'Oliver\',\'Hill\',\'{"legalName": "Firm B", "employeeCount": 2, "mnc": true, "estDate": "2017-7-7", "lastUpdate": "2022-9-01T06:00:00", "entityType":"Company", "otherNames": ["O5", "O6"], "address": {"name": "A3", "street": "S2", "lines": [{"details": "D5"},{"details": "D6"}]}}\',\'{"name": "A9", "street": "S9"}\',7)',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,ADDRESS_DETAILS,MANAGERID) VALUES (7,\'David\',\'Harris\',\'{"legalName": "Firm B", "employeeCount": 2, "mnc": true, "estDate": "2017-7-7", "lastUpdate": "2022-9-01T06:00:00", "entityType":"Company", "otherNames": ["O5", "O6"], "address": {"name": "A3", "lines": [{"details": "D5"},{"details": "D6"}]}}\',\'{"name": "A10", "street": "S10", "lines": [{"details": "D13"}]}\',null)'
+                        ];
+                    };
+                    auth: Test;
+                }
+            }#
+        ]
+    ];
+}
+
+###Pure
+function multiBinding::semiStructuredPropertyAccessFromSingleBindingMapping(): TabularDataSet[1]
+{
+    multiBinding::model::Person.all()->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.address.name, 'Address Name')
+    ])
+}
+
+function multiBinding::semiStructuredPropertyAccessFromMultipleBindingMapping(): TabularDataSet[1]
+{
+    multiBinding::model::Employee.all()->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Legal Name'),
+        col(x | $x.address.name, 'Address Name')
+    ])
+}
+
+function multiBinding::semiStructuredRelOpWithJoinPropertyAccessFromMultipleBindingMapping(): TabularDataSet[1]
+{
+    multiBinding::model::EmployeeWithManager.all()->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Legal Name'),
+        col(x | $x.address.name, 'Address Name'),
+        col(x | $x.managerFirm.legalName, 'Manager Firm Legal Name')
+    ])
+}

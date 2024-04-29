@@ -1,0 +1,195 @@
+###Data
+Data data::RelationalData
+{
+  Relational
+  #{
+    default.PersonTable:
+              'id,firm_id,firstName,lastName,employeeType\n' +
+              '1,1,John,Doe,FTO\n' +
+              '2,1,Nicole,Smith,FTC\n' +
+              '3,2,Time,Smith,FTE\n';
+
+    default.FirmTable:
+          'id,legal_name\n' +
+          '1,Finos\n' +
+          '2,Apple';
+
+  }#
+}
+
+###Relational
+Database store::TestDB
+(
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY,
+    legal_name VARCHAR(200)
+  )
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firm_id INTEGER,
+    firstName VARCHAR(200),
+    lastName VARCHAR(200),
+    employeeType VARCHAR(200)
+  )
+
+  Join FirmPerson(PersonTable.firm_id = FirmTable.id)
+)
+
+
+###Pure
+Class model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  employeeType: model::EmployeeType[1];
+}
+
+Enum model::EmployeeType
+{
+    CONTRACT,
+    FULL_TIME
+}
+
+Class model::Firm
+{
+  legalName: String[1];
+  employees: model::Person[*];
+}
+
+
+###Mapping
+Mapping execution::RelationalMapping
+(
+  *model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [store::TestDB]PersonTable.id
+    )
+    ~mainTable [store::TestDB]PersonTable
+    firstName: [store::TestDB]PersonTable.firstName,
+    lastName: [store::TestDB]PersonTable.lastName,
+    employeeType: EnumerationMapping EmployeeTypeMapping: [store::TestDB]PersonTable.employeeType
+  }
+
+  model::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    CONTRACT: ['FTC', 'FTO'],
+    FULL_TIME: 'FTE'
+  }
+
+  *model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [store::TestDB]FirmTable.id
+    )
+    ~mainTable [store::TestDB]FirmTable
+    legalName: [store::TestDB]FirmTable.legal_name,
+    employees[model_Person]: [store::TestDB]@FirmPerson
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection model::MyConnection
+{
+  store: store::TestDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'Drop table if exists FirmTable;\nDrop table if exists PersonTable;\nCreate Table FirmTable(id INT, Legal_Name VARCHAR(200));\nCreate Table PersonTable(id INT, firm_id INT, lastName VARCHAR(200), firstName VARCHAR(200), employeeType VARCHAR(200));\nInsert into FirmTable (id, Legal_Name) values (1, \'FirmA\');\nInsert into FirmTable (id, Legal_Name) values (2, \'Apple\');\nInsert into PersonTable (id, firm_id, lastName, firstName, employeeType) values (1, 1, \'John\', \'Doe\', \'FTC\');\nInsert into PersonTable (id, firm_id, lastName, firstName, employeeType) values (2, 2, \'Tim\', \'Smith\', \'FTE\');\nInsert into PersonTable (id, firm_id, lastName, firstName, employeeType) values (3, 3, \'Nicole\', \'Doe\', \'FTO\');\n\n'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime execution::Runtime
+{
+  mappings:
+  [
+    execution::RelationalMapping
+  ];
+  connections:
+  [
+    store::TestDB:
+    [
+      connection_1: model::MyConnection
+    ]
+  ];
+}
+
+###Service
+ExecutionEnvironment test::executionEnvironment
+{
+  executions:
+  [
+    QA:
+    {
+      mapping: execution::RelationalMapping;
+      runtime: execution::Runtime;
+    }
+  ];
+}
+Service service::SimpleRelationalPassFailing
+{
+  pattern: '/d2c48a9c-70fa-46e3-8173-c355e774004f';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name'])->from(test::executionEnvironment->get('QA'));
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference
+            #{
+              data::RelationalData
+            }#
+        ]
+      ]
+      tests:
+      [
+        test1:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldPass:
+              EqualToJson
+              #{
+                expected :
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Employees/First Name":"John","Employees/Last Name":"Doe","Legal Name":"Finos"},{"Employees/First Name":"Nicole","Employees/Last Name":"Smith","Legal Name":"Finos"},{"Employees/First Name":"Time","Employees/Last Name":"Smith","Legal Name":"Apple"}]\n';
+                  }#;
+              }#,
+            shouldFail:
+              EqualToJson
+              #{
+                expected :
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Employees/First Name":"JohnDIFF","Employees/Last Name":"Doe","Legal Name":"Finos"},{"Employees/First Name":"Nicole","Employees/Last Name":"Smith","Legal Name":"Finos"},{"Employees/First Name":"Time","Employees/Last Name":"Smith","Legal Name":"Apple"}]\n';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

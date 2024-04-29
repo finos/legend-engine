@@ -1,0 +1,49 @@
+import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::functions::sqlQueryToString::h2::*;
+
+// Load the H2 extension according to the version that is actually running
+function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::h2::dbExtensionLoaderForH2():DbExtensionLoader[1]
+{
+  ^DbExtensionLoader(dbType = DatabaseType.H2, loader = createDbExtensionForH2__DbExtension_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::createDbExtensionForH2():DbExtension[1]
+{
+  let h2Versions = getH2Versions();
+  assertEquals(1, size($h2Versions), 'More than one H2 version found when loading extension');
+
+  if($h2Versions->toOne()->eq('1.4.200'),
+    | meta::relational::functions::sqlQueryToString::h2::v1_4_200::createDbExtensionForH2(),
+    | meta::relational::functions::sqlQueryToString::h2::v2_1_214::createDbExtensionForH2()
+  );
+}
+
+function meta::relational::functions::sqlQueryToString::h2::assertEqualsH2Compatible(
+  legacyExpected: Any[1],
+  upgradedExpected: Any[1],
+  actual: Any[1]
+): Boolean[1]
+{
+  let h2Versions = getH2Versions();
+  assertEquals(1, size($h2Versions), 'More than one H2 version found asserting test outputs');
+
+  if($h2Versions->toOne()->eq('1.4.200'),
+    | assertEquals($legacyExpected, $actual),
+    | assertEquals($upgradedExpected, $actual)
+  );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::getH2Versions(): Any[*]
+{
+  let conn = ^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2);
+  let results = executeInDb('SELECT H2VERSION();', $conn);
+  $results.rows.values;
+}
+
+
+###Relational
+// Database needed just to get the H2 connection version
+Database meta::relational::functions::sqlQueryToString::h2::emptyDb()

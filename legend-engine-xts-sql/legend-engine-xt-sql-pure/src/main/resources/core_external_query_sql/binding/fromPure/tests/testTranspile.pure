@@ -1,0 +1,2646 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::functions::hash::*;
+import meta::relational::extension::*;
+import meta::external::query::sql::transformation::queryToPure::*;
+import meta::external::query::sql::metamodel::*;
+import meta::external::query::sql::transformation::queryToPure::tests::*;
+import meta::external::query::sql::*;
+import meta::external::query::sql::schema::metamodel::*;
+import meta::legend::service::metamodel::*;
+import meta::pure::functions::meta::*;
+import meta::pure::mapping::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::external::query::sql::transformation::compile::utils::*;
+
+//SELECT
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectStar():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      }
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectNull():Boolean[1]
+{
+  test(
+    'SELECT NULL FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->project([
+          col(row:TDSRow[1] | []->cast(@String), 'NULL')
+        ])
+      }
+  );
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectStarFromJoinTable():Boolean[1]
+{
+  test(
+    'SELECT table1.* FROM service."/service/service1" "table1" LEFT OUTER JOIN (SELECT * FROM service."/service/service2") AS "table2" ON "table1"."Integer" = "table2"."Integer"',
+
+    {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+          ->renameColumns([
+                pair('Boolean', 'Boolean_table1'),
+                pair('Integer', 'Integer_table1'),
+                pair('Float', 'Float_table1'),
+                pair('Decimal', 'Decimal_table1'),
+                pair('StrictDate', 'StrictDate_table1'),
+                pair('DateTime', 'DateTime_table1'),
+                pair('String', 'String_table1')
+          ])
+        ->join(FlatInput.all()->project(
+                [x | $x.idIn, x | $x.integerIn, x | $x.stringIn],
+                ['ID', 'Integer', 'String']
+              )->renameColumns([
+                pair('ID', 'ID_table2'),
+                pair('Integer', 'Integer_table2'),
+                pair('String', 'String_table2')
+          ]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer_table1') == $row2.getInteger('Integer_table2')}
+        )
+        ->restrict(['Boolean_table1', 'Integer_table1', 'Float_table1', 'Decimal_table1', 'StrictDate_table1', 'DateTime_table1', 'String_table1'])
+        ->renameColumns([
+              pair('Boolean_table1', 'Boolean'),
+              pair('Integer_table1', 'Integer'),
+              pair('Float_table1', 'Float'),
+              pair('Decimal_table1', 'Decimal'),
+              pair('StrictDate_table1', 'StrictDate'),
+              pair('DateTime_table1', 'DateTime'),
+              pair('String_table1', 'String')
+        ])
+      }
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectStarAndColumnsFromJoinTable():Boolean[1]
+{
+  test(
+    'SELECT table1.*, table2.id, sin(table2.int) FROM service."/service/service1" "table1" LEFT OUTER JOIN (SELECT ID as "id", Integer AS "int" FROM service."/service/service2") AS "table2" ON "table1"."Integer" = "table2"."int"',
+
+    {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])->renameColumns([
+            pair('Boolean', 'Boolean_table1'),
+            pair('Integer', 'Integer_table1'),
+            pair('Float', 'Float_table1'),
+            pair('Decimal', 'Decimal_table1'),
+            pair('StrictDate', 'StrictDate_table1'),
+            pair('DateTime', 'DateTime_table1'),
+            pair('String', 'String_table1')
+          ])
+        ->join(FlatInput.all()->project(
+                [x | $x.idIn, x | $x.integerIn, x | $x.stringIn],
+                ['ID', 'Integer', 'String']
+              )->restrict(['ID', 'Integer'])->renameColumns([
+                pair('ID', 'id'),
+                pair('Integer', 'int')
+              ])->renameColumns([
+                pair('id', 'id_table2'),
+                pair('int', 'int_table2')
+              ]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer_table1') == $row2.getInteger('int_table2')}
+        )->project([
+          col(row:TDSRow[1] | $row.getBoolean('Boolean_table1'), 'Boolean'),
+          col(row:TDSRow[1] | $row.getInteger('Integer_table1'), 'Integer'),
+          col(row:TDSRow[1] | $row.getFloat('Float_table1'), 'Float'),
+          col(row:TDSRow[1] | $row.getDecimal('Decimal_table1'), 'Decimal'),
+          col(row:TDSRow[1] | $row.getStrictDate('StrictDate_table1'), 'StrictDate'),
+          col(row:TDSRow[1] | $row.getDateTime('DateTime_table1'), 'DateTime'),
+          col(row:TDSRow[1] | $row.getString('String_table1'), 'String'),
+          col(row:TDSRow[1] | $row.getInteger('id_table2'), 'id'),
+          col(row:TDSRow[1] | sin($row.getInteger('int_table2')), 'sin(int)')
+        ])
+      }
+  )
+}
+
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectColumns():Boolean[1]
+{
+  test(
+    'SELECT Boolean, Integer FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->restrict(['Boolean', 'Integer'])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectWithAliases():Boolean[1]
+{
+  test(
+    'SELECT Boolean, Integer AS int FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->restrict(['Boolean', 'Integer'])
+      ->renameColumns(pair('Integer', 'int'))
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectWithTableAlias():Boolean[1]
+{
+  test(
+    'SELECT t1."String" AS "str" FROM service."/service/service1" t1',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->restrict('String')->renameColumns(pair('String', 'str'))
+      }
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectColumnMultiTimes():Boolean[1]
+{
+  test(
+    'SELECT String, String as "str" FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->project([
+          col(row:TDSRow[1] | $row.getString('String'), 'String'),
+          col(row:TDSRow[1] | $row.getString('String'), 'str')
+        ])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectColumnMultiTimesRealiasToExisting():Boolean[1]
+{
+  test(
+    [
+      'SELECT String as "str", String as "String" FROM service."/service/service1"',
+      'SELECT "t1"."String" as "str", "t1".String as "String" FROM service."/service/service1" t1'
+    ],
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->project([
+          col(row:TDSRow[1] | $row.getString('String'), 'str'),
+          col(row:TDSRow[1] | $row.getString('String'), 'String')
+        ])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectColumnMultiTimesRealiasToExisting2():Boolean[1]
+{
+  test(
+    [
+      'SELECT String as "str", String as "Integer" FROM service."/service/service1"',
+      'SELECT "t1"."String" as "str", "t1".String as "Integer" FROM service."/service/service1" t1'
+    ],
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->project([
+          col(row:TDSRow[1] | $row.getString('String'), 'str'),
+          col(row:TDSRow[1] | $row.getString('String'), 'Integer')
+        ])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectColumnMultiTimesRealiasToExistingWithGroupBy():Boolean[1]
+{
+  test(
+    'SELECT ' +
+    't1.String AS "col1", ' +
+    't1.String AS "col2", ' +
+    't1.StrictDate AS "StrictDate", ' +
+    't1.String AS "String", ' +
+    'SUM(t1.Integer) AS "sum" ' +
+    'FROM (select * from service."/service/service1") "t1" GROUP BY 3, 4',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->extend([
+          col(row:TDSRow[1] | $row.getString('String'), 'col1'),
+          col(row:TDSRow[1] | $row.getString('String'), 'col2')
+        ])->groupBy(
+          ['StrictDate', 'String', 'col1', 'col2'],
+          agg('sum', row | $row.getInteger('Integer'), y | $y->sum())
+        )->restrict([
+          'col1', 'col2', 'StrictDate', 'String', 'sum'
+        ])
+      }, false
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::selectStarFromRealisedColumnSubQuery():Boolean[1]
+{
+  test(
+    [
+      'SELECT * FROM (select String as "S" from service."/service/service1")',
+      'SELECT t1.* FROM (select String as "S" from service."/service/service1") t1'
+    ],
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->restrict('String')
+        ->renameColumns(pair('String', 'S'))
+      }
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectColumnMultiTimesGroupBy():Boolean[1]
+{
+  test(
+    'SELECT String, String as "str" FROM service."/service/service1" group by 1',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->extend([
+          col(row:TDSRow[1] | $row.getString('String'), 'str')
+        ])->restrict(['String', 'str'])->distinct()
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectQualified():Boolean[1]
+{
+  test(
+    'SELECT Boolean, service."/service/service1".Integer FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->restrict(['Boolean', 'Integer'])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectQualifiedWithAlias():Boolean[1]
+{
+  test(
+     'SELECT Boolean, table1.Integer FROM service."/service/service1" AS table1',
+
+     {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->restrict(['Boolean', 'Integer'])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testTableFunc():Boolean[1]
+{
+  test(
+    'SELECT Boolean, table1.Integer FROM service(\'/service/service1\') AS table1',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->restrict(['Boolean', 'Integer'])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectQuotedSingleColumn():Boolean[1]
+{
+  test(
+    'SELECT "Boolean", "Integer" FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->restrict(['Boolean', 'Integer'])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectUnquotedSingleColumn():Boolean[1]
+{
+  test(
+    'SELECT Boolean, Integer FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->restrict(['Boolean', 'Integer'])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSimplificationOfNullablesComplex():Boolean[1]
+{
+  test(
+    'SELECT (date_trunc(\'day\', CAST(\'1900-01-01\' AS DATE) + NULL * INTERVAL \'1 DAY\') + 1 * INTERVAL \'1 YEAR\') AS "NULL1", ' +
+                  'CAST( FLOOR(EXTRACT(EPOCH FROM CAST((CAST(\'1900-01-01 00:00:00\' AS TIMESTAMP) + NULL * INTERVAL \'1 DAY\') AS TIMESTAMP)) / 86400) - ' +
+                  'FLOOR(EXTRACT(EPOCH FROM CAST((CAST(\'1900-01-01 00:00:00\' AS TIMESTAMP) + NULL * INTERVAL \'1 DAY\') AS TIMESTAMP)) / 86400) AS BIGINT) AS "NULL2" FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->project([
+          col(row:TDSRow[1] | []->cast(@Date), 'NULL1'),
+          col(row:TDSRow[1] | []->cast(@Integer), 'NULL2')
+        ])
+      })
+}
+
+//DISTINCT
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDistinctAllColumns():Boolean[1]
+{
+  test(
+    'SELECT DISTINCT * FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->distinct()
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDistinctSingleColumn():Boolean[1]
+{
+  test(
+    'SELECT DISTINCT Boolean FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->restrict(['Boolean'])
+      ->distinct()
+      })
+}
+
+//LIMIT-OFFSET
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLimit():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1" LIMIT 2',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->limit(2)
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLimitAll():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1" LIMIT ALL',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOffset():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1" OFFSET 1',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->drop(1)
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLimitOffset():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1" OFFSET 2 LIMIT 1',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->slice(2, 2 + 1)
+      })
+}
+
+//ORDER BY
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderBy():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1" ORDER BY Integer DESC, Boolean ASC',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->sort([desc('Integer'), asc('Boolean')])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByAlias():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1" AS table1 ORDER BY table1.Integer DESC, Boolean',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->sort([desc('Integer'), asc('Boolean')])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByQualified():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1" ORDER BY service."/service/service1".Integer DESC, Boolean ASC',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->sort([desc('Integer'), asc('Boolean')])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByIndex():Boolean[1]
+{
+  test(
+    'SELECT Integer, String FROM service."/service/service1" ORDER BY 1 DESC, 2 ASC',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->restrict(['Integer', 'String'])
+      ->sort([desc('Integer'), asc('String')])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByColumnRealiasWithGroupBy():Boolean[1]
+{
+  test([
+    'SELECT Calc AS Calc, Calc AS Calc2 FROM (select 1 AS Calc from service."/service/service1") GROUP BY 1 ORDER BY 1, Calc2 ASC',
+    'SELECT Calc AS Calc, Calc AS Calc2 FROM (select 1 AS Calc from service."/service/service1") GROUP BY 1 ORDER BY Calc, Calc2 ASC'
+    ],
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->project(col(row:TDSRow[1] | 1, 'Calc'))
+      ->extend([
+        col(row:TDSRow[1] | $row.getInteger('Calc'), 'Calc2')
+      ])
+      ->distinct()
+      ->sort([asc('Calc'), asc('Calc2')])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByColumnRealiasWithNoGroupBy():Boolean[1]
+{
+  test([
+    'SELECT Calc AS Calc, Calc AS Calc2 FROM (select 1 AS Calc from service."/service/service1") ORDER BY 1, Calc2 ASC',
+    'SELECT Calc AS Calc, Calc AS Calc2 FROM (select 1 AS Calc from service."/service/service1") ORDER BY Calc, Calc2 ASC'
+    ],
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->project(col(row:TDSRow[1] | 1, 'Calc'))
+      ->project([
+        col(row:TDSRow[1] | $row.getInteger('Calc'), 'Calc'),
+        col(row:TDSRow[1] | $row.getInteger('Calc'), 'Calc2')
+      ])
+      ->sort([asc('Calc'), asc('Calc2')])
+      })
+}
+
+//WHERE
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWhere():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1" WHERE Integer != 2 AND Integer <> 3',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->filter(row | ($row.getInteger('Integer') != 2) && ($row.getInteger('Integer') != 3))
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCompositeWhere():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1" WHERE (Integer = 2 AND String = \'abc\') OR (String = \'def\' AND Integer = 1)',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->filter(row | ($row.getInteger('Integer') == 2 && $row.getString('String') == 'abc') || ($row.getString('String') == 'def' && $row.getInteger('Integer') == 1))
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWhereAliases():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1" AS table1 WHERE Integer = 2 OR table1.Integer = 3',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->filter(row | $row.getInteger('Integer') == 2 || $row.getInteger('Integer') == 3)
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWhereQualified():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1" WHERE service."/service/service1".Integer = 2 OR Integer = 3',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->filter(row | $row.getInteger('Integer') == 2 || $row.getInteger('Integer') == 3)
+      }, false)
+}
+
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testInAndNullOperators():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1" WHERE Integer IN (1,2,3) OR Integer IS NULL OR Integer IS NOT NULL',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->filter(row | $row.getInteger('Integer')->in([1,2,3]) || $row.getInteger('Integer')->isEmpty() || $row.getInteger('Integer')->isNotEmpty())
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testComparisonOperatorsNumber():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1" WHERE Integer > 1 OR Integer < 1 OR Integer >= 1 OR Integer <= 1 OR Integer BETWEEN 0 AND 1',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->filter(row | ($row.getInteger('Integer') > 1)
+                    || ($row.getInteger('Integer') < 1)
+                    || ($row.getInteger('Integer') >= 1)
+                    || ($row.getInteger('Integer') <= 1)
+                    || (($row.getInteger('Integer') >= 0) && ($row.getInteger('Integer') <= 1)))
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testComparisonOperatorsString():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1" WHERE String > \'one\' OR String < \'one\' OR String >= \'one\' OR String <= \'one\'',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->filter(row | ($row.getString('String') > 'one') || ($row.getString('String') < 'one') || ($row.getString('String') >= 'one') || ($row.getString('String') <= 'one'))
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testComparisonOperatorsBoolean():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1" WHERE Boolean > true OR Boolean < true OR Boolean >= false OR Boolean <= false',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->filter(row | ($row.getBoolean('Boolean') > true) || ($row.getBoolean('Boolean') < true) || ($row.getBoolean('Boolean') >= false) || ($row.getBoolean('Boolean') <= false))
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testComparisonOperatorsDate():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1" WHERE StrictDate > TIMESTAMP \'2023-01-01\' OR StrictDate < CURRENT_DATE OR StrictDate >= TIMESTAMP \'2023-01-02\' ' +
+    'OR StrictDate <= CURRENT_DATE OR StrictDate > \'2023-01-03\' OR StrictDate > date_trunc(\'month\', StrictDate)',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->filter(row | ($row.getStrictDate('StrictDate') > parseDate('2023-01-01')) || ($row.getStrictDate('StrictDate') < today())
+            || ($row.getStrictDate('StrictDate') >= parseDate('2023-01-02')) || ($row.getStrictDate('StrictDate') <= today())
+            || ($row.getStrictDate('StrictDate') > parseDate('2023-01-03'))
+            || ($row.getStrictDate('StrictDate') > firstDayOfMonth($row.getStrictDate('StrictDate'))))
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testComparisonOperatorsEnum():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service3" WHERE "The Enum Value" > \'Value2\' or "The Enum Value" < \'Value_3\' or "The Enum Value" >= \'Value2\' or "The Enum Value" <= \'Value_3\' or "The Enum Value" = \'Value1\' or "The Enum Value" != \'Value1\'',
+
+    {|
+        let const = 123;
+        FlatInput.all()->project(
+        [
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal, x | $x.type, x | $const
+        ],
+        [
+          'ID', 'Integer', 'The Enum Value', 'The Type', 'Const'
+        ]
+      )->filter(row|$row.getEnum('The Enum Value')->in(MyEnum.Value_3)
+            || $row.getEnum('The Enum Value')->in([MyEnum.VALUE__4, MyEnum.Value1, MyEnum.Value2])
+            || $row.getEnum('The Enum Value')->in([MyEnum.Value2, MyEnum.Value_3])
+            || $row.getEnum('The Enum Value')->in([MyEnum.VALUE__4, MyEnum.Value1, MyEnum.Value2, MyEnum.Value_3])
+            || $row.getEnum('The Enum Value') == MyEnum.Value1
+            || $row.getEnum('The Enum Value') != MyEnum.Value1
+      )
+  ;}, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDistinctFromOperator():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1" WHERE String IS DISTINCT FROM \'ABC\' OR String IS NOT DISTINCT FROM \'DEF\'',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->filter(row |
+        !(($row.getString('String')->isEmpty() && 'ABC'->isEmpty()) || ($row.getString('String') == 'ABC'))
+        ||
+        (($row.getString('String')->isEmpty() && 'DEF'->isEmpty()) || ($row.getString('String') == 'DEF'))
+      )
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWhereCombined():Boolean[1]
+{
+  test(
+    'SELECT String, sum(Float) AS "float" FROM service."/service/service1" WHERE Integer = 1 GROUP BY 1',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->filter(row | ($row.getInteger('Integer') == 1))
+      ->groupBy('String', agg('float', row | $row.getFloat('Float'), y | $y->sum()))
+      }, false)
+}
+
+//GROUP BY
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupBy():Boolean[1]
+{
+  test(
+    'SELECT count(Integer) AS "count" FROM service."/service/service1" GROUP BY String',
+
+    {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->groupBy('String', agg('count', row | $row.getInteger('Integer'), y | $y->count()))
+        ->restrict('count')
+      }, false)
+}
+
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByNoAggregates():Boolean[1]
+{
+  test(
+    'SELECT String FROM service."/service/service1" GROUP BY 1',
+
+    {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->restrict('String')->distinct()
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByIndex():Boolean[1]
+{
+ test(
+  'SELECT String, sum(Integer) AS "sum" FROM service."/service/service1" GROUP BY 1',
+
+  {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->groupBy(['String'], agg('sum', row | $row.getInteger('Integer'), y | $y->sum()))
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByIndexMultipleWithAlias():Boolean[1]
+{
+  test(
+    'SELECT String, sum(Integer) AS "sum", Boolean AS "bool" FROM service."/service/service1" GROUP BY 1, 3',
+
+    {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->extend([
+          col(row:TDSRow[1] | $row.getBoolean('Boolean'), 'bool')
+        ])
+        ->groupBy(['String', 'bool'], agg('sum', row | $row.getInteger('Integer'), y | $y->sum()))
+        ->restrict(['String', 'sum', 'bool'])
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByWithAlias():Boolean[1]
+{
+  test(
+    'SELECT String, sum(Integer) AS "sum", Boolean AS "bool" FROM service."/service/service1" GROUP BY String, bool',
+
+    {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->extend([
+          col(row:TDSRow[1] | $row.getBoolean('Boolean'), 'bool')
+        ])
+        ->groupBy(['String', 'bool'], agg('sum', row | $row.getInteger('Integer'), y | $y->sum()))
+        ->restrict(['String', 'sum', 'bool'])
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByFunctions():Boolean[1]
+{
+  test('SELECT ' +
+          'count(Integer) AS "count", count(DISTINCT Integer) AS "distinctCount", SUM(Integer) AS "sum", avg(Integer) AS "avg", ' +
+          'stddev_pop(Integer) AS "stdDevPop", stddev_samp(Integer) AS "stdDevSamp", stddev(Integer) AS "stdDev", ' +
+          'var_pop(Integer) AS "variancePop", var_samp(Integer) AS "varianceSamp", variance(Integer) AS "variance", ' +
+          'min(Integer) AS "minInt", min(StrictDate) AS "minDate", min(String) AS "minString", ' +
+          'max(Integer) AS "maxInt", max(StrictDate) AS "maxDate", max(String) AS "maxString", ' +
+          'string_agg(String) AS "stringAgg", string_agg(cast(Integer AS VARCHAR), \' \') AS "stringAgg2", ' +
+          'bool_and(Boolean) AS "boolAnd", bool_and(Integer > 1) AS "boolAndExp", ' +
+          'every(Boolean) AS "every", every(Integer > 1) AS "everyExp" ' +
+          'FROM service."/service/service1" GROUP BY String',
+
+      {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->groupBy('String', [
+          agg('count', row | $row.getInteger('Integer'), y | $y->count()),
+          agg('distinctCount', row | $row.getInteger('Integer'), y | $y->distinct()->count()),
+          agg('sum', row | $row.getInteger('Integer'), y | $y->sum()),
+          agg('avg', row | $row.getInteger('Integer'), y | $y->average()),
+          agg('stdDevPop', row | $row.getInteger('Integer'), y | $y->stdDevPopulation()),
+          agg('stdDevSamp', row | $row.getInteger('Integer'), y | $y->stdDevSample()),
+          agg('stdDev', row | $row.getInteger('Integer'), y | $y->stdDevSample()),
+          agg('variancePop', row | $row.getInteger('Integer'), y | $y->variancePopulation()),
+          agg('varianceSamp', row | $row.getInteger('Integer'), y | $y->varianceSample()),
+          agg('variance', row | $row.getInteger('Integer'), y | $y->varianceSample()),
+          agg('minInt', row | $row.getInteger('Integer'), y | $y->min()),
+          agg('minDate', row | $row.getStrictDate('StrictDate'), y | $y->min()),
+          agg('minString', row | $row.getString('String'), y | $y->min()),
+          agg('maxInt', row | $row.getInteger('Integer'), y | $y->max()),
+          agg('maxDate', row | $row.getStrictDate('StrictDate'), y | $y->max()),
+          agg('maxString', row | $row.getString('String'), y | $y->max()),
+          agg('stringAgg', row | $row.getString('String'), y | $y->joinStrings()),
+          agg('stringAgg2', row | $row.getInteger('Integer')->toString(), y | $y->joinStrings(' ')),
+          agg('boolAnd', row | $row.getBoolean('Boolean'), y | $y->and()),
+          agg('boolAndExp', row | $row.getInteger('Integer') > 1, y | $y->and()),
+          agg('every', row | $row.getBoolean('Boolean'), y | $y->and()),
+          agg('everyExp', row | $row.getInteger('Integer') > 1, y | $y->and())
+        ])->restrict(['count', 'distinctCount', 'sum', 'avg', 'stdDevPop', 'stdDevSamp', 'stdDev', 'variancePop', 'varianceSamp', 'variance', 'minInt', 'minDate', 'minString',
+                      'maxInt', 'maxDate', 'maxString', 'stringAgg', 'stringAgg2', 'boolAnd', 'boolAndExp', 'every', 'everyExp'])
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByAggregateExpressions():Boolean[1]
+{
+  test(
+    'SELECT ' +
+    'Integer, ' +
+    'sum(1) AS "sum", ' +
+    'count(*) AS "count", ' +
+    'sum(Integer + Float) AS "exp", ' +
+    'EXTRACT(YEAR FROM MAX("StrictDate")) AS "aggFunctionCall", ' +
+    'MAX("StrictDate") + INTERVAL \'1 WEEK\' AS "dateAggMath" ' +
+    'FROM service."/service/service1" GROUP BY Integer',
+
+    {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->groupBy(['Integer'], [
+          agg('sum', row | 1, y | $y->sum()),
+          agg('count', row | $row, y | $y->count()),
+          agg('exp', row | $row.getInteger('Integer') + $row.getFloat('Float'), y | $y->sum()),
+          agg('aggFunctionCall', row | $row.getStrictDate('StrictDate'), y | $y->max()->toOne()->year()),
+          agg('dateAggMath', row | $row.getStrictDate('StrictDate'), y | $y->max()->toOne()->adjust(1, DurationUnit.WEEKS))])
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByAggregateMixedExpressions():Boolean[1]
+{
+  test(
+    'SELECT ' +
+    'Integer, ' +
+    'sum(Integer) AS "sum", ' +
+    'count(*) AS "count", ' +
+    'CASE WHEN sum(Integer) > sum(Float) THEN 1 ELSE 0 END AS "multiArg", ' +
+    'CASE WHEN sum(Integer) < count(Float) THEN 1 ELSE 0 END AS "multiArg2" ' +
+    'FROM service."/service/service1" GROUP BY Integer',
+
+    {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->groupBy(['Integer'], [
+          agg('sum', row | $row.getInteger('Integer'), y | $y->sum()),
+          agg('count', row | $row, y | $y->count()),
+          agg('sum(Integer)', row | $row.getInteger('Integer'), y | $y->sum()),
+          agg('sum(Float)', row | $row.getFloat('Float'), y | $y->sum()),
+          agg('count(Float)', row | $row.getFloat('Float'), y | $y->count())
+        ])->extend([
+          col(row:TDSRow[1] | if ($row.getInteger('sum(Integer)') > $row.getFloat('sum(Float)'), | 1, | 0), 'multiArg'),
+          col(row:TDSRow[1] | if ($row.getInteger('sum(Integer)') < $row.getInteger('count(Float)'), | 1, | 0), 'multiArg2')
+        ])
+        ->restrict(['Integer', 'sum', 'count', 'multiArg', 'multiArg2'])
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByMixed():Boolean[1]
+{
+  test(
+    'SELECT sum(Integer) AS "SUM", CASE WHEN String = \'abc\' THEN 1 WHEN String = \'def\' THEN 2 ELSE 3 END AS "Number" FROM service."/service/service1" GROUP BY 2',
+
+    {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->extend(
+            col(row:TDSRow[1] | if ($row.getString('String') == 'abc', | 1, | if ($row.getString('String') == 'def', | 2, | 3)), 'Number')
+        )->groupBy(['Number'], [
+          agg('SUM', row | $row.getInteger('Integer'), y | $y->sum())
+        ])->restrict(['SUM', 'Number'])
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByAggWithinFunc():Boolean[1]
+{
+  test('SELECT ' +
+          'CASE WHEN(SUM("Integer") <10) THEN max("Integer") ELSE min("Integer") END AS "MIN/MAX", ' +
+          'CASE WHEN(SUM("Integer") < 10) THEN \'LOW\' ELSE \'HIGH\' END AS "HIGH/LOW", ' +
+          'cast(sum("Integer") AS VARCHAR) AS "CAST", ' +
+          'floor(sum("Integer")) AS "FUNC" ' +
+        'FROM service."/service/service1"',
+
+      {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->groupBy([], [
+          agg('MIN/MAX', row | $row.getInteger('Integer'), y | if ($y->sum() < 10, | max($y), | min($y))),
+          agg('HIGH/LOW', row | $row.getInteger('Integer'), y | if ($y->sum() < 10, | 'LOW', | 'HIGH')),
+          agg('CAST', row | $row.getInteger('Integer'), y | $y->sum()->toString()),
+          agg('FUNC', row | $row.getInteger('Integer'), y | floor($y->sum()))
+        ])
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testAggregationWithConstantSelectItemNoGroupBy():Boolean[1]
+{
+  test(
+    'SELECT count("Integer") AS "Count", count("Float") AS "Float Count", \'abc\' AS "String", cast("Float" AS VARCHAR) AS "Float", Float AS "Original Float" from service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->extend([
+            col(row:TDSRow[1] | 'abc', 'String_1'),
+            col(row:TDSRow[1] | $row.getFloat('Float')->toString(), 'Float_1'),
+            col(row:TDSRow[1] | $row.getFloat('Float'), 'Original Float')
+        ])
+        ->groupBy(['String_1', 'Float_1', 'Original Float'], [
+          agg('Count', row | $row.getInteger('Integer'), y | $y->count()),
+          agg('Float Count', row | $row.getFloat('Float'), y | $y->count())
+        ])
+        ->restrict(['Count', 'Float Count', 'String_1', 'Float_1', 'Original Float'])
+        ->renameColumns([
+          pair('String_1', 'String'),
+          pair('Float_1', 'Float')
+        ])
+      }, false
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByExpression():Boolean[1]
+{
+  //NOTE: group by complex expressions, cannot reference projected columns, only source columns
+  test(
+    'SELECT sum(Integer) AS "sum", String FROM service."/service/service1" GROUP BY String, (case when "String" = \'N/A\' then \'\' else "String" end)',
+
+    {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )
+        ->extend([
+          col(row:TDSRow[1] | if ($row.getString('String') == 'N/A', | '', | $row.getString('String')), 'CASE WHEN String = N/A THEN  ELSE String END')
+        ])
+        ->groupBy(['String', 'CASE WHEN String = N/A THEN  ELSE String END'], agg('sum', row | $row.getInteger('Integer'), y | $y->sum()))
+        ->restrict(['sum', 'String'])
+      }, false)
+}
+
+//HAVING
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testHaving():Boolean[1]
+{
+  test(
+    'SELECT count(Integer) AS "count", max(Integer) FROM service."/service/service1" GROUP BY String HAVING count(Integer) > 0 AND count(1) > 0 AND floor(max(Integer)) > 0',
+
+    {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->groupBy('String', [
+          agg('count', row | $row.getInteger('Integer'), y | $y->count()),
+          agg('max(Integer)', row | $row.getInteger('Integer'), y | $y->max()),
+          agg('count(1)', row | 1, y | $y->count())
+        ])->filter(row | ($row.getInteger('count') > 0) && ($row.getInteger('count(1)') > 0) && (floor($row.getInteger('max(Integer)')) > 0))
+          ->restrict(['count', 'max(Integer)'])
+
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testHavingNoGroupby():Boolean[1]
+{
+  test('SELECT \'abc\', pi() AS "pi" FROM service."/service/service1" HAVING count(1) > 0 AND count(1) < 1000',
+
+      {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->extend([
+          col(row:TDSRow[1] | 'abc', 'abc'),
+          col(row:TDSRow[1] | pi(), 'pi')
+        ])
+        ->groupBy(['abc', 'pi'], [
+          agg('count(1)', row | 1, y | $y->count())
+        ])->filter(row | ($row.getInteger('count(1)') > 0) && ($row.getInteger('count(1)') < 1000))
+          ->restrict(['abc', 'pi'])
+
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testHavingWithJoinAndColumnAlias():Boolean[1]
+{
+  test(
+    'SELECT table1.*, table2.String as "str" FROM service(\'/service/service1\') "table1" LEFT JOIN service(\'/service/service1\') "table2" USING (String) HAVING (COUNT(1) > 0)',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->renameColumns([
+                pair('Boolean', 'Boolean_table1'),
+                pair('Integer', 'Integer_table1'),
+                pair('Float', 'Float_table1'),
+                pair('Decimal', 'Decimal_table1'),
+                pair('StrictDate', 'StrictDate_table1'),
+                pair('DateTime', 'DateTime_table1'),
+                pair('String', 'String_table1')
+        ])->join(FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->renameColumns([
+                pair('Boolean', 'Boolean_table2'),
+                pair('Integer', 'Integer_table2'),
+                pair('Float', 'Float_table2'),
+                pair('Decimal', 'Decimal_table2'),
+                pair('StrictDate', 'StrictDate_table2'),
+                pair('DateTime', 'DateTime_table2'),
+                pair('String', 'String_table2')
+        ]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, ['String'])
+        ->extend(
+          col(row:TDSRow[1] | $row.getString('String_table2'), 'str')
+        )
+        ->groupBy([
+          'Boolean_table1', 'Integer_table1', 'Float_table1', 'Decimal_table1', 'StrictDate_table1', 'DateTime_table1', 'String_table1',
+          'str'
+        ], agg('COUNT(1)', row | 1, y | $y->count()))
+        ->filter(row | $row.getInteger('COUNT(1)') > 0)
+        ->restrict([
+          'Boolean_table1', 'Integer_table1', 'Float_table1', 'Decimal_table1', 'StrictDate_table1', 'DateTime_table1', 'String_table1', 'str'
+        ])
+        ->renameColumns([
+                pair('Boolean_table1', 'Boolean'),
+                pair('Integer_table1', 'Integer'),
+                pair('Float_table1', 'Float'),
+                pair('Decimal_table1', 'Decimal'),
+                pair('StrictDate_table1', 'StrictDate'),
+                pair('DateTime_table1', 'DateTime'),
+                pair('String_table1', 'String')
+        ])
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testHavingSelectStar():Boolean[1]
+{
+  test(
+    'SELECT * FROM service(\'/service/service1\') HAVING (COUNT(1) > 0)',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->groupBy(['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'], agg('COUNT(1)', row | 1, y | $y->count()))->filter(row | $row.getInteger('COUNT(1)') > 0)
+        ->restrict([ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      }, false)
+}
+
+//CAST
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCasts():Boolean[1]
+{
+  test('SELECT' +
+      ' CAST(\'2023-01-01\' AS DATE) AS "constant", CAST(String AS VARCHAR) AS "string", CAST(String AS TEXT) AS "text", CAST(String AS DATE) AS "date",' +
+      ' CAST(String AS INTEGER) AS "integer", CAST(String AS BIGINT) AS "bigint", CAST(String AS SMALLINT) AS "smallint", CAST(String AS BOOLEAN) AS "boolean", ' +
+      ' CAST(String AS DOUBLE PRECISION) AS "double", CAST(String AS NUMERIC) AS "numeric",' +
+      ' CAST(String AS TIMESTAMP) AS "timestamp", CAST(Integer AS TEXT) AS "integerText", CAST(Integer AS VARCHAR) AS "integerString", CAST(Integer AS Integer) AS "expression",' +
+      ' CAST(String AS VARCHAR(2)) AS "stringChars", CAST(Integer AS VARCHAR(2)) AS "integerStringChars",' +
+      ' CAST(Float AS NUMERIC) AS "floatNumeric", CAST(Decimal AS NUMERIC) AS "decimalNumeric", CAST(1 + 1.1 AS NUMERIC) AS "numberNumeric", CAST(Decimal AS DOUBLE PRECISION) AS "decimalDoublePrecision",' +
+      ' CAST(Float AS DOUBLE PRECISION) AS "floatDoublePrecision", CAST(1 + 1.1 AS DOUBLE PRECISION) AS "numberDoublePrecision", CAST(String AS NUMERIC(4, 2)) AS "numericParams" FROM service."/service/service1"',
+
+      {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->project([
+          col(row:TDSRow[1] | parseDate('2023-01-01'), 'constant'),
+          col(row:TDSRow[1] | $row.getString('String'), 'string'),
+          col(row:TDSRow[1] | $row.getString('String'), 'text'),
+          col(row:TDSRow[1] | parseDate($row.getString('String')), 'date'),
+          col(row:TDSRow[1] | parseInteger($row.getString('String')), 'integer'),
+          col(row:TDSRow[1] | parseInteger($row.getString('String')), 'bigint'),
+          col(row:TDSRow[1] | parseInteger($row.getString('String')), 'smallint'),
+          col(row:TDSRow[1] | parseBoolean($row.getString('String')), 'boolean'),
+          col(row:TDSRow[1] | parseFloat($row.getString('String')), 'double'),
+          col(row:TDSRow[1] | parseDecimal($row.getString('String')), 'numeric'),
+          col(row:TDSRow[1] | parseDate($row.getString('String')), 'timestamp'),
+          col(row:TDSRow[1] | toString($row.getInteger('Integer')), 'integerText'),
+          col(row:TDSRow[1] | toString($row.getInteger('Integer')), 'integerString'),
+          col(row:TDSRow[1] | $row.getInteger('Integer'), 'expression'),
+          col(row:TDSRow[1] | substring($row.getString('String'), 1, 2), 'stringChars'),
+          col(row:TDSRow[1] | substring(toString($row.getInteger('Integer')), 1, 2), 'integerStringChars'),
+          col(row:TDSRow[1] | toDecimal($row.getFloat('Float')), 'floatNumeric'),
+          col(row:TDSRow[1] | $row.getDecimal('Decimal'), 'decimalNumeric'),
+          col(row:TDSRow[1] | toDecimal(1 + 1.1), 'numberNumeric'),
+          col(row:TDSRow[1] | toFloat($row.getDecimal('Decimal')), 'decimalDoublePrecision'),
+          col(row:TDSRow[1] | $row.getFloat('Float'), 'floatDoublePrecision'),
+          col(row:TDSRow[1] | toFloat(1 + 1.1), 'numberDoublePrecision'),
+          col(row:TDSRow[1] | round(parseDecimal($row.getString('String')), 2), 'numericParams')
+        ])
+      })
+}
+
+//CAST
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDateCasts():Boolean[1]
+{
+  test(
+    'SELECT CAST(\'2023-01-01\' AS DATE) AS "constantDate", CAST(String AS DATE) AS "date", CAST(\'2023-01-01 10:01:01\' AS TIMESTAMP) AS "constantTimestamp", ' +
+    'CAST(\'2023-01-01 10:01:01.12\' AS TIMESTAMP) AS "constantTimestampMillis", CAST(String AS TIMESTAMP) AS "timestamp" FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->project([
+          col(row:TDSRow[1] | parseDate('2023-01-01'), 'constantDate'),
+          col(row:TDSRow[1] | parseDate($row.getString('String')), 'date'),
+          col(row:TDSRow[1] | parseDate('2023-01-01T10:01:01'), 'constantTimestamp'),
+          col(row:TDSRow[1] | parseDate('2023-01-01T10:01:01.12'), 'constantTimestampMillis'),
+          col(row:TDSRow[1] | parseDate($row.getString('String')), 'timestamp')
+        ])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testNullCasts():Boolean[1]
+{
+  test('SELECT CAST(NULL AS VARCHAR) AS "string", CAST(NULL AS TEXT) AS "text", CAST(NULL AS DATE) AS "date", ' +
+       'CAST(NULL AS INTEGER) AS "integer", CAST(NULL AS BOOLEAN) AS "boolean", CAST(NULL AS DOUBLE PRECISION) AS "double", ' +
+       'CAST(NULL AS NUMERIC) AS "numeric", CAST(NULL AS TIMESTAMP) AS "timestamp", CAST(floor(NULL) AS TEXT) AS "exp" ' +
+       'FROM service."/service/service1"',
+
+      {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->project([
+          col(row:TDSRow[1] | cast([], @String), 'string'),
+          col(row:TDSRow[1] | cast([], @String), 'text'),
+          col(row:TDSRow[1] | cast([], @StrictDate), 'date'),
+          col(row:TDSRow[1] | cast([], @Integer), 'integer'),
+          col(row:TDSRow[1] | cast([], @Boolean), 'boolean'),
+          col(row:TDSRow[1] | cast([], @Float), 'double'),
+          col(row:TDSRow[1] | cast([], @Decimal), 'numeric'),
+          col(row:TDSRow[1] | cast([], @DateTime), 'timestamp'),
+          col(row:TDSRow[1] | cast([], @String), 'exp')
+        ])
+      })
+}
+
+
+//CASE
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMultiSearchedCaseWhen():Boolean[1]
+{
+  test(
+    'SELECT CASE WHEN String = \'abc\' THEN 1 WHEN String = \'def\' THEN NULL ELSE 3 END AS "Number" FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->project(
+          [
+            col(row:TDSRow[1] | if ($row.getString('String') == 'abc', | 1, | if ($row.getString('String') == 'def', | [], | 3)), 'Number')
+          ]
+        )
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCaseWhen():Boolean[1]
+{
+  test(
+    'SELECT CASE String WHEN \'abc\' THEN 1 WHEN \'def\' THEN 2 ELSE 3 END AS "Number" FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->project(
+          [
+            col(row:TDSRow[1] | if ($row.getString('String') == 'abc', | 1, | if ($row.getString('String') == 'def', | 2, | 3)), 'Number')
+          ]
+        )
+      })
+}
+
+
+///ARITHMETIC
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testArithmetic():Boolean[1]
+{
+  test(
+    'SELECT 1 + 2 AS "plus", 1 - 2 AS "minus", 1 * 2 AS "multiply", 1 / 2 AS "divide", 1 % 2 AS "mod", 1 ^ 2 AS "pow", Integer + Float AS "column plus" FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->project(
+          [
+            col(row:TDSRow[1] | 1 + 2, 'plus'),
+            col(row:TDSRow[1] | 1 - 2, 'minus'),
+            col(row:TDSRow[1] | 1 * 2, 'multiply'),
+            col(row:TDSRow[1] | 1 / 2, 'divide'),
+            col(row:TDSRow[1] | mod(1, 2), 'mod'),
+            col(row:TDSRow[1] | pow(1, 2), 'pow'),
+            col(row:TDSRow[1] | $row.getInteger('Integer') + $row.getFloat('Float'), 'column plus')
+          ]
+        )
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testArithmeticNullable():Boolean[1]
+{
+  test(
+    'SELECT 1 + NULL AS "plus", 1 - NULL AS "minus", 1 * NULL AS "multiply", 1 / NULL AS "divide", 1 % NULL AS "mod", 1 ^ NULL AS "pow" FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->project(
+          [
+            col(row:TDSRow[1] | []->cast(@Number), 'plus'),
+            col(row:TDSRow[1] | []->cast(@Number), 'minus'),
+            col(row:TDSRow[1] | []->cast(@Number), 'multiply'),
+            col(row:TDSRow[1] | []->cast(@Float), 'divide'),
+            col(row:TDSRow[1] | []->cast(@Integer), 'mod'),
+            col(row:TDSRow[1] | []->cast(@Number), 'pow')
+          ]
+        )
+      })
+}
+
+//JOIN
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLeftJoinSubqueryOn():Boolean[1]
+{
+  test(
+    'SELECT table1.Integer FROM service."/service/service1" "table1" LEFT OUTER JOIN (SELECT Integer FROM service."/service/service2") AS "table2" ON "table1"."Integer" = "table2"."Integer"',
+
+    {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->renameColumns([
+            pair('Boolean', 'Boolean_table1'),
+            pair('Integer', 'Integer_table1'),
+            pair('Float', 'Float_table1'),
+            pair('Decimal', 'Decimal_table1'),
+            pair('StrictDate', 'StrictDate_table1'),
+            pair('DateTime', 'DateTime_table1'),
+            pair('String', 'String_table1')
+          ])
+        ->join(FlatInput.all()->project(
+                [x | $x.idIn, x | $x.integerIn, x | $x.stringIn],
+                ['ID', 'Integer', 'String']
+              )->restrict('Integer')
+              ->renameColumns([
+                pair('Integer', 'Integer_table2')
+              ]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer_table1') == $row2.getInteger('Integer_table2')}
+        )->restrict('Integer_table1')->renameColumns(pair('Integer_table1', 'Integer'))
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLeftJoinSubqueryUsing():Boolean[1]
+{
+  test(
+    'SELECT table1.Integer AS "Int", table2.String AS "Str" FROM service."/service/service1" AS table1 LEFT OUTER JOIN (SELECT Integer, String FROM service."/service/service1") AS table2 USING (Integer)',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->renameColumns([
+          pair('Boolean', 'Boolean_table1'),
+          pair('Integer', 'Integer_table1'),
+          pair('Float', 'Float_table1'),
+          pair('Decimal', 'Decimal_table1'),
+          pair('StrictDate', 'StrictDate_table1'),
+          pair('DateTime', 'DateTime_table1'),
+          pair('String', 'String_table1')
+        ])->join(
+          FlatInput.all()->project(
+            [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+            [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->restrict(['Integer', 'String'])
+            ->renameColumns([
+              pair('Integer', 'Integer_table2'),
+              pair('String', 'String_table2')
+            ]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, ['Integer']
+        )->restrict([
+          'Integer_table1', 'String_table2'
+        ])->renameColumns([
+          pair('Integer_table1', 'Int'),
+          pair('String_table2', 'Str')
+        ])
+      });
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCrossJoin():Boolean[1]
+{
+  test(
+    'SELECT table1.Integer AS "Int", table2.String AS "Str" FROM service."/service/service1" table1 CROSS JOIN service."/service/service2" table2',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->renameColumns([
+          pair('Boolean', 'Boolean_table1'),
+          pair('Integer', 'Integer_table1'),
+          pair('Float', 'Float_table1'),
+          pair('Decimal', 'Decimal_table1'),
+          pair('StrictDate', 'StrictDate_table1'),
+          pair('DateTime', 'DateTime_table1'),
+          pair('String', 'String_table1')
+        ])->join(
+          FlatInput.all()
+            ->project([{x|$x.idIn}, {x|$x.integerIn}, {x|$x.stringIn}], ['ID', 'Integer', 'String'])
+            ->renameColumns([
+              pair('ID', 'ID_table2'),
+              pair('Integer', 'Integer_table2'),
+              pair('String', 'String_table2')
+            ]), meta::relational::metamodel::join::JoinType.INNER, {row1:TDSRow[1], row2:TDSRow[1] | true}
+        )->restrict(['Integer_table1', 'String_table2'])->renameColumns([
+          pair('Integer_table1', 'Int'),
+          pair('String_table2', 'Str')
+        ])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testImplicitJoin():Boolean[1]
+{
+  test(
+    'SELECT table1.Integer AS "Int", table2.String AS "Str" FROM service."/service/service1" table1, service."/service/service2" table2 where table1.Integer = table2.Integer',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->renameColumns([
+          pair('Boolean', 'Boolean_table1'),
+          pair('Integer', 'Integer_table1'),
+          pair('Float', 'Float_table1'),
+          pair('Decimal', 'Decimal_table1'),
+          pair('StrictDate', 'StrictDate_table1'),
+          pair('DateTime', 'DateTime_table1'),
+          pair('String', 'String_table1')
+        ])->join(
+          FlatInput.all()
+            ->project([{x|$x.idIn}, {x|$x.integerIn}, {x|$x.stringIn}], ['ID', 'Integer', 'String'])
+            ->renameColumns([
+              pair('ID', 'ID_table2'),
+              pair('Integer', 'Integer_table2'),
+              pair('String', 'String_table2')
+            ]), meta::relational::metamodel::join::JoinType.INNER, {row1:TDSRow[1], row2:TDSRow[1] | true}
+        )->filter({row|($row.getInteger('Integer_table1') == $row.getInteger('Integer_table2'))})
+        ->restrict(['Integer_table1', 'String_table2'])->renameColumns([
+          pair('Integer_table1', 'Int'),
+          pair('String_table2', 'Str')
+        ])
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLeftJoinRelationOn():Boolean[1]
+{
+  test(
+    'SELECT table1.Integer AS Integer, table2.String AS String FROM service."/service/service1" AS table1 LEFT OUTER JOIN service."/service/service2" AS table2 ON (table1.Integer = table2.Integer)',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->renameColumns([
+          pair('Boolean', 'Boolean_table1'),
+          pair('Integer', 'Integer_table1'),
+          pair('Float', 'Float_table1'),
+          pair('Decimal', 'Decimal_table1'),
+          pair('StrictDate', 'StrictDate_table1'),
+          pair('DateTime', 'DateTime_table1'),
+          pair('String', 'String_table1')
+        ])->join(FlatInput.all()->project(
+            [x | $x.idIn, x | $x.integerIn, x | $x.stringIn],
+            ['ID', 'Integer', 'String']
+        )->renameColumns([
+          pair('ID', 'ID_table2'),
+          pair('Integer', 'Integer_table2'),
+          pair('String', 'String_table2')
+        ]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer_table1') == $row2.getInteger('Integer_table2')})
+        ->restrict(['Integer_table1', 'String_table2'])
+        ->renameColumns([
+          pair('Integer_table1', 'Integer'),
+          pair('String_table2', 'String')
+        ])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMultiJoin():Boolean[1]
+{
+  test(
+      'SELECT * FROM (SELECT * FROM service(\'/service/service1\')) "table1" LEFT JOIN (SELECT * FROM service(\'/service/service2\')) "table2" ON ("table1"."String" = "table2"."ID") ' +
+      'LEFT JOIN (SELECT * FROM service(\'/service/service2\')) "table3" ON ("table1"."String" = "table3"."String") WHERE "table2"."String" = \'ABC\'',
+
+      {|FlatInput.all()
+          ->project([{x|$x.booleanIn}, {x|$x.integerIn}, {x|$x.floatIn}, {x|$x.decimalIn}, {x|$x.strictDateIn}, {x|$x.dateTimeIn}, {x|$x.stringIn}], ['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+          ->renameColumns([
+            pair('Boolean', 'Boolean_table1'),
+            pair('Integer', 'Integer_table1'),
+            pair('Float', 'Float_table1'),
+            pair('Decimal', 'Decimal_table1'),
+            pair('StrictDate', 'StrictDate_table1'),
+            pair('DateTime', 'DateTime_table1'),
+            pair('String', 'String_table1')
+          ])
+          ->join(FlatInput.all()
+                  ->project([{x|$x.idIn}, {x|$x.integerIn}, {x|$x.stringIn}], ['ID', 'Integer', 'String'])
+                  ->renameColumns([
+                    pair('ID', 'ID_table2'),
+                    pair('Integer', 'Integer_table2'),
+                    pair('String', 'String_table2')
+                  ]),
+            meta::relational::metamodel::join::JoinType.LEFT_OUTER,
+            {row1, row2|$row1.getString('String_table1') == $row2.getInteger('ID_table2')})
+          ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                  ->project([{x|$x.idIn}, {x|$x.integerIn}, {x|$x.stringIn}], ['ID', 'Integer', 'String'])
+                  ->renameColumns([
+                    pair('ID', 'ID_table3'),
+                    pair('Integer', 'Integer_table3'),
+                    pair('String', 'String_table3')
+                  ]),
+            meta::relational::metamodel::join::JoinType.LEFT_OUTER,
+            {row1, row2|$row1.getString('String_table1') == $row2.getString('String_table3')})
+          ->filter({row|$row.getString('String_table2') == 'ABC'})
+          ->renameColumns([
+            pair('Boolean_table1', 'Boolean'),
+            pair('Float_table1', 'Float'),
+            pair('Decimal_table1', 'Decimal'),
+            pair('StrictDate_table1', 'StrictDate'),
+            pair('DateTime_table1', 'DateTime')
+          ])}, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMultiJoinSelectStarFromLimited():Boolean[1]
+{
+  test(
+    'select * from ( SELECT table1.String as T1String , table2.String as T2String FROM service."/service/service1" AS table1 LEFT OUTER JOIN service."/service/service1" AS table2 ON table1.String = table2.String )',
+
+      {|FlatInput.all()
+          ->project([{x|$x.booleanIn}, {x|$x.integerIn}, {x|$x.floatIn}, {x|$x.decimalIn}, {x|$x.strictDateIn}, {x|$x.dateTimeIn}, {x|$x.stringIn}], ['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+          ->renameColumns([
+            pair('Boolean', 'Boolean_table1'),
+            pair('Integer', 'Integer_table1'),
+            pair('Float', 'Float_table1'),
+            pair('Decimal', 'Decimal_table1'),
+            pair('StrictDate', 'StrictDate_table1'),
+            pair('DateTime', 'DateTime_table1'),
+            pair('String', 'String_table1')
+          ])
+          ->join(FlatInput.all()
+                  ->project([{x|$x.booleanIn}, {x|$x.integerIn}, {x|$x.floatIn}, {x|$x.decimalIn}, {x|$x.strictDateIn}, {x|$x.dateTimeIn}, {x|$x.stringIn}], ['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+                  ->renameColumns([
+                    pair('Boolean', 'Boolean_table2'),
+                    pair('Integer', 'Integer_table2'),
+                    pair('Float', 'Float_table2'),
+                    pair('Decimal', 'Decimal_table2'),
+                    pair('StrictDate', 'StrictDate_table2'),
+                    pair('DateTime', 'DateTime_table2'),
+                    pair('String', 'String_table2')
+                  ]),
+            meta::relational::metamodel::join::JoinType.LEFT_OUTER,
+            {row1, row2|$row1.getString('String_table1') == $row2.getString('String_table2')})
+          ->project([
+            col(row:TDSRow[1] | $row.getString('String_table1'), 'T1String'),
+            col(row:TDSRow[1] | $row.getString('String_table2'), 'T2String')
+          ])
+        }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testJoinWithAliasRenamingInSubQueries():Boolean[1]
+{
+  test(
+    'SELECT "t0"."String" AS "String", "t1"."measure" AS "sum" FROM (SELECT "t3"."String" AS "String" FROM service."/service/service1" "t3" GROUP BY 1) "t0" CROSS JOIN (SELECT SUM("t3"."Integer") AS "measure" FROM service."/service/service1" "Staples" HAVING (COUNT(1) > 0)) "t1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->restrict('String')->distinct()
+        ->renameColumns(pair('String', 'String_t0'))
+        ->join(FlatInput.all()->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              ['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+              ->groupBy([], [
+                agg('measure', row | $row.getInteger('Integer'), y | $y->sum()),
+                agg('COUNT(1)', row | 1, y | $y->count())
+              ])
+              ->filter(row|($row.getInteger('COUNT(1)') > 0))
+              ->restrict('measure')
+              ->renameColumns(pair('measure', 'measure_t1')),
+              meta::relational::metamodel::join::JoinType.INNER, {row1:TDSRow[1], row2:TDSRow[1] | true})
+        ->renameColumns([
+          pair('String_t0', 'String'),
+          pair('measure_t1', 'sum')
+        ])
+    }, false
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testJoinWithMultiCommonTableAliases():Boolean[1]
+{
+  test(
+    'SELECT "t0"."int"           AS "int",' +
+    '       "t1"."Integer"       AS "Integer"' +
+    'FROM service."/service/service1" "t1"' +
+    'INNER JOIN (' +
+    '    SELECT "t1"."Integer"      AS "int",' +
+    '           "t1"."String"       AS "str"' +
+    '    FROM service."/service/service2" "t1"' +
+    ') "t0" ON (("t1"."Integer" = "t0"."int") AND ("t1"."String" = "t0"."str"))',
+
+    {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+        ->project([x|$x.booleanIn, x|$x.integerIn, x|$x.floatIn, x|$x.decimalIn, x|$x.strictDateIn, x|$x.dateTimeIn, x|$x.stringIn],
+        ['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+        ->renameColumns([
+          pair('Boolean', 'Boolean_t1'),
+          pair('Integer', 'Integer_t1'),
+          pair('Float', 'Float_t1'),
+          pair('Decimal', 'Decimal_t1'),
+          pair('StrictDate', 'StrictDate_t1'),
+          pair('DateTime', 'DateTime_t1'),
+          pair('String', 'String_t1')])
+        ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project([x|$x.idIn, x|$x.integerIn, x|$x.stringIn], ['ID', 'Integer', 'String'])
+            ->restrict(['Integer', 'String'])
+            ->renameColumns([
+              pair('Integer', 'int'),
+              pair('String', 'str')])
+            ->renameColumns([
+              pair('int', 'int_t0'),
+              pair('str', 'str_t0')]),
+          meta::relational::metamodel::join::JoinType->extractEnumValue('INNER'),
+          {row1, row2|(($row1.getInteger('Integer_t1') == $row2.getInteger('int_t0')) && ($row1.getString('String_t1') == $row2.getString('str_t0')))})
+        ->restrict(['int_t0', 'Integer_t1'])
+        ->renameColumns([
+          pair('int_t0', 'int'),
+          pair('Integer_t1', 'Integer')])
+      }, false
+  )
+}
+
+
+
+//UNION
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testUnion():Boolean[1]
+{
+  test('SELECT Integer FROM service."/service/service1" UNION SELECT Integer FROM service."/service/service2"',
+
+      {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->restrict('Integer')
+        ->concatenate(
+          FlatInput.all()
+            ->project(
+              [ x | $x.idIn, x | $x.integerIn, x | $x.stringIn ],
+              [ 'ID', 'Integer', 'String' ])
+            ->restrict('Integer')
+        )
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testUnionWithRestrictAllNeeded():Boolean[1]
+{
+  test('SELECT * FROM (SELECT * FROM service."/service/service1" UNION SELECT * FROM service."/service/service1")',
+
+      {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->concatenate(
+          FlatInput.all()
+              ->project(
+                [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+                [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        )
+      })
+}
+
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectFromAliasedUnion():Boolean[1]
+{
+  test('SELECT 1 AS "Number of Records",' +
+       '"t0"."String" AS "String"' +
+       'FROM (SELECT "t1"."String" AS "String"' +
+       '       FROM (' +
+       '           SELECT "s1"."Integer" AS "int",' +
+       '                   \'Value\'     AS "String"' +
+       '           FROM service."/service/service1" "s1") "t1"' +
+       '       UNION ALL' +
+       '       SELECT "s1"."String" AS "String"' +
+       '       FROM (SELECT "s1"."Integer" AS "int",' +
+       '                   \'Value2\'        AS "String"' +
+       '             FROM service."/service/service1" "s1") "t2") "t0" LIMIT 1000',
+
+    {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+      ->project([x|$x.booleanIn, x|$x.integerIn, x|$x.floatIn, x|$x.decimalIn, x|$x.strictDateIn, x|$x.dateTimeIn, x|$x.stringIn],
+        ['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+      ->project([
+          col(row:TDSRow[1] |$row.getInteger('Integer'), 'int'),
+          col(row:TDSRow[1]| 'Value', 'String')])
+      ->restrict('String')
+      ->concatenate(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+        ->project([x|$x.booleanIn, x|$x.integerIn, x|$x.floatIn, x|$x.decimalIn, x|$x.strictDateIn, x|$x.dateTimeIn, x|$x.stringIn],
+            ['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+        ->project([
+          col(row:TDSRow[1]| $row.getInteger('Integer'), 'int'),
+          col(row:TDSRow[1]|'Value2', 'String')])
+        ->restrict('String')
+      )->project([
+        col(row:TDSRow[1]|1, 'Number of Records'),
+        col(row:TDSRow[1]| $row.getString('String'), 'String')])
+      ->limit(1000)}
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectStarWithExpressionsFromSubselect():Boolean[1]
+{
+  test(
+    'select *, String as "abc" from (select Integer, String from service."/service/service1" UNION ALL select Integer, String from service."/service/service1")',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->restrict(['Integer', 'String'])->concatenate(
+          FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->restrict(['Integer', 'String'])
+        )->project([
+          col(row:TDSRow[1] | $row.getInteger('Integer'), 'Integer'),
+          col(row:TDSRow[1] | $row.getString('String'), 'String'),
+          col(row:TDSRow[1] | $row.getString('String'), 'abc')
+        ])
+      }
+  )
+}
+
+//CURRENT TIME
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCurrentTime():Boolean[1]
+{
+  test(
+    'SELECT CURRENT_TIMESTAMP, CURRENT_DATE, CURRENT_TIMESTAMP AS timestamp, CURRENT_DATE AS date FROM service."/service/service1"',
+
+    {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | now(), 'CURRENT_TIMESTAMP'),
+                col(row:TDSRow[1] | today(), 'CURRENT_DATE'),
+                col(row:TDSRow[1] | now(), 'timestamp'),
+                col(row:TDSRow[1] | today(), 'date')
+              ])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDateFunctions():Boolean[1]
+{
+  test(
+    'SELECT ' +
+    'localtimestamp() AS "LOCALTIMESTAMP", ' +
+    'make_date(2023, 01, 02) AS "MAKEDATE", ' +
+    'make_timestamp(2023, 01, 02, 12, 11, 10.5) AS "MAKETIMESTAMP", ' +
+    'date(\'2023-01-01\') AS "DATE", ' +
+    'date(DateTime) AS "DATE2" ' +
+    'FROM service."/service/service1"',
+
+    {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | now(), 'LOCALTIMESTAMP'),
+                col(row:TDSRow[1] | %2023-01-02, 'MAKEDATE'),
+                col(row:TDSRow[1] | %2023-01-02T12:11:10.5, 'MAKETIMESTAMP'),
+                col(row:TDSRow[1] | datePart(parseDate('2023-01-01')), 'DATE'),
+                col(row:TDSRow[1] | datePart($row.getDateTime('DateTime')), 'DATE2')
+              ])
+      })
+}
+
+//DATE_TRUNC
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDateTrunc():Boolean[1]
+{
+  test(
+    'SELECT date_trunc(\'year\', StrictDate) AS "YEAR", date_trunc(\'quarter\', CAST(\'2023-01-01\' AS DATE)) AS "QUARTER", date_trunc(\'month\', StrictDate) AS "MONTH", date_trunc(\'week\', StrictDate) AS "WEEK", ' +
+    'date_trunc(\'day\', StrictDate) AS "DAY", date_trunc(\'hour\', StrictDate) AS "HOUR", date_trunc(\'minute\', StrictDate) AS "MINUTE", date_trunc(\'second\', StrictDate) AS "SECOND" FROM service."/service/service1"',
+
+    {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | firstDayOfYear($row.getStrictDate('StrictDate')), 'YEAR'),
+                col(row:TDSRow[1] | firstDayOfQuarter(parseDate('2023-01-01')), 'QUARTER'),
+                col(row:TDSRow[1] | firstDayOfMonth($row.getStrictDate('StrictDate')), 'MONTH'),
+                col(row:TDSRow[1] | firstDayOfWeek($row.getStrictDate('StrictDate')), 'WEEK'),
+                col(row:TDSRow[1] | firstHourOfDay($row.getStrictDate('StrictDate')), 'DAY'),
+                col(row:TDSRow[1] | firstMinuteOfHour($row.getStrictDate('StrictDate')), 'HOUR'),
+                col(row:TDSRow[1] | firstSecondOfMinute($row.getStrictDate('StrictDate')), 'MINUTE'),
+                col(row:TDSRow[1] | firstMillisecondOfSecond($row.getStrictDate('StrictDate')), 'SECOND')
+              ])
+    })
+}
+
+//DATE_PART
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDatePart():Boolean[1]
+{
+  test('SELECT date_part(\'year\', StrictDate) AS "YEAR", date_part(\'quarter\', CAST(\'2023-01-01\' AS DATE)) AS "QUARTER", date_part(\'month\', StrictDate) AS "MONTH", date_part(\'week\', StrictDate) AS "WEEK", ' +
+                  'date_part(\'dow\', StrictDate) AS "DOW", date_part(\'day\', StrictDate) AS "DAY", date_part(\'doy\', StrictDate) AS "DOY", date_part(\'hour\', StrictDate) AS "HOUR", date_part(\'minute\', StrictDate) AS "MINUTE", ' +
+                  'date_part(\'second\', StrictDate) AS "SECOND", date_part(\'epoch\', StrictDate) AS "EPOCH" FROM service."/service/service1"',
+
+      {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | year($row.getStrictDate('StrictDate')), 'YEAR'),
+                col(row:TDSRow[1] | quarterNumber(parseDate('2023-01-01')), 'QUARTER'),
+                col(row:TDSRow[1] | monthNumber($row.getStrictDate('StrictDate')), 'MONTH'),
+                col(row:TDSRow[1] | weekOfYear($row.getStrictDate('StrictDate')), 'WEEK'),
+                col(row:TDSRow[1] | dayOfWeekNumber($row.getStrictDate('StrictDate')), 'DOW'),
+                col(row:TDSRow[1] | dayOfMonth($row.getStrictDate('StrictDate')), 'DAY'),
+                col(row:TDSRow[1] | dayOfYear($row.getStrictDate('StrictDate')), 'DOY'),
+                col(row:TDSRow[1] | hour($row.getStrictDate('StrictDate')), 'HOUR'),
+                col(row:TDSRow[1] | minute($row.getStrictDate('StrictDate')), 'MINUTE'),
+                col(row:TDSRow[1] | second($row.getStrictDate('StrictDate')), 'SECOND'),
+                col(row:TDSRow[1] | toEpochValue($row.getStrictDate('StrictDate')), 'EPOCH')
+              ])
+      })
+}
+
+//EXTRACT
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testExtract():Boolean[1]
+{
+  test(
+    'SELECT EXTRACT(\'year\' FROM StrictDate) AS "YEAR", EXTRACT(\'quarter\' FROM CAST(\'2023-01-01\' AS DATE)) AS "QUARTER", EXTRACT(\'month\' FROM StrictDate) AS "MONTH", EXTRACT(\'week\' FROM StrictDate) AS "WEEK", ' +
+    'EXTRACT(\'dow\' FROM StrictDate) AS "DOW", EXTRACT(\'day\' FROM StrictDate) AS "DAY", EXTRACT(\'doy\' FROM StrictDate) AS "DOY", EXTRACT(\'hour\' FROM StrictDate) AS "HOUR", EXTRACT(\'minute\' FROM StrictDate) AS "MINUTE", ' +
+    'EXTRACT(\'second\' FROM StrictDate) AS "SECOND", EXTRACT(\'epoch\' FROM StrictDate) AS "EPOCH" FROM service."/service/service1"',
+
+    {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | year($row.getStrictDate('StrictDate')), 'YEAR'),
+                col(row:TDSRow[1] | quarterNumber(parseDate('2023-01-01')), 'QUARTER'),
+                col(row:TDSRow[1] | monthNumber($row.getStrictDate('StrictDate')), 'MONTH'),
+                col(row:TDSRow[1] | weekOfYear($row.getStrictDate('StrictDate')), 'WEEK'),
+                col(row:TDSRow[1] | dayOfWeekNumber($row.getStrictDate('StrictDate')), 'DOW'),
+                col(row:TDSRow[1] | dayOfMonth($row.getStrictDate('StrictDate')), 'DAY'),
+                col(row:TDSRow[1] | dayOfYear($row.getStrictDate('StrictDate')), 'DOY'),
+                col(row:TDSRow[1] | hour($row.getStrictDate('StrictDate')), 'HOUR'),
+                col(row:TDSRow[1] | minute($row.getStrictDate('StrictDate')), 'MINUTE'),
+                col(row:TDSRow[1] | second($row.getStrictDate('StrictDate')), 'SECOND'),
+                col(row:TDSRow[1] | toEpochValue($row.getStrictDate('StrictDate')), 'EPOCH')
+              ])
+      })
+}
+
+//INTERVAL
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testIntervalArithmetic():Boolean[1]
+{
+  test(
+        'SELECT ' +
+        'StrictDate + INTERVAL \'1 YEAR 3 WEEKS 2 DAYS\' AS "INTERVAL_ADD", ' +
+        'StrictDate + 1 + INTERVAL \'1 YEAR 3 WEEKS 2 DAYS\' AS "INTERVAL_MULTI_ADD", ' +
+        'StrictDate + 1 AS "NUMERIC_ADD", ' +
+        'StrictDate + 6 * INTERVAL \'1 YEAR 3 WEEKS 2 DAYS\' AS "INTERVAL_TIMES", ' +
+        'StrictDate + NULL * INTERVAL \'1 YEAR 3 WEEKS 2 DAYS\' AS "INTERVAL_TIMES_NULL", ' +
+        'StrictDate + NULL + INTERVAL \'1 YEAR 3 WEEKS 2 DAYS\' AS "INTERVAL_ADD_NULL", ' +
+        '(CAST(\'2023-01-01\' AS DATE) + 2 * INTERVAL \'1 DAY\') + 3 * INTERVAL \'2 DAY\' AS "INTERVAL_MIX", ' +
+        'StrictDate + EXTRACT(\'year\' FROM StrictDate) * INTERVAL \'2 YEAR 3 DAYS\' AS "INTERVAL_MIX2", '  +
+        'CAST((DATE_TRUNC( \'DAY\', CAST("StrictDate" AS DATE) ) + (EXTRACT(DOW FROM "StrictDate") * INTERVAL \'1 DAY\')) AS DATE) AS "INTERVAL_MIX3", ' +
+        'StrictDate - DateTime AS "DATE_SUBTRACT", ' +
+        'StrictDate - INTERVAL \'1 DAY\' AS "INTERVAL_SUBTRACT", ' +
+        'StrictDate - \'2023-01-01\' AS "STRING_SUBSTRACT", ' +
+        '\'2023-01-01\' - StrictDate AS "STRING_SUBSTRACT2" ' +
+        'FROM service."/service/service1"',
+
+        {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->adjust(1, DurationUnit.YEARS)->adjust(3, DurationUnit.WEEKS)->adjust(2, DurationUnit.DAYS), 'INTERVAL_ADD'),
+                col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->adjust(1, DurationUnit.DAYS)->adjust(1, DurationUnit.YEARS)->adjust(3, DurationUnit.WEEKS)->adjust(2, DurationUnit.DAYS), 'INTERVAL_MULTI_ADD'),
+                col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->adjust(1, DurationUnit.DAYS), 'NUMERIC_ADD'),
+                col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->adjust(6 * 1, DurationUnit.YEARS)->adjust(6 * 3, DurationUnit.WEEKS)->adjust(6 * 2, DurationUnit.DAYS), 'INTERVAL_TIMES'),
+                col(row:TDSRow[1] | []->cast(@StrictDate), 'INTERVAL_TIMES_NULL'),
+                col(row:TDSRow[1] | []->cast(@StrictDate), 'INTERVAL_ADD_NULL'),
+                col(row:TDSRow[1] | parseDate('2023-01-01')->adjust(2 * 1, DurationUnit.DAYS)->adjust(3 * 2, DurationUnit.DAYS), 'INTERVAL_MIX'),
+                col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->adjust(year($row.getStrictDate('StrictDate')) * 2, DurationUnit.YEARS)->adjust(year($row.getStrictDate('StrictDate')) * 3, DurationUnit.DAYS), 'INTERVAL_MIX2'),
+                col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->firstHourOfDay()->adjust(($row.getStrictDate('StrictDate')->dayOfWeekNumber() * 1), DurationUnit.DAYS), 'INTERVAL_MIX3'),
+                col(row:TDSRow[1] | dateDiff($row.getStrictDate('StrictDate'), $row.getDateTime('DateTime'), DurationUnit.DAYS), 'DATE_SUBTRACT'),
+                col(row:TDSRow[1] | adjust($row.getStrictDate('StrictDate'), -1, DurationUnit.DAYS), 'INTERVAL_SUBTRACT'),
+                col(row:TDSRow[1] | dateDiff($row.getStrictDate('StrictDate'), parseDate('2023-01-01'), DurationUnit.DAYS), 'STRING_SUBSTRACT'),
+                col(row:TDSRow[1] | dateDiff(parseDate('2023-01-01'), $row.getStrictDate('StrictDate'), DurationUnit.DAYS), 'STRING_SUBSTRACT2')
+              ])
+      })
+}
+
+//STRING FUNCTIONS
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testStringFunctions():Boolean[1]
+{
+  test(
+        'SELECT ascii(String) AS "ASCII", chr(Integer) AS "CHR", concat(String, \'abc\') AS "CONCAT", String || \'abc\' AS "CONCAT2", regexp_like(String, \'^test$\') AS "MATCH", ' +
+        'char_length(String) AS "CHAR_LENGTH", length(String) AS "LENGTH", ltrim(String) AS "LTRIM", ltrim(String, \' \') AS "LTRIM2", md5(String) AS "MD5", upper(String) AS "UPPER", ' +
+        'lower(String) AS "LOWER", repeat(String, 2) AS "REPEAT", replace(String, \'A\', \'a\') AS "REPLACE", starts_with(String, \'a\') AS "STARTSWITH", strpos(String, \'abc\') AS "STRPOS",' +
+        'reverse(String) AS "REVERSE", rtrim(String) AS "RTRIM", rtrim(String, \' \') AS "RTRIM2", sha256(String) AS "SHA256", split_part(String, \',\', 1) AS "SPLITPART", ' +
+        'split_part(String, \',\', Integer) AS "SPLITPART2", substring(String, 1) AS "SUBSTRING", substr(String, 1, 2) AS "SUBSTR", btrim(String) AS "TRIM", btrim(String, \' \') AS "TRIM2",' +
+        'lpad(String, 2) AS "LPAD", lpad(String, 2, \'a\') AS "LPAD2", rpad(String, 2) AS "RPAD", rpad(String, 2, \'a\') AS "RPAD2", left(String, 1) AS "LEFT", right(String, 1) AS "RIGHT", ' +
+        'decode(String, \'base64\') AS "DECODE", encode(String, \'base64\') AS "ENCODE", ' +
+        'trim(BOTH from String) AS "TRIMB", trim(BOTH \' \' from String) AS "TRIMB2", trim(LEADING from String) AS "TRIML", trim(LEADING \' \' from String) AS "TRIML2", ' +
+        'trim(TRAILING from String) AS "TRIMT", trim(TRAILING \' \' from String) AS "TRIMT2"' +
+        'FROM service."/service/service1"',
+
+        {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | ascii($row.getString('String')), 'ASCII'),
+                col(row:TDSRow[1] | char($row.getInteger('Integer')), 'CHR'),
+                col(row:TDSRow[1] | $row.getString('String') + 'abc', 'CONCAT'),
+                col(row:TDSRow[1] | $row.getString('String') + 'abc', 'CONCAT2'),
+                col(row:TDSRow[1] | matches($row.getString('String'), 'test'), 'MATCH'),
+                col(row:TDSRow[1] | length($row.getString('String')), 'CHAR_LENGTH'),
+                col(row:TDSRow[1] | length($row.getString('String')), 'LENGTH'),
+                col(row:TDSRow[1] | ltrim($row.getString('String')), 'LTRIM'),
+                col(row:TDSRow[1] | ltrim($row.getString('String')), 'LTRIM2'),
+                col(row:TDSRow[1] | hash($row.getString('String'), HashType.MD5), 'MD5'),
+                col(row:TDSRow[1] | toUpper($row.getString('String')), 'UPPER'),
+                col(row:TDSRow[1] | toLower($row.getString('String')), 'LOWER'),
+                col(row:TDSRow[1] | repeatString($row.getString('String'), 2), 'REPEAT'),
+                col(row:TDSRow[1] | replace($row.getString('String'), 'A', 'a'), 'REPLACE'),
+                col(row:TDSRow[1] | startsWith($row.getString('String'), 'a'), 'STARTSWITH'),
+                col(row:TDSRow[1] | indexOf($row.getString('String'), 'abc'), 'STRPOS'),
+                col(row:TDSRow[1] | reverseString($row.getString('String')), 'REVERSE'),
+                col(row:TDSRow[1] | rtrim($row.getString('String')), 'RTRIM'),
+                col(row:TDSRow[1] | rtrim($row.getString('String')), 'RTRIM2'),
+                col(row:TDSRow[1] | hash($row.getString('String'), HashType.SHA256), 'SHA256'),
+                col(row:TDSRow[1] | splitPart($row.getString('String'), ',', 0), 'SPLITPART'),
+                col(row:TDSRow[1] | splitPart($row.getString('String'), ',', $row.getInteger('Integer') - 1), 'SPLITPART2'),
+                col(row:TDSRow[1] | substring($row.getString('String'), 1), 'SUBSTRING'),
+                col(row:TDSRow[1] | substring($row.getString('String'), 1, 2), 'SUBSTR'),
+                col(row:TDSRow[1] | trim($row.getString('String')), 'TRIM'),
+                col(row:TDSRow[1] | trim($row.getString('String')), 'TRIM2'),
+                col(row:TDSRow[1] | lpad($row.getString('String'), 2), 'LPAD'),
+                col(row:TDSRow[1] | lpad($row.getString('String'), 2, 'a'), 'LPAD2'),
+                col(row:TDSRow[1] | rpad($row.getString('String'), 2), 'RPAD'),
+                col(row:TDSRow[1] | rpad($row.getString('String'), 2, 'a'), 'RPAD2'),
+                col(row:TDSRow[1] | left($row.getString('String'), 1), 'LEFT'),
+                col(row:TDSRow[1] | right($row.getString('String'), 1), 'RIGHT'),
+                col(row:TDSRow[1] | decodeBase64($row.getString('String')), 'DECODE'),
+                col(row:TDSRow[1] | encodeBase64($row.getString('String')), 'ENCODE'),
+                col(row:TDSRow[1] | trim($row.getString('String')), 'TRIMB'),
+                col(row:TDSRow[1] | trim($row.getString('String')), 'TRIMB2'),
+                col(row:TDSRow[1] | ltrim($row.getString('String')), 'TRIML'),
+                col(row:TDSRow[1] | ltrim($row.getString('String')), 'TRIML2'),
+                col(row:TDSRow[1] | rtrim($row.getString('String')), 'TRIMT'),
+                col(row:TDSRow[1] | rtrim($row.getString('String')), 'TRIMT2')
+              ])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testStringFunctionsNullable():Boolean[1]
+{
+  test(
+      'SELECT ascii(NULL) AS "ASCII", chr(NULL) AS "CHR", regexp_like(NULL, \'^test$\') AS "MATCH", char_length(NULL) AS "CHAR_LENGTH", length(NULL) AS "LENGTH", ltrim(NULL) AS "LTRIM", ' +
+      'ltrim(NULL, \' \') AS "LTRIM2", md5(NULL) AS "MD5", upper(NULL) AS "UPPER", lower(NULL) AS "LOWER", replace(NULL, \'A\', \'a\') AS "REPLACE", starts_with(NULL, \'a\') AS "STARTSWITH", ' +
+      'strpos(NULL, \'abc\') AS "STRPOS", reverse(NULL) AS "REVERSE", rtrim(NULL) AS "RTRIM", rtrim(NULL, \' \') AS "RTRIM2", sha256(NULL) AS "SHA256", substring(NULL, 1) AS "SUBSTRING", ' +
+      'substr(NULL, 1, 2) AS "SUBSTR", btrim(NULL) AS "TRIM", btrim(NULL, \' \') AS "TRIM2", lpad(NULL, 2) AS "LPAD", lpad(String, NULL) AS "LPAD2", lpad(String, 2, NULL) AS "LPAD3",' +
+      'rpad(NULL, 2) AS "RPAD", rpad(String, NULL) AS "RPAD2", rpad(String, 2, NULL) AS "RPAD3", left(NULL, 1) AS "LEFT", left(String, NULL) AS "LEFT2", right(NULL, 1) AS "RIGHT", right(String, NULL) AS "RIGHT2", ' +
+      'decode(NULL, \'base64\') AS "DECODE", encode(NULL, \'base64\') AS "ENCODE", trim(BOTH from NULL) AS "TRIM3" ' +
+      'FROM service."/service/service1"',
+
+      {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | []->cast(@Integer), 'ASCII'),
+                col(row:TDSRow[1] | []->cast(@String), 'CHR'),
+                col(row:TDSRow[1] | []->cast(@Boolean), 'MATCH'),
+                col(row:TDSRow[1] | []->cast(@Integer), 'CHAR_LENGTH'),
+                col(row:TDSRow[1] | []->cast(@Integer), 'LENGTH'),
+                col(row:TDSRow[1] | []->cast(@String), 'LTRIM'),
+                col(row:TDSRow[1] | []->cast(@String), 'LTRIM2'),
+                col(row:TDSRow[1] | []->cast(@String), 'MD5'),
+                col(row:TDSRow[1] | []->cast(@String), 'UPPER'),
+                col(row:TDSRow[1] | []->cast(@String), 'LOWER'),
+                col(row:TDSRow[1] | []->cast(@String), 'REPLACE'),
+                col(row:TDSRow[1] | []->cast(@Boolean), 'STARTSWITH'),
+                col(row:TDSRow[1] | []->cast(@Integer), 'STRPOS'),
+                col(row:TDSRow[1] | []->cast(@String), 'REVERSE'),
+                col(row:TDSRow[1] | []->cast(@String), 'RTRIM'),
+                col(row:TDSRow[1] | []->cast(@String), 'RTRIM2'),
+                col(row:TDSRow[1] | []->cast(@String), 'SHA256'),
+                col(row:TDSRow[1] | []->cast(@String), 'SUBSTRING'),
+                col(row:TDSRow[1] | []->cast(@String), 'SUBSTR'),
+                col(row:TDSRow[1] | []->cast(@String), 'TRIM'),
+                col(row:TDSRow[1] | []->cast(@String), 'TRIM2'),
+                col(row:TDSRow[1] | []->cast(@String), 'LPAD'),
+                col(row:TDSRow[1] | []->cast(@String), 'LPAD2'),
+                col(row:TDSRow[1] | []->cast(@String), 'LPAD3'),
+                col(row:TDSRow[1] | []->cast(@String), 'RPAD'),
+                col(row:TDSRow[1] | []->cast(@String), 'RPAD2'),
+                col(row:TDSRow[1] | []->cast(@String), 'RPAD3'),
+                col(row:TDSRow[1] | []->cast(@String), 'LEFT'),
+                col(row:TDSRow[1] | []->cast(@String), 'LEFT2'),
+                col(row:TDSRow[1] | []->cast(@String), 'RIGHT'),
+                col(row:TDSRow[1] | []->cast(@String), 'RIGHT2'),
+                col(row:TDSRow[1] | []->cast(@String), 'DECODE'),
+                col(row:TDSRow[1] | []->cast(@String), 'ENCODE'),
+                col(row:TDSRow[1] | []->cast(@String), 'TRIM3')
+              ])
+      })
+}
+
+
+
+
+Class meta::external::query::sql::transformation::queryToPure::tests::ToCharTestConfig
+{
+  sql: String[1];
+  col: LambdaFunction<{TDSRow[1]->Any[*]}>[0..1];
+  name : String[1];
+  value: String[1];
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::tc(sql:String[1], col: LambdaFunction<{TDSRow[1]->Any[*]}>[0..1], name:String[1], value:String[1]):ToCharTestConfig[1]
+{
+  ^ToCharTestConfig(sql = $sql, col = $col, name = $name, value = $value);
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::toCharTest(items:ToCharTestConfig[*], compareLambda:Boolean[1]):Boolean[1]
+{
+  let sqlString = 'SELECT ' + $items->map(i | $i.sql + ' AS "' + $i.name + '"')->joinStrings(', ') + ' FROM service."/service/service1"';
+
+  let sqlTransformContext = $sqlString->processQuery();
+  let csv = 'default\n'+
+            'flat\n'+
+            'id,boolean,integer,float,decimal,strictDate,dateTime,string,enum,type\n'+
+            '1,1,10,1.5,2.5,2023-10-02,2023-04-01T09:08:07,test,V1,T1\n';
+
+  let runtime = ^meta::core::runtime::Runtime(
+    connectionStores = ^meta::core::runtime::ConnectionStore(
+      element = 	meta::external::query::sql::transformation::queryToPure::tests::dummyDatabase,
+      connection = ^meta::external::store::relational::runtime::TestDatabaseConnection(
+         type=meta::relational::runtime::DatabaseType.H2,
+         testDataSetupCsv = $csv
+         ))
+   );
+
+   let sqlStatements = meta::alloy::service::execution::setUpDataSQLs($csv, meta::external::query::sql::transformation::queryToPure::tests::dummyDatabase);
+   $sqlStatements->map(sql|
+      meta::relational::functions::database::executeInDb($sql, $runtime.connectionStores->at(0), false);
+      )->size();  // NO NOT REMOVE: size called to inhibit lazy evaluation ensuring the map is activated;
+
+
+  if ($compareLambda,
+    |
+        let cols = $items->map(c | createCol($c.col->toOne(), $c.name));
+
+        let expected = {|
+              FlatInput.all()
+                  ->project(
+                    [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+                    [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        }->appendTdsFunc(project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_, list(iv($cols)));
+
+
+        assertLambdaEquals($expected, $sqlTransformContext.lambda());,
+    | []);
+
+
+  let tds = meta::pure::router::execute($sqlTransformContext.lambda()->toOne()->cast(@LambdaFunction<{->TabularDataSet[1]}>), dummyMapping, $runtime, relationalExtensions()).values;
+  let values = $tds.rows->at(0).values;
+
+  $items->forAll(i |
+    assertEquals($i.value, $values->at($items->indexOf($i)), | 'expected ' + $values->at($items->indexOf($i))->toString() + ' to equal ' + $i.value + ' sql: ' + $i.sql);
+  );
+
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testToChar():Boolean[1]
+{
+  toCharTest([
+    tc('to_char(DateTime, \'HH24\')',   {row:TDSRow[1] | $row.getDateTime('DateTime')->hour()->toString()->lpad(2, '0')},                   'HH24',         '09'),
+    tc('to_char(DateTime, \'FMHH24\')', {row:TDSRow[1] | $row.getDateTime('DateTime')->hour()->toString()},                                 'FMHH24',       '9'),
+    tc('to_char(DateTime, \'MI\')',     {row:TDSRow[1] | $row.getDateTime('DateTime')->minute()->toString()->lpad(2, '0')},                 'MI',           '08'),
+    tc('to_char(DateTime, \'FMMI\')',   {row:TDSRow[1] | $row.getDateTime('DateTime')->minute()->toString()},                               'FMMI',         '8'),
+    tc('to_char(DateTime, \'SS\')',     {row:TDSRow[1] | $row.getDateTime('DateTime')->second()->toString()->lpad(2, '0')},                 'SS',           '07'),
+    tc('to_char(DateTime, \'FMSS\')',   {row:TDSRow[1] | $row.getDateTime('DateTime')->second()->toString()},                               'FMSS',         '7'),
+    tc('to_char(DateTime, \'YYYY\')',   {row:TDSRow[1] | $row.getDateTime('DateTime')->year()->toString()},                                 'YYYY',         '2023'),
+    tc('to_char(DateTime, \'YYY\')',    {row:TDSRow[1] | $row.getDateTime('DateTime')->year()->toString()->substring(2, 3)},                'YYY',          '023'),
+    tc('to_char(DateTime, \'YY\')',     {row:TDSRow[1] | $row.getDateTime('DateTime')->year()->toString()->substring(3, 2)},                'YY',           '23'),
+    tc('to_char(DateTime, \'Y\')',      {row:TDSRow[1] | $row.getDateTime('DateTime')->year()->toString()->substring(4, 1)},                'Y',            '3'),
+    tc('to_char(DateTime, \'MONTH\')',  {row:TDSRow[1] | $row.getDateTime('DateTime')->month()->toString()->toUpper()->rpad(9, ' ')},       'MONTHUPPER',   'APRIL    '),
+    tc('to_char(DateTime, \'FMMONTH\')',{row:TDSRow[1] | $row.getDateTime('DateTime')->month()->toString()->toUpper()},                     'FMMONTHUPPER', 'APRIL'),
+    tc('to_char(DateTime, \'Month\')',  {row:TDSRow[1] | $row.getDateTime('DateTime')->month()->toString()->rpad(9, ' ')},                  'Month',        'April    '),
+    tc('to_char(DateTime, \'FMMonth\')',{row:TDSRow[1] | $row.getDateTime('DateTime')->month()->toString()},                                'FMMonth',      'April'),
+    tc('to_char(DateTime, \'month\')',  {row:TDSRow[1] | $row.getDateTime('DateTime')->month()->toString()->toLower()->rpad(9, ' ')},       'monthLower',   'april    '),
+    tc('to_char(DateTime, \'FMmonth\')',{row:TDSRow[1] | $row.getDateTime('DateTime')->month()->toString()->toLower()},                     'FMmonthLower', 'april'),
+    tc('to_char(DateTime, \'MM\')',     {row:TDSRow[1] | $row.getDateTime('DateTime')->monthNumber()->toString()->lpad(2, '0')},            'MM',           '04'),
+    tc('to_char(DateTime, \'FMMM\')',   {row:TDSRow[1] | $row.getDateTime('DateTime')->monthNumber()->toString()},                          'FMMM',         '4'),
+    tc('to_char(DateTime, \'DAY\')',    {row:TDSRow[1] | $row.getDateTime('DateTime')->dayOfWeek()->toString()->toUpper()->rpad(9, ' ')},   'DAYUPPER',     'SATURDAY '),
+    tc('to_char(DateTime, \'FMDAY\')',  {row:TDSRow[1] | $row.getDateTime('DateTime')->dayOfWeek()->toString()->toUpper()},                 'FMDAYUPPER',   'SATURDAY'),
+    tc('to_char(DateTime, \'Day\')',    {row:TDSRow[1] | $row.getDateTime('DateTime')->dayOfWeek()->toString()->rpad(9, ' ')},              'Day',          'Saturday '),
+    tc('to_char(DateTime, \'FMDay\')',  {row:TDSRow[1] | $row.getDateTime('DateTime')->dayOfWeek()->toString()},                            'FMDay',        'Saturday'),
+    tc('to_char(DateTime, \'day\')',    {row:TDSRow[1] | $row.getDateTime('DateTime')->dayOfWeek()->toString()->toLower()->rpad(9, ' ')},   'dayLower',     'saturday '),
+    tc('to_char(DateTime, \'FMday\')',  {row:TDSRow[1] | $row.getDateTime('DateTime')->dayOfWeek()->toString()->toLower()},                 'FMdayLower',   'saturday'),
+    tc('to_char(DateTime, \'DDD\')',    {row:TDSRow[1] | $row.getDateTime('DateTime')->dayOfYear()->toString()->lpad(3, '0')},              'DDD',          '091'),
+    tc('to_char(DateTime, \'FMDDD\')',  {row:TDSRow[1] | $row.getDateTime('DateTime')->dayOfYear()->toString()},                            'FMDDD',        '91'),
+    tc('to_char(DateTime, \'DD\')',     {row:TDSRow[1] | $row.getDateTime('DateTime')->dayOfMonth()->toString()->lpad(2, '0')},             'DD',           '01'),
+    tc('to_char(DateTime, \'FMDD\')',   {row:TDSRow[1] | $row.getDateTime('DateTime')->dayOfMonth()->toString()},                           'FMDD',         '1'),
+    tc('to_char(DateTime, \'D\')',      {row:TDSRow[1] | $row.getDateTime('DateTime')->dayOfWeekNumber()->toString()},                      'D',            '7'),
+    tc('to_char(DateTime, \'WW\')',     {row:TDSRow[1] | $row.getDateTime('DateTime')->weekOfYear()->toString()->lpad(2, '0')},             'WW',           '13'),
+    tc('to_char(DateTime, \'FMWW\')',   {row:TDSRow[1] | $row.getDateTime('DateTime')->weekOfYear()->toString()},                           'FMWW',         '13'),
+    tc('to_char(DateTime, \'Q\')',      {row:TDSRow[1] | $row.getDateTime('DateTime')->quarterNumber()->toString()},                        'Q',            '2')
+  ], true);
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testToCharCombined():Boolean[1]
+{
+  toCharTest([
+    tc('to_char(DateTime, \'HH24-FMHH24-MI-FMMI-SS-FMSS-YYYY-YYY-YY-MONTH-FMMONTH-month-FMmonth-DAY-FMDAY-Day-FMDay-day-FMday-DDD-FMDDD-DD-FMDD-D-WW-FMWW-Q\')', [],
+      'a-l-l', '09-9-08-8-07-7-2023-023-23-APRIL    -APRIL-april    -april-SATURDAY -SATURDAY-Saturday -Saturday-saturday -saturday-091-91-01-1-7-13-13-2'),
+    tc('to_char(DateTime, \'HH24FMHH24MIFMMISSFMSSYYYY-YYY-YYMONTHFMMONTHmonthFMmonthDAYFMDAYDayFMDaydayFMdayDDDFMDD-D-DDFMDDDWWFMWWQ\')', [],
+      'all', '0990880772023-023-23APRIL    APRILapril    aprilSATURDAY SATURDAYSaturday Saturdaysaturday saturday0911-7-019113132'),
+      tc('to_char(DateTime, \'YYYY-MM-DD\')', [], 'yyyymmdd', '2023-04-01')
+  ], false);
+}
+
+
+//MATH FUNCTIONS
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMathFunctions():Boolean[1]
+{
+  test(
+    'SELECT abs(Integer) AS "ABS", acos(Integer) AS "ACOS", asin(Integer) AS "ASIN", atan(Integer) AS "ATAN", atan2(Integer, 1) AS "ATAN2", ' +
+    'ceil(Integer) AS "CEIL", ceiling(Integer) AS "CEILING", cos(Integer) AS "COS", cot(Integer) AS "COT", degrees(Integer) AS "DEGREES", div(Integer, 1) AS "DIV", ' +
+    'exp(Integer) AS "EXP", floor(Float) AS "FLOOR", log(Integer) AS "LOG", ln(Integer) AS "LN", mod(Integer, 1) AS "MOD", pi() AS "PI", power(Integer, 2) AS "POWER", ' +
+    'radians(Integer) AS "RADIANS", round(Integer) AS "ROUND", round(Decimal, 1) AS "ROUND_DEC", sign(Integer) AS "SIGN", ' +
+    'sin(Integer) AS "SIN", sqrt(Integer) AS "SQRT", tan(Integer) AS "TAN", trunc(Integer) AS "TRUNC" FROM service."/service/service1"',
+
+    {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | abs($row.getInteger('Integer')), 'ABS'),
+                col(row:TDSRow[1] | acos($row.getInteger('Integer')), 'ACOS'),
+                col(row:TDSRow[1] | asin($row.getInteger('Integer')), 'ASIN'),
+                col(row:TDSRow[1] | atan($row.getInteger('Integer')), 'ATAN'),
+                col(row:TDSRow[1] | atan2($row.getInteger('Integer'), 1), 'ATAN2'),
+                col(row:TDSRow[1] | ceiling($row.getInteger('Integer')), 'CEIL'),
+                col(row:TDSRow[1] | ceiling($row.getInteger('Integer')), 'CEILING'),
+                col(row:TDSRow[1] | cos($row.getInteger('Integer')), 'COS'),
+                col(row:TDSRow[1] | cot($row.getInteger('Integer')), 'COT'),
+                col(row:TDSRow[1] | toDegrees($row.getInteger('Integer')), 'DEGREES'),
+                col(row:TDSRow[1] | $row.getInteger('Integer') / 1, 'DIV'),
+                col(row:TDSRow[1] | exp($row.getInteger('Integer')), 'EXP'),
+                col(row:TDSRow[1] | floor($row.getFloat('Float')), 'FLOOR'),
+                col(row:TDSRow[1] | log10($row.getInteger('Integer')), 'LOG'),
+                col(row:TDSRow[1] | log($row.getInteger('Integer')), 'LN'),
+                col(row:TDSRow[1] | rem($row.getInteger('Integer'), 1), 'MOD'),
+                col(row:TDSRow[1] | pi(), 'PI'),
+                col(row:TDSRow[1] | pow($row.getInteger('Integer'), 2), 'POWER'),
+                col(row:TDSRow[1] | toRadians($row.getInteger('Integer')), 'RADIANS'),
+                col(row:TDSRow[1] | round($row.getInteger('Integer')), 'ROUND'),
+                col(row:TDSRow[1] | round($row.getDecimal('Decimal'), 1), 'ROUND_DEC'),
+                col(row:TDSRow[1] | sign($row.getInteger('Integer')), 'SIGN'),
+                col(row:TDSRow[1] | sin($row.getInteger('Integer')), 'SIN'),
+                col(row:TDSRow[1] | sqrt($row.getInteger('Integer')), 'SQRT'),
+                col(row:TDSRow[1] | tan($row.getInteger('Integer')), 'TAN'),
+                col(row:TDSRow[1] | if ($row.getInteger('Integer') > 0, | floor($row.getInteger('Integer')), | ceiling($row.getInteger('Integer'))), 'TRUNC')
+              ])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMathFunctionsNullable():Boolean[1]
+{
+  test(
+    'SELECT abs(NULL) AS "ABS", acos(NULL) AS "ACOS", asin(NULL) AS "ASIN", atan(NULL) AS "ATAN", atan2(NULL, 1) AS "ATAN2", ' +
+    'ceil(NULL) AS "CEIL", ceiling(NULL) AS "CEILING", cos(NULL) AS "COS", cot(NULL) AS "COT", degrees(NULL) AS "DEGREES", div(NULL, 1) AS "DIV", exp(NULL) AS "EXP", floor(NULL) AS "FLOOR", ' +
+    'log(NULL) AS "LOG", ln(NULL) AS "LN", mod(NULL, 1) AS "MOD", power(NULL, 2) AS "POWER", radians(NULL) AS "RADIANS", round(NULL) AS "ROUND", round(NULL, 1) AS "ROUND_DEC", sign(NULL) AS "SIGN", ' +
+    'sin(NULL) AS "SIN", sqrt(NULL) AS "SQRT", tan(NULL) AS "TAN", trunc(NULL) AS "TRUNC" FROM service."/service/service1"',
+
+    {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | []->cast(@Number), 'ABS'),
+                col(row:TDSRow[1] | []->cast(@Float), 'ACOS'),
+                col(row:TDSRow[1] | []->cast(@Float), 'ASIN'),
+                col(row:TDSRow[1] | []->cast(@Float), 'ATAN'),
+                col(row:TDSRow[1] | []->cast(@Float), 'ATAN2'),
+                col(row:TDSRow[1] | []->cast(@Integer), 'CEIL'),
+                col(row:TDSRow[1] | []->cast(@Integer), 'CEILING'),
+                col(row:TDSRow[1] | []->cast(@Float), 'COS'),
+                col(row:TDSRow[1] | []->cast(@Float), 'COT'),
+                col(row:TDSRow[1] | []->cast(@Float), 'DEGREES'),
+                col(row:TDSRow[1] | []->cast(@Float), 'DIV'),
+                col(row:TDSRow[1] | []->cast(@Float), 'EXP'),
+                col(row:TDSRow[1] | []->cast(@Integer), 'FLOOR'),
+                col(row:TDSRow[1] | []->cast(@Float), 'LOG'),
+                col(row:TDSRow[1] | []->cast(@Float), 'LN'),
+                col(row:TDSRow[1] | []->cast(@Number), 'MOD'),
+                col(row:TDSRow[1] | []->cast(@Number), 'POWER'),
+                col(row:TDSRow[1] | []->cast(@Float), 'RADIANS'),
+                col(row:TDSRow[1] | []->cast(@Integer), 'ROUND'),
+                col(row:TDSRow[1] | []->cast(@Decimal), 'ROUND_DEC'),
+                col(row:TDSRow[1] | []->cast(@Integer), 'SIGN'),
+                col(row:TDSRow[1] | []->cast(@Float), 'SIN'),
+                col(row:TDSRow[1] | []->cast(@Float), 'SQRT'),
+                col(row:TDSRow[1] | []->cast(@Float), 'TAN'),
+                col(row:TDSRow[1] | []->cast(@Integer), 'TRUNC')
+              ])
+      })
+}
+
+//COLLECTION FUNCTIONS
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCollectionFunctions():Boolean[1]
+{
+  test(
+    'SELECT ' +
+    'coalesce(NULL, Integer, 1) AS "COALESCE", ' +
+    'greatest(NULL, Integer, 1) AS "GREATEST", ' +
+    'least(NULL, Integer, 1) AS "LEAST" ' +
+    'FROM service."/service/service1"',
+
+    {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | meta::pure::tds::extensions::firstNotNull([$row.getInteger('Integer'), 1]), 'COALESCE'),
+                col(row:TDSRow[1] | greatest([$row.getInteger('Integer'), 1]), 'GREATEST'),
+                col(row:TDSRow[1] | least([$row.getInteger('Integer'), 1]), 'LEAST')
+              ])
+      })
+}
+
+//GROUP FUNCTIONS
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupFunctions():Boolean[1]
+{
+  test(
+      'SELECT String, ' +
+      'percentile_cont(0.1) WITHIN GROUP (ORDER BY Integer ASC) AS "PERCENTILE_CONT_ASC", ' +
+      'percentile_cont(0.2) WITHIN GROUP (ORDER BY Integer DESC) AS "PERCENTILE_CONT_DESC", ' +
+      'percentile_disc(0.3) WITHIN GROUP (ORDER BY Integer ASC) AS "PERCENTILE_DISC_ASC", ' +
+      'percentile_disc(0.4) WITHIN GROUP (ORDER BY Integer DESC) AS "PERCENTILE_DISC_DESC" ' +
+      'FROM service."/service/service1" GROUP BY String',
+
+      {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->groupBy(['String'], [
+              agg('PERCENTILE_CONT_ASC', row | $row.getInteger('Integer'), y | $y->percentile(0.1)),
+              agg('PERCENTILE_CONT_DESC', row | $row.getInteger('Integer'), y | $y->percentile(0.2, false, true)),
+              agg('PERCENTILE_DISC_ASC', row | $row.getInteger('Integer'), y | $y->percentile(0.3, true, false)),
+              agg('PERCENTILE_DISC_DESC', row | $row.getInteger('Integer'), y | $y->percentile(0.4, false, false))
+            ])
+      }, false)
+}
+
+//WINDOW FUNCTIONS
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWindowFunctions():Boolean[1]
+{
+  test(
+    'SELECT String AS "string", Integer, ' +
+    'row_number() OVER (PARTITION BY String ORDER BY Integer ASC) AS "ROW", ' +
+    'dense_rank() OVER (PARTITION BY String ORDER BY Integer DESC) AS "DENSE RANK", ' +
+    'rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "RANK", ' +
+    'max(Integer) OVER (PARTITION BY String ORDER BY String ASC) AS "MAX" ' +
+    'FROM service."/service/service1"',
+
+    {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->extend([
+              col(row:TDSRow[1] | $row.getString('String'), 'string')
+            ])
+            ->olapGroupBy(['String'], asc('Integer'), func(y | $y->meta::pure::functions::math::olap::rowNumber()), 'ROW')
+            ->olapGroupBy(['String'], desc('Integer'), func(y | $y->meta::pure::functions::math::olap::denseRank()), 'DENSE RANK')
+            ->olapGroupBy(['String'], asc('Integer'), func(y | $y->meta::pure::functions::math::olap::rank()), 'RANK')
+            ->olapGroupBy(['String'], asc('String'), func('Integer', y | $y->max()), 'MAX')
+            ->restrict(['string', 'Integer', 'ROW', 'DENSE RANK', 'RANK', 'MAX'])
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testProjectWithWindowFunctions():Boolean[1]
+{
+  test(
+    'SELECT String, abs(Integer) AS "ABS", ' +
+    'row_number() OVER (PARTITION BY upper(String) ORDER BY EXTRACT(YEAR FROM StrictDate) + 10 ASC) AS "ROW", ' +
+    'dense_rank() OVER (PARTITION BY String ORDER BY Integer DESC) AS "DENSE RANK", ' +
+    'rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "RANK" ' +
+    'FROM service."/service/service1"',
+
+    {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->extend([
+              col(row:TDSRow[1] | abs($row.getInteger('Integer')), 'ABS'),
+              col(row:TDSRow[1] | toUpper($row.getString('String')), 'upper(String)'),
+              col(row:TDSRow[1] | year($row.getStrictDate('StrictDate')) + 10, 'EXTRACT(\'year\' FROM StrictDate) + 10')
+            ])
+            ->olapGroupBy(['upper(String)'], asc('EXTRACT(\'year\' FROM StrictDate) + 10'), func(y | $y->meta::pure::functions::math::olap::rowNumber()), 'ROW')
+            ->olapGroupBy(['String'], desc('Integer'), func(y | $y->meta::pure::functions::math::olap::denseRank()), 'DENSE RANK')
+            ->olapGroupBy(['String'], asc('Integer'), func(y | $y->meta::pure::functions::math::olap::rank()), 'RANK')
+            ->restrict(['String', 'ABS', 'ROW', 'DENSE RANK', 'RANK'])
+      }, false)
+}
+
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectStarWithWidnow():Boolean[1]
+{
+  test(
+    'SELECT *,' +
+    'rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "RANK" ' +
+    'FROM service."/service/service1"',
+
+    {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->olapGroupBy(['String'], asc('Integer'), func(y | $y->meta::pure::functions::math::olap::rank()), 'RANK')
+      }, false)
+}
+
+function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByWithWindowFunctions():Boolean[1]
+{
+  test(
+    'SELECT String, Integer, sum(Integer) AS "SUM", ' +
+    'row_number() OVER (PARTITION BY String ORDER BY Integer ASC) AS "ROW", ' +
+    'dense_rank() OVER (PARTITION BY String ORDER BY Integer DESC) AS "DENSE RANK", ' +
+    'rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "RANK" ' +
+    'FROM service."/service/service1" GROUP BY String, Integer',
+
+    {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->olapGroupBy(['String'], asc('Integer'), y | $y->meta::pure::functions::math::olap::rowNumber(), 'ROW')
+            ->olapGroupBy(['String'], desc('Integer'), y | $y->meta::pure::functions::math::olap::denseRank(), 'DENSE RANK')
+            ->olapGroupBy(['String'], asc('Integer'), y | $y->meta::pure::functions::math::olap::rank(), 'RANK')
+            ->groupBy(['String', 'Integer'], agg('SUM', row | $row.getInteger('Integer'), y | $y->sum()))
+      })
+}
+
+//LIKE
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLike():Boolean[1]
+{
+  test(
+    'SELECT ' +
+    'String like \'b\' AS "EQUAL", ' +
+    'String like \'b%\' AS "STARTS_WITH", ' +
+    'String like \'%b\' AS "ENDS_WITH", ' +
+    'String like \'%b%\' AS "CONTAINS"' +
+    'FROM service."/service/service1"',
+
+    {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | equal($row.getString('String'), 'b'), 'EQUAL'),
+                col(row:TDSRow[1] | startsWith($row.getString('String'), 'b'), 'STARTS_WITH'),
+                col(row:TDSRow[1] | endsWith($row.getString('String'), 'b'), 'ENDS_WITH'),
+                col(row:TDSRow[1] | contains($row.getString('String'), 'b'), 'CONTAINS')
+              ])
+      })
+}
+
+//PATTERN MATCHING
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testPatternMatching():Boolean[1]
+{
+  test(
+    'SELECT ' +
+    'String ~~ \'b\' AS "LIKE", ' +
+    'String !~~ \'b\' AS "NOT_LIKE", ' +
+    'String ~ \'^b$\' AS "REGEX_MATCHES", ' +
+    'String !~ \'^b$\' AS "REGEX_NOT_MATCHES" ' +
+    'FROM service."/service/service1"',
+
+    {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | equal($row.getString('String'), 'b'), 'LIKE'),
+                col(row:TDSRow[1] | not(equal($row.getString('String'), 'b')), 'NOT_LIKE'),
+                col(row:TDSRow[1] | matches($row.getString('String'), 'b'), 'REGEX_MATCHES'),
+                col(row:TDSRow[1] | not(matches($row.getString('String'), 'b')), 'REGEX_NOT_MATCHES')
+              ])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testFromScopingSimple():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->from(dummyMapping, dummyRuntime())
+      }->meta::pure::router::preeval::preval(sqlExtensions()), testSources(), true, false, true)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testFromScopingNoMapping():Boolean[1]
+{
+  let mapping = meta::external::query::sql::transformation::queryToPure::emptyMapping();
+  let sources = serviceToSource(createService('/service/service1', | FlatInput.all()->project(x | $x.stringIn, 'String'), [], dummyRuntime()));
+
+  test(
+    'SELECT * FROM service."/service/service1"',
+
+    {|
+      FlatInput.all()->project(x | $x.stringIn, 'String')->from($mapping, dummyRuntime())
+    }->meta::pure::router::preeval::preval(sqlExtensions()), $sources, true, false, true);
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testFromScopingSimpleNested():Boolean[1]
+{
+  test(
+    'SELECT * FROM (SELECT Integer FROM service."/service/service1")',
+
+    {|
+      FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->restrict('Integer')->from(dummyMapping, dummyRuntime())
+      }->meta::pure::router::preeval::preval(sqlExtensions()), testSources(), true, false, true)
+}
+
+function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testFromScopingJoin():Boolean[1]
+{
+  test(
+    'SELECT table1.Integer FROM service."/service/service1" "table1" LEFT OUTER JOIN (SELECT Integer AS "int" FROM service."/service/service2") AS "table2" ON "table1"."Integer" = "table2"."int"',
+
+    {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->restrict('Integer')->from(dummyMapping, dummyRuntime())
+        ->join(FlatInput.all()->project(
+                [x | $x.idIn, x | $x.integerIn, x | $x.stringIn],
+                ['ID', 'Integer', 'String']
+              )->renameColumns(pair('Integer', 'int'))->restrict(['int'])->from(dummyMapping, dummyRuntime()), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer') == $row2.getInteger('int')}
+        )->restrict('Integer')
+      }->meta::pure::router::preeval::preval(sqlExtensions()))
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testFromScopingUnion():Boolean[1]
+{
+  test(
+    'SELECT Integer FROM service."/service/service1" UNION SELECT Integer FROM service."/service/service2"',
+
+    {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->restrict('Integer')->from(dummyMapping, dummyRuntime())
+        ->concatenate(
+          FlatInput.all()
+            ->project(
+              [ x | $x.idIn, x | $x.integerIn, x | $x.stringIn ],
+              [ 'ID', 'Integer', 'String' ])
+            ->restrict('Integer')->from(dummyMapping, dummyRuntime())
+        )
+      }->meta::pure::router::preeval::preval(sqlExtensions()), testSources(), true, false, true)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testParameterizedAllSupplied():Boolean[1]
+{
+  test(
+    'SELECT * FROM service(\'/service/service4/{id}\', id => \'abc\', ints => [1,2,3], date => \'2023-01-01\') LIMIT 1',
+
+    {id:String[1], ints:Integer[*], date:StrictDate[0..1]|
+      FlatInput.all()->filter(f | $f.idIn == $id && $f.integerIn->in($ints) && ($f.strictDateIn > $date))->project(
+        [
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal
+        ],
+        [
+          'ID', 'Integer', 'Enum'
+        ]
+      )->limit(1)}, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testParameterizedNotSupplied():Boolean[1]
+{
+  test(
+    'SELECT * FROM service(\'/service/service4/{id}\', id => \'abc\') LIMIT 1',
+
+    {id:String[1], ints:Integer[*], date:StrictDate[0..1]|
+
+      FlatInput.all()->filter(f | $f.idIn == $id && $f.integerIn->in($ints) && ($f.strictDateIn > $date))->project(
+        [
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal
+        ],
+        [
+          'ID', 'Integer', 'Enum'
+        ]
+      )->limit(1)})
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMultiLineQuery():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service3"',
+
+    {|
+        let const = 123;
+        FlatInput.all()->project(
+        [
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal, x | $x.type, x | $const
+        ],
+        [
+          'ID', 'Integer', 'The Enum Value', 'The Type', 'Const'
+        ]
+      );})
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testParameterizedMultiLineJoin():Boolean[1]
+{
+  test([
+    'SELECT * FROM service(\'/service/service4/{id}\', id => \'abc\') union select ID, Integer, "The Enum Value" AS "Enum" from service(\'/service/service3\')',
+    'SELECT t.* FROM (SELECT * FROM service(\'/service/service4/{id}\', id => \'abc\') union select ID, Integer, "The Enum Value" as "Enum" from service(\'/service/service3\')) "t"'
+    ],
+    {id_1:String[1], ints_1:Integer[*], date_1:StrictDate[0..1]|
+
+      let const_3 = 123;
+
+      FlatInput.all()->filter(f | $f.idIn == $id_1 && $f.integerIn->in($ints_1) && ($f.strictDateIn > $date_1))->project(
+        [
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal
+        ],
+        [
+          'ID', 'Integer', 'Enum'
+        ]
+      )->concatenate(FlatInput.all()->project(
+        [
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal, x | $x.type, x | $const_3
+        ],
+        [
+          'ID', 'Integer', 'The Enum Value', 'The Type', 'Const'
+        ]
+      )->restrict(['ID', 'Integer', 'The Enum Value'])->renameColumns(pair('The Enum Value', 'Enum')));})
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testPlaceholderParameters():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1" where Integer = ? and String = $2 and StrictDate = $3',
+
+    {_1:Integer[1], _2:String[1], _3:StrictDate[1] | FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->filter(row:TDSRow[1] | $row.getInteger('Integer') == $_1 && $row.getString('String') == $_2 && $row.getStrictDate('StrictDate') == $_3)
+      }
+  )
+}
+
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testEnumValues():Boolean[1]
+{
+  //NOTE: the enum filter and plan generation is important to ensure cast and typing works correctly
+
+  let sqlString = 'SELECT 1 AS "one", "The Enum Value" AS "enum" FROM service."/service/service3" WHERE "The Enum Value" = \'Value1\' OR "The Enum Value" IN (\'Value1\', \'Value2\')';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {|
+        let const = 123;
+        FlatInput.all()->project(
+        [
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal, x | $x.type, x | $const
+        ],
+        [
+          'ID', 'Integer', 'The Enum Value', 'The Type', 'Const'
+        ]
+      )->filter(row:TDSRow[1] |
+          $row.getEnum('The Enum Value') == MyEnum.Value1
+          ||
+          $row.getEnum('The Enum Value')->in([MyEnum.Value1, MyEnum.Value2])
+      )->project([
+          col(row:TDSRow[1] | 1, 'one'),
+          col(row:TDSRow[1] | $row.getEnum('The Enum Value'), 'enum')
+      ]);};
+
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
+  let plan = $sqlTransformContext->getPlan($sqlTransformContext.sources, $sqlTransformContext.extensions);
+
+  let sql = $plan.rootExecutionNode->cast(@meta::relational::mapping::RelationalTdsInstantiationExecutionNode).executionNodes->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery;
+
+  assertEquals('select 1 as "one", "root".enum as "enum" from flat as "root" where ("root".enum = \'V1\' or "root".enum in (\'V1\', \'V2\'))', $sql);
+
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testPlanGenerationAndTransform():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service."/service/service3"';
+  let sqlTransformContext = $sqlString->processQuery(true);
+  let plan = $sqlTransformContext->getPlan($sqlTransformContext.sources, $sqlTransformContext.extensions);
+  let transformed = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan($plan, $sqlTransformContext.extensions);
+  assert($transformed->isNotEmpty());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSchemaService1():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service."/service/service1"';
+
+  let actualSchema = $sqlString->processQuery(true).columns()->meta::external::query::sql::tdsColsToSchema();
+
+  let expectedCol1 = ^PrimitiveSchemaColumn(name='Boolean',      type=meta::external::query::sql::schema::metamodel::PrimitiveType.Boolean);
+  let expectedCol2 = ^PrimitiveSchemaColumn(name='Integer',      type=meta::external::query::sql::schema::metamodel::PrimitiveType.Integer);
+  let expectedCol3 = ^PrimitiveSchemaColumn(name='Float',        type=meta::external::query::sql::schema::metamodel::PrimitiveType.Float);
+  let expectedCol4 = ^PrimitiveSchemaColumn(name='Decimal',      type=meta::external::query::sql::schema::metamodel::PrimitiveType.Decimal);
+  let expectedCol5 = ^PrimitiveSchemaColumn(name='StrictDate',   type=meta::external::query::sql::schema::metamodel::PrimitiveType.StrictDate);
+  let expectedCol6 = ^PrimitiveSchemaColumn(name='DateTime',     type=meta::external::query::sql::schema::metamodel::PrimitiveType.DateTime);
+  let expectedCol7 = ^PrimitiveSchemaColumn(name='String',       type=meta::external::query::sql::schema::metamodel::PrimitiveType.String);
+  let expectedSchema = ^Schema(columns=[$expectedCol1, $expectedCol2, $expectedCol3, $expectedCol4, $expectedCol5, $expectedCol6, $expectedCol7]);
+
+  assertEquals($expectedSchema, $actualSchema);
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSchemaService2():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service."/service/service2"';
+
+  let actualSchema = $sqlString->processQuery(true).columns()->meta::external::query::sql::tdsColsToSchema();
+
+  let expectedCol1 = ^PrimitiveSchemaColumn(name='ID',             type=meta::external::query::sql::schema::metamodel::PrimitiveType.Integer);
+  let expectedCol2 = ^PrimitiveSchemaColumn(name='Integer',        type=meta::external::query::sql::schema::metamodel::PrimitiveType.Integer);
+  let expectedCol3 = ^PrimitiveSchemaColumn(name='String',         type=meta::external::query::sql::schema::metamodel::PrimitiveType.String);
+  let expectedSchema = ^Schema(columns=[$expectedCol1, $expectedCol2, $expectedCol3]);
+
+  assertEquals($expectedSchema, $actualSchema);
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSchemaService3():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service."/service/service3"';
+
+  let actualSchema = $sqlString->processQuery(true).columns()->meta::external::query::sql::tdsColsToSchema();
+
+  let expectedCol1 = ^PrimitiveSchemaColumn(name='ID',             type=meta::external::query::sql::schema::metamodel::PrimitiveType.Integer);
+  let expectedCol2 = ^PrimitiveSchemaColumn(name='Integer',        type=meta::external::query::sql::schema::metamodel::PrimitiveType.Integer);
+  let expectedCol3 = ^EnumSchemaColumn(name='The Enum Value',      type=MyEnum->elementToPath());
+  let expectedCol4 = ^EnumSchemaColumn(name='The Type',            type=FieldType->elementToPath());
+  let expectedCol5 = ^PrimitiveSchemaColumn(name='Const',            type=meta::external::query::sql::schema::metamodel::PrimitiveType.Integer);
+  let expectedEnum1 = ^meta::external::query::sql::schema::metamodel::Enum(type=MyEnum->elementToPath(), values=MyEnum->enumValues()->map(v:meta::pure::metamodel::type::Enum[1] | $v->id()));
+  let expectedEnum2 = ^meta::external::query::sql::schema::metamodel::Enum(type=FieldType->elementToPath(), values=FieldType->enumValues()->map(v:meta::pure::metamodel::type::Enum[1] | $v->id()));
+  let expectedSchema = ^Schema(columns=[$expectedCol1, $expectedCol2, $expectedCol3, $expectedCol4,$expectedCol5], enums=[$expectedEnum1, $expectedEnum2]);
+
+  assertEquals($expectedSchema, $actualSchema);
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::doNameTest(e:meta::external::query::sql::metamodel::Expression[1], str:String[1]):Boolean[1]
+{
+  assertEquals($str, $e->extractNameFromExpression([]));
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testExtractNameFromExpression():Boolean[1]
+{
+  doNameTest(^ArithmeticExpression(left = ^IntegerLiteral(value = 1), type = ArithmeticType.ADD, right = ^IntegerLiteral(value = 2)), '1 + 2');
+  doNameTest(^ArithmeticExpression(left = ^IntegerLiteral(value = 1), type = ArithmeticType.SUBTRACT, right = ^IntegerLiteral(value = 2)), '1 - 2');
+  doNameTest(^ArithmeticExpression(left = ^IntegerLiteral(value = 1), type = ArithmeticType.MULTIPLY, right = ^IntegerLiteral(value = 2)), '1 * 2');
+  doNameTest(^ArithmeticExpression(left = ^IntegerLiteral(value = 1), type = ArithmeticType.DIVIDE, right = ^IntegerLiteral(value = 2)), '1 / 2');
+  doNameTest(^ArithmeticExpression(left = ^IntegerLiteral(value = 1), type = ArithmeticType.MODULUS, right = ^IntegerLiteral(value = 2)), '1 % 2');
+  doNameTest(^ArithmeticExpression(left = ^IntegerLiteral(value = 1), type = ArithmeticType.POWER, right = ^IntegerLiteral(value = 2)), '1 ^ 2');
+
+  doNameTest(^BetweenPredicate(min = ^IntegerLiteral(value = 0), max = ^IntegerLiteral(value = 2), value = ^IntegerLiteral(value = 1)), '1 BETWEEN 0 AND 2');
+
+  doNameTest(^Cast(expression = ^StringLiteral(value = '1', quoted = true), type = ^ColumnType(name = 'INTEGER')), 'CAST(\'1\' AS INTEGER)');
+
+  doNameTest(^CurrentTime(type = CurrentTimeType.TIME), 'CURRENT_TIME');
+  doNameTest(^CurrentTime(type = CurrentTimeType.TIMESTAMP), 'CURRENT_TIMESTAMP');
+  doNameTest(^CurrentTime(type = CurrentTimeType.DATE), 'CURRENT_DATE');
+
+  doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.EQUAL, right = ^IntegerLiteral(value = 2)), '1 = 2');
+  doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.NOT_EQUAL, right = ^IntegerLiteral(value = 2)), '1 != 2');
+  doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.LESS_THAN, right = ^IntegerLiteral(value = 2)), '1 < 2');
+  doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.LESS_THAN_OR_EQUAL, right = ^IntegerLiteral(value = 2)), '1 <= 2');
+  doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.GREATER_THAN, right = ^IntegerLiteral(value = 2)), '1 > 2');
+  doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.GREATER_THAN_OR_EQUAL, right = ^IntegerLiteral(value = 2)), '1 >= 2');
+  doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.REGEX_MATCH, right = ^StringLiteral(value = 'def')), 'abc ~ def');
+  doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.REGEX_MATCH_CI, right = ^StringLiteral(value = 'def')), 'abc ~* def');
+  doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.REGEX_NO_MATCH, right = ^StringLiteral(value = 'def')), 'abc !~ def');
+  doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.REGEX_NO_MATCH_CI, right = ^StringLiteral(value = 'def')), 'abc !~* def');
+  doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.LIKE, right = ^StringLiteral(value = 'def')), 'abc ~~ def');
+  doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.ILIKE, right = ^StringLiteral(value = 'def')), 'abc ~~* def');
+  doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.NOT_LIKE, right = ^StringLiteral(value = 'def')), 'abc !~~ def');
+  doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.NOT_ILIKE, right = ^StringLiteral(value = 'def')), 'abc !~~* def');
+
+  doNameTest(^Extract(field = ExtractField.DOW, expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'date'))), 'EXTRACT(\'dow\' FROM date)');
+
+  doNameTest(^FunctionCall(name = ^QualifiedName(parts = 'myFunc'), arguments = ^IntegerLiteral(value = 1), distinct = false), 'myFunc(1)');
+
+  doNameTest(^InPredicate(value = ^IntegerLiteral(value =  1), valueList = ^InListExpression(values = ^IntegerLiteral(value = 1))), '1 IN (1)');
+
+  doNameTest(^LongLiteral(value = 1), '1');
+  doNameTest(^BooleanLiteral(value = true), 'true');
+  doNameTest(^DoubleLiteral(value = 1.0), '1.0');
+  doNameTest(^IntegerLiteral(value = 1), '1');
+  doNameTest(^StringLiteral(value = 'abc', quoted = false), 'abc');
+  doNameTest(^ArrayLiteral(values = [^IntegerLiteral(value = 1), ^IntegerLiteral(value = 2)]), '1,2');
+  doNameTest(^NullLiteral(), 'NULL');
+
+  doNameTest(^LikePredicate(value = ^StringLiteral(value = 'a', quoted = false),
+                            pattern = ^StringLiteral(value = 'b', quoted = false),
+                            ignoreCase = false), 'a LIKE b');
+  doNameTest(^LikePredicate(value = ^StringLiteral(value = 'a', quoted = false),
+                            pattern = ^StringLiteral(value = 'b', quoted = false),
+                            ignoreCase = true), 'a ILIKE b');
+  doNameTest(^LikePredicate(value = ^StringLiteral(value = 'a', quoted = false),
+                            pattern = ^StringLiteral(value = 'b', quoted = false),
+                            escape = ^StringLiteral(value = '!', quoted = false),
+                            ignoreCase = false), 'a LIKE b ESCAPE !');
+
+  doNameTest(^LogicalBinaryExpression(left = ^BooleanLiteral(value = true), right = ^BooleanLiteral(value = false),type = LogicalBinaryType.AND), 'true AND false');
+  doNameTest(^LogicalBinaryExpression(left = ^BooleanLiteral(value = true), right = ^BooleanLiteral(value = false),type = LogicalBinaryType.OR), 'true OR false');
+
+  doNameTest(^NamedArgumentExpression(name = 'arg', expression = ^IntegerLiteral(value = 1)), 'arg => 1');
+
+  doNameTest(^NegativeExpression(value = ^IntegerLiteral(value = 1)), '-1');
+
+  doNameTest(^NotExpression(value = ^BooleanLiteral(value = true)), 'NOT true');
+
+  doNameTest(^SimpleCaseExpression(operand = ^BooleanLiteral(value = true),
+                                  whenClauses = ^WhenClause(operand = ^BooleanLiteral(value = false),result = ^IntegerLiteral(value = 2)),
+                                  defaultValue = ^IntegerLiteral(value = 1)), 'CASE WHEN true = false THEN 2 ELSE 1 END');
+
+  doNameTest(^Trim(value = ^StringLiteral(value = 'abc', quoted = true), characters = ^StringLiteral(value = ' ', quoted = true), mode =TrimMode.BOTH), 'TRIM(BOTH \' \' FROM \'abc\')');
+  doNameTest(^Trim(value = ^StringLiteral(value = 'abc', quoted = true), mode = TrimMode.BOTH), 'TRIM(BOTH FROM \'abc\')');
+
+  doNameTest(^IntervalLiteral(years = 5), 'INTERVAL\'5 YEARS\'');
+  doNameTest(^IntervalLiteral(years = 5, ago = true), 'INTERVAL\'5 YEARS AGO\'');
+  doNameTest(^IntervalLiteral(years = 5, months = 6, weeks = 3, days = 1, hours = 9, minutes = 1, seconds = 0), 'INTERVAL\'5 YEARS 6 MONTHS 3 WEEKS 1 DAYS 9 HOURS 1 MINUTES 0 SECONDS\'');
+  doNameTest(^IntervalLiteral(years = 5, months = 6, weeks = 3, days = 1, hours = 9, minutes = 1, seconds = 0, ago = true), 'INTERVAL\'5 YEARS 6 MONTHS 3 WEEKS 1 DAYS 9 HOURS 1 MINUTES 0 SECONDS AGO\'');
+
+  doNameTest(^PositionalParameterExpression(index = 1), '$1');
+  doNameTest(^ParameterPlaceholderExpression(index = 1), '?');
+}
+
+
+function meta::external::query::sql::transformation::queryToPure::tests::testSources():SQLSource[*]
+{
+  [
+    serviceToSource(Service1()),
+    serviceToSource(Service2()),
+    serviceToSource(Service3()),
+    serviceToSource(Service4())
+  ]
+}

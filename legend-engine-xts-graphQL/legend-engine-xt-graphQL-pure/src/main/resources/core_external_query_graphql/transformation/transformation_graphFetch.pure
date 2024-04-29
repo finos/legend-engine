@@ -1,0 +1,417 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+
+
+
+###Pure
+import meta::external::query::graphQL::metamodel::sdl::*;
+import meta::external::query::graphQL::metamodel::sdl::value::*;
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
+import meta::external::query::graphQL::transformation::queryToPure::*;
+import meta::pure::graphFetch::*;
+
+function meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure(query:Document[1], root: Class<Any>[1]) : RootGraphFetchTree<Any>[1]
+{
+  let types = $root->meta::external::query::graphQL::binding::fromPure::introspection::scanTypes([]);
+  let fragments = $query.definitions->map(d|
+    $d->match([
+
+      f : FragmentDefinition[1]| pair($f.name, list($f.selectionSet->transformSelectionToPure($types->filter(c|$c.name == $f.typeCondition)->toOne()->cast(@Class<Any>))));,
+      o : OperationDefinition[1]| pair('__Query', list($o.selectionSet->transformSelectionToPure($root)));
+    ])
+  )->newMap();
+
+  ^RootGraphFetchTree<Any>
+  (
+    class = $root,
+    subTrees = $fragments->get('__Query')->toOne().values->buildGraphFetchFromIntermediateNodes($fragments)
+  );
+}
+
+
+Class <<access.private>> meta::external::query::graphQL::transformation::queryToPure::IntermediateNode
+{
+}
+
+Class <<access.private>> meta::external::query::graphQL::transformation::queryToPure::IntermediatePropertyNode extends IntermediateNode
+{
+  children :  meta::external::query::graphQL::transformation::queryToPure::IntermediateNode[*];
+  propertyFetch : PropertyGraphFetchTree[1];
+}
+
+Class <<access.private>> meta::external::query::graphQL::transformation::queryToPure::IntermediateFragmentNode extends IntermediateNode
+{
+  name : String[1];
+}
+
+
+function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::transformSelectionToPure(selection:Selection[*], root:Class<Any>[1]) : meta::external::query::graphQL::transformation::queryToPure::IntermediateNode[*]
+{
+  $selection->map(s|$s->match(
+    [
+      field : Field[1] |let property = $root->meta::pure::functions::meta::allProperties()->filter(p|$p.name == $field.name);
+                        assert(!$property->isEmpty(), |'Property "'+$field.name+'" can\'t be found in the type '+$root->elementToPath());
+
+
+                         let params =  if($property->toOne()->instanceOf(QualifiedProperty) ,
+                                                    | $property->cast(@QualifiedProperty<Any>).classifierGenericType.typeArguments.rawType->toOne()->cast(@FunctionType).parameters->tail(),
+                                                    |  []
+                                           );
+                        ^meta::external::query::graphQL::transformation::queryToPure::IntermediatePropertyNode
+                        (
+                            propertyFetch = ^PropertyGraphFetchTree
+                                          (
+                                            property = $property->toOne(),
+                                            parameters = $params),
+                          children = if ($field.selectionSet->isEmpty(),|[],|$field.selectionSet->transformSelectionToPure($property->toOne()->functionReturnType().rawType->cast(@Class<Any>)->toOne()))
+                        );,
+      fragmentId : FragmentSpread[1] | ^meta::external::query::graphQL::transformation::queryToPure::IntermediateFragmentNode(name = $fragmentId.name);
+    ]
+  ));
+}
+
+function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::buildGraphFetchFromIntermediateNodes(nodes : meta::external::query::graphQL::transformation::queryToPure::IntermediateNode[*], fragments : Map<String, List<meta::external::query::graphQL::transformation::queryToPure::IntermediateNode>>[1]) : PropertyGraphFetchTree[*]
+{
+  $nodes->map(n | $n->match(
+      [
+        p : meta::external::query::graphQL::transformation::queryToPure::IntermediatePropertyNode[1] | let val = $p.propertyFetch;
+                                                                                           ^$val
+                                                                                           (
+                                                                                             subTrees = $p.children->buildGraphFetchFromIntermediateNodes($fragments)
+                                                                                           );,
+        f : meta::external::query::graphQL::transformation::queryToPure::IntermediateFragmentNode[1] | $fragments->get($f.name).values->buildGraphFetchFromIntermediateNodes($fragments)
+      ]
+    )
+  )
+}
+
+
+###Pure
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
+import meta::external::query::graphQL::metamodel::sdl::*;
+import meta::pure::graphFetch::*;
+import meta::external::query::graphQL::transformation::queryToPure::*;
+
+function meta::external::query::graphQL::transformation::queryToPure::extractLambdaFromQuery(
+                                                                          cl:Class<Any>[1],
+                                                                          query:meta::external::query::graphQL::metamodel::sdl::Document[1]
+                                                                      ): meta::pure::graphFetch::domain::ExtractedDomainClassWithParameters[*]
+{
+  let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);
+  $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true)->map(
+    r | ^meta::pure::graphFetch::domain::ExtractedDomainClassWithParameters(
+      propertyName = $r.propertyName,
+      functionDef = $r.functionDef->addDynamicFilter($cl,$query)
+    )
+  );
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::getPlansFromGraphQL(
+                                                                          cl:Class<Any>[1],
+                                                                          mapping:meta::pure::mapping::Mapping[1],
+                                                                          runtime:meta::core::runtime::Runtime[1],
+                                                                          query:meta::external::query::graphQL::metamodel::sdl::Document[1],
+                                                                          extensions:meta::pure::extension::Extension[*]
+                                                                      ):Pair<String, meta::pure::executionPlan::ExecutionPlan>[*]
+{
+  meta::external::query::graphQL::transformation::queryToPure::extractLambdaFromQuery($cl, $query)->map(r|
+              pair(
+                $r.propertyName,
+                meta::pure::executionPlan::executionPlan(
+                  $r.functionDef,
+                  $mapping,
+                  $runtime,
+                  $extensions
+                )
+              )
+        );
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPlansWithParameters(
+                                                                          cl:Class<Any>[1],
+                                                                          query:meta::external::query::graphQL::metamodel::sdl::Document[1],
+                                                                          mapping:meta::pure::mapping::Mapping[1],
+                                                                          runtime:meta::core::runtime::Runtime[1],
+                                                                          extensions:meta::pure::extension::Extension[*]
+                                                                      ):meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan[*]
+{
+  meta::external::query::graphQL::transformation::queryToPure::extractLambdaFromQuery($cl, $query)->map(r|
+              ^meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan(
+               name = $r.propertyName,
+               plan =  meta::pure::executionPlan::executionPlan(
+                  $r.functionDef,
+                  $mapping,
+                  $runtime,
+                  $extensions
+                )
+              )
+        );
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::addDynamicFilter(
+                                                                          f: LambdaFunction<Any>[1],
+                                                                          cl: Class<Any>[1],
+                                                                          query: meta::external::query::graphQL::metamodel::sdl::Document[1]
+                                                                      ): LambdaFunction<Any>[1]
+{
+  let property = $cl->allProperties()->filter(p | $p.name == $query
+                                                              ->cast(@ExecutableDocument).executableDefinitions()->at(0)
+                                                              ->cast(@OperationDefinition).selectionSet->at(0)
+                                                              ->cast(@Field).name
+                                              )->evaluateAndDeactivate();
+  let whereObject = $query
+    ->cast(@ExecutableDocument).executableDefinitions()->at(0)
+    ->cast(@OperationDefinition).selectionSet->at(0)
+    ->cast(@Field).arguments->filter(x|$x.name == 'where');
+  if (
+    $whereObject->isEmpty(),
+    | $f,
+    | let whereObjectValue = $whereObject->toOne().value;
+      let ic = meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseValue(
+                $whereObjectValue,
+                'where',
+                meta::external::query::graphQL::transformation::queryToPure::dynamic::getOperatorMap(),
+                ^DebugContext(debug=false,space='')
+              )->meta::external::query::graphQL::transformation::queryToPure::dynamic::nodesToValueSpecification(
+                [],
+                $property.genericType.rawType->cast(@Class<Any>)->toOne(),
+                [],
+                0
+              );
+      let fe = $ic.valueSpecifications->toOne();
+      let vars = $ic.vars;
+      let expressionSequence = $f.expressionSequence;
+      let serializeParam = $expressionSequence->last()->toOne()
+                              ->cast(@SimpleFunctionExpression);
+      let graphFetchParam = $serializeParam.parametersValues->at(0)
+                    ->cast(@SimpleFunctionExpression);
+      let limitingFunctionParam = $graphFetchParam.parametersValues->at(0)
+                    ->cast(@SimpleFunctionExpression);
+      let sortFunctionParam = if($limitingFunctionParam.parametersValues->at(0)->instanceOf(SimpleFunctionExpression), |$limitingFunctionParam.parametersValues->at(0)->cast(@SimpleFunctionExpression), |[]);
+      if($limitingFunctionParam.func->isALimitingFunction(), |assert($sortFunctionParam.func->toOne()->isASortingFunction(),'Any limit function should be preceded by sorting function'), |[]);
+      
+      let funcWithoutGraphFetchSerializeOrLimit = if($limitingFunctionParam.func->isALimitingFunction(),
+                                              | $sortFunctionParam.parametersValues->at(0),
+                                              | $graphFetchParam.parametersValues->at(0)
+                                            );
+      
+      let expressionSequenceLengthLess1 = $expressionSequence->size() - 1;
+      let returnType = $funcWithoutGraphFetchSerializeOrLimit->evaluateAndDeactivate();
+      let classGenericType = $returnType.genericType->cast(@GenericType);
+      let filterLambda = newLambdaFunction(
+        ^FunctionType(
+          returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean), parameters = [^VariableExpression(multiplicity=PureOne,genericType=$classGenericType,name='p_0')])
+      );
+      let finalLambda = newLambdaFunction(
+        ^FunctionType(
+          returnType=$classGenericType,
+          returnMultiplicity=ZeroMany,
+          parameters = $f->functionType().parameters->concatenate($vars)
+        )
+      );
+      let sfe = ^SimpleFunctionExpression(
+                    importGroup=system::imports::coreImport,
+                    func=meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_,
+                    multiplicity=ZeroMany,
+                    genericType=$classGenericType,
+                    parametersValues = [
+                      $funcWithoutGraphFetchSerializeOrLimit,
+                      ^InstanceValue(
+                        multiplicity=PureOne,
+                        genericType=^GenericType(rawType = LambdaFunction, typeArguments = [^GenericType(rawType = ^FunctionType(returnMultiplicity=PureOne,returnType=^GenericType(rawType=Boolean)))]),
+                        values= ^$filterLambda(expressionSequence = $fe->evaluateAndDeactivate()->toOneMany())
+                      )
+                    ]
+                  );
+      ^$finalLambda(
+        expressionSequence = $expressionSequence->slice(0,$expressionSequenceLengthLess1)->concatenate(
+          ^$serializeParam(
+            parametersValues = [
+              ^$graphFetchParam(
+                parametersValues = [
+                  if($limitingFunctionParam.func->isALimitingFunction(),
+                    | let sortFunctionParamToOne = $sortFunctionParam->toOne();
+                      ^$limitingFunctionParam(
+                        parametersValues = [
+                          ^$sortFunctionParamToOne(
+                            parametersValues = [
+                              $sfe
+                            ]->concatenate($sortFunctionParamToOne.parametersValues->drop(1))
+                          )
+                        ]->concatenate($limitingFunctionParam.parametersValues->drop(1))
+                      );,
+                    | $sfe
+                  )
+                ]->concatenate($graphFetchParam.parametersValues->drop(1))
+              )
+            ]->concatenate($serializeParam.parametersValues->drop(1))
+          )
+        )->toOneMany()
+      );
+  );
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::getPlanForTotalCountDirective(
+                                                                          cl:Class<Any>[1],
+                                                                          mapping:meta::pure::mapping::Mapping[1],
+                                                                          runtime:meta::core::runtime::Runtime[1],
+                                                                          query:meta::external::query::graphQL::metamodel::sdl::Document[1],
+                                                                          extensions:meta::pure::extension::Extension[*]
+                                                                      ):meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan[*]
+{
+  meta::external::query::graphQL::transformation::queryToPure::extractLambdaFromQuery($cl, $query)->map(r|
+    ^meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan(
+      name = $r.propertyName + '@totalCount',
+      plan =  meta::pure::executionPlan::executionPlan(
+                meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective($r, $query),
+                $mapping,
+                $runtime,
+                $extensions
+              )
+    )
+  );
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::isASortingFunction(func: Function<Any>[1]): Boolean[1]
+{
+  $func->in(
+    [
+      sortBy_T_m__Function_$0_1$__T_m_
+    ]
+  )
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::isALimitingFunction(func: Function<Any>[1]): Boolean[1]
+{
+  $func->in(
+    [
+      slice_T_MANY__Integer_1__Integer_1__T_MANY_,
+      drop_T_MANY__Integer_1__T_MANY_,
+      limit_T_MANY__Integer_1__T_MANY_,
+      take_T_MANY__Integer_1__T_MANY_,
+      paginated_T_MANY__Integer_1__Integer_1__T_MANY_
+    ]
+  )
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective(r: meta::pure::graphFetch::domain::ExtractedDomainClassWithParameters[1], query: meta::external::query::graphQL::metamodel::sdl::Document[1]): FunctionDefinition<Any>[1]
+{
+  let parameters = $r.functionDef.classifierGenericType.typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate();
+  let expressionSequence = $r.functionDef.expressionSequence;
+  let getAll = $expressionSequence->last()->toOne()->cast(@SimpleFunctionExpression);
+  let funcWithoutGraphFetchSerialize = $expressionSequence->last()->toOne()
+                                        ->cast(@SimpleFunctionExpression).parametersValues->at(0)
+                                        ->cast(@SimpleFunctionExpression).parametersValues->at(0);
+  let funcWithoutLimitingFunction = if(
+    $funcWithoutGraphFetchSerialize->cast(@SimpleFunctionExpression).func->meta::external::query::graphQL::transformation::queryToPure::isALimitingFunction(),
+    |$funcWithoutGraphFetchSerialize->cast(@SimpleFunctionExpression).parametersValues->at(0),
+    |$funcWithoutGraphFetchSerialize
+  );
+
+  let expressionSequenceLengthLess1 = $expressionSequence->size() - 1;
+  let returnType = $funcWithoutLimitingFunction->evaluateAndDeactivate();
+  let classGenericType = $returnType.genericType->cast(@GenericType);
+  let integerGenericType = ^GenericType(rawType = Integer);
+  let xLambda = newLambdaFunction(
+    ^FunctionType(
+      returnMultiplicity = ZeroMany, returnType = ^GenericType(rawType = Integer), parameters = [^VariableExpression(multiplicity=PureOne,genericType=$classGenericType,name='x')])
+  );
+  let yLambda = newLambdaFunction(
+    ^FunctionType(
+      returnMultiplicity = ZeroMany, returnType = ^GenericType(rawType = Integer), parameters = [^VariableExpression(multiplicity=ZeroMany,genericType=^GenericType(rawType=Integer),name='y')])
+  );
+  let func = ^LambdaFunction<{->Any[*]}>(
+    expressionSequence = $expressionSequence->slice(0,$expressionSequenceLengthLess1)->concatenate(
+                          // $realGroupBy
+                          ^$getAll(
+                            func = groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_,
+                            functionName = 'groupBy',
+                            genericType = ^GenericType(rawType=TabularDataSet),
+                            resolvedTypeParameters = ^GenericType(rawType=TabularDataSet, typeArguments=[$classGenericType,$integerGenericType,$integerGenericType]),
+                            parametersValues = [
+                              $funcWithoutLimitingFunction,
+                              ^InstanceValue(multiplicity=ZeroMany,genericType=^GenericType(rawType=Function),values=[]),
+                              ^InstanceValue(
+                                multiplicity=PureOne,
+                                genericType=^GenericType(rawType=meta::pure::functions::collection::AggregateValue, typeArguments=[$classGenericType,$integerGenericType,$integerGenericType]),
+                                values = [
+                                  ^SimpleFunctionExpression(
+                                    func = agg_FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_,
+                                    functionName = 'agg',
+                                    genericType = ^GenericType(rawType=meta::pure::functions::collection::AggregateValue, typeArguments=[$classGenericType,$integerGenericType,$integerGenericType]),
+                                    resolvedTypeParameters = [
+                                      $classGenericType,
+                                      ^GenericType(rawType=Integer),
+                                      ^GenericType(rawType=Integer)
+                                    ],
+                                    multiplicity = PureOne,
+                                    importGroup=system::imports::coreImport,
+                                    parametersValues = [
+                                      ^InstanceValue(
+                                        multiplicity=PureOne,
+                                        genericType=^GenericType(rawType=LambdaFunction, typeArguments = [^GenericType(rawType = ^FunctionType(returnType=^GenericType(rawType=Integer),returnMultiplicity=PureOne,parameters=[^VariableExpression(multiplicity=PureOne,genericType=$classGenericType,name='x')]))]),
+                                        values = ^$xLambda(expressionSequence = ^InstanceValue(multiplicity=PureOne,genericType=^GenericType(rawType=Integer),values=[1]))
+                                      ),
+                                      ^InstanceValue(
+                                        multiplicity=PureOne,
+                                        genericType=^GenericType(rawType=LambdaFunction, typeArguments = [^GenericType(rawType = ^FunctionType(returnType=^GenericType(rawType=Integer),returnMultiplicity=PureOne,parameters=[^VariableExpression(multiplicity=ZeroMany,genericType=$integerGenericType,name='y')]))]),
+                                        values = ^$yLambda(expressionSequence = ^SimpleFunctionExpression(
+                                                      func=count_Any_MANY__Integer_1_,
+                                                      multiplicity=PureOne,
+                                                      importGroup=system::imports::coreImport,
+                                                      genericType=^GenericType(rawType=Integer),
+                                                      parametersValues=[
+                                                        ^VariableExpression(multiplicity=PureOne,name='y',genericType=^GenericType(rawType=Integer))
+                                                      ])
+                                                  )
+                                      )
+                                    ]
+                                  )
+                                ]
+                              ),
+                              ^InstanceValue(multiplicity=ZeroMany,genericType=^GenericType(rawType=String),values=['count'])
+                            ],
+                            usageContext = []
+                          )
+                        )->toOneMany());
+  let lambdaWithParams = newLambdaFunction(
+                          ^FunctionType(returnMultiplicity = ZeroMany, returnType = ^GenericType(rawType = Any), parameters= $parameters)
+                        );
+  ^$func(classifierGenericType=$lambdaWithParams.classifierGenericType);
+}
+Class meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan
+{
+  name : String[1];
+  plan : meta::pure::executionPlan::ExecutionPlan[1];
+}
+
+Class meta::external::query::graphQL::transformation::queryToPure::GraphFetchResult
+{
+  graphFetchTree : meta::pure::graphFetch::RootGraphFetchTree<Any>[1];
+  explodedDomain : Pair<String, FunctionDefinition<{->Any[*]}>>[*];
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::getGraphFetchFromGraphQL(cl:Class<Any>[1], query:meta::external::query::graphQL::metamodel::sdl::Document[1]):GraphFetchResult[1]
+{
+  let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);
+  let res = $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree();
+  ^GraphFetchResult
+  (
+    graphFetchTree = $graphFetch,
+    explodedDomain = $res->map(r|pair($r.first, $r.second))
+  );
+}
+

@@ -1,0 +1,158 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+import meta::protocols::pure::v1_29_0::metamodel::store::service::*;
+
+Class meta::protocols::pure::v1_29_0::metamodel::store::service::ServiceStore extends meta::protocols::pure::v1_29_0::metamodel::store::Store
+{
+   description : String[0..1];
+   elements    : ServiceStoreElement[*];
+}
+
+Class <<typemodifiers.abstract>> meta::protocols::pure::v1_29_0::metamodel::store::service::ServiceStoreElement
+{
+   _type    : String[1];
+   
+   id       : String[1];
+   path     : String[1];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::store::service::ServiceGroup extends ServiceStoreElement
+{
+   elements : ServiceStoreElement[*];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::store::service::Service extends ServiceStoreElement
+{  
+   requestBody : TypeReference[0..1];
+   method      : String[1];
+   parameters  : ServiceParameter[*];
+   response    : ComplexTypeReference[1];
+   security    : SecurityScheme[*];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::store::service::ServiceParameter
+{
+   name                 : String[1];
+   type                 : TypeReference[1];
+   location             : String[1];
+
+   allowReserved        : Boolean[0..1];
+   required             : Boolean[0..1];
+   _enum                : String[0..1];
+   serializationFormat  : SerializationFormat[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::protocols::pure::v1_29_0::metamodel::store::service::TypeReference
+{
+   _type    : String[1];
+   
+   list     : Boolean[1];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::store::service::StringTypeReference extends meta::protocols::pure::v1_29_0::metamodel::store::service::TypeReference
+{
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::store::service::BooleanTypeReference extends meta::protocols::pure::v1_29_0::metamodel::store::service::TypeReference
+{
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::store::service::IntegerTypeReference extends meta::protocols::pure::v1_29_0::metamodel::store::service::TypeReference
+{
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::store::service::FloatTypeReference extends meta::protocols::pure::v1_29_0::metamodel::store::service::TypeReference
+{
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::store::service::ComplexTypeReference extends meta::protocols::pure::v1_29_0::metamodel::store::service::TypeReference
+{
+   type    : String[1];
+   binding : String[1];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::store::service::SerializationFormat
+{
+   style   : String[0..1];
+   explode : Boolean[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::protocols::pure::v1_29_0::metamodel::store::service::SecurityScheme
+{
+   _type    : String[1];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::store::service::ServiceGroupPtr
+{
+   serviceStore : String[1];
+   serviceGroup : String[1];
+   parent       : ServiceGroupPtr[0..1];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::store::service::ServicePtr
+{
+   serviceStore : String[1];
+   service      : String[1];
+   parent       : ServiceGroupPtr[0..1];
+}
+
+
+// Mapping
+###Pure
+import meta::protocols::pure::v1_29_0::metamodel::store::service::*;
+import meta::protocols::pure::v1_29_0::metamodel::store::service::mapping::*;
+
+import meta::protocols::pure::v1_29_0::metamodel::valueSpecification::raw::*;
+
+Class meta::protocols::pure::v1_29_0::metamodel::store::service::mapping::RootServiceClassMapping extends meta::protocols::pure::v1_29_0::metamodel::mapping::ClassMapping
+{
+   localMappingProperties : LocalMappingProperty[*];
+   servicesMapping        : ServiceMapping[*];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::store::service::mapping::LocalMappingProperty
+{
+   name         : String[1];
+   type         : String[1];
+   multiplicity : meta::protocols::pure::v1_29_0::metamodel::domain::Multiplicity[1];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::store::service::mapping::ServiceMapping
+{
+   service          : ServicePtr[1];
+   pathOffset       : Path[0..1];
+   requestBuildInfo : ServiceRequestBuildInfo[0..1];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::store::service::mapping::ServiceRequestBuildInfo
+{
+   requestParametersBuildInfo : ServiceRequestParametersBuildInfo[0..1];
+   requestBodyBuildInfo       : ServiceRequestBodyBuildInfo[0..1];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::store::service::mapping::ServiceRequestParametersBuildInfo
+{
+   parameterBuildInfoList : ServiceRequestParameterBuildInfo[*];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::store::service::mapping::ServiceRequestParameterBuildInfo
+{
+   serviceParameter : String[1];
+   transform        : Lambda[1];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::store::service::mapping::ServiceRequestBodyBuildInfo
+{
+   transform        : Lambda[1];
+}

@@ -1,0 +1,83 @@
+import meta::analytics::quality::model::*;
+import meta::analytics::quality::*;
+import meta::analytics::quality::model::domain::*;
+
+
+function meta::analytics::quality::model::domain::classRules():Rule<Class<Any>>[*]
+{
+    [
+      meta::analytics::quality::model::domain::classNameShouldStartWithUpperCase_Class_1__CheckResult_MANY_,
+      meta::analytics::quality::model::domain::entityNameShouldNotStartWithPackageName_Class_1__CheckResult_MANY_,
+      meta::analytics::quality::model::domain::classHasAtLeastOneMandatoryProperty_Class_1__CheckResult_MANY_ ,
+      meta::analytics::quality::model::domain::allEntitiesAndPropertiesShouldHaveALongDescription_Class_1__CheckResult_MANY_
+   ]->map(rule|createRule($rule)->cast(@Rule<Class<Any>>));
+
+}
+
+function { rule.rule = 'Invalid Class Names',
+           rule.description ='Class name should start with Upper case',
+           rule.severity = 'Medium',
+           rule.category = 'Modelling',
+           doc.doc = 'Returns true if the class name starts with upper case letter'}
+meta::analytics::quality::model::domain::classNameShouldStartWithUpperCase(cl:Class<Any>[1]):CheckResult[*]
+{
+   let issues = if(!$cl.name->toOne()->meta::pure::functions::string::substring(0,1)->isUpperCase(),
+                   | 'should start with upper case',
+                   | [])
+                  ->concatenate(if ($cl.name->contains('_'),
+                     | 'should not contain \'_\'',
+                     | []
+                    ));
+
+   let message = if($issues->isEmpty(),
+                 | 'Class name (' + $cl.name->toOne() + ') matches required standards',
+                 | 'Class name (' + $cl.name->toOne() + ') does not match required standards: ' + $issues->joinStrings(';')
+                 );
+
+   ^CheckResult(isValid=$issues->isEmpty(), message=$message);
+}
+
+function   <<rule.skipTests>>
+           { rule.rule = 'Class has no mandatory properties',
+           rule.description ='Class should have at least one mandatory property',
+           rule.severity = 'High',
+           rule.category = 'Modelling',
+           doc.doc = 'Returns true if the class has a mandatory property'}
+meta::analytics::quality::model::domain::classHasAtLeastOneMandatoryProperty(cl:Class<Any>[1]):CheckResult[*]
+{
+   let passed = $cl.properties->filter(p | $p.multiplicity->isToOne())->isNotEmpty();
+
+   let message = if($passed, | 'Class has at least one mandatory property', | 'Class should have at least one mandatory property');
+
+   ^CheckResult(isValid=$passed, message=$message);
+}
+
+function <<rule.skipTests>>
+           { rule.rule = 'Invalid Entity Name',
+           rule.description ='Entity name must not start with the package name.',
+           rule.severity = 'High',
+           rule.category = 'Modelling',
+           doc.doc = 'Returns true if Entity name is valid'}
+meta::analytics::quality::model::domain::entityNameShouldNotStartWithPackageName(cl:Class<Any>[1]):CheckResult[*]
+{
+   let passed  = !($cl.name->toOne()->toLower()->startsWith($cl.package.name->toOne()->toLower()));
+
+   let message ='Check name of class and package ' + $cl.name->toOne() ;
+
+   ^CheckResult(isValid=$passed, message=$message);
+}
+
+function <<rule.skipTests>>
+           { rule.rule = 'Documentation not provided for entity and/or its properties',
+           rule.description ='All entities and properties must have a long description.',
+           rule.severity = 'High',
+           rule.category = 'Modelling',
+           doc.doc = 'Returns true if long description is provided for entites and its properties'}
+meta::analytics::quality::model::domain::allEntitiesAndPropertiesShouldHaveALongDescription(cl:Class<Any>[1]):CheckResult[*]
+{
+   let passed = ($cl.taggedValues->size() != 0 && $cl.taggedValues->filter(t | $t.tag.profile == doc)->size() != 0)
+                  && $cl.properties->size() == $cl.properties->map(p|$p.taggedValues)-> filter(t | $t.tag.profile == doc)->size();
+   let message ='Provide documentation for class ' + + $cl.name->toOne() + ' and its properties';
+
+   ^CheckResult(isValid=$passed, message=$message);
+}

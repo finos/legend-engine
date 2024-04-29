@@ -1,0 +1,389 @@
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::relational::functions::sqlQueryToString::memsql::*;
+import meta::relational::functions::sqlQueryToString::default::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
+
+function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::memsql::dbExtensionLoaderForMemSQL():DbExtensionLoader[1]
+{
+  ^DbExtensionLoader(dbType = DatabaseType.MemSQL, loader = createDbExtensionForMemSQL__DbExtension_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::createDbExtensionForMemSQL():DbExtension[1]
+{
+   let reservedWords = memSQLReservedWords();
+   let literalProcessors = getDefaultLiteralProcessors();
+   let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
+   let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
+     getDynaFunctionToSqlForMemSQL()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
+
+   ^DbExtension(
+      isBooleanLiteralSupported = true,
+      collectionThresholdLimit = 1048576,
+      extraTempTableCreationLogicSupplierForIn = {varName:String[1] | 'instanceOf(' + $varName + ', "StreamingResult")'},
+      isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
+      literalProcessor = $literalProcessor,
+      windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
+      semiStructuredElementProcessor = processSemiStructuredElementForMemSQL_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
+      tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
+      joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
+      selectSQLQueryProcessor = processSelectSQLQueryForMemSQL_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      upsertSQLQueryProcessor = processUpsertSQLQueryForMemSQL_UpsertSQLQuery_1__SqlGenerationContext_1__String_1_,
+      columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
+      identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
+      dynaFuncDispatch = $dynaFuncDispatch,
+      ddlCommandsTranslator = getDDLCommandsTranslator(),
+      processTempTableName = processTempTableNameDefault_String_1__DatabaseConnection_1__String_1_
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::memSQLReservedWords():String[*]
+{
+    [
+       'absolute','action','allocate','are','assertion',
+       'bit', 'bit_length', 'both',
+       'cascaded',' case',' cast',' catalog',' char',' char_length',' character',' character_length',' coalesce',' collate',' collation',' column',' connection',' constraints',' corresponding',' cross',' current_date',' current_time',' current_timestamp',' current_user',
+       'date',' day',' dec',' decimal','default',' deferrable',' deferred',' describe',' descriptor',' diagnostics',' disconnect',' domain',
+       'end-exec',' exception',' extract',
+       'false',' first',' float',' found',' full',
+       'get',' global',' go',
+       'hour',
+       'immediate',' indicator',' initially',' inner',' input',' insensitive',' int',' integer',' interval',
+       'join',
+       'kerberos','key',
+       'language',' last',' leading',' left','lines',' local',' lower',
+       'match',' minute',' module',' month',
+       'names',' natural',' nchar',' next',' no',' nullif',' numeric',
+       'octet_length',' outer',' output',' overlaps',
+       'pad',' partial',' position',' preserve',' prior',
+       'real',' relative',' restrict',' right',
+       'scroll',' second',' section',' semi_sensitive',' session_user ',' size ',' smallint',' space',' sql',' sqlcode',' sqlerror',' sqlstate',' substring',' system_user',
+       'then',' time',' timestamp',' timezone_hour',' timezone_minute',' trailing',' translate',' translation',' trim',' true',
+       'unknown',' upper',' usage',
+       'value', 'varchar',
+       'when',' whenever','window',' write',' year',
+       'zone'
+       ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::getDynaFunctionToSqlForMemSQL(): DynaFunctionToSql[*]
+{
+  let allStates = allGenerationStates();
+
+  [
+    dynaFnToSql('adjust',                    $allStates,            ^ToSql(format='adddate(%s)', transform={p:String[3] | $p->at(0) + ', INTERVAL ' + $p->at(1) + ' ' + $p->at(2)->mapToDBUnitType()})),
+    dynaFnToSql('atan2',                     $allStates,            ^ToSql(format='atan2(%s,%s)')),
+    dynaFnToSql('booland',                   $allStates,            ^ToSql(format='min(%s)')),
+    dynaFnToSql('boolor',                    $allStates,            ^ToSql(format='max(%s)')),
+    dynaFnToSql('char',                      $allStates,            ^ToSql(format='char(%s)')),
+    dynaFnToSql('concat',                    $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('convertDate',               $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateMemSQL()})),
+    dynaFnToSql('convertVarchar128',         $allStates,            ^ToSql(format='convert(%s, CHAR)')),
+    dynaFnToSql('dateDiff',                  $allStates,            ^ToSql(format='%s', transform={p:String[*]|generateDateDiffExpressionForMemSQL ([$p->at(0), $p->at(1), $p->at(2)->replace('\'', '')])})),
+    dynaFnToSql('datePart',                  $allStates,            ^ToSql(format='date(%s)')),
+    dynaFnToSql('dayOfMonth',                $allStates,            ^ToSql(format='day(%s)')),
+    dynaFnToSql('dayOfWeek',                 $allStates,            ^ToSql(format='dayname(%s)')),
+    dynaFnToSql('dayOfWeekNumber',           $allStates,            ^ToSql(format='dayofweek(%s)')),
+    dynaFnToSql('dayOfYear',                 $allStates,            ^ToSql(format='dayofyear(%s)')),
+    dynaFnToSql('decodeBase64',              $allStates,            ^ToSql(format='cast(from_base64(%s) as char)')),
+    dynaFnToSql('encodeBase64',              $allStates,            ^ToSql(format='cast(to_base64(%s) as char)')),
+    dynaFnToSql('extractFromSemiStructured', $allStates,            ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsForMemSQL()})),
+    dynaFnToSql('firstDayOfMonth',           $allStates,            ^ToSql(format='subdate(%s, INTERVAL dayofmonth(%s) - 1 DAY) ', transform={p:String[1] | $p->repeat(2)})),
+    dynaFnToSql('firstDayOfQuarter',         $allStates,            ^ToSql(format='adddate(subdate(%s, INTERVAL dayofyear(%s) - 1 DAY), INTERVAL (quarter(date(%s)) -1) QUARTER)', transform={p:String[1] | $p->repeat(3)})),
+    dynaFnToSql('firstDayOfThisMonth',       $allStates,            ^ToSql(format='subdate(curdate(), INTERVAL dayofmonth(current_date()) - 1 DAY) ')),
+    dynaFnToSql('firstDayOfThisQuarter',     $allStates,            ^ToSql(format='adddate(subdate(curdate(), INTERVAL dayofyear(current_date()) - 1 DAY), INTERVAL (quarter(curdate()) -1) QUARTER)')),
+    dynaFnToSql('firstDayOfThisYear',        $allStates,            ^ToSql(format='subdate(curdate(), INTERVAL dayofyear(current_date()) - 1 DAY)')),
+    dynaFnToSql('firstDayOfWeek',            $allStates,            ^ToSql(format='date_trunc(\'week\', %s)')),
+    dynaFnToSql('firstDayOfYear',            $allStates,            ^ToSql(format='subdate(%s, INTERVAL dayofyear(%s) - 1 DAY)', transform={p:String[1] | $p->repeat(2)})),
+    dynaFnToSql('firstHourOfDay',            $allStates,            ^ToSql(format='date_trunc(\'day\', %s)')),
+    dynaFnToSql('firstMillisecondOfSecond',  $allStates,            ^ToSql(format='date_trunc(\'second\', %s)')),
+    dynaFnToSql('firstMinuteOfHour',         $allStates,            ^ToSql(format='date_trunc(\'hour\', %s)')),
+    dynaFnToSql('firstSecondOfMinute',       $allStates,            ^ToSql(format='date_trunc(\'minute\', %s)')),
+    dynaFnToSql('hour',                      $allStates,            ^ToSql(format='hour(%s)')),
+    dynaFnToSql('indexOf',                   $allStates,            ^ToSql(format='LOCATE(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
+    dynaFnToSql('joinStrings',               $allStates,            ^ToSql(format='group_concat(%s separator %s)')),
+    dynaFnToSql('left',                      $allStates,            ^ToSql(format='left(%s, %s)')),
+    dynaFnToSql('length',                    $allStates,            ^ToSql(format='char_length(%s)')),
+    dynaFnToSql('lpad',                      $allStates,            ^ToSql(format='lpad(%s)', transform={p:String[2..*] | $p->concatenate(if ($p->size() == 2, | '\' \'', | []))->joinStrings(', ')})),
+    dynaFnToSql('matches',                   $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
+    dynaFnToSql('minute',                    $allStates,            ^ToSql(format='minute(%s)')),
+    dynaFnToSql('month',                     $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('monthName',                 $allStates,            ^ToSql(format='monthname(%s)')),
+    dynaFnToSql('monthNumber',               $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('mostRecentDayOfWeek',       $allStates,            ^ToSql(format='adddate(%s, INTERVAL case when %s - dayofweek(%s) > 0 then %s - dayofweek(%s) - 7 else %s - dayofweek(%s) end DAY)', transform={p:String[1..2] | $p->formatMostRecentMemSQL('curdate()')}, parametersWithinWhenClause = [false, false])),
+    dynaFnToSql('now',                       $allStates,            ^ToSql(format='now()')),
+    dynaFnToSql('parseFloat',                $allStates,            ^ToSql(format='cast(%s as decimal)')),
+    dynaFnToSql('parseInteger',              $allStates,            ^ToSql(format='cast(%s as signed integer)')),
+    dynaFnToSql('position',                  $allStates,            ^ToSql(format='LOCATE(%s, %s)')),
+    dynaFnToSql('previousDayOfWeek',         $allStates,            ^ToSql(format='adddate(%s, INTERVAL case when %s - dayofweek(%s) >= 0 then %s - dayofweek(%s) - 7 else %s - dayofweek(%s) end DAY)', transform={p:String[1..2] | $p->formatMostRecentMemSQL('curdate()')}, parametersWithinWhenClause = [false, false])),
+    dynaFnToSql('quarter',                   $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('quarterNumber',             $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('rem',                       $allStates,            ^ToSql(format='mod(%s, %s)')), 
+    dynaFnToSql('repeatString',              $allStates,            ^ToSql(format='%s', transform={p:String[2] | 'rpad(\'\', char_length(' + $p->at(0) + ') * ' + $p->at(1) + ', ' +  $p->at(0) + ')'})),
+    dynaFnToSql('right',                     $allStates,            ^ToSql(format='right(%s, %s)')),
+    dynaFnToSql('round',                     $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('rpad',                      $allStates,            ^ToSql(format='rpad(%s)', transform={p:String[2..*] | $p->concatenate(if ($p->size() == 2, | '\' \'', | []))->joinStrings(', ')})),
+    dynaFnToSql('rtrim',                     $allStates,            ^ToSql(format='rtrim(%s)')),
+    dynaFnToSql('second',                    $allStates,            ^ToSql(format='second(%s)')),
+    dynaFnToSql('sha256',                    $allStates,            ^ToSql(format='sha2(%s, 256)')),
+    dynaFnToSql('substring',                 $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('stdDevPopulation',          $allStates,            ^ToSql(format='stddev_pop(%s)')),
+    dynaFnToSql('stdDevSample',              $allStates,            ^ToSql(format='stddev_samp(%s)')),
+    dynaFnToSql('today',                     $allStates,            ^ToSql(format='curdate()')),
+    dynaFnToSql('toString',                  $allStates,            ^ToSql(format='cast(%s as char)')),
+    dynaFnToSql('toTimestamp',               $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampMemSQL()})),
+    dynaFnToSql('year',                      $allStates,            ^ToSql(format='year(%s)')),
+    dynaFnToSql('weekOfYear',                $allStates,            ^ToSql(format='weekofyear(%s)'))
+  ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processExtractFromSemiStructuredParamsForMemSQL(params:String[3]):String[1]
+{
+  let baseRelationalOp = $params->at(0);
+  let pathNavigation = $params->at(1)->replace('[', '.')->replace(']', '')->replace('"','')->split('.')->map(s | '\'' + $s + '\'')->joinStrings(', ');
+  let returnType = $params->at(2);
+
+  let fullPath = $baseRelationalOp + ', ' + $pathNavigation;
+
+  // https://docs.singlestore.com/managed-service/en/reference/sql-reference/json-functions/json_extract_-type-.html
+
+  if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'json_extract_string(' + $fullPath + ')', |
+  if ($returnType->in(['DATETIME', 'TIMESTAMP']), | 'timestamp(json_extract_string(' + $fullPath + '))', |
+  if ($returnType == 'DATE', | 'date(json_extract_string(' + $fullPath + '))', |
+  if ($returnType == 'BOOLEAN', | 'json_extract_json(' + $fullPath + ')', |
+  if ($returnType == 'FLOAT', | 'json_extract_double(' + $fullPath + ')', |
+  if ($returnType == 'INTEGER', | 'json_extract_bigint(' + $fullPath + ')', |
+  'json_extract_json(' + $fullPath + ')'))))));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::convertToDateMemSQL(params:String[*]):String[1]
+{
+   assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDate: convertDate(column,[dateformat])');
+   assert($params->size()==1 || dateFormatsMemSQL()->contains($params->at(1)->replace('\'', '')) , | $params->at(1) +' not supported ');
+   let dateFormat = if( $params->size() == 1,|'\'YYYY-MM-DD\'' ,| $params->at(1););
+   'cast( to_date('+$params->at(0)+','+$dateFormat +') as date)';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::transformToTimestampMemSQL(params:String[2]):String[1]
+{
+  //Standardizing the format as per Postgres specification, will include mappings for the formats in future.
+   assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
+   let timestampFormat = $params->at(1);
+   'to_timestamp('+$params->at(0)+','+$timestampFormat+')';
+}
+
+function  <<access.private>> meta::relational::functions::sqlQueryToString::memsql::generateDateDiffExpressionForMemSQL(params:String[*]):String[1]
+{
+  let enumList = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
+
+  let indexOfDiff = $enumList->indexOf($params->at(2)->replace('Text', ''));
+
+  let dbSpecificUnits = [
+
+     {| format('(%s)', [
+        'timestampdiff(YEAR, %s , %s)'
+     ])},
+     {| format('(%s)', [
+        'timestampdiff(MONTH, %s , %s)'
+     ])},
+     {| format('(%s)', [
+        'timestampdiff(WEEK, %s , %s)'
+     ])},
+     {| format('(%s)', [
+        'timestampdiff(DAY, %s , %s)'
+     ])},
+     {| format('(%s)', [
+        'timestampdiff(HOUR, %s , %s)'
+     ])},
+     {| format('(%s)', [
+        'timestampdiff(MINUTE, %s , %s)'
+     ])},
+     {| format('(%s)', [
+        'timestampdiff(SECOND, %s , %s)'
+     ])},
+     {| format('(%s)', [
+        // Since SingleStore doesn't support millisecond diff, using microsecond diff to calculate required value (https://docs.singlestore.com/cloud/reference/sql-reference/date-and-time-functions/timestampdiff/)
+        'floor(timestampdiff(MICROSECOND, %s , %s)/1000)'
+     ])}
+  ];
+
+  format($dbSpecificUnits->at($indexOfDiff)->eval(), [$params->at(0), $params->at(1)]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::formatMostRecentMemSQL(p:String[1..2], defaultDay:String[1]):String[*]
+{
+   let day = $p->last()->toOne()->mapToDBDayOfWeekNumber()->toString();
+   let current = if ($p->size() == 2, | $p->first()->toOne(), | $defaultDay);
+   [$current, $day, $current, $day, $current, $day, $current];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::dateFormatsMemSQL():String[*]
+{
+   ['YYYY-MM-DD', 'MMMYYYY', 'YYYYMMDD'];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processTableFunctionParamPlaceHolder(r:RelationalOperationElement[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  assert($r->instanceOf(TableFunctionParamPlaceHolder), 'sqlQueryToString for relational element ' + $r->type().name->toOne() + ' has not been implemented yet for snowflake');
+  $r->match([
+    t: TableFunctionParamPlaceHolder[1] | $t.var->replaceVarPlaceHolderForAppGeneration($sgc)
+  ]);
+}
+
+function <<access.private>>  meta::relational::functions::sqlQueryToString::memsql::replaceVarPlaceHolderForAppGeneration(v:VarPlaceHolder[1], sgc:SqlGenerationContext[1]): String[1]
+{
+  assertEmpty($v.propertyPath, 'processing for variable with propertyPath access is not implemented');
+  assertFalse($v->isCollectionPlaceHolder() || $v->isOptionalPlaceHolder() || $v.type->instanceOf(Enumeration), 'only variables of primitive types and multiplicity one can be used');
+
+  $v.name;
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processSemiStructuredElementForMemSQL(s:RelationalOperationElement[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   $s->match([
+      o:SemiStructuredObjectNavigation[1] | $o->processSemiStructuredObjectNavigationForMemSQL($sgc),
+      a:SemiStructuredArrayFlatten[1] | fail('Array flattening not supported for MemSQL'); '';,
+      a:SemiStructuredArrayFlattenOutput[1] | fail('Array flattening not supported for MemSQL!'); '';
+   ])
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processSemiStructuredObjectNavigationForMemSQL(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   // https://docs.singlestore.com/managed-service/en/create-a-database/using-json.html
+
+   let processedOperand = $s.operand->processOperation($sgc);
+
+   let fullOperand = $processedOperand + $s->match([
+      p: SemiStructuredPropertyAccess[1]     | if($p.index->isEmpty(),
+                                                | castOperatorForMemSQLSemiStructuredData($s.returnType) + $sgc.dbConfig.identifierProcessor($p.property->cast(@Literal).value->cast(@String)),
+                                                | '::' + $sgc.dbConfig.identifierProcessor($p.property->cast(@Literal).value->cast(@String)) + castOperatorForMemSQLSemiStructuredData($p.returnType) + '`' + $p.index->toOne()->cast(@Literal).value->toString() + '`'),
+      a: SemiStructuredArrayElementAccess[1] | castOperatorForMemSQLSemiStructuredData($s.returnType) + '`' + $a.index->cast(@Literal).value->toString() + '`'
+   ]);
+
+  // MemSQL does not allow for fluent casting of date values, must explicitly cast the full operand after parsing as json string
+  if($s.returnType == StrictDate, | 'date(' + $fullOperand + ')', |
+  if($s.returnType == Integer, | $fullOperand + ' !:> bigint', |
+  if($s.returnType->isNotEmpty() && $s.returnType->toOne()->_subTypeOf(Date), | 'timestamp(' + $fullOperand + ')', |
+  $fullOperand)));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::castOperatorForMemSQLSemiStructuredData(type:Type[0..1]): String[1]
+{
+   if($type == String, | '::$', |
+   // Dates treated as strings and explicitly casted after
+   if($type == StrictDate, | '::$', |
+   if($type->isNotEmpty() && $type->toOne()->_subTypeOf(Date), | '::$', |
+   if($type->isNotEmpty() && $type->toOne()->_subTypeOf(Integer), | '::', |
+   if($type->isNotEmpty() && $type->toOne()->_subTypeOf(Number), | '::%', |
+   if($type->isNotEmpty() && $type->toOne()->instanceOf(Enumeration), | '::$', |
+   '::'))))));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processUpsertSQLQueryForMemSQL(upsertQuery:UpsertSQLQuery[1], sgc:SqlGenerationContext[1]):String[1]
+{
+  // Map of Column to Literals of VarPlaceHolder
+  let keyValues = $upsertQuery.equalityStatements->keyValues()->sortBy(kv | $kv.first);
+  let columnNames = $keyValues->map(kv | $kv.first)->joinStrings(', ');
+  let literalValues = $keyValues->map(kv | meta::relational::functions::sqlQueryToString::processLiteralValue($kv.second.value, $sgc.dbConfig))->joinStrings(', ');
+
+  let primaryKeyColumnNames = $upsertQuery.data.primaryKey->map(pk | $pk.name);
+  let nonPrimaryKeyKeyValues = $keyValues->filter(kv | !$kv.first->in($primaryKeyColumnNames))
+                                          ->map(kv | $kv.first + ' = ' + meta::relational::functions::sqlQueryToString::processLiteralValue($kv.second.value, $sgc.dbConfig))
+                                          ->joinStrings(', ');
+
+  'insert into ' + $upsertQuery.data.name + ' (' + $columnNames + ') values (' + $literalValues + ') on duplicate key update ' + $nonPrimaryKeyKeyValues;
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processSelectSQLQueryForMemSQL(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForMemSQL($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processSelectSQLQueryForMemSQL(sq:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
+{
+  let s = if($sq.fromRow->isNotEmpty() && $sq.toRow->isEmpty(), |$sq->rewriteSliceAsWindowFunction(), |$sq);
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let joinOrder = [JoinType.INNER, JoinType.LEFT_OUTER, JoinType.RIGHT_OUTER];
+
+  $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), $joinOrder, $extensions)) +
+  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
+  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
+  + processLimit($s, $dbConfig, $format, $extensions, processTakeDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_, processSliceOrDropDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::getDDLCommandsTranslator(): RelationalDDLCommandsTranslator[1]
+{
+  ^RelationalDDLCommandsTranslator(
+                createSchema = translateCreateSchemaStatementMemSQL_CreateSchemaSQL_1__DbConfig_1__String_MANY_,
+                dropSchema =  translateDropSchemaStatementMemSQL_DropSchemaSQL_1__DbConfig_1__String_MANY_,
+                createTable =  translateCreateTableStatementMemSQL_CreateTableSQL_1__DbConfig_1__String_1_,
+                dropTable = translateDropTableStatementMemSQL_DropTableSQL_1__DbConfig_1__String_1_,
+                loadTable =  loadValuesToDbTableMemSQL_LoadTableSQL_1__DbConfig_1__String_MANY_
+              );
+}
+
+function meta::relational::functions::sqlQueryToString::memsql::translateCreateSchemaStatementMemSQL(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
+{
+  if($createSchemaSQL.schema.name == 'default', |[], |'Create Schema ' + $dbConfig.identifierProcessor($createSchemaSQL.schema.name) + ';');
+}
+
+function meta::relational::functions::sqlQueryToString::memsql::translateDropSchemaStatementMemSQL(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
+{
+  if($dropSchemaSQL.schema.name == 'default', |[], |'Drop schema if exists ' + $dbConfig.identifierProcessor($dropSchemaSQL.schema.name) + ';');
+}
+
+function meta::relational::functions::sqlQueryToString::memsql::translateDropTableStatementMemSQL(dropTableSQL:DropTableSQL[1], dbConfig:DbConfig[1]) : String[1]
+{
+  let t = $dropTableSQL.table;
+  'Drop table if exists '+ if($t.schema.name == 'default', |'', |$dbConfig.identifierProcessor($t.schema.name) + '.') + $dbConfig.identifierProcessor($t.name) + ';';
+}
+
+function meta::relational::functions::sqlQueryToString::memsql::translateCreateTableStatementMemSQL(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
+{
+  if($createTableSQL.isTempTable->isTrue(),|
+   'CREATE TEMPORARY TABLE ' + $createTableSQL.table->tableToString($dbConfig) + '('+ $createTableSQL.table.columns->map(r|$r->match([c:Column[1]| $c.name->toOne() + ' ' + if($c.type->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText() == 'TIMESTAMP',|'DATETIME(6)',|$c.type->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText()),
+                                                                                                    r:RelationalOperationElement[1]| fail('Only \'Column\' types are supported when creating temporary tables, found: '+$r->type()->toOne()->elementToPath());'';]))->joinStrings(',') + ');'
+  ,|let t= $createTableSQL.table;
+    let applyConstraints = $createTableSQL.applyConstraints;
+    'Create Table '+ if($t.schema.name == 'default', |'', |$dbConfig.identifierProcessor($t.schema.name) + '.') + $dbConfig.identifierProcessor($t.name)+
+        + '('
+        + $t.columns->cast(@meta::relational::metamodel::Column)
+          ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextMemSQL($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' )))
+          ->joinStrings(',')
+        + if ($t.primaryKey->isEmpty() || $applyConstraints == false, | '', | ', PRIMARY KEY(' + $t.primaryKey->map(c | $c.name->processColumnName($dbConfig))->joinStrings(',') + ')')
+        +');';);
+}
+
+function meta::relational::functions::sqlQueryToString::memsql::getColumnTypeSqlTextMemSQL(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
+{
+   $columnType->match([
+      s : meta::relational::metamodel::datatype::Json[1] | 'JSON',
+      a : Any[*] | meta::relational::metamodel::datatype::dataTypeToSqlText($columnType)
+   ])
+}
+
+function meta::relational::functions::sqlQueryToString::memsql::loadValuesToDbTableMemSQL(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
+{
+  if($loadTableSQL.absolutePathToFile->isNotEmpty(),|
+  'LOAD DATA LOCAL INFILE \'' + $loadTableSQL.absolutePathToFile->toOne()->processOperation($dbConfig.dbType, []) + '\' \nINTO TABLE `' + $loadTableSQL.table->tableToString($dbConfig) + '` \nIGNORE 1 LINES;';
+   ,|$loadTableSQL.parsedData.values->map(row |  let sql = 'insert into ' + if($loadTableSQL.table.schema.name == 'default', |'', |$dbConfig.identifierProcessor($loadTableSQL.table.schema.name) + '.') + $dbConfig.identifierProcessor($loadTableSQL.table.name) + ' ('
+            + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
+            +') '
+            + 'values ('
+            + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type)
+            + ');';
+    );
+  );
+}

@@ -1,0 +1,25 @@
+function meta::external::store::rel::utils::assert::assertEqualElements<T>(expected: T[*], actual: T[*]): Boolean[1] {
+  let diff1 =
+    $expected
+      ->filter(e | !$e->in($actual))
+      ->map(e | $e->toRepresentation());
+
+  let diff2 =
+    $actual
+      ->filter(e | !$e->in($expected))
+      ->map(e | $e->toRepresentation());
+
+  assertEmpty(
+    $diff1->concatenate($diff2),
+    format(
+      'Expected not contained in actual: %s\nActual not contained in expected: %s',
+      [$diff1->joinStrings('[', ', ', ']'), $diff2->joinStrings('[', ', ', ']')]
+    )
+  );
+}
+
+function meta::external::store::rel::utils::assert::assertEqualRel(expected: String[*], actual: String[1]): Boolean[1] {
+  let source = $expected->joinStrings('\n');
+
+  assertEquals($source + '\n', $actual);
+}

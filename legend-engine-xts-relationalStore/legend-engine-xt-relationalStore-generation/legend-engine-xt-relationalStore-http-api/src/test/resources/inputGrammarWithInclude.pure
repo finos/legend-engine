@@ -1,0 +1,43 @@
+###Relational
+Database model::MyIncludeDB
+(
+  Schema HR
+  (
+    Table Person
+    (
+      name VARCHAR(200) PRIMARY KEY,
+      addressId INTEGER
+    )
+    Table Address
+    (
+      id VARCHAR(200) PRIMARY KEY
+    )
+  )
+
+  Join PersonAddress(HR.Person.addressId = HR.Address.id)
+)
+
+Database model::MyDB
+(
+  include model::MyIncludeDB
+
+  Schema testSchema1
+  (
+    Table Company
+    (
+      name VARCHAR(200) PRIMARY KEY,
+      location VARCHAR(200) NOT NULL
+    )
+    Table Employee
+    (
+      fullname VARCHAR(1000) PRIMARY KEY,
+      passportId INTEGER PRIMARY KEY,
+      firmname VARCHAR(200),
+      location VARCHAR(200)
+    )
+  )
+
+  Join CompanyEmployee(testSchema1.Company.location != 'Toronto'
+    and testSchema1.Employee.fullname = 'John Doe'
+    and testSchema1.Company.name = testSchema1.Employee.firmname)
+)

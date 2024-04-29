@@ -1,0 +1,179 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::graphQL::binding::toPure::*;
+import meta::external::query::graphQL::binding::toPure::sdl::tests::*;
+
+function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tests::testTypeCompatibility() : Boolean[1]
+{
+  // Primitives
+  assert(isTypeCompatible(String, String));
+  assertFalse(isTypeCompatible(String, Boolean));
+
+  // Classes
+  assert(isTypeCompatible(Firm, Firm_2));
+  assert(isTypeCompatible(Employee, Employee_2));
+  assert(isTypeCompatible(Address, Address_2));
+  assert(isTypeCompatible(Country, Country_2));
+  assert(isTypeCompatible(Child, Child_2));
+  assert(isTypeCompatible(Parent, Parent_2));
+
+  assertFalse(isTypeCompatible(Firm, Employee_2));
+  assertFalse(isTypeCompatible(Address, Country_2));
+  assertFalse(isTypeCompatible(Child, Parent));
+
+  assertFalse(isTypeCompatible(Firm, Firm_False));
+  assertFalse(isTypeCompatible(Employee, Employee_False));
+  assertFalse(isTypeCompatible(Address, Address_False));
+  assertFalse(isTypeCompatible(Country, Country_False));
+  assertFalse(isTypeCompatible(Child, Child_False));
+  assertFalse(isTypeCompatible(Child, Child_Parent_False));
+}
+
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Firm
+{
+  legalName          : String[1];
+  numberOfEmployees  : Integer[1];
+  countries          : String[*];
+  public             : Boolean[1];
+  otherName          : String[0..1];
+
+  employees          : Employee[*];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Employee
+{
+  firstName : String[1];
+  lastName  : String[1];
+
+  addresses : Address[*];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Address
+{
+  street  : String[1];
+
+  country : Country[1];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Country
+{
+  name : String[1];
+
+  iso2Code : CountryCode[1];
+}
+
+Enum meta::external::query::graphQL::binding::toPure::sdl::tests::CountryCode
+{
+  US
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Firm_2
+{
+  legalName          : String[1];
+  numberOfEmployees  : Integer[1];
+  countries          : String[*];
+  public             : Boolean[1];
+  otherName          : String[0..1];
+
+  employees          : Employee_2[*];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Employee_2
+{
+  firstName : String[1];
+  lastName  : String[1];
+
+  addresses : Address_2[*];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Address_2
+{
+  street  : String[1];
+
+  country : Country_2[1];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Country_2
+{
+  name : String[1];
+
+  iso2Code : CountryCode[1];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Firm_False
+{
+  legalName          : String[1];
+  numberOfEmployees  : Integer[1];
+  countries          : String[*];
+  public             : Boolean[1];
+  otherName          : String[0..1];
+
+  employees          : Employee_False[*];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Employee_False
+{
+  firstName : String[1];
+  lastName  : String[1];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Address_False
+{
+  street  : String[2];
+
+  country : Country[1];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Country_False
+{
+  countryName : String[1];
+
+  iso2Code    : CountryCode[1];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Child extends meta::external::query::graphQL::binding::toPure::sdl::tests::Parent
+{
+  child: String[1];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Parent
+{
+  parent: String[1];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Child_2 extends meta::external::query::graphQL::binding::toPure::sdl::tests::Parent_2
+{
+  child: String[1];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Parent_2
+{
+  parent: String[1];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Child_False
+{
+  child: String[1];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Parent_False
+{
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Child_Parent_False extends meta::external::query::graphQL::binding::toPure::sdl::tests::Parent_False
+{
+  child: String[1];
+}

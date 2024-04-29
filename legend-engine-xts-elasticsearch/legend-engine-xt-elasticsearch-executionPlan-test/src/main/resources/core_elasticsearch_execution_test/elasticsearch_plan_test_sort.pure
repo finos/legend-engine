@@ -1,0 +1,163 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::*;
+import meta::external::store::elasticsearch::executionTest::testCase::*;
+import meta::external::store::elasticsearch::executionTest::testCase::tds::*;
+import meta::external::store::elasticsearch::executionTest::test::*;
+import meta::external::store::elasticsearch::executionTest::utils::*;
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test default sort Keyword field on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::sort::keyword::testSort(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->sort('Director'));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort Keyword field with provided direction on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::sort::keyword::testSortWithDirection(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->sort('Director', SortDirection.DESC));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test asc() sort function with Keyword field on Elasticsearch'}  
+meta::external::store::elasticsearch::executionTest::testCase::tds::sort::keyword::testSortAsc(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->sort(asc('Director')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test desc() sort function with Keyword field on Elasticsearch'}  
+meta::external::store::elasticsearch::executionTest::testCase::tds::sort::keyword::testSortDesc(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->sort(desc('Director')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test default sort Integer field on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::sort::integer::testSort(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->sort('Budget'));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort Integer field with provided direction on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::sort::integer::testSortWithDirection(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->sort('Budget', SortDirection.DESC));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test asc() sort function with Integer field on Elasticsearch'}  
+meta::external::store::elasticsearch::executionTest::testCase::tds::sort::integer::testSortAsc(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->sort(asc('Budget')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test desc() sort function with Integer field on Elasticsearch'}  
+meta::external::store::elasticsearch::executionTest::testCase::tds::sort::integer::testSortDesc(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->sort(desc('Budget')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test default sort Float field on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::sort::float::testSort(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->sort('Revenue'));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort Float field with provided direction on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::sort::float::testSortWithDirection(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->sort('Revenue', SortDirection.DESC));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test asc() sort function with Float field on Elasticsearch'}  
+meta::external::store::elasticsearch::executionTest::testCase::tds::sort::float::testSortAsc(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->sort(asc('Revenue')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test desc() sort function with Float field on Elasticsearch'}  
+meta::external::store::elasticsearch::executionTest::testCase::tds::sort::float::testSortDesc(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->sort(desc('Revenue')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test default sort Date field on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::sort::date::testSort(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->sort('ReleaseDate'));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort Date field with provided direction on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::sort::date::testSortWithDirection(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->sort('ReleaseDate', SortDirection.DESC));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test asc() sort function with Date field on Elasticsearch'}  
+meta::external::store::elasticsearch::executionTest::testCase::tds::sort::date::testSortAsc(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->sort(asc('ReleaseDate')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test desc() sort function with Date field on Elasticsearch'}  
+meta::external::store::elasticsearch::executionTest::testCase::tds::sort::date::testSortDesc(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->sort(desc('ReleaseDate')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort on null Keyword field on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::sort::keyword::testSortOnNullableAsc(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->sort([asc('MPAA'), desc('Title')]));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort null Keyword field on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::sort::keyword::testSortOnNullableDesc(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->sort([desc('MPAA'), asc('Title')]));
+}

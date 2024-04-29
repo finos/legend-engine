@@ -1,0 +1,163 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
+import meta::external::format::json::binding::validation::*;
+import meta::external::format::json::executionPlan::model::*;
+import meta::external::format::json::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::*;
+import meta::external::format::json::metamodel::*;
+import meta::external::format::json::metamodel::internalize::*;
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::transform::*;
+
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::binding::validation::*;
+import meta::external::format::shared::executionPlan::*;
+import meta::external::format::shared::executionPlan::engine::*;
+import meta::external::format::shared::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::shared::functions::*;
+import meta::external::format::shared::metamodel::*;
+
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
+
+import meta::pure::dataQuality::*;
+
+import meta::pure::extension::*;
+
+import meta::pure::graphFetch::*;
+
+import meta::pure::metamodel::serialization::grammar::*;
+
+
+// ========================================================================================================================================================
+// Descriptor
+// ========================================================================================================================================================
+
+function meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::getExternalFormatInternalizeJavaBindingDescriptor(): ExternalFormatInternalizeBindingDescriptor[1]
+{
+  ^ExternalFormatInternalizeBindingDescriptor
+  (
+    internalizeGenerator  = {node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]| generateForInternalize($node, $path, $context, $debug)}
+  );
+}
+
+// ========================================================================================================================================================
+// generate
+// ========================================================================================================================================================
+
+function meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::generateForInternalize(node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
+{
+  print(if($debug.debug,|$debug.space+'('+$path+') generate ExternalFormatInternalizeExecutionNode for JsonSchema \n', |''));
+
+  let conventions        = $context.conventions;
+  let pureClass          = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
+  let javaClass          = $conventions->className($pureClass);
+  let dependentClass     = $context.typeInfos->classDependenciesViaPropertiesWithSubTypes($pureClass, true);
+  let readableClasses    = $pureClass->concatenate($dependentClass);
+  let readableEnums      = $context.typeInfos->enumDependenciesViaProperties($pureClass);
+  
+  let bindingDetail      = $context->nodeInfosForPath($path).data->cast(@JsonSchemaBindingDetail)->toOne();
+  let mainClassProject   = $pureClass->createDataClass($path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=$node.enableConstraints, topLevelOnly=$node.tree->isEmpty(), graphFetchTree=$node.tree), $bindingDetail, $debug->indent());
+  let dataClassesProject = if($dependentClass->isEmpty(),
+                            | $mainClassProject,
+                            | $mainClassProject->concatenate($dependentClass->map(dc | $dc->createDataClass($path, $context, [], $bindingDetail, $debug->indent())))
+                            );
+
+  let jsonReaderProject  = createJsonReading($pureClass, $javaClass, $path, $node.config->cast(@JsonSchemaInternalizeConfig)->orElse(defaultInternalizeConfig()), $bindingDetail, $readableClasses, $readableEnums, $context, $debug->indent());
+
+  let sourceStreamParam       = j_parameter(javaInputStream(), 'sourceStream');
+  let createReaderMethodCodes = $conventions->jsonReaderClass($path, $pureClass)
+                                            ->j_new($sourceStreamParam)
+                                            ->j_return();
+
+  let executeClassWithImports = $conventions->planNodeClass('public', $path, 'Execute')
+                                            ->usingKnownPackages($conventions->knownPackages())
+                                            ->imports($conventions->standardImports())
+                                            ->imports(javaInputStream())
+                                            ->imports($conventions->className(_IJsonInternalizeExecutionNodeSpecifics))
+                                            ->imports($conventions->className(JsonDataReader))
+                                            ->imports($javaClass)
+                                            ->implements($conventions->className(_IJsonInternalizeExecutionNodeSpecifics));
+
+  let executeClass = $executeClassWithImports->addMethod(
+    javaMethod(['public'], javaParameterizedType($conventions->className(JsonDataReader), $javaClass), 'createReader', [$sourceStreamParam], $createReaderMethodCodes)
+  );
+
+  let executeProject = newProject()->addClasses($executeClass);
+  let allProjects    = $executeProject
+    ->concatenate($dataClassesProject)
+    ->concatenate($jsonReaderProject)
+    ->concatenate($createReaderMethodCodes->dependencies()->resolveAndGetProjects())
+    ->toOneMany();
+
+  $allProjects->mergeProjects()->generatedCode($executeClass);
+}
+
+function meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::createDataClass(class:meta::pure::metamodel::type::Class<Any>[1], path:String[1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[0..1], bindingDetail:JsonSchemaBindingDetail[0..1], debug:DebugContext[1]): Project[1]
+{
+  print(if($debug.debug,|$debug.space+'('+$path+') createDataClass for '+$class->elementToPath()+'\n', |''));
+
+  let conventions     = $context.conventions;
+
+  let boundProperties = if($bindingDetail->isEmpty(), | $context.typeInfos->allProperties($class), | $bindingDetail.mappedPropertiesForClass($class));
+
+  let classWithFields = $conventions->dataClass($class, $path)
+                                    ->usingKnownPackages($conventions->knownPackages())
+                                    ->imports($conventions->standardImports())
+                                    ->imports(if($constraintContext->isNotEmpty(), | $conventions->constrainedImports(), | []))
+                                    ->implements($conventions->className($class))
+                                    ->addConstructor(javaConstructor('public', [], []))
+                                    ->map({dc | $context.typeInfos->allProperties($class)->fold({p, c|
+                                                  let variable    = $conventions->fieldName($p);
+                                                  let javaType    = $conventions->pureTypeToJavaType($p);
+
+                                                  let withField   = $c->addField(javaField('private', $javaType, $variable));
+                                                  let field       = j_this($withField)->j_field($variable);
+                                                  let setterParam = j_parameter($javaType, $conventions->fieldName($p.name->toOne()));
+                                                
+                                                  $withField
+                                                    ->addMethod(
+                                                        javaMethod('public', $javaType, $conventions->getterName($p), [],
+                                                                  if ($javaType->isJavaList(),
+                                                                      | j_conditional($field->j_eq(j_null()), javaCollections()->j_invoke('emptyList', [], $javaType), $field),
+                                                                      | $field
+                                                                  )->j_return()
+                                                        )
+                                                    )
+                                                    ->addMethod(
+                                                        javaMethod('public', javaVoid(), $conventions->setterName($p), [$setterParam],
+                                                                  if($boundProperties->contains($p),
+                                                                    | $field->j_assign($setterParam),
+                                                                    | j_throw(javaUnsupportedOperationException()->j_new(j_string('Property \'' + $p.name->toOne() +'\' is not bound to any field in json schema'))))
+                                                        )
+                                                    );
+                                                }, $dc)
+                                      });
+
+  mergeProjects([
+    newProject()->addClass($classWithFields),
+    $classWithFields->createQualifiedPropertiesForClass($context.typeInfos->allQualifiedProperties($class), $context.conventions, $debug->indent()),
+    $classWithFields->imports($conventions->className(IReferencedObject))->createAlloyStoreObjectReferenceMethodsForClass($context, $debug->indent())
+  ]->concatenate(if($constraintContext->isNotEmpty(), | $classWithFields->imports($conventions->checkedClass())->createConstraintCheckingForClass($class, $path, $context, $constraintContext->toOne(), $debug->indent()), | []))->toOneMany());
+}

@@ -1,0 +1,12 @@
+type ClassWithCustomScalars {
+  date: Date!
+  datetime: DateTime!
+  decimal: BigDecimal
+}
+input ClassWithCustomScalars_bool_exp {
+  _and: [ClassWithCustomScalars_bool_exp!]
+  _or: [ClassWithCustomScalars_bool_exp!]
+}
+input ClassWithCustomScalars_exists_exp {
+  _exists: ClassWithCustomScalars_bool_exp
+}

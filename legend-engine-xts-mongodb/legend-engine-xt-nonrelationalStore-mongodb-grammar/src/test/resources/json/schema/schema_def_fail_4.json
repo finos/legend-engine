@@ -1,0 +1,21 @@
+{
+  "database": {
+    "databaseName": "my_database_4",
+    "collections": [
+      {
+        "options": {
+          "validator": {
+            "$jsonSchema": {
+              "bsonType": "object",
+              "title": "Record of Firm"
+            },
+            "validationLevel": "strict",
+            "validationAction": "error"
+          },
+          "collectionName": "firm",
+          "type": "collection"
+        }
+      }
+    ]
+  }
+}

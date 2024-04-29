@@ -1,0 +1,378 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::mapping::*;
+import meta::pure::milestoning::*;
+import meta::pure::graphFetch::tests::m2m2r::milestoning::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::alloy::connections::alloy::specification::*;
+import meta::pure::alloy::connections::alloy::authentication::*;
+import meta::relational::runtime::*;
+import meta::core::runtime::*;
+
+//fix transform property platform code
+function <<test.Test, test.AlloyOnly, test.ToFix>> meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::test_ViaNoArgMapping():Boolean[1]
+{
+  let mapping = meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::getNoArgMapping();
+  let runtime = getModelChainRuntime($mapping);
+
+   let query={bdate:DateTime[1]|meta::relational::tests::milestoning::TargetProductMilestoned.all($bdate)->graphFetch(
+      #{
+        meta::relational::tests::milestoning::TargetProductMilestoned{
+          id,
+          name,
+          synonymsNonMilestoned
+          {
+            synonym
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        meta::relational::tests::milestoning::TargetProductMilestoned{
+          id,
+          name,
+          synonymsNonMilestoned
+          {
+            synonym
+          }
+        }
+      }#
+    )
+    ->meta::pure::mapping::from($mapping,$runtime)
+    };
+   let result = meta::legend::executeLegendQuery($query,  [pair('bdate', '2023-10-15T00:00:00')], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+   assertJsonStringsEqual('{"builder":{"_type":"json"},"values":['+
+                                      '{"id":2,"name":"ProductName2","synonymsNonMilestoned":[{"synonym":"GS-Mod-S1"},{"synonym":"GS-Mod-S3"}]},'+
+                                      '{"id":3,"name":"ProductName3","synonymsNonMilestoned":[{"synonym":"GS-Mod-S3"}]}'+
+                                    ']}', $result);
+}
+
+function <<test.Test, test.AlloyOnly, test.ToFix>> meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::testWithHardcodedDate_ViaNoArgMapping():Boolean[1]
+{
+  let mapping = meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::getNoArgMapping();
+  let runtime = getModelChainRuntime($mapping);
+
+   let query={|meta::relational::tests::milestoning::TargetProductMilestoned.all(%2023-10-15T00:00:00)->graphFetch(
+      #{
+        meta::relational::tests::milestoning::TargetProductMilestoned{
+          id,
+          name,
+          synonymsNonMilestoned
+          {
+            synonym
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        meta::relational::tests::milestoning::TargetProductMilestoned{
+          id,
+          name,
+          synonymsNonMilestoned
+          {
+            synonym
+          }
+        }
+      }#
+    )
+    ->meta::pure::mapping::from($mapping,$runtime)
+    };
+   let result = meta::legend::executeLegendQuery($query,  [], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+   assertJsonStringsEqual('{"builder":{"_type":"json"},"values":['+
+                                      '{"id":2,"name":"ProductName2","synonymsNonMilestoned":[{"synonym":"GS-Mod-S1"},{"synonym":"GS-Mod-S3"}]},'+
+                                      '{"id":3,"name":"ProductName3","synonymsNonMilestoned":[{"synonym":"GS-Mod-S3"}]}'+
+                                    ']}', $result);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::test_ViaAllVersionsMapping():Boolean[1]
+{
+  let mapping = meta::relational::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::TargetToModeMapping_AllVersions;
+  let runtime = getModelChainRuntime($mapping);
+
+   let query={bdate:DateTime[1]|meta::relational::tests::milestoning::TargetProductMilestoned.all($bdate)->graphFetch(
+      #{
+        meta::relational::tests::milestoning::TargetProductMilestoned{
+          id,
+          name,
+          synonymsNonMilestoned
+          {
+            synonym
+          }
+        }
+      }#
+    )->serialize(
+      #{
+        meta::relational::tests::milestoning::TargetProductMilestoned{
+          id,
+          name,
+          synonymsNonMilestoned
+          {
+            synonym
+          }
+        }
+      }#
+    )
+    ->meta::pure::mapping::from($mapping,$runtime)
+    };
+   let result = meta::legend::executeLegendQuery($query, [pair('bdate', '2023-10-15T00:00:00')], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+   assertJsonStringsEqual('{"builder":{"_type":"json"},"values":['+
+                                      '{"id":2,"name":"ProductName2","synonymsNonMilestoned":[{"synonym":"GS-Mod-S0"},{"synonym":"GS-Mod-S1"},{"synonym":"GS-Mod-S2"},{"synonym":"GS-Mod-S3"}]},'+
+                                      '{"id":3,"name":"ProductName3","synonymsNonMilestoned":[{"synonym":"GS-Mod-S2"},{"synonym":"GS-Mod-S3"}]}'+
+                                    ']}', $result);
+}
+
+// Flatten cases
+
+function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::testFlatten_ViaNoArgMapping():Boolean[1]
+{
+  let mapping = meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::getNoArgFlattenMapping();
+  let runtime = getModelChainRuntime($mapping);
+
+   let query={bdate:DateTime[1]|meta::relational::tests::milestoning::TargetProductFlattened.all($bdate)->graphFetch(
+      #{
+        meta::relational::tests::milestoning::TargetProductFlattened{
+          id,
+          name,
+          synonymNames
+        }
+      }#
+    )->serialize(
+      #{
+        meta::relational::tests::milestoning::TargetProductFlattened{
+          id,
+          name,
+          synonymNames
+        }
+      }#
+    )
+    ->meta::pure::mapping::from($mapping,$runtime)
+    };
+   let result = meta::legend::executeLegendQuery($query,  [pair('bdate', '2023-10-15T00:00:00')], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+   assertJsonStringsEqual('{"builder":{"_type":"json"},"values":['+
+                                            '{"id":2,"name":"ProductName2","synonymNames":["GS-Mod-S1","GS-Mod-S3"]},'+
+                                            '{"id":3,"name":"ProductName3","synonymNames":["GS-Mod-S3"]}'+
+                                          ']}', $result);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::testFlatten_ViaNoArgMapping_ViaAssociation():Boolean[1]
+{
+  let mapping = meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::getNoArgFlattenMapping_ViaAssociation();
+  let runtime = getModelChainRuntime($mapping);
+
+   let query={bdate:DateTime[1]|meta::relational::tests::milestoning::TargetProductFlattened.all($bdate)->graphFetch(
+      #{
+        meta::relational::tests::milestoning::TargetProductFlattened{
+          id,
+          name,
+          synonymNames
+        }
+      }#
+    )->serialize(
+      #{
+        meta::relational::tests::milestoning::TargetProductFlattened{
+          id,
+          name,
+          synonymNames
+        }
+      }#
+    )
+    ->meta::pure::mapping::from($mapping,$runtime)
+    };
+   let result = meta::legend::executeLegendQuery($query,  [pair('bdate', '2023-10-15T00:00:00')], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+   assertJsonStringsEqual('{"builder":{"_type":"json"},"values":['+
+                                            '{"id":2,"name":"ProductName2","synonymNames":["GS-Mod-S1","GS-Mod-S3"]},'+
+                                            '{"id":3,"name":"ProductName3","synonymNames":["GS-Mod-S3"]}'+
+                                          ']}', $result);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::testFlatten_ViaAllVersionsMapping():Boolean[1]
+{
+  let mapping = meta::relational::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::TargetToModeMappingWithComplexPropertyFlattened_AllVersions;
+  let runtime = getModelChainRuntime($mapping);
+
+   let query={bdate:DateTime[1]|meta::relational::tests::milestoning::TargetProductFlattened.all($bdate)->graphFetch(
+      #{
+        meta::relational::tests::milestoning::TargetProductFlattened{
+          id,
+          name,
+          synonymNames
+        }
+      }#
+    )->serialize(
+      #{
+        meta::relational::tests::milestoning::TargetProductFlattened{
+          id,
+          name,
+          synonymNames
+        }
+      }#
+    )
+    ->meta::pure::mapping::from($mapping,$runtime)
+    };
+   let result = meta::legend::executeLegendQuery($query, [pair('bdate', '2023-10-15T00:00:00')], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+   assertJsonStringsEqual('{"builder":{"_type":"json"},"values":['+
+                                          '{"id":2,"name":"ProductName2","synonymNames":["GS-Mod-S0","GS-Mod-S1","GS-Mod-S2","GS-Mod-S3"]},'+
+                                          '{"id":3,"name":"ProductName3","synonymNames":["GS-Mod-S2","GS-Mod-S3"]}'+
+                                        ']}', $result);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::testFlatten_ViaHardcodedDateMapping():Boolean[1]
+{
+  let mapping = meta::relational::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::TargetToModeMappingWithComplexPropertyFlattened_HardcodedDate;
+  let runtime = getModelChainRuntime($mapping);
+
+   let query={bdate:DateTime[1]|meta::relational::tests::milestoning::TargetProductFlattened.all($bdate)->graphFetch(
+      #{
+        meta::relational::tests::milestoning::TargetProductFlattened{
+          id,
+          name,
+          synonymNames
+        }
+      }#
+    )->serialize(
+      #{
+        meta::relational::tests::milestoning::TargetProductFlattened{
+          id,
+          name,
+          synonymNames
+        }
+      }#
+    )
+    ->meta::pure::mapping::from($mapping,$runtime)
+    };
+   let result = meta::legend::executeLegendQuery($query,  [pair('bdate', '2023-10-15T00:00:00')], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+   assertJsonStringsEqual('{"builder":{"_type":"json"},"values":['+
+                                            '{"id":2,"name":"ProductName2","synonymNames":["GS-Mod-S1","GS-Mod-S3"]},'+
+                                            '{"id":3,"name":"ProductName3","synonymNames":["GS-Mod-S3"]}'+
+                                          ']}', $result);
+}
+
+//milestoned property without args is not supported by pure ide compiler but works with engine
+function meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::getNoArgMapping():meta::pure::mapping::Mapping[1]
+{
+  let mappingStr =  '###Mapping\n' +
+                    'Mapping meta::relational::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::TargetToModelMappingWithComplexPropertyFlattened_WithNoArg\n'+
+                    '(\n'+
+                    '  *meta::relational::tests::milestoning::TargetProductMilestoned: Pure\n'+
+                    '  {\n'+
+                    '    ~src meta::relational::tests::milestoning::ProductMilestoned\n'+
+                    '    id: $src.id,\n'+
+                    '    name: $src.name,\n'+
+                    '    synonymsNonMilestoned:$src.synonymsMilestoned\n'+
+                    '  }\n' +
+                    '  *meta::relational::tests::milestoning::TargetProductSynonymNonMilestoned: Pure\n'+
+                    '  {\n'+
+                    '     ~src meta::relational::tests::milestoning::ProductSynonymMilestoned\n'+
+                    '    synonym: $src.synonym\n'+
+                    '  }\n' +
+                    ')';
+
+  let mapping = meta::legend::compileLegendGrammar($mappingStr)->at(0)->cast(@Mapping);
+
+  let newMapping = ^$mapping(includes = ^MappingInclude(included = meta::relational::tests::milestoning::milestoningMapSmall,                    // fix legend compile to allow mapping reference in include
+                                                        owner = $mapping)
+                            );
+}
+
+//milestoned property without args is not supported by pure ide compiler but works with engine
+function meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::getNoArgFlattenMapping():meta::pure::mapping::Mapping[1]
+{
+  let mappingStr =  '###Mapping\n' +
+                    'Mapping meta::relational::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::TargetToModelMappingWithComplexPropertyFlattened_WithNoArg\n'+
+                    '(\n'+
+                    '  *meta::relational::tests::milestoning::TargetProductFlattened: Pure\n'+
+                    '  {\n'+
+                    '    ~src meta::relational::tests::milestoning::ProductMilestoned\n'+
+                    '    id: $src.id,\n'+
+                    '    name: $src.name,\n'+
+                    '    synonymNames:$src.synonymsMilestoned.synonym\n'+
+                    '  }\n' +
+                    ')';
+
+  let mapping = meta::legend::compileLegendGrammar($mappingStr)->at(0)->cast(@Mapping);
+
+  let newMapping = ^$mapping(includes = ^MappingInclude(included = meta::relational::tests::milestoning::milestoningMapSmall,                    // fix legend compile to allow mapping reference in include
+                                                        owner = $mapping)
+                            );
+}
+
+function meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::getNoArgFlattenMapping_ViaAssociation():meta::pure::mapping::Mapping[1]
+{
+  let mappingStr =  '###Mapping\n' +
+                    'Mapping meta::relational::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::TargetToModelMappingWithComplexPropertyFlattened_WithNoArg\n'+
+                    '(\n'+
+                    '  *meta::relational::tests::milestoning::TargetProductFlattened: Pure\n'+
+                    '  {\n'+
+                    '    ~src meta::relational::tests::milestoning::ProductMilestoned\n'+
+                    '    id: $src.id,\n'+
+                    '    name: $src.name,\n'+
+                    '    synonymNames:$src.synonymsMilestonedViaAssociation.synonym\n'+
+                    '  }\n' +
+                    ')';
+
+  let mapping = meta::legend::compileLegendGrammar($mappingStr)->at(0)->cast(@Mapping);
+
+  let newMapping = ^$mapping(includes = ^MappingInclude(included = meta::relational::tests::milestoning::milestoningMapSmall,                    // fix legend compile to allow mapping reference in include
+                                                        owner = $mapping)
+                            );
+}
+
+###Mapping
+
+Mapping meta::relational::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::TargetToModeMapping_AllVersions
+(
+  include meta::relational::tests::milestoning::milestoningMapSmall
+
+  *meta::relational::tests::milestoning::TargetProductMilestoned: Pure
+  {
+    ~src meta::relational::tests::milestoning::ProductMilestoned
+    id: $src.id,
+    name: $src.name,
+    synonymsNonMilestoned:$src.synonymsMilestonedAllVersions
+  }
+
+  *meta::relational::tests::milestoning::TargetProductSynonymNonMilestoned: Pure
+  {
+    ~src meta::relational::tests::milestoning::ProductSynonymMilestoned
+    synonym: $src.synonym
+  }
+)
+
+
+Mapping meta::relational::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::TargetToModeMappingWithComplexPropertyFlattened_AllVersions
+(
+  include meta::relational::tests::milestoning::milestoningMapSmall
+
+  *meta::relational::tests::milestoning::TargetProductFlattened: Pure
+  {
+    ~src meta::relational::tests::milestoning::ProductMilestoned
+    id: $src.id,
+    name: $src.name,
+    synonymNames:$src.synonymsMilestonedAllVersions.synonym
+  }
+)
+
+Mapping meta::relational::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::TargetToModeMappingWithComplexPropertyFlattened_HardcodedDate
+(
+  include meta::relational::tests::milestoning::milestoningMapSmall
+  *meta::relational::tests::milestoning::TargetProductFlattened: Pure
+  {
+    ~src meta::relational::tests::milestoning::ProductMilestoned
+    id: $src.id,
+    name: $src.name,
+    synonymNames:$src.synonymsMilestoned(%2023-10-15T00:00:00).synonym
+  }
+)

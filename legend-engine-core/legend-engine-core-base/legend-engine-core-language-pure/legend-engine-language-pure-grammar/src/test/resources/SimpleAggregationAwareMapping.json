@@ -1,0 +1,270 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "mapping",
+      "associationMappings": [],
+      "classMappings": [
+        {
+          "_type": "aggregationAware",
+          "aggregateSetImplementations": [
+            {
+              "aggregateSpecification": {
+                "aggregateValues": [
+                  {
+                    "aggregateFn": {
+                      "_type": "lambda",
+                      "body": [
+                        {
+                          "_type": "func",
+                          "function": "sum",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "mapped"
+                            }
+                          ]
+                        }
+                      ],
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "mapped"
+                        }
+                      ]
+                    },
+                    "mapFn": {
+                      "_type": "lambda",
+                      "body": [
+                        {
+                          "_type": "property",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "this"
+                            }
+                          ],
+                          "property": "price"
+                        }
+                      ],
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "this"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "canAggregate": true,
+                "groupByFunctions": [
+                  {
+                    "groupByFn": {
+                      "_type": "lambda",
+                      "body": [
+                        {
+                          "_type": "property",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "this"
+                            }
+                          ],
+                          "property": "id"
+                        }
+                      ],
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "this"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "index": 0,
+              "setImplementation": {
+                "_type": "pureInstance",
+                "class": "test::DiscountedProduct",
+                "id": "PR_Aggregate_0",
+                "propertyMappings": [
+                  {
+                    "_type": "purePropertyMapping",
+                    "explodeProperty": false,
+                    "property": {
+                      "class": "test::DiscountedProduct",
+                      "property": "price"
+                    },
+                    "source": "PR",
+                    "transform": {
+                      "_type": "lambda",
+                      "body": [
+                        {
+                          "_type": "property",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "src"
+                            }
+                          ],
+                          "property": "price"
+                        }
+                      ],
+                      "parameters": []
+                    }
+                  },
+                  {
+                    "_type": "purePropertyMapping",
+                    "explodeProperty": false,
+                    "property": {
+                      "class": "test::DiscountedProduct",
+                      "property": "producer"
+                    },
+                    "source": "PR",
+                    "transform": {
+                      "_type": "lambda",
+                      "body": [
+                        {
+                          "_type": "property",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "src"
+                            }
+                          ],
+                          "property": "provider"
+                        }
+                      ],
+                      "parameters": []
+                    }
+                  }
+                ],
+                "root": false,
+                "srcClass": "test::Service"
+              }
+            }
+          ],
+          "class": "test::DiscountedProduct",
+          "id": "PR",
+          "mainSetImplementation": {
+            "_type": "pureInstance",
+            "class": "test::DiscountedProduct",
+            "id": "PR_Main",
+            "propertyMappings": [
+              {
+                "_type": "purePropertyMapping",
+                "explodeProperty": false,
+                "property": {
+                  "class": "test::DiscountedProduct",
+                  "property": "price"
+                },
+                "source": "PR",
+                "transform": {
+                  "_type": "lambda",
+                  "body": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "src"
+                        }
+                      ],
+                      "property": "price"
+                    }
+                  ],
+                  "parameters": []
+                }
+              },
+              {
+                "_type": "purePropertyMapping",
+                "explodeProperty": false,
+                "property": {
+                  "class": "test::DiscountedProduct",
+                  "property": "producer"
+                },
+                "source": "PR",
+                "transform": {
+                  "_type": "lambda",
+                  "body": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "src"
+                        }
+                      ],
+                      "property": "producer"
+                    }
+                  ],
+                  "parameters": []
+                }
+              },
+              {
+                "_type": "purePropertyMapping",
+                "explodeProperty": false,
+                "property": {
+                  "class": "test::DiscountedProduct",
+                  "property": "discount"
+                },
+                "source": "PR",
+                "transform": {
+                  "_type": "lambda",
+                  "body": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "src"
+                        }
+                      ],
+                      "property": "discount"
+                    }
+                  ],
+                  "parameters": []
+                }
+              }
+            ],
+            "root": false,
+            "srcClass": "test::DiscountedProduct"
+          },
+          "propertyMappings": [
+            {
+              "_type": "AggregationAwarePropertyMapping",
+              "property": {
+                "class": "test::DiscountedProduct",
+                "property": "price"
+              },
+              "source": "PR"
+            },
+            {
+              "_type": "AggregationAwarePropertyMapping",
+              "property": {
+                "class": "test::DiscountedProduct",
+                "property": "producer"
+              },
+              "source": "PR"
+            },
+            {
+              "_type": "AggregationAwarePropertyMapping",
+              "property": {
+                "class": "test::DiscountedProduct",
+                "property": "discount"
+              },
+              "source": "PR"
+            }
+          ],
+          "root": false
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "map",
+      "package": "test",
+      "tests": []
+    }
+  ]
+}

@@ -125,7 +125,7 @@ The use of `from` is best understood as limiting the object collection.  For exa
 ``` pure
 {|
    Person.all()
-      ->from(my::Mapping, ^Runtime(connections=^DatabaseConnection(element=my::Db, ...)))
+      ->from(my::Mapping, ^Runtime(connectionStores=^ConnectionStore(element=my::Db, connection=^DatabaseConnection( ...)))
 }
 ```
 can be read as query all `Person` objects *that are realizable from the specified Store(s)*.
@@ -136,14 +136,14 @@ functions to be negotiated with a Store.  For example:
 {|
    Person.all()
       ->filter(p| $p.firstName == 'Peter')
-      ->from(my::Mapping, ^Runtime(connections=^DatabaseConnection(element=my::Db, ...)))
+      ->from(my::Mapping, ^Runtime(connectionStores=^ConnectionStore(element=my::Db, connection=^DatabaseConnection( ...)))
 }
 ```
 implies that the `filter` is available for implementation by a Store.  Whereas:
 ``` pure
 {|
    Person.all()
-      ->from(my::Mapping, ^Runtime(connections=^DatabaseConnection(element=my::Db, ...)))
+      ->from(my::Mapping, ^Runtime(connectionStores=^ConnectionStore(element=my::Db, connection=^DatabaseConnection( ...)))
       ->filter(p| $p.firstName == 'Peter')
 }
 ```
@@ -543,7 +543,7 @@ _(Object stream return not currently suppored)_
 ``` pure
 {|
    Person.all()
-      ->from(my::Mapping, ^Runtime(connections=^DatabaseConnection(element=my::Db, ...)))
+      ->from(my::Mapping, ^Runtime(connectionStores=^ConnectionStore(element=my::Db, connection=^DatabaseConnection( ...)))
 }
 ```
 ### Execution Plan
@@ -566,7 +566,7 @@ _(Object stream return not currently suppored)_
 ``` pure
 {|
    Person.all()
-      ->from(my::Mapping, ^Runtime(connections=^DatabaseConnection(element=my::Db, ...)))
+      ->from(my::Mapping, ^Runtime(connectionStores=^ConnectionStore(element=my::Db, connection=^DatabaseConnection( ...)))
       ->filter(p| $p.firstName == 'Peter')
       ->project(p| $p.firm.legalName, 'Name')
 }
@@ -595,7 +595,7 @@ _(Object stream return not currently suppored)_
 ``` pure
 {|
    Person.all()
-      ->from(my::Mapping, ^Runtime(connections=^DatabaseConnection(element=my::Db, ...)))
+      ->from(my::Mapping, ^Runtime(connectionStores=^ConnectionStore(element=my::Db, connection=^DatabaseConnection( ...)))
       ->externalize(my::Binding, #{Person {firstName, lastName)}#)
 }
 ```
@@ -635,7 +635,7 @@ then
 ``` pure
 {|
    Person.all()
-      ->from(my::Mapping, ^Runtime(connections=^DatabaseConnection(element=my::Db, ...)))
+      ->from(my::Mapping, ^Runtime(connectionStores=^ConnectionStore(element=my::Db, connection=^DatabaseConnection( ...)))
       ->filter(p| $p.firstName == 'Peter')
       ->project(p| $p.firm.legalName, 'Name')
       ->externalize(my::TdsBinding)
@@ -711,7 +711,7 @@ then
    
    LegalEntity.all
       ->graphFetch(#{...}#)
-      ->from(my::PersonToLegalEntityMapping, ^Runtime(connections=^ModelConnection(element=^ModelStore(), instances=newMop(pair(Person, list($fromJson)))))) 
+      ->from(my::PersonToLegalEntityMapping, ^Runtime(connectionStores=^ConnectionStore(element=^ModelStore(), connection=^ModelConnection(instances=newMop(pair(Person, list($fromJson))))))) 
       ->externalize(my::SecondBinding, #{...}#)
 }
 ```

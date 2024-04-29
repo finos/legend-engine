@@ -1,0 +1,1307 @@
+###Pure
+import meta::external::language::java::generation::featureBased::tests::*;
+
+function <<access.private>> meta::external::language::java::generation::featureBased::tests::expectedSources(): Map<String,String>[1]
+{
+  newMap([
+    pair('src/main/java/meta/external/language/java/generation/featureBased/tests/model/Person.java',expectedSourceForPerson()),
+    pair('src/main/java/meta/external/language/java/generation/featureBased/tests/model/Address.java',expectedSourceForAddress()),
+    pair('src/main/java/meta/external/language/java/generation/featureBased/tests/model/AddressExtension.java',expectedSourceForAddressExtension()),
+    pair('src/main/java/meta/external/language/java/generation/featureBased/tests/model/Firm.java',expectedSourceForFirm()),
+    pair('src/main/java/meta/external/language/java/generation/featureBased/tests/model/ASimpleChoice.java',expectedSourceForSimpleChoice()),
+    pair('src/main/java/meta/external/language/java/generation/featureBased/tests/constructorInjection/ASimpleChoice.java',expectedSourceForSimpleChoiceWithConstructorInjection()),
+    pair('src/main/java/meta/external/language/java/generation/featureBased/tests/constructorInjection/Person.java',expectedSourceForPersonWithConstructorInjection()),
+    pair('src/main/java/meta/external/language/java/generation/featureBased/tests/constructorInjection/Firm.java',expectedSourceForFirmWithConstructorInjection())
+    ]);
+}
+
+
+function <<access.private>> meta::external::language::java::generation::featureBased::tests::expectedSourceForPerson():String[1]
+{
+  'package meta.external.language.java.generation.featureBased.tests.model;\n'+
+  '\n'+
+  'import java.util.List;\n'+
+  'import javax.annotation.Generated;\n'+
+  '\n'+
+    '@Generated("meta::external::language::java::generation::featureBased::tests::model::Person")\n'+
+  'public class Person\n'+
+  '{\n'+
+  '    private String firstName;\n'+
+  '    private String lastName;\n'+
+  '    private List<Address> addresses;\n'+
+  '    private Firm firm;\n'+
+  '    private boolean drives;\n'+
+  '    private ASimpleChoice choice;\n'+
+  '    private String preferredName;\n'+
+  '\n'+
+  '    public Person()\n'+
+  '    {\n'+
+  '    }\n'+
+  '\n'+
+  '    public String getFirstName()\n'+
+  '    {\n'+
+  '        return this.firstName;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setFirstName(String firstName)\n'+
+  '    {\n'+
+  '        this.firstName = firstName;\n'+
+  '    }\n'+
+  '\n'+
+  '    public String getLastName()\n'+
+  '    {\n'+
+  '        return this.lastName;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setLastName(String lastName)\n'+
+  '    {\n'+
+  '        this.lastName = lastName;\n'+
+  '    }\n'+
+  '\n'+
+  '    public List<Address> getAddresses()\n'+
+  '    {\n'+
+  '        return this.addresses;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setAddresses(List<Address> addresses)\n'+
+  '    {\n'+
+  '        this.addresses = addresses;\n'+
+  '    }\n'+
+  '\n'+
+  '    public Firm getFirm()\n'+
+  '    {\n'+
+  '        return this.firm;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setFirm(Firm firm)\n'+
+  '    {\n'+
+  '        this.firm = firm;\n'+
+  '    }\n'+
+  '\n'+
+  '    public boolean getDrives()\n'+
+  '    {\n'+
+  '        return this.drives;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setDrives(boolean drives)\n'+
+  '    {\n'+
+  '        this.drives = drives;\n'+
+  '    }\n'+
+  '\n'+
+  '    public ASimpleChoice getChoice()\n'+
+  '    {\n'+
+  '        return this.choice;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setChoice(ASimpleChoice choice)\n'+
+  '    {\n'+
+  '        this.choice = choice;\n'+
+  '    }\n'+
+  '\n'+
+  '    public String getPreferredName()\n'+
+  '    {\n'+
+  '        return this.preferredName;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setPreferredName(String preferredName)\n'+
+  '    {\n'+
+  '        this.preferredName = preferredName;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public boolean equals(Object o)\n'+
+  '    {\n'+
+  '        if (this == o)\n'+
+  '        {\n'+
+  '            return true;\n'+
+  '        }\n'+
+  '        if (o == null || this.getClass() != o.getClass())\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        Person that = (Person) o;\n'+
+  '        if (this.getFirstName() != null\n'+
+  '                ? !this.getFirstName().equals(that.getFirstName())\n'+
+  '                : that.getFirstName() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getLastName() != null\n'+
+  '                ? !this.getLastName().equals(that.getLastName())\n'+
+  '                : that.getLastName() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getAddresses() != null\n'+
+  '                ? !this.getAddresses().equals(that.getAddresses())\n'+
+  '                : that.getAddresses() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getFirm() != null\n'+
+  '                ? !this.getFirm().equals(that.getFirm())\n'+
+  '                : that.getFirm() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getDrives() != that.getDrives())\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getChoice() != null\n'+
+  '                ? !this.getChoice().equals(that.getChoice())\n'+
+  '                : that.getChoice() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getPreferredName() != null\n'+
+  '                ? !this.getPreferredName().equals(that.getPreferredName())\n'+
+  '                : that.getPreferredName() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        return true;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public int hashCode()\n'+
+  '    {\n'+
+  '        int result = this.getFirstName() != null ? this.getFirstName().hashCode() : 0;\n'+
+  '        result = 31 * result + (this.getLastName() != null ? this.getLastName().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getAddresses() != null ? this.getAddresses().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getFirm() != null ? this.getFirm().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getDrives() ? 1 : 0);\n'+
+  '        result = 31 * result + (this.getChoice() != null ? this.getChoice().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getPreferredName() != null\n'+
+  '                                    ? this.getPreferredName().hashCode()\n'+
+  '                                    : 0);\n'+
+  '        return result;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public String toString()\n'+
+  '    {\n'+
+  '        return "Person" + "{" + "firstName=" + this.getFirstName() + ", " + "lastName=" + this\n'+
+  '                                                   .getLastName() + ", " + "addresses=" + this\n'+
+  '                                                   .getAddresses() + ", " + "firm=" + this\n'+
+  '                                                   .getFirm() + ", " + "drives=" + this\n'+
+  '                                                   .getDrives() + ", " + "choice=" + this\n'+
+  '                                                   .getChoice() + ", " + "preferredName=" + this\n'+
+  '                                                   .getPreferredName() + "}";\n'+
+  '    }\n'+
+  '}';
+
+}
+
+function <<access.private>> meta::external::language::java::generation::featureBased::tests::expectedSourceForAddress():String[1]
+{
+  'package meta.external.language.java.generation.featureBased.tests.model;\n'+
+  '\n'+
+  'import java.math.BigDecimal;\n'+
+  'import java.time.LocalDate;\n'+
+  'import java.time.ZonedDateTime;\n'+
+  'import javax.annotation.Generated;\n'+
+  '\n'+
+  '@Generated("meta::external::language::java::generation::featureBased::tests::model::Address")\n'+
+  'public class Address\n'+
+  '{\n'+
+  '    private double number;\n'+
+  '    private String street;\n'+
+  '    private float value;\n'+
+  '    private BigDecimal distanceFromCentre;\n'+
+  '    private ZonedDateTime built;\n'+
+  '    private ZonedDateTime lastVisisted;\n'+
+  '    private LocalDate anotherDate;\n'+
+  '\n'+
+  '    public Address()\n'+
+  '    {\n'+
+  '    }\n'+
+  '\n'+
+  '    public double getNumber()\n'+
+  '    {\n'+
+  '        return this.number;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setNumber(double number)\n'+
+  '    {\n'+
+  '        this.number = number;\n'+
+  '    }\n'+
+  '\n'+
+  '    public String getStreet()\n'+
+  '    {\n'+
+  '        return this.street;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setStreet(String street)\n'+
+  '    {\n'+
+  '        this.street = street;\n'+
+  '    }\n'+
+  '\n'+
+  '    public float getValue()\n'+
+  '    {\n'+
+  '        return this.value;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setValue(float value)\n'+
+  '    {\n'+
+  '        this.value = value;\n'+
+  '    }\n'+
+  '\n'+
+  '    public BigDecimal getDistanceFromCentre()\n'+
+  '    {\n'+
+  '        return this.distanceFromCentre;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setDistanceFromCentre(BigDecimal distanceFromCentre)\n'+
+  '    {\n'+
+  '        this.distanceFromCentre = distanceFromCentre;\n'+
+  '    }\n'+
+  '\n'+
+  '    public ZonedDateTime getBuilt()\n'+
+  '    {\n'+
+  '        return this.built;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setBuilt(ZonedDateTime built)\n'+
+  '    {\n'+
+  '        this.built = built;\n'+
+  '    }\n'+
+  '\n'+
+  '    public ZonedDateTime getLastVisisted()\n'+
+  '    {\n'+
+  '        return this.lastVisisted;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setLastVisisted(ZonedDateTime lastVisisted)\n'+
+  '    {\n'+
+  '        this.lastVisisted = lastVisisted;\n'+
+  '    }\n'+
+  '\n'+
+  '    public LocalDate getAnotherDate()\n'+
+  '    {\n'+
+  '        return this.anotherDate;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setAnotherDate(LocalDate anotherDate)\n'+
+  '    {\n'+
+  '        this.anotherDate = anotherDate;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public boolean equals(Object o)\n'+
+  '    {\n'+
+  '        if (this == o)\n'+
+  '        {\n'+
+  '            return true;\n'+
+  '        }\n'+
+  '        if (o == null || this.getClass() != o.getClass())\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        Address that = (Address) o;\n'+
+  '        if (this.getNumber() != null\n'+
+  '                ? !this.getNumber().equals(that.getNumber())\n'+
+  '                : that.getNumber() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getStreet() != null\n'+
+  '                ? !this.getStreet().equals(that.getStreet())\n'+
+  '                : that.getStreet() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getValue() != null\n'+
+  '                ? !this.getValue().equals(that.getValue())\n'+
+  '                : that.getValue() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getDistanceFromCentre() != null\n'+
+  '                ? !this.getDistanceFromCentre()\n'+
+  '                       .equals(that.getDistanceFromCentre())\n'+
+  '                : that.getDistanceFromCentre() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getBuilt() != null\n'+
+  '                ? !this.getBuilt().equals(that.getBuilt())\n'+
+  '                : that.getBuilt() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getLastVisisted() != null\n'+
+  '                ? !this.getLastVisisted().equals(that.getLastVisisted())\n'+
+  '                : that.getLastVisisted() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getAnotherDate() != null\n'+
+  '                ? !this.getAnotherDate().equals(that.getAnotherDate())\n'+
+  '                : that.getAnotherDate() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        return true;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public int hashCode()\n'+
+  '    {\n'+
+  '        int result = this.getNumber() != null ? this.getNumber().hashCode() : 0;\n'+
+  '        result = 31 * result + (this.getStreet() != null ? this.getStreet().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getValue() != null ? this.getValue().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getDistanceFromCentre() != null\n'+
+  '                                    ? this.getDistanceFromCentre().hashCode()\n'+
+  '                                    : 0);\n'+
+  '        result = 31 * result + (this.getBuilt() != null ? this.getBuilt().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getLastVisisted() != null\n'+
+  '                                    ? this.getLastVisisted().hashCode()\n'+
+  '                                    : 0);\n'+
+  '        result = 31 * result + (this.getAnotherDate() != null\n'+
+  '                                    ? this.getAnotherDate().hashCode()\n'+
+  '                                    : 0);\n'+
+  '        return result;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public String toString()\n'+
+  '    {\n'+
+  '        return "Address" + "{" + "number=" + this.getNumber() + ", " + "street=" + this\n'+
+  '                                                 .getStreet() + ", " + "value=" + this\n'+
+  '                                                 .getValue() + ", " + "distanceFromCentre=" + this\n'+
+  '                                                 .getDistanceFromCentre() + ", " + "built=" + this\n'+
+  '                                                 .getBuilt() + ", " + "lastVisisted=" + this\n'+
+  '                                                 .getLastVisisted() + ", " + "anotherDate=" + this\n'+
+  '                                                 .getAnotherDate() + "}";\n'+
+  '    }\n'+
+  '}'                                                                                                  
+  ;
+}
+
+function <<access.private>> meta::external::language::java::generation::featureBased::tests::expectedSourceForAddressExtension():String[1]
+{
+  'package meta.external.language.java.generation.featureBased.tests.model;\n'+
+  '\n'+
+  'import javax.annotation.Generated;\n'+
+  '\n'+
+  '@Generated("meta::external::language::java::generation::featureBased::tests::model::AddressExtension")\n'+
+  'public class AddressExtension extends Address\n'+
+  '{\n'+
+  '    private String city;\n'+
+  '\n'+
+  '    public AddressExtension()\n'+
+  '    {\n'+
+  '    }\n'+
+  '\n'+
+  '    public String getCity()\n'+
+  '    {\n'+
+  '        return this.city;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setCity(String city)\n'+
+  '    {\n'+
+  '        this.city = city;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public boolean equals(Object o)\n'+
+  '    {\n'+
+  '        if (this == o)\n'+
+  '        {\n'+
+  '            return true;\n'+
+  '        }\n'+
+  '        if (o == null || this.getClass() != o.getClass())\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (!super.equals(o))\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        AddressExtension that = (AddressExtension) o;\n'+
+  '        if (this.getCity() != null\n'+
+  '                ? !this.getCity().equals(that.getCity())\n'+
+  '                : that.getCity() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        return true;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public int hashCode()\n'+
+  '    {\n'+
+  '        int result = super.hashCode();\n'+
+  '        result = 31 * result + (this.getCity() != null ? this.getCity().hashCode() : 0);\n'+
+  '        return result;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public String toString()\n'+
+  '    {\n'+
+  '        return "AddressExtension" + "{" + "super=" + super.toString() + ", " + "city=" + this\n'+
+  '                                                          .getCity() + "}";\n'+
+  '    }\n'+
+  '}\n';
+}
+
+function <<access.private>> meta::external::language::java::generation::featureBased::tests::expectedSourceForFirm():String[1]
+{
+  'package meta.external.language.java.generation.featureBased.tests.model;\n'+
+  '\n'+
+  'import java.util.List;\n'+
+  'import javax.annotation.Generated;\n'+
+  '\n'+
+  '@Generated("meta::external::language::java::generation::featureBased::tests::model::Firm")\n'+
+  'public class Firm\n'+
+  '{\n'+
+  '    private String legalName;\n'+
+  '    private List<Person> employees;\n'+
+  '    private List<Address> addresses;\n'+
+  '    private int count;\n'+
+  '\n'+
+  '    public Firm()\n'+
+  '    {\n'+
+  '    }\n'+
+  '\n'+
+  '    public String getLegalName()\n'+
+  '    {\n'+
+  '        return this.legalName;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setLegalName(String legalName)\n'+
+  '    {\n'+
+  '        this.legalName = legalName;\n'+
+  '    }\n'+
+  '\n'+
+  '    public List<Person> getEmployees()\n'+
+  '    {\n'+
+  '        return this.employees;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setEmployees(List<Person> employees)\n'+
+  '    {\n'+
+  '        this.employees = employees;\n'+
+  '    }\n'+
+  '\n'+
+  '    public List<Address> getAddresses()\n'+
+  '    {\n'+
+  '        return this.addresses;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setAddresses(List<Address> addresses)\n'+
+  '    {\n'+
+  '        this.addresses = addresses;\n'+
+  '    }\n'+
+  '\n'+
+  '    public int getCount()\n'+
+  '    {\n'+
+  '        return this.count;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setCount(int count)\n'+
+  '    {\n'+
+  '        this.count = count;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public boolean equals(Object o)\n'+
+  '    {\n'+
+  '        if (this == o)\n'+
+  '        {\n'+
+  '            return true;\n'+
+  '        }\n'+
+  '        if (o == null || this.getClass() != o.getClass())\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        Firm that = (Firm) o;\n'+
+  '        if (this.getLegalName() != null\n'+
+  '                ? !this.getLegalName().equals(that.getLegalName())\n'+
+  '                : that.getLegalName() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getEmployees() != null\n'+
+  '                ? !this.getEmployees().equals(that.getEmployees())\n'+
+  '                : that.getEmployees() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getAddresses() != null\n'+
+  '                ? !this.getAddresses().equals(that.getAddresses())\n'+
+  '                : that.getAddresses() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getCount() != null\n'+
+  '                ? !this.getCount().equals(that.getCount())\n'+
+  '                : that.getCount() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        return true;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public int hashCode()\n'+
+  '    {\n'+
+  '        int result = this.getLegalName() != null ? this.getLegalName().hashCode() : 0;\n'+
+  '        result = 31 * result + (this.getEmployees() != null ? this.getEmployees().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getAddresses() != null ? this.getAddresses().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getCount() != null ? this.getCount().hashCode() : 0);\n'+
+  '        return result;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public String toString()\n'+
+  '    {\n'+
+  '        return "Firm" + "{" + "legalName=" + this.getLegalName() + ", " + "employees=" + this\n'+
+  '                                                 .getEmployees() + ", " + "addresses=" + this\n'+
+  '                                                 .getAddresses() + ", " + "count=" + this\n'+
+  '                                                 .getCount() + "}";\n'+
+  '    }\n'+
+  '}';
+}
+
+function <<access.private>> meta::external::language::java::generation::featureBased::tests::expectedSourceForSimpleChoice():String[1]
+{
+  'package meta.external.language.java.generation.featureBased.tests.model;\n'+
+  '\n'+
+  'import javax.annotation.Generated;\n'+
+  '\n'+
+  '@Generated("meta::external::language::java::generation::featureBased::tests::model::ASimpleChoice")\n'+
+  'public enum ASimpleChoice\n'+
+  '{\n'+
+  '    A,\n'+
+  '    B\n'+
+ '}';
+}
+
+function <<access.private>> meta::external::language::java::generation::featureBased::tests::expectedSourceForAddressNonPrimtives():String[1]
+{
+  'package meta.external.language.java.generation.featureBased.tests.model;\n'+
+  '\n'+
+  'import java.math.BigDecimal;\n'+
+  'import java.time.LocalDate;\n'+
+  'import java.time.ZonedDateTime;\n'+
+  'import javax.annotation.Generated;\n'+
+  '\n'+
+  '@Generated("meta::external::language::java::generation::featureBased::tests::model::Address")\n'+
+  'public class Address\n'+
+  '{\n'+
+  '    private Double number;\n'+
+  '    private String street;\n'+
+  '    private Float value;\n'+
+  '    private BigDecimal distanceFromCentre;\n'+
+  '    private ZonedDateTime built;\n'+
+  '    private ZonedDateTime lastVisisted;\n'+
+  '    private LocalDate anotherDate;\n'+
+  '\n'+
+  '    public Address()\n'+
+  '    {\n'+
+  '    }\n'+
+  '\n'+
+  '    public Double getNumber()\n'+
+  '    {\n'+
+  '        return this.number;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setNumber(Double number)\n'+
+  '    {\n'+
+  '        this.number = number;\n'+
+  '    }\n'+
+  '\n'+
+  '    public String getStreet()\n'+
+  '    {\n'+
+  '        return this.street;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setStreet(String street)\n'+
+  '    {\n'+
+  '        this.street = street;\n'+
+  '    }\n'+
+  '\n'+
+  '    public Float getValue()\n'+
+  '    {\n'+
+  '        return this.value;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setValue(Float value)\n'+
+  '    {\n'+
+  '        this.value = value;\n'+
+  '    }\n'+
+  '\n'+
+  '    public BigDecimal getDistanceFromCentre()\n'+
+  '    {\n'+
+  '        return this.distanceFromCentre;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setDistanceFromCentre(BigDecimal distanceFromCentre)\n'+
+  '    {\n'+
+  '        this.distanceFromCentre = distanceFromCentre;\n'+
+  '    }\n'+
+  '\n'+
+  '    public ZonedDateTime getBuilt()\n'+
+  '    {\n'+
+  '        return this.built;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setBuilt(ZonedDateTime built)\n'+
+  '    {\n'+
+  '        this.built = built;\n'+
+  '    }\n'+
+  '\n'+
+  '    public ZonedDateTime getLastVisisted()\n'+
+  '    {\n'+
+  '        return this.lastVisisted;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setLastVisisted(ZonedDateTime lastVisisted)\n'+
+  '    {\n'+
+  '        this.lastVisisted = lastVisisted;\n'+
+  '    }\n'+
+  '\n'+
+  '    public LocalDate getAnotherDate()\n'+
+  '    {\n'+
+  '        return this.anotherDate;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setAnotherDate(LocalDate anotherDate)\n'+
+  '    {\n'+
+  '        this.anotherDate = anotherDate;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public boolean equals(Object o)\n'+
+  '    {\n'+
+  '        if (this == o)\n'+
+  '        {\n'+
+  '            return true;\n'+
+  '        }\n'+
+  '        if (o == null || this.getClass() != o.getClass())\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        Address that = (Address) o;\n'+
+  '        if (this.getNumber() != null\n'+
+  '                ? !this.getNumber().equals(that.getNumber())\n'+
+  '                : that.getNumber() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getStreet() != null\n'+
+  '                ? !this.getStreet().equals(that.getStreet())\n'+
+  '                : that.getStreet() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getValue() != null\n'+
+  '                ? !this.getValue().equals(that.getValue())\n'+
+  '                : that.getValue() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getDistanceFromCentre() != null\n'+
+  '                ? !this.getDistanceFromCentre()\n'+
+  '                       .equals(that.getDistanceFromCentre())\n'+
+  '                : that.getDistanceFromCentre() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getBuilt() != null\n'+
+  '                ? !this.getBuilt().equals(that.getBuilt())\n'+
+  '                : that.getBuilt() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getLastVisisted() != null\n'+
+  '                ? !this.getLastVisisted().equals(that.getLastVisisted())\n'+
+  '                : that.getLastVisisted() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getAnotherDate() != null\n'+
+  '                ? !this.getAnotherDate().equals(that.getAnotherDate())\n'+
+  '                : that.getAnotherDate() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        return true;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public int hashCode()\n'+
+  '    {\n'+
+  '        int result = this.getNumber() != null ? this.getNumber().hashCode() : 0;\n'+
+  '        result = 31 * result + (this.getStreet() != null ? this.getStreet().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getValue() != null ? this.getValue().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getDistanceFromCentre() != null\n'+
+  '                                    ? this.getDistanceFromCentre().hashCode()\n'+
+  '                                    : 0);\n'+
+  '        result = 31 * result + (this.getBuilt() != null ? this.getBuilt().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getLastVisisted() != null\n'+
+  '                                    ? this.getLastVisisted().hashCode()\n'+
+  '                                    : 0);\n'+
+  '        result = 31 * result + (this.getAnotherDate() != null\n'+
+  '                                    ? this.getAnotherDate().hashCode()\n'+
+  '                                    : 0);\n'+
+  '        return result;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public String toString()\n'+
+  '    {\n'+
+  '        return "Address" + "{" + "number=" + this.getNumber() + ", " + "street=" + this\n'+
+  '                                                 .getStreet() + ", " + "value=" + this\n'+
+  '                                                 .getValue() + ", " + "distanceFromCentre=" + this\n'+
+  '                                                 .getDistanceFromCentre() + ", " + "built=" + this\n'+
+  '                                                 .getBuilt() + ", " + "lastVisisted=" + this\n'+
+  '                                                 .getLastVisisted() + ", " + "anotherDate=" + this\n'+
+  '                                                 .getAnotherDate() + "}";\n'+
+  '    }\n'+
+  '}'                                                                                                  
+  ;
+}
+
+function <<access.private>> meta::external::language::java::generation::featureBased::tests::optionals::expectedSourceForAddressExtensionOptionals():String[1]
+{
+  'package meta.external.language.java.generation.featureBased.tests.model;\n'+
+  '\n'+
+  'import java.math.BigDecimal;\n'+
+  'import java.time.LocalDate;\n'+
+  'import java.time.ZonedDateTime;\n'+
+  '\n'+
+  'public class Address\n'+
+  '{\n'+
+  '    private double number;\n'+
+  '    private String street;\n'+
+  '    private float value;\n'+
+  '    private BigDecimal distanceFromCentre;\n'+
+  '    private ZonedDateTime built;\n'+
+  '    private ZonedDateTime lastVisisted;\n'+
+  '    private LocalDate anotherDate;\n'+
+  '\n'+
+  '    public Address()\n'+
+  '    {\n'+
+  '    }\n'+
+  '\n'+
+  '    public double getNumber()\n'+
+  '    {\n'+
+  '        return this.number;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setNumber(double number)\n'+
+  '    {\n'+
+  '        this.number = number;\n'+
+  '    }\n'+
+  '\n'+
+  '    public String getStreet()\n'+
+  '    {\n'+
+  '        return this.street;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setStreet(String street)\n'+
+  '    {\n'+
+  '        this.street = street;\n'+
+  '    }\n'+
+  '\n'+
+  '    public float getValue()\n'+
+  '    {\n'+
+  '        return this.value;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setValue(float value)\n'+
+  '    {\n'+
+  '        this.value = value;\n'+
+  '    }\n'+
+  '\n'+
+  '    public BigDecimal getDistanceFromCentre()\n'+
+  '    {\n'+
+  '        return this.distanceFromCentre;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setDistanceFromCentre(BigDecimal distanceFromCentre)\n'+
+  '    {\n'+
+  '        this.distanceFromCentre = distanceFromCentre;\n'+
+  '    }\n'+
+  '\n'+
+  '    public ZonedDateTime getBuilt()\n'+
+  '    {\n'+
+  '        return this.built;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setBuilt(ZonedDateTime built)\n'+
+  '    {\n'+
+  '        this.built = built;\n'+
+  '    }\n'+
+  '\n'+
+  '    public ZonedDateTime getLastVisisted()\n'+
+  '    {\n'+
+  '        return this.lastVisisted;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setLastVisisted(ZonedDateTime lastVisisted)\n'+
+  '    {\n'+
+  '        this.lastVisisted = lastVisisted;\n'+
+  '    }\n'+
+  '\n'+
+  '    public LocalDate getAnotherDate()\n'+
+  '    {\n'+
+  '        return this.anotherDate;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setAnotherDate(LocalDate anotherDate)\n'+
+  '    {\n'+
+  '        this.anotherDate = anotherDate;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public boolean equals(Object o)\n'+
+  '    {\n'+
+  '        if (this == o)\n'+
+  '        {\n'+
+  '            return true;\n'+
+  '        }\n'+
+  '        if (o == null || this.getClass() != o.getClass())\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        Address that = (Address) o;\n'+
+  '        if (this.getNumber() != null\n'+
+  '                ? !this.getNumber().equals(that.getNumber())\n'+
+  '                : that.getNumber() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getStreet() != null\n'+
+  '                ? !this.getStreet().equals(that.getStreet())\n'+
+  '                : that.getStreet() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getValue() != null\n'+
+  '                ? !this.getValue().equals(that.getValue())\n'+
+  '                : that.getValue() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getDistanceFromCentre() != null\n'+
+  '                ? !this.getDistanceFromCentre()\n'+
+  '                       .equals(that.getDistanceFromCentre())\n'+
+  '                : that.getDistanceFromCentre() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getBuilt() != null\n'+
+  '                ? !this.getBuilt().equals(that.getBuilt())\n'+
+  '                : that.getBuilt() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getLastVisisted() != null\n'+
+  '                ? !this.getLastVisisted().equals(that.getLastVisisted())\n'+
+  '                : that.getLastVisisted() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getAnotherDate() != null\n'+
+  '                ? !this.getAnotherDate().equals(that.getAnotherDate())\n'+
+  '                : that.getAnotherDate() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        return true;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public int hashCode()\n'+
+  '    {\n'+
+  '        int result = this.getNumber() != null ? this.getNumber().hashCode() : 0;\n'+
+  '        result = 31 * result + (this.getStreet() != null ? this.getStreet().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getValue() != null ? this.getValue().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getDistanceFromCentre() != null\n'+
+  '                                    ? this.getDistanceFromCentre().hashCode()\n'+
+  '                                    : 0);\n'+
+  '        result = 31 * result + (this.getBuilt() != null ? this.getBuilt().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getLastVisisted() != null\n'+
+  '                                    ? this.getLastVisisted().hashCode()\n'+
+  '                                    : 0);\n'+
+  '        result = 31 * result + (this.getAnotherDate() != null\n'+
+  '                                    ? this.getAnotherDate().hashCode()\n'+
+  '                                    : 0);\n'+
+  '        return result;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public String toString()\n'+
+  '    {\n'+
+  '        return "Address" + "{" + "number=" + this.getNumber() + ", " + "street=" + this\n'+
+  '                                                 .getStreet() + ", " + "value=" + this\n'+
+  '                                                 .getValue() + ", " + "distanceFromCentre=" + this\n'+
+  '                                                 .getDistanceFromCentre() + ", " + "built=" + this\n'+
+  '                                                 .getBuilt() + ", " + "lastVisisted=" + this\n'+
+  '                                                 .getLastVisisted() + ", " + "anotherDate=" + this\n'+
+  '                                                 .getAnotherDate() + "}";\n'+
+  '    }\n'+
+  '}'                                                                                                  
+  ;
+}
+
+function <<access.private>> meta::external::language::java::generation::featureBased::tests::expectedSourceForAddressExtensionVersions():String[1]
+{
+  'package meta.external.language.java.generation.featureBased.tests.model;\n'+
+  '\n'+
+  'import javax.annotation.Generated;\n'+
+  '\n'+
+  '@Generated("meta::external::language::java::generation::featureBased::tests::model::AddressExtension")\n'+
+  'public class AddressExtension extends Address\n'+
+  '{\n'+
+  '    private String city;\n'+
+  '    public static final String MODEL_VERSION = "1.0.0";\n'+
+  '\n'+
+  '    public AddressExtension()\n'+
+  '    {\n'+
+  '    }\n'+
+  '\n'+
+  '    public String getCity()\n'+
+  '    {\n'+
+  '        return this.city;\n'+
+  '    }\n'+
+  '\n'+
+  '    public void setCity(String city)\n'+
+  '    {\n'+
+  '        this.city = city;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public boolean equals(Object o)\n'+
+  '    {\n'+
+  '        if (this == o)\n'+
+  '        {\n'+
+  '            return true;\n'+
+  '        }\n'+
+  '        if (o == null || this.getClass() != o.getClass())\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (!super.equals(o))\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        AddressExtension that = (AddressExtension) o;\n'+
+  '        if (this.getCity() != null\n'+
+  '                ? !this.getCity().equals(that.getCity())\n'+
+  '                : that.getCity() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        return true;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public int hashCode()\n'+
+  '    {\n'+
+  '        int result = super.hashCode();\n'+
+  '        result = 31 * result + (this.getCity() != null ? this.getCity().hashCode() : 0);\n'+
+  '        return result;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public String toString()\n'+
+  '    {\n'+
+  '        return "AddressExtension" + "{" + "super=" + super.toString() + ", " + "city=" + this\n'+
+  '                                                          .getCity() + "}";\n'+
+  '    }\n'+
+  '}\n'
+                                                                                                                                                                                                  
+  ;
+}
+
+function <<access.private>> meta::external::language::java::generation::featureBased::tests::optionals::expectedSourceForOptionalsSample():String[1]
+{
+  '';
+}
+
+function <<access.private>> meta::external::language::java::generation::featureBased::tests::optionals::expectedSourceForOptionalsSampleWithPrimitives():String[1]
+{
+  '';
+}
+
+function <<access.private>> meta::external::language::java::generation::featureBased::tests::expectedSourceForPersonWithConstructorInjection():String[1]
+{
+  'package meta.external.language.java.generation.featureBased.tests.constructorInjection;\n'+
+  '\n'+
+  'import com.fasterxml.jackson.annotation.JsonIgnoreProperties;\n' +
+  'import java.util.List;\n'+
+  'import javax.annotation.Generated;\n'+
+  '\n'+
+  '@Generated("meta::external::language::java::generation::featureBased::tests::constructorInjection::Person")\n'+
+  '@JsonIgnoreProperties(ignoreUnknown=true)\n' +
+  'public class Person\n'+
+  '{\n'+
+  '    private String firstName;\n'+
+  '    private String lastName;\n'+
+  '    private List<String> addresses;\n'+
+  '    private Firm firm;\n'+
+  '    private boolean drives;\n'+
+  '    private ASimpleChoice choice;\n'+
+  '    private String preferredName;\n'+
+  '\n'+
+  '    public Person(String firstName,\n' +
+  '                  String lastName,\n' +
+  '                  List<String> addresses,\n' +
+  '                  Firm firm,\n' +
+  '                  boolean drives,\n' +
+  '                  ASimpleChoice choice,\n' +
+  '                  String preferredName)\n'+
+  '    {\n'+
+  '        this.firstName = firstName;\n' +
+  '        this.lastName = lastName;\n' +
+  '        this.addresses = addresses;\n' +
+  '        this.firm = firm;\n' +
+  '        this.drives = drives;\n' +
+  '        this.choice = choice;\n' +
+  '        this.preferredName = preferredName;\n' +
+  '    }\n'+
+  '\n'+
+  '    public String getFirstName()\n'+
+  '    {\n'+
+  '        return this.firstName;\n'+
+  '    }\n'+
+  '\n'+
+  '    public String getLastName()\n'+
+  '    {\n'+
+  '        return this.lastName;\n'+
+  '    }\n'+
+  '\n'+
+  '    public List<String> getAddresses()\n'+
+  '    {\n'+
+  '        return this.addresses;\n'+
+  '    }\n'+
+  '\n'+
+  '    public Firm getFirm()\n'+
+  '    {\n'+
+  '        return this.firm;\n'+
+  '    }\n'+
+  '\n'+
+  '    public boolean getDrives()\n'+
+  '    {\n'+
+  '        return this.drives;\n'+
+  '    }\n'+
+  '\n'+
+  '    public ASimpleChoice getChoice()\n'+
+  '    {\n'+
+  '        return this.choice;\n'+
+  '    }\n'+
+  '\n'+
+  '    public String getPreferredName()\n'+
+  '    {\n'+
+  '        return this.preferredName;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public boolean equals(Object o)\n'+
+  '    {\n'+
+  '        if (this == o)\n'+
+  '        {\n'+
+  '            return true;\n'+
+  '        }\n'+
+  '        if (o == null || this.getClass() != o.getClass())\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        Person that = (Person) o;\n'+
+  '        if (this.getFirstName() != null\n'+
+  '                ? !this.getFirstName().equals(that.getFirstName())\n'+
+  '                : that.getFirstName() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getLastName() != null\n'+
+  '                ? !this.getLastName().equals(that.getLastName())\n'+
+  '                : that.getLastName() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getAddresses() != null\n'+
+  '                ? !this.getAddresses().equals(that.getAddresses())\n'+
+  '                : that.getAddresses() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getFirm() != null\n'+
+  '                ? !this.getFirm().equals(that.getFirm())\n'+
+  '                : that.getFirm() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getDrives() != that.getDrives())\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getChoice() != null\n'+
+  '                ? !this.getChoice().equals(that.getChoice())\n'+
+  '                : that.getChoice() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getPreferredName() != null\n'+
+  '                ? !this.getPreferredName().equals(that.getPreferredName())\n'+
+  '                : that.getPreferredName() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        return true;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public int hashCode()\n'+
+  '    {\n'+
+  '        int result = this.getFirstName() != null ? this.getFirstName().hashCode() : 0;\n'+
+  '        result = 31 * result + (this.getLastName() != null ? this.getLastName().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getAddresses() != null ? this.getAddresses().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getFirm() != null ? this.getFirm().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getDrives() ? 1 : 0);\n'+
+  '        result = 31 * result + (this.getChoice() != null ? this.getChoice().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getPreferredName() != null\n'+
+  '                                    ? this.getPreferredName().hashCode()\n'+
+  '                                    : 0);\n'+
+  '        return result;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public String toString()\n'+
+  '    {\n'+
+  '        return "Person" + "{" + "firstName=" + this.getFirstName() + ", " + "lastName=" + this\n'+
+  '                                                   .getLastName() + ", " + "addresses=" + this\n'+
+  '                                                   .getAddresses() + ", " + "firm=" + this\n'+
+  '                                                   .getFirm() + ", " + "drives=" + this\n'+
+  '                                                   .getDrives() + ", " + "choice=" + this\n'+
+  '                                                   .getChoice() + ", " + "preferredName=" + this\n'+
+  '                                                   .getPreferredName() + "}";\n'+
+  '    }\n'+
+  '}';
+
+}
+
+
+function <<access.private>> meta::external::language::java::generation::featureBased::tests::expectedSourceForFirmWithConstructorInjection():String[1]
+{
+  'package meta.external.language.java.generation.featureBased.tests.constructorInjection;\n'+
+  '\n'+
+  'import com.fasterxml.jackson.annotation.JsonIgnoreProperties;\n' +
+  'import java.util.List;\n'+
+  'import javax.annotation.Generated;\n'+
+  '\n'+
+  '@Generated("meta::external::language::java::generation::featureBased::tests::constructorInjection::Firm")\n'+
+  '@JsonIgnoreProperties(ignoreUnknown=true)\n' +
+  'public class Firm\n'+
+  '{\n'+
+  '    private String legalName;\n'+
+  '    private List<Person> employees;\n'+
+  '    private List<String> addresses;\n'+
+  '    private int count;\n'+
+  '\n'+
+  '    public Firm(String legalName, List<Person> employees, List<String> addresses, int count)\n'+
+  '    {\n'+
+  '        this.legalName = legalName;\n' +
+  '        this.employees = employees;\n' +
+  '        this.addresses = addresses;\n' +
+  '        this.count = count;\n' +
+  '    }\n'+
+  '\n'+
+  '    public String getLegalName()\n'+
+  '    {\n'+
+  '        return this.legalName;\n'+
+  '    }\n'+
+  '\n'+
+  '    public List<Person> getEmployees()\n'+
+  '    {\n'+
+  '        return this.employees;\n'+
+  '    }\n'+
+  '\n'+
+  '    public List<String> getAddresses()\n'+
+  '    {\n'+
+  '        return this.addresses;\n'+
+  '    }\n'+
+  '\n'+
+  '    public int getCount()\n'+
+  '    {\n'+
+  '        return this.count;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public boolean equals(Object o)\n'+
+  '    {\n'+
+  '        if (this == o)\n'+
+  '        {\n'+
+  '            return true;\n'+
+  '        }\n'+
+  '        if (o == null || this.getClass() != o.getClass())\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        Firm that = (Firm) o;\n'+
+  '        if (this.getLegalName() != null\n'+
+  '                ? !this.getLegalName().equals(that.getLegalName())\n'+
+  '                : that.getLegalName() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getEmployees() != null\n'+
+  '                ? !this.getEmployees().equals(that.getEmployees())\n'+
+  '                : that.getEmployees() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getAddresses() != null\n'+
+  '                ? !this.getAddresses().equals(that.getAddresses())\n'+
+  '                : that.getAddresses() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getCount() != null\n'+
+  '                ? !this.getCount().equals(that.getCount())\n'+
+  '                : that.getCount() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        return true;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public int hashCode()\n'+
+  '    {\n'+
+  '        int result = this.getLegalName() != null ? this.getLegalName().hashCode() : 0;\n'+
+  '        result = 31 * result + (this.getEmployees() != null ? this.getEmployees().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getAddresses() != null ? this.getAddresses().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getCount() != null ? this.getCount().hashCode() : 0);\n'+
+  '        return result;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public String toString()\n'+
+  '    {\n'+
+  '        return "Firm" + "{" + "legalName=" + this.getLegalName() + ", " + "employees=" + this\n'+
+  '                                                 .getEmployees() + ", " + "addresses=" + this\n'+
+  '                                                 .getAddresses() + ", " + "count=" + this\n'+
+  '                                                 .getCount() + "}";\n'+
+  '    }\n'+
+  '}';
+}
+
+function <<access.private>> meta::external::language::java::generation::featureBased::tests::expectedSourceForSimpleChoiceWithConstructorInjection():String[1]
+{
+  'package meta.external.language.java.generation.featureBased.tests.constructorInjection;\n'+
+  '\n'+
+  'import javax.annotation.Generated;\n'+
+  '\n'+
+  '@Generated("meta::external::language::java::generation::featureBased::tests::constructorInjection::ASimpleChoice")\n'+
+  'public enum ASimpleChoice\n'+
+  '{\n'+
+  '    A,\n'+
+  '    B\n'+
+ '}';
+}

@@ -1,0 +1,72 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::alloy::connections::alloy::authentication::*;
+import meta::pure::alloy::connections::alloy::specification::*;
+import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
+import meta::pure::mapping::modelToModel::test::createInstances::*;
+import meta::relational::postProcessor::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
+import meta::pure::mapping::modelToModel::test::shared::*;
+import meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::mapping::*;
+import meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::*;
+import meta::pure::mapping::modelToModel::test::enumeration::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::executionPlan::tests::datetime::*;
+import meta::relational::tests::tds::tabletds::*;
+import meta::pure::mapping::*;
+import meta::relational::mapping::*;
+import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::tests::mapping::inheritance::relational::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::tests::tds::tdsJoin::*;
+import meta::pure::executionPlan::toString::*;
+import meta::pure::executionPlan::tests::*;
+import meta::relational::tests::groupBy::datePeriods::mapping::*;
+import meta::relational::tests::groupBy::datePeriods::*;
+import meta::relational::tests::groupBy::datePeriods::domain::*;
+import meta::pure::executionPlan::*;
+import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::graphFetch::executionPlan::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::functions::collection::*;
+
+function <<test.Test>> meta::pure::executionPlan::tests::redshift::testFilterEqualsWithOptionalParameter_Redshift():Boolean[1]
+{
+   let expectedPlan ='Sequence\n'+
+                     '(\n'+
+                     '  type = TDS[(Time, Integer, INT, "")]\n'+
+                     '  (\n'+
+                     '    FunctionParametersValidationNode\n'+
+                     '    (\n'+
+                     '      functionParameters = [optionalID:String[0..1], optionalActive:Boolean[0..1]]\n'+
+                     '    )\n'+
+                     '    Relational\n'+
+                     '    (\n'+
+                     '      type = TDS[(Time, Integer, INT, "")]\n'+
+                     '      resultColumns = [("Time", INT)]\n'+
+                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" {"\\\'" : "\\\'\\\'"} "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" {} "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
+                     '      connection = DatabaseConnection(type = "Redshift")\n'+
+                     '    )\n'+
+                     '  )\n'+
+                     ')\n';
+   assertPlanGenerationForOptionalParameter(DatabaseType.Redshift, $expectedPlan);
+}

@@ -1,0 +1,478 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::mongodb::metamodel::*;
+import meta::external::store::mongodb::metamodel::pure::*;
+import meta::external::store::mongodb::metamodel::aggregation::*;
+
+Enum meta::external::store::mongodb::metamodel::aggregation::Operator
+{
+    EQ, GT, GTE, IN, LT, LTE, NE, NIN, AND, NOT, NOR, OR
+}
+
+Enum meta::external::store::mongodb::metamodel::aggregation::ReadConcernValue
+{
+    LOCAL, AVAILABLE, MAJORITY, LINEARIZABLE
+}
+
+
+Class meta::external::store::mongodb::metamodel::BaseType
+{
+  allOf: BaseType[*];
+  anyOf: BaseType[*];
+  //bsonType: BaseType[1];
+  enum: String[*];
+  not: BaseType[0..1];
+  oneOf: BaseType[*];
+  title: String[0..1];
+  description: String[0..1];
+}
+
+
+Class meta::external::store::mongodb::metamodel::PropertyType
+{
+  key: String[1];
+  value: BaseType[1];
+}
+
+Class meta::external::store::mongodb::metamodel::ArrayType extends BaseType
+{
+  additionalItemsAllowed: Boolean[1];
+  additionalItems: BaseType[0..1];
+  items: BaseType[1..*];
+  maxItems: Integer[0..1];
+  minItems: Integer[0..1];
+  uniqueItems: Boolean[1];
+}
+
+Class meta::external::store::mongodb::metamodel::BsonType extends BaseType
+{  
+}
+
+Class meta::external::store::mongodb::metamodel::ObjectType extends BaseType
+{
+  properties: PropertyType[1..*];
+  required: String[*];  // Refers to properties, should it be ObjectType[*]??
+  additionalPropertiesAllowed: Boolean[1];
+  additionalProperties: ObjectType[0..1]; 
+  dependencies: ObjectType[0..1];
+  maxProperties: Integer[0..1];
+  minProperties: Integer[0..1];
+  patternProperties: ObjectType[0..1];
+}
+
+Class {doc.doc = 'UTF 8'} meta::external::store::mongodb::metamodel::StringType extends BsonType
+{
+  pattern: String[0..1];
+  minLength: Integer[0..1];
+  maxLength: Integer[0..1];
+}
+
+Class meta::external::store::mongodb::metamodel::DoubleType extends BsonType
+{
+  exclusiveMaximum: Boolean[0..1];
+  exclusiveMinimum: Boolean[0..1];
+  maximum: Number[0..1];
+  minimum: Number[0..1];
+}
+
+Class meta::external::store::mongodb::metamodel::BinaryType extends BsonType
+{
+  subType: Integer[1]; // https://www.mongodb.com/docs/manual/reference/bson-types/#binary-data
+}
+
+Class meta::external::store::mongodb::metamodel::ObjectIdType extends BsonType
+{
+}
+
+Class meta::external::store::mongodb::metamodel::BoolType extends BsonType
+{
+}
+
+Class meta::external::store::mongodb::metamodel::DateType extends BsonType
+{
+}
+
+Class meta::external::store::mongodb::metamodel::NullType extends BsonType
+{
+}
+
+Class meta::external::store::mongodb::metamodel::RegExType extends BsonType
+{  
+}
+
+Class meta::external::store::mongodb::metamodel::JavaScriptType extends BsonType
+{  
+}
+
+Class meta::external::store::mongodb::metamodel::IntType extends BsonType
+{
+  exclusiveMaximum: Boolean[0..1];
+  exclusiveMinimum: Boolean[0..1];
+  maximum: Integer[0..1];
+  minimum: Integer[0..1];
+}
+
+Class meta::external::store::mongodb::metamodel::TimeStampType extends BsonType
+{  
+}
+
+Class meta::external::store::mongodb::metamodel::LongType extends BsonType
+{
+  exclusiveMaximum: Boolean[0..1];
+  exclusiveMinimum: Boolean[0..1];
+  maximum: Integer[0..1];
+  minimum: Integer[0..1];
+}
+
+Class meta::external::store::mongodb::metamodel::DecimalType extends BsonType
+{
+  exclusiveMaximum: Boolean[0..1];
+  exclusiveMinimum: Boolean[0..1];
+  maximum: Decimal[0..1];
+  minimum: Decimal[0..1];
+}
+
+Class meta::external::store::mongodb::metamodel::MinKeyType extends BsonType
+{  
+}
+
+Class meta::external::store::mongodb::metamodel::MaxKeyType extends BsonType
+{  
+}
+
+Enum meta::external::store::mongodb::metamodel::SchemaValidationLevel
+{
+    strict, moderate
+}
+
+Enum meta::external::store::mongodb::metamodel::SchemaValidationAction
+{
+    error, warn
+}
+
+Class meta::external::store::mongodb::metamodel::Schema extends ObjectType
+{
+    id: String[0..1];
+}
+
+Class meta::external::store::mongodb::metamodel::MongoIndex
+{
+  name: String[1];
+  field: String[*];
+}
+
+Class meta::external::store::mongodb::metamodel::Validator
+{
+    validationLevel: SchemaValidationLevel[0..1];
+    validationAction: SchemaValidationAction[0..1];
+    validatorExpression: ArgumentExpression[1];
+}
+
+Class meta::external::store::mongodb::metamodel::Collection
+{
+  owner: MongoDatabase[1];
+  name: String[1];
+  uuid: String[1];
+  collation: Collation[0..1];
+  validator: Validator[1];
+  indexes:  MongoIndex[0..1];
+  field(fieldName: String[1])
+  {
+    $this.validator.validatorExpression->cast(@JsonSchemaExpression).schemaExpression->cast(@Schema).properties->filter(c | $c.key == $fieldName)->first();
+  }: meta::external::store::mongodb::metamodel::PropertyType[0..1];
+}
+
+
+
+Class meta::external::store::mongodb::metamodel::CollectionView
+{
+  owner: MongoDatabase[1];
+  name: String[1];
+  collation: Collation[0..1];
+  source: Collection[1];
+  pipeLine: ViewPipeline[1..*];
+} 
+
+Class meta::external::store::mongodb::metamodel::pure::MongoDatabase extends meta::pure::store::Store
+{
+  collections: Collection[*];
+  views: CollectionView[*];
+}
+
+Class meta::external::store::mongodb::metamodel::Collation
+{
+  locale: String[1];
+}
+
+Class meta::external::store::mongodb::metamodel::MongoDBOperationElement
+{
+}
+
+
+
+Class  {doc.doc = 'https://www.mongodb.com/docs/manual/reference/command/aggregate/#mongodb-dbcommand-dbcmd.aggregate'}
+meta::external::store::mongodb::metamodel::aggregation::DatabaseCommand extends MongoDBOperationElement
+{
+    type: String[1];
+    // collection name & aggregation pipeline get added after object instantiation hence the multiplicity set to [0..1], should be [1]
+    collectionName: String[0..1];
+    aggregationPipeline: AggregationPipeline[0..1];
+    cursor: Cursor[0..1];
+    explain: Boolean[0..1];
+    allowDiskUse: Boolean[0..1];
+    maxTimeMS: Integer[0..1];
+    byPassDocumentValidation: Boolean[0..1]; // Applicable only commands with $out or $merge stages
+    readConcern: ReadConcern[0..1];
+    collation: Collation[0..1];
+    hint: String[0..1];  //Not supporting Hint as document yet
+    comment: String[0..1]; // Used in logs & other dashboards to view current activity
+    writeConcern: WriteConcern[0..1];
+    let: ObjectTypeValue[0..1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::ViewPipeline extends AggregationPipeline
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::AggregationPipeline extends MongoDBOperationElement
+{
+    stages: Stage[*];
+}
+
+
+Class meta::external::store::mongodb::metamodel::aggregation::Stage extends MongoDBOperationElement
+{
+}
+
+
+Class {doc.doc = 'Maps to { $match { $expr { <aggregation expression> } } }'}
+meta::external::store::mongodb::metamodel::aggregation::MatchStage extends Stage
+{
+  expression: ArgumentExpression[1];
+}
+
+Class {doc.doc = 'Maps to { $project { $fieldName { <specification> } } }'}
+meta::external::store::mongodb::metamodel::aggregation::ProjectStage extends Stage
+{
+  projections: ArgumentExpression[1];
+}
+
+
+Class {doc.doc = 'Allows us to use aggregate expressions in query'} meta::external::store::mongodb::metamodel::aggregation::ExprQueryExpression extends ArgumentExpression
+{
+  expression: ArgumentExpression[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::ArgumentExpression extends MongoDBOperationElement
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::Cursor 
+{
+  batchSize: Integer[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::ReadConcern 
+{
+  level: ReadConcernValue[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::WriteConcern 
+{
+  w: String[0..1];  // Can take values "majority", numbers upto number of replicas - 1, custom tag
+  j: Boolean[0..1];   //Written to disk ack.
+  wtimeout: Integer[0..1];  // in millis
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::LiteralValue extends ArgumentExpression
+{
+  value: BaseTypeValue[1];
+}
+
+Class {doc.doc = 'Expression for fieldName.path.to.element'} 
+meta::external::store::mongodb::metamodel::aggregation::FieldPathExpression extends ArgumentExpression
+{
+  // Do we need to diffentiate between $xxx vs xxxx fields
+  fieldPath: String[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::JsonSchemaExpression extends ArgumentExpression
+{
+  schemaExpression: meta::external::store::mongodb::metamodel::Schema[1];
+}
+
+
+Class {doc.doc = 'Comparison Operator Expressions https://www.mongodb.com/docs/manual/reference/operator/query-comparison/'}
+meta::external::store::mongodb::metamodel::aggregation::ComparisonOperatorExpression extends ArgumentExpression
+{
+  expressions: ArgumentExpression[2];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::EqOperatorExpression extends ComparisonOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::GTOperatorExpression extends ComparisonOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::GTEOperatorExpression extends ComparisonOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::InOperatorExpression extends ComparisonOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::LTOperatorExpression extends ComparisonOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::LTEOperatorExpression extends ComparisonOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::NEOperatorExpression extends ComparisonOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::NinOperatorExpression extends ComparisonOperatorExpression
+{
+}
+
+Class {doc.doc = 'Logical Operator Expressions https://www.mongodb.com/docs/manual/reference/operator/query-logical/'}
+meta::external::store::mongodb::metamodel::aggregation::LogicalOperatorExpression extends ArgumentExpression
+{
+  expressions: ArgumentExpression[1..*];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::AndOperatorExpression extends LogicalOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::OrOperatorExpression extends LogicalOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::NotOperatorExpression extends LogicalOperatorExpression
+{
+  // TODO: Strip out Not from other logical operator as it has only 1 expression
+  // expression: ArgumentExpression[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::NorOperatorExpression extends LogicalOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::KeyValueExpressionPair
+{
+  field: String[1];
+  argument: ArgumentExpression[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::QueryExprKeyValue extends ArgumentExpression
+{
+  key: ArgumentExpression[1];
+  value: ArgumentExpression[1];
+}
+
+Class {doc.doc = 'Computed field for Project expressions with format $fieldName'}
+meta::external::store::mongodb::metamodel::aggregation::ComputedFieldValue extends ArgumentExpression
+{
+  value: String[1];
+}
+
+Class <<doc.deprecated>> meta::external::store::mongodb::metamodel::aggregation::ObjectExpression extends ArgumentExpression
+{
+  keyValues: KeyValueExpressionPair[*];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::ObjectQueryExpression extends ArgumentExpression
+{
+  keyValues: ArgumentExpression[*];
+}
+
+
+Class meta::external::store::mongodb::metamodel::aggregation::BaseTypeValue
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::VariableTypeValue extends BaseTypeValue
+{
+  value: String[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::StringTypeValue extends BaseTypeValue
+{
+  value: String[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::IntTypeValue extends BaseTypeValue
+{
+  value: Integer[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::BoolTypeValue extends BaseTypeValue
+{
+  value: Boolean[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::NullTypeValue extends BaseTypeValue
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::LongTypeValue extends BaseTypeValue
+{
+  value: Integer[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::FloatTypeValue extends BaseTypeValue
+{
+  value: Float[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::DecimalTypeValue extends BaseTypeValue
+{
+  value: Decimal[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::ObjectTypeValue extends BaseTypeValue
+{
+  keyValues: KeyValuePair[*];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::DateTypeValue extends BaseTypeValue
+{
+  value: String[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::ArrayTypeValue extends BaseTypeValue
+{
+  items: BaseTypeValue[*];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::KeyValuePair
+{
+  key: String[1];
+  value: BaseTypeValue[1];
+}
+
+
+
+
+
+
+
+

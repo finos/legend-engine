@@ -1,0 +1,115 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::shared::functions::*;
+
+import meta::external::format::json::executionPlan::test::association::*;
+import meta::external::format::json::functions::*;
+
+import meta::pure::graphFetch::execution::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::association::testAssociation(): Boolean[1]
+{
+  let query   = {data:String[1]| Firm->fromJson($data)->graphFetch(#{Firm{name, ranking, addresses{addressType, address{firstLine, secondLine}}, employees{firstName, lastName}}}#)->toJson(#{Firm{name, ranking, addresses{addressType, address{firstLine, secondLine}}, employees{firstName, lastName}}}#)};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"name": "Firm A", "ranking": 1, "addresses": {"addressType": "Headquarters", "address": {"firstLine": "FirstLine", "secondLine": "SecondLine"}}, "employees": {"firstName": "FirstName", "lastName": "LastName"}}'));
+
+  assertEquals('{"name":"Firm A","ranking":1,"addresses":[{"addressType":"Headquarters","address":{"firstLine":"FirstLine","secondLine":"SecondLine"}}],"employees":[{"firstName":"FirstName","lastName":"LastName"}]}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::association::testAssociationWithSchema(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let query   = {data:String[1]| Firm->internalize($binding, $data)->graphFetch(#{Firm{name, ranking, addresses{addressType, address{firstLine, secondLine}}, employees{firstName, lastName}}}#)->toJson(#{Firm{name, ranking, addresses{addressType, address{firstLine, secondLine}}, employees{firstName, lastName}}}#)};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"name": "Firm A", "ranking": 1, "addresses": {"addressType": "Headquarters", "address": {"firstLine": "FirstLine", "secondLine": "SecondLine"}}, "employees": {"firstName": "FirstName", "lastName": "LastName"}}'));
+
+  assertEquals('{"name":"Firm A","ranking":1,"addresses":[{"addressType":"Headquarters","address":{"firstLine":"FirstLine","secondLine":"SecondLine"}}],"employees":[{"firstName":"FirstName","lastName":"LastName"}]}', $result);
+}
+
+
+###Pure
+import meta::legend::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::json::executionPlan::test::association::*;
+
+Enum meta::external::format::json::executionPlan::test::association::AddressType
+{
+  Headquarters,
+  RegionalOffice,
+  Home,
+  Holiday
+}
+
+Class meta::external::format::json::executionPlan::test::association::Firm
+{
+  name      : String[1];
+  ranking   : Integer[0..1];
+  addresses : AddressUse[1..*];
+}
+
+Class meta::external::format::json::executionPlan::test::association::Address
+{
+  firstLine  : String[1];
+  secondLine : String[0..1];
+}
+
+Class meta::external::format::json::executionPlan::test::association::AddressUse
+{
+  addressType : AddressType[1];
+  address     : Address[1];
+}
+
+Class meta::external::format::json::executionPlan::test::association::Person
+{
+  firstName      : String[1];
+  lastName       : String[1];
+}
+
+Association meta::external::format::json::executionPlan::test::association::Firm_Person
+{
+  firm      : Firm[1];
+  employees : Person[*];
+}
+
+function meta::external::format::json::executionPlan::test::association::getTestBinding():Binding[1]
+{
+  let schema = 
+    '###ExternalFormat\n' +
+    'SchemaSet meta::external::format::json::executionPlan::test::association::TestSchemaSet\n' +
+    '{\n' +
+    '  format: JSON;\n' +
+    '  schemas: [\n' +
+    '    {\n' +
+    '      id: Firm;\n' +
+    '      location: \'Firm.json\';\n' +
+    '      content: \'{  "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",  "title": "meta::external::format::json::executionPlan::test::association::Firm",  "type": "object",  "properties":   {    "name":     {      "type": "string"    },    "ranking":     {      "type": "integer"    },    "addresses":     {      "type": "array",      "items":       {        "$ref": "#\/definitions\/meta::external::format::json::executionPlan::test::association::AddressUse"      },      "minItems": 1    },    "employees":     {      "type": "array",      "items":       {        "$ref": "#\/definitions\/meta::external::format::json::executionPlan::test::association::Person"      }    }  },  "required": ["name","addresses"  ],  "definitions":   {    "meta::external::format::json::executionPlan::test::association::Address":     {      "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",      "title": "meta::external::format::json::executionPlan::test::association::Address",      "type": "object",      "properties":       {        "firstLine":         {          "type": "string"        },        "secondLine":         {          "type": "string"        }      },      "required": ["firstLine"      ]    },    "meta::external::format::json::executionPlan::test::association::AddressType":     {      "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",      "title": "meta::external::format::json::executionPlan::test::association::AddressType",      "enum": ["Headquarters","RegionalOffice","Home","Holiday"      ],      "type": "string"    },    "meta::external::format::json::executionPlan::test::association::AddressUse":     {      "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",      "title": "meta::external::format::json::executionPlan::test::association::AddressUse",      "type": "object",      "properties":       {        "addressType":         {          "$ref": "#\/definitions\/meta::external::format::json::executionPlan::test::association::AddressType"        },        "address":         {          "$ref": "#\/definitions\/meta::external::format::json::executionPlan::test::association::Address"        }      },      "required": ["addressType","address"      ]    },    "meta::external::format::json::executionPlan::test::association::Person":     {      "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",      "title": "meta::external::format::json::executionPlan::test::association::Person",      "type": "object",      "properties":       {        "firstName":         {          "type": "string"        },        "lastName":         {          "type": "string"        }      },      "required": ["firstName","lastName","firm"      ]    }  }}\';\n' +
+    '    }\n' +
+    '  ];\n' +
+    '}\n' +
+    'Binding meta::external::format::json::executionPlan::test::association::TestBinding\n' +
+    '{\n' +
+    '  schemaSet: meta::external::format::json::executionPlan::test::association::TestSchemaSet;\n' +
+    '  contentType: \'application/json\';\n' +
+    '  modelIncludes: [\n' +
+    '    meta::external::format::json::executionPlan::test::association::Firm,\n' +
+    '    meta::external::format::json::executionPlan::test::association::Person,\n' +
+    '    meta::external::format::json::executionPlan::test::association::Address,\n' +
+    '    meta::external::format::json::executionPlan::test::association::AddressUse,\n' +
+    '    meta::external::format::json::executionPlan::test::association::Firm_Person\n' +
+    '  ];\n' +
+    '}\n';
+  
+  compileLegendGrammar($schema)->filter(ele | $ele->instanceOf(Binding))->cast(@Binding)->toOne();
+}

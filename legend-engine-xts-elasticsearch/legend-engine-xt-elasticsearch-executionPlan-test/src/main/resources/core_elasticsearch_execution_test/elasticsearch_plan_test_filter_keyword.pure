@@ -1,0 +1,136 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::*;
+import meta::external::store::elasticsearch::executionTest::testCase::*;
+import meta::external::store::elasticsearch::executionTest::testCase::tds::*;
+import meta::external::store::elasticsearch::executionTest::test::*;
+import meta::external::store::elasticsearch::executionTest::utils::*;
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Keyword property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::keyword::testEqualValueFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getString('Title') == 'Iron Man'));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Keyword property mapping using PureOne variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::keyword::testEqualValueFilter_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 'Iron Man';
+  $config->testTdsExpression(x | $x->filter(x | $x.getString('Title') == $var));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Keyword property mapping using ZeroOne variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::keyword::testEqualValueFilter_PureZeroOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let withVal = asZeroOne('PG-13');
+  $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('MPAA') == $withVal));
+
+  let withoutVal = asZeroOne([]->cast(@String));
+  $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('MPAA') == $withoutVal));  
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test NOT filter on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::keyword::testNotEqualValueFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getString('Title') != 'Iron Man'));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test NOT filter on Elasticsearch with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::keyword::testNotEqualValueFilter_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let val = 'Iron Man';
+  $config->testTdsExpression(x | $x->filter(x | $x.getString('Title') != $val));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test startWith filter on Elasticsearch Keyword property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::keyword::testStartWithFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getString('Title')->startsWith('Iron')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test startWith filter on Elasticsearch Keyword property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::keyword::testStartWithFilter_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 'Iron';
+  $config->testTdsExpression(x | $x->filter(x | $x.getString('Title')->startsWith($var)));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test endWith filter on Elasticsearch Keyword property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::keyword::testEndWithFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getString('Title')->endsWith('y')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test endWith filter on Elasticsearch Keyword property mapping with varaible'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::keyword::testEndWithFilter_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 'y';
+  $config->testTdsExpression(x | $x->filter(x | $x.getString('Title')->endsWith($var)));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test contains filter on Elasticsearch Keyword property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::keyword::testContainsFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getString('Title')->contains('ron ')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test contains filter on Elasticsearch Keyword property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::keyword::testContainsFilter_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 'ron ';
+  $config->testTdsExpression(x | $x->filter(x | $x.getString('Title')->contains($var)));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test in filter on Elasticsearch Keyword property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::keyword::testInFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getString('Title')->in(['Iron Man', 'Iron Man 2'])));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test in filter on Elasticsearch Keyword property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::keyword::testInFilter_PureManyVariable(config:TestConfig[1]):Boolean[1]
+{
+  let many = asZeroMany(['Iron Man', 'Iron Man 2']);
+  $config->testTdsExpression(x | $x->filter(x | $x.getString('Title')->in($many)));
+
+  let none = asZeroMany([]->cast(@String));
+  $config->testTdsExpressionReturnsEmpty(x | $x->filter(x | $x.getString('Title')->in($none)));  
+}

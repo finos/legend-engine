@@ -1,0 +1,342 @@
+import meta::pure::mapping::*;
+import meta::pure::mapping::serialization::grammar::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::mapping::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::datatype::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::transform::autogen::*;
+
+function meta::relational::transform::autogen::schemaToModel(schema:Schema[1], packageStr:String[1]):meta::protocols::pure::vX_X_X::metamodel::domain::Class[*]
+{
+   $schema.tables->map(t | $t->tableToClass($packageStr, columnFilterPredicate_Column_1__Boolean_1_));
+}
+
+function <<access.private>> meta::relational::transform::autogen::columnFilterPredicate(column:Column[1]):Boolean[1]
+{
+   true;
+}
+
+function meta::relational::transform::autogen::tableToClass(table:Table[1], packageStr:String[1], columnFilterFunction:Function<{Column[1]->Boolean[1]}>[1]):meta::protocols::pure::vX_X_X::metamodel::domain::Class[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::domain::Class
+   (
+      _type = 'class',
+      name = createValidClassName($table.name),
+      package = $packageStr + '::' + $table.schema.name,
+      properties = $table.columns->cast(@Column)
+           ->filter(c | $columnFilterFunction->eval($c))
+           ->map(c | $c->columnToProperty()),
+      taggedValues = [createPureGeneratedTaggedDoc()]
+   );
+}
+
+function meta::relational::transform::autogen::createPureGeneratedTaggedDoc():meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue
+   (
+      tag = ^meta::protocols::pure::vX_X_X::metamodel::domain::TagPtr(
+          profile = 'meta::pure::profiles::doc',
+          value = 'doc'
+      ),
+      value = 'Generated Element'
+   );
+}
+
+function <<access.private>> meta::relational::transform::autogen::columnToProperty(column:Column[1]):meta::protocols::pure::vX_X_X::metamodel::domain::Property[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::domain::Property
+   (
+      name = $column.name->createSQLSafeName()->createValidPropertyName(),
+      multiplicity = if($column.nullable == false, | PureOne, | ZeroOne)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()->toOne(),
+      type = meta::relational::metamodel::datatype::dataTypeToCompatiblePureType($column.type)->toOne()->elementToPath()
+   );
+}
+
+function <<access.private>> meta::relational::transform::autogen::createValidClassName(tableName:String[1]):String[1]
+{
+   $tableName->replaceUnsupportedCharsWith('', [' ', '/'])->makeCamelCase(true);
+}
+
+function <<access.private>> meta::relational::transform::autogen::createSQLSafeName(initialString:String[1]):String[1]
+{
+   $initialString->replaceUnsupportedCharsWith('_', [' ', '/', '@', '~', '<', '>', '.']);
+}
+
+function <<access.private>> meta::relational::transform::autogen::createValidPropertyName(initialString:String[1]):String[1]
+{
+   $initialString->replaceUnsupportedCharsWith('', ['"'])->makeCamelCase(false);
+}
+
+function <<access.private>> meta::relational::transform::autogen::replaceUnsupportedCharsWith(initialString:String[1], replacementChar:String[1], unsupportedChars:String[*]):String[1]
+{
+   $initialString->length()->range()->fold({index, acc|
+     let char = $initialString->substring($index, $index + 1);
+     $acc + if($unsupportedChars->contains($char), |$replacementChar, |$char);
+   }, '');
+}
+
+function meta::relational::transform::autogen::databaseToAssociationJoinPair(database:Database[1], packageStr:String[1]):Pair<meta::protocols::pure::vX_X_X::metamodel::domain::Association, Join>[*]
+{
+   $database.joins->map(j | $j->joinToAssociation($packageStr)->pair($j));
+}
+
+function meta::relational::transform::autogen::joinToAssociation(join:Join[1], packageStr:String[1]):meta::protocols::pure::vX_X_X::metamodel::domain::Association[1]
+{
+   let joinName = $join.name->toOne();
+   let leftTableAliasColumn = getJoinOperationTableAliasColumnAtIndex($join, 0);
+   let rightTableAliasColumn = getJoinOperationTableAliasColumnAtIndex($join, 1);
+   let leftTable = $leftTableAliasColumn.column.owner->cast(@Table)->toOne();
+   let rightTable = $rightTableAliasColumn.column.owner->cast(@Table)->toOne();
+   let isP1PrimaryKey = $leftTable.primaryKey->exists(p | $p.name == $leftTableAliasColumn.columnName);
+   let isP2PrimaryKey = $rightTable.primaryKey->exists(p | $p.name == $rightTableAliasColumn.columnName);
+   let multPair = getAssociationMultiplicityPairFromPK($isP1PrimaryKey, $isP2PrimaryKey);
+   let p1Mult = $multPair.first;
+   let p2Mult = $multPair.second;
+   let p1 = generateAssociationProperty($joinName, $packageStr, $leftTable, $p1Mult);
+   let p2 = generateAssociationProperty($joinName, $packageStr, $rightTable, $p2Mult);
+   ^meta::protocols::pure::vX_X_X::metamodel::domain::Association
+   (
+     _type = 'association',
+     name = $joinName,
+     package = $packageStr,
+     properties = [$p1, $p2],
+     taggedValues = [createPureGeneratedTaggedDoc()]
+   );
+}
+
+function <<access.private>> meta::relational::transform::autogen::getJoinOperationTableAliasColumnAtIndex(join:Join[1], index:Integer[1]):TableAliasColumn[1]
+{
+   let joinOperations = $join.operation->cast(@DynaFunction);
+   let joinParams = if($joinOperations.name == 'and',
+                       |$joinOperations.parameters->filter(p |
+                                                               let nestedParams = $p->cast(@DynaFunction).parameters;
+                                                               $nestedParams->at(0)->instanceOf(TableAliasColumn) && $nestedParams->at(1)->instanceOf(TableAliasColumn);
+                                                          )->cast(@DynaFunction).parameters,
+                       |$joinOperations.parameters);
+   $joinParams->at($index)->cast(@TableAliasColumn);
+}
+
+function <<access.private>> meta::relational::transform::autogen::getAssociationMultiplicityPairFromPK(isP1PrimaryKey:Boolean[1], isP2PrimaryKey:Boolean[1]):Pair<Multiplicity, Multiplicity>[1]
+{
+   let multKVPairs = [
+     pair(pair(true, true), pair(PureOne, PureOne)),
+     pair(pair(true, false), pair(PureOne, OneMany)),
+     pair(pair(false, true), pair(OneMany, PureOne)),
+     pair(pair(false, false), pair(OneMany, OneMany))
+   ];
+   let multiplicityMap = $multKVPairs->newMap();
+   $multiplicityMap->get(pair($isP1PrimaryKey, $isP2PrimaryKey))->toOne();
+}
+
+function <<access.private>> meta::relational::transform::autogen::generateAssociationProperty(joinName:String[1], packageStr:String[1], table:Table[1], multiplicity:Multiplicity[1]):meta::protocols::pure::vX_X_X::metamodel::domain::Property[1]
+{
+   let schemaName = $table.schema.name;
+   let tableName = $table.name;
+   let propertyName = $joinName + '_' + $schemaName + '_' + $tableName;
+   ^meta::protocols::pure::vX_X_X::metamodel::domain::Property(
+     name = $propertyName->createSQLSafeName()->createValidPropertyName(),
+     multiplicity = $multiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()->toOne(),
+     type = $packageStr + '::' + $schemaName + '::' + createValidClassName($tableName)
+   );
+}
+
+function meta::relational::transform::autogen::databaseToMappingWithClassMappings(database:Database[1], mappingPackageStr:String[1], classPackageStr:String[1]):meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1]
+{
+   databaseToMappingWithClassMappings($database, $mappingPackageStr, $classPackageStr, [], columnFilterPredicate_Column_1__Boolean_1_);
+}
+
+function meta::relational::transform::autogen::databaseToMappingWithClassMappings(database:Database[1], mappingPackageStr:String[1], classPackageStr:String[1], joinStrategyFunctions:Function<Any>[*], columnFilterFunction:Function<{Column[1]->Boolean[1]}>[1]):meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping
+   (
+      _type = 'mapping',
+      name = $database.name->toOne() + 'Mapping',
+      package = $mappingPackageStr,
+      classMappings = $database.schemas->map(s | $s.tables->map(t | $t->tableToClassMapping($classPackageStr, $database, $columnFilterFunction)))
+   )
+}
+
+function <<access.private>> meta::relational::transform::autogen::tableToClassMapping(table:Table[1], classPackageStr:String[1], database:Database[1], columnFilterFunction:Function<{Column[1]->Boolean[1]}>[1]):meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RootRelationalClassMapping[1]
+{
+   let tableName = $table.name;
+   let schemaName = $table.schema.name;
+   let classPath = $classPackageStr + '::' + $schemaName + '::' + createValidClassName($tableName);
+   let databasePath = $database->elementToPath();
+   let tableAlias = ^TableAlias(name=$tableName, relationalElement=$table, database=$database, schema=$schemaName);
+
+   let propertyMappings = $table.columns->cast(@Column)->filter(c|$columnFilterFunction->eval($c))
+                                                       ->map(c | let columnName = $c.name->createSQLSafeName();
+                                                                 let propertyName = $columnName->createValidPropertyName();
+                                                                 let propertyRawReturnType = meta::relational::metamodel::datatype::dataTypeToCompatiblePureType($c.type);
+                                                             
+                                                                 let tableAliasColumn = ^TableAliasColumn(columnName=$columnName, alias=$tableAlias, column=$c);
+                                                             
+                                                                 let element = if($propertyRawReturnType == Boolean && $c.type->instanceOf(Bit), 
+                                                                    {| 
+                                                                       let e = ^DynaFunction(name='case', parameters = [
+                                                                          ^DynaFunction(name = 'equal', parameters = [$tableAliasColumn, ^Literal(value=1)]),
+                                                                          ^DynaFunction(name = 'sqlTrue'), 
+                                                                          ^DynaFunction(name = 'sqlFalse')
+                                                                          ]);
+                                                                                  
+                                                                       if($c.nullable == false, 
+                                                                         | $e,
+                                                                         | ^DynaFunction(name='case', parameters = [
+                                                                             ^DynaFunction(name = 'isNull', parameters = [$tableAliasColumn]),
+                                                                             ^DynaFunction(name = 'sqlNull'), 
+                                                                             $e
+                                                                             ]
+                                                                            );
+                                                                         );
+                                                                     },
+                                                                    | $tableAliasColumn
+                                                                    );
+
+                                                                 ^meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RelationalPropertyMapping(
+                                                                    _type = 'relationalPropertyMapping',
+                                                                    property = ^meta::protocols::pure::vX_X_X::metamodel::domain::PropertyPtr(class=$classPath, property=$propertyName),
+                                                                    target = $propertyRawReturnType->match([
+                                                                       c:Class<Any>[1] | $c->elementToPath()->replace('::', '_'),
+                                                                       t:Type[0..1] | ''
+                                                                    ]), 
+                                                                    relationalOperation = $element->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::relational::transformRelationalOperationElement($database)
+                                                                 );
+                                                          );
+
+   let userDefinedPrimaryKey = $table.primaryKey->isEmpty();
+   let primaryKey = if ($userDefinedPrimaryKey, 
+                        | 
+                           let notNullColumns = $table.columns->filter(c | $c->cast(@Column).nullable == false);
+                           if($notNullColumns->isEmpty(), 
+                              | $table.columns->cast(@Column), 
+                              | $notNullColumns->cast(@Column)); ,
+                        | $table.primaryKey);
+   
+   let namedRelation = $tableAlias.relationalElement->cast(@NamedRelation);
+   let storeFromTableAlias = $tableAlias.database;
+   ^meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RootRelationalClassMapping
+   (
+      id = $classPath->replace('::', '_'),
+      _type = 'relational',
+      class = $classPath,
+      root = true,
+      mainTable = ^meta::protocols::pure::vX_X_X::metamodel::store::relational::element::TablePtr(
+         _type = 'table',
+         table = $namedRelation.name,
+         mainTableDb = if($storeFromTableAlias->isNotEmpty(),|if($databasePath == $storeFromTableAlias->toOne()->elementToPath(),| $database ,| $storeFromTableAlias->toOne()), | $database)->elementToPath(),
+         database = $databasePath,
+         schema = $schemaName),
+      distinct = false,
+      primaryKey = $primaryKey->map(c | ^TableAliasColumn(columnName=$c.name->createSQLSafeName(), alias=$tableAlias, column=$c))->map(c|$c->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::relational::transformRelationalOperationElement($database)),
+      propertyMappings = $propertyMappings
+   );
+}
+
+function meta::relational::transform::autogen::associationsAndJoinsToAssociationMappings(store:Database[1], mapping:meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1], associationJoinPairs:Pair<meta::protocols::pure::vX_X_X::metamodel::domain::Association, Join>[*]):meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RelationalAssociationMapping[*]
+{
+   $associationJoinPairs->map(p |
+     let association = $p.first;
+     let join = $p.second;
+     let associationName = $association.package->toOne() + '::' + $association.name;
+     ^meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RelationalAssociationMapping
+       (
+         id = $associationName->replace('::', '_'),
+         _type = 'relational',
+         stores = $store->elementToPath(),
+         association = $associationName,
+         propertyMappings = generateRelationalPropertyMappings($association, $mapping, $join, $store)
+       );
+   );
+}
+
+function <<access.private>> meta::relational::transform::autogen::generateRelationalPropertyMappings(association:meta::protocols::pure::vX_X_X::metamodel::domain::Association[1], mapping:meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1], join:Join[1], store:Database[1]):meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RelationalPropertyMapping[*]
+{
+   let p1 = $association.properties->at(0);
+   let p2 = $association.properties->at(1);
+   let p1ClassPath = $p2.type;
+   let p2ClassPath = $p1.type;
+   let p1ClassName = getClassNameFromClassPath($p1ClassPath);
+   let p2ClassName = getClassNameFromClassPath($p2ClassPath);
+   let associationAlias = $join.aliases->at(0);
+   let p1TableAlias = if($associationAlias.first.name == $p1ClassName, |$associationAlias.first, |$associationAlias.second);
+   let p2TableAlias = if($associationAlias.first.name == $p2ClassName, |$associationAlias.first, |$associationAlias.second);
+   let p1ClassID = findMatchingClassID($mapping, $p1ClassPath);
+   let p2ClassID = findMatchingClassID($mapping, $p2ClassPath);
+   [generateRelationalPropertyMapping($p1ClassPath, $p1ClassID, $p2ClassID, $p1TableAlias, $p1.name, $join, $store, true), generateRelationalPropertyMapping($p2ClassPath, $p1ClassID, $p2ClassID, $p2TableAlias, $p2.name, $join, $store, false)];
+}
+
+function <<access.private>> meta::relational::transform::autogen::findMatchingClassID(mapping:meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1], classPath:String[1]):String[1]
+{
+  $mapping.classMappings->filter(cm | $cm->cast(@meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RootRelationalClassMapping).class == $classPath).id->toOne();
+}
+
+function <<access.private>> meta::relational::transform::autogen::getClassNameFromClassPath(classPath:String[1]):String[1]
+{
+   let lastColonIndex = lastIndexOf($classPath,':');
+   $classPath->substring($lastColonIndex + 1, $classPath->length())->toUpperFirstCharacter()->toOne();
+}
+
+function <<access.private>> meta::relational::transform::autogen::generateRelationalPropertyMapping(classPath:String[1], p1ClassID:String[1], p2ClassID:String[1], propertyTableAlias:TableAlias[1], propertyName:String[1], join:Join[1], store:Database[1], isFirstProperty:Boolean[1]):meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RelationalPropertyMapping[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RelationalPropertyMapping
+     (
+       _type = 'relationalPropertyMapping',
+       property = ^meta::protocols::pure::vX_X_X::metamodel::domain::PropertyPtr(class=$classPath, property=$propertyName),
+       source = if($isFirstProperty, |$p1ClassID, |$p2ClassID),
+       target = if($isFirstProperty, |$p2ClassID, |$p1ClassID),
+       relationalOperation = ^RelationalOperationElementWithJoin(
+         joinTreeNode = ^JoinTreeNode(joinName = $join.name,
+                                      database = $store,
+                                      alias = $propertyTableAlias,
+                                      join = $join)
+       )->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::relational::transformRelationalOperationElement($store)
+     )
+}
+
+function meta::relational::transform::autogen::buildPureModelFromClassesAssociationsAndMapping(mapping: meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1], classes: meta::protocols::pure::vX_X_X::metamodel::domain::Class[*], associations: meta::protocols::pure::vX_X_X::metamodel::domain::Association[*]):meta::protocols::pure::vX_X_X::metamodel::PureModelContextData[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::PureModelContextData
+   (
+     _type = 'data',
+     serializer = ^meta::protocols::Protocol(name='pure', version='vX_X_X'),
+     elements = $mapping
+                   ->concatenate($classes)
+                   ->concatenate($associations)
+   );
+}
+
+function meta::relational::transform::autogen::classesAssociationsAndMappingFromDatabase(database:Database[1], targetPackage:String[1]):String[1]
+{
+  let allDatabases = meta::relational::transform::autogen::getAllDatabases($database, []);
+  let elements = $allDatabases->map(db | meta::relational::transform::autogen::generateModelsFromDatabase($db, $targetPackage, $targetPackage, $targetPackage));
+  meta::relational::transform::autogen::buildPMCD($elements);
+}
+
+function meta::relational::transform::autogen::getAllDatabases(database : Database[1], visited: Database[*]): Database[*]
+{
+   if($database->in($visited), | [], | $database->concatenate($database.includes->map(db|$db->cast(@Database)->meta::relational::transform::autogen::getAllDatabases($visited->concatenate($database)))));
+}
+
+function meta::relational::transform::autogen::generateModelsFromDatabase(database:Database[1], classesPackage:String[1], associationsPackage:String[1], mappingPackage:String[1]):meta::protocols::pure::vX_X_X::metamodel::PackageableElement[*]
+{
+   let allClasses = $database.schemas->map(schema | $schema->meta::relational::transform::autogen::schemaToModel($classesPackage));
+   let allAssociationJoinPairs = meta::relational::transform::autogen::databaseToAssociationJoinPair($database, $associationsPackage);
+   let allAssociations = $allAssociationJoinPairs.first;
+   let mappingWithClassMappings = meta::relational::transform::autogen::databaseToMappingWithClassMappings($database, $mappingPackage, $classesPackage);
+   let associationMappings = meta::relational::transform::autogen::associationsAndJoinsToAssociationMappings($database, $mappingWithClassMappings, $allAssociationJoinPairs);
+   let mapping = ^$mappingWithClassMappings(associationMappings = $associationMappings);
+   $mapping->concatenate($allClasses)->concatenate($allAssociations);
+}
+
+function meta::relational::transform::autogen::buildPMCD(elements: meta::protocols::pure::vX_X_X::metamodel::PackageableElement[*]):String[1]
+{
+   let pmcd = ^meta::protocols::pure::vX_X_X::metamodel::PureModelContextData
+   (
+     _type = 'data',
+     serializer = ^meta::protocols::Protocol(name='pure', version='vX_X_X'),
+     elements = $elements
+   );
+   $pmcd->meta::alloy::metadataServer::alloyToJSON();
+}

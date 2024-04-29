@@ -1,0 +1,283 @@
+import meta::pure::model::unit::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+import meta::legend::service::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::functions::*;
+import meta::external::function::activator::hostedService::validator::*;
+import meta::legend::service::metamodel::*;
+import meta::pure::graphFetch::*;
+import meta::external::function::activator::hostedService::generation::*;
+import meta::pure::extension::*;
+import meta::external::function::activator::hostedService::*;
+import meta::pure::metamodel::dataSpace::*;
+
+
+function meta::external::function::activator::hostedService::generation::printPlan(h:HostedService[1]): Any[*]
+{
+  let extensions = meta::external::format::shared::externalFormatExtension()->concatenate(meta::relational::extension::relationalExtensions());
+
+  meta::pure::executionPlan::executionPlan($h->recomposeServiceFunction().function->cast(@FunctionDefinition<Any>), $extensions)->meta::pure::executionPlan::toString::planToString($extensions)->println();
+}
+
+function meta::external::function::activator::hostedService::validator::validateService(s:HostedService[1]):Boolean[1]
+{
+  $s->validateFunctionParamsInPattern();
+  $s.function->validateFunction();
+  $s->validateReturnType();
+}
+
+function meta::external::function::activator::hostedService::validator::validateReturnType(s:HostedService[1]):Boolean[1]
+{
+  if($s.function->functionReturnType().rawType->in(allowedReturnTypes()),
+    | true;,
+    | assert($s.binding->isNotEmpty() || $s.contentType->isNotEmpty(), 'Service must return a serializable:  '+ allowedReturnTypes().name->joinStrings('[',',',']')+ ', or must use binding/contentType to externalize')
+  );
+}
+
+function meta::external::function::activator::hostedService::validator::validateFunctionParamsInPattern(h:HostedService[1]): Boolean[1]
+{
+  let pattern = $h.pattern;
+  assert($pattern->startsWith('/'),'Pattern must start with backslash');
+  let params  = $h.function->functionType().parameters->evaluateAndDeactivate();
+  let oneParams  = $params->filter(p|$p->deactivate().multiplicity == PureOne);
+  let nonOneParams  = $params->filter(p|!$p->deactivate().multiplicity == PureOne);
+  //all [1] params in pattern
+  $oneParams->map(p| assert($pattern->contains('{'+$p.name+'}'), 'Parameter '+$p.name+' with multiplicty [1] must be in service pattern.'));
+  //all non [1] params not in pattern
+  $nonOneParams->map(p| assert($pattern->contains('{'+$p.name+'}'), 'Parameter '+$p.name+' with multiplicty not [1] cannot be in service pattern.'));
+  //Service has a base pattern
+  let firstParamIndex = $pattern->indexOf('{');
+
+  assert(if($firstParamIndex != -1,| $firstParamIndex != 1,| true), 'Service must have a base pattern. Cannot start with a parameter');
+  //no param in pattern that doesnt exist in function
+  if($firstParamIndex!=-1,
+  |
+    let withoutBase = $pattern->substring($firstParamIndex, $pattern->length());
+    let leftOver = $oneParams.name->fold({b, a| $a->replace('{'+$b+'}','')}, $withoutBase->replace('/',''));
+    assert($leftOver->length()==0, 'Found unexpected params in pattern: '+$leftOver->replace('{','')->replace('}',' ')->trim()->replace(' ',','));,
+  | true);
+  true;
+}
+
+function meta::external::function::activator::hostedService::validator::validateFunction(func:Function<Any>[1]): Boolean[1]
+{
+  $func->match([
+    lf: LambdaFunction<Any>[1]|
+                                $lf.expressionSequence->map(es| $es->evaluateAndDeactivate()->validateExpression()); ,
+
+    cd: ConcreteFunctionDefinition<Any>[1]| $cd.expressionSequence->map(es| $es->evaluateAndDeactivate()->validateExpression()); ,
+    a:Any[*]| println($a); fail('Unexpected case'); true;
+  ]);
+  true;
+}
+
+function meta::external::function::activator::hostedService::validator::validateExpression(expression:ValueSpecification[1]): Boolean[1]
+{
+  $expression->match([
+    sfe:SimpleFunctionExpression[1]|
+                                    if($sfe.func == letFunction_String_1__T_m__T_m_ && $sfe.parametersValues->at(1)->instanceOf(SimpleFunctionExpression),
+                                      |assert($sfe.parametersValues->at(1)->cast(@SimpleFunctionExpression).func->in(allowedPlatformFunctions()),
+                                              'Usage of platform function not allowed during service registration, Function: '+$sfe.parametersValues->at(1)->cast(@SimpleFunctionExpression).functionName->toOne()); ,
+                                      | true;
+                                      );,
+    iv: InstanceValue[1]| true,
+    a:  Any[*]| println($a); fail('Unexpected Expression');true;
+  ]);
+  true;
+}
+
+function meta::external::function::activator::hostedService::generation::needsSerialization(ty:GenericType[1]):Boolean[1]
+{
+  !$ty.rawType->in(allowedReturnTypes());
+}
+
+function meta::external::function::activator::hostedService::generation::recomposeServiceFunction(service:HostedService[1]):HostedService[1]
+{
+  let result = if($service.function->functionReturnType()->needsSerialization(),
+                  |let tree = getTree($service.function); //println($service.function->functionReturnType().rawType);
+                    assert($service.binding->isNotEmpty() || $service.contentType->isNotEmpty() , 'Service needs serialization but no binding/contentType provides');
+                    let binding = if($service.binding->isNotEmpty(),
+                                    |$service.binding,
+                                    |buildBinding($service.contentType->toOne(),$service.function->functionReturnType().rawType->toOne()->cast(@Class<Any>)));
+                    let externalizeExpression = ^SimpleFunctionExpression(
+                                              importGroup = system::imports::coreImport,
+                                              func = externalize_T_MANY__Binding_1__RootGraphFetchTree_1__String_1_,
+                                              functionName = 'externalize',
+                                              genericType = ^GenericType(rawType = String),
+                                              multiplicity = PureOne,
+                                              parametersValues = $service.function->cast(@ConcreteFunctionDefinition<Any>).expressionSequence
+                                                                  ->concatenate(^InstanceValue(multiplicity = PureOne,genericType=^GenericType(rawType=Binding), values=$binding->toOne()))
+                                                                  ->concatenate(^InstanceValue(multiplicity = PureOne,genericType=^GenericType(rawType=RootGraphFetchTree), values=$tree->toOne()))
+                                            )->evaluateAndDeactivate();
+                    let serviceFunc = $service.function->cast(@ConcreteFunctionDefinition<Any>);
+                    let newServiceFunc = ^$serviceFunc(expressionSequence =$externalizeExpression->evaluateAndDeactivate());
+                    let newService = ^$service(function = $newServiceFunc);,
+                |$service;
+                );
+  $result;
+}
+
+function meta::external::function::activator::hostedService::generation::buildBinding(contentType:String[1], type:Class<Any>[1]):Binding[1]
+{
+  ^Binding(name='serviceBinding', contentType = $contentType ,modelUnit = meta::pure::model::unit::newModelUnit()->include($type));
+}
+
+function meta::external::function::activator::hostedService::generation::getTree(func:PackageableFunction<Any>[1]):GraphFetchTree[1]
+{
+  let functionReturn = $func->functionReturnType();
+  $func->match([
+    cd: ConcreteFunctionDefinition<Any>[1]|
+          let expr = $cd.expressionSequence->evaluateAndDeactivate()->filter(es| $es->instanceOf(SimpleFunctionExpression) && $es->cast(@SimpleFunctionExpression).genericType.rawType == $functionReturn.rawType)->last()->cast(@SimpleFunctionExpression);
+          assertEquals(1, $expr->size(), 'unexpected size');
+          assertEquals('from', $expr->cast(@SimpleFunctionExpression).functionName, 'unexpected function');
+          $expr->toOne()->getTree();,
+    any:Any[*]| fail('Unexpected'); ^GraphFetchTree();
+
+  ]);
+}
+
+function meta::external::function::activator::hostedService::generation::getTree(simpleFunc: SimpleFunctionExpression[1]): GraphFetchTree[1]
+{
+  $simpleFunc->evaluateAndDeactivate().parametersValues->at(0)->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().parametersValues
+          ->filter(pv|$pv->instanceOf(InstanceValue) && $pv.genericType.rawType->toOne()->subTypeOf(GraphFetchTree))
+          ->cast(@InstanceValue).values->last()
+          ->cast(@GraphFetchTree)->toOne()
+}
+
+function meta::external::function::activator::hostedService::generation::isMultiEenvironmentService(h:HostedService[1]):Boolean[1]
+{
+  $h.function->meta::external::function::activator::hostedService::generation::getExecutionParam()->size() > 0;
+}
+
+function meta::external::function::activator::hostedService::generation::getEnvironmentkey(h:HostedService[1] ):String[1]
+{
+    let func = $h.function;
+    let valueSpecification = $func->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().parametersValues
+                            ->filter(x| $x.genericType.rawType->toOne()->in([ExecutionEnvironmentInstance, SingleExecutionParameters]));
+                            //today we'll get a function cos we're in the pure IDE. from syudio we should be getting a packageable element so the need for the inner match will be eliminated
+  $valueSpecification->match([
+    s:SimpleFunctionExpression[1]|  $s->evaluateAndDeactivate().parametersValues->filter(x| $x.genericType.rawType->toOne()==String)->map(pv|
+                                          $pv->match([
+                                            v:VariableExpression[1]| $v.name;
+                                          ]);
+                                        )->toOne();,
+    a:Any[1]| fail('unexpected type'); 'any';
+  ]) ;
+
+}
+
+function meta::external::function::activator::hostedService::generation::getExecutionParam(func: PackageableFunction<Any>[1]):PackageableElement[*]
+{
+  let valueSpecification = $func->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().parametersValues
+                            ->filter(x| $x.genericType.rawType->toOne()->in([ExecutionEnvironmentInstance, SingleExecutionParameters, DataSpace]));
+                            //today we'll get a function cos we're in the pure IDE. from syudio we should be getting a packageable element so the need for the inner match will be eliminated
+  if($valueSpecification->isNotEmpty(),
+    |$valueSpecification->match([
+    s:SimpleFunctionExpression[1]|if($s.func == get_ExecutionEnvironmentInstance_1__String_1__SingleExecutionParameters_1_ ,
+                                        |$s->evaluateAndDeactivate().parametersValues->filter(x| $x.genericType.rawType->toOne()==ExecutionEnvironmentInstance)->map(pv|
+                                          $pv->match([
+                                            s:SimpleFunctionExpression[1]| $s->reactivate()->toOne();,
+                                             e: ExecutionEnvironmentInstance[1]| $e
+                                          ]));,
+                                        |$s->reactivate()->toOne()
+                                    );,
+    e: ExecutionEnvironmentInstance[1]| $e,
+    d: DataSpace[1] | $d,
+    a:Any[1]| fail('unexpected type'); $a;
+    ]),
+    |[])->cast(@PackageableElement);
+}
+
+function meta::external::function::activator::hostedService::generation::rebuildServiceUsingSingleExecutionParams(h:HostedService[1] ):Pair<String,HostedService>[*]
+{
+    let execParam = getExecutionParam($h.function);
+    $execParam->match([
+                       e : ExecutionEnvironmentInstance[*] | assert($e->size()== 1, 'Found too many/not enough execution environment instances. Size='+ $e->size()->toString());
+                                                             $e.executionParameters->map(
+                                                                p | assert($p->instanceOf(SingleExecutionParameters),'Only handles singleExecutionParams');
+                                                                    let newFunc = rebuildFromExpression($h.function, $p->cast(@SingleExecutionParameters).mapping, $p->cast(@SingleExecutionParameters).runtime);
+                                                                    let newHostedService = ^$h(function=$newFunc);
+                                                                    pair($p->cast(@SingleExecutionParameters).key, $newHostedService);
+                                                             );,
+                       d : DataSpace[*]                    | assert($d->size() == 1, 'Found too many/ not enough dataSpaces, Size =' + $d->size()->toString());
+                                                              $d.executionContexts->map(
+                                                                ec | let newFunc = rebuildFromExpression($h.function, $ec.mapping, $ec.defaultRuntime.runtimeValue);
+                                                                let newHostedService = ^$h(function = $newFunc);
+                                                                pair($ec.name, $newHostedService);
+                                                              );,
+                       a : Any[1]                          | fail('unexpected type'); [];
+    ]);
+}
+
+function meta::external::function::activator::hostedService::generation::rebuildFromExpression(func: PackageableFunction<Any>[1], mapping: Mapping[1], runtime: Runtime[1]): PackageableFunction<Any>[1]
+{
+  let fromExpression = ^SimpleFunctionExpression(
+                              importGroup = system::imports::coreImport,
+                              functionName = 'from',
+                              func = meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_,
+                              genericType = $func->functionReturnType(),
+                              multiplicity = PureOne,
+                              parametersValues = $func->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().parametersValues->at(0)
+                                                  ->concatenate(^InstanceValue(genericType =^GenericType(rawType = Mapping), multiplicity = PureOne, values = $mapping))
+                                                  ->concatenate(^InstanceValue(genericType =^GenericType(rawType = Runtime), multiplicity = PureOne, values = $runtime))
+                             )->evaluateAndDeactivate();
+    let serviceFunc = $func->cast(@ConcreteFunctionDefinition<Any>);
+    let newServiceFunc = ^$serviceFunc(expressionSequence =$fromExpression->evaluateAndDeactivate());
+}
+
+function meta::external::function::activator::hostedService::generation::possiblyFlattenSingleExecutionParam(service:HostedService[1]):HostedService[1]
+{
+  let serviceFunction = $service.function->cast(@ConcreteFunctionDefinition<Any>);
+  let newExpressions = $service.function->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate()
+                      ->map(es|
+                              $es->match([
+                                s:SimpleFunctionExpression[1]| if($s.func == from_T_m__SingleExecutionParameters_1__T_m_,
+                                                                |let param = $s.parametersValues->last()->toOne()->reactivate()->toOne();
+                                                                  assert($param->instanceOf(SingleExecutionParameters),'Unexpected param');
+                                                                  let singleExecutionParam = $param->cast(@SingleExecutionParameters);
+                                                                  ^SimpleFunctionExpression(
+                                                                          importGroup = system::imports::coreImport,
+                                                                          func = meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_,
+                                                                          functionName = 'from',
+                                                                          genericType = $serviceFunction->functionReturnType(),
+                                                                          multiplicity = $s.multiplicity,
+                                                                          parametersValues = $s.parametersValues->at(0)
+                                                                                            ->concatenate(^InstanceValue(genericType =^GenericType(rawType = Mapping), multiplicity = PureOne, values = $singleExecutionParam.mapping))
+                                                                                            ->concatenate(^InstanceValue(genericType =^GenericType(rawType = Runtime), multiplicity = PureOne, values = $singleExecutionParam.runtime))
+                                                                  )->evaluateAndDeactivate();,
+                                                                |$s),
+                                a:Any[*]|$a
+                              ])->cast(@ValueSpecification)
+                            );
+  let newFunc = ^$serviceFunction(expressionSequence = $newExpressions->toOneMany()->evaluateAndDeactivate());
+  ^$service(function=$newFunc);
+}
+
+function meta::external::function::activator::hostedService::generation::getExecutionParamByKey(execEnv: ExecutionEnvironmentInstance[1], key:String[1]):SingleExecutionParameters[1]
+{
+  assert($execEnv.executionParameters->at(0)->instanceOf(SingleExecutionParameters),| 'Please provide the subkey using function ->get(masterKey,subKey)');
+  let singleExecParam = $execEnv.executionParameters->cast(@SingleExecutionParameters)->filter(x| $x.key == $key->toOne());
+  assert($singleExecParam->isNotEmpty(),| 'The key value provided is not present in the execution environment');
+  $singleExecParam->at(0);
+}
+
+function meta::external::function::activator::hostedService::validator::allowedPlatformFunctions():Function<Any>[*]
+{
+
+  [
+    today__StrictDate_1_,
+    new_Class_1__String_1__KeyExpression_MANY__T_1_,
+    now__DateTime_1_
+  ]
+}
+
+function meta::external::function::activator::hostedService::validator::allowedReturnTypes():Type[*]
+{
+
+  [
+    TabularDataSet,
+    String,
+    Byte
+  ]
+}

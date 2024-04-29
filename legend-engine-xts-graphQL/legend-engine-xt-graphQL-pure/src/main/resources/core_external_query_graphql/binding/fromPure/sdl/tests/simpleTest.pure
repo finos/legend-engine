@@ -1,0 +1,758 @@
+import meta::external::query::graphQL::binding::*;
+import meta::external::query::graphQL::binding::fromPure::sdl::tests::*;
+import meta::external::query::graphQL::binding::fromPure::sdl::tests::model::*;
+
+Enum meta::external::query::graphQL::binding::fromPure::sdl::tests::model::IncType
+{
+  LLC, CORP
+}
+
+Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Firm
+{
+  legalName : String[1];
+  employees : Person[*];
+  incType : meta::external::query::graphQL::binding::fromPure::sdl::tests::model::IncType[1];
+}
+
+Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Person
+{
+  firstName : String[0..1];
+  lastName : String[1];
+  age : Integer[1];
+}
+
+Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Employee extends meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Person
+{
+  title: String[1];
+  startDate: StrictDate[1];
+}
+
+Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::GSEmployee extends meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Employee
+{
+  division: String[1];
+}
+
+Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Team
+{
+  name: String[1];
+  members: Employee[1..*];
+}
+
+Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::ClassWithPrimitiveTypes
+{
+  string: String[1];
+  integer: Integer[1];
+  float: Float[1];
+  boolean: Boolean[1];
+  date: Date[1];
+  datetime: DateTime[1];
+  decimal: Decimal[1];
+  strictDate: StrictDate[1];
+}
+
+Class <<GraphQL.Mutation>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::MutationPrimitive
+{
+  // Dummy implementation
+  upsertClass(class:ClassWithPrimitiveTypes[1]){ClassWithPrimitiveTypes.all()->first()}:ClassWithPrimitiveTypes[0..1];
+}
+
+Class <<temporal.bitemporal>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::BitemporalClass
+{
+  string: String[1];
+}
+
+Class <<GraphQL.Query>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Query
+{
+  firmByName(n:String[1]){Firm.all()->filter(z|$z.legalName == $n)->first()}:Firm[0..1];
+}
+
+Class <<GraphQL.Mutation>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Mutation
+{
+  // Dummy implementation
+  upsertFirm(firm:Firm[1]){Firm.all()->first()}:Firm[0..1];
+}
+
+Class <<GraphQL.Query>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::QueryHierarchy
+{
+  teamByName(n:String[1]){Team.all()->filter(z|$z.name == $n)->first()}:Team[0..1];
+  employeeByFirstName(n:String[1]){Employee.all()->filter(z|$z.firstName == $n)->first()}:Employee[0..1];
+}
+
+Class <<GraphQL.Mutation>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::MutationHierarchy
+{
+  // Dummy implementation
+  upsertTeam(team:Team[1]){Team.all()->first()}:Team[0..1];
+  upsertEmployee(employee:Employee[1]){Employee.all()->first()}:Employee[0..1];
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testQuery():Boolean[1]
+{
+  let res = typesToGraphQLString([Query, Firm, Person, IncType]->cast(@PackageableElement));
+
+  assertEquals(
+    'type Firm {\n' +
+    '  legalName: String!\n' +
+    '  employees: [Person!]!\n' +
+    '  incType: IncType!\n' +
+    '}\n' +
+    '\n' +
+    'input Firm_bool_exp {\n' +
+    '  legalName: String_comparison_exp\n' +
+    '  employees: Person_exists_exp\n' +
+    '  incType: IncType_comparison_exp\n' +
+    '  _and: [Firm_bool_exp!]\n' +
+    '  _or: [Firm_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input Firm_exists_exp {\n' +
+    '  _exists: Firm_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'enum IncType {\n' +
+    '  LLC\n' +
+    '  CORP\n' +
+    '}\n' +
+    '\n' +
+    'input IncType_comparison_exp {\n' +
+    '  _eq: IncType!\n' +
+    '  _in: [IncType!]\n' +
+    '}\n' +
+    '\n' +
+    'type Person {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input Person_bool_exp {\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp\n' +
+    '  age: Int_comparison_exp\n' +
+    '  _and: [Person_bool_exp!]\n' +
+    '  _or: [Person_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input Person_exists_exp {\n' +
+    '  _exists: Person_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'type Query {\n' +
+    '  firmByName(n: String!, where: Firm_bool_exp): Firm\n' +
+    '}\n' +
+    '\n' +
+    'schema {\n' +
+    '  query : Query\n' +
+    '}', $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testExcludeDynamicFilter():Boolean[1]
+{
+  let res = typesToGraphQLStringWithoutDynamicFilter([Query, Firm, Person, IncType]->cast(@PackageableElement));
+
+  assertEquals(
+    'type Firm {\n' +
+    '  legalName: String!\n' +
+    '  employees: [Person!]!\n' +
+    '  incType: IncType!\n' +
+    '}\n' +
+    '\n' +
+    'enum IncType {\n' +
+    '  LLC\n' +
+    '  CORP\n' +
+    '}\n' +
+    '\n' +
+    'type Person {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'type Query {\n' +
+    '  firmByName(n: String!): Firm\n' +
+    '}\n' +
+    '\n' +
+    'schema {\n' +
+    '  query : Query\n' +
+    '}', $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testQueryAndMutation():Boolean[1]
+{
+  let res = typesToGraphQLString([Query, Mutation, Firm, Person, IncType]->cast(@PackageableElement));
+
+  assertEquals(
+    'type Firm {\n' +
+    '  legalName: String!\n' +
+    '  employees: [Person!]!\n' +
+    '  incType: IncType!\n' +
+    '}\n' +
+    '\n' +
+    'input FirmInput {\n' +
+    '  legalName: String!\n' +
+    '  employees: [PersonInput!]!\n' +
+    '  incType: IncType!\n' +
+    '}\n' +
+    '\n' +
+    'input Firm_bool_exp {\n' +
+    '  legalName: String_comparison_exp\n' +
+    '  employees: Person_exists_exp\n' +
+    '  incType: IncType_comparison_exp\n' +
+    '  _and: [Firm_bool_exp!]\n' +
+    '  _or: [Firm_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input Firm_exists_exp {\n' +
+    '  _exists: Firm_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'enum IncType {\n' +
+    '  LLC\n' +
+    '  CORP\n' +
+    '}\n' +
+    '\n' +
+    'input IncType_comparison_exp {\n' +
+    '  _eq: IncType!\n' +
+    '  _in: [IncType!]\n' +
+    '}\n' +
+    '\n' +
+    'type Mutation {\n' +
+    '  upsertFirm(firm: FirmInput!): Firm\n' +
+    '}\n' +
+    '\n' +
+    'type Person {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input PersonInput {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input Person_bool_exp {\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp\n' +
+    '  age: Int_comparison_exp\n' +
+    '  _and: [Person_bool_exp!]\n' +
+    '  _or: [Person_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input Person_exists_exp {\n' +
+    '  _exists: Person_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'type Query {\n' +
+    '  firmByName(n: String!, where: Firm_bool_exp): Firm\n' +
+    '}\n' +
+    '\n' +
+    'schema {\n' +
+    '  query : Query\n' +
+    '  mutation : Mutation\n' +
+    '}',
+    $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testNonBuiltInPrimitiveTypes():Boolean[1]
+{
+  let res = typesToGraphQLString([ClassWithPrimitiveTypes]);
+
+  assertEquals(
+    'scalar BigDecimal\n' +
+    '\n' +
+    'type ClassWithPrimitiveTypes {\n' +
+    '  string: String!\n' +
+    '  integer: Int!\n' +
+    '  float: Float!\n' +
+    '  boolean: Boolean!\n' +
+    '  date: Date!\n' +
+    '  datetime: DateTime!\n' +
+    '  decimal: BigDecimal!\n' +
+    '  strictDate: StrictDate!\n' +
+    '}\n' +
+    '\n' +
+    'input ClassWithPrimitiveTypes_bool_exp {\n' +
+    '  string: String_comparison_exp\n' +
+    '  integer: Int_comparison_exp\n' +
+    '  float: Float_comparison_exp\n' +
+    '  boolean: Boolean_comparison_exp\n' +
+    '  _and: [ClassWithPrimitiveTypes_bool_exp!]\n' +
+    '  _or: [ClassWithPrimitiveTypes_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input ClassWithPrimitiveTypes_exists_exp {\n' +
+    '  _exists: ClassWithPrimitiveTypes_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'scalar Date\n' +
+    '\n' +
+    'scalar DateTime\n' +
+    '\n' +
+    'scalar StrictDate', $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testNonBuiltInPrimitiveTypesWithLongForInteger():Boolean[1]
+{
+  let res = typesToGraphQLString([ClassWithPrimitiveTypes], 'Long');
+
+  assertEquals(
+    'scalar BigDecimal\n' +
+    '\n' +
+    'type ClassWithPrimitiveTypes {\n' +
+    '  string: String!\n' +
+    '  integer: Long!\n' +
+    '  float: Float!\n' +
+    '  boolean: Boolean!\n' +
+    '  date: Date!\n' +
+    '  datetime: DateTime!\n' +
+    '  decimal: BigDecimal!\n' +
+    '  strictDate: StrictDate!\n' +
+    '}\n' +
+    '\n' +
+    'input ClassWithPrimitiveTypes_bool_exp {\n' +
+    '  string: String_comparison_exp\n' +
+    '  float: Float_comparison_exp\n' +
+    '  boolean: Boolean_comparison_exp\n' +
+    '  _and: [ClassWithPrimitiveTypes_bool_exp!]\n' +
+    '  _or: [ClassWithPrimitiveTypes_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input ClassWithPrimitiveTypes_exists_exp {\n' +
+    '  _exists: ClassWithPrimitiveTypes_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'scalar Date\n' +
+    '\n' +
+    'scalar DateTime\n' +
+    '\n' +
+    'scalar Long\n' +
+    '\n' +
+    'scalar StrictDate', $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testNonBuiltInPrimitiveTypesAreNotDuplicated():Boolean[1]
+{
+  let res = typesToGraphQLString([ClassWithPrimitiveTypes, MutationPrimitive]);
+
+  assertEquals(
+    'scalar BigDecimal\n' +
+    '\n' +
+    'type ClassWithPrimitiveTypes {\n' +
+    '  string: String!\n' +
+    '  integer: Int!\n' +
+    '  float: Float!\n' +
+    '  boolean: Boolean!\n' +
+    '  date: Date!\n' +
+    '  datetime: DateTime!\n' +
+    '  decimal: BigDecimal!\n' +
+    '  strictDate: StrictDate!\n' +
+    '}\n' +
+    '\n' +
+    'input ClassWithPrimitiveTypesInput {\n' +
+    '  string: String!\n' +
+    '  integer: Int!\n' +
+    '  float: Float!\n' +
+    '  boolean: Boolean!\n' +
+    '  date: Date!\n' +
+    '  datetime: DateTime!\n' +
+    '  decimal: BigDecimal!\n' +
+    '  strictDate: StrictDate!\n' +
+    '}\n' +
+    '\n' +
+    'input ClassWithPrimitiveTypes_bool_exp {\n' +
+    '  string: String_comparison_exp\n' +
+    '  integer: Int_comparison_exp\n' +
+    '  float: Float_comparison_exp\n' +
+    '  boolean: Boolean_comparison_exp\n' +
+    '  _and: [ClassWithPrimitiveTypes_bool_exp!]\n' +
+    '  _or: [ClassWithPrimitiveTypes_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input ClassWithPrimitiveTypes_exists_exp {\n' +
+    '  _exists: ClassWithPrimitiveTypes_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'scalar Date\n' +
+    '\n' +
+    'scalar DateTime\n' +
+    '\n' +
+    'type MutationPrimitive {\n' +
+    '  upsertClass(class: ClassWithPrimitiveTypesInput!): ClassWithPrimitiveTypes\n' +
+    '}\n' +
+    '\n' +
+    'scalar StrictDate\n' +
+    '\n' +
+    'schema {\n' +
+    '  mutation : MutationPrimitive\n' +
+    '}',
+    $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testTemporalClass():Boolean[1]
+{
+  let res = typesToGraphQLString([BitemporalClass]);
+
+  assertEquals(
+    'type BitemporalClass @bitemporal {\n' +
+    '  string: String!\n' +
+    '}\n' +
+    '\n' +
+    'input BitemporalClass_bool_exp {\n' +
+    '  string: String_comparison_exp\n' +
+    '  _and: [BitemporalClass_bool_exp!]\n' +
+    '  _or: [BitemporalClass_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input BitemporalClass_exists_exp {\n' +
+    '  _exists: BitemporalClass_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'directive @bitemporal on OBJECT | INPUT_OBJECT',
+    $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testClassWithInheritance():Boolean[1]
+{
+  let res = typesToGraphQLString([Employee, Person]);
+
+  assertEquals(
+    'type Employee implements PersonInterface @extends(class: "Person") {\n' +
+    '  title: String!\n' +
+    '  startDate: StrictDate!\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input Employee_bool_exp {\n' +
+    '  title: String_comparison_exp\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp\n' +
+    '  age: Int_comparison_exp\n' +
+    '  _and: [Employee_bool_exp!]\n' +
+    '  _or: [Employee_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input Employee_exists_exp {\n' +
+    '  _exists: Employee_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'type Person implements PersonInterface {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'interface PersonInterface {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input Person_bool_exp {\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp\n' +
+    '  age: Int_comparison_exp\n' +
+    '  _and: [Person_bool_exp!]\n' +
+    '  _or: [Person_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input Person_exists_exp {\n' +
+    '  _exists: Person_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'scalar StrictDate\n' +
+    '\n' +
+    'directive @extends(class: String!) on OBJECT | INPUT_OBJECT',
+    $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testClassWithDeepInheritance():Boolean[1]
+{
+  let res = typesToGraphQLString([GSEmployee, Employee, Person]);
+
+  assertEquals(
+    'type Employee implements EmployeeInterface @extends(class: "Person") {\n' +
+    '  title: String!\n' +
+    '  startDate: StrictDate!\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'interface EmployeeInterface implements PersonInterface {\n' +
+    '  title: String!\n' +
+    '  startDate: StrictDate!\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input Employee_bool_exp {\n' +
+    '  title: String_comparison_exp\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp\n' +
+    '  age: Int_comparison_exp\n' +
+    '  _and: [Employee_bool_exp!]\n' +
+    '  _or: [Employee_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input Employee_exists_exp {\n' +
+    '  _exists: Employee_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'type GSEmployee implements EmployeeInterface @extends(class: "Employee") {\n' +
+    '  division: String!\n' +
+    '  title: String!\n' +
+    '  startDate: StrictDate!\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input GSEmployee_bool_exp {\n' +
+    '  division: String_comparison_exp\n' +
+    '  title: String_comparison_exp\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp\n' +
+    '  age: Int_comparison_exp\n' +
+    '  _and: [GSEmployee_bool_exp!]\n' +
+    '  _or: [GSEmployee_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input GSEmployee_exists_exp {\n' +
+    '  _exists: GSEmployee_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'type Person implements PersonInterface {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'interface PersonInterface {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input Person_bool_exp {\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp\n' +
+    '  age: Int_comparison_exp\n' +
+    '  _and: [Person_bool_exp!]\n' +
+    '  _or: [Person_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input Person_exists_exp {\n' +
+    '  _exists: Person_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'scalar StrictDate\n' +
+    '\n' +
+    'directive @extends(class: String!) on OBJECT | INPUT_OBJECT',
+    $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testPropertyWithInheritance():Boolean[1]
+{
+  let res = typesToGraphQLString([Team, Employee, Person]);
+
+  assertEquals(
+    'type Employee implements PersonInterface @extends(class: "Person") {\n' +
+    '  title: String!\n' +
+    '  startDate: StrictDate!\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input Employee_bool_exp {\n' +
+    '  title: String_comparison_exp\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp\n' +
+    '  age: Int_comparison_exp\n' +
+    '  _and: [Employee_bool_exp!]\n' +
+    '  _or: [Employee_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input Employee_exists_exp {\n' +
+    '  _exists: Employee_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'type Person implements PersonInterface {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'interface PersonInterface {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input Person_bool_exp {\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp\n' +
+    '  age: Int_comparison_exp\n' +
+    '  _and: [Person_bool_exp!]\n' +
+    '  _or: [Person_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input Person_exists_exp {\n' +
+    '  _exists: Person_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'scalar StrictDate\n' +
+    '\n' +
+    'type Team {\n' +
+    '  name: String!\n' +
+    '  members: [Employee!]!\n' +
+    '}\n' +
+    '\n' +
+    'input Team_bool_exp {\n' +
+    '  name: String_comparison_exp\n' +
+    '  members: Employee_exists_exp\n' +
+    '  _and: [Team_bool_exp!]\n' +
+    '  _or: [Team_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input Team_exists_exp {\n' +
+    '  _exists: Team_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'directive @extends(class: String!) on OBJECT | INPUT_OBJECT',
+    $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testQueryAndMutationWithHierarchy():Boolean[1]
+{
+  let res = typesToGraphQLString([QueryHierarchy, MutationHierarchy, Team, Employee, Person]);
+
+  assertEquals(
+    'type Employee implements PersonInterface @extends(class: "Person") {\n' +
+    '  title: String!\n' +
+    '  startDate: StrictDate!\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input EmployeeInput @extends(class: "PersonInput") {\n' +
+    '  title: String!\n' +
+    '  startDate: StrictDate!\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input Employee_bool_exp {\n' +
+    '  title: String_comparison_exp\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp\n' +
+    '  age: Int_comparison_exp\n' +
+    '  _and: [Employee_bool_exp!]\n' +
+    '  _or: [Employee_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input Employee_exists_exp {\n' +
+    '  _exists: Employee_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'type MutationHierarchy {\n' +
+    '  upsertTeam(team: TeamInput!): Team\n' +
+    '  upsertEmployee(employee: EmployeeInput!): Employee\n' +
+    '}\n' +
+    '\n' +
+    'type Person implements PersonInterface {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input PersonInput {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'interface PersonInterface {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input Person_bool_exp {\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp\n' +
+    '  age: Int_comparison_exp\n' +
+    '  _and: [Person_bool_exp!]\n' +
+    '  _or: [Person_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input Person_exists_exp {\n' +
+    '  _exists: Person_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'type QueryHierarchy {\n' +
+    '  teamByName(n: String!, where: Team_bool_exp): Team\n' +
+    '  employeeByFirstName(n: String!, where: Employee_bool_exp): Employee\n' +
+    '}\n' +
+    '\n' +
+    'scalar StrictDate\n' +
+    '\n' +
+    'type Team {\n' +
+    '  name: String!\n' +
+    '  members: [Employee!]!\n' +
+    '}\n' +
+    '\n' +
+    'input TeamInput {\n' +
+    '  name: String!\n' +
+    '  members: [EmployeeInput!]!\n' +
+    '}\n' +
+    '\n' +
+    'input Team_bool_exp {\n' +
+    '  name: String_comparison_exp\n' +
+    '  members: Employee_exists_exp\n' +
+    '  _and: [Team_bool_exp!]\n' +
+    '  _or: [Team_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input Team_exists_exp {\n' +
+    '  _exists: Team_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'directive @extends(class: String!) on OBJECT | INPUT_OBJECT\n' +
+    '\n' +
+    'schema {\n' +
+    '  query : QueryHierarchy\n' +
+    '  mutation : MutationHierarchy\n' +
+    '}',
+    $res);
+}
+
+function meta::external::query::graphQL::binding::fromPure::sdl::tests::typesToGraphQLStringWithoutDynamicFilter(types: PackageableElement[*]): String[1]
+{
+  typesToGraphQLString($types, [], true);
+}
+
+function meta::external::query::graphQL::binding::fromPure::sdl::tests::typesToGraphQLString(types: PackageableElement[*]): String[1]
+{
+  typesToGraphQLString($types, [], false);
+}
+
+function meta::external::query::graphQL::binding::fromPure::sdl::tests::typesToGraphQLString(types: PackageableElement[*], integerScalarType: String[0..1]): String[1]
+{
+  typesToGraphQLString($types, $integerScalarType, false);
+}
+
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::tests::typesToGraphQLString(types: PackageableElement[*], integerScalarType: String[0..1], excludeDynamicFilter: Boolean[1]): String[1]
+{
+  let defaultConfig = meta::external::query::graphQL::binding::fromPure::sdl::defaultConfig();
+  let updatedConfig = ^$defaultConfig(integerScalarType = $integerScalarType, excludeDynamicFilter = $excludeDynamicFilter);
+  meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL($types, $updatedConfig)
+    ->map(x|$x->meta::external::query::graphQL::serialization::graphQLtoString())
+    ->joinStrings('\n\n');
+}

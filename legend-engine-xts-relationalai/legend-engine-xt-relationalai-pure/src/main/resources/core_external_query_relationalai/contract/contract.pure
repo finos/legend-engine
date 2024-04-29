@@ -1,0 +1,51 @@
+import meta::core::runtime::*;
+import meta::external::store::rel::mapping::*;
+import meta::pure::extension::*;
+import meta::pure::mapping::*;
+import meta::pure::store::*;
+
+function meta::external::store::rel::contract::contract(): StoreContract[1] {
+  ^StoreContract(
+    id = 'relationalai',
+
+    // Routing ------------------------------------------------------------------------------------------
+    supports = meta::external::store::rel::mapping::supports_FunctionExpression_1__Boolean_1_,
+    supportsNativeJoinAmongElements = true,
+    shouldStopRouting = [
+      meta::pure::tds::project_TableTDS_1__ColumnSpecification_MANY__TabularDataSet_1_,
+      // meta::pure::tds::tableToTDS_Table_1__TableTDS_1_,
+      // meta::pure::tds::viewToTDS_View_1__TableTDS_1_,
+      meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_
+      // meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_,
+      // meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_,
+      // meta::relational::functions::columnProjectionsFromRoot_Any_MANY__NamedRelation_1__String_MANY__Boolean_$0_1$__Integer_$0_1$__RelationData_1_
+    ],
+    // Treat every property as auto-mapped so that match functions will be routed.
+    isPropertyAutoMapped = {prop: AbstractProperty<Any>[1], set: InstanceSetImplementation[1] |
+      $set->match([
+        {r: RelSetImplementation[1] |
+          let propertyName = $prop.name->toOne();
+          let setHasPropertyMapping = $r->_propertyMappingsByPropertyName($propertyName)->isNotEmpty();
+          $setHasPropertyMapping && !$prop->isPrimitiveValueProperty(); // TODO: Check we need the second conjunct.
+        },
+        {a: Any[*] | false }
+      ])
+    },
+    // ------------------------------------------------------------------------------------------ Routing
+
+    // ExecutionPlan Generation -------------------------------------------------------------------------
+    supportsStreamFunction = meta::external::store::rel::mapping::supportsStream_FunctionExpression_1__Boolean_1_,
+    // ------------------------------------------------------------------------------------ ExecutionPlan
+
+    // Core ---------------------------------------------------------------------------------------------
+    supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(RelSetImplementation),
+    supportsStore = s:Store[1] | $s->instanceOf(meta::external::store::rel::metamodel::store::RAIDatabase),
+    resolveStoreFromSetImplementation = {s:InstanceSetImplementation[1] |
+      $s.stores->toOne();
+    },
+    // --------------------------------------------------------------------------------------------- Core
+
+    // DEPRECTAED AND TO BE REMOVED
+    executeStoreQuery = meta::external::store::rel::mapping::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_
+  )
+}

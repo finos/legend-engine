@@ -1,0 +1,67 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::*;
+import meta::external::store::elasticsearch::executionTest::testCase::*;
+import meta::external::store::elasticsearch::executionTest::testCase::tds::*;
+import meta::external::store::elasticsearch::executionTest::test::*;
+import meta::external::store::elasticsearch::executionTest::utils::*;
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test OR conditions filter on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::bool::testOr(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getString('Title') == 'Ghostbusters' ||  $x.getString('Director') == 'Jon Favreau'));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test AND conditions filter on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::bool::testAnd(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getString('Title') == 'Iron Man 2' &&  $x.getString('Director') == 'Jon Favreau'));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test AND conditions filter on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::bool::testNot(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | !($x.getString('Title') == 'Iron Man 2' &&  $x.getString('Director') == 'Jon Favreau')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test == [] filter on Elasticsearch Keyword property mapping'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::collection::testEqualEmptyFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('MPAA') == []));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test isNull filter on Elasticsearch Keyword property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::collection::testIsNullFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.isNull('MPAA')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test isNotNull filter on Elasticsearch Keyword property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::collection::testIsNotNullFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.isNotNull('MPAA')));
+}

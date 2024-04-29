@@ -1,0 +1,365 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::graphQL::transformation::queryToPure::*;
+import meta::external::query::graphQL::transformation::introspection::*;
+import meta::external::query::graphQL::transformation::queryToPure::tests::model::*;
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::tests::testConvertIntrospectionQueryToGraphFetch():Boolean[1]
+{
+  let classes = meta::external::query::graphQL::metamodel::introspection.children->filter(c|$c->instanceOf(Class))->cast(@Class<Any>);
+  let res = graphQLExecutableToPure(meta::external::query::graphQL::transformation::queryToPure::tests::buildIntrospectionQuery(), BaseGraphQLType);
+  let graphFetch = $res->meta::pure::graphFetch::routing::asString(true);
+  assertEquals( '#{meta::external::query::graphQL::transformation::introspection::BaseGraphQLType {\n' +
+                '    __schema {\n' +
+                '        queryType {\n' +
+                '            name\n' +
+                '        }, \n' +
+                '        mutationType {\n' +
+                '            name\n' +
+                '        }, \n' +
+                '        types {\n' +
+                '            kind, \n' +
+                '            name, \n' +
+                '            description, \n' +
+                '            fields {\n' +
+                '                name, \n' +
+                '                description, \n' +
+                '                args {\n' +
+                '                    name, \n' +
+                '                    description, \n' +
+                '                    type {\n' +
+                '                        kind, \n' +
+                '                        name, \n' +
+                '                        ofType {\n' +
+                '                            kind, \n' +
+                '                            name, \n' +
+                '                            ofType {\n' +
+                '                                kind, \n' +
+                '                                name, \n' +
+                '                                ofType {\n' +
+                '                                    kind, \n' +
+                '                                    name, \n' +
+                '                                    ofType {\n' +
+                '                                        kind, \n' +
+                '                                        name, \n' +
+                '                                        ofType {\n' +
+                '                                            kind, \n' +
+                '                                            name, \n' +
+                '                                            ofType {\n' +
+                '                                                kind, \n' +
+                '                                                name, \n' +
+                '                                                ofType {\n' +
+                '                                                    kind, \n' +
+                '                                                    name\n' +
+                '                                                }\n' +
+                '                                            }\n' +
+                '                                        }\n' +
+                '                                    }\n' +
+                '                                }\n' +
+                '                            }\n' +
+                '                        }\n' +
+                '                    }, \n' +
+                '                    defaultValue\n' +
+                '                }, \n' +
+                '                type {\n' +
+                '                    kind, \n' +
+                '                    name, \n' +
+                '                    ofType {\n' +
+                '                        kind, \n' +
+                '                        name, \n' +
+                '                        ofType {\n' +
+                '                            kind, \n' +
+                '                            name, \n' +
+                '                            ofType {\n' +
+                '                                kind, \n' +
+                '                                name, \n' +
+                '                                ofType {\n' +
+                '                                    kind, \n' +
+                '                                    name, \n' +
+                '                                    ofType {\n' +
+                '                                        kind, \n' +
+                '                                        name, \n' +
+                '                                        ofType {\n' +
+                '                                            kind, \n' +
+                '                                            name, \n' +
+                '                                            ofType {\n' +
+                '                                                kind, \n' +
+                '                                                name\n' +
+                '                                            }\n' +
+                '                                        }\n' +
+                '                                    }\n' +
+                '                                }\n' +
+                '                            }\n' +
+                '                        }\n' +
+                '                    }\n' +
+                '                }, \n' +
+                '                isDeprecated, \n' +
+                '                deprecationReason\n' +
+                '            }, \n' +
+                '            inputFields {\n' +
+                '                name, \n' +
+                '                description, \n' +
+                '                type {\n' +
+                '                    kind, \n' +
+                '                    name, \n' +
+                '                    ofType {\n' +
+                '                        kind, \n' +
+                '                        name, \n' +
+                '                        ofType {\n' +
+                '                            kind, \n' +
+                '                            name, \n' +
+                '                            ofType {\n' +
+                '                                kind, \n' +
+                '                                name, \n' +
+                '                                ofType {\n' +
+                '                                    kind, \n' +
+                '                                    name, \n' +
+                '                                    ofType {\n' +
+                '                                        kind, \n' +
+                '                                        name, \n' +
+                '                                        ofType {\n' +
+                '                                            kind, \n' +
+                '                                            name, \n' +
+                '                                            ofType {\n' +
+                '                                                kind, \n' +
+                '                                                name\n' +
+                '                                            }\n' +
+                '                                        }\n' +
+                '                                    }\n' +
+                '                                }\n' +
+                '                            }\n' +
+                '                        }\n' +
+                '                    }\n' +
+                '                }, \n' +
+                '                defaultValue\n' +
+                '            }, \n' +
+                '            interfaces {\n' +
+                '                kind, \n' +
+                '                name, \n' +
+                '                ofType {\n' +
+                '                    kind, \n' +
+                '                    name, \n' +
+                '                    ofType {\n' +
+                '                        kind, \n' +
+                '                        name, \n' +
+                '                        ofType {\n' +
+                '                            kind, \n' +
+                '                            name, \n' +
+                '                            ofType {\n' +
+                '                                kind, \n' +
+                '                                name, \n' +
+                '                                ofType {\n' +
+                '                                    kind, \n' +
+                '                                    name, \n' +
+                '                                    ofType {\n' +
+                '                                        kind, \n' +
+                '                                        name, \n' +
+                '                                        ofType {\n' +
+                '                                            kind, \n' +
+                '                                            name\n' +
+                '                                        }\n' +
+                '                                    }\n' +
+                '                                }\n' +
+                '                            }\n' +
+                '                        }\n' +
+                '                    }\n' +
+                '                }\n' +
+                '            }, \n' +
+                '            enumValues {\n' +
+                '                name, \n' +
+                '                description, \n' +
+                '                isDeprecated, \n' +
+                '                deprecationReason\n' +
+                '            }, \n' +
+                '            possibleTypes {\n' +
+                '                kind, \n' +
+                '                name, \n' +
+                '                ofType {\n' +
+                '                    kind, \n' +
+                '                    name, \n' +
+                '                    ofType {\n' +
+                '                        kind, \n' +
+                '                        name, \n' +
+                '                        ofType {\n' +
+                '                            kind, \n' +
+                '                            name, \n' +
+                '                            ofType {\n' +
+                '                                kind, \n' +
+                '                                name, \n' +
+                '                                ofType {\n' +
+                '                                    kind, \n' +
+                '                                    name, \n' +
+                '                                    ofType {\n' +
+                '                                        kind, \n' +
+                '                                        name, \n' +
+                '                                        ofType {\n' +
+                '                                            kind, \n' +
+                '                                            name\n' +
+                '                                        }\n' +
+                '                                    }\n' +
+                '                                }\n' +
+                '                            }\n' +
+                '                        }\n' +
+                '                    }\n' +
+                '                }\n' +
+                '            }\n' +
+                '        }, \n' +
+                '        directives {\n' +
+                '            name, \n' +
+                '            description, \n' +
+                '            locations, \n' +
+                '            args {\n' +
+                '                name, \n' +
+                '                description, \n' +
+                '                type {\n' +
+                '                    kind, \n' +
+                '                    name, \n' +
+                '                    ofType {\n' +
+                '                        kind, \n' +
+                '                        name, \n' +
+                '                        ofType {\n' +
+                '                            kind, \n' +
+                '                            name, \n' +
+                '                            ofType {\n' +
+                '                                kind, \n' +
+                '                                name, \n' +
+                '                                ofType {\n' +
+                '                                    kind, \n' +
+                '                                    name, \n' +
+                '                                    ofType {\n' +
+                '                                        kind, \n' +
+                '                                        name, \n' +
+                '                                        ofType {\n' +
+                '                                            kind, \n' +
+                '                                            name, \n' +
+                '                                            ofType {\n' +
+                '                                                kind, \n' +
+                '                                                name\n' +
+                '                                            }\n' +
+                '                                        }\n' +
+                '                                    }\n' +
+                '                                }\n' +
+                '                            }\n' +
+                '                        }\n' +
+                '                    }\n' +
+                '                }, \n' +
+                '                defaultValue\n' +
+                '            }\n' +
+                '        }\n' +
+                '    }\n' +
+                '}}#', $graphFetch);
+}
+
+Class meta::external::query::graphQL::transformation::queryToPure::tests::model::Person
+{
+  firstName : String[1];
+  middleName: String[0..1];
+  lastName : String[1];
+  age : Integer[1];
+  phone: Integer[1];
+  zipcode: String[1];
+  bankBalance: Float[1];
+  dateOfBirth: Date[1];
+  fullName() {$this.firstName + ' ' + $this.lastName}: String[1];
+  isSeniorCitizen() {$this.age > 60}: Boolean[1];
+}
+
+Class meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm
+{
+  legalName: String[1];
+  id: String[1];
+  firmType: FirmType[1];
+}
+
+Enum meta::external::query::graphQL::transformation::queryToPure::tests::model::FirmType
+{
+  LLC,
+  CORP
+}
+
+Association meta::external::query::graphQL::transformation::queryToPure::tests::model::FIrm_Employee
+{
+  firm: meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm[1];
+  employees: meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1];
+}
+
+Class meta::external::query::graphQL::transformation::queryToPure::tests::model::Query
+{
+  personByVariousProps(names:String[*], phone: Integer[1], isSeniorCitizen: Boolean[1], zipcode: String[1], minBalance: Float[1], maxBalance: Float[1])
+  {
+    Person.all()->filter(
+      p | $p.fullName->in($names) 
+          && $p.phone == $phone 
+          && $p.isSeniorCitizen == $isSeniorCitizen 
+          && $p.zipcode == $zipcode
+          && $p.bankBalance->greaterThan($minBalance)
+          && $p.bankBalance->lessThan($maxBalance)
+    )
+  }: Person[*];
+
+  personByName(name: String[1]){Person.all()->filter(p|$p.fullName == $name)->first()}: Person[0..1];
+
+  persons() {Person.all()}: Person[*];
+
+  personsPaginated(pageNumber: Integer[1]) {Person.all()->sortBy(#/Person/fullName#)->paginated($pageNumber, 1)}: Person[*];
+
+  personsWithSlice(limit: Integer[1],offset: Integer[1]) {let end = $limit + $offset; Person.all()->sortBy(#/Person/fullName#)->slice($offset,$end);}: Person[*];
+
+  personsWithLimit(limit: Integer[1]) {Person.all()->sortBy(#/Person/fullName#)->limit($limit)}: Person[*];
+
+  personsWithDrop(offset: Integer[1]) {Person.all()->sortBy(#/Person/fullName#)->drop($offset)}: Person[*];
+
+  personsWithTake(take: Integer[1]) {Person.all()->sortBy(#/Person/fullName#)->take($take)}: Person[*];
+
+  firms() {Firm.all()}: Firm[*];
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::tests::testConvertQueryWithOneParamToGraphFetch():Boolean[1]
+{
+  let graphQLDocument = meta::legend::compileVS('#GQL{ query { employees: personByName(name:"John Doe") { firstName lastName } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
+  let pureGraphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query);
+  assertEquals('#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Query {\n' +
+               '    personByName($name) {\n' +
+               '        firstName, \n'+
+               '        lastName\n'+
+               '    }\n' +
+               '}}#', $pureGraphFetch->meta::pure::graphFetch::routing::asString(true));
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::tests::testConvertQueryWithMultipleParamsToGraphFetch():Boolean[1]
+{
+  let graphQLDocument = meta::legend::compileVS('#GQL{ query { employees: personByVariousProps(names:["John Doe","Steve Stark"], phone: 123456789, isSeniorCitizen: false, zipcode: "123456", minBalance: 10.00, maxBalance: 1000.50) { fullName } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
+  let pureGraphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query);
+  assertEquals('#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Query {\n' +
+              '    personByVariousProps($names, $phone, $isSeniorCitizen, $zipcode, $minBalance, $maxBalance) {\n' +
+              '        fullName()\n'+
+              '    }\n' +
+              '}}#', $pureGraphFetch->meta::pure::graphFetch::routing::asString(true));
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::tests::testConvertQueryWithAssociationProperties():Boolean[1]
+{
+  let graphQLDocument = meta::legend::compileVS('#GQL{ query { employees: personByName(name:"John Doe") { firstName lastName firm { id } } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
+  let pureGraphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query);
+  assertEquals('#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Query {\n' +
+               '    personByName($name) {\n' +
+               '        firstName, \n'+
+               '        lastName, \n'+
+               '        firm {\n'+
+               '            id\n'+
+               '        }\n'+
+               '    }\n' +
+               '}}#', $pureGraphFetch->meta::pure::graphFetch::routing::asString(true));
+}

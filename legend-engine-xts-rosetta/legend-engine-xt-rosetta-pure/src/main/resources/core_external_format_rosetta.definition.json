@@ -1,0 +1,10 @@
+{
+  "name": "core_external_format_rosetta",
+  "pattern": "(meta::external::format::rosetta|meta::protocols::pure)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "core_functions",
+    "core_generation"
+  ]
+}

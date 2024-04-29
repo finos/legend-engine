@@ -1,0 +1,108 @@
+###Service
+Service service::RelationalServiceWithCSVWithCommaWithQuotes
+{
+  pattern: '/myService/{firm}';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |model::Person.all()->project([x|$x.firstName, x|$x.lastName], ['First Name', 'Last Name']);
+    mapping: execution::FirmMapping;
+    runtime: execution::Runtime;
+  }
+  testSuites:
+  [
+    testSuite_1:
+    {
+      data:
+      [
+        connections:
+        [
+          model::MyConnection:
+            Relational
+            #{
+              default.PersonTable:
+                'id,firm_id,firstName,lastName,employeeType\n'+
+                '1,1,I\'m John, "Doe, Jr",FTO\n'+
+                '2,1,Nicole,Smith,FTC\n'+
+                '3,2,Time,Smith,FTE\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test_1:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            assertion_1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "First Name" : "I\'m John",\n  "Last Name" : " \\"Doe, Jr\\""\n}, {\n  "First Name" : "Nicole",\n  "Last Name" : "Smith"\n}, {\n  "First Name" : "Time",\n  "Last Name" : "Smith"\n} ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service service::RelationalServiceWithCSVWithComma
+{
+  pattern: '/myService/{firm}';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |model::Person.all()->project([x|$x.firstName, x|$x.lastName], ['First Name', 'Last Name']);
+    mapping: execution::FirmMapping;
+    runtime: execution::Runtime;
+  }
+  testSuites:
+  [
+    testSuite_1:
+    {
+      data:
+      [
+        connections:
+        [
+          model::MyConnection:
+            Relational
+            #{
+              default.PersonTable:
+                'id,firm_id,firstName,lastName,employeeType\n'+
+                '1,1,I\'m John,"Doe, Jr",FTO\n'+
+                '2,1,Nicole,Smith,FTC\n'+
+                '3,2,Time,Smith,FTE\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test_1:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            assertion_1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "First Name" : "I\'m John",\n  "Last Name" : "Doe, Jr"\n}, {\n  "First Name" : "Nicole",\n  "Last Name" : "Smith"\n}, {\n  "First Name" : "Time",\n  "Last Name" : "Smith"\n} ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,1 +1,1 @@
-java -cp ~/.m2/repository/com/h2database/h2/1.4.200/h2-1.4.200.jar org.h2.tools.Server -tcp -tcpPort 9092 -ifNotExists
+java -cp ~/.m2/repository/com/h2database/h2/2.1.214/h2-2.1.214.jar org.h2.tools.Server -tcp -tcpPort 1975 -ifNotExists

@@ -1,0 +1,63 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::functions::*;
+
+import meta::external::format::json::executionPlan::test::*;
+import meta::external::format::json::executionPlan::test::customSchema::*;
+import meta::external::format::json::functions::*;
+
+import meta::pure::graphFetch::execution::*;
+
+import meta::legend::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::customSchema::testSpecialCharacterHandling(): Boolean[1]
+{
+  let binding  = compileLegendGrammar(readFile('/core_external_format_json/executionPlan/tests/resources/customSchema.txt')->toOne())->filter(e | $e->instanceOf(Binding))->cast(@Binding)->toOne();
+  let query   = {data:Byte[*] | meta::external::format::json::executionPlan::test::customSchema::Person->internalize($binding, $data)->graphFetch(#{meta::external::format::json::executionPlan::test::customSchema::Person{firstName, lastAtName, age, address {streetName}}}#)->toJson(#{meta::external::format::json::executionPlan::test::customSchema::Person{firstName, lastAtName, age, address {streetName}}}#)};
+
+  let input   = '{"first.name": "John", "last@name": "Doe", "age": 1, "address": [{"street name": "Street A"}]}';
+  let result  = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+  
+  assertJsonStringsEqual('{"firstName":"John","lastAtName":"Doe","age":1,"address":[{"streetName":"Street A"}]}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::customSchema::testSpecialCharacterHandlingOnSerialization(): Boolean[1]
+{
+  let binding  = compileLegendGrammar(readFile('/core_external_format_json/executionPlan/tests/resources/customSchema.txt')->toOne())->filter(e | $e->instanceOf(Binding))->cast(@Binding)->toOne();
+  let query   = {data:Byte[*] | meta::external::format::json::executionPlan::test::customSchema::Person->internalize($binding, $data)->graphFetch(#{meta::external::format::json::executionPlan::test::customSchema::Person{firstName, lastAtName, age, address {streetName}}}#)->externalize($binding, #{meta::external::format::json::executionPlan::test::customSchema::Person{firstName, lastAtName, age, address {streetName}}}#)};
+
+  let input   = '{"first.name": "John", "last@name": "Doe", "age": 1, "address": [{"street name": "Street A"}]}';
+  let result  = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+  
+  assertJsonStringsEqual($input, $result);
+}
+
+###Pure
+import meta::external::format::json::executionPlan::test::customSchema::*;
+
+Class meta::external::format::json::executionPlan::test::customSchema::Person
+{
+  firstName  : String[1];
+  lastAtName : String[1];
+  age        : Integer[1];
+  address    : Address[*];
+}
+
+Class meta::external::format::json::executionPlan::test::customSchema::Address
+{
+  streetName : String[1];
+}
+

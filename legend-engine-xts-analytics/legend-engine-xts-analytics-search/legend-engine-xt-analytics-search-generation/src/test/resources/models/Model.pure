@@ -1,0 +1,39 @@
+###Pure
+Class model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+Profile meta::pure::profiles::devStatus
+{
+  stereotypes: [inProgress];
+}
+
+###Service
+Service <<devStatus.inProgress>> test::Service
+{
+  pattern : 'test';
+  documentation : 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: model::Person[1]|$src.firstName;
+    mapping: test::Mapping;
+    runtime:
+    #{
+      connections: [];
+    }#;
+  }
+  test: Single
+  {
+    data: 'test';
+    asserts: [];
+  }
+}
+
+###Mapping
+Mapping test::Mapping
+(
+)
+

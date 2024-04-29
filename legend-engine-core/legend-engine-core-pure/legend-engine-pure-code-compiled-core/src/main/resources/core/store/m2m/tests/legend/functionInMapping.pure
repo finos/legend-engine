@@ -1,0 +1,201 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::engine::java::roadmap::*;
+import meta::json::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::function::*;
+import meta::pure::mapping::modelToModel::test::alloy::utils::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a mapping that calls a function: at(0).',
+   doc.doc='When:  the mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the mapping completes without error and no defects are reported'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::canUseFunctionsInAMapping() : Boolean[1]
+{
+   let tree = #{FirstEmployee {name} }#;
+
+   let result = execute(
+      |FirstEmployee.all()->graphFetchChecked($tree)->serialize($tree),
+      meta::pure::mapping::modelToModel::test::alloy::simple::function::m1,
+      testJsonRuntime(Firm, '{"name": "firm1", "employees": [{"firstName": "Dave", "lastName": "Miles"}]}'),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   let json = $result.values->toOne();
+   let expected= 
+   '{'+
+   '  "defects":[],'+
+   '  "value":{"name":"Miles"},'+
+   '  "source":{'+
+   '    "defects":[],'+
+   '    "value":{"employees": [{"lastName": "Miles"}]},'+
+   '    "source": {"number":1, "record":"{\\"name\\":\\"firm1\\",\\"employees\\":[{\\"firstName\\":\\"Dave\\",\\"lastName\\":\\"Miles\\"}]}"}'+
+   '  }'+
+   '}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));   
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a mapping that calls a function: defaultIfEmpty.',
+   doc.doc='When:  the mapping is executed using graphFetch',
+   doc.doc='Then:  the mapping executes successfully'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::testDefaultIfEmptyFunctionUsageInMapping(): Boolean[1]
+{
+   let tree = #{FirstEmployee {name} }#;
+
+   let result = execute(
+      |FirstEmployee.all()->graphFetch($tree)->serialize($tree),
+      defaultIfEmptyMapping,
+      testJsonRuntime(Firm, '[' +
+         '{"name": "FirmX", "employees": [{"firstName": "Peter", "lastName": "Smith"}, {"firstName": "John", "lastName": "Johnson"}]},' +
+         '{"name": "FirmA", "employees": [{"firstName": "Fabrice", "lastName": "Roberts"}]}' +
+      ']'),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   let json = $result.values->toOne();
+   let expected = '[{"name":"Johnson"},{"name":"Unknown"}]';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));   
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  serverVersion.start='v1_19_0'}
+meta::pure::mapping::modelToModel::test::alloy::simple::testConflictVariableInMapping(): Boolean[1]
+{
+   let tree = #{FirstEmployee {name} }#;
+
+   let result = execute(
+      |FirstEmployee.all()->graphFetch($tree)->serialize($tree),
+      meta::pure::mapping::modelToModel::test::alloy::simple::function::employeeMapping,
+      testJsonRuntime(Firm, '[' +
+         '{"name":"FirmX","employees":[{"role":"developer","firstName":"Smith"},'+
+         '{"role":"productOwner","firstName":"Johnson"}]}' +
+      ']'),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   let json = $result.values->toOne();
+   let expected = '{"name":"Smith"}';
+   assertEquals($expected, $json);   
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{ serverVersion.start='v1_29_0'}
+meta::pure::mapping::modelToModel::test::alloy::simple::testMatchInMapping(): Boolean[1]
+{
+   let runtime = testJsonRuntime(Firm, '[{"employees":[{"@type":"PersonA","role":"developer","firstNameA":"Smith","firstName":"testFirstName","lastName":"testLastName"}]}]');
+   let lambda = {|AllEmployees.all()->meta::pure::graphFetch::execution::graphFetch(#{meta::pure::mapping::modelToModel::test::alloy::simple::function::AllEmployees{names}}#)->meta::pure::graphFetch::execution::serialize(#{meta::pure::mapping::modelToModel::test::alloy::simple::function::AllEmployees{names}}#)};
+   let result = execute($lambda, meta::pure::mapping::modelToModel::test::alloy::simple::function::MatchMappingTest, $runtime, meta::pure::extension::defaultExtensions());
+   let json = $result.values->toOne();
+   let expected = '{"names":[]}';
+   assert(meta::json::jsonEquivalent($expected->meta::json::parseJSON(), $json->meta::json::parseJSON()));
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::function::Firm
+{
+  name: String[0..1];
+  employees: Person[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::function::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  role: meta::pure::mapping::modelToModel::test::alloy::simple::function::EmployeeRole[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::function::PersonA extends Person
+{
+  firstNameA: String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::function::PersonB extends Person
+{
+  firstNameB: String[1];
+  middleNames: String[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::function::FirstEmployee
+{
+  name: String[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::function::AllEmployees
+{
+  names: String[*];
+}
+
+Enum meta::pure::mapping::modelToModel::test::alloy::simple::function::EmployeeRole
+{
+  developer,
+  productOwner,
+  projectManager
+}
+
+###Mapping
+   
+Mapping meta::pure::mapping::modelToModel::test::alloy::simple::function::m1
+(
+  *meta::pure::mapping::modelToModel::test::alloy::simple::function::FirstEmployee[test_FirstEmployee]: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::simple::function::Firm
+    name: $src.employees->at(0).lastName
+  }
+)
+
+###Mapping
+   
+Mapping meta::pure::mapping::modelToModel::test::alloy::simple::function::defaultIfEmptyMapping
+(
+  *meta::pure::mapping::modelToModel::test::alloy::simple::function::FirstEmployee[test_FirstEmployee]: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::simple::function::Firm
+    name: $src.employees->filter(e | $e.firstName == 'John').lastName->defaultIfEmpty('Unknown')->at(0)
+  }
+)
+
+###Mapping
+   
+ Mapping meta::pure::mapping::modelToModel::test::alloy::simple::function::employeeMapping
+ (
+   *meta::pure::mapping::modelToModel::test::alloy::simple::function::FirstEmployee: Pure
+   {
+     ~src meta::pure::mapping::modelToModel::test::alloy::simple::function::Firm
+     name: $src.employees->filter(x|$x.role.name == 'developer')->first().firstName
+   }
+ )
+
+###Mapping
+
+ Mapping meta::pure::mapping::modelToModel::test::alloy::simple::function::MatchMappingTest
+ (
+   meta::pure::mapping::modelToModel::test::alloy::simple::function::AllEmployees: Pure
+   {
+     ~src meta::pure::mapping::modelToModel::test::alloy::simple::function::Firm
+     names: $src.employees->map(
+        c|$c->match(
+           [
+             personA: meta::pure::mapping::modelToModel::test::alloy::simple::function::PersonA[1]|[],
+             personB: meta::pure::mapping::modelToModel::test::alloy::simple::function::PersonB[1]|$personB.firstNameB
+           ]
+        )
+     )
+   }
+ )

@@ -1,0 +1,20 @@
+{
+  "_type" : "databaseCommand",
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$match": {
+        "$expr" :
+        {
+          "$or" : [
+            {"$eq" : ["$sector", "Metal Fabrications"] },
+            {"$eq" : ["$location", "Mauritius"]},
+            {"$gt" : ["yearOfIncorporation", 2000]}
+          ]
+        }
+      }
+    }
+  ],
+  "cursor": {}
+}
+

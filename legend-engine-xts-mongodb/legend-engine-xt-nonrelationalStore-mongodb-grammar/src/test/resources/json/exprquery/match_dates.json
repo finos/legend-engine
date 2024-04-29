@@ -1,0 +1,21 @@
+{
+  "_type": "databaseCommand",
+  "aggregate": "person",
+  "pipeline": [
+    {
+      "$match": {
+        "$expr": {
+          "$and": [
+            {
+              "$eq": [
+                "$dateOfBirth",
+                "1990-01-01T10:00:00.000Z"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "cursor": {}
+}

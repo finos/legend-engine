@@ -1,0 +1,8 @@
+import meta::protocols::pure::v1_31_0::metamodel::runtime::connection::authentication::*;
+
+Class meta::protocols::pure::v1_31_0::metamodel::runtime::connection::authentication::demo::AuthenticationDemo
+{
+    _type  : String[1];
+    authentication : AuthenticationSpecification[1];
+}
+

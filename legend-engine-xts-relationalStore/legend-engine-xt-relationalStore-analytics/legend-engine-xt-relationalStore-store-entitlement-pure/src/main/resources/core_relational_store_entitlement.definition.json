@@ -1,0 +1,14 @@
+{
+  "name": "core_relational_store_entitlement",
+  "pattern": "(meta::analytics::store::entitlements)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_dsl_mapping",
+    "platform_dsl_store",
+    "platform_store_relational",
+    "platform_functions",
+    "core_functions",
+    "core",
+    "core_relational"
+  ]
+}

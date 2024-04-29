@@ -1,0 +1,233 @@
+import meta::relational::transform::autogen::*;
+import meta::relational::transform::autogen::tests::*;
+import meta::pure::functions::asserts::*;
+
+function <<test.Test>> meta::relational::transform::autogen::tests::testClassesAssociationsAndMappingFromDatabase():Boolean[1]
+{
+   let extensions = meta::relational::extension::relationalExtension();
+   let expected = ^meta::protocols::pure::vX_X_X::metamodel::PureModelContextData
+   (
+     _type = 'data',
+     serializer = ^meta::protocols::Protocol(name='pure', version='vX_X_X'),
+     elements = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::transformMapping(meta::relational::transform::autogen::tests::testDBMapping, $extensions)
+                   ->concatenate(meta::relational::transform::autogen::tests::transformClass(meta::relational::transform::autogen::tests::testSchema1::Company, $extensions))
+                   ->concatenate(meta::relational::transform::autogen::tests::transformClass(meta::relational::transform::autogen::tests::testSchema1::Employee, $extensions))
+                   ->concatenate(meta::relational::transform::autogen::tests::transformClass(meta::relational::transform::autogen::tests::testSchema1::City, $extensions))
+                   ->concatenate(meta::relational::transform::autogen::tests::transformClass(meta::relational::transform::autogen::tests::testSchema1::Passport, $extensions))
+                   ->concatenate(meta::relational::transform::autogen::tests::transformClass(meta::relational::transform::autogen::tests::testSchema1::Country, $extensions))
+                   ->concatenate(meta::relational::transform::autogen::tests::transformClass(meta::relational::transform::autogen::tests::testSchema2::Company, $extensions))
+                   ->concatenate(meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformAssociation(meta::relational::transform::autogen::tests::CompanyEmployee, $extensions))
+                   ->concatenate(meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformAssociation(meta::relational::transform::autogen::tests::EmployeeCity, $extensions))
+                   ->concatenate(meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformAssociation(meta::relational::transform::autogen::tests::EmployeePassport, $extensions))
+                   ->concatenate(meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformAssociation(meta::relational::transform::autogen::tests::PassportCountry, $extensions))
+                   ->concatenate(meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformAssociation(meta::relational::transform::autogen::tests::CompanyEmployeeFromDifferentSchemas, $extensions))
+   )->meta::alloy::metadataServer::alloyToJSON();
+   let actual = meta::relational::transform::autogen::classesAssociationsAndMappingFromDatabase(testDB, meta::relational::transform::autogen::tests->elementToPath());
+   assertJsonStringsEqual($expected, $actual);
+}
+
+// removes the default native any supertype from protocol class
+function meta::relational::transform::autogen::tests::transformClass(class:Class<Any>[1], extensions:meta::pure::extension::Extension[*]): meta::protocols::pure::vX_X_X::metamodel::domain::Class[1]
+{
+  let anyClassPath = 'meta::pure::metamodel::type::Any';
+  let _class = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformClass($class, $extensions);
+  ^$_class(
+    superTypes = $_class.superTypes->filter(e | $e != $anyClassPath)
+  );
+}
+
+Class {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::testSchema1::Company
+{
+   name : String[1];
+   location : String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::testSchema1::Employee
+{
+   fullname : String[1];
+   passportId : Integer[1];
+   firmname : String[0..1];
+   location : String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::testSchema1::City
+{
+   cityId : Integer[1];
+   name : String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::testSchema1::Passport
+{
+   passportId : Integer[1];
+   countryName : String[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::testSchema1::Country
+{
+   name : String[1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::testSchema2::Company
+{
+   name : String[1];
+   location : String[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::CompanyEmployee
+{
+   companyEmployeeTestSchema1Company : meta::relational::transform::autogen::tests::testSchema1::Company[1];
+   companyEmployeeTestSchema1Employee : meta::relational::transform::autogen::tests::testSchema1::Employee[1..*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::EmployeeCity
+{
+   employeeCityTestSchema1Employee : meta::relational::transform::autogen::tests::testSchema1::Employee[1..*];
+   employeeCityTestSchema1City : meta::relational::transform::autogen::tests::testSchema1::City[1..*];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::EmployeePassport
+{
+   employeePassportTestSchema1Employee : meta::relational::transform::autogen::tests::testSchema1::Employee[1];
+   employeePassportTestSchema1Passport : meta::relational::transform::autogen::tests::testSchema1::Passport[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::PassportCountry
+{
+   passportCountryTestSchema1Passport : meta::relational::transform::autogen::tests::testSchema1::Passport[1..*];
+   passportCountryTestSchema1Country : meta::relational::transform::autogen::tests::testSchema1::Country[1];
+}
+
+Association {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::CompanyEmployeeFromDifferentSchemas
+{
+   companyEmployeeFromDifferentSchemasTestSchema2Company : meta::relational::transform::autogen::tests::testSchema2::Company[1];
+   companyEmployeeFromDifferentSchemasTestSchema1Employee : meta::relational::transform::autogen::tests::testSchema1::Employee[1..*];
+}
+
+###Mapping
+Mapping meta::relational::transform::autogen::tests::testDBMapping
+(
+   *meta::relational::transform::autogen::tests::testSchema1::Company[meta_relational_transform_autogen_tests_testSchema1_Company] : Relational
+   {
+     ~primaryKey
+     (
+       [meta::relational::transform::autogen::tests::testDB]testSchema1.Company.name
+     )
+     ~mainTable [meta::relational::transform::autogen::tests::testDB]testSchema1.Company
+     name : [meta::relational::transform::autogen::tests::testDB]testSchema1.Company.name,
+     location : [meta::relational::transform::autogen::tests::testDB]testSchema1.Company.location
+   }
+   *meta::relational::transform::autogen::tests::testSchema1::Employee[meta_relational_transform_autogen_tests_testSchema1_Employee] : Relational
+   {
+     ~primaryKey
+     (
+       [meta::relational::transform::autogen::tests::testDB]testSchema1.Employee.fullname,
+       [meta::relational::transform::autogen::tests::testDB]testSchema1.Employee.passportId
+     )
+     ~mainTable [meta::relational::transform::autogen::tests::testDB]testSchema1.Employee
+     fullname : [meta::relational::transform::autogen::tests::testDB]testSchema1.Employee.fullname,
+     passportId : [meta::relational::transform::autogen::tests::testDB]testSchema1.Employee.passportId,
+     firmname : [meta::relational::transform::autogen::tests::testDB]testSchema1.Employee.firmname,
+     location : [meta::relational::transform::autogen::tests::testDB]testSchema1.Employee.location
+   }
+   *meta::relational::transform::autogen::tests::testSchema1::City[meta_relational_transform_autogen_tests_testSchema1_City] : Relational
+   {
+     ~primaryKey
+     (
+       [meta::relational::transform::autogen::tests::testDB]testSchema1.City.city_id
+     )
+     ~mainTable [meta::relational::transform::autogen::tests::testDB]testSchema1.City
+     cityId : [meta::relational::transform::autogen::tests::testDB]testSchema1.City.city_id,
+     name : [meta::relational::transform::autogen::tests::testDB]testSchema1.City.name
+   }
+   *meta::relational::transform::autogen::tests::testSchema1::Passport[meta_relational_transform_autogen_tests_testSchema1_Passport] : Relational
+   {
+     ~primaryKey
+     (
+       [meta::relational::transform::autogen::tests::testDB]testSchema1.Passport.passportId
+     )
+     ~mainTable [meta::relational::transform::autogen::tests::testDB]testSchema1.Passport
+     passportId : [meta::relational::transform::autogen::tests::testDB]testSchema1.Passport.passportId,
+     countryName : [meta::relational::transform::autogen::tests::testDB]testSchema1.Passport.countryName
+   }
+   *meta::relational::transform::autogen::tests::testSchema1::Country[meta_relational_transform_autogen_tests_testSchema1_Country] : Relational
+   {
+     ~primaryKey
+     (
+       [meta::relational::transform::autogen::tests::testDB]testSchema1.Country.name
+     )
+     ~mainTable [meta::relational::transform::autogen::tests::testDB]testSchema1.Country
+     name : [meta::relational::transform::autogen::tests::testDB]testSchema1.Country.name
+   }
+   *meta::relational::transform::autogen::tests::testSchema2::Company[meta_relational_transform_autogen_tests_testSchema2_Company] : Relational
+   {
+     ~primaryKey
+     (
+       [meta::relational::transform::autogen::tests::testDB]testSchema2.Company.name
+     )
+     ~mainTable [meta::relational::transform::autogen::tests::testDB]testSchema2.Company
+     name : [meta::relational::transform::autogen::tests::testDB]testSchema2.Company.name,
+     location : [meta::relational::transform::autogen::tests::testDB]testSchema2.Company.location
+   }
+   meta::relational::transform::autogen::tests::CompanyEmployee : Relational
+   {
+      AssociationMapping
+      (
+        companyEmployeeTestSchema1Company[meta_relational_transform_autogen_tests_testSchema1_Employee,meta_relational_transform_autogen_tests_testSchema1_Company] : [meta::relational::transform::autogen::tests::testDB]@CompanyEmployee,
+        companyEmployeeTestSchema1Employee[meta_relational_transform_autogen_tests_testSchema1_Company,meta_relational_transform_autogen_tests_testSchema1_Employee] : [meta::relational::transform::autogen::tests::testDB]@CompanyEmployee
+      )
+   }
+   meta::relational::transform::autogen::tests::EmployeeCity : Relational
+   {
+      AssociationMapping
+      (
+        employeeCityTestSchema1Employee[meta_relational_transform_autogen_tests_testSchema1_City,meta_relational_transform_autogen_tests_testSchema1_Employee] : [meta::relational::transform::autogen::tests::testDB]@EmployeeCity,
+        employeeCityTestSchema1City[meta_relational_transform_autogen_tests_testSchema1_Employee,meta_relational_transform_autogen_tests_testSchema1_City] : [meta::relational::transform::autogen::tests::testDB]@EmployeeCity
+      )
+   }
+   meta::relational::transform::autogen::tests::EmployeePassport : Relational
+   {
+      AssociationMapping
+      (
+        employeePassportTestSchema1Employee[meta_relational_transform_autogen_tests_testSchema1_Passport,meta_relational_transform_autogen_tests_testSchema1_Employee] : [meta::relational::transform::autogen::tests::testDB]@EmployeePassport,
+        employeePassportTestSchema1Passport[meta_relational_transform_autogen_tests_testSchema1_Employee,meta_relational_transform_autogen_tests_testSchema1_Passport] : [meta::relational::transform::autogen::tests::testDB]@EmployeePassport
+      )
+   }
+   meta::relational::transform::autogen::tests::PassportCountry : Relational
+   {
+      AssociationMapping
+      (
+        passportCountryTestSchema1Passport[meta_relational_transform_autogen_tests_testSchema1_Country,meta_relational_transform_autogen_tests_testSchema1_Passport] : [meta::relational::transform::autogen::tests::testDB]@PassportCountry,
+        passportCountryTestSchema1Country[meta_relational_transform_autogen_tests_testSchema1_Passport,meta_relational_transform_autogen_tests_testSchema1_Country] : [meta::relational::transform::autogen::tests::testDB]@PassportCountry
+      )
+   }
+   meta::relational::transform::autogen::tests::CompanyEmployeeFromDifferentSchemas : Relational
+   {
+      AssociationMapping
+      (
+        companyEmployeeFromDifferentSchemasTestSchema2Company[meta_relational_transform_autogen_tests_testSchema1_Employee,meta_relational_transform_autogen_tests_testSchema2_Company] : [meta::relational::transform::autogen::tests::testDB]@CompanyEmployeeFromDifferentSchemas,
+        companyEmployeeFromDifferentSchemasTestSchema1Employee[meta_relational_transform_autogen_tests_testSchema2_Company,meta_relational_transform_autogen_tests_testSchema1_Employee] : [meta::relational::transform::autogen::tests::testDB]@CompanyEmployeeFromDifferentSchemas
+      )
+   }
+)
+
+###Relational
+Database meta::relational::transform::autogen::tests::testDB
+(
+   Schema testSchema1
+   (
+     Table Company(name VARCHAR(200) PRIMARY KEY, location VARCHAR(200) NOT NULL)
+     Table Employee(fullname VARCHAR(1000) PRIMARY KEY, passportId INT PRIMARY KEY, firmname VARCHAR(200), location VARCHAR(200))
+     Table City(city_id INT PRIMARY KEY, name VARCHAR(200))
+     Table Passport(passportId INT PRIMARY KEY, countryName VARCHAR(200))
+     Table Country(name VARCHAR(200) PRIMARY KEY)
+   )
+   Schema testSchema2
+   (
+     Table Company(name VARCHAR(200) PRIMARY KEY, location VARCHAR(200) NOT NULL)
+   )
+   Join CompanyEmployee(testSchema1.Company.location != 'Toronto' and testSchema1.Employee.fullname = 'John Doe' and testSchema1.Company.name = testSchema1.Employee.firmname)
+   Join EmployeeCity(testSchema1.Employee.location = testSchema1.City.name)
+   Join EmployeePassport(testSchema1.Employee.passportId = testSchema1.Passport.passportId)
+   Join PassportCountry(testSchema1.Passport.countryName = testSchema1.Country.name)
+   Join CompanyEmployeeFromDifferentSchemas(testSchema2.Company.location != 'Toronto' and testSchema1.Employee.fullname = 'John Doe' and testSchema2.Company.name = testSchema1.Employee.firmname)
+)

@@ -1,0 +1,119 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::model::unit::*;
+
+import meta::external::format::shared::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::binding::validation::*;
+import meta::external::format::shared::metamodel::*;
+import meta::external::format::shared::transformation::fromPure::*;
+import meta::external::format::shared::transformation::toPure::*;
+import meta::external::format::shared::transformation::tests::*;
+
+import meta::pure::extension::*;
+
+function meta::external::format::shared::transformation::tests::exampleFormatContract(): ExternalFormatContract<ExampleSchema>[1]
+{
+   ^ExternalFormatContract<ExampleSchema>
+   (
+      id                               = 'Example',
+      contentTypes                     = 'text/example',
+      
+      externalFormatMetamodel          = ExampleSchema,
+
+      externalFormatToPureDescriptor   = exampleSchemaToPureDescriptor(),
+      externalFormatFromPureDescriptor = exampleSchemaFromPureDescriptor(),
+      externalFormatBindingValidator   = bindDetails_Binding_1__BindingDetail_1_
+   )
+}
+
+
+
+// Example Schema Metamodel
+Class meta::external::format::shared::transformation::tests::ExampleSchema
+{
+
+}
+
+// Example Schema To Pure Descriptor
+
+Class meta::external::format::shared::transformation::tests::ExampleSchemaToModelConfiguration extends SchemaToModelConfiguration
+{
+
+}
+
+function meta::external::format::shared::transformation::tests::exampleSchemaToPureDescriptor(): ExternalFormatToPureDescriptor<ExampleSchemaToModelConfiguration>[1]
+{
+  ^ExternalFormatToPureDescriptor<ExampleSchemaToModelConfiguration>
+  (
+    configuration        = ExampleSchemaToModelConfiguration,
+    generator            = exampleSchemaToPure_SchemaSet_1__ExampleSchemaToModelConfiguration_1__PackageableElement_MANY_,
+    defaultConfig        = toPureDefaultConfig()
+  )
+}
+
+function meta::external::format::shared::transformation::tests::exampleSchemaToPure(schemaSet:SchemaSet[1], config:ExampleSchemaToModelConfiguration[1]): PackageableElement[*]
+{
+  meta::external::format::shared::transformation::tests::ExampleSchema;
+}
+
+function meta::external::format::shared::transformation::tests::toPureDefaultConfig(): ExampleSchemaToModelConfiguration[1]
+{
+  ^ExampleSchemaToModelConfiguration(format = 'Example', targetPackage = 'test')
+}
+
+// Pure To Example Schema Descriptor
+
+Class meta::external::format::shared::transformation::tests::ModelToExampleSchemaConfiguration extends ModelToSchemaConfiguration
+{
+
+}
+
+function meta::external::format::shared::transformation::tests::exampleSchemaFromPureDescriptor(): ExternalFormatFromPureDescriptor<ModelToExampleSchemaConfiguration>[1]
+{
+  ^ExternalFormatFromPureDescriptor<ModelToExampleSchemaConfiguration>
+  (
+    configuration        = ModelToExampleSchemaConfiguration,
+    generator            = pureToExampleSchema_ModelUnit_1__ModelToExampleSchemaConfiguration_1__SchemaSet_1_,
+    defaultConfig        = defaultConfig()
+  )
+}
+
+function meta::external::format::shared::transformation::tests::pureToExampleSchema(modelUnit:ModelUnit[1], config:ModelToExampleSchemaConfiguration[1]): SchemaSet[1]
+{
+  ^SchemaSet(format = 'Example', package = ^Package(name = 'test'), name = 'ExampleSchemaSet');
+}
+
+function meta::external::format::shared::transformation::tests::defaultConfig(): ModelToExampleSchemaConfiguration[1]
+{
+  ^ModelToExampleSchemaConfiguration(format = 'Example', targetSchemaSet = 'test::ExampleSchema')
+}
+
+// Example Schema Binding Validator
+
+function meta::external::format::shared::transformation::tests::bindDetails(binding:Binding[1]):BindingDetail[1]
+{
+   ^SuccessfulBindingDetail(fetchMappedPropertiesForClass = {class:Class<Any>[1] | []});
+}
+
+//Example Extension with External Format Contract
+function meta::external::format::shared::transformation::tests::exampleExternalFormatExtension(): Extension[1]
+{
+   ^Extension
+   (
+      type                     = 'Example External Format Extension',
+      availableExternalFormats = meta::external::format::shared::transformation::tests::exampleFormatContract()
+   )
+}

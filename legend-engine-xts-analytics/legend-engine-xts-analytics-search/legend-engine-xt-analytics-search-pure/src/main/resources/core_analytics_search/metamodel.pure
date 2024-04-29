@@ -1,0 +1,146 @@
+Enum meta::analytics::search::metamodel::DocumentType
+{
+  Class,
+  DataSpace,
+  Diagram,
+  Mapping,
+  Service,
+  DatabaseStore,
+  Function,
+  Runtime,
+  Connection,
+  PackageableElement
+}
+
+Class meta::analytics::search::metamodel::BaseRootDocument
+[
+  idNotBlank: $this.id->length() > 0,
+  typeNotBlank: $this.type->isNotEmpty()
+]
+{
+  id: String[1];
+  type: meta::analytics::search::metamodel::DocumentType[1];
+  name: String[1];
+  description: String[0..1];
+}
+
+Class meta::analytics::search::metamodel::PackageableRootDocument extends  meta::analytics::search::metamodel::BaseRootDocument
+{
+  stereotypes: String[*];
+  projectCoordinates : meta::analytics::search::metamodel::ProjectCoordinates[0..1];
+  taggedValues:  Map<String, String>[0..1];
+  package: String[1];
+}
+
+Class meta::analytics::search::metamodel::ProjectCoordinates
+[
+  groupIdNotBlank: $this.groupId->length() > 0,
+  artifactIdNotBlank: $this.artifactId->length() > 0,
+  versionIdNotBlank: $this.versionId->length() > 0
+]
+{
+  groupId: String[1];
+  artifactId: String[1];
+  versionId: String[1];
+}
+
+
+// CLASS DOCUMENT
+Class meta::analytics::search::metamodel::class::ClassDocument extends meta::analytics::search::metamodel::class::SimpleClassElement, meta::analytics::search::metamodel::PackageableRootDocument
+{
+}
+
+Class meta::analytics::search::metamodel::class::SimpleClassElement
+{
+  name: String[1];
+  package: String[1];
+  properties: meta::analytics::search::metamodel::class::ClassProperty[*];
+  taggedValues:  Map<String, String>[0..1];
+  stereotypes: String[*];
+}
+
+Class meta::analytics::search::metamodel::class::ClassProperty
+{
+  name: String[1];
+  stereotypes: String[*];
+  taggedValues:  Map<String, String>[0..1];
+}
+
+// DATASPACE DOCUMENT
+Class meta::analytics::search::metamodel::dataspace::DataSpaceDocument extends meta::analytics::search::metamodel::PackageableRootDocument
+{
+  defaultExecutionContext: String[1];
+  diagrams: String[*];
+  executionContexts: meta::analytics::search::metamodel::dataspace::ExecutionContext[*];
+  taxonomies: String[*];
+}
+
+Class meta::analytics::search::metamodel::dataspace::ExecutionContext
+{
+  name: String[1];
+  mappingPath: String[1];
+  runtimePath: String[1];
+  classes: meta::analytics::search::metamodel::class::SimpleClassElement[*];
+  databaseColumns: meta::analytics::search::metamodel::mapping::DatabaseColumn[*];
+}
+
+// DIAGRAM DOCUMENT
+Class meta::analytics::search::metamodel::diagram::DiagramDocument extends meta::analytics::search::metamodel::PackageableRootDocument
+{
+  classes: meta::analytics::search::metamodel::class::SimpleClassElement[*];
+}
+
+// MAPPING DOCUMENT
+Class meta::analytics::search::metamodel::mapping::MappingDocument extends meta::analytics::search::metamodel::PackageableRootDocument
+{
+  classes: meta::analytics::search::metamodel::class::SimpleClassElement[*];
+  includedMappings: String[*];
+}
+
+Class meta::analytics::search::metamodel::mapping::DatabaseColumn
+{
+  database: String[1];
+  schema: String[1];
+  table: String[1];
+  columns: String[*];
+}
+
+// SERVICE DOCUMENT
+Class meta::analytics::search::metamodel::service::ServiceDocument extends meta::analytics::search::metamodel::PackageableRootDocument
+{
+  owners: String[*];
+  executions: meta::analytics::search::metamodel::service::Execution[*];
+}
+
+Class meta::analytics::search::metamodel::service::Execution
+{
+  mapping: String[1];
+  classes: meta::analytics::search::metamodel::class::SimpleClassElement[*];
+  databaseColumns: meta::analytics::search::metamodel::mapping::DatabaseColumn[*];
+}
+
+Class meta::analytics::search::metamodel::service::LinkedPropertyElement
+{
+  name: String[1];
+  classPath: String[0..1];
+  class: Class<Any>[1];
+}
+
+// DATABASE DOCUMENT
+Class meta::analytics::search::metamodel::database::DatabaseDocument extends meta::analytics::search::metamodel::PackageableRootDocument
+{
+  schemas: meta::analytics::search::metamodel::database::Schema[*];
+  includedStores: String[*];
+}
+
+Class meta::analytics::search::metamodel::database::Schema
+{
+  name: String[1];
+  tables: meta::analytics::search::metamodel::database::Table[*];
+}
+
+Class meta::analytics::search::metamodel::database::Table
+{
+  name: String[1];
+  columns: String[*];
+}

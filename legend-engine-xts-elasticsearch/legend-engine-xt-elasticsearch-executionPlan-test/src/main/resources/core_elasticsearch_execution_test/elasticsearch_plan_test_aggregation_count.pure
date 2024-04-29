@@ -1,0 +1,164 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::*;
+import meta::pure::tds::*;
+import meta::external::store::elasticsearch::executionTest::testCase::*;
+import meta::external::store::elasticsearch::executionTest::testCase::tds::*;
+import meta::external::store::elasticsearch::executionTest::test::*;
+import meta::external::store::elasticsearch::executionTest::utils::*;
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test count aggregation on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::count::testCountAggregation(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy([], agg('count', r | $r.getString('MainActor.Name'), agg | $agg->count())));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test count no result aggregation on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::count::testEmptyCountAggregation(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->filter(r | $r.getString('_id') == 'N/A')->groupBy([], agg('count', r | $r.getString('MainActor.Name'), agg | $agg->count())));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test count aggregation on nullable field on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::count::testCountAggregationOnNullable(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy('MPAA', agg('count', r | $r.getNullableString('MPAA'), agg | $agg->count())));
+}
+
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test count * aggregation on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::count::testCountStarAggregationOnNullable(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy('MPAA', agg('count', r | $r, agg | $agg->count())));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test count * aggregation on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::count::testCountStarAggregationOnNullable_WithSortAsc_countFirst(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy('MPAA', agg('count', r | $r, agg | $agg->count()))->sort([asc('count'), asc('MPAA')]));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test count * aggregation on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::count::testCountStarAggregationOnNullable_WithSortAsc_groupByFirst(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy('MPAA', agg('count', r | $r, agg | $agg->count()))->sort([asc('MPAA'), asc('count')]));
+}
+
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test count * aggregation on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::count::testCountStarAggregationOnNullable_WithSortDesc_countFirst(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy('MPAA', agg('count', r | $r, agg | $agg->count()))->sort([desc('count'), desc('MPAA')]));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test count * aggregation on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::count::testCountStarAggregationOnNullable_WithSortDesc_groupByFirst(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy('MPAA', agg('count', r | $r, agg | $agg->count()))->sort([desc('MPAA'), desc('count')]));
+}
+
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test count * aggregation on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::count::testCountStarAggregationOnNullable_NoGroupByColumns(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy([], agg('count', r | $r, agg | $agg->count())));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test count * aggregation on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::count::testCountStarAggregationOnNullable_NoGroupByColumns_WithSort(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy([], agg('count', r | $r, agg | $agg->count()))->sort('count'));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test count * aggregation on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::count::testCountStarAggregationOnNullable_WithSortAsc_multipleGroupBy(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy(['ReleaseDate', 'MPAA'], agg('count', r | $r, agg | $agg->count()))->sort([asc('MPAA'), asc('ReleaseDate')]));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test count * aggregation on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::count::testCountStarAggregationOnNullable_WithSortDesc_multipleGroupBy(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy(['ReleaseDate', 'MPAA'], agg('count', r | $r, agg | $agg->count()))->sort([desc('MPAA'), desc('ReleaseDate')]));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test count * aggregation on if expressions Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::expressions::count::testGroupByIfExpressionOnAdjustNowFunctionsAndCountAgg(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | 
+          if($x.getDate('ReleaseDate') < now()->adjust(-15, DurationUnit.YEARS), 
+            |'Oldest', 
+            |if($x.getDate('ReleaseDate') < now()->adjust(-10, DurationUnit.YEARS), 
+              |'Older',
+              |if($x.getDate('ReleaseDate') < now()->adjust(-5, DurationUnit.YEARS), 
+                |'Newer',
+                |'Newest'))), 'Bucket')])->groupBy('Bucket', agg('countRows', r | $r, agg | $agg->count())));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test count * aggregation on if expressions Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::expressions::count::testGroupByIfExpressionOnAdjustNowFunctionsAndCountAgg_WithSortAsc(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | 
+          if($x.getDate('ReleaseDate') < now()->adjust(-15, DurationUnit.YEARS), 
+            |'Oldest', 
+            |if($x.getDate('ReleaseDate') < now()->adjust(-10, DurationUnit.YEARS), 
+              |'Older',
+              |if($x.getDate('ReleaseDate') < now()->adjust(-5, DurationUnit.YEARS), 
+                |'Newer',
+                |'Newest'))), 'Bucket')])->groupBy('Bucket', agg('countRows', r | $r, agg | $agg->count()))->sort([asc('countRows'), asc('Bucket')]));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test count * aggregation on if expressions Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::expressions::count::testGroupByIfExpressionOnAdjustNowFunctionsAndCountAgg_WithSortDesc(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | 
+          if($x.getDate('ReleaseDate') < now()->adjust(-15, DurationUnit.YEARS), 
+            |'Oldest', 
+            |if($x.getDate('ReleaseDate') < now()->adjust(-10, DurationUnit.YEARS), 
+              |'Older',
+              |if($x.getDate('ReleaseDate') < now()->adjust(-5, DurationUnit.YEARS), 
+                |'Newer',
+                |'Newest'))), 'Bucket')])->groupBy('Bucket', agg('countRows', r | $r, agg | $agg->count()))->sort([desc('countRows'), desc('Bucket')]));
+}

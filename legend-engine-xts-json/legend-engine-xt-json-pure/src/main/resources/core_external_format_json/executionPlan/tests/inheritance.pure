@@ -1,0 +1,116 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::execution::*;
+import meta::legend::*;
+import meta::external::format::json::executionPlan::test::*;
+import meta::external::format::json::functions::*;
+import meta::external::format::json::executionPlan::test::inheritance::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::inheritance::testInheritanceAtRootLevel(): Boolean[1]
+{
+  let treeString =  '#{\n'+
+                    '  meta::external::format::json::executionPlan::test::inheritance::Location{\n'+
+                    '    zipCode,\n'+
+                    '    coordinates{\n'+
+                    '      latitude,\n'+
+                    '      longitude\n'+
+                    '    },\n'+
+                    '    ->subType(@meta::external::format::json::executionPlan::test::inheritance::Street){\n'+
+                    '      street\n'+
+                    '    },\n'+   
+                    '    ->subType(@meta::external::format::json::executionPlan::test::inheritance::Road){\n'+
+                    '      road\n'+
+                    '    }\n'+          
+                    '  }\n'+
+                    '}#';
+
+  let tree    = meta::legend::compileLegendValueSpecification($treeString)->cast(@RootGraphFetchTree<Location>);
+  let query   = {data:Byte[*] | Location->fromJson($data)->graphFetch($tree)->toJson($tree)};
+
+  let input   = '[{ "zipCode": "10000000", "coordinates": {"latitude": "11.11", "longitude": "11.11"}},\n' + 
+                 '{ "zipCode": "20000000", "coordinates": {"latitude": "11.11", "longitude": "11.11"} , "street" : "myStreet" , "@type":"Street"}\n,' +
+                 '{ "zipCode": "30000000", "coordinates": {"latitude": "11.11", "longitude": "11.11"} , "road" : "myRoad" , "@type":"Road"}]';
+  let result  = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+  
+  assertJsonStringsEqual('[{"zipCode":"10000000","coordinates":{"latitude":"11.11","longitude":"11.11"}},{"zipCode":"20000000","coordinates":{"latitude":"11.11","longitude":"11.11"},"street":"myStreet"},{"zipCode":"30000000","coordinates":{"latitude":"11.11","longitude":"11.11"},"road":"myRoad"}]', $result);
+
+  let input1  = '[{ "zipCode": "10000000", "coordinates": {"latitude": "11.11", "longitude": "11.11"}},\n' + 
+                 '{ "zipCode": "20000000", "coordinates": {"latitude": "11.11", "longitude": "11.11"} , "street" : "myStreet" , "@type":"meta::external::format::json::executionPlan::test::inheritance::Street"}\n,' +
+                 '{ "zipCode": "30000000", "coordinates": {"latitude": "11.11", "longitude": "11.11"} , "road" : "myRoad" , "@type":"meta::external::format::json::executionPlan::test::inheritance::Road"}]';
+  let result1 = executeLegendQuery($query, pair('data', convertStringToBytes($input1)), jsonExtensions());
+  
+  assertJsonStringsEqual('[{"zipCode":"10000000","coordinates":{"latitude":"11.11","longitude":"11.11"}},{"zipCode":"20000000","coordinates":{"latitude":"11.11","longitude":"11.11"},"street":"myStreet"},{"zipCode":"30000000","coordinates":{"latitude":"11.11","longitude":"11.11"},"road":"myRoad"}]', $result);
+}
+
+function <<meta::pure::profiles::test.ToFix, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::inheritance::testInheritanceAtPropertyLevel(): Boolean[1]
+{
+  let tree    = #{meta::external::format::json::executionPlan::test::inheritance::Firm {
+                    name, 
+                    location {
+                      zipCode,
+                      coordinates{
+                        latitude,
+                        longitude
+                      }
+                    },
+                    location->subType(@Street) {
+                      street
+                    },
+                    location->subType(@Road) {
+                      road
+                    }
+                  }}#;
+
+  let query   = {data:Byte[*] | meta::external::format::json::executionPlan::test::inheritance::Firm->fromJson($data)->graphFetch($tree)->toJson($tree)};
+
+  let input   = '[{ "zipCode": "10000000", "coordinates": {"latitude": "11.11", "longitude": "11.11"}},\n' + 
+                 '{ "zipCode": "20000000", "coordinates": {"latitude": "11.11", "longitude": "11.11"} , "street" : "myStreet" , "@type":"Street"}\n,' +
+                 '{ "zipCode": "30000000", "coordinates": {"latitude": "11.11", "longitude": "11.11"} , "road" : "myRoad" , "@type":"Road"}]';
+  let result  = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+  
+  assertJsonStringsEqual('[{"zipCode":"10000000","coordinates":{"latitude":"11.11","longitude":"11.11"}},{"zipCode":"20000000","coordinates":{"latitude":"11.11","longitude":"11.11"},"street":"myStreet"},{"zipCode":"30000000","coordinates":{"latitude":"11.11","longitude":"11.11"},"road":"myRoad"}]', $result);
+}
+
+###Pure
+import meta::external::format::json::executionPlan::test::inheritance::*;
+
+Class meta::external::format::json::executionPlan::test::inheritance::Firm
+{
+  name        : String[1];
+  location    : Location[1];
+}
+
+Class meta::external::format::json::executionPlan::test::inheritance::Location
+{
+  zipCode     : String[1];
+  coordinates : Coordinate[1];
+}
+
+Class meta::external::format::json::executionPlan::test::inheritance::Coordinate
+{
+  latitude    : String[1];
+  longitude   : String[1];
+}
+ 
+Class meta::external::format::json::executionPlan::test::inheritance::Street extends Location
+{
+  street: String[1];
+}
+ 
+Class meta::external::format::json::executionPlan::test::inheritance::Road extends Location
+{
+  road: String[1];
+}

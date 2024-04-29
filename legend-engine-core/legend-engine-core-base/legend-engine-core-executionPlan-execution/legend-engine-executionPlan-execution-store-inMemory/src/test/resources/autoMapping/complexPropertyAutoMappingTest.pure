@@ -1,0 +1,82 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import test::legend::autoMapping::model::*;
+
+Class test::legend::autoMapping::model::Person
+{
+  firstName : String[1];
+  lastName  : String[1];
+  firm      : Firm[1];
+  addresses : Address[*];
+}
+
+Class test::legend::autoMapping::model::SPerson
+{
+  fullName : String[1];
+  firm     : Firm[1];
+  address1 : Address[1];
+  address2 : Address[0..1];
+}
+
+Class test::legend::autoMapping::model::Firm
+{
+  id       : String[1];
+  address  : Address[1];
+}
+
+Class test::legend::autoMapping::model::Address
+{
+  street   : String[1];
+}
+
+###Mapping
+import test::legend::autoMapping::model::*;
+
+Mapping test::legend::autoMapping::mapping::TestComplexTypeAutoMapping
+(
+  *test::legend::autoMapping::model::Person[src]: Pure
+  {
+    ~src test::legend::autoMapping::model::SPerson
+
+    firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')),
+    lastName  : $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),
+    firm      : $src.firm,
+    addresses : $src.address1->concatenate($src.address2)
+  }
+)
+
+###Runtime
+Runtime test::legend::autoMapping::runtime::TestComplexTypeAutoMapping
+{
+    mappings:
+    [
+        test::legend::autoMapping::mapping::TestComplexTypeAutoMapping
+    ];
+    connections:
+    [
+        ModelStore:
+        [
+            connections_1:
+                #{
+                    JsonModelConnection
+                    {
+                        class : test::legend::autoMapping::model::SPerson;
+                        url   : 'executor:default';
+                    }
+                }#
+        ]
+    ];
+}

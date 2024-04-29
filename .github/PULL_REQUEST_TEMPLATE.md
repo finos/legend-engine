@@ -1,7 +1,9 @@
 #### What type of PR is this?
 
 <!--
-Add one/more labels.
+Choose one of the following labels :
+- Improvement
+- Bug Fix
 -->
 
 #### What does this PR do / why is it needed ?

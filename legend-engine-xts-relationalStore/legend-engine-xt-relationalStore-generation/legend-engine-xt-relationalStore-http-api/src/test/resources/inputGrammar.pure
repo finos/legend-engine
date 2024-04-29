@@ -1,0 +1,25 @@
+###Relational
+Database meta::relational::transform::autogen::tests::testDB
+(
+   Schema testSchema1
+   (
+     Table Company(name VARCHAR(200) PRIMARY KEY, location VARCHAR(200) NOT NULL)
+     Table Employee(fullname VARCHAR(1000) PRIMARY KEY, passportId INT PRIMARY KEY, firmname VARCHAR(200), location VARCHAR(200))
+     Table City(city_id INT PRIMARY KEY, name VARCHAR(200))
+     Table Passport(passportId INT PRIMARY KEY, countryName VARCHAR(200))
+     Table Country(name VARCHAR(200) PRIMARY KEY)
+   )
+   Schema testSchema2
+   (
+     Table Company(name VARCHAR(200) PRIMARY KEY, location VARCHAR(200) NOT NULL)
+   )
+   Schema SCHEMA3
+   (
+     Table Company(name VARCHAR(200) PRIMARY KEY, location VARCHAR(200) NOT NULL)
+   )
+   Join CompanyEmployee(testSchema1.Company.location != 'Toronto' and testSchema1.Employee.fullname = 'John Doe' and testSchema1.Company.name = testSchema1.Employee.firmname)
+   Join EmployeeCity(testSchema1.Employee.location = testSchema1.City.name)
+   Join EmployeePassport(testSchema1.Employee.passportId = testSchema1.Passport.passportId)
+   Join PassportCountry(testSchema1.Passport.countryName = testSchema1.Country.name)
+   Join CompanyEmployeeFromDifferentSchemas(testSchema2.Company.location != 'Toronto' and testSchema1.Employee.fullname = 'John Doe' and testSchema2.Company.name = testSchema1.Employee.firmname)
+)

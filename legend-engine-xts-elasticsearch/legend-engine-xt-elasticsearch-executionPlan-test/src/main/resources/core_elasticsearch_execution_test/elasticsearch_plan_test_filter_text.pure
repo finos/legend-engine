@@ -1,0 +1,65 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::*;
+import meta::external::store::elasticsearch::executionTest::testCase::*;
+import meta::external::store::elasticsearch::executionTest::testCase::tds::*;
+import meta::external::store::elasticsearch::executionTest::test::*;
+import meta::external::store::elasticsearch::executionTest::utils::*;
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Text with keyword field property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::text::fields::testEqualValueFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('Description.asKeyword') == 'In 1951, two policemen, Nock and Staehl, investigate the mathematician Alan Turing after an apparent break-in at his home'));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Text with keyword field property mapping using variables'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::text::fields::testEqualFilter_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let value = 'In 1951, two policemen, Nock and Staehl, investigate the mathematician Alan Turing after an apparent break-in at his home';
+  $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('Description.asKeyword') == $value));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test NOT filter on Elasticsearch Text with keyword field property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::text::fields::testNotEqualValueFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('Description.asKeyword') != 'In 1951, two policemen, Nock and Staehl, investigate the mathematician Alan Turing after an apparent break-in at his home'));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test contains filter on Elasticsearch Text property mapping.  This uses match_phrase_prefix, hence no matching on the left side of the string'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::text::testContainsFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('Description')->contains('the')));
+  $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('Description')->contains('his i')));
+  $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('Description')->contains('his identity')));
+  $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('Description')->contains('his identity a')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test contains filter on Elasticsearch Text property mapping using variables.  This uses match_phrase_prefix, hence no matching on the left side of the string'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::text::testContainsFilter_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let value = 'the';
+  $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('Description.asKeyword')->contains($value)));
+}
+

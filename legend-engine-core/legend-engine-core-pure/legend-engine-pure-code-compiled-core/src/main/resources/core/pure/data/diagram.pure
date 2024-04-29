@@ -1,0 +1,139 @@
+###Diagram
+Diagram meta::pure::data::MetaModelDiagram(width=0.0, height=0.0)
+{
+    TypeView cview_3(
+        type=meta::pure::data::EmbeddedData,
+        position=(817.84766, 220.00000),
+        width=107.35156,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::pure::metamodel::PackageableElement,
+        position=(212.84766, 90.00000),
+        width=215.04590,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::pure::data::DataElement,
+        position=(248.00000, 223.00000),
+        width=144.69531,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::external::format::shared::metamodel::data::ExternalFormatData,
+        position=(1649.31128, 384.00000),
+        width=138.35742,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::pure::data::ModelStoreData,
+        position=(822.02344, 398.00000),
+        width=114.75146,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::pure::data::DataElementReference,
+        position=(244.75818, 404.25000),
+        width=150.72266,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_1,
+        target=cview_2,
+        points=[(320.34766,245.00000),(320.37061,119.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_5,
+        target=cview_3,
+        points=[(871.02344,404.00000),(871.52344,242.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_6,
+        target=cview_3,
+        points=[(1718.48999,413.00000),(871.52344,242.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_9,
+        target=cview_3,
+        points=[(320.11951,419.25000),(871.52344,242.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::pure::data::DataElement.data,
+        source=cview_1,
+        target=cview_3,
+        points=[(320.34766,245.00000),(871.52344,242.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::pure::data::DataElementReference.dataElement,
+        source=cview_9,
+        target=cview_1,
+        points=[(320.11951,419.25000),(320.34766,245.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

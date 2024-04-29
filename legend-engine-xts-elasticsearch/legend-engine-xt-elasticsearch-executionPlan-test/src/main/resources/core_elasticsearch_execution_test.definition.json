@@ -1,0 +1,16 @@
+{
+  "name": "core_elasticsearch_execution_test",
+  "pattern": "(meta::external::store::elasticsearch::executionTest)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_functions_json",
+    "platform_dsl_mapping",
+    "core_functions",
+    "core",
+    "core_authentication",
+    "core_elasticsearch_seven_metamodel",
+    "core_external_execution",
+    "core_external_compiler"
+  ]
+}

@@ -1,0 +1,256 @@
+import meta::external::store::rel::compile::*;
+import meta::external::store::rel::compile::ir::*;
+import meta::external::store::rel::compile::substitution::*;
+import meta::external::store::rel::compile::utils::*;
+import meta::external::store::rel::contract::*;
+import meta::external::store::rel::execute::*;
+import meta::external::store::rel::mapping::*;
+import meta::external::store::rel::mapping::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::metamodel::render::program::*;
+import meta::external::store::rel::metamodel::store::*;
+import meta::external::store::rel::metamodel::utils::*;
+import meta::external::store::rel::runtime::*;
+import meta::external::store::rel::trace::*;
+import meta::external::store::rel::utils::*;
+import meta::external::store::rel::utils::collection::*;
+import meta::external::store::rel::utils::lang::*;
+import meta::pure::executionPlan::*;
+
+Class meta::external::store::rel::mapping::QueryActivity extends meta::pure::mapping::Activity {
+  relSource: String[1];
+}
+
+function meta::external::store::rel::mapping::execution(
+  sq: meta::pure::mapping::StoreQuery[1],
+  _ext: RoutedValueSpecification[0..1],
+  mapping: meta::pure::mapping::Mapping[1],
+  runtime: meta::core::runtime::Runtime[1],
+  exeCtx: meta::pure::runtime::ExecutionContext[1],
+  extensions: meta::pure::extension::Extension[*],
+  debug: DebugContext[1]
+): meta::pure::mapping::Result<Any|*>[1] {
+  assert($sq.store->instanceOf(RAIDatabase), 'Rel queries can only be executed against an instance of `RAIDatabase`');
+  $sq.fe->execution($mapping, $debug, $sq.store->cast(@RAIDatabase).config, emptyTrace());
+}
+
+function <<access.private>> meta::external::store::rel::mapping::execution(
+  query: FunctionExpression[1],
+  mapping: meta::pure::mapping::Mapping[1],
+  debug: DebugContext[1],
+  config: RAITranspilerConfig[1],
+  trace: Trace[1]
+): meta::pure::mapping::Result<Any|*>[1] {
+  let state = CompilationState($debug);
+
+  let newTrace = $trace->stage('execution(FunctionExpression[1],Mapping[1],DebugContext[1])');
+
+  let result = $query
+    ->entryPointPExpr($newTrace)
+    ->andThen(node: PExpr[1] |
+      //println($node->meta::external::store::rel::compile::ir::utils::describe());
+      //$debug->debug(| 'PURE Expression plan:');
+      $debug->debug(| $node->meta::external::store::rel::compile::ir::utils::describe());
+      $node->compile(emptySubstitution(), emptyColumnAccessRewrite(), $state, $newTrace);
+    )
+    ->andThen({state: CompilationState[1] |
+      $debug->debug(| 'Column names:');
+      $debug->debug(| $state.cols.names);
+      $state.current
+        ->okOr(| errorTrace('No current expression.', $newTrace))
+        ->andThen({expr: RelExpr[1] |
+          let type = $query.genericType.rawType;
+
+          let outputRelation =
+            $config.outputRelationPrefix
+              ->map(s: String[1] | format('%s:%s', [$s, 'output']))
+              ->orElse('output');
+
+          /*
+           * We distinguish three cases.
+           * 1. The type of the query is a primitive type.
+           * 2. The type of the query is of type Any because it is the union of
+           *    multiple class types that belong to the mapping. This can happen
+           *    because, e.g., different result types in the branches of an `if`.
+           * 3. The type of the query is a `TabularDataSet`, in which case we
+           *    interpret the query results as a table.
+           * 4. The type of the query is a class belonging to our mapping (i.e.,
+           *    a type more specific than Any). In this case we also output the
+           *    primitive-valued properties.
+           */
+          $type->match([
+            p: PrimitiveType[1] |
+              /*
+               * Handles case 1.
+               */
+              ^$state(program=
+                $state
+                  .program
+                  ->with(rel($outputRelation)->def($expr))
+              )
+              ->ok(),
+            class: Class<Any>[1] |
+              switch([
+                case($class == Any, {|
+                  /*
+                   * Handles case 2.
+                   */
+                  ^$state(program=
+                    $state
+                      .program
+                      ->with(rel($outputRelation)->def($expr))
+                  )
+                  ->ok()
+                }),
+                case($class == TabularDataSet, {|
+                  /*
+                   * Handles case 3.
+                   */
+                  let outputBody =
+                    $state.cols.names
+                      ->map(col: String[1] |
+                        $expr
+                          ->appl([label($col), var('i')])
+                      );
+
+                  let output =
+                    def(
+                      rel($outputRelation),
+                      if ($outputBody->isEmpty(), | reltrue(), {|
+                        $outputBody
+                          ->toOneMany()
+                          ->product()
+                          ->from(var('i'))
+                      })
+                    );
+
+                  ^$state(
+                    program=$state.program->with($output)
+                  )
+                  ->ok();
+                })
+              ], {|
+                /*
+                 * Handles case 4.
+                 */
+                $mapping
+                  ->meta::pure::mapping::_classMappingByClass($class)
+                  ->okOr(| errorTrace(format('No class mapping found for `%s`', $class.name), $newTrace))
+                  ->tryCastm(@RelSetImplementation, $newTrace)
+                  ->them(sets: RelSetImplementation[*] | $sets->first()->toOne() )
+                  ->andThen(set: RelSetImplementation[1] |
+                    $set
+                      ->propertyOutputs($newTrace)
+                      ->them(rules: Pair<Label,RelRule>[*] |
+                        ^$state(
+                          program=$state
+                            .program
+                            ->with([
+                              rel($outputRelation)
+                                ->appl(label('query'))
+                                ->headAtom(var('x'))
+                                ->def($expr->atom(var('x')))
+                            ])
+                            ->with($rules.second)
+                        )
+                      )
+                  )
+              })
+          ]);
+        });
+    });
+
+
+  if ($result->isOk(), {|
+    let unwrapped = $result->unwrap();
+    let compiled = $unwrapped.program->render($config.configNoIndent);
+
+    ^meta::pure::mapping::Result<Any|*>(
+      values=[],
+      activities=[^QueryActivity(relSource=$compiled)]
+    );
+  }, {|
+    // Fail with error message
+    $result->unwrap();
+    ^meta::pure::mapping::Result<Any|*>();
+  });
+}
+
+/**
+  * Helper function which generates output rules for the property mappings
+  * belonging to `set`. Output rules take the format
+  *
+  * ```rel
+  * def output[:property] = Class:property[x] for x in output[:query]
+  * ```
+  *
+  * Here, `Class:property` is the property expression associated to the property
+  * named `property`. This function assumes that query results are stored in
+  * `output[:query]`
+  */
+function <<access.private>> meta::external::store::rel::mapping::propertyOutputs(
+  set: RelSetImplementation[1],
+  trace: Trace[1]
+): Result<Pair<Label, RelRule>|*>[1] {
+  let newTrace = $trace->stage('propertyOutputs(RelSetImplementation[1])');
+  $set.propertyMappings
+    ->tryCastm(@RelPropertyMapping, $newTrace)
+    ->them({properties: RelPropertyMapping[*] |
+      let primitiveProperties =
+        $properties
+          ->filter(p: RelPropertyMapping[1] | $p.property->isPrimitiveValueProperty());
+
+      let exprs = zip(
+        $primitiveProperties
+          .property
+          .name
+          ->map(n | label($n)),
+        $primitiveProperties.target
+      );
+
+      $exprs
+        ->map({pair |
+          $pair.first
+            ->pair(
+              rel('output')
+                ->appl($pair.first)
+                ->def(
+                  $pair.second
+                    ->appl(var('x'))
+                    ->for(var('x')
+                      ->where(
+                        rel('output')
+                          ->appl(label('query'))
+                          ->atom(var('x'))
+                      )
+                    )
+                )
+            )
+        });
+    });
+}
+
+function meta::external::store::rel::mapping::supports(f: FunctionExpression[1]): Boolean[1] {
+  true;
+}
+
+function meta::external::store::rel::mapping::supportsStream(f: FunctionExpression[1]): Boolean[1] {
+  [
+    meta::pure::functions::collection::in_Any_1__Any_MANY__Boolean_1_,
+    meta::pure::functions::collection::in_Any_$0_1$__Any_MANY__Boolean_1_
+  ]->contains($f.func);
+}
+
+function meta::external::store::rel::mapping::planExecution(
+  sq: meta::pure::mapping::StoreQuery[1],
+  ext: RoutedValueSpecification[0..1],
+  mapping: meta::pure::mapping::Mapping[0..1],
+  runtime: meta::core::runtime::Runtime[0..1],
+  exeCtx: meta::pure::runtime::ExecutionContext[1],
+  extensions: meta::pure::router::extension::RouterExtension[*],
+  debug:DebugContext[1]
+): ExecutionNode[1] {
+  fail('Not implemented');
+
+  ^ExecutionNode(resultType=^ResultType(type=^Type()));
+}

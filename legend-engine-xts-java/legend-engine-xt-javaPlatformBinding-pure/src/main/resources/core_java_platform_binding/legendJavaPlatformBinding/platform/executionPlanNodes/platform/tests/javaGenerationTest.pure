@@ -1,0 +1,286 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::platformBinding::legendJava::library::tests::*;
+import meta::pure::test::*;
+import meta::pure::executionPlan::platformBinding::legendJava::tests::utils::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::functions::meta::*;
+
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::tests::generateTestCollection(pkg: Package[1], pkgsToExclude: Package[*], functionsToExclude: FunctionDefinition<Any>[*]):PureTestCollection[1]
+{
+  let subPkgs = $pkg.children->map(c| $c->match([p:Package[1]| $p, x:Any[1]| []]))->removeAll($pkgsToExclude);
+  let fns = $pkg.children->map(c| $c->match([p:ConcreteFunctionDefinition<Any>[1]| $p, x:Any[1]| []]))->removeAll($functionsToExclude);
+  
+  ^PureTestCollection(
+      pkg = $pkg,
+      testFunctions = $fns->filter(f| $f->hasStereotype('Test', test) && !$f->cast(@ElementWithTaggedValues)->value4Tag('excludePlatform',test).value->contains('Java compiled')),
+      beforeFunctions = $fns->filter(f| $f->hasStereotype('BeforePackage', test)),
+      afterFunctions = $fns->filter(f| $f->hasStereotype('AfterPackage', test)),
+      subCollections = $subPkgs->map(p| $p->generateTestCollection($pkgsToExclude, $functionsToExclude))
+  );
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::tests::getPackagesToExclude():Package[*]
+{
+  [
+    meta::pure::functions::asserts,
+    meta::pure::functions::meta,
+    meta::pure::functions::multiplicity,
+    meta::pure::functions::test,
+    meta::pure::functions::relation
+  ];
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::tests::getFunctionsToExclude():FunctionDefinition<{->Boolean[1]}>[*]
+{
+  let genericsNotSupported = [
+		meta::pure::functions::boolean::tests::and::testShortCircuit__Boolean_1_, // requires List<T>
+		meta::pure::functions::boolean::tests::or::testShortCircuit__Boolean_1_, // requires List<T>
+        meta::pure::functions::collection::tests::drop::testDropInList__Boolean_1_, // requires meta::pure::functions::collection::list_U_MANY__List_1_
+        meta::pure::functions::collection::tests::groupBy::testCase1GroupWithWindowSubset__Boolean_1_, // requires meta::pure::tds::groupByWithWindowSubset_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__String_MANY__String_MANY__TabularDataSet_1_
+        meta::pure::functions::collection::tests::groupBy::testCase2GroupWithWindowSubset__Boolean_1_, // requires meta::pure::tds::groupByWithWindowSubset_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__String_MANY__String_MANY__TabularDataSet_1_
+        meta::pure::functions::collection::tests::groupBy::testGroupByAggregationEmptyValues__Boolean_1_, // requires meta::pure::tds::groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_
+        meta::pure::functions::collection::tests::groupBy::testGroupByAggregation__Boolean_1_, // requires meta::pure::tds::groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_
+        meta::pure::functions::collection::tests::intersection::testSimplePartition__Boolean_1_, // requires meta::pure::functions::collection::partition_I_MANY__Function_1__Pair_1_
+        meta::pure::functions::collection::tests::intersection::testTypePartition__Boolean_1_, // requires meta::pure::functions::collection::partition_I_MANY__Function_1__Pair_1_
+        meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesBy__Boolean_1_, // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_
+        meta::pure::functions::collection::tests::slice::testSliceInList__Boolean_1_, // requires meta::pure::functions::collection::list_U_MANY__List_1_
+        meta::pure::functions::collection::tests::take::testTakeInList__Boolean_1_, // requires meta::pure::functions::collection::list_U_MANY__List_1_
+        meta::pure::functions::collection::tests::zip::testZipBothListsSameLength__Boolean_1_, // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_
+        meta::pure::functions::collection::tests::zip::testZipFirstListLonger__Boolean_1_, // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_
+        meta::pure::functions::collection::tests::zip::testZipSecondListLonger__Boolean_1_, // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_
+        meta::pure::functions::string::tests::testHumanize__Boolean_1_, // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_
+        meta::pure::functions::string::tests::testSplitOnCamelCase__Boolean_1_, // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_
+        meta::pure::functions::tests::collection::allButOneAreEmpty__Boolean_1_, // requires meta::pure::functions::collection::list_U_MANY__List_1_
+        meta::pure::functions::tests::collection::newMultiValueMap2Test__Boolean_1_, // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_
+        meta::pure::functions::tests::collection::newMultiValueMapTest__Boolean_1_, // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_
+        meta::pure::functions::tests::collection::toIndexed__Boolean_1_, // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_
+        meta::pure::functions::tests::collection::toNumbered__Boolean_1_, // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_
+        meta::pure::functions::lang::tests::if::testMultiIf__Boolean_1_ // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_
+  ];
+
+  let translationNotSupported = [
+		meta::pure::functions::collection::tests::add::testAddWithOffset__Boolean_1_, // requires meta::pure::functions::collection::add_T_MANY__Integer_1__T_1__T_$1_MANY$_ 
+		meta::pure::functions::collection::tests::get::testGetWithVariable__Boolean_1_, // requires meta::pure::functions::collection::get_T_MANY__String_1__T_$0_1$_ 
+		meta::pure::functions::collection::tests::get::testGet__Boolean_1_, // requires meta::pure::functions::collection::get_T_MANY__String_1__T_$0_1$_ 
+		meta::pure::functions::collection::tests::removeAll::testRemoveAllOptimizedPrimitiveStandardFunction__Boolean_1_, // requires meta::pure::functions::collection::removeAllOptimized_T_MANY__T_MANY__T_MANY_ 
+		meta::pure::functions::collection::tests::removeAllOptimized::testRemoveAllOptimizedClassKey__Boolean_1_, // requires meta::pure::functions::collection::removeAllOptimized_T_MANY__T_MANY__T_MANY_ 
+		meta::pure::functions::collection::tests::zip::testZipBothListsAreOfPairs__Boolean_1_, // requires meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_ 
+		meta::pure::functions::collection::tests::zip::testZipBothListsEmpty__Boolean_1_, // requires meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_ 
+		meta::pure::functions::collection::tests::zip::testZipFirstListEmpty__Boolean_1_, // requires meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_ 
+		meta::pure::functions::collection::tests::zip::testZipFirstListsIsOfPairs__Boolean_1_, // requires meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_ 
+		meta::pure::functions::collection::tests::zip::testZipSecondListEmpty__Boolean_1_, // requires meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_ 
+		meta::pure::functions::collection::tests::zip::testZipSecondListsIsOfPairs__Boolean_1_, // requires meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_ 
+		meta::pure::functions::collection::tests::testGetPropertyValues__Boolean_1_, // requires meta::pure::functions::collection::get_T_MANY__String_1__T_$0_1$_  
+		meta::pure::functions::lang::tests::letFn::testAssignNewInstance__Boolean_1_, // requires meta::pure::functions::meta::genericType_Any_MANY__GenericType_1_ 
+		meta::pure::functions::lang::tests::match::testMatchWithExtraParam__Boolean_1_, // requires meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_ 
+		meta::pure::functions::lang::tests::match::testMatchWithExtraParamsAndFunctionsAsParam__Boolean_1_, // requires meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_ 
+		meta::pure::functions::lang::tests::new::testDynamicInstance__Boolean_1_, // requires meta::pure::functions::meta::genericType_Any_MANY__GenericType_1_,
+        meta::pure::functions::collection::tests::find::testFindInstance__Boolean_1_,
+        meta::pure::functions::collection::tests::find::testFindLiteralFromVar__Boolean_1_,
+        meta::pure::functions::collection::tests::find::testFindLiteral__Boolean_1_,
+        meta::pure::functions::collection::tests::find::testFindUsingVarForFunction__Boolean_1_
+  ];
+
+  let prohibitedFunctionAccess = [
+		meta::pure::functions::boolean::tests::and::testShortCircuitInDynamicEvaluation__Boolean_1_, // requires evaluate_Function_1__List_MANY__Any_MANY_
+		meta::pure::functions::boolean::tests::or::testShortCircuitInDynamicEvaluation__Boolean_1_, // requires evaluate_Function_1__List_MANY__Any_MANY_
+		meta::pure::functions::collection::tests::concatenate::testConcatenateTypeInference__Boolean_1_, // requires type_Any_MANY__Type_1_
+		meta::pure::functions::collection::tests::evaluateAndDeactivate::map::testMapWithFunctionToMany__Boolean_1_, // requires deactivate_Any_MANY__ValueSpecification_1_ 
+		meta::pure::functions::collection::tests::evaluateAndDeactivate::map::testMapWithFunctionToOne__Boolean_1_, // requires deactivate_Any_MANY__ValueSpecification_1_ 
+		meta::pure::functions::collection::tests::fold::testFoldFiltering__Boolean_1_, // requires copy_T_1__String_1__KeyExpression_MANY__T_1_ 
+		meta::pure::functions::collection::tests::fold::testFoldToMany__Boolean_1_, // requires copy_T_1__String_1__KeyExpression_MANY__T_1_ 
+		meta::pure::functions::collection::tests::fold::testFold__Boolean_1_, // requires copy_T_1__String_1__KeyExpression_MANY__T_1_ 
+		meta::pure::functions::collection::tests::groupBy::testGroupByObj__Boolean_1_, // requires keys_Map_1__U_MANY_ 
+		meta::pure::functions::collection::tests::groupBy::testGroupBy__Boolean_1_, // requires get_Map_1__U_1__V_$0_1$_ 
+		meta::pure::functions::collection::tests::map::testMapWithPathInFunctionReflective__Boolean_1_, // requires doStuff_T_MANY__Path_1__String_1_ 
+		meta::pure::functions::collection::tests::map::testMapWithPathInFunction__Boolean_1_, // requires doStuff_T_MANY__Path_1__String_1_ 
+		meta::pure::functions::collection::tests::map::testMapWithPropertyAsVariable__Boolean_1_, // requires classPropertyByName_Class_1__String_1__Property_$0_1$_ 
+		meta::pure::functions::collection::tests::map::testMapWithDynamicFunctionFromZeroOneToZeroOne__Boolean_1_, // requires evaluate_Function_1__List_MANY__Any_MANY_
+		meta::pure::functions::collection::tests::map::testAutoMapWithZeroOnePropertyInEvaluate__Boolean_1_, // requires evaluate_Function_1__List_MANY__Any_MANY_
+		meta::pure::functions::collection::tests::mapcollection::testMapBuilder__Boolean_1_, // requires newMap_Pair_MANY__Map_1_
+		meta::pure::functions::collection::tests::mapcollection::testMapGet__Boolean_1_, // requires put_Map_1__U_1__V_1__Map_1_ 
+		meta::pure::functions::collection::tests::mapcollection::testMapImmutablePut__Boolean_1_, // requires put_Map_1__U_1__V_1__Map_1_ 
+		meta::pure::functions::collection::tests::mapcollection::testMapKeyValues__Boolean_1_, // requires newMap_Pair_MANY__Map_1_ 
+		meta::pure::functions::collection::tests::mapcollection::testMapNew__Boolean_1_, // requires put_Map_1__U_1__V_1__Map_1_ 
+		meta::pure::functions::collection::tests::mapcollection::testMapPutAllWithMap__Boolean_1_, // requires newMap_Pair_MANY__Map_1_ 
+		meta::pure::functions::collection::tests::mapcollection::testMapPutAll__Boolean_1_, // requires newMap_Pair_MANY__Map_1_ 
+		meta::pure::functions::collection::tests::mapcollection::testMapPut__Boolean_1_, // requires put_Map_1__U_1__V_1__Map_1_ 
+		meta::pure::functions::date::tests::testAdjustReflectiveEvaluation__Boolean_1_, // requires eval_Function_1__T_n__U_p__W_q__V_m_ 
+		meta::pure::functions::date::tests::testHasMonth__Boolean_1_, // requires eval_Function_1__T_n__V_m_ 
+		meta::pure::functions::date::tests::testHasYear__Boolean_1_, // requires eval_Function_1__T_n__V_m_ 
+		meta::pure::functions::date::tests::testQuarterNumber__Boolean_1_, // requires eval_Function_1__T_n__V_m_ 
+		meta::pure::functions::date::tests::testQuarter__Boolean_1_, // requires eval_Function_1__T_n__V_m_ 
+		meta::pure::functions::date::tests::testYear__Boolean_1_, // requires eval_Function_1__T_n__V_m_
+		meta::pure::functions::lang::tests::copy::testCopySubClass__Boolean_1_, // requires copy_T_1__String_1__KeyExpression_MANY__T_1_
+		meta::pure::functions::lang::tests::copy::testCopyWithAssociation__Boolean_1_, // requires copy_T_1__String_1__KeyExpression_MANY__T_1_ 
+		meta::pure::functions::lang::tests::copy::testCopyWithIdVariable__Boolean_1_, // requires copy_T_1__String_1__KeyExpression_MANY__T_1_ 
+		meta::pure::functions::lang::tests::copy::testDeepCopyToOne__Boolean_1_, // requires copy_T_1__String_1__KeyExpression_MANY__T_1_ 
+		meta::pure::functions::lang::tests::copy::testDeepCopyWithAssociation1__Boolean_1_, // requires copy_T_1__String_1__KeyExpression_MANY__T_1_ 
+		meta::pure::functions::lang::tests::copy::testDeepCopyWithAssociation2__Boolean_1_, // requires assertInstanceOf_Any_1__Type_1__Boolean_1_ 
+		meta::pure::functions::lang::tests::copy::testFlatCopyObjectToManyAdd__Boolean_1_, // requires copy_T_1__String_1__KeyExpression_MANY__T_1_ 
+		meta::pure::functions::lang::tests::copy::testFlatCopyPrimitiveToManyAdd__Boolean_1_, // requires copy_T_1__String_1__KeyExpression_MANY__T_1_ 
+		meta::pure::functions::lang::tests::copy::testFlatCopyPrimitiveToManyReplace__Boolean_1_, // requires copy_T_1__String_1__KeyExpression_MANY__T_1_ 
+		meta::pure::functions::lang::tests::copy::testFlatCopyToOne__Boolean_1_, // requires copy_T_1__String_1__KeyExpression_MANY__T_1_ 
+		meta::pure::functions::lang::tests::copy::testFunctionDefinitionCopy__Boolean_1_, // requires pathToElement_String_1__PackageableElement_1_ 
+		meta::pure::functions::lang::tests::copy::testFunctionDefinitionWithInstanceCopy__Boolean_1_, // requires pathToElement_String_1__PackageableElement_1_ 
+		meta::pure::functions::lang::tests::dynamicNew::testDynamicNewWithClass__Boolean_1_, // requires dynamicNew_Class_1__KeyValue_MANY__Function_$0_1$__Function_$0_1$__Any_$0_1$__Any_1_ 
+		meta::pure::functions::lang::tests::dynamicNew::testDynamicNewWithGenericType__Boolean_1_, // requires dynamicNew_GenericType_1__KeyValue_MANY__Function_$0_1$__Function_$0_1$__Any_$0_1$__Any_1_ 
+		meta::pure::functions::lang::tests::dynamicNew::testSimpleDynamicNewWithGenericType__Boolean_1_, // requires dynamicNew_GenericType_1__KeyValue_MANY__Any_1_ 
+		meta::pure::functions::lang::tests::dynamicNew::testSimpleDynamicNew__Boolean_1_, // requires dynamicNew_Class_1__KeyValue_MANY__Any_1_ 
+		meta::pure::functions::lang::tests::eval::testEvalOne__Boolean_1_, // requires eval_Function_1__T_n__V_m_ 
+		meta::pure::functions::lang::tests::eval::testEvalTwo__Boolean_1_, // requires eval_Function_1__T_n__U_p__V_m_ 
+		meta::pure::functions::lang::tests::eval::testEvalWithCollectionWithOneElement__Boolean_1_, // requires eval_Function_1__T_n__V_m_ 
+		meta::pure::functions::lang::tests::eval::testEval__Boolean_1_, // requires eval_Function_1__V_m_ 
+		meta::pure::functions::lang::tests::evaluate::copy::testFunctionDefinitionCopy__Boolean_1_, // requires pathToElement_String_1__PackageableElement_1_ 
+		meta::pure::functions::lang::tests::evaluate::copy::testFunctionDefinitionWithInstanceCopy__Boolean_1_, // requires pathToElement_String_1__PackageableElement_1_ 
+		meta::pure::functions::lang::tests::evaluate::testEvaluateAnyWithMultiplicities__Boolean_1_, // requires evaluate_Function_1__List_MANY__Any_MANY_ 
+		meta::pure::functions::lang::tests::evaluate::testEvaluateInheritance__Boolean_1_, // requires eval_Function_1__T_n__V_m_ 
+		meta::pure::functions::lang::tests::evaluate::testEvaluateMultiplicityInference__Boolean_1_, // requires eval_Function_1__T_n__V_m_ 
+		meta::pure::functions::lang::tests::evaluate::testEvaluateOne__Boolean_1_, // requires eval_Function_1__T_n__V_m_ 
+		meta::pure::functions::lang::tests::evaluate::testEvaluateQualifierWithParam__Boolean_1_, // requires evaluate_Function_1__List_MANY__Any_MANY_ 
+		meta::pure::functions::lang::tests::evaluate::testEvaluateQualifier__Boolean_1_, // requires evaluate_Function_1__List_MANY__Any_MANY_ 
+		meta::pure::functions::lang::tests::evaluate::testEvaluateWithNoParams__Boolean_1_, // requires evaluate_Function_1__List_MANY__Any_MANY_ 
+		meta::pure::functions::lang::tests::letFn::testLetChainedWithAnotherFunction__Boolean_1_, // requires letChainedWithAnotherFunction_ModelElement_MANY__ModelElement_MANY_ 
+		meta::pure::functions::lang::tests::match::testMatchWithMixedReturnType__Boolean_1_, // requires deactivate_Any_MANY__ValueSpecification_1_ 
+		meta::pure::functions::math::tests::abs::testReflectiveExecution__Boolean_1_, // requires eval_Function_1__T_n__V_m_ 
+		meta::pure::functions::math::tests::evaluate::divide::testNumberDivide__Boolean_1_, // requires eval_Function_1__T_n__U_p__V_m_ 
+		meta::pure::functions::math::tests::evaluate::minus::testReflectiveExecution__Boolean_1_, // requires eval_Function_1__T_n__V_m_ 
+		meta::pure::functions::math::tests::evaluate::minus::testSingleExpressionMinus__Boolean_1_, // requires eval_Function_1__V_m_ 
+        meta::pure::functions::math::tests::exp::testNumberExp__Boolean_1_, // requires eval
+        meta::pure::functions::math::tests::log::testNumberLog__Boolean_1_, // requires eval
+		meta::pure::functions::math::tests::minus::testSingleMinusType__Boolean_1_, // requires type_Any_MANY__Type_1_ 
+		meta::pure::functions::math::tests::mod::testModInEval__Boolean_1_, // requires eval_Function_1__T_n__U_p__V_m_ 
+		meta::pure::functions::math::tests::plus::testSinglePlusType__Boolean_1_, // requires type_Any_MANY__Type_1_ 
+		meta::pure::functions::math::tests::pow::testNumberPow__Boolean_1_, // requires eval_Function_1__T_n__U_p__V_m_ 
+		meta::pure::functions::math::tests::rem::testRemInEvalWithFloat__Boolean_1_, // requires eval_Function_1__T_n__U_p__V_m_ 
+		meta::pure::functions::math::tests::rem::testRemInEvalWithMixedIntegersAndFloats__Boolean_1_, // requires eval_Function_1__T_n__U_p__V_m_ 
+		meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers__Boolean_1_, // requires eval_Function_1__T_n__U_p__V_m_ 
+		meta::pure::functions::math::tests::rem::testRemInEval__Boolean_1_, // requires eval_Function_1__T_n__U_p__V_m_     
+        meta::pure::functions::math::tests::trigonometry::testArcCosine__Boolean_1_, // requires eval
+        meta::pure::functions::math::tests::trigonometry::testArcSine__Boolean_1_, // requires eval
+        meta::pure::functions::math::tests::trigonometry::testArcTangent2__Boolean_1_, // requires eval
+        meta::pure::functions::math::tests::trigonometry::testArcTangent__Boolean_1_, // requires eval
+		meta::pure::functions::math::tests::trigonometry::testCosine__Boolean_1_, // requires eval_Function_1__T_n__V_m_ 
+		meta::pure::functions::math::tests::trigonometry::testSine__Boolean_1_, // requires eval_Function_1__T_n__V_m_ 
+        meta::pure::functions::math::tests::trigonometry::testSquareRoot__Boolean_1_, // requires eval
+        meta::pure::functions::math::tests::trigonometry::testTangent__Boolean_1_, // requires eval
+		meta::pure::functions::math::testPercentile__Boolean_1_, // requires eval_Function_1__T_n__V_m_ 
+		meta::pure::functions::string::tests::evaluate::plus::testPlusInLambda__Boolean_1_, // requires eval_Function_1__T_n__U_p__V_m_ 
+		meta::pure::functions::string::tests::format::testFormatInEval__Boolean_1_, // requires eval_Function_1__T_n__U_p__V_m_
+		meta::pure::functions::string::tests::format::testFormatInEvaluate__Boolean_1_, // requires evaluate_Function_1__List_MANY__Any_MANY_
+		meta::pure::functions::string::tests::parseDate::testParseDateTypes__Boolean_1_, // requires assertInstanceOf_Any_1__Type_1__Boolean_1_
+		meta::pure::functions::string::tests::plus::testPlusInIterate__Boolean_1_ // requires copy_T_1__String_1__KeyExpression_MANY__T_1_
+  ];
+
+  let misc = [    
+		meta::pure::functions::boolean::tests::testIsConcreteFunctionDefinitions__Boolean_1_,
+		meta::pure::functions::boolean::tests::testIsNativeFunctions__Boolean_1_,
+        meta::pure::functions::collection::tests::contains::testContainsWithFunction__Boolean_1_, // Unhandled value type: meta::pure::metamodel::function::ConcreteFunctionDefinition
+		meta::pure::functions::collection::tests::contains::testContainsAllNonPrimitive__Boolean_1_,
+		meta::pure::functions::collection::tests::containsAny::testContainsAnyNonPrimitive__Boolean_1_,
+		meta::pure::functions::collection::tests::filter::testFilterUsingVarForFunction__Boolean_1_,
+		meta::pure::functions::collection::tests::head::testHeadComplex__Boolean_1_, // scanProperties: functionType is not supported yet for this subtype of function Path
+		meta::pure::functions::collection::tests::in::testInNonPrimitive__Boolean_1_,
+		meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesPrimitiveStandardFunction__Boolean_1_,		
+		meta::pure::functions::collection::tests::map::testMapWithFunctionAsVariable__Boolean_1_,
+        meta::pure::functions::collection::tests::removeAll::testRemoveAllClassCustomFunction__Boolean_1_, // Unhandled value type: meta::pure::metamodel::function::ConcreteFunctionDefinition
+		meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesLongList__Boolean_1_,
+		meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesNonPrimitives__Boolean_1_,
+		meta::pure::functions::lang::tests::new::testNewGenericFunc__Boolean_1_,
+		meta::pure::functions::lang::tests::new::testNewGeneric__Boolean_1_,
+        meta::pure::functions::lang::tests::match::testMatchWithFunctionsAsParamManyMatch__Boolean_1_,
+		meta::pure::functions::lang::tests::match::testMatchWithFunctionsAsParam__Boolean_1_,
+		meta::pure::functions::string::tests::toRepresentation::testFunctionToRepresentation__Boolean_1_,    
+		meta::pure::functions::string::tests::format::testFormatList__Boolean_1_,
+		meta::pure::functions::string::tests::format::testFormatPair__Boolean_1_,
+		meta::pure::functions::string::tests::makestring::testMakeStringInstances__Boolean_1_,
+		meta::pure::functions::string::tests::makestring::testMakeStringMixedTypes__Boolean_1_,
+		meta::pure::functions::string::tests::toRepresentation::testClassInstanceToRepresentation__Boolean_1_,
+		meta::pure::functions::string::tests::toString::testListToString__Boolean_1_,
+		meta::pure::functions::string::tests::toString::testPairCollectionToString__Boolean_1_,
+		meta::pure::functions::string::tests::toString::testPairToString__Boolean_1_
+  ];
+
+  let compilationFailures = [
+        meta::pure::functions::collection::tests::forall::testforAllOnEmptySet__Boolean_1_,
+        meta::pure::functions::collection::tests::reverse::testReverse__Boolean_1_,
+        meta::pure::functions::collection::tests::sort::testSimpleSortWithFunctionVariables__Boolean_1_,
+        meta::pure::functions::collection::tests::sort::testSortBy__Boolean_1_,
+        meta::pure::functions::lang::tests::dot::testDotManyToOne__Boolean_1_,
+        meta::pure::functions::lang::tests::dot::testDotOneToOneFromVar__Boolean_1_,
+        meta::pure::functions::lang::tests::dot::testDotOneToOne__Boolean_1_,
+        meta::pure::functions::lang::tests::dot::testStructureNavigation__Boolean_1_,
+        meta::pure::functions::lang::tests::letFn::testLetWithParam__Boolean_1_,
+        meta::pure::functions::math::tests::minus::testSingleMinus__Boolean_1_,
+        meta::pure::functions::string::tests::toRepresentation::testClassToRepresentation__Boolean_1_,
+        meta::pure::functions::string::tests::toString::testClassToString__Boolean_1_,
+        meta::pure::functions::string::tests::toString::testEnumerationToString__Boolean_1_,
+        meta::pure::functions::tests::collection::removeDuplicatesPreservesOrderTest__Boolean_1_
+  ];
+
+  let wrongResults = [
+        meta::pure::functions::boolean::tests::testEqualMixedCollections__Boolean_1_,
+        meta::pure::functions::boolean::tests::testEqualNonPrimitive__Boolean_1_,
+        meta::pure::functions::boolean::tests::testEqualRecursivePrimitiveCollections__Boolean_1_,
+        meta::pure::functions::collection::tests::contains::testContainsNonPrimitive__Boolean_1_,
+        meta::pure::functions::collection::tests::removeAll::testRemoveAllClassKey__Boolean_1_,
+        meta::pure::functions::collection::tests::intersection::testTypes__Boolean_1_,
+        meta::pure::functions::collection::tests::take::testTakeNegativeOnEmptyList__Boolean_1_,
+        meta::pure::functions::collection::tests::take::testTakeNegativeOnNonEmptyList__Boolean_1_,
+        meta::pure::functions::lang::tests::new::testNewWithAssociation__Boolean_1_,
+        meta::pure::functions::lang::tests::subType::testWhenSubType__Boolean_1_,
+        meta::pure::functions::math::tests::rem::testRemWithDecimals__Boolean_1_,
+        meta::pure::functions::string::tests::parseFloat::testParseZero__Boolean_1_,
+        meta::pure::functions::string::tests::toString::testPersonToString__Boolean_1_,
+        meta::pure::functions::string::tests::toString1::testComplexClassToString__Boolean_1_
+  ];
+
+  $genericsNotSupported
+    ->concatenate($translationNotSupported)
+    ->concatenate($prohibitedFunctionAccess)
+    ->concatenate($misc)
+    ->concatenate($compilationFailures)
+    ->concatenate($wrongResults);
+}
+
+function <<access.private>>  meta::pure::executionPlan::platformBinding::legendJava::library::tests::rootPackage():Package[1]
+{
+   meta::pure::functions;
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::library::tests::collectTestsForJavaGeneration():PureTestCollection[1]
+{
+  let root = rootPackage();
+  let pkgsToExclude = getPackagesToExclude();
+  let fnsToExclude = getFunctionsToExclude();
+  $root->generateTestCollection($pkgsToExclude, $fnsToExclude);
+}
+
+function <<test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::platformBinding::legendJava::library::tests::JavaGenerationTestSingle():Boolean[1]
+{
+  let root = rootPackage();
+  let pkgsToExclude = getPackagesToExclude();
+  let fnsToExclude = getFunctionsToExclude();
+
+  let suite = javaPureTests(engineConventions([]), [])
+    ->addTestsWithin($root)
+    ->excludeTestsWithin($pkgsToExclude)
+    ->excludeTests($fnsToExclude)
+    ->runTests();
+}

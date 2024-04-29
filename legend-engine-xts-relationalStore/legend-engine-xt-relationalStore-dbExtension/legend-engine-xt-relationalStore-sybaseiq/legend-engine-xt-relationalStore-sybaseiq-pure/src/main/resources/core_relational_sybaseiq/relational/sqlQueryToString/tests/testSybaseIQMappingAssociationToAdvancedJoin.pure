@@ -1,0 +1,29 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::mapping::join::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::join::model::domain::*;
+import meta::relational::tests::mapping::join::model::mapping::*;
+import meta::relational::tests::mapping::join::model::store::*;
+import meta::relational::mapping::*;
+import meta::pure::profiles::*;
+import meta::relational::functions::sqlstring::*;
+
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sybaseIQ::testConvertToStringSybase():Boolean[1]
+{
+   let s = toSQLString(|Trade.all()->project([#/Trade/account/name!name#]), MappingForAccountAndTrade, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+   assertSameSQL('select "accountTable_d_0_d_m1".name as "name" from tradeTable as "root" left outer join accountTable as "accountTable_d_0_d_m1" on (convert(VARCHAR(128), "root".accountID) = "accountTable_d_0_d_m1".ID)', $s);
+}

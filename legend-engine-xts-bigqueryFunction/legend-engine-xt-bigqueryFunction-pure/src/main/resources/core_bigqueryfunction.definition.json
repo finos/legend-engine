@@ -1,0 +1,9 @@
+{
+  "name": "core_bigqueryfunction",
+  "pattern": "(meta::external::function::activator::bigQueryFunction|meta::protocols)(::.*)?",
+  "dependencies": [
+    "platform",
+    "core_function_activator",
+    "core_relational"
+  ]
+}

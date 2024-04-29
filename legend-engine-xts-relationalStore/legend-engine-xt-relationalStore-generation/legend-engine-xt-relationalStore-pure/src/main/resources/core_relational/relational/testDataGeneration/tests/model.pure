@@ -1,0 +1,155 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+ import meta::relational::metamodel::execute::*;
+ import meta::pure::functions::lang::tests::cast::*;
+ import meta::relational::metamodel::join::*;
+ import meta::relational::functions::database::*;
+ import meta::pure::executionPlan::*;
+ import meta::relational::mapping::*;
+ import meta::relational::functions::toDDL::*;
+ import meta::relational::metamodel::*;
+ import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
+ import meta::core::runtime::*;
+ import meta::pure::lineage::scanTables::*;
+ import meta::relational::tests::model::simple::*;
+ import meta::relational::testDataGeneration::*;
+
+Class meta::relational::testDataGeneration::tests::model::Student
+{
+  id : String[1];
+  name : String[1];
+}
+Class meta::relational::testDataGeneration::tests::model::School
+{
+  id : String[1];
+  name : String[1];
+}
+Association meta::relational::testDataGeneration::tests::model::Student_School
+{
+  student: meta::relational::testDataGeneration::tests::model::Student[1..*];
+  school: meta::relational::testDataGeneration::tests::model::School[1];
+}
+
+function meta::relational::testDataGeneration::tests::model::setUp():Runtime[1]
+{
+  let connection = meta::external::store::relational::tests::testRuntime(meta::relational::testDataGeneration::tests::model::db).connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
+  executeInDb('Drop table if exists StudentTable;', $connection);
+  executeInDb('Create Table StudentTable(id VARCHAR(60), name VARCHAR(60), school_id VARCHAR(60));', $connection);
+  executeInDb('insert into StudentTable(id, name, school_id) values (\'1\', \'SURAJ\', \'sc1\');', $connection);
+  executeInDb('insert into StudentTable(id, name, school_id) values (\'2\', \'MAN\', \'sc2\');', $connection);
+  executeInDb('insert into StudentTable(id, name, school_id) values (\'5\', \'RAJ\', \'sc5\');', $connection);
+  executeInDb('Drop table if exists SchoolTable;', $connection);
+  executeInDb('Create Table SchoolTable(id VARCHAR(60), name VARCHAR(60));', $connection);
+  executeInDb('insert into SchoolTable(id, name) values (\'sc1\', \'school1\');', $connection);
+  executeInDb('insert into SchoolTable(id, name) values (\'sc2\', \'school2\');', $connection);
+  executeInDb('insert into SchoolTable(id, name) values (\'sc3\', \'school3\');', $connection);
+  executeInDb('insert into SchoolTable(id, name) values (\'sc4\', \'school4\');', $connection);
+
+  meta::external::store::relational::tests::testRuntime(meta::relational::testDataGeneration::tests::model::db);
+}
+
+###Relational
+Database meta::relational::testDataGeneration::tests::model::db
+(
+  View ViewSchool
+  (
+    id: SchoolTable.id,
+    name : SchoolTable.name
+  )
+
+  View ViewOnViewSchool
+  (
+    id: ViewSchool.id,
+    name: ViewSchool.name
+  )
+
+  View ViewOnViewOnViewSchool
+  (
+    id: ViewOnViewSchool.id,
+    name: ViewOnViewSchool.name
+  )
+
+  Table SchoolTable
+  (
+    id VARCHAR(60) PRIMARY KEY,
+    name VARCHAR(60) PRIMARY KEY
+  )
+
+  Table StudentTable
+  (
+    id VARCHAR(60) PRIMARY KEY,
+    school_id VARCHAR(60),
+    name VARCHAR(60)
+  )
+
+  Join student_to_school(ViewOnViewSchool.id = StudentTable.school_id)
+  Join student_to_school2(ViewOnViewOnViewSchool.id = StudentTable.school_id)
+ )
+
+
+###Mapping
+import meta::relational::testDataGeneration::tests::model::*;
+Mapping meta::relational::testDataGeneration::tests::model::VeiwOnViewMapping
+(
+  meta::relational::testDataGeneration::tests::model::Student_School: Relational
+  {
+    AssociationMapping
+    (
+      student[schoolMapping,studentMapping]: [db]@student_to_school,
+      school[studentMapping, schoolMapping]: [db]@student_to_school
+    )
+  }
+
+  *meta::relational::testDataGeneration::tests::model::School[schoolMapping]: Relational
+  {
+    ~mainTable [db]ViewOnViewSchool
+    id: [db]ViewOnViewSchool.id,
+    name: [db]ViewOnViewSchool.name
+  }
+
+  *meta::relational::testDataGeneration::tests::model::Student[studentMapping]: Relational
+  {
+    ~mainTable [db]StudentTable
+    id: [db]StudentTable.id,
+    name: [db]StudentTable.name
+  }
+)
+
+Mapping meta::relational::testDataGeneration::tests::model::VeiwOnViewonViewMapping
+(
+  meta::relational::testDataGeneration::tests::model::Student_School: Relational
+  {
+    AssociationMapping
+    (
+      student[schoolMapping,studentMapping]: [db]@student_to_school2,
+      school[studentMapping, schoolMapping]: [db]@student_to_school2
+    )
+  }
+
+  *meta::relational::testDataGeneration::tests::model::School[schoolMapping]: Relational
+  {
+    ~mainTable [db]ViewOnViewOnViewSchool
+    id: [db]ViewOnViewOnViewSchool.id,
+    name: [db]ViewOnViewOnViewSchool.name
+  }
+
+  *meta::relational::testDataGeneration::tests::model::Student[studentMapping]: Relational
+  {
+    ~mainTable [db]StudentTable
+    id: [db]StudentTable.id,
+    name: [db]StudentTable.name
+  }
+)

@@ -62,11 +62,11 @@ jobs:
       - name: Build
         env:
           MAVEN_OPTS: -Xmx4g
-        run: mvn clean install -DskipTests=true
+        run: mvn -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-redshift/legend-engine-xt-relationalStore-redshift-execution-tests -am clean install -DskipTests=true
       - name: Connection Protocol Integration Tests
         env:
           MAVEN_OPTS: -Xmx4g
           REDSHIFT_INTEGRATION_USER1_NAME: ${{ secrets.REDSHIFT_INTEGRATION_USER1_NAME }}
           REDSHIFT_INTEGRATION_USER1_PASSWORD: ${{ secrets.REDSHIFT_INTEGRATION_USER1_PASSWORD }}
         run: |
-          mvn -pl legend-engine-xt-relationalStore-executionPlan-connection-tests  -Dtest="ExternalIntegration*Redshift*" test
+          mvn -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-redshift/legend-engine-xt-relationalStore-redshift-execution-tests  -Dtest="ExternalIntegration*Redshift*" test

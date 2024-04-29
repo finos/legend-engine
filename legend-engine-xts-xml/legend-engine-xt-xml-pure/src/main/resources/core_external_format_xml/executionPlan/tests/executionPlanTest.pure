@@ -1,0 +1,128 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+import meta::xsd::tests::toPure::*;
+import meta::external::format::xml::executionPlan::test::*;
+import meta::external::format::xml::metamodel::xml::*;
+import meta::external::format::xml::metamodel::xsd::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::executionPlan::*;
+import meta::external::format::shared::functions::*;
+import meta::external::format::shared::functions::*;
+import meta::external::format::shared::metamodel::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::toString::*;
+import meta::pure::graphFetch::execution::*;
+import meta::external::store::model::*;
+import meta::pure::model::unit::*;
+import meta::core::runtime::*;
+Class meta::external::format::xml::executionPlan::test::Person
+{
+  firstName : String[1];
+  lastName  : String[1];
+}
+
+Class meta::external::format::xml::executionPlan::test::PersonWithFirm
+{
+  firstName   : String[1];
+  lastName    : String[1];
+  age         : Integer[0..1];
+  dateOfBirth : StrictDate[0..1];
+  firm        : Firm[1];
+  addresses   : Address[1..*];
+}
+
+Class meta::external::format::xml::executionPlan::test::PersonWithFirmConstraint
+[
+  $this.age > 0
+]
+{
+  firstName   : String[1];
+  lastName    : String[1];
+  age         : Integer[0..1];
+  dateOfBirth : StrictDate[0..1];
+  firm        : Firm[1];
+  addresses   : Address[1..*];
+}
+
+Class meta::external::format::xml::executionPlan::test::Firm
+{
+  legalName : String[1];
+  firmAddress: Address[*];
+  active    : Boolean[1];
+}
+
+Class meta::external::format::xml::executionPlan::test::Address
+{
+  street : String[1];
+}
+
+Class meta::external::format::xml::executionPlan::test::TargetPerson
+{
+  fullName : String[1];
+}
+
+function meta::external::format::xml::executionPlan::test::getTestBinding(): Binding[1]
+{
+  let schemaSet = ^SchemaSet(
+    name    = 'TestSchema',
+    package = meta::external::format::xml::executionPlan::test,
+    format  = 'XSD',
+    schemas = ^Schema(
+        id      = 'default.xsd',
+        detail  = ^XsdSchema(
+          items = [
+              ^XsdElement(
+                name=^QName(localPart='person', namespace=''),
+                minOccurs=1,
+                maxOccurs=1,
+                type=^XsdComplexType(
+                    particle=^XsdSequence(
+                      minOccurs=1,
+                      maxOccurs=1,
+                      items = [
+                          ^XsdElement(name=^QName(localPart='firstName', namespace=''), typeName=xsType('string'), minOccurs=1, maxOccurs=1),
+                          ^XsdElement(name=^QName(localPart='lastName', namespace=''), typeName=xsType('string'), minOccurs=1, maxOccurs=1)
+                      ]
+                    )
+                )
+              )
+          ]
+        )
+    )
+  );
+
+  ^Binding(
+    name      = 'TestBinding',
+    package   = meta::external::format::xml::executionPlan::test,
+    schemaSet = $schemaSet,
+    contentType = 'application/xml',
+    modelUnit = newModelUnit()->include(Person)
+  );
+}
+
+function meta::external::format::xml::executionPlan::test::xsType(type: String[1]): QName[1]
+{
+   ^QName(localPart=$type, namespace='http://www.w3.org/2001/XMLSchema');
+}
+
+###Mapping
+import meta::external::format::xml::executionPlan::test::*;
+Mapping meta::external::format::xml::executionPlan::test::M2MMapping
+(
+  TargetPerson: Pure
+  {
+    ~src Person
+    fullName : $src.firstName + ' ' + $src.lastName;
+  }
+)

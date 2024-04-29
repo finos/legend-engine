@@ -1,0 +1,30 @@
+import meta::analytics::quality::model::*;
+import meta::analytics::quality::*;
+import meta::analytics::quality::model::domain::*;
+
+function meta::analytics::quality::model::domain::associationRules():Rule<Association>[*]
+{
+    [
+       associationNameShouldStartWithUpperCase_Association_1__CheckResult_MANY_
+    ]->map(rule|createRule($rule)->cast(@Rule<Association>));
+
+}
+
+function <<rule.skipTests>>
+           { rule.rule = 'Invalid Association Name',
+           rule.description ='Camel case must be used Association name and should be upper camel case, with an underscore between both sides of the join.',
+           rule.severity = 'High',
+           rule.category = 'Modelling',
+           doc.doc = 'Returns true if Association name is valid'}
+meta::analytics::quality::model::domain::associationNameShouldStartWithUpperCase(a:Association[1]):CheckResult[*]
+{
+
+   let containsUnderScore = $a.name->meta::pure::functions::string::contains('_');
+   let tokens = if($containsUnderScore,| meta::pure::functions::string::split($a.name->toOne(), '_'), |$a.name->toOne());
+
+   let passed  = size($tokens) == 2 &&
+                              $tokens->at(0)->meta::pure::functions::string::substring(0,1) ->isUpperCase() &&
+                                 $tokens->at(1)->meta::pure::functions::string::substring(0,1) ->isUpperCase();
+   let message ='Association (' + $a.name->toOne() + ') does not match required standards: Camel case must be used Association name and should be upper camel case, with an underscore between both sides of the join';
+   ^CheckResult(isValid=$passed, message=$message);
+}

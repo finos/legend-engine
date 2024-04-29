@@ -1,0 +1,402 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Reference document : https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md
+// Below metamodel is based on OpenApi Spec 3.0.3
+
+import meta::external::function::description::openapi::metamodel::*;
+
+Class meta::external::function::description::openapi::metamodel::OpenApi
+{
+  openapi       : String[1];
+  info          : Info[1];
+  servers       : Server[*];
+  paths         : Map<String, PathItem>[1];
+  components    : Components[0..1];
+  security      : SecurityRequirement[*];
+  tags          : meta::external::function::description::openapi::metamodel::Tag[*];
+  externalDocs  : ExternalDocumentation[0..1];
+}
+
+Class meta::external::function::description::openapi::metamodel::Info
+{
+  title         : String[1];
+  description   : String[0..1];
+  termsOfService: String[0..1];
+  contact       : Contact[0..1];
+  license       : License[0..1];
+  version       : String[1];
+}
+
+Class meta::external::function::description::openapi::metamodel::Contact
+{
+  name          : String[0..1];
+  url           : String[0..1];
+  email         : String[0..1];
+}
+
+Class meta::external::function::description::openapi::metamodel::License
+{
+  name          : String[1];
+  url           : String[0..1];
+}
+
+Class meta::external::function::description::openapi::metamodel::Server
+{
+  url           : String[1];
+  description   : String[0..1];
+  variables     : Map<String, ServerVariable>[0..1];
+}
+
+Class meta::external::function::description::openapi::metamodel::ServerVariable
+[
+  defaultValueIsValid : $this.enum->isEmpty() || $this.default->in($this.enum)
+]
+{
+  enum          : String[*];
+  default       : String[1];
+  description   : String[0..1];
+}
+
+Class meta::external::function::description::openapi::metamodel::Components
+{
+  schemas       : Map<String, SchemaOrReference>[0..1];
+  responses     : Map<String, ResponseOrReference>[0..1];
+  parameters    : Map<String, ParameterOrReference>[0..1];
+  examples      : Map<String, ExampleOrReference>[0..1];
+  requestBodies : Map<String, RequestBodyOrReference>[0..1];
+  headers       : Map<String, HeaderOrReference>[0..1];
+  securitySchemes : Map<String, SecuritySchemeOrReference>[0..1];
+  links         : Map<String, LinkOrReference>[0..1];
+  callbacks     : Map<String, CallbackOrReference>[0..1];
+}
+
+Class meta::external::function::description::openapi::metamodel::PathItem
+{
+  ref           : String[0..1];
+  summary       : String[0..1];
+  description   : String[0..1];
+  get           : Operation[0..1];
+  put           : Operation[0..1];
+  post          : Operation[0..1];
+  delete        : Operation[0..1];
+  options       : Operation[0..1];
+  head          : Operation[0..1];
+  patch         : Operation[0..1];
+  trace         : Operation[0..1];
+  servers       : Server[*];
+  parameters    : ParameterOrReference[*];
+}
+
+Class meta::external::function::description::openapi::metamodel::Operation
+{
+  tags          : String[*];
+  summary       : String[0..1];
+  description   : String[0..1];
+  externalDocs  : ExternalDocumentation[0..1];
+  operationId   : String[0..1];
+  parameters    : ParameterOrReference[*];
+  requestBody   : RequestBodyOrReference[0..1];
+  responses     : Map<String, ResponseOrReference>[1];
+  callbacks     : Map<String, CallbackOrReference>[0..1];
+  deprecated    : Boolean[0..1];
+  security      : SecurityRequirement[*];
+  servers       : Server[*];
+}
+
+Class meta::external::function::description::openapi::metamodel::ExternalDocumentation
+{
+  description   : String[0..1];
+  url           : String[1];
+}
+
+Class meta::external::function::description::openapi::metamodel::Parameter extends ParameterOrReference
+[
+  if ($this.in == In.path, |assert(!$this.required->isEmpty() && $this.required->toOne(),'path is required'), |true),
+  if ($this.in == In.body, |assert(!$this.schema->isEmpty(), 'schema should not be empty'),|true)
+]
+{
+  name          : String[1];
+  in            : In[1];
+  description   : String[0..1];
+  required      : Boolean[0..1];
+  deprecated    : Boolean[0..1];
+  allowEmptyValue: Boolean[0..1];
+
+  style         : Style[0..1];
+  explode       : Boolean[0..1];
+  allowReserved : Boolean[0..1];
+  schema        : SchemaOrReference[0..1];
+  example       : Any[0..1];
+  examples      : Map<String, ExampleOrReference>[0..1];
+  content       : Map<String, MediaType>[0..1];
+}
+
+Enum meta::external::function::description::openapi::metamodel::In
+{
+  query,
+  header,
+  path,
+  cookie,
+  body      //TODO: check this
+}
+
+Enum meta::external::function::description::openapi::metamodel::Style
+{
+  matrix,
+  label,
+  form,
+  simple,
+  spaceDelimited,
+  pipeDelimited,
+  deepObject
+}
+
+Class meta::external::function::description::openapi::metamodel::RequestBody extends RequestBodyOrReference
+{
+  description  : String[0..1];
+  content      : Map<String, MediaType>[1];
+  required     : Boolean[0..1];
+}
+
+Class meta::external::function::description::openapi::metamodel::MediaType
+{
+  schema       : SchemaOrReference[0..1];
+  example      : Any[0..1];
+  examples     : Map<String, ExampleOrReference>[0..1];
+  encoding     : Map<String, Encoding>[0..1];
+}
+
+Class meta::external::function::description::openapi::metamodel::Encoding
+{
+  contentType  : String[0..1];
+  headers      : Map<String, HeaderOrReference>[0..1];
+  style        : Style[0..1];
+  explode      : Boolean[0..1];
+  allowReserved : Boolean[0..1];
+}
+
+Class meta::external::function::description::openapi::metamodel::Response extends ResponseOrReference
+{
+  description  : String[1];
+  headers      : Map<String, HeaderOrReference>[0..1];
+  content      : Map<String, MediaType>[0..1];
+  links        : Map<String, LinkOrReference>[0..1];
+}
+
+Class meta::external::function::description::openapi::metamodel::Callback extends Map<String, PathItem>, CallbackOrReference
+{
+}
+
+Class meta::external::function::description::openapi::metamodel::Example extends ExampleOrReference
+{
+  summary      : String[0..1];
+  description  : String[0..1];
+  value        : Any[0..1];
+  externalValue: String[0..1];
+}
+
+Class meta::external::function::description::openapi::metamodel::Link extends LinkOrReference
+{
+  operationRef : String[0..1];
+  operationId  : String[0..1];
+  parameters   : Map<String, String>[0..1];
+  requestBody  : Any[0..1];
+  description  : String[0..1];
+  server       : Server[0..1];
+}
+
+Class meta::external::function::description::openapi::metamodel::Header extends HeaderOrReference
+{
+  description   : String[0..1];
+  required      : Boolean[0..1];
+  deprecated    : Boolean[0..1];
+
+  style         : Style[0..1];
+  explode       : Boolean[0..1];
+  schema        : SchemaOrReference[0..1];
+  example       : Any[0..1];
+  examples      : Map<String, ExampleOrReference>[0..1];
+  content       : Map<String, MediaType>[0..1];
+}
+
+Class meta::external::function::description::openapi::metamodel::Tag
+{
+  name          : String[1];
+  description   : String[0..1];
+  externalDocs  : ExternalDocumentation[0..1];
+}
+
+Class meta::external::function::description::openapi::metamodel::Schema extends SchemaOrReference
+{
+  title         : String[0..1];
+  name          : String[0..1];
+  description   : String[0..1];
+
+  multipleOf    : Integer[0..1];
+  maximum       : Integer[0..1];
+  exclusiveMaximum: Boolean[0..1];
+  minimum       : Integer[0..1];
+  exclusiveMinimum: Boolean[0..1];
+  maxLength     : Integer[0..1];
+  minLength     : Integer[0..1];
+  pattern       : String[0..1];
+  maxItems      : Integer[0..1];
+  minItems      : Integer[0..1];
+  uniqueItems   : Boolean[0..1];
+  maxProperties : Integer[0..1]; 
+  minProperties : Integer[0..1];
+  format        : String[0..1];
+  nullable      : Boolean[0..1];
+  readOnly      : Boolean[0..1];
+  writeOnly     : Boolean[0..1];
+
+  required      : List<String>[*];
+
+  type          : String[0..1];
+
+  properties    : Map<String, SchemaOrReference>[0..1];
+  additionalProperties: Any[0..1];
+   
+  externalDocs  : ExternalDocumentation[0..1];
+  deprecated    : Boolean[0..1];
+
+  xml           : Xml[0..1];
+  discriminator : Discriminator[0..1];
+  
+  exampleSetFlag: Boolean[0..1];
+
+  allOf         : SchemaOrReference[0..1];
+  anyOf         : SchemaOrReference[0..1];
+  oneOf         : SchemaOrReference[0..1];
+  not           : SchemaOrReference[0..1];
+  items         : SchemaOrReference[0..1];
+
+  enum          : Any[*];
+  const         : Any[0..1];
+
+  default       : Any[0..1];
+  example       : Any[0..1];
+}
+
+Class meta::external::function::description::openapi::metamodel::Discriminator
+{
+  propertyName  : String[1];
+  mapping       : Map<String, String>[0..1];
+}
+
+Class meta::external::function::description::openapi::metamodel::Xml
+{
+  name          : String[0..1];
+  namespace     : String[0..1];
+  prefix        : String[0..1];
+  attribute     : Boolean[0..1];
+  wrapped       : Boolean[0..1];
+}
+
+Class meta::external::function::description::openapi::metamodel::SecurityRequirement extends Map<String, List<String>>
+{
+
+}
+
+Class meta::external::function::description::openapi::metamodel::SecurityScheme extends SecuritySchemeOrReference
+[
+  apiKeyScheme : if($this.type == SecuritySchemeType.apiKey, | $this.name->isNotEmpty() && $this.in->isNotEmpty(), | true),
+  httpScheme : if($this.type == SecuritySchemeType.http, | $this.scheme->isNotEmpty(), | true),
+  oauth2Scheme : if($this.type == SecuritySchemeType.oauth2, | $this.flows->isNotEmpty(), | true),
+  openIdConnectScheme : if($this.type == SecuritySchemeType.openIdConnect, | $this.openIdConnectUrl->isNotEmpty(), | true)
+]
+{
+  type          : SecuritySchemeType[1];
+  description   : String[0..1];
+  name          : String[0..1];
+  in            : In[0..1];
+  scheme        : String[0..1];
+  bearerFormat  : String[0..1];
+  flows         : OAuthFlows[0..1];
+  openIdConnectUrl : String[0..1];
+}
+
+Enum meta::external::function::description::openapi::metamodel::SecuritySchemeType
+{
+  apiKey,
+  http,
+  oauth2,
+  openIdConnect,
+  mutualTLS
+}
+
+Class meta::external::function::description::openapi::metamodel::OAuthFlows
+[
+  implicit : $this.implicit->isEmpty() || $this.implicit.authorizationUrl->isNotEmpty(),
+  password : $this.password->isEmpty() || $this.password.tokenUrl->isNotEmpty(),
+  clientCredentials : $this.clientCredentials->isEmpty() || $this.clientCredentials.tokenUrl->isNotEmpty(),
+  authorizationCode : $this.authorizationCode->isEmpty() || ($this.authorizationCode.tokenUrl->isNotEmpty() && $this.authorizationCode.authorizationUrl->isNotEmpty())
+]
+{
+  implicit      : OAuthFlow[0..1];          
+  password      : OAuthFlow[0..1];
+  clientCredentials: OAuthFlow[0..1];
+  authorizationCode: OAuthFlow[0..1];
+}
+
+Class meta::external::function::description::openapi::metamodel::OAuthFlow
+{
+  authorizationUrl: String[0..1];
+  tokenUrl      : String[0..1];
+  refreshUrl    : String[0..1];
+  scopes        : Map<String, String>[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::function::description::openapi::metamodel::CallbackOrReference
+{
+}
+
+Class <<typemodifiers.abstract>> meta::external::function::description::openapi::metamodel::ExampleOrReference
+{
+}
+
+Class <<typemodifiers.abstract>> meta::external::function::description::openapi::metamodel::HeaderOrReference
+{
+}
+
+Class <<typemodifiers.abstract>> meta::external::function::description::openapi::metamodel::LinkOrReference
+{
+}
+
+Class <<typemodifiers.abstract>> meta::external::function::description::openapi::metamodel::ParameterOrReference
+{
+}
+
+Class <<typemodifiers.abstract>> meta::external::function::description::openapi::metamodel::RequestBodyOrReference
+{
+}
+
+Class <<typemodifiers.abstract>> meta::external::function::description::openapi::metamodel::ResponseOrReference
+{
+}
+
+Class <<typemodifiers.abstract>> meta::external::function::description::openapi::metamodel::SecuritySchemeOrReference
+{
+}
+
+Class <<typemodifiers.abstract>> meta::external::function::description::openapi::metamodel::SchemaOrReference
+{
+  specificationExtensions: Map<String, Any>[0..1];
+}
+
+Class meta::external::function::description::openapi::metamodel::Reference extends CallbackOrReference,ExampleOrReference,HeaderOrReference,LinkOrReference,ParameterOrReference,RequestBodyOrReference,ResponseOrReference,SecuritySchemeOrReference,SchemaOrReference
+{
+  ref: String[1];
+}

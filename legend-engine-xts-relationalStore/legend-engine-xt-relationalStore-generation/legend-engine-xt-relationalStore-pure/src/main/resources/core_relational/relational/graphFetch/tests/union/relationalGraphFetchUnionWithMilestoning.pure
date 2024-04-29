@@ -1,0 +1,264 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::toString::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::pure::executionPlan::*;
+import meta::relational::tests::milestoning::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+
+function <<meta::pure::profiles::test.BeforePackage>>  meta::relational::graphFetch::tests::union::relationalGraphFetchUnionWithMilestoning::setUp():Boolean[1]
+{
+   let connection = meta::external::store::relational::tests::testRuntime(db).connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
+
+   executeInDb('drop table if exists OrderTable;',$connection);
+   executeInDb('create table OrderTable (orderDate TIMESTAMP, id Integer, prodFk Integer)',$connection);
+   executeInDb('insert into OrderTable values(\'2015-8-26 00:00:00\', 1,1);',$connection);
+
+
+   executeInDb('drop table if exists OrderTable2;',$connection);
+   executeInDb('create table OrderTable2 (orderDate TIMESTAMP, id Integer, prodFk Integer)',$connection);
+   executeInDb('insert into OrderTable2 values(\'2015-8-26 00:00:00\', 2,2);',$connection);
+
+   executeInDb('drop table if exists ProductTable;',$connection);
+   executeInDb('create table ProductTable (id Integer, name VARCHAR(200),type VARCHAR(200),exchange VARCHAR(200), referenceSystemName VARCHAR(200), EXTERNALREFERENCESYSTEMNAME VARCHAR(200), classificationSystemId Integer, from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into ProductTable values(1,\'ProductName1\',\'STOCK\',\'ISE\', \'SYS1\',\'SYS1\', 1, \'2015-8-15 00:00:00\', \'2015-8-26 00:00:00\');',$connection);
+   executeInDb('insert into ProductTable values(2,\'ProductName2\',\'OPTION\',\'LNSE\', \'SYS1\',\'SYS1\', 1, \'2015-8-16 00:00:00\', \'2015-8-26 00:00:00\');',$connection);
+
+   executeInDb('drop table if exists MilestonedProductTable2;',$connection);
+   executeInDb('create table MilestonedProductTable2 (id Integer, name VARCHAR(200),type VARCHAR(200),exchange VARCHAR(200), referenceSystemName VARCHAR(200), EXTERNALREFERENCESYSTEMNAME VARCHAR(200), classificationSystemId Integer, from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into MilestonedProductTable2 values(1,\'ProductName3\',\'OPTION\',\'ISE\', \'SYS1\',\'SYS1\', 1, \'2015-8-15 00:00:00\', \'2015-10-24 00:00:00\');',$connection);
+   executeInDb('insert into MilestonedProductTable2 values(2,\'ProductName4\',\'STOCK\',\'LNSE\', \'SYS1\',\'SYS1\', 1, \'2015-8-16 00:00:00\', \'2015-10-16 00:00:00\');',$connection);
+
+
+   executeInDb('drop table if exists ProductSynonymTable;',$connection);
+   executeInDb('create table ProductSynonymTable (prodId Integer, name VARCHAR(200), synonym VARCHAR(200), type VARCHAR(10), createdBy VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into ProductSynonymTable values(1, \'ProductName1\',\'GS-Mod-S1\',\'STOCK\',\'Scottd\',\'2015-8-26 00:00:00\',\'2015-9-26 00:00:00\');',$connection);
+   executeInDb('insert into ProductSynonymTable values(2, \'ProductName1\',\'GS-Mod-S2\',\'STOCK\',\'Scottd\',\'2015-9-26 00:00:00\',\'2015-8-16 00:00:00\');',$connection);
+   executeInDb('insert into ProductSynonymTable values(3, \'ProductName2\',\'GS-Mod-S0\',\'CUSIP\',\'smith\',\'2015-1-1 00:00:00\',\'2015-10-15 00:00:00\');',$connection);
+   executeInDb('insert into ProductSynonymTable values(4, \'ProductName2\',\'GS-Mod-S1\',\'CUSIP\',\'smith\',\'2015-8-15 00:00:00\',\'9999-12-31 00:00:00\');',$connection);
+
+   executeInDb('drop table if exists ProductSynonymTableNoMilestoning;',$connection);
+   executeInDb('create table ProductSynonymTableNoMilestoning (prodId Integer, name VARCHAR(200), synonym VARCHAR(200), type VARCHAR(10), createdBy VARCHAR(200));',$connection);
+   executeInDb('insert into ProductSynonymTableNoMilestoning values(5, \'ProductName1\',\'GS-Mod-S1\',\'STOCK\',\'Scottd\');',$connection);
+   executeInDb('insert into ProductSynonymTableNoMilestoning values(6, \'ProductName1\',\'GS-Mod-S2\',\'STOCK\',\'Scottd\');',$connection);
+   executeInDb('insert into ProductSynonymTableNoMilestoning values(7, \'ProductName2\',\'GS-Mod-S0\',\'CUSIP\',\'smith\');',$connection);
+   executeInDb('insert into ProductSynonymTableNoMilestoning values(8, \'ProductName2\',\'GS-Mod-S1\',\'CUSIP\',\'smith\');',$connection);
+
+   executeInDb('drop table if exists ProductClassificationTable;',$connection);
+   executeInDb('create table ProductClassificationTable (type VARCHAR(200),type_description VARCHAR(400),system VARCHAR(200), exchange VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into ProductClassificationTable values(\'STOCK\',\'STOCK DESC-V1\',\'SYS1\', \'LNSE\', \'2015-8-15 00:00:00\', \'2015-8-17 00:00:00\');',$connection);
+   executeInDb('insert into ProductClassificationTable values(\'STOCK\',\'STOCK DESC-V2\',\'SYS1\', \'LNSE\', \'2015-8-17 00:00:00\',\'2015-9-15 00:00:00\');',$connection);
+   executeInDb('insert into ProductClassificationTable values(\'STOCK\',\'STOCK DESC-V3\',\'SYS1\', \'LNSE\', \'2015-9-15 00:00:00\',\'2015-10-17 00:00:00\');',$connection);
+   executeInDb('insert into ProductClassificationTable values(\'STOCK\',\'STOCK DESC-V4\',\'SYS1\', \'LNSE\', \'2015-10-17 00:00:00\',\'9999-12-31 00:00:00\');',$connection);
+   executeInDb('insert into ProductClassificationTable values(\'OPTION\',\'OPTION DESC-V1\',\'SYS1\', \'ISE\', \'2015-7-17 00:00:00\',\'2015-7-23 00:00:00\');',$connection);
+
+   executeInDb('drop table if exists ProductClassificationTable2;',$connection);
+   executeInDb('create table ProductClassificationTable2 (type VARCHAR(200),type_description VARCHAR(400),system VARCHAR(200), exchange VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into ProductClassificationTable2 values(\'STOCK\',\'STOCK DESC-V1\',\'SYS1\', \'LNSE\', \'2015-8-15 00:00:00\', \'2015-8-17 00:00:00\');',$connection);
+   executeInDb('insert into ProductClassificationTable2 values(\'STOCK\',\'STOCK DESC-V2\',\'SYS1\', \'LNSE\', \'2015-8-17 00:00:00\',\'2015-8-19 00:00:00\');',$connection);
+   executeInDb('insert into ProductClassificationTable2 values(\'STOCK\',\'STOCK DESC-V3\',\'SYS1\', \'LNSE\', \'2015-9-15 00:00:00\',\'2015-10-17 00:00:00\');',$connection);
+   executeInDb('insert into ProductClassificationTable2 values(\'STOCK\',\'STOCK DESC-V4\',\'SYS1\', \'LNSE\', \'2015-10-17 00:00:00\',\'2015-12-31 00:00:00\');',$connection);
+   executeInDb('insert into ProductClassificationTable2 values(\'OPTION\',\'OPTION DESC-V1\',\'SYS1\', \'ISE\', \'2015-8-17 00:00:00\',\'2020-8-23 00:00:00\');',$connection);
+
+
+   executeInDb('drop table if exists ProductExchangeTable;',$connection);
+   executeInDb('create table ProductExchangeTable (name VARCHAR(200), city VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+   executeInDb('insert into ProductExchangeTable values(\'LNSE\',\'London\',\'2015-8-15 00:00:00\',\'9999-12-31 00:00:00\');',$connection);
+
+   executeInDb('drop table if exists ProductExchangeTableNoMilestoning;',$connection);
+   executeInDb('create table ProductExchangeTableNoMilestoning (name VARCHAR(200));',$connection);
+   executeInDb('insert into ProductExchangeTableNoMilestoning values(\'ISE\');',$connection);
+   true;
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::union::relationalGraphFetchUnionWithMilestoning::testMilestoningWithSimpleQualifiedPropertyWithUnionMapping(): Boolean[1]
+{
+  let tree = #{
+      Order {
+         id,
+         product(%2015-8-20) {
+            name,
+            classification(%2015-8-20)
+            {
+              type
+            },
+            classificationTypeStr
+         }
+      }
+   }#;
+
+   let query = {|Order.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::graphFetch::tests::union::relationalGraphFetchUnionWithMilestoning::MilestoningUnionMap;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let queryresult = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"id":1,"product(2015-08-20)":[{"name":"ProductName1","classificationTypeStr()":"STOCK","classification(2015-08-20)":{"type":"STOCK"}},{"name":"ProductName3","classificationTypeStr()":"OPTION","classification(2015-08-20)":{"type":"OPTION"}}]},' +
+      '{"id":2,"product(2015-08-20)":[{"name":"ProductName2","classificationTypeStr()":"OPTION","classification(2015-08-20)":{"type":"OPTION"}},{"name":"ProductName4","classificationTypeStr()":"STOCK","classification(2015-08-20)":{"type":"STOCK"}}]}]',
+      $queryresult
+   );
+
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::union::relationalGraphFetchUnionWithMilestoning::testMilestoningWithComplexQualifiedPropertyWithUnionMapping(): Boolean[1]
+{
+  let tree = #{
+      Order {
+         id,
+         product(%2015-8-20) {
+             name,
+             classificationExchangeName1,
+             classificationExchangeName2,
+             classificationExchangeName3
+
+         }
+      }
+   }#;
+
+   let query = {|Order.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::graphFetch::tests::union::relationalGraphFetchUnionWithMilestoning::MilestoningUnionMap;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let queryresult = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"id":1,"product(2015-08-20)":[{"classificationExchangeName1()":"LNSE","classificationExchangeName2()":"LNSE","name":"ProductName1","classificationExchangeName3()":"LNSE"},{"classificationExchangeName1()":"ISE","classificationExchangeName2()":"ISE","name":"ProductName3","classificationExchangeName3()":"ISE"}]},' +
+      '{"id":2,"product(2015-08-20)":[{"classificationExchangeName1()":"ISE","classificationExchangeName2()":"ISE","name":"ProductName2","classificationExchangeName3()":"ISE"},{"classificationExchangeName1()":"LNSE","classificationExchangeName2()":"LNSE","name":"ProductName4","classificationExchangeName3()":"LNSE"}]}]',
+      $queryresult
+   );
+
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::union::relationalGraphFetchUnionWithMilestoning::testMilestoningWithMultiLevelUnionMapping(): Boolean[1]
+{
+  let tree = #{
+      Order {
+         id,
+         product(%2015-8-20) {
+            name,
+            synonyms(%2015-8-20){
+              type,
+              synonym
+            }
+         }
+      }
+   }#;
+
+   let query = {|Order.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::graphFetch::tests::union::relationalGraphFetchUnionWithMilestoning::MilestoningUnionMap;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let queryresult = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+   assertJsonStringsEqual(
+      '[{"id":1,"product(2015-08-20)":[{"synonyms(2015-08-20)":[{"synonym":"GS-Mod-S1","type":"STOCK"},{"synonym":"GS-Mod-S2","type":"STOCK"}],"name":"ProductName1"},{"synonyms(2015-08-20)":[],"name":"ProductName3"}]},' +
+      '{"id":2,"product(2015-08-20)":[{"synonyms(2015-08-20)":[{"synonym":"GS-Mod-S0","type":"CUSIP"},{"synonym":"GS-Mod-S1","type":"CUSIP"},{"synonym":"GS-Mod-S0","type":"CUSIP"},{"synonym":"GS-Mod-S1","type":"CUSIP"}],"name":"ProductName2"},{"synonyms(2015-08-20)":[],"name":"ProductName4"}]}]',
+      $queryresult
+   );
+}
+
+###Mapping
+import meta::relational::tests::milestoning::*;
+Mapping meta::relational::graphFetch::tests::union::relationalGraphFetchUnionWithMilestoning::MilestoningUnionMap
+(
+  *Order : Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(o1, o2)
+  }
+
+  *Product : Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(p1, p2)
+  }
+
+  *ProductClassification : Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(c1, c2)
+  }
+
+  *Exchange : Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(e1, e2)
+  }
+
+  *ProductSynonym : Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(s1, s2)
+  }
+
+  meta::relational::tests::milestoning::Order[o1] : Relational{
+    id : [db]OrderTable.id,
+    product[p1] : [db]@Order_Product,
+    product[p2] : [db]@Order_MilestonedProductTable2
+  }
+
+  meta::relational::tests::milestoning::Order[o2] : Relational{
+    id : [db]OrderTable2.id,
+    product[p1] : [db]@Order2_Product,
+    product[p2] : [db]@Order2_MilestonedProductTable2
+  }
+
+  meta::relational::tests::milestoning::Product[p1] : Relational{
+    id : [db]ProductTable.id,
+    name : [db]ProductTable.name,
+    classification[c1] : [db]@Product_Classification,
+    classification[c2] : [db]@Product_Classification2,
+    synonyms[s1] : [db]@Product_Synonym,
+    synonyms[s2] : [db]@Product_SynonymNoMilestoning
+  }
+
+  meta::relational::tests::milestoning::Product[p2] : Relational{
+    id : [db]MilestonedProductTable2.id,
+    name : [db]MilestonedProductTable2.name,
+    classification[c1] : [db]@MilestonedProductTable2_Classification,
+    classification[c2] : [db]@MilestonedProductTable2_Classification2,
+    synonyms[s1] : [db]@MilestonedProductTable2_Synonym,
+    synonyms[s2] : [db]@MilestonedProductTable2_SynonymNoMilestoning
+  }
+
+  meta::relational::tests::milestoning::ProductClassification[c1] : Relational{
+    type : [db]ProductClassificationTable.type,
+    description : [db]ProductClassificationTable.type_description,
+    exchange[e1] : [db]@Classification_Exchange,
+    exchange[e2] : [db]@Classification_ExchangeNoMilestoning
+  }
+
+  meta::relational::tests::milestoning::ProductClassification[c2] : Relational{
+    type : [db]ProductClassificationTable2.type,
+    description : [db]ProductClassificationTable2.type_description,
+    exchange[e1] : [db]@Classification2_Exchange,
+    exchange[e2] : [db]@Classification2_ExchangeNoMilestoning
+  }
+
+  meta::relational::tests::milestoning::ProductSynonym[s1] : Relational{
+    type : [db]ProductSynonymTable.type,
+    synonym : [db]ProductSynonymTable.synonym
+  }
+
+  meta::relational::tests::milestoning::ProductSynonym[s2] : Relational{
+    type : [db]ProductSynonymTableNoMilestoning.type,
+    synonym : [db]ProductSynonymTableNoMilestoning.synonym
+  }
+
+  meta::relational::tests::milestoning::Exchange[e1] : Relational{
+    name : [db]ProductExchangeTable.name
+  }
+  meta::relational::tests::milestoning::Exchange[e2] : Relational{
+    name : [db]ProductExchangeTableNoMilestoning.name
+  }
+)

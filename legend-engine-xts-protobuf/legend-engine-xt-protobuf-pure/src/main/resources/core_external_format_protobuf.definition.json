@@ -1,0 +1,13 @@
+{
+  "name": "core_external_format_protobuf",
+  "pattern": "(meta::external::format::protobuf|meta::protocols::pure)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_functions_json",
+    "platform_dsl_diagram",
+    "core_functions",
+    "core",
+    "core_generation"
+  ]
+}

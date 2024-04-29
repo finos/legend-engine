@@ -1,0 +1,198 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::*;
+import meta::external::store::elasticsearch::executionTest::testCase::*;
+import meta::external::store::elasticsearch::executionTest::testCase::tds::*;
+import meta::external::store::elasticsearch::executionTest::test::*;
+import meta::external::store::elasticsearch::executionTest::utils::*;
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test restrict on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::restrict::integer::testRestrictInteger(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->restrict('Budget'));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testProjectInteger(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->project([col(x: TDSRow[1] | $x.getInteger('Budget'), 'Hello')]));
+}
+
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure != expression on integer'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testNotEqualValue(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $x.getInteger('Budget') != 170, 'expression')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure > expression on integer'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testGreaterThan(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $x.getInteger('Budget') > 55, 'expression')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure > expression on integer'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testGreaterThanReversedInteger(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | 55 > $x.getInteger('Budget'), 'expression')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure >= expression on integer'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testGreaterThanEqualInteger(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $x.getInteger('Budget') >= 55, 'expression')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure >= expression on integer'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testGreaterThanEqualReversedInteger(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | 55 >= $x.getInteger('Budget'), 'expression')));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure < expression on integer'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testLessThanInteger(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $x.getInteger('Budget') < 55, 'expression')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure < expression on integer'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testLessThanReversedInteger(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | 55 < $x.getInteger('Budget'), 'expression')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure <= expression on integer'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testLessThanEqualInteger(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $x.getInteger('Budget') <= 55, 'expression')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure <= expression on integer'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testLessThanEqualReversedInteger(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | 55 <= $x.getInteger('Budget'), 'expression')));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure == expression on integer'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testEqualValueFilterWithVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 170;
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $x.getInteger('Budget') == $var, 'expression')));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure != expression on integer'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testNotEqualValueFilterWithVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 170;
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $x.getInteger('Budget') != $var, 'expression')));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure > expression on integer'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testGreaterThanIntegerWithVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 55;
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $x.getInteger('Budget') > $var, 'expression')));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure > expression on integer'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testGreaterThanReversedIntegerWithVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 55;
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $var > $x.getInteger('Budget'), 'expression')));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure >= expression on integer'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testGreaterThanEqualIntegerWithVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 55;
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $x.getInteger('Budget') >= $var, 'expression')));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure >= expression on integer'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testGreaterThanEqualReversedIntegerWithVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 55;
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $var >= $x.getInteger('Budget'), 'expression')));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure < expression on integer'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testLessThanInteger_PurOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let val = 55;
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $x.getInteger('Budget') < $val, 'expression')));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure < expression on integer'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testLessThanReversedIntegerWithVariable(config:TestConfig[1]):Boolean[1]
+{
+  let val = 55;
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $val < $x.getInteger('Budget'), 'expression')));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure <= expression on integer'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testLessThanEqualIntegerWithVariable(config:TestConfig[1]):Boolean[1]
+{
+  let val = 55;
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $x.getInteger('Budget') <= $val, 'expression')));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure <= expression on integer'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testLessThanEqualReversedIntegerWithVariable(config:TestConfig[1]):Boolean[1]
+{
+  let val = 55;
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $val <= $x.getInteger('Budget'), 'expression')));
+}

@@ -1,0 +1,78 @@
+{
+  "values":   {
+    "firstName": "Franz",
+    "lastName": "Stiant",
+    "legallyCompetent": false,
+    "firm":     {
+      "legalName": "Voolia",
+      "address":       {
+        "lastUpdated": "2018-01-01T21:10:00.000",
+        "city": "London",
+        "buildingNumber": 40,
+        "isActive": true
+      },
+      "public": true,
+      "dateFounded": "1993-10-07T04:40:27.000",
+      "department": [
+        {
+          "dateCreated": "1995-01-01T21:10:22.000",
+          "name": "HR",
+          "isActive": true,
+          "numberOfEmployees": 30
+        },
+        {
+          "dateCreated": "1996-11-01T21:10:22.000",
+          "name": "Engineering",
+          "isActive": true,
+          "numberOfEmployees": 450
+        },
+        {
+          "dateCreated": "2013-11-16T21:10:22.000",
+          "name": "Product",
+          "isActive": true,
+          "numberOfEmployees": 220
+        },
+        {
+          "dateCreated": "2000-11-16T21:10:22.000",
+          "name": "Sales",
+          "isActive": true,
+          "numberOfEmployees": 100
+        },
+        {
+          "dateCreated": "2014-11-16T21:10:22.000",
+          "name": "Marketing",
+          "isActive": true,
+          "numberOfEmployees": 200
+        },
+        {
+          "dateCreated": "2002-11-16T21:10:22.000",
+          "name": "Communications",
+          "isActive": false,
+          "numberOfEmployees": 100
+        }
+      ],
+      "numberOfEmployees": 2000
+    },
+    "address":     {
+      "lastUpdated": "2007-01-01T08:10:00.000",
+      "city": "Sacramento",
+      "buildingNumber": 540,
+      "isActive": true
+    },
+    "otherPhoneNumbers": [
+"+1 405 332 4537",
+"+1 814 987 3881"
+    ],
+    "department":     {
+      "dateCreated": "1995-01-01T21:10:22.000",
+      "name": "HR",
+      "isActive": true,
+      "numberOfEmployees": 30
+    },
+    "birthDate": "1985-04-04T17:18:23.000",
+    "age": 68
+  },
+  "builder":   {
+    "_type": "json"
+  }
+}

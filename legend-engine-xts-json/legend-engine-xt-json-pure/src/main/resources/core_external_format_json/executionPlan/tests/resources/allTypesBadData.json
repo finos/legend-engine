@@ -1,0 +1,71 @@
+[
+  {
+    
+  },
+  {
+    "optionalString" : "OptionalString",
+    "repeatedString" : ["RepeatedString1", "RepeatedString2"]
+  },
+  {
+    "string" : ["RepeatedString1", "RepeatedString2"],
+    "optionalString" : ["RepeatedString1", "RepeatedString2"],
+    "repeatedString" : ["RepeatedString1", "RepeatedString2"],
+
+    "integer" : 1,
+
+    "float" : 1.0,
+
+    "decimal" : 1.23456789,
+
+    "boolean" : true,
+
+    "date" : "2022-12-12",
+
+    "strictDate" : "2022-12-12",
+
+    "dateTime" : "2023-12-12T12:00:00",
+
+    "enum" : "MALE",
+
+    "measure" : {
+      "unit":[
+        {
+          "unitId":"meta::pure::unit::Mass~Kilogram",
+          "exponentValue":1
+        }
+      ],
+      "value":5.5
+    }
+  },
+  {
+    "string" : true,
+
+    "integer" : 1.1,
+
+    "float" : "1.1",
+
+    "decimal" : 1.23456789,
+
+    "boolean" : "xyz",
+
+    "date" : "12-12-12",
+
+    "strictDate" : "12-12-12",
+
+    "dateTime" : "12-12-12T12:00:00",
+
+    "enum" : "UNKNOWN",
+    "optionalEnum" : "meta::external::format::unknow::executionPlan::test::types::Gender.FEMALE",
+
+    "measure" : {
+      "unit":[
+        {
+          "unitId":"meta::pure::unit::Mass~Pound",
+          "exponentValue":1
+        }
+      ],
+      "value":5.5
+    },
+    "optionalMeasure" : 5.5
+  }
+]

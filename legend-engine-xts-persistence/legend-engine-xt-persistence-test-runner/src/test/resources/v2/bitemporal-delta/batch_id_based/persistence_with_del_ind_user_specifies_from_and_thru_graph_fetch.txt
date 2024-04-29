@@ -1,0 +1,290 @@
+###Pure
+Class test::model::Firm
+{
+  employees: test::model::Person[1..*];
+  legalName: String[1];
+}
+
+Class test::model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  isDeleted: String[1];
+}
+
+Class test::store::S_Firm
+{
+  employees: test::store::S_Person[1..*];
+  legalName: String[1];
+}
+
+Class test::store::S_Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+###Mapping
+Mapping test::mapping::FirmMapping
+(
+  *test::model::Firm: Pure
+  {
+    ~src test::store::S_Firm
+    legalName: $src.legalName,
+    employees[test_model_Person]: $src.employees
+  }
+  *test::model::Person: Pure
+  {
+    ~src test::store::S_Person
+    firstName: $src.firstName,
+    lastName: $src.lastName
+  }
+)
+
+###Connection
+JsonModelConnection test::runtime::SFirmConnection
+{
+  class: test::store::S_Firm;
+  url: 'executor:default';
+}
+JsonModelConnection test::runtime::SPersonConnection
+{
+  class: test::store::S_Person;
+  url: 'executor:default';
+}
+
+
+###Runtime
+Runtime test::runtime::SFirmRuntime
+{
+  mappings:
+  [
+    test::mapping::FirmMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection1: test::runtime::SFirmConnection
+    ]
+  ];
+}
+Runtime test::runtime::SFirmAndSPersonRuntime
+{
+  mappings:
+  [
+    test::mapping::FirmMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection1: test::runtime::SFirmConnection,
+      connection2: test::runtime::SPersonConnection
+    ]
+  ];
+}
+
+
+###Service
+Service test::service::FirmService
+{
+  pattern: '/testFirmService';
+  owners:
+  [
+    'owner1',
+    'owner2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: name:String[1]|test::model::Firm.all()->filter(f | $f.legalName == $name )->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);
+    mapping: test::mapping::FirmMapping;
+    runtime: test::runtime::SFirmRuntime;
+  }
+  testSuites:
+  [
+  ]
+}
+
+
+###Relational
+Database test::myDatabase
+(
+  Table bitempPersonTable
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100),
+    startTime TIMESTAMP PRIMARY KEY,
+    endTime TIMESTAMP,
+    batchIdIn INTEGER PRIMARY KEY,
+    batchIdOut INTEGER
+  )
+  Table bitempLegalNameTable
+    (
+      legalName VARCHAR(100) PRIMARY KEY,
+      startTime TIMESTAMP PRIMARY KEY,
+      endTime TIMESTAMP,
+      batchIdIn INTEGER PRIMARY KEY,
+      batchIdOut INTEGER
+    )
+)
+
+###Persistence
+Persistence test::TestPersistence
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::service::FirmService;
+  serviceOutputTargets:
+  [
+    #/test::model::Firm/employees#
+    {
+      keys:
+      [
+      ]
+      datasetType: Delta
+      {
+        actionIndicator: DeleteIndicator
+        {
+          deleteField: #/test::model::Firm/employees/isDeleted#;
+          deleteValues: ['Yes', 'true', '1'];
+        }
+      }
+      deduplication: None;
+    }
+    ->
+    Relational
+    #{
+      table: bitempPersonTable;
+      database: test::myDatabase;
+      temporality: Bitemporal
+      {
+        processingDimension: BatchId
+        {
+          batchIdIn: batchIdIn;
+          batchIdOut: batchIdOut;
+        }
+        sourceDerivedDimension: DateTime
+        {
+          dateTimeStart: startTime;
+          dateTimeEnd: endTime;
+          sourceFields: StartAndEnd
+          {
+            startField: timeFrom;
+            endField: timeThru;
+          }
+        }
+      }
+    }#,
+    #/test::model::Firm/legalName#
+    {
+      keys:
+      [
+      ]
+      datasetType: Delta
+      {
+        actionIndicator: None;
+      }
+      deduplication: None;
+    }
+    ->
+    Relational
+    #{
+      table: bitempLegalNameTable;
+      database: test::myDatabase;
+      temporality: Bitemporal
+      {
+        processingDimension: BatchId
+        {
+          batchIdIn: batchIdIn;
+          batchIdOut: batchIdOut;
+        }
+        sourceDerivedDimension: DateTime
+        {
+          dateTimeStart: startTime;
+          dateTimeEnd: endTime;
+          sourceFields: StartAndEnd
+          {
+            startField: timeFrom;
+            endField: timeThru;
+          }
+        }
+      }
+    }#
+  ];
+  tests:
+  [
+    test1:
+    {
+      testBatches:
+      [
+        testBatch1:
+        {
+         data:
+         {
+           connection:
+           {
+              ExternalFormat
+              #{
+                 contentType: 'application/json';
+                 data: '[{"ID":1, "NAME":"Fred", "timeFrom": "2022-01-01 00:00:00.0", "timeThru": "2022-01-02 00:00:00.0", "isDeleted" : 0}, {"ID":2, "NAME":"Jane", "timeFrom": "2022-01-01 00:00:00.0", "timeThru": "2022-01-02 00:00:00.0", "isDeleted" : 0}]';
+              }#
+           }
+         }
+         asserts:
+         [
+           assert1:
+             EqualToJson
+             #{
+               expected:
+                 ExternalFormat
+                 #{
+                   contentType: 'application/json';
+                   data: '[{"ID":1, "NAME":"Fred", "startTime": "2022-01-01 00:00:00.0", "endTime": "2022-01-02 00:00:00.0", "batchIdIn":1, "batchIdOut":999999999}, {"ID":2, "NAME":"Jane", "startTime": "2022-01-01 00:00:00.0", "endTime": "2022-01-02 00:00:00.0", "batchIdIn":1, "batchIdOut":999999999}]';
+                 }#;
+             }#
+          ]
+        }
+      ]
+      isTestDataFromServiceOutput: true;
+      graphFetchPath: #/test::model::Firm/employees#;
+    },
+     test2:
+     {
+       testBatches:
+       [
+         testBatch1:
+         {
+          data:
+          {
+            connection:
+            {
+               ExternalFormat
+               #{
+                  contentType: 'application/json';
+                  data: '[{"legalName":"Fred", "timeFrom": "2022-01-01 00:00:00.0", "timeThru": "2022-01-02 00:00:00.0"}, {"legalName":"Jane", "timeFrom": "2022-01-01 00:00:00.0", "timeThru": "2022-01-02 00:00:00.0"}]';
+               }#
+            }
+          }
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"legalName":"Fred", "startTime": "2022-01-01 00:00:00.0", "endTime": "2022-01-02 00:00:00.0", "batchIdIn":1, "batchIdOut":999999999}, {"legalName":"Jane", "startTime": "2022-01-01 00:00:00.0", "endTime": "2022-01-02 00:00:00.0", "batchIdIn":1, "batchIdOut":999999999}]';
+                  }#;
+              }#
+           ]
+         }
+       ]
+       isTestDataFromServiceOutput: true;
+       graphFetchPath: #/test::model::Firm/legalName#;
+     }
+  ]
+}

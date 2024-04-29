@@ -1,0 +1,276 @@
+###Pure
+import meta::pure::mapping::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::executionPlan::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::mapping::*;
+import meta::relational::runtime::*;
+import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
+import meta::core::runtime::*;
+import meta::external::store::relational::modelJoins::test::*;
+import meta::pure::alloy::connections::alloy::specification::*;
+
+function <<test.BeforePackage>> meta::external::store::relational::modelJoins::test::setUp():Boolean[1]
+{
+   let connection = meta::external::store::relational::tests::testRuntime(LocalTradesDatabase).connectionStores.connection->toOne()->cast(@DatabaseConnection);
+
+   executeInDb('Drop table if exists LegalEntity;', $connection);
+   executeInDb('Create Table LegalEntity (ENTITY_ID INT, name VARCHAR(32));', $connection);
+   executeInDb('insert into LegalEntity (ENTITY_ID, name) values (1, \'Firm X\');', $connection);
+   executeInDb('insert into LegalEntity (ENTITY_ID, name) values (2, \'Firm A\');', $connection);
+
+   executeInDb('Drop table if exists Trade;', $connection);
+   executeInDb('Create Table Trade(id INT, ENTITY_NAME_FK VARCHAR(32), value INT, ENTITY_ID_FK INT);', $connection);
+   executeInDb('insert into Trade (id, ENTITY_NAME_FK, value, ENTITY_ID_FK) values (1, \'Firm X\', 8, 1);', $connection);
+   executeInDb('insert into Trade (id, ENTITY_NAME_FK, value, ENTITY_ID_FK) values (2, \'Firm A\', 9, 2);', $connection);
+   executeInDb('insert into Trade (id, ENTITY_NAME_FK, value, ENTITY_ID_FK) values (3, \'Firm X\', 10, 1);', $connection);
+   executeInDb('insert into Trade (id, ENTITY_NAME_FK, value, ENTITY_ID_FK) values (4, \'Firm X\', 11, 1);', $connection);
+   true;
+}
+
+function meta::external::store::relational::modelJoins::test::getConnection():meta::core::runtime::Connection[1]
+{
+  ^RelationalDatabaseConnection(
+    type = DatabaseType.H2,
+    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(),
+    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::DefaultH2AuthenticationStrategy()
+  );
+}
+
+function meta::external::store::relational::modelJoins::test::getXStoreRuntime():Runtime[1]
+{
+  let c = getConnection();
+  let xstoreruntime = ^meta::core::runtime::Runtime(
+    connectionStores=[
+      ^ConnectionStore(element=XStoreTradesDatabase, connection=$c),
+      ^ConnectionStore(element=EntityDatabase, connection=$c)
+     ]
+  );
+}
+
+function meta::external::store::relational::modelJoins::test::getSingleConnectionRuntime():Runtime[1]
+{
+  let localruntime = ^meta::core::runtime::Runtime(
+    connectionStores=[
+      ^ConnectionStore(element=LocalTradesDatabase, connection=getConnection())
+     ]
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::modelJoins::test::testPersonToFirmUsingProject():Boolean[1]
+{
+  let query = {|Trade.all()->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);};
+  let xstoreResult = executionPlan($query, XStoreTradesMapping, getXStoreRuntime(), meta::relational::extension::relationalExtensions());
+  let localResult = executionPlan($query, LocalTradesMapping, getSingleConnectionRuntime(),meta::relational::extension::relationalExtensions());
+  assertEquals(
+    $xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery,
+    $localResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::modelJoins::test::testPersonToFirmUsingFromProject():Boolean[1]
+{
+  let xstoreResult = executionPlan({|Trade.all()->from(XStoreTradesMapping, getXStoreRuntime())->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);}, meta::relational::extension::relationalExtensions());
+  let localResult = executionPlan({|Trade.all()->from(LocalTradesMapping, getSingleConnectionRuntime())->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);}, meta::relational::extension::relationalExtensions());
+  assertEquals(
+    $xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery,
+    $localResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery
+  );
+}
+
+function <<test.Test, test.ToFix>> meta::external::store::relational::modelJoins::test::testPersonToFirmGraphUsingFetch():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         value,
+         client {
+            name
+         }
+      }
+   }#;
+  let query = {|Trade.all()->graphFetch($tree)->serialize($tree);};
+  let xstoreResult = executionPlan($query, XStoreTradesMapping, getXStoreRuntime(), meta::relational::extension::relationalExtensions());
+  let localResult = executionPlan($query, LocalTradesMapping, getSingleConnectionRuntime(), meta::relational::extension::relationalExtensions());
+  false;
+}
+
+function <<test.Test, test.ToFix>> meta::external::store::relational::modelJoins::test::testPersonToFirmUsingFromGraphFetch():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         value,
+         client {
+            name
+         }
+      }
+   }#;
+  let xstoreResult = executionPlan({|Trade.all()->from(XStoreTradesMapping, getXStoreRuntime())->graphFetch($tree)->serialize($tree);}, meta::relational::extension::relationalExtensions());
+  let localResult = executionPlan({|Trade.all()->from(LocalTradesMapping, getSingleConnectionRuntime())->graphFetch($tree)->serialize($tree);}, meta::relational::extension::relationalExtensions());
+  false;
+}
+
+###Pure
+Class meta::external::store::relational::modelJoins::test::LegalEntity
+{
+  entityId: String[1];
+  name: String[1];
+}
+
+Class meta::external::store::relational::modelJoins::test::Trade
+{
+  id: String[1];
+  value: Integer[1];
+}
+
+Class meta::external::store::relational::modelJoins::test::OtherEntity
+{
+  idPlusName: String[1];
+}
+
+Association meta::external::store::relational::modelJoins::test::Trade_LegalEntity
+{
+  client: meta::external::store::relational::modelJoins::test::LegalEntity[1];
+  trades: meta::external::store::relational::modelJoins::test::Trade[*];
+}
+
+Association meta::external::store::relational::modelJoins::test::Trade_OtherEntity
+{
+  otherClient: meta::external::store::relational::modelJoins::test::OtherEntity[1];
+  trades: meta::external::store::relational::modelJoins::test::Trade[*];
+}
+
+
+###Relational
+Database meta::external::store::relational::modelJoins::test::EntityDatabase
+(
+  Schema Entity
+  (
+    Table LegalEntity
+    (
+      ENTITY_ID VARCHAR(32) PRIMARY KEY,
+      name VARCHAR(32) NOT NULL
+    )
+
+    View LegalEntity_View
+    (
+      ~groupBy (Entity.LegalEntity.ENTITY_ID)
+      ENTITY_ID: Entity.LegalEntity.ENTITY_ID,
+      name: Entity.LegalEntity.name
+    )
+  )
+)
+
+###Relational
+Database meta::external::store::relational::modelJoins::test::LocalTradesDatabase
+(
+  include meta::external::store::relational::modelJoins::test::EntityDatabase
+  Schema Trades
+  (
+    Table Trade
+    (
+      id VARCHAR(32) PRIMARY KEY,
+      value INTEGER NOT NULL,
+      ENTITY_ID_FK VARCHAR(32) NOT NULL,
+      ENTITY_NAME_FK VARCHAR(32) NOT NULL
+    )
+  )
+
+  Join Entity_Trade(
+    case(isNull(toString(toString(Trades.Trade.ENTITY_ID_FK))), toString(Trades.Trade.ENTITY_ID_FK), toString(Trades.Trade.ENTITY_ID_FK)) = Entity.LegalEntity_View.ENTITY_ID and case(isNull(Trades.Trade.ENTITY_NAME_FK),'Unknown',Trades.Trade.ENTITY_NAME_FK) = Entity.LegalEntity_View.name
+  )
+)
+
+
+###Relational
+Database meta::external::store::relational::modelJoins::test::XStoreTradesDatabase
+(
+  Schema Trades
+  (
+    Table Trade
+    (
+      id VARCHAR(32) PRIMARY KEY,
+      value INTEGER NOT NULL,
+      ENTITY_ID_FK VARCHAR(32) NOT NULL,
+      ENTITY_NAME_FK VARCHAR(32) NOT NULL
+    )
+  )
+)
+
+
+###Mapping
+import meta::external::store::relational::modelJoins::test::*;
+
+Mapping meta::external::store::relational::modelJoins::test::LegalEntityMapping
+(
+  meta::external::store::relational::modelJoins::test::LegalEntity[legal_entity]: Relational
+  {
+    ~primaryKey
+    (
+      [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity_View.ENTITY_ID
+    )
+    ~mainTable [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity_View
+    entityId: [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity_View.ENTITY_ID,
+    name: [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity_View.name
+  }
+)
+
+###Mapping
+import meta::external::store::relational::modelJoins::test::*;
+
+Mapping meta::external::store::relational::modelJoins::test::LocalTradesMapping
+(
+  include meta::external::store::relational::modelJoins::test::LegalEntityMapping
+
+  Trade[trade]: Relational
+  {
+    ~primaryKey
+    (
+      [LocalTradesDatabase]Trades.Trade.id
+    )
+    ~mainTable [LocalTradesDatabase]Trades.Trade
+    id: [LocalTradesDatabase]Trades.Trade.id,
+    value: [LocalTradesDatabase]Trades.Trade.value,
+    +entityIdFk: String[1]: [LocalTradesDatabase]Trades.Trade.ENTITY_ID_FK,
+    +entityNameFk: String[1]: [LocalTradesDatabase]Trades.Trade.ENTITY_NAME_FK
+  }
+
+  meta::external::store::relational::modelJoins::test::Trade_LegalEntity[trade_legal]: Relational
+  {
+    AssociationMapping
+    (
+      client[trade, legal_entity]: [LocalTradesDatabase]@Entity_Trade,
+      trades[legal_entity, trade]: [LocalTradesDatabase]@Entity_Trade
+    )
+  }
+)
+
+
+###Mapping
+import meta::external::store::relational::modelJoins::test::*;
+
+Mapping meta::external::store::relational::modelJoins::test::XStoreTradesMapping
+(
+  include meta::external::store::relational::modelJoins::test::LegalEntityMapping
+
+  Trade[trade]: Relational
+  {
+    ~primaryKey
+    (
+      [XStoreTradesDatabase]Trades.Trade.id
+    )
+    ~mainTable [XStoreTradesDatabase]Trades.Trade
+    id: [XStoreTradesDatabase]Trades.Trade.id,
+    value: [XStoreTradesDatabase]Trades.Trade.value,
+    +entityIdFk: String[1]: case(isNull(toString(toString([XStoreTradesDatabase]Trades.Trade.ENTITY_ID_FK))), toString([XStoreTradesDatabase]Trades.Trade.ENTITY_ID_FK), toString([XStoreTradesDatabase]Trades.Trade.ENTITY_ID_FK)),
+    +entityNameFk: String[1]: case(isNull([LocalTradesDatabase]Trades.Trade.ENTITY_NAME_FK), 'Unknown', [LocalTradesDatabase]Trades.Trade.ENTITY_NAME_FK)
+  }
+
+  meta::external::store::relational::modelJoins::test::Trade_LegalEntity: XStore
+  {
+    client[trade, legal_entity]: $this.entityIdFk ==
+  $that.entityId && $this.entityNameFk == $that.name,
+    trades[legal_entity, trade]: $this.entityId ==
+  $that.entityIdFk && $this.name == $that.entityNameFk
+  }
+)

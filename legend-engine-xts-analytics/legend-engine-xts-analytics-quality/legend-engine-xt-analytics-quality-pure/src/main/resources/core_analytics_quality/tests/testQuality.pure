@@ -1,0 +1,265 @@
+import apps::pure::quality::tests::*;
+import meta::relational::tests::*;
+import meta::relational::runtime::*;
+import meta::analytics::quality::model::*;
+
+Class meta::analytics::quality::model::domain::tests::myTestClass
+{
+   Name: String[1];
+   myTestClassProperty: Boolean[1];
+   myTestFlag:String[1];
+   myInvalidDays:String[1];
+   hasWrongType:String[1];
+   myBadToManyProperty:String[*];
+   myBadChildren:String[1];
+   myBadSingletonProperties:String[0..1];
+}
+
+
+Class {rule.ignore='Invalid Property Names'} //incorrect rule to ignore
+    meta::analytics::quality::model::domain::tests::testClassWithIgnoreFlags
+{
+   {rule.ignore='Invalid Property Names'}
+   Name: String[1];
+
+   {rule.ignore='Invalid Boolean Flag Property Type,Invalid Property Names'}
+   TestFlag: String[1];
+   testClassProperty: Boolean[1];
+   aTestFlag(){ 'lala' == false }:Boolean[1];
+
+   {rule.ignore='Invalid Equality'}
+   anotherTestFlag(){ 'this is not false, obviously' == false }:Boolean[1];
+
+}
+
+
+
+
+Class meta::analytics::quality::model::domain::tests::Employee
+{
+   name: Boolean[1];
+}
+
+Class meta::analytics::quality::model::domain::tests::Firm
+{
+   employeesFlag: meta::analytics::quality::model::domain::tests::Employee[0..1];
+}
+
+Class meta::analytics::quality::model::domain::tests::UntestedClass
+{
+   foo:String[1];
+}
+
+Class meta::analytics::quality::model::domain::tests::NoModelQualityViolation
+{
+   validChildren: String[*];
+   kerberos: String[1];
+   issuer: String[1];
+   issuanceDate: Date[1];
+   name: String[1];
+   validationFlag: Boolean[1];
+   maturityYears: Integer[0..1];
+   isValid: Boolean[1];
+   hasValidName: Boolean[1];
+   validationFlags : Boolean[*];
+}
+
+function <<test.Test>> meta::analytics::quality::model::domain::tests::testClassNameShouldStartWithUpperCase():Boolean[1]
+{
+    assert(meta::analytics::quality::model::domain::tests::Employee->meta::analytics::quality::model::domain::classNameShouldStartWithUpperCase()->toOne().isValid);
+    assertFalse(meta::analytics::quality::model::domain::tests::myTestClass->meta::analytics::quality::model::domain::classNameShouldStartWithUpperCase()->toOne().isValid);
+}
+
+// function <<test.Test>> meta::analytics::quality::tests::testClassShouldBeIncludedInADiagram():Boolean[1]
+// {
+//     assert(meta::analytics::quality::tests::Employee->meta::analytics::quality::classIsIncludedInADiagram()->toOne().isValid);
+//     assertFalse(meta::analytics::quality::tests::myTestClass->meta::analytics::quality::classIsIncludedInADiagram()->toOne().isValid);
+// }
+
+// function <<test.Test>> apps::pure::quality::tests::testClassShouldBeIncludedInATest():Boolean[1]
+// {
+//     assert(meta::analytics::quality::tests::myTestClass->apps::pure::quality::classIsIncludedInATest()->toOne().isValid);
+//     assertFalse('apps::pure::quality::tests::UntestedClass'->pathToElement()->cast(@Class<Any>)->apps::pure::quality::classIsIncludedInATest()->toOne().isValid);
+// }
+
+function <<test.Test>> meta::analytics::quality::model::domain::tests::testClassPropertyShouldStartWithLowerLetter():Boolean[1]
+{
+    assert(meta::analytics::quality::model::domain::tests::myTestClass.properties->filter(f| $f.name == 'myTestFlag')->toOne()->meta::analytics::quality::model::domain::classPropertyShouldStartWithLowerLetter()->toOne().isValid);
+    assertFalse(meta::analytics::quality::model::domain::tests::myTestClass.properties->filter(f| $f.name == 'Name')->toOne()->meta::analytics::quality::model::domain::classPropertyShouldStartWithLowerLetter()->toOne().isValid);
+}
+
+function <<test.Test>> meta::analytics::quality::model::domain::tests::testClassPropertyShouldNotStartWithClassName():Boolean[1]
+{
+    assert(meta::analytics::quality::model::domain::tests::myTestClass.properties->filter(f| $f.name == 'Name')->toOne()->meta::analytics::quality::model::domain::classPropertyShouldNotStartWithClassName()->toOne().isValid);
+    assertFalse(meta::analytics::quality::model::domain::tests::myTestClass.properties->filter(f| $f.name == 'myTestClassProperty')->toOne()->meta::analytics::quality::model::domain::classPropertyShouldNotStartWithClassName()->toOne().isValid);
+}
+
+function <<test.Test>> meta::analytics::quality::model::domain::tests::testClassBooleanPropertyShouldStartWithIsOrHasOrEndsWithFlag():Boolean[1]
+{
+    assert(meta::analytics::quality::model::domain::tests::NoModelQualityViolation.properties->filter(f| $f.name == 'validationFlag')->toOne()->meta::analytics::quality::model::domain::classBooleanPropertyShouldStartWithIsOrHasOrEndsWithFlag()->toOne().isValid);
+    assertFalse(meta::analytics::quality::model::domain::tests::myTestClass.properties->filter(f| $f.name == 'myTestClassProperty')->toOne()->meta::analytics::quality::model::domain::classBooleanPropertyShouldStartWithIsOrHasOrEndsWithFlag()->toOne().isValid);
+}
+
+function <<test.Test>> meta::analytics::quality::model::domain::tests::testClassPropertyEndingWithFlagShouldBeBoolean():Boolean[1]
+{
+    assert(meta::analytics::quality::model::domain::tests::NoModelQualityViolation.properties->filter(f| $f.name == 'validationFlag')->toOne()->meta::analytics::quality::model::domain::classPropertyEndingWithFlagShouldBeBoolean()->toOne().isValid);
+    assertFalse(meta::analytics::quality::model::domain::tests::myTestClass.properties->filter(f| $f.name == 'myTestFlag')->toOne()->meta::analytics::quality::model::domain::classPropertyEndingWithFlagShouldBeBoolean()->toOne().isValid);
+}
+
+function <<test.Test>> meta::analytics::quality::model::domain::tests::testClassPropertyWithToManyMultiplicityAreNamedCorrectly():Boolean[1]
+{
+    assert(meta::analytics::quality::model::domain::tests::NoModelQualityViolation.properties->filter(f| $f.name == 'validationFlags')->toOne()->meta::analytics::quality::model::domain::classPropertyWithToManyMultiplicityAreNamedCorrectly()->toOne().isValid);
+    assertFalse(meta::analytics::quality::model::domain::tests::myTestClass.properties->filter(f| $f.name == 'myBadToManyProperty')->toOne()->meta::analytics::quality::model::domain::classPropertyWithToManyMultiplicityAreNamedCorrectly()->toOne().isValid);
+}
+
+function <<test.Test>> meta::analytics::quality::model::domain::tests::testClassPropertyWithToOneMultiplicityAreNamedCorrectly():Boolean[1]
+{
+    assert(meta::analytics::quality::model::domain::tests::NoModelQualityViolation.properties->filter(f| $f.name == 'kerberos')->toOne()->meta::analytics::quality::model::domain::classPropertyWithToOneMultiplicityAreNamedCorrectly()->toOne().isValid);
+    assertFalse(meta::analytics::quality::model::domain::tests::myTestClass.properties->filter(f| $f.name == 'myBadChildren')->toOne()->meta::analytics::quality::model::domain::classPropertyWithToOneMultiplicityAreNamedCorrectly()->toOne().isValid);
+    assertFalse(meta::analytics::quality::model::domain::tests::myTestClass.properties->filter(f| $f.name == 'myBadSingletonProperties')->toOne()->meta::analytics::quality::model::domain::classPropertyWithToOneMultiplicityAreNamedCorrectly()->toOne().isValid);
+}
+
+function <<test.Test>> meta::analytics::quality::model::domain::tests::testClassPropertyIntegersWithToOneMultiplicityAreNamedCorrectly():Boolean[1]
+{
+    assert(meta::analytics::quality::model::domain::tests::NoModelQualityViolation.properties->filter(f| $f.name == 'maturityYears')->toOne()->meta::analytics::quality::model::domain::classPropertyIntegersWithToOneMultiplicityAreNamedCorrectly()->toOne().isValid);
+    assertFalse(meta::analytics::quality::model::domain::tests::myTestClass.properties->filter(f| $f.name == 'myInvalidDays')->toOne()->meta::analytics::quality::model::domain::classPropertyIntegersWithToOneMultiplicityAreNamedCorrectly()->toOne().isValid);
+}
+
+function <<test.Test>> meta::analytics::quality::model::domain::tests::testClassPropertyStartingWithIsOrHasShouldBeBoolean():Boolean[1]
+{
+    assert(meta::analytics::quality::model::domain::tests::NoModelQualityViolation.properties->filter(f| $f.name == 'hasValidName')->toOne()->meta::analytics::quality::model::domain::classPropertyStartingWithIsOrHasShouldBeBoolean()->toOne().isValid);
+    assertFalse(meta::analytics::quality::model::domain::tests::myTestClass.properties->filter(f| $f.name == 'hasWrongType')->toOne()->meta::analytics::quality::model::domain::classPropertyStartingWithIsOrHasShouldBeBoolean()->toOne().isValid);
+}
+
+
+function <<test.Test>> meta::analytics::quality::model::domain::tests::runRulesForPackageableElementTest():Boolean[1]
+{
+   let results = [meta::analytics::quality::model::domain::tests::pack1,meta::analytics::quality::model::domain::tests::Employee]->meta::analytics::quality::model::domain::runQualityChecks();
+   assertSize($results, 14);
+}
+
+
+function <<test.Test>> meta::analytics::quality::model::domain::tests::runAsHTMLForPackageableElementTest():Boolean[1]
+{
+   let results = meta::analytics::quality::model::domain::tests::pack1->meta::analytics::quality::model::domain::runChecksAsHtml([],true);
+   assertFalse($results->isEmpty());
+}
+
+function <<test.Test>> meta::analytics::quality::model::domain::tests::runRulesServiceTest():Boolean[1]
+{
+   let results = meta::analytics::quality::model::domain::findBugsReports('meta::analytics::quality::tests::pack1');
+   assertFalse($results->isEmpty());
+}
+
+
+function <<test.Test>> meta::analytics::quality::model::domain::tests::runRulesEmptyResults():Boolean[1]
+{
+     assert([]->meta::analytics::quality::model::domain::runRules()->isEmpty());
+     let results = []->meta::analytics::quality::model::domain::runChecksAsHtml([],false);
+     println($results);
+     assertFalse($results->isEmpty());
+}
+
+function <<test.Test>> meta::analytics::quality::model::domain::tests::filterIgnoresTest():Boolean[1]
+{
+     let results = [meta::analytics::quality::model::domain::tests::testClassWithIgnoreFlags]
+                   ->meta::analytics::quality::model::domain::runQualityChecks()->removeDuplicates() ->filter(bug|!$bug.detail.isValid);
+
+     assertFalse($results->isEmpty());
+     assertEquals(7,$results->size());
+
+     let filtered = $results->meta::analytics::quality::model::domain::filterInstancesToIgnore();
+
+     assertFalse($filtered->isEmpty());
+     assertEquals(3,$filtered->size());
+
+}
+
+
+###Relational
+Database meta::analytics::quality::model::domain::tests::TestDB
+(
+   Table TABLE1( NAME VARCHAR(30) PRIMARY KEY)
+)
+
+###Mapping
+
+Mapping meta::analytics::quality::model::domain::tests::TestMapping
+(
+   meta::analytics::quality::model::domain::tests::myTestClass : Relational
+   {
+      Name: [meta::analytics::quality::model::domain::tests::TestDB]TABLE1.NAME
+   }
+)
+
+
+// ###Diagram
+
+// Diagram apps::pure::quality::tests::testDiagram(width=447.00000, height=164.00000)
+// {
+//     TypeView NoModelQualityViolation_0_0_0_0_0_0_0_0_0_0(
+//         type=apps::pure::quality::tests::NoModelQualityViolation,
+//         stereotypesVisible=true,
+//         attributesVisible=true,
+//         attributeStereotypesVisible=true,
+//         attributeTypesVisible=true,
+//         color=#FFFFCC,
+//         lineWidth=1.0,
+//         position=(272.00000, 227.00000),
+//         width=159.00000,
+//         height=72.00000)
+
+//     TypeView UntestedClass_1_1_1_1_1_1_1_1_1_1(
+//         type=apps::pure::quality::tests::UntestedClass,
+//         stereotypesVisible=true,
+//         attributesVisible=true,
+//         attributeStereotypesVisible=true,
+//         attributeTypesVisible=true,
+//         color=#FFFFCC,
+//         lineWidth=1.0,
+//         position=(270.00000, 343.00000),
+//         width=105.00000,
+//         height=48.00000)
+
+//     TypeView Firm_2_2_2_2_2_2_2_2_2_2(
+//         type=apps::pure::quality::tests::Firm,
+//         stereotypesVisible=true,
+//         attributesVisible=true,
+//         attributeStereotypesVisible=true,
+//         attributeTypesVisible=true,
+//         color=#FFFFCC,
+//         lineWidth=1.0,
+//         position=(671.00000, 232.00000),
+//         width=46.00000,
+//         height=36.00000)
+
+//     TypeView Employee_3_3_3_3_3_3_3_3(
+//         type=apps::pure::quality::tests::Employee,
+//         stereotypesVisible=true,
+//         attributesVisible=true,
+//         attributeStereotypesVisible=true,
+//         attributeTypesVisible=true,
+//         color=#FFFFCC,
+//         lineWidth=1.0,
+//         position=(484.00000, 240.00000),
+//         width=110.00000,
+//         height=48.00000)
+
+
+
+//     PropertyView pview_4(property=apps::pure::quality::tests::Firm.employeesFlag,
+//         stereotypesVisible=true,
+//         nameVisible=true,
+//         color=#000000,
+//         lineWidth=-1.0,
+//         lineStyle=SIMPLE,
+//         points=[(694.00000,250.00000),(539.00000,264.00000)],
+//         label='',
+//         source=Firm_2_2_2_2_2_2_2_2_2_2,
+//         target=Employee_3_3_3_3_3_3_3_3,
+//         propertyPosition=(593.95000, 240.95242),
+//         multiplicityPosition=(593.95000, 223.10242))
+
+
+
+// }

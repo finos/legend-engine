@@ -1,0 +1,15 @@
+{
+  "name": "core_external_format_json",
+  "pattern": "(meta::external::format::json|meta::json)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_functions_json",
+    "platform_dsl_mapping",
+    "platform_dsl_path",
+    "platform_dsl_graph",
+    "core_functions",
+    "core",
+    "core_generation"
+  ]
+}

@@ -1,0 +1,125 @@
+###Pure
+import simple::model::*;
+
+Class simple::model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+###Relational
+Database simple::store::DB
+(
+  Table PERSON_TABLE
+  (
+    FIRST_NAME VARCHAR(100),
+    LAST_NAME VARCHAR(100)
+  )
+)
+
+###Mapping
+import simple::model::*;
+import simple::store::*;
+
+Mapping simple::mapping::Mapping
+(
+  Person : Relational
+  {
+    firstName: [DB]PERSON_TABLE.FIRST_NAME,
+    lastName: [DB]PERSON_TABLE.LAST_NAME
+  }
+)
+
+Mapping simple::mapping::Mapping2
+(
+  Person : Relational
+  {
+    firstName: [DB]PERSON_TABLE.FIRST_NAME,
+    lastName: [DB]PERSON_TABLE.LAST_NAME
+  }
+)
+
+###Runtime
+Runtime simple::runtime::Runtime
+{
+    mappings :
+    [
+        simple::mapping::Mapping
+    ];
+    connections :
+    [
+        simple::store::DB :
+        [
+            connection_1 : #{
+                RelationalDatabaseConnection {
+                    store: simple::store::DB;
+                    type: H2;
+                    specification: LocalH2{
+                        testDataSetupSqls: [
+                            'DROP TABLE IF EXISTS PERSON_TABLE;',
+                            'CREATE TABLE PERSON_TABLE(ID INT PRIMARY KEY, FIRST_NAME VARCHAR(100), LAST_NAME VARCHAR(100), FIRM_ID INT);',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (1,\'Peter\',\'Smith\',1);'
+                        ];
+                    };
+                    auth: DefaultH2;
+                }
+            }#
+        ]
+    ];
+}
+
+###Service
+Service simple::service::PeopleService
+{
+  pattern: '/people';
+  owners:
+  [
+    'person1',
+    'person2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {|
+      simple::model::Person.all()->project([
+        col(x | $x.firstName, 'first name'),
+        col(x | $x.lastName, 'last name')
+      ])
+    };
+    mapping: simple::mapping::Mapping;
+    runtime: simple::runtime::Runtime;
+  }
+}
+
+Service simple::service::MultiExecutionService
+{
+  pattern: '/people/{key}';
+  owners:
+  [
+    'person1',
+    'person2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {|
+      simple::model::Person.all()->project([
+        col(x | $x.firstName, 'first name'),
+        col(x | $x.lastName, 'last name')
+      ])
+    };
+    key: 'key';
+    executions['k1']:
+    {
+      mapping: simple::mapping::Mapping;
+      runtime: simple::runtime::Runtime;
+    }
+    executions['k2']:
+    {
+      mapping: simple::mapping::Mapping2;
+      runtime: simple::runtime::Runtime;
+    }
+  }
+}

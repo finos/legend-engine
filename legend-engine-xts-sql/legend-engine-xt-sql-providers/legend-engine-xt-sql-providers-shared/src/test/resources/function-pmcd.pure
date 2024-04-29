@@ -1,0 +1,22 @@
+###Pure
+import simple::model::*;
+
+Class simple::model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+function simple::func::simpleFunction(lastNames:String[*]):meta::pure::tds::TabularDataSet[1]
+{
+  simple::model::Person.all()
+    ->filter(p | $p.lastName->in($lastNames))
+    ->project([
+        col(x | $x.firstName, 'first name'),
+        col(x | $x.lastName, 'last name')
+    ])
+}
+
+function simple::func::nonTdsFunction():String[1]
+{
+    ''
+}

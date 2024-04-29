@@ -1,0 +1,57 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::pure::changetoken::cast_generation::expand::*;
+
+function meta::pure::changetoken::cast_generation::expand::expand(input: JSONElement[1], typeKeyName: String[1]): JSONElement[1]
+{
+    let o = $input->cast(@JSONObject);
+    newJSONObject($o.keyValuePairs->map(kv | ^JSONKeyValue(key = $kv.key, value = if($kv.key.value == 'versions', | $kv.value->expandVersions($typeKeyName), | $kv.value))));
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::expand::expandVersions(input: JSONElement[1], typeKeyName: String[1]): JSONElement[1]
+{
+    let a = $input->cast(@JSONArray);
+    ^JSONArray(values = $a.values->map(o | $o->expandVersion($typeKeyName)));
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::expand::expandVersion(input: JSONElement[1], typeKeyName: String[1]): JSONElement[1]
+{
+    let o = $input->cast(@JSONObject);
+    newJSONObject($o.keyValuePairs->map(kv | ^JSONKeyValue(key = $kv.key, value = if($kv.key.value == 'changeTokens', | $kv.value->expandChangeTokens($typeKeyName), | $kv.value))));
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::expand::expandChangeTokens(input: JSONElement[1], typeKeyName: String[1]): JSONElement[1]
+{
+    let a = $input->cast(@JSONArray);
+    ^JSONArray(values = $a.values->map(o | $o->expandChangeToken($typeKeyName)));
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::expand::expandChangeToken(input: JSONElement[1], typeKeyName: String[1]): JSONElement[1]
+{
+    let o = $input->cast(@JSONObject);
+    newJSONObject($o.keyValuePairs->map(kv | ^JSONKeyValue(key = $kv.key, value = if($kv.key.value == 'defaultValue', | $kv.value->expandDefaultValue($typeKeyName), | $kv.value))));
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::expand::expandDefaultValue(input: JSONElement[1], typeKeyName: String[1]): JSONElement[1]
+{
+    let o = $input->cast(@JSONObject);
+    newJSONObject($o.keyValuePairs->map(kv | ^JSONKeyValue(key = $kv.key, value = if($kv.key.value == 'value', | $kv.value->expandValue($typeKeyName), | $kv.value))));
+}
+
+function meta::pure::changetoken::cast_generation::expand::expandValue(input: Any[1], typeKeyName: String[1]): JSONElement[1]
+{
+    $input->toJSON([], 100, config(true, true, true, true, $typeKeyName, true))->parseJSON();
+}

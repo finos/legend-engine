@@ -1,0 +1,95 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::*;
+import meta::external::store::elasticsearch::executionTest::testCase::*;
+import meta::external::store::elasticsearch::executionTest::testCase::tds::*;
+import meta::external::store::elasticsearch::executionTest::test::*;
+import meta::external::store::elasticsearch::executionTest::utils::*;
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test restrict on Elasticsearch on boolean field'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::restrict::boolean::testRestrictBoolean(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | $x.isNull('MPAA'), 'has mpaa')])->restrict('has mpaa'));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure isEmpty expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::boolean::testProjectExpressionIsEmpty(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | $x.getNullableString('MPAA')->isEmpty(), 'has mpaa')]));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure TdsisNull expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::boolean::testProjectExpressionTdsIsNull(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | $x.isNull('MPAA'), 'has mpaa')]));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure isNotEmpty expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::boolean::testProjectExpressionIsNotEmpty(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | $x.getNullableString('MPAA')->isNotEmpty(), 'missing mpaa')]));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure TdsisNotNull expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::boolean::testProjectExpressionTdsIsNotEmpty(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | $x.isNotNull('MPAA'), 'missing mpaa')]));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure && expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::boolean::testProjectExpressionAnd(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | ($x.getDate('ReleaseDate') >= %1990-01-01) && ($x.getDate('ReleaseDate') < %2000-01-01), '90s')]));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure && expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::boolean::testProjectExpressionAndWithVariables(config:TestConfig[1]):Boolean[1]
+{
+  let var1 = %1990-01-01;
+  let var2 = %2000-01-01;
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | ($x.getDate('ReleaseDate') >= $var1) && ($x.getDate('ReleaseDate') < $var2), '90s')]));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with || expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::boolean::testProjectExpressionOr(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | ($x.getDate('ReleaseDate') < %1990-01-01) || ($x.getDate('ReleaseDate') >= %2000-01-01), 'Not 90s')]));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure || expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::boolean::testProjectExpressionOrWithVariables(config:TestConfig[1]):Boolean[1]
+{
+  let var1 = %1990-01-01;
+  let var2 = %2000-01-01;
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | ($x.getDate('ReleaseDate') < $var1) && ($x.getDate('ReleaseDate') >= $var2), 'Not 90s')]));
+}

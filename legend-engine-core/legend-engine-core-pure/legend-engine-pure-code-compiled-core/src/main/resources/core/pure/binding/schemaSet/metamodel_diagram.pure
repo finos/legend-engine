@@ -1,0 +1,27 @@
+###Diagram
+Diagram meta::external::format::shared::metamodel::MetamodelDiagram(width=0.0, height=0.0)
+{
+    TypeView cview_1(
+        type=meta::external::format::shared::metamodel::SchemaSet,
+        position=(1079.00000, 392.00000),
+        width=108.00537,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::external::format::shared::metamodel::Schema,
+        position=(1271.00000, 381.00000),
+        width=142.87988,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+}

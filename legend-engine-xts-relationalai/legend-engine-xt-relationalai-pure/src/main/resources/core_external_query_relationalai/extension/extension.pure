@@ -1,0 +1,9 @@
+import meta::external::store::rel::contract::*;
+import meta::pure::extension::*;
+
+function meta::external::store::rel::extension::defaultRAIExtension(): Extension[1] {
+  ^Extension(
+    availableStores = [contract()],
+    type = 'relationalai'
+  );
+}

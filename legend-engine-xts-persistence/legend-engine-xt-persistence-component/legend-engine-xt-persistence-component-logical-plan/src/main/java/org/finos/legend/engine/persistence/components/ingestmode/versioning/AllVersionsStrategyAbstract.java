@@ -1,0 +1,100 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package org.finos.legend.engine.persistence.components.ingestmode.versioning;
+
+import org.immutables.value.Value;
+
+import java.util.Optional;
+
+import static org.immutables.value.Value.Immutable;
+import static org.immutables.value.Value.Style;
+
+@Immutable
+@Style(
+    typeAbstract = "*Abstract",
+    typeImmutable = "*",
+    jdkOnly = true,
+    optionalAcceptNullable = true,
+    strictBuilder = true
+)
+public interface AllVersionsStrategyAbstract extends VersioningStrategy
+{
+    String DATA_SPLIT = "legend_persistence_data_split";
+
+    String versioningField();
+
+    @Value.Default
+    default VersioningOrder versioningOrder()
+    {
+        return VersioningOrder.ASC;
+    }
+
+    Optional<MergeDataVersionResolver> mergeDataVersionResolver();
+
+    @Value.Default
+    default boolean performStageVersioning()
+    {
+        return true;
+    }
+
+    @Value.Default
+    default String dataSplitFieldName()
+    {
+        return DATA_SPLIT;
+    }
+
+    @Override
+    default <T> T accept(VersioningStrategyVisitor<T> visitor)
+    {
+        return visitor.visitAllVersionsStrategy(this);
+    }
+
+    @Value.Check
+    default void validate()
+    {
+        // For VersionColumnBasedResolver,
+        // Versioning Order ASC: allowed comparators: > , >=
+        // Versioning Order DESC: allowed comparators: < , <=
+        mergeDataVersionResolver().ifPresent(mergeDataVersionResolver -> new MergeDataVersionResolverVisitor<Void>()
+        {
+            @Override
+            public Void visitDigestBasedResolver(DigestBasedResolverAbstract digestBasedResolver)
+            {
+                return null;
+            }
+
+            @Override
+            public Void visitVersionColumnBasedResolver(VersionColumnBasedResolverAbstract versionColumnBasedResolver)
+            {
+                if (versioningOrder().equals(VersioningOrder.ASC) &&
+                        (versionColumnBasedResolver.versionComparator().equals(VersionComparator.LESS_THAN) ||
+                        versionColumnBasedResolver.versionComparator().equals(VersionComparator.LESS_THAN_EQUAL_TO)))
+                {
+                    throw new IllegalStateException("Cannot build AllVersionsStrategy, Invalid comparator :" +
+                            versionColumnBasedResolver.versionComparator());
+                }
+
+                if (versioningOrder().equals(VersioningOrder.DESC) &&
+                        (versionColumnBasedResolver.versionComparator().equals(VersionComparator.GREATER_THAN) ||
+                                versionColumnBasedResolver.versionComparator().equals(VersionComparator.GREATER_THAN_EQUAL_TO)))
+                {
+                    throw new IllegalStateException("Cannot build AllVersionsStrategy, Invalid comparator :" +
+                            versionColumnBasedResolver.versionComparator());
+                }
+                return null;
+            }
+        });
+    }
+}

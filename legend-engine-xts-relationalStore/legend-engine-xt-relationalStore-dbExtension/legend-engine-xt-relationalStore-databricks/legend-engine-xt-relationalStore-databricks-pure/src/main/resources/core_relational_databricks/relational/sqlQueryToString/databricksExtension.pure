@@ -1,0 +1,304 @@
+import meta::relational::functions::sqlQueryToString::databricks::*;
+import meta::relational::functions::sqlQueryToString::default::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
+
+function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::databricks::dbExtensionLoaderForDatabricks():DbExtensionLoader[1]
+{
+  ^DbExtensionLoader(dbType = DatabaseType.Databricks, loader = createDbExtensionForDatabricks__DbExtension_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::databricksReservedWords():String[*]
+{
+    //https://docs.databricks.com/sql/language-manual/sql-ref-reserved-words.html
+    [
+       'anti', 'cross', 'catalog', 'except', 'full', 'inner', 'intersect', 'join', 'lateral',
+       'left', 'minus', 'natural', 'on', 'right', 'semi', 'union', 'using', 'all', 'alter',
+       'and', 'any', 'array', 'as', 'at', 'authorization', 'between', 'both', 'by', 'case',
+       'cast', 'check', 'collate', 'column', 'commit', 'constraint', 'create', 'cross', 'cube',
+       'current', 'current_date', 'current_time', 'current_timestamp', 'current_user', 'delete',
+       'describe', 'distinct', 'drop', 'else', 'end', 'escape', 'except', 'exists', 'external',
+       'extract', 'false', 'fetch', 'filter', 'for', 'foreign', 'from', 'full', 'function',
+       'global', 'grant', 'group', 'grouping', 'having', 'in', 'inner', 'insert', 'intersect',
+       'interval', 'into', 'is', 'join', 'leading', 'left', 'like', 'local', 'natural', 'no', 'not',
+       'null', 'of', 'on', 'only', 'or', 'order', 'out', 'outer', 'overlaps', 'partition', 'position',
+       'primary', 'range', 'references', 'revoke', 'right', 'rollback', 'rollup', 'row', 'rows', 'select',
+       'session_user', 'set', 'some', 'start', 'table', 'tablesample', 'then', 'time', 'to', 'trailing',
+       'true', 'truncate', 'union', 'unique', 'unknown', 'update', 'user', 'using', 'values', 'when',
+       'where', 'window', 'with'
+   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::createDbExtensionForDatabricks():DbExtension[1]
+{
+   let reservedWords = databricksReservedWords();
+   let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsForDatabricks());
+   let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
+   let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
+     getDynaFunctionToSqlForDatabricks()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
+
+   ^DbExtension(
+      isBooleanLiteralSupported = true,
+      isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
+      literalProcessor = $literalProcessor,
+      windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
+      joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
+      selectSQLQueryProcessor = processSelectSQLQueryForDatabricks_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      schemaNameToIdentifier = schemaNameToIdentifierForDatabricks_String_1__DbConfig_1__String_1_,
+      columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
+      identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
+      dynaFuncDispatch = $dynaFuncDispatch
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::getLiteralProcessorsForDatabricks():Map<Type,LiteralProcessor>[1]
+{
+   newMap([
+      // escape single quotes in string
+      pair(String,         ^LiteralProcessor(format = '\'%s\'',               transform = {s:String[1], a:String[0..1] | $s->replace('\'','\\\'')})),
+      pair(StrictDate,     ^LiteralProcessor(format = 'to_date(\'%s\')',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'to_timestamp(\'%s\')', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'to_date(\'%s\')',      transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::getDynaFunctionToSqlForDatabricks(): DynaFunctionToSql[*]
+{
+  let allStates = allGenerationStates();
+
+  [
+    dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='%s', transform={p:String[3] | $p->at(0) + ' + INTERVAL ' + $p->at(1) + ' ' + $p->at(2)->mapToDBUnitType()})),
+    dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
+    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)', transform={p:String[*] | joinStrings($p, ', ')})),    
+    dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateDatabricks()})),
+    dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateTimeDatabricks()})),
+    dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='cast(%s as STRING)')),
+    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='%s', transform={p:String[2..3] | $p->dateDiffDatabricks()})),
+    dynaFnToSql('datePart',               $allStates,            ^ToSql(format='to_date(%s)')),
+    dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='dayofmonth(%s)')),
+    dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='dayofweek(%s)')),
+    dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='dayofyear(%s)')),
+    dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='cast(unbase64(%s) AS STRING)')),
+    dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='base64(%s)')),
+    dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='trunc(%s, \'MONTH\')')),
+    dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='trunc(%s, \'QUARTER\')')),
+    dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='trunc(current_date(), \'MONTH\')%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfThisQuarter',  $allStates,            ^ToSql(format='trunc(CURRENT_DATE, \'QUARTER\')%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='trunc(CURRENT_DATE, \'YEAR\')%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='trunc(%s, \'WEEK\')')),
+    dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='trunc(%s, \'YEAR\')')),
+    dynaFnToSql('firstHourOfDay',         $allStates,            ^ToSql(format='date_trunc(\'DAY\', %s)')),
+    dynaFnToSql('firstMillisecondOfSecond', $allStates,          ^ToSql(format='date_trunc(\'SECOND\', %s)')),
+    dynaFnToSql('firstMinuteOfHour',      $allStates,            ^ToSql(format='date_trunc(\'HOUR\', %s)')),
+    dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='date_trunc(\'MINUTE\', %s)')),
+    dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
+    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='locate(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
+    dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),
+    dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format='%s', transform={p:String[1]|$p->transformAlphaNumericParamsDatabricks()})),
+    dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='%s', transform={p:String[1..2] | $p->arrayJoinDatabricks()})),
+    dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format='%s', transform={p:String[2]|$p->transformRegexpParamsDatabricks()})),
+    dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
+    dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('monthName',              $allStates,            ^ToSql(format='to_char(%s, \'MMMM\')')),
+    dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='date_sub(%s, case when dayofweek(%s) = %s then 0 else dayofweek(%s) - %s end)', transform={p:String[1..2] | $p->formatMostRecentDatabricks('current_date()')}, parametersWithinWhenClause = [false, false])),
+    dynaFnToSql('now',                    $allStates,            ^ToSql(format='current_timestamp')),
+    dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='to_date(%s,%s)')),
+    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as double)')),
+    dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
+    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as int)')),
+    dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s, %s)')),
+    dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='date_sub(%s, case when dayofweek(%s) = %s then 7 else dayofweek(%s) - %s end)', transform={p:String[1..2] | $p->formatMostRecentDatabricks('current_date()')}, parametersWithinWhenClause = [false, false])),
+    dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
+    dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='sha2(%s, 256)')),
+    dynaFnToSql('sqlFalse',               $allStates,            ^ToSql(format='false')),
+    dynaFnToSql('sqlTrue',                $allStates,            ^ToSql(format='true')),
+    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
+    dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
+    dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
+    dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
+    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double)')),
+    dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as string)')),
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='weekofyear(%s)')),
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
+  ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSelectSQLQueryForDatabricks(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForDatabricks($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSelectSQLQueryForDatabricks(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
+{
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+
+  $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(',')) +
+  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(',')) +
+  + processLimitDatabricks(
+      $s,
+      $dbConfig,
+      $format,
+      $extensions,
+      processTakeDatabricks_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_,
+      processOffsetDatabricks_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_,
+      processSliceDatabricks_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_
+  );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processTakeDatabricks(s:SelectSQLQuery[1], format:Format[1], dbConfig: DbConfig[1], extensions:Extension[*]):String[1]
+{
+   assert($s.toRow->isNotEmpty());
+   '%s limit %s'->format([$format.separator, $s.toRow->toOne()->getValueForTake($format, $dbConfig, $extensions)]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processOffsetDatabricks(s:SelectSQLQuery[1], format:Format[1], dbConfig: DbConfig[1], extensions:Extension[*]):String[1]
+{
+   assert($s.fromRow->isNotEmpty());
+   '%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake($format, $dbConfig, $extensions)]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSliceDatabricks(s:SelectSQLQuery[1], format:Format[1], dbConfig: DbConfig[1], extensions:Extension[*], size:Any[1]):String[1]
+{
+   assert($s.toRow->isNotEmpty());
+   assert($s.fromRow->isNotEmpty());
+   '%s limit %s offset %s'->format([$format.separator, $size, $s.fromRow->toOne()->getValueForTake($format, $dbConfig, $extensions)]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processLimitDatabricks(
+   s:SelectSQLQuery[1],
+   dbConfig: DbConfig[1],
+   format:Format[1],
+   extensions:Extension[*],
+   takeProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1], DbConfig[1], Extension[*] -> String[1]}>[1],
+   offsetProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1], DbConfig[1], Extension[*] -> String[1]}>[1],
+   sliceProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1], DbConfig[1], Extension[*], Any[1] -> String[1]}>[1]
+   ):String[1]
+{
+   if ($s.fromRow == [] && $s.toRow == [],
+      | // both fromRow and toRow are null, do mot limit results
+        '';
+     ,| if ($s.fromRow != [] && $s.toRow != [],
+          | // both fromRow and toRow are not null, this is a slice (i.e. LIMIT + OFFSET)
+            let size = $s.toRow.value->match([
+              i:Integer[1]| $s.toRow->toOne().value->cast(@Integer) - $s.fromRow->toOne().value->cast(@Integer),
+              v:VarPlaceHolder[1]| [$s.toRow->toOne().value->cast(@VarPlaceHolder).name, $s.fromRow->toOne().value->cast(@VarPlaceHolder).name]->joinStrings('${','?number - ', '?number}')
+            ]);
+            $sliceProcessor->eval($s, $format,$dbConfig, $extensions, $size);
+         ,| if ($s.toRow == [],
+              | // toRow is null, this is an offset
+                $offsetProcessor->toOne()->eval($s, $format,$dbConfig, $extensions);
+             ,| // fromRow is null, this is a take
+                $takeProcessor->toOne()->eval($s, $format,$dbConfig, $extensions);
+          );
+      );
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::convertToDateDatabricks(params:String[*]):String[1]
+{
+   assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDate: convertDate(column,[dateformat])');
+   assert($params->size()==1 || dateFormatsDatabricks()->contains($params->at(1)->replace('\'', '')) , | $params->at(1) +' not supported ');
+   let dateFormat = if( $params->size() == 1,|'\'yyyy-MM-dd\'' ,| $params->at(1););
+   'to_date('+$params->at(0)+','+$dateFormat +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::convertToDateTimeDatabricks(params:String[*]):String[1]
+{
+   assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDateTime: convertDateTime(column,[dateformat])');
+   assert($params->size()==1 || dateTimeFormatsDatabricks()->contains($params->at(1)->replace('\'', '')) , | $params->at(1) +' not supported ');
+   let dateTimeFormat = if( $params->size() == 1,|'\'yyyy-MM-dd HH:mm:ss\'',| $params->at(1));
+   'to_timestamp('+$params->at(0)+','+$dateTimeFormat +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformAlphaNumericParamsDatabricks(params: String[1]):String[1]
+{
+   let param = '\'[a-zA-Z0-9]*\'';
+   let expression = $param->removeQuotes();
+   'rlike(' + $params->at(0) + ',' + $expression + ')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformRegexpParamsDatabricks(params: String[2]):String[1]
+{
+   'rlike(' + $params->at(0) + ',' + $params->at(1) + ')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::schemaNameToIdentifierForDatabricks(schemaName: String[1], dbConfig: DbConfig[1]): String[1]
+{
+   $schemaName->replace('$', '.');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dateDiffDatabricks(p:String[2..3]):String[1]
+{
+    // dateDiff(d1: Date[1], d2: Date[1], du: DurationUnit[1]): Integer[1]
+    // This returns an integer, hence a need to round results to int
+    let interval = if($p->size() == 2, |'DAY', |$p->at(2)->replace('\'', '')->mapToDBUnitType());
+    let cmd = if ($interval == 'YEAR',
+        | 'year('+ $p->at(1) +') - year('+ $p->at(0) +')',
+        | if ($interval == 'MONTH',
+             | 'cast(round(months_between('+ $p->at(1) +', '+ $p->at(0) +')) AS INT)',
+             | if ($interval == 'DAY',
+                  | 'datediff('+ $p->at(1) +', '+ $p->at(0) +')',
+                  | if ($interval == 'HOUR',
+                       | 'cast(round((unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')) / 3600) AS INT)',
+                       | if ($interval == 'MINUTE',
+                            | 'cast(round((unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')) / 60) AS INT)',
+                            | if ($interval == 'SECOND',
+                                 | 'unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')',
+                                 | if ($interval == 'MILLISECOND',
+                                      | '(unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')) * 1000',
+                                      | ''
+                                 )
+                            )
+                       )
+                  )
+             )
+        )
+    );
+    if ($cmd == '',|fail('The DurationUnit \''+$p->at(2)+'\' is not supported yet for date_diff'),|'');
+    [$cmd];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::arrayJoinDatabricks(p:String[1..2]):String[1]
+{
+    let delimiter = if($p->size() == 1, |',', |$p->at(1));
+    let values = if($p->at(0)->size() == 1, |'array('+$p->at(0)+')', |$p->at(0));
+    let cmd = 'array_join('+ $values + ', ' + $p->at(1) +')';
+    [$cmd];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::formatMostRecentDatabricks(p:String[1..2], defaultDay:String[1]):String[*]
+{
+   let day = $p->last()->toOne()->mapToDBDayOfWeekNumber()->toString();
+   let current = if ($p->size() == 2, | $p->first()->toOne(), | $defaultDay);
+   [$current, $current, $day, $current, $day];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dateFormatsDatabricks():String[*]
+{
+   ['yyyy-MM-dd', 'MMMyyyy', 'yyyyMMdd'];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dateTimeFormatsDatabricks():String[*]
+{
+   ['yyyy-MM-dd HH:mm:ss', 'yyyy-MM-dd HH:mm:ss.SSS'];
+}

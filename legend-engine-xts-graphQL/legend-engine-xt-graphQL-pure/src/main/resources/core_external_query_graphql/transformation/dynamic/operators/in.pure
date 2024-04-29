@@ -1,0 +1,73 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::in::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operations::in::*;
+import meta::external::query::graphQL::metamodel::sdl::*;
+import meta::external::query::graphQL::metamodel::sdl::value::*;
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::*;
+import meta::pure::graphFetch::*;
+import meta::pure::functions::lang::*;
+import meta::pure::functions::multiplicity::*;
+
+
+Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::InOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::BooleanOperator
+{
+  value: Literal[*];
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::in::objectFieldToInOperator(o: ObjectField[1], prefix: String[1], m: Map<String,Function<{ObjectField[1], String[1], Map<Any,Any>[1], DebugContext[1]->Node[*]}>>[1], debug: DebugContext[1]): Node[*]
+{
+  if($debug.debug, | println($debug.space + 'InOperator'), |[]);
+  assert($o.value->instanceOf(ListValue), '_in should have a list value');
+  let value = $o.value->traverseValue($prefix + '__in', $m, ^$debug(space=$debug.space + ' '));
+  
+  assert($value->size() >= 1, '_in list should have atleast one value');
+  assert($value->filter(v|!$v->instanceOf(Literal))->size() == 0, '_in values should be literals');
+  assert($value->map(v|$v->cast(@Literal).type)->distinct()->size() == 1, 'All _in values should be of same type');
+  
+  ^InOperator(value=^Literal(name=$prefix + '__in',type=$value->map(v|$v->cast(@Literal).type)->at(0)));
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::in::processInOperator(i: InOperator[1], fieldNames: String[*], cl: Class<Any>[1], vars: VariableExpression[*], count: Integer[1]): IntermediateClass[1]
+{
+  let prop = createProperty($fieldNames, $cl, constructVarName($count));
+  let ic2 = $i.value->nodesToValueSpecification($fieldNames, $cl, $vars, $count)->toOne()
+                    ->handleEnum($prop)
+                    ->handleDate($prop);
+  let vs = $ic2.valueSpecifications->toOne()->evaluateAndDeactivate();
+  let vsMultiplicityZeroMany = ^$vs(multiplicity = ZeroMany);
+  ^IntermediateClass(
+    vars=$ic2.vars->filter(v|$v->evaluateAndDeactivate().name != $vsMultiplicityZeroMany->cast(@VariableExpression).name)->concatenate($vsMultiplicityZeroMany->cast(@VariableExpression)),
+    valueSpecifications=createIn(
+      $prop, 
+      $vsMultiplicityZeroMany
+    )
+  );
+}
+
+function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::in::createIn(left: ValueSpecification[1], right: ValueSpecification[1]): SimpleFunctionExpression[1]
+{
+  assertEquals(
+    $left.genericType.rawType, 
+    $right.genericType.rawType, 
+    'Incorrect type of value provided for "' + $left->cast(@SimpleFunctionExpression).func->cast(@AbstractProperty<Any>).name->toOne() + '".' + 
+    'Expected: ' + $left.genericType.rawType->toOne()->toString() + ', Actual: ' + $right.genericType.rawType->toOne()->toString()
+  );
+  sfe(meta::pure::functions::collection::in_Any_1__Any_MANY__Boolean_1_, ^GenericType(rawType=Boolean), [], PureOne, [$left, $right]);
+}

@@ -1,0 +1,177 @@
+###Data
+Data data::RelationalData
+{
+  Relational
+  #{
+    default.FirmTable:
+          'id,legal_name\n' +
+          '1,Finos\n' +
+          '2,Apple';
+  }#
+}
+
+Data data::PersonData
+{
+  Relational
+  #{
+    default.PersonTable:
+              'id,firm_id,firstName,lastName,employeeType\n' +
+              '1,1,John,Doe,FTO\n' +
+              '2,1,Nicole,Smith,FTC\n' +
+              '3,2,Time,Smith,FTE\n';
+  }#
+}
+
+
+###Relational
+Database store::FirmDB
+(
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY,
+    legal_name VARCHAR(200)
+  )
+)
+
+
+Database store::PersonDB
+(
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firm_id INTEGER,
+    firstName VARCHAR(200),
+    lastName VARCHAR(200),
+    employeeType VARCHAR(200)
+  )
+)
+
+
+###Pure
+Class model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  employeeType: model::EmployeeType[1];
+}
+
+Enum model::EmployeeType
+{
+    CONTRACT,
+    FULL_TIME
+}
+
+Class model::Firm
+{
+  legalName: String[1];
+}
+
+Association model::Person_Firm
+{
+  employees: model::Person[*];
+  firm: model::Firm[1];
+}
+
+
+###Mapping
+Mapping execution::FirmMapping
+(
+  include dataspace model::com::PersonDataspace
+
+  *model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [store::FirmDB]FirmTable.id
+    )
+    ~mainTable [store::FirmDB]FirmTable
+    legalName: [store::FirmDB]FirmTable.legal_name,
+    +id: String[1]: toString([store::FirmDB] FirmTable.id)
+  }
+
+  model::Person_Firm: XStore
+  {
+    employees[model_Firm, model_Person]: $this.id == $that.firmIdFK
+  }
+)
+
+Mapping execution::PersonMapping
+(
+  *model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [store::PersonDB]PersonTable.id
+    )
+    ~mainTable [store::PersonDB]PersonTable
+    firstName: [store::PersonDB]PersonTable.firstName,
+    lastName: [store::PersonDB]PersonTable.lastName,
+    employeeType: EnumerationMapping EmployeeTypeMapping: [store::PersonDB] PersonTable.employeeType,
+    +firmIdFK: String[1]: toString(toString([store::PersonDB] PersonTable.firm_id))
+  }
+
+  model::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    CONTRACT: ['FTC', 'FTO'],
+    FULL_TIME: 'FTE'
+  }
+)
+
+
+###DataSpace
+DataSpace model::com::PersonDataspace
+{
+    executionContexts:
+    [
+        {
+            name:'default';
+            description:'asdfas';
+            mapping: execution::PersonMapping;
+            defaultRuntime: execution::Runtime2;
+            testData:
+                Reference
+                #{
+                    data::PersonData
+                }#;
+        }
+    ];
+    defaultExecutionContext: 'default';
+}
+
+
+###Connection
+RelationalDatabaseConnection model::MyConnection
+{
+  store: store::FirmDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+SingleConnectionRuntime execution::Runtime
+{
+  mappings:
+  [
+    execution::FirmMapping
+  ];
+  connection: model::MyConnection;
+}
+
+Runtime execution::Runtime2
+{
+  mappings:
+  [
+    execution::PersonMapping
+  ];
+  connectionStores:
+  [
+    model::MyConnection:
+    [
+      store::PersonDB
+    ]
+  ];
+}

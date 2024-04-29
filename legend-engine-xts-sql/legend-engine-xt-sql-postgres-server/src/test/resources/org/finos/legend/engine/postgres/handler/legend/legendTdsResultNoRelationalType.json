@@ -1,0 +1,42 @@
+{
+  "builder": {
+    "_type": "tdsBuilder",
+    "columns": [
+      {
+        "name": "stringColumn1",
+        "type": "String"
+      },
+      {
+        "name": "stringColumn2",
+        "type": "String",
+        "relationalType": "sqlType"
+      }
+    ]
+  },
+  "activities": [
+    {
+      "_type": "relational",
+      "sql": "select ..."
+    }
+  ],
+  "result": {
+    "columns": [
+      "stringColumn1",
+      "stringColumn2"
+    ],
+    "rows": [
+      {
+        "values": [
+          "foo",
+          "bar"
+        ]
+      },
+      {
+        "values": [
+          "foo1",
+          "bar2"
+        ]
+      }
+    ]
+  }
+}

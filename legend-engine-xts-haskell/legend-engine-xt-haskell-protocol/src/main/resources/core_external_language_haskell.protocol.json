@@ -1,0 +1,6 @@
+{
+  "purePackage": "meta::external::language::haskell::metamodel",
+  "javaPackage": "org.finos.legend.engine.protocol.haskell.metamodel",
+  "elementsToBeExcluded": [
+  ]
+}

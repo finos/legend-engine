@@ -1,0 +1,164 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::*;
+import meta::pure::tds::*;
+import meta::external::store::elasticsearch::executionTest::testCase::*;
+import meta::external::store::elasticsearch::executionTest::testCase::tds::*;
+import meta::external::store::elasticsearch::executionTest::test::*;
+import meta::external::store::elasticsearch::executionTest::utils::*;
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort on group by column on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnGroupByOneField(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy('Director', agg('max', r | $r.getInteger('Budget'), agg | $agg->max()))->sort([asc('Director')]));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort on group by column on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnGroupByOneField_withRename(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->project([
+      col(y: TDSRow[1] | $y.getString('Director'), 'Dir'),
+      col(y: TDSRow[1] | $y.getInteger('Budget'), 'Budget')
+    ]
+  )->groupBy('Dir', agg('max', r | $r.getInteger('Budget'), agg | $agg->max()))->sort([asc('Dir')]));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort on multiple group by columns on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnMultipleGroupByFields(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy(['Director', 'MainActor.Name'], agg('max', r | $r.getInteger('Budget'), agg | $agg->max()))->sort([desc('Director'), asc('MainActor.Name')]));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort on multiple group by columns on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnMultipleGroupByFields_withRename(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->project([
+      col(y: TDSRow[1] | $y.getString('Director'), 'Dir'),
+      col(y: TDSRow[1] | $y.getString('MainActor.Name'), 'MainActor'),
+      col(y: TDSRow[1] | $y.getInteger('Budget'), 'Budget')
+    ]
+  )->groupBy(['Dir', 'MainActor'], agg('max', r | $r.getInteger('Budget'), agg | $agg->max()))->sort([desc('Dir'), asc('MainActor')]));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort on group by and aggregate columns on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnSingleGroupByAndSingleAggFields(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy('Director', agg('sum', r | $r.getInteger('Budget'), agg | $agg->sum()))->sort([asc('Director'), asc('sum')]));
+}
+
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort on group by and aggregate columns on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnSingleGroupByAndSingleAggFields_withRename(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->project([
+      col(y: TDSRow[1] | $y.getString('Director'), 'Dir'),
+      col(y: TDSRow[1] | $y.getInteger('Budget'), 'Budget')
+    ]
+  )->groupBy('Dir', agg('sum', r | $r.getInteger('Budget'), agg | $agg->sum()))->sort([asc('Dir'), asc('sum')]));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort on group by and aggregate columns on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnSingleGroupByAndSingleAggFields_aggFirst(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy('Director', agg('max', r | $r.getInteger('Budget'), agg | $agg->max()))->sort([asc('max'), asc('Director')]));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort on group by and aggregate columns on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnSingleGroupByAndSingleAggFields_aggFirst_withRename(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->project([
+      col(y: TDSRow[1] | $y.getInteger('Budget'), 'Bud'),
+      col(y: TDSRow[1] | $y.getString('Director'), 'Dir')
+    ]
+  )->groupBy('Dir', agg('max', r | $r.getInteger('Bud'), agg | $agg->max()))->sort([asc('max'), asc('Dir')]));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort on group by and aggregate columns on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnSingleGroupByAndMultipleAggFields(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy('Budget', [agg('max', r | $r.getFloat('Revenue'), agg | $agg->max()), agg('min', r | $r.getFloat('Revenue'), agg | $agg->min())])->sort([asc('max'), asc('Budget'), asc('min')]));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort on group by and aggregate columns on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnSingleGroupByAndMultipleAggFields_withRename(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->project([
+      col(y: TDSRow[1] | $y.getInteger('Budget'), 'Bud'),
+      col(y: TDSRow[1] | $y.getFloat('Revenue'), 'Rev')
+    ]
+  )->groupBy('Bud', [agg('max', r | $r.getFloat('Rev'), agg | $agg->max()), agg('min', r | $r.getFloat('Rev'), agg | $agg->min())])->sort([asc('max'), asc('Bud'), asc('min')]));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort on group by and aggregate columns on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnSingleAggFields_multipleGroupByFields(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy(['Director', 'MainActor.Name'], agg('max', r | $r.getInteger('Budget'), agg | $agg->max()))->sort([asc('max')]));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort on group by and aggregate columns on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnSingleAggFields_multipleGroupByFields_withRename(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->project([
+      col(y: TDSRow[1] | $y.getString('Director'), 'Dir'),
+      col(y: TDSRow[1] | $y.getString('MainActor.Name'), 'MainActor.Name'),
+      col(y: TDSRow[1] | $y.getInteger('Budget'), 'Budget')
+    ]
+  )->groupBy(['Dir', 'MainActor.Name'], agg('max', r | $r.getInteger('Budget'), agg | $agg->max()))->sort([asc('max')]));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort on group by and aggregate columns on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnMultipleAggFields(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy(['Director', 'MainActor.Name'], [ agg('sum', r | $r.getInteger('Budget'), agg | $agg->sum()), agg('max', r | $r.getInteger('Budget'), agg | $agg->max())])->sort([asc('sum'), desc('max')]));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort on group by and aggregate columns on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnMultipleAggFields_withRename(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->project([
+      col(y: TDSRow[1] | $y.getString('Director'), 'Dir'),
+      col(y: TDSRow[1] | $y.getString('MainActor.Name'), 'MainActor.Name'),
+      col(y: TDSRow[1] | $y.getInteger('Budget'), 'Budget')
+    ]
+  )->groupBy(['Dir', 'MainActor.Name'], [ agg('sum', r | $r.getInteger('Budget'), agg | $agg->sum()), agg('max', r | $r.getInteger('Budget'), agg | $agg->max())])->sort([asc('sum'), desc('max')]));
+}

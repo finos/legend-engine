@@ -1,0 +1,141 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::function::activator::snowflakeApp::generation::*;
+import meta::external::function::activator::*;
+import meta::external::function::activator::snowflakeApp::*;
+import meta::pure::mapping::*;
+import meta::external::function::activator::snowflakeApp::tests::*;
+import meta::external::function::activator::snowflakeApp::tests::model::simple::*;
+
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunction():Boolean[1]
+{
+  let expected = 'APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'haha\' $$;';
+  assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunction__TabularDataSet_1_, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithParams():Boolean[1]
+{
+  let expected = 'APP1("age" number) RETURNS TABLE ("FIRSTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName" from personTable as "root" where ("root".AGE is not null and "root".AGE > age) $$;';
+  assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithParams_Integer_1__TabularDataSet_1_, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithStringParams():Boolean[1]
+{
+  let expected = 'APP1("firstName" VARCHAR) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = firstName $$;';
+  assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithStringParams_String_1__TabularDataSet_1_, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testEnumPushDownWithFilter():Boolean[1]
+{
+  let expected = 'APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"GENDER" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", case when "root".GENDER = \'male\' then \'M\' when "root".GENDER = \'female\' then \'F\' else null end as "Gender" from personTable as "root" where "root".GENDER = \'male\' $$;';
+  assertSnowflakeArtifactForFunction( meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionEnumPushDown__TabularDataSet_1_, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testRelationalfunctionWithDateTimeHardCoded():Boolean[1]
+{
+  // the time zone info in the connection should be ignored in the generated sql
+  let expected = 'APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".LAST_UPDATED = \'2024-02-27 16:21:53\'::timestamp $$;';
+  assertSnowflakeArtifactForFunction( meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithDateTimeHardCoded__TabularDataSet_1_, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testRelationalfunctionWithDateTimeParam():Boolean[1]
+{
+  // the time zone info in the connection should be ignored in the generated sql
+  let expected = 'APP1("asOf" timestamp) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".LAST_UPDATED = asOf $$;';
+  assertSnowflakeArtifactForFunction( meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithDateTimeParam_DateTime_1__TabularDataSet_1_, $expected);
+}
+
+// not supported yet
+function <<test.Test, test.ToFix>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParams():Boolean[1]
+{
+  let expected = '';
+  assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParams_Integer_MANY__TabularDataSet_1_, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithEnumParams():Boolean[1]
+{
+  let expected = 'APP1("gender" VARCHAR) RETURNS TABLE ("FIRSTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName" from personTable as "root" where gender = case when "root".GENDER = \'male\' then \'M\' when "root".GENDER = \'female\' then \'F\' else null end $$;';
+  assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionEnumParam_Gender_1__TabularDataSet_1_, $expected);
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunction():TabularDataSet[1]
+{
+    PersonX.all()->filter(p|$p.firstName == 'haha')->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithParams(age: Integer[1]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p|$p.age > $age)->project([col(p|$p.firstName, 'firstName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithStringParams(firstName: String[1]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p|$p.firstName == $firstName)->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParams(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p| $p.age->in($ages) )->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingContains(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p| $ages->contains($p.age->toOne()) )->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionEnumPushDown():TabularDataSet[1]
+{
+    PersonX.all()->filter(p|$p.gender == Gender.M)->project([col(p|$p.firstName, 'firstName'), col(p|$p.gender, 'Gender')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionEnumParam(gender: Gender[1]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p|$p.gender == $gender)->project([col(p|$p.firstName, 'firstName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithDateTimeHardCoded():TabularDataSet[1]
+{
+    PersonX.all()->filter(p|$p.lastUpdated == %2024-02-27T16:21:53)->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntimeWithTimeZone(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithDateTimeParam(asOf: DateTime[1]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p|$p.lastUpdated ==$asOf)->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntimeWithTimeZone(dbInc))
+}
+
+function <<access.private>> meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifactForFunction(function: PackageableFunction<Any>[1], expected: String[1]): Boolean[1]
+{
+  let app =  ^SnowflakeApp
+   (
+      applicationName = 'App1',
+      ownership = ^DeploymentOwnership(id = 'owner1'),
+      description = 'bla bla',
+      activationConfiguration = defaultConfig(),
+      function = $function
+   );
+
+  let generatedQuery = $app->generateArtifact();  
+  assertEquals($expected, $generatedQuery);
+}

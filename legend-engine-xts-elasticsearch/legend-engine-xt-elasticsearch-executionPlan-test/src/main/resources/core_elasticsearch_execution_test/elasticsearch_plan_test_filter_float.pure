@@ -1,0 +1,214 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::*;
+import meta::external::store::elasticsearch::executionTest::testCase::*;
+import meta::external::store::elasticsearch::executionTest::testCase::tds::*;
+import meta::external::store::elasticsearch::executionTest::test::*;
+import meta::external::store::elasticsearch::executionTest::utils::*;
+
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Keyword property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testEqualValueFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getFloat('Revenue') == 233.5));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Keyword property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testNotEqualValueFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getFloat('Revenue') != 233.5));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than filter on Elasticsearch float property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testGreaterThanfloat(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getFloat('Revenue') > 266.5));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than filter on Elasticsearch float property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testGreaterThanReversedfloat(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | 266.5 > $x.getFloat('Revenue')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than equal filter on Elasticsearch float property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testGreaterThanEqualfloat(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getFloat('Revenue') >= 266.5));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than equal filter on Elasticsearch float property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testGreaterThanEqualReversedfloat(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | 266.5 >= $x.getFloat('Revenue')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than filter on Elasticsearch float property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testLessThanfloat(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getFloat('Revenue') < 266.5));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than filter on Elasticsearch float property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testLessThanReversedfloat(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | 266.5 < $x.getFloat('Revenue')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than equal filter on Elasticsearch float property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testLessThanEqualfloat(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getFloat('Revenue') <= 266.5));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than equal filter on Elasticsearch float property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testLessThanEqualReversedfloat(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | 266.5 <= $x.getFloat('Revenue')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test in filter on Elasticsearch float property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testInFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getFloat('Revenue')->in([543.8, 214.0])));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Keyword property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testEqualValueFilter_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 233.5;
+  $config->testTdsExpression(x | $x->filter(x | $x.getFloat('Revenue') == $var));
+}
+
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Keyword property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testNotEqualValueFilter_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 233.5;
+  $config->testTdsExpression(x | $x->filter(x | $x.getFloat('Revenue') != $var));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than filter on Elasticsearch float property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testGreaterThanfloat_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 266.5;
+  $config->testTdsExpression(x | $x->filter(x | $x.getFloat('Revenue') > $var));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than filter on Elasticsearch float property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testGreaterThanReversedfloat_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 266.5;
+  $config->testTdsExpression(x | $x->filter(x | $var > $x.getFloat('Revenue')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than equal filter on Elasticsearch float property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testGreaterThanEqualfloat_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 266.5;
+  $config->testTdsExpression(x | $x->filter(x | $x.getFloat('Revenue') >= $var));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than equal filter on Elasticsearch float property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testGreaterThanEqualReversedfloat_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 266.5;
+  $config->testTdsExpression(x | $x->filter(x | $var >= $x.getFloat('Revenue')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than filter on Elasticsearch float property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testLessThanfloat_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 266.5;
+  $config->testTdsExpression(x | $x->filter(x | $x.getFloat('Revenue') < $var));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than filter on Elasticsearch float property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testLessThanReversedfloat_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 266.5;
+  $config->testTdsExpression(x | $x->filter(x | $var < $x.getFloat('Revenue')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than equal filter on Elasticsearch float property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testLessThanEqualfloat_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 266.5;
+  $config->testTdsExpression(x | $x->filter(x | $x.getFloat('Revenue') <= $var));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than equal filter on Elasticsearch float property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testLessThanEqualReversedfloat_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 266.5;
+  $config->testTdsExpression(x | $x->filter(x | $var <= $x.getFloat('Revenue')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test in filter on Elasticsearch float property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testInFilter_PureManyVariable(config:TestConfig[1]):Boolean[1]
+{
+  let oneVal = asZeroMany(543.8);
+  $config->testTdsExpression(x | $x->filter(x | $x.getFloat('Revenue')->in($oneVal)));
+
+  let manyVal = asZeroMany([543.8, 214.0]);
+  $config->testTdsExpression(x | $x->filter(x | $x.getFloat('Revenue')->in($manyVal)));
+
+  let noVal = asZeroMany([]->cast(@Float));
+  $config->testTdsExpressionReturnsEmpty(x | $x->filter(x | $x.getFloat('Revenue')->in($noVal)));   
+}

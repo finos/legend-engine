@@ -1,0 +1,106 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::path::*;
+import meta::external::format::shared::metamodel::*;
+import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
+import meta::pure::graphFetch::*;
+import meta::pure::executionPlan::*;
+import meta::external::store::mongodb::metamodel::mapping::*;
+import meta::external::store::mongodb::graphFetch::executionPlan::*;
+import meta::external::store::mongodb::metamodel::aggregation::*;
+import meta::external::store::mongodb::functions::pureToDatabaseCommand::*;
+import meta::external::store::mongodb::metamodel::pure::runtime::*;
+import meta::external::store::mongodb::metamodel::pure::*;
+import meta::pure::extension::*;
+import meta::core::runtime::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::mapping::*;
+import meta::pure::graphFetch::executionPlan::*;
+import meta::external::store::mongodb::metamodel::pure::graphFetch::executionPlan::*;
+import meta::external::format::shared::executionPlan::*;
+
+function meta::external::store::mongodb::graphFetch::executionPlan::planRootGraphFetchExecutionMongoDb(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: StoreMappingClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1]): LocalGraphFetchExecutionNode[1]
+{
+  let fe = $sq.fe->evaluateAndDeactivate();
+  let lhsFe = $fe.parametersValues->evaluateAndDeactivate()->at(0)->byPassRouterInfo()->cast(@FunctionExpression);
+  let rootTree = $clusteredTree->byPassClusteringInfo()->cast(@RoutedRootGraphFetchTree<Any>);
+  let store = $sq.store->cast(@MongoDatabase);
+
+  let propertiesToProject = getSubTreeProperties($rootTree.subTrees->cast(@RoutedPropertyGraphFetchTree));
+
+  let databaseCommand = $lhsFe->toDatabaseCommand($mapping, $sq.inScopeVars, $debug, $extensions)->cast(@DatabaseCommand)->addProjectedFields($propertiesToProject);
+
+  let connection = $runtime->toOne()->connectionByElement($store)->cast(@MongoDBConnection);
+
+  let binding = $mapping.classMappings->at(0)->cast(@MongoDBSetImplementation)->at(0).binding->toOne();
+
+  ^InMemoryRootGraphFetchExecutionNode(
+    resultType = ^ClassResultType(type=$rootTree.class->toOne()),
+    nodeIndex = 0,
+    graphFetchTree = $rootTree,
+    checked = $checked,
+    children = $rootTree->generateInMemoryChildGraphNodes($rootTree->nodePathName(), $orderedPaths, $debug),
+    executionNodes = [
+      //^ExternalFormatInternalizeExecutionNode(
+      ^MongoDBDocumentInternalizeExecutionNode(
+        resultType = ^PartialClassResultType(
+                            type = $rootTree.class->toOne(),
+                            propertiesWithParameters = $rootTree.subTrees->cast(@PropertyGraphFetchTree)->map(x | $x->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters)))
+                          ),
+        //config = $internalizeConfig,
+        checked = $checked,
+        enableConstraints = false,
+        tree = $rootTree,
+        binding = $binding,
+        executionNodes = [
+          ^MongoDBExecutionNode(
+            resultType = ^meta::pure::executionPlan::ResultType(type = Any),
+            databaseCommand = $databaseCommand,
+            connection = $connection
+          )
+        ]
+      )
+    ]
+  );
+}
+
+function meta::external::store::mongodb::graphFetch::executionPlan::getSubTreeProperties(subTrees: RoutedPropertyGraphFetchTree[*]): String[*]
+{
+  $subTrees->fold({s, acc |
+    let propertyName = $s.property.name->toOne();
+    let path = $s.propertyMapping->match([
+      m: MongoDBPropertyMapping[1]           | $propertyName,
+      e: EmbeddedMongoDBSetImplementation[1] |
+        let subProperties = getSubTreeProperties($s.subTrees->cast(@RoutedPropertyGraphFetchTree));
+        $subProperties->map(p | $propertyName + '.' + $p);
+    ]);
+    $acc->concatenate($path);
+  }, []);
+}
+
+function meta::external::store::mongodb::graphFetch::executionPlan::addProjectedFields(databaseCommand: DatabaseCommand[1], fieldNames: String[*]): DatabaseCommand[1]
+{
+  let matchStage = $databaseCommand.aggregationPipeline.stages->filter(x | $x->instanceOf(MatchStage))->cast(@MatchStage);
+
+  let keyValuesToProject = $fieldNames->map(k |
+    ^QueryExprKeyValue(key=^FieldPathExpression(fieldPath=$k->toOne()), value=^LiteralValue(value=^IntTypeValue(value=1)));
+  );
+
+  ^$databaseCommand(
+    aggregationPipeline = ^AggregationPipeline(
+      stages = $matchStage->concatenate(^ProjectStage(projections=^ObjectQueryExpression(keyValues = $keyValuesToProject)))
+    )
+  );
+}

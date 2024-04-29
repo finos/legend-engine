@@ -1,0 +1,230 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::elasticsearch::v7::metamodel::tds::*;
+import meta::external::store::elasticsearch::v7::metamodel::tds::*;
+import meta::external::store::elasticsearch::v7::metamodel::executionPlan::tds::*;
+import meta::json::*;
+import meta::pure::functions::io::http::*;
+import meta::external::store::elasticsearch::v7::metamodel::runtime::*;
+import meta::external::store::elasticsearch::v7::metamodel::executionPlan::*;
+import meta::pure::mapping::*;
+import meta::protocols::pure::vX_X_X::extension::*;
+import meta::pure::extension::*;
+
+function meta::external::store::elasticsearch::v7::protocol::vX_X_X::elasticsearchV7StoreExtension(type: String[1]): SerializerExtension[1]
+{
+  ^SerializerExtension_vX_X_X(
+
+      transfers_valueSpecification_transformAny = {inScope:String[*], open:Map<String,List<Any>>[1], m:Multiplicity[1], fe:FunctionExpression[0..1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*] |
+          [
+            s:meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7Store[1] |
+                ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
+                  (
+                     _type = 'packageableElementPtr',
+                     fullPath = $s->elementToPath()
+                  )
+          ]
+      },
+
+      transfers_store_transformStore2 = {extensions:meta::pure::extension::Extension[*] |
+           [
+              s:meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7Store[1] |
+                ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::store::Elasticsearch7Store(
+                  name    = $s.name->toOne(),
+                  package = $s.package->map(p | $p->elementToPath()),
+                  indices = $s.indices->map(i |
+                    ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::store::Elasticsearch7StoreIndex(
+                      indexName = $i.indexName,
+                      properties = $i.properties->map(p |
+                        ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::store::Elasticsearch7StoreIndexProperty(
+                          propertyName = $p.propertyName,
+                          property = $p.property
+                        )
+                      )
+                    )
+                  )
+                )
+           ]
+      },
+
+      invocation_execution_transformContext =
+      [
+        e: meta::external::store::elasticsearch::v7::metamodel::executionPlan::context::Elasticsearch7ExecutionContext[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::context::Elasticsearch7ExecutionContext()
+      ],
+
+      transfers_store_transformConnection2 = extensions: Extension[*] | [
+          conn: Elasticsearch7StoreConnection[1] | $conn->meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::transformConnection($extensions)
+      ],
+
+      transfers_executionPlan_transformNode = {mapping:Mapping[1], extensions:Extension[*] |
+          [
+              esNode: Elasticsearch7RequestExecutionNode[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::Elasticsearch7RequestExecutionNode(
+                _type = 'elasticsearch7RequestExecutionNode',
+                resultType = $esNode.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                connection = $esNode.connection->meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::transformConnection($extensions),
+                request = $esNode.request,
+                metadata = $esNode.metadata->match([
+                  tds: TDSMetadata[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::TDSMetadata(
+                    _type = 'tDSMetadata',
+                    columnResultPaths = $tds.columnResultPaths
+                        ->map(c | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::TDSColumnResultPath(
+                            index = $c.index,
+                            resultPath = $c.resultPath->meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::transformResultPath($extensions)
+                          )
+                        )
+                    )
+                ])
+              )
+          ]
+      }
+  );
+}
+
+function meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::transformResultPath(path: ResultPath[1], extensions:Extension[*]): meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath[1]
+{
+  $path->match([
+    src: SourceFieldResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::SourceFieldResultPath(
+      _type = 'sourceFieldResultPath',
+      fieldPath = $src.fieldPath
+    ),
+    field: FieldResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::FieldResultPath(
+      _type = 'fieldResultPath',
+      fieldPath = $field.fieldPath,
+      readFrom = $field.readFrom->map(x | $x->meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::transformResultPath($extensions))
+    ),
+    docvalue: DocValueResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::DocValueResultPath(
+      _type = 'docValueResultPath',
+      fieldPath = $docvalue.fieldPath
+    ),
+    agg: AggregateResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::AggregateResultPath(
+      _type = 'aggregateResultPath',
+      fieldPath = $agg.fieldPath,
+      fieldToAggregate = $agg.fieldToAggregate->map(x | $x->meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::transformResultPath($extensions))
+    ),
+    agg: DocCountAggregateResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::DocCountAggregateResultPath(
+      _type = 'docCountAggregateResultPath',
+      fieldPath = $agg.fieldPath
+    ),
+    id: _IDResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::_IDResultPath(
+      _type = '_IDResultPath',
+      fieldPath = $id.fieldPath
+    )
+  ]);
+}
+
+function meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::transformConnection(conn: Elasticsearch7StoreConnection[1],extensions:Extension[*]): meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::Elasticsearch7StoreConnection[1]
+{
+  ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::Elasticsearch7StoreConnection(
+    _type = 'elasticsearch7StoreConnection',
+    element = '',
+    sourceSpec = ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::Elasticsearch7StoreURLSourceSpecification(
+            url = '%s://%s:%d%s'->format([$conn.sourceSpec.url.scheme->defaultIfEmpty(URLScheme.http)->toOne(), $conn.sourceSpec.url.host, $conn.sourceSpec.url.port, $conn.sourceSpec.url.path])
+          ),
+    authSpec = $conn.authSpec->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformAuthenticationSpecification($extensions)
+  )
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::Elasticsearch7RequestExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode
+{
+   connection : meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::Elasticsearch7StoreConnection[1];
+   request    : meta::external::store::elasticsearch::v7::metamodel::specification::types::RequestBase[1];
+   metadata   : meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::RequestResultMetadata[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::RequestResultMetadata
+{
+   _type: String[1];
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::TDSMetadata extends meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::RequestResultMetadata
+{
+   columnResultPaths: meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::TDSColumnResultPath[1..*];
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::TDSColumnResultPath
+{
+  index: Integer[1];
+  resultPath: meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath
+{
+  _type: String[1];
+  fieldPath: String[1..*];
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::SourceFieldResultPath extends meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath
+{
+
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::_IDResultPath extends meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath
+{
+
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::FieldResultPath extends meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath
+{
+  readFrom: meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath[1];
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::DocValueResultPath extends meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath
+{
+
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::AggregateResultPath extends meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath
+{
+  fieldToAggregate: meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath[1];
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::DocCountAggregateResultPath extends meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath
+{
+
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::Elasticsearch7StoreConnection extends meta::protocols::pure::vX_X_X::metamodel::runtime::Connection
+{
+   sourceSpec: meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::Elasticsearch7StoreURLSourceSpecification[1];
+   authSpec:  meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::AuthenticationSpecification[1];
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::Elasticsearch7StoreURLSourceSpecification
+{
+   url: String[1];
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::context::Elasticsearch7ExecutionContext extends meta::protocols::pure::vX_X_X::metamodel::ExecutionContext
+{
+  _type: String[1] = 'elasticsearch7ExecutionContext';
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::store::Elasticsearch7Store extends meta::protocols::pure::vX_X_X::metamodel::store::Store
+{
+  _type: String[1] = 'elasticsearch7Store';
+  indices: meta::external::store::elasticsearch::v7::protocol::vX_X_X::store::Elasticsearch7StoreIndex[*];
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::store::Elasticsearch7StoreIndex
+{
+  indexName: String[1];
+  properties: meta::external::store::elasticsearch::v7::protocol::vX_X_X::store::Elasticsearch7StoreIndexProperty[*];
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::store::Elasticsearch7StoreIndexProperty
+{
+  propertyName: String[1];
+  property: meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property[1];
+}

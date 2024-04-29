@@ -1,0 +1,369 @@
+import meta::analytics::quality::model::*;
+import meta::analytics::quality::model::domain::*;
+import meta::relational::tests::*;
+import meta::pure::runtime::*;
+
+
+Enum meta::analytics::quality::model::Severity
+{
+   High, Medium, Low
+}
+
+Enum meta::analytics::quality::model::Category
+{
+   Modelling, Correctness, Quality, Testing
+}
+
+Class meta::analytics::quality::model::Rule<T>
+{
+   id : String[1];
+   func: FunctionDefinition<{T[1]->Any[*]}>[1];
+   severity : Severity[1];
+   category : Category[1];
+   description: String[1];
+   hasSkipTestsFlag : Boolean[1];
+
+}
+
+Profile meta::analytics::quality::model::rule
+{
+    stereotypes: [skipTests];
+    tags: [rule, severity, category, description, ignore];
+}
+
+Class meta::analytics::quality::model::CheckResult
+{
+   isValid: Boolean[1];
+   message: String[1];
+}
+
+Class meta::analytics::quality::model::ViolationInstance<T>
+{
+   source : T[1];
+   rule : Rule<T>[1];
+   sourceInfo() { $this.source->sourceInformation()}: SourceInformation[0..1] ;
+   detail :
+    CheckResult[1];
+}
+
+Class meta::analytics::quality::model::Rankings
+{
+   severity() { [pair(Severity.High, 1), pair(Severity.Medium, 2),pair(Severity.Low, 3)]}: Pair<Severity,Integer>[*];
+   severity(severity :Severity[1]) { $this.severity()->filter(p|$p.first == $severity)->toOne().second} : Integer[1];
+
+}
+
+function <<access.private>> meta::analytics::quality::model::domain::apply(rule:Rule<Any>[1],pe:AbstractProperty<Any>[1]):Any[*]
+{
+  if($rule->skipInTests($pe), |[], |$rule.func->eval($pe))
+}
+
+function {doc.doc = 'Run quality checks for class properties'}
+meta::analytics::quality::model::domain::runClassPropertyQualityChecks(cl:Class<Any>[1],rules:Rule<AbstractProperty<Any>>[*]):ViolationInstance<Any>[*]
+{
+   let properties = $cl->allProperties();
+
+   $properties->map(p:AbstractProperty<Any>[1] | $rules->map(rule:Rule<AbstractProperty<Any>>[1] | $rule->apply($p)->cast(@CheckResult)->violationHandler($p, $rule)));
+}
+
+function <<access.private>> meta::analytics::quality::model::domain::skipInTests(rule:Rule<Any>[1],pe:Any[1]):Boolean[1]
+{
+  if($rule.hasSkipTestsFlag ,
+      |
+        let pName = $pe->match([p:PackageableElement[1]|$p->fullPackageName('::'), p:AbstractProperty<Any>[1]|$p->fullPackageName('::')]);
+        let si = $pe->sourceInformation();
+        $pName->contains('::tests::') || $pName->contains('::test::')|| $si.source->contains('/test/') || $si.source->contains('/tests/');,
+      | false
+      );
+}
+
+function {doc.doc = 'Handles model checks violations'}
+//TODO: there is a bug with generics so ViolationInstance<Any> instead of ViolationInstance<T>
+meta::analytics::quality::model::domain::violationHandler(detail:CheckResult[*],element: Any[1],rule: Rule<Any>[1]):ViolationInstance<Any>[*]
+{
+  $detail->filter(r | !$r.isValid)->map(r | ^ViolationInstance<Any>(source=$element, rule=$rule, detail=$r));
+}
+
+function meta::analytics::quality::model::domain::createRule<T>(ruleFunctionB: FunctionDefinition<{T[1]->Any[*]}>[1]):Rule<T>[1]
+{
+    let ruleFunction = $ruleFunctionB->cast(@AnnotatedElement);
+    let tags = $ruleFunction.taggedValues;
+
+    let rule = $ruleFunction->value4Tag('rule', rule).value->toOne();
+    let description = $ruleFunction->value4Tag('description', rule).value->toOne();
+    let severity = Severity->extractEnumValue($tags->filter(t | $t.tag == rule->tag('severity'))->map(t | $t.value)->toOne()->toString());
+    let category = Category->extractEnumValue($tags->filter(t | $t.tag == rule->tag('category'))->map(t | $t.value)->toOne()->toString());
+    let skipTestsTag = $ruleFunction->hasStereotype('skipTests',meta::analytics::quality::model::rule);
+    ^Rule<T>(id=$rule,func=$ruleFunctionB,severity=$severity,category=$category,description=$description,hasSkipTestsFlag=$skipTestsTag);
+}
+
+function {doc.doc='Run quality checks for all elements in a package'}
+meta::analytics::quality::model::domain::runQualityChecks(elements:PackageableElement[*]):ViolationInstance<Any>[*]
+{
+     let functionRules = functionRules();
+     let enumerationRules = enumerationRules();
+     let associationRules = associationRules();
+     let classRules = classRules();
+     let propertyRules = propertyRules();
+
+     let allElements = $elements->filter(e | $e->instanceOf(Package))->cast(@Package)->map(p | $p->getAllPackageElements(true))->concatenate($elements)->removeDuplicates();
+
+     let funcViolations = $allElements->filter(x|$x->instanceOf(FunctionDefinition))->cast(@FunctionDefinition<Any>)->runQualityChecksForFunctions($functionRules);
+     let classes = $allElements->filter(x|$x->instanceOf(Class))->cast(@Class<Any>);
+     let associations = $allElements->filter(x|$x->instanceOf(Association));
+     let classViolations = $classes->runQualityChecksForClass($classRules, $propertyRules)->concatenate($classes.qualifiedProperties->runQualityChecksForFunctions($functionRules));
+     let enumerationViolations = $allElements->filter(x|$x->instanceOf(Enumeration))->cast(@Enumeration<Any>)->runQualityChecksForEnumerations($enumerationRules);
+     let associationViolations = $allElements->filter(x|$x->instanceOf(Association))->cast(@Association)->runQualityChecksForAssociations($associationRules);
+
+     $funcViolations->concatenate($classViolations)->concatenate($enumerationViolations)->concatenate($associationViolations);
+}
+
+function {doc.doc = 'Run Quality checks for functions'}
+meta::analytics::quality::model::domain::runQualityChecksForFunctions(fns:FunctionDefinition<Any>[*], rules : Rule<List<FunctionDefinition<Any>>>[*]):ViolationInstance<Any>[*]
+{
+   if($fns->isEmpty()
+     ,|[]
+     ,|$rules->map(rule|
+         let ruleFunction=$rule.func->cast(@FunctionDefinition<{List<FunctionDefinition<Any>>[1]->Pair<Any,CheckResult>[*]}>);//todo this is a hack for compile mode
+
+         let filtersFns = $fns->filter(f|!$rule->skipInTests($f));
+
+         let results = $ruleFunction->eval(^List<FunctionDefinition<Any>>(values=$filtersFns));
+
+
+         $results->map(p|
+               []->concatenate($p.second)->violationHandler($p.first,$rule);
+            );
+        );
+     );
+
+}
+
+function {doc.doc = 'Run quality checks for classes, their properties and abstract functions'}
+meta::analytics::quality::model::domain::runQualityChecksForClass(cls:Class<Any>[*], classRules:Rule<Class<Any>>[*], propRules:Rule<AbstractProperty<Any>>[*]):ViolationInstance<Any>[*]
+{
+
+   $cls->map(cl| $classRules->map(rule:Rule<Class<Any>>[1] | $rule->apply($cl)->cast(@CheckResult)->violationHandler($cl, $rule))
+                       ->concatenate($cl->meta::analytics::quality::model::domain::runClassPropertyQualityChecks($propRules)));
+}
+
+function {doc.doc = 'Run quality checks for enums'}
+meta::analytics::quality::model::domain::runQualityChecksForEnumerations(e:Enumeration<Any>[*], enumerationRules:Rule<Enumeration<Any>>[*]):ViolationInstance<Any>[*]
+{
+   $e->map(e | $enumerationRules->map(rule:Rule<Enumeration<Any>>[1] | $rule->apply($e)->cast(@CheckResult)->violationHandler($e, $rule)));
+}
+
+function {doc.doc = 'Run quality checks for associations'}
+meta::analytics::quality::model::domain::runQualityChecksForAssociations(e:Association[*], associationRules:Rule<Association>[*]):ViolationInstance<Any>[*]
+{
+   $e->map(e | $associationRules->map(rule:Rule<Association>[1] | $rule->apply($e)->cast(@CheckResult)->violationHandler($e, $rule)));
+}
+
+function <<access.private>> meta::analytics::quality::model::domain::apply(rule:Rule<Any>[1],pe:PackageableElement[1]):Any[*]
+{
+  if($rule->skipInTests($pe), |[], |$rule.func->eval($pe))
+}
+
+function meta::analytics::quality::model::domain::runRules(pkg:PackageableElement[*]) : ViolationInstance<Any>[*]
+{
+     let severity = newMap(^Rankings().severity);
+
+     $pkg->removeDuplicates()
+         ->runQualityChecks()
+         ->removeDuplicates()
+         ->cast(@ViolationInstance<Any>)
+         ->filter(bug|!$bug.detail.isValid)
+         ->filterInstancesToIgnore()
+         ->sortBy(b |  $severity->get($b.rule.severity)->toOne());
+
+}
+
+function meta::analytics::quality::model::domain::filterInstancesToIgnore(i:ViolationInstance<Any>[*]) : ViolationInstance<Any>[*]
+{
+
+  $i->filter(v| let ignoreTag = $v.source->match([e:ElementWithTaggedValues[1]| $e->value4Tag('ignore', rule).value,
+                                                  fe:FunctionExpression[1]| $fe.usageContext->match(
+                                                                            [es:ExpressionSequenceValueSpecificationContext[1]| if($es.functionDefinition->instanceOf(AnnotatedElement),|$es.functionDefinition->cast(@AnnotatedElement)->value4Tag('ignore', rule).value, |[]);,
+                                                                             a: ValueSpecificationContext[1]|''
+                                                                             ]);,
+                                                  a:Any[1]| println($a);'';]);
+                if( $ignoreTag->isEmpty()
+                ,| true
+                ,| let values = $ignoreTag->toOne()->split(',');
+                   !$v.rule.id->in($values);
+                );
+
+  );
+}
+
+function meta::analytics::quality::model::domain::runChecksAsHtml(pkgs:PackageableElement[*],elements:String[*],service:Boolean[1]):String[1]
+{
+  let bugs = meta::analytics::quality::model::domain::runRules($pkgs);
+  let bugDetailsTable = [
+        '<div id="details">',
+        '<table id="qc">',
+        '<tr>',
+        '<th><b>Severity</b></th>',
+        '<th><b>Category</b></th>',
+        '<th><b>Rule</b></th>',
+        '<th><b>Message</b></th>',
+        '<th><b>Element</b></th>',
+        '</tr>'
+     ]->concatenate(
+         $bugs->map({bug|
+         let pe = $bug.source->findPackagableElement();
+         let peName = $bug.source->match([p:PackageableElement[1]| $p->fullPackageName('::'),a:Any[1]|$pe->fullPackageName('::') ]) ;
+         [
+         '<tr>',
+         ('<td>' + $bug.rule.severity->makeString() + '</td>'),
+         ('<td>' + $bug.rule.category->makeString() + '</td>'),
+         ('<td>' + $bug.rule.description->makeString() + '</td>'),
+         ('<td>' + $bug.detail.message->makeString() + '</td>'),
+         if($service
+         ,|('<td><a>' + $pe->cast(@PackageableElement)->fullPackageName('::') + '</a></td>')
+         ,|('<td>' + '<a href=\'#\' onclick=\'openFile(\"' +  $bug.sourceInfo->toOne().source + '\",' + $bug.sourceInfo->toOne().startLine->toString() + ',' + $bug.sourceInfo->toOne().startColumn->toString() + ',false); return false;\'>'
+                 + $peName+ '</a>'+ '</td>')
+         ),
+         '</tr>'
+         ];
+         })
+     )->concatenate([
+        '</table>',
+        '</div>'
+     ]);
+
+     let packagesInfo = [
+       '<div id="elements">',
+       '<p>',
+       'Inspected elements:<BR>'
+       ]
+      ->concatenate($elements->map(e | $e + '<BR>')->sort()->joinStrings(''))
+      ->concatenate(
+       ['</p></div>'])
+     ;
+
+     let rulesInfo = [
+       '<div id="rules">',
+       '<table id="qc">',
+       '<tr>',
+       '<th><b>Rule</b></th>',
+       '<th><b>Severity</b></th>',
+       '<th><b>Category</b></th>',
+       '<th><b>Description</b></th>',
+       '<th><b>Rule code</b></th>',
+       '</tr>'
+      ]
+     ->concatenate(classRules()->map(r | $r->createRuleHTMLRow('Classes',$service)))
+     ->concatenate(propertyRules()->map(r | $r->createRuleHTMLRow('Properties',$service)))
+     ->concatenate(functionRules()->map(r | $r->createRuleHTMLRow('Functions',$service)))
+     ->concatenate(enumerationRules()->map(r | $r->createRuleHTMLRow('Enumerations',$service)))
+     ->concatenate(associationRules()->map(r | $r->createRuleHTMLRow('Associations',$service)))
+     ->concatenate([
+        '</table>',
+        '</div>'
+     ]);
+
+     let stats = '<div id="summary">'+ $bugs->meta::analytics::quality::model::domain::buildStatsTable('Rule')+'</div>';
+
+     let scripts = if($service,|
+        '<script type="text/javascript" src="/training/js/qualityChecks/jquery_2_1_4.js"></script>'+
+        '<script type="text/javascript" src="/training/js/qualityChecks/jquery_ui_1_11_4.js"></script>'+
+        '<link rel="stylesheet" href="/training/css/qualityChecks/jquery_ui_1_11_4.css">'
+     ,|'');
+
+     let page = [
+     '<html>',
+     '<title>PURE Quality Checks</title>',
+     '<head>',
+     '<style type="text/css">',
+     '#qc {width: 100%}',
+     '#qc th, #qc td {text-align: left; align:left; font-size:x-small}',
+     '#qc tr:nth-child(even) {background-color: #f2f2f2}',
+     '#qc tr:hover {background-color: #f1f6c8}',
+     '</style>',
+     $scripts,
+     '<script>',
+     '$(function() {$( "#qttabs" ).tabs();});',
+     '</script>',
+     '</head>',
+     '<boby>',
+     '<div id="qttabs">',
+     '<ul><li><a href="#summary">Summary</a></li>',
+     '<li><a href="#details">Details</a></li>',
+     '<li><a href="#elements">Inspected Elements</a></li>',
+     '<li><a href="#rules">Rules</a></li></ul>']
+     ->concatenate($stats)
+     ->concatenate($packagesInfo)
+     ->concatenate($bugDetailsTable)
+     ->concatenate($rulesInfo)
+     ->concatenate
+     ([
+     '</boby>',
+     '</html>',
+     ''
+     ]) ->joinStrings('\n');
+     $page;
+}
+
+function <<access.private>> meta::analytics::quality::model::domain::createRuleHTMLRow(r:Rule<Any>[1],type:String[1],service:Boolean[1]):String[1]
+{
+
+   let pe = $r.func;
+   let si= $pe->sourceInformation()->toOne();
+
+  '<tr><td>'+$type +'</td><td>'+$r.severity->toString() + '</td><td>' +  $r.category->toString() + '</td><td>' + $r.description +'</td>' +
+
+  if($service
+    ,|('<td><a>' + $pe->cast(@PackageableElement)->fullPackageName('::') + '</a></td>')
+    ,|('<td>' + '<a href=\'#\' onclick=\'openFile(\"' +  $si.source + '\",' + $si.startLine->toString() + ',' + $si.startColumn->toString() + ',false); return false;\'>'
+                 + $pe->cast(@PackageableElement)->fullPackageName('::') + '</a>'+ '</td>')
+    );
+
+}
+
+function <<access.private>> meta::analytics::quality::model::domain::buildStatsTable(items : ViolationInstance<Any>[*], name : String[1]) : String[1]
+{
+    let severity = newMap(^Rankings().severity);
+
+    let pairs = $items->map(e| ^Pair<Rule<Any>,Integer>(first=$e.rule,second=1));
+
+    let keys = $pairs.first->distinct()->cast(@Rule<Any>);
+
+    let stats = $keys->map(k|let p=^Pair<Integer,Integer>(first=$severity->get($k.severity)->toOne(),second=$pairs->filter(p|$p.first == $k).second->sum());
+                             ^Pair<Rule<Any>,Pair<Integer,Integer>>(first=$k, second = $p);)
+                     ->sort({a,b| $a.second.first->compare($b.second.first) + (-1* $a.second.second->compare($b.second.second)) }); // sort by severity then count
+
+
+   let rows =$stats
+           ->map({p|
+            let percent = (($p.second.second / $items->size()) * 100);
+            [
+            '<tr>',
+            ('<td>' + $p.first.id->makeString() + '</td>'),
+            ('<td>' + $p.first.severity->makeString() + '</td>'),
+            ('<td>' + $p.second.second->makeString() + '</td>'),
+            ('<td>' + if ($percent > 0.1, | format('%.2f', [$percent]), | 'n/a') + '%</td>'),
+            '</tr>'
+            ];
+         })->cast(@String);
+
+   let statsTable = [
+        '<table id="qc">']
+     ->concatenate(['<tr><td>Total</td><td>',$items->size()->toString(),'</td><td>Violation Instances</td>'])
+     ->concatenate([('<tr><th>' + $name + '</th>'),
+                    '<th>Severity</th>',
+                    '<th>Count</th>',
+                    '<th>%</th>',
+                    '</tr>'])
+     ->concatenate($rows)
+     ->concatenate(['</table>']);
+
+   $statsTable->joinStrings('');
+}
+
+function {service.url='/quality/reports/{element}', service.contentType='text/html'}
+meta::analytics::quality::model::domain::findBugsReports(element : String[1]) : String[1]
+{
+  let pe = $element->pathToElement();
+  [$pe]->meta::analytics::quality::model::domain::runChecksAsHtml($pe->fullPackageName('::'),true);
+}

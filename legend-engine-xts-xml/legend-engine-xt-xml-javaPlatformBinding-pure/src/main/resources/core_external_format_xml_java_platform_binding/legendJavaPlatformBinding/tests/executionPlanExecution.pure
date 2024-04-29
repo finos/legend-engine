@@ -1,0 +1,56 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::xml::executionPlan::test::*;
+import meta::external::format::xml::executionPlan::platformBinding::legendJava::test::*;
+import meta::external::format::shared::functions::*;
+
+import meta::legend::*;
+
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::*;
+import meta::core::runtime::*;
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::xml::executionPlan::platformBinding::legendJava::test::testInternalizeExternalizeSimple(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let query   = {data:String[1] | Person->internalize($binding, $data)->serialize(#{Person{firstName, lastName}}#)};
+  let vars    = pair('data', '<Person version=\'1.1\' type=\'md\'>\n' +
+                                '<firstName>John</firstName>\n' +
+                                '<lastName>Doe</lastName>\n' +
+                              '</Person>');
+
+  let result  = executeXSDBindingQuery($query, $vars);
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"firstName":"John","lastName":"Doe"}}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::xml::executionPlan::platformBinding::legendJava::test::testBindingAndM2MChainedSimple(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let tree    = #{TargetPerson{fullName}}#;
+  let query   = {data:String[1]| TargetPerson.all()->graphFetch($tree)->from(M2MMapping, getRuntimeWithModelQueryConnection(Person, $binding, $data))->serialize($tree);};
+  let vars    = pair('data', '<Person version=\'1.1\' type=\'md\'>\n' +
+                                '<firstName>John</firstName>\n' +
+                                '<lastName>Doe</lastName>\n' +
+                              '</Person>');
+
+  let result  = executeXSDBindingQuery($query, $vars);
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"fullName":"John Doe"}}', $result);
+}
+
+function meta::external::format::xml::executionPlan::platformBinding::legendJava::test::executeXSDBindingQuery(f: FunctionDefinition<Any>[1], vars: Pair<String, Any>[*]): String[1]
+{
+  meta::legend::executeLegendQuery($f, $vars, ^meta::pure::runtime::ExecutionContext(), getExtensions());
+}

@@ -1,0 +1,57 @@
+###Elasticsearch
+Elasticsearch7Cluster abc::abc::Store
+{
+    indices: [
+        index1: {
+            properties: [
+                prop1: Keyword
+            ];
+        }
+    ];
+}
+
+###Connection
+Elasticsearch7ClusterConnection abc::abc::Connection
+{
+    store: abc::abc::Store;
+    clusterDetails: # URL { http://_%_ELASTIC_HOST_%_ }#;
+    authentication: # UserPassword {
+        username: 'elastic';
+        password: SystemPropertiesSecret
+        {
+            systemPropertyName: 'org.finos.legend.engine.plan.execution.stores.elasticsearch.test.password';
+        };
+    }#;
+}
+
+###Runtime
+Runtime abc::abc::Runtime
+{
+  mappings:
+  [
+  ];
+  connections:
+  [
+    abc::abc::Store:
+    [
+      connection: abc::abc::Connection
+    ]
+  ];
+}
+
+###Mapping
+Mapping abc::abc::EmptyMapping
+(
+
+)
+
+###Pure
+function abc::abc::indexToTdsFunction(): TabularDataSet[1]
+{
+    indexToTDS(abc::abc::Store, 'index1')->from(abc::abc::EmptyMapping, abc::abc::Runtime);
+}
+
+function abc::abc::indexToTDSGroupByFunction(): TabularDataSet[1]
+{
+    indexToTDS(abc::abc::Store, 'index1')->from(abc::abc::EmptyMapping, abc::abc::Runtime)->groupBy(['prop1', '_id'], agg('count', r | $r.getString('prop1'), agg | $agg->count()));
+}

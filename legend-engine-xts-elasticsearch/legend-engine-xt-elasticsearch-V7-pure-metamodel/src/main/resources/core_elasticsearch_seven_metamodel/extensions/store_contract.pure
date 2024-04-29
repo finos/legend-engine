@@ -1,0 +1,153 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::extension::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+import meta::pure::store::*;
+import meta::pure::executionPlan::*;
+
+import meta::pure::router::routing::*;
+import meta::pure::router::clustering::*;
+
+import meta::external::store::elasticsearch::v7::metamodel::store::*;
+import meta::external::store::elasticsearch::v7::metamodel::runtime::*;
+import meta::external::store::elasticsearch::v7::contract::*;
+import meta::external::store::elasticsearch::v7::executionPlan::generation::*;
+import meta::external::store::elasticsearch::v7::metamodel::executionPlan::*;
+
+function meta::external::store::elasticsearch::v7::extension::elasticsearchV7Extension() : meta::pure::extension::Extension[1]
+{
+   ^Extension
+   (
+      type = 'elasticsearchV7',
+      availableStores = [
+        elasticsearchV7StoreContract()
+      ],
+      serializerExtension = meta::external::store::elasticsearch::v7::contract::elasticsearchV7StoreSerializerExtension_String_1__String_1_,
+      tdsSchema_resolveSchemaImpl = {fe:FunctionExpression[1], openVars:Map<String, List<Any>>[1], extensions:Extension[*]|
+                                      [
+                                          pair(meta::external::store::elasticsearch::v7::tds::indexToTDS_Elasticsearch7Store_1__String_1__TabularDataSet_1_->cast(@Function<Any>), {|
+                                              meta::pure::tds::schema::createSchemaState($fe->reactivate()->cast(@TabularDataSet).columns);
+                                          })
+                                      ]
+                                    }
+   )
+}
+
+function meta::external::store::elasticsearch::v7::contract::elasticsearchV7StoreContract(): StoreContract[1]
+{
+   ^StoreContract
+   (
+     // ** SupportContract **
+
+      // Routing
+      supports = supports(),
+      supportsNativeJoinAmongElements = false,
+      // Routing
+
+      // ExecutionPlan
+      supportsStreamFunction = f: FunctionExpression[1] | false,
+      planExecution = planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
+
+      // ExecutionPlan
+
+      // Core
+      supportsSetImplementation = s: SetImplementation[1] | false,
+      supportsStore = store: Store[1] | $store->instanceOf(Elasticsearch7Store),
+      resolveStoreFromSetImplementation = [],
+      // Core
+
+     // ** SupportContract **
+
+     // ** RouterExtension **
+
+      // Routing
+      shouldStopRouting = [meta::external::store::elasticsearch::v7::tds::indexToTDS_Elasticsearch7Store_1__String_1__TabularDataSet_1_],
+
+      shouldStopPreeval = shouldStopPreeval(),
+
+      routeFunctionExpressions = routeFunctionExpressionsPairs(),
+      // Routing
+
+      // Execution
+      traceQueryInfoBuilder = [],
+      // Execution
+
+     // ** RouterExtension **
+
+     // ** ExecutionPlanExtension **
+
+      // Execution Node - Print
+      printPlanNodeToString = printPlanNodeToString_String_1__Extension_MANY__Function_MANY_,
+      printConnectionToString = ext:  Extension[*] |
+        [
+          es: Elasticsearch7StoreConnection[1] | '%s, %s'->format([$es.sourceSpec->type().name->toOne(), $es.authSpec->type().name->toOne()])
+        ],
+      printTypeToString = [],
+      // Execution Node - Print
+
+     // ** ExecutionPlanExtension **
+
+     id = 'elasticsearchV7'
+   )
+}
+
+function meta::external::store::elasticsearch::v7::contract::routeFunctionExpressionsPairs(): Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{Function<Any>[1], FunctionExpression[1], RoutingState[1], meta::pure::runtime::ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], meta::pure::extension::Extension[*], DebugContext[1]->RoutingState[1]}>>[*]
+{
+   pair(
+    fe:FunctionExpression[1] | $fe.func == meta::external::store::elasticsearch::v7::tds::indexToTDS_Elasticsearch7Store_1__String_1__TabularDataSet_1_,
+    {function: Function<Any>[1], fe: FunctionExpression[1], state: RoutingState[1], executionContext: meta::pure::runtime::ExecutionContext[1], vars: Map<VariableExpression, ValueSpecification>[1], inScopeVars: Map<String, List<Any>>[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1] |
+          let store = $fe->instanceValuesAtParameter(0, $vars, $inScopeVars)->toOne()->cast(@Elasticsearch7Store);
+          let mapping = if($state.routingStrategy->instanceOf(meta::pure::router::store::metamodel::StoreMappingRoutingStrategy),
+            |$state.routingStrategy->cast(@meta::pure::router::store::metamodel::StoreMappingRoutingStrategy).mapping,
+            |[]
+          );
+          let runtime = $state.routingStrategy->cast(@meta::pure::router::store::metamodel::StoreRoutingStrategy).runtime;
+          ^$state(value = ^TDSRoutedValueSpecification(
+                  genericType = $fe.genericType,
+                  multiplicity = $fe.multiplicity,
+                  id = 'Index TDS',
+                  store = $store,
+                  runtime = $runtime,
+                  mapping = $mapping,
+                  executionContext = $executionContext,
+                  value = $fe
+                ));
+    }
+   )
+}
+
+function meta::external::store::elasticsearch::v7::contract::supports(): Function<{FunctionExpression[1]->Boolean[1]}>[1]
+{
+  let supportedFunctions = meta::external::store::elasticsearch::v7::pureToEs::supportedRoutingFunctions().first;
+
+  {f:FunctionExpression[1]| $supportedFunctions->exists(x | $x->eval($f.func, []))};
+}
+
+function meta::external::store::elasticsearch::v7::contract::shouldStopPreeval(): Function<{Any[*]->Boolean[1]}>[1]
+{
+    let matches = [
+        p: Elasticsearch7Store[1] | true,
+        f: SimpleFunctionExpression[1] | $f.func == meta::external::store::elasticsearch::v7::tds::indexToTDS_Elasticsearch7Store_1__String_1__TabularDataSet_1_,
+        a: Any[*] | false
+    ];
+
+    {a:Any[*] | $a->match($matches)};
+}
+
+function meta::external::store::elasticsearch::v7::contract::elasticsearchV7StoreSerializerExtension(version:String[1]):String[1]
+{
+   'meta::external::store::elasticsearch::v7::protocol::%s::elasticsearchV7StoreExtension_String_1__SerializerExtension_1_'->format($version);
+}

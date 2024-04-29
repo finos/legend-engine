@@ -1,0 +1,83 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::external::store::model::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::*;
+import meta::core::runtime::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> { serverVersion.start='v1_19_0' }
+meta::pure::mapping::modelToModel::test::alloy::simple::testEqualityOperationsWithEmptyValues(): Boolean[1]
+{
+  let tree    = #{Target {accountNumber, isTestAccount, isAccountTypeMissing, trueExpressionField} }#;
+  let mapping = EqualityTestMapping;
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(
+                              element = ^ModelStore(),
+                              connection=^JsonModelConnection(
+                              class   = Source,
+                              url     = 'data:application/json,[{"accountNumber":1}, {"accountNumber":1, "accountDetails": {"accountType": "TEST_ACCOUNT"}}]'
+                            )));
+
+  let result = execute(
+    | Target.all()->graphFetch($tree)->serialize($tree),
+    $mapping,
+    $runtime,
+    meta::pure::extension::defaultExtensions()
+  );
+
+  assert(jsonEquivalent('[{"accountNumber":1,"isTestAccount":false,"isAccountTypeMissing":true,"trueExpressionField":true},{"accountNumber":1,"isTestAccount":true,"isAccountTypeMissing":false,"trueExpressionField":true}]'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+Enum meta::pure::mapping::modelToModel::test::alloy::simple::AccountType
+{
+  TEST_ACCOUNT,
+  NORMAL_ACCOUNT
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::AccountDetails
+{
+  accountType     : AccountType[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::Target
+{
+  accountNumber   : Integer[1];
+  isTestAccount   : Boolean[1];
+  isAccountTypeMissing : Boolean[1];
+  trueExpressionField  : Boolean[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::Source
+{
+  accountNumber   : Integer[1];
+  accountDetails  : AccountDetails[0..1];
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::alloy::simple::*;
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::simple::EqualityTestMapping
+(
+  *Target: Pure
+  {
+    ~src Source
+
+    accountNumber: $src.accountNumber,
+    isTestAccount: $src.accountDetails.accountType == AccountType.TEST_ACCOUNT,
+    isAccountTypeMissing: $src.accountDetails.accountType == [],
+    trueExpressionField : $src.accountDetails.accountType == $src.accountDetails.accountType
+  }
+)

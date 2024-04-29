@@ -1,0 +1,92 @@
+
+import meta::external::format::flatdata::executionPlan::test::*;
+import meta::external::format::flatdata::metamodel::*;
+import meta::external::format::flatdata::binding::validation::*;
+
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::executionPlan::*;
+import meta::external::format::shared::metamodel::*;
+import meta::external::format::shared::functions::*;
+import meta::pure::executionPlan::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::executionPlan::toString::*;
+import meta::external::store::model::*;
+import meta::pure::model::unit::*;
+import meta::core::runtime::*;
+import meta::external::format::flatdata::binding::validation::test::*;
+
+Class meta::external::format::flatdata::binding::validation::test::WholeFile {}
+
+Class meta::external::format::flatdata::binding::validation::test::Target
+{
+  id : Integer[1];
+  value : String[1];
+  date : StrictDate[1];
+}
+
+Class meta::external::format::flatdata::binding::validation::test::Header
+{
+  date:StrictDate[1];
+}
+
+Class meta::external::format::flatdata::binding::validation::test::Row
+{
+  id : Integer[1];
+  value : String[1];
+}
+
+Association meta::external::format::flatdata::binding::validation::test::FileHeader
+{
+  file : WholeFile[1];
+  header : Header[1];
+}
+
+Association meta::external::format::flatdata::binding::validation::test::FileRow
+{
+  file : WholeFile[1];
+  row : Row[*];
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::binding::validation::test::testFlatDataSchemaBindingWithImmaterialFooter():Boolean[1]
+{
+  let schema =
+    '###ExternalFormat\n' +
+    'Binding meta::external::format::flatdata::binding::validation::test::TestBinding\n' +
+    '{\n' +
+    '  schemaSet: meta::external::format::flatdata::binding::validation::test::TestSchema;\n' +
+    '  contentType: \'application/x.flatdata\';\n' +
+    '  modelIncludes: [\n' +
+    '    meta::external::format::flatdata::binding::validation::test::Header, meta::external::format::flatdata::binding::validation::test::Row, meta::external::format::flatdata::binding::validation::test::FileHeader, meta::external::format::flatdata::binding::validation::test::FileRow, meta::external::format::flatdata::binding::validation::test::WholeFile\n' +
+    '  ];\n' +
+    '}\n\n' +
+    'SchemaSet meta::external::format::flatdata::binding::validation::test::TestSchema\n' +
+    '{\n' +
+    '  format: FlatData;\n' +
+    '  schemas: [\n' +
+    '    {\n' +
+    '      content: \'section Header: DelimitedWithoutHeadings {  delimiter: \\\' \\\';  scope.forNumberOfLines: 1;   Record  { date {3}: DATE(format = \\\'yyyyMMdd\\\');}} section Row: DelimitedWithoutHeadings {  delimiter: \\\'~\\\'; scope.default;   Record  { id {1}: INTEGER; value {1}: STRING;}} section footer: ImmaterialLines {  scope.forNumberOfLines: 1; } \';\n' +
+    '    }\n' +
+    '  ];\n' +
+    '}\n';
+
+  let binding = meta::external::format::flatdata::binding::validation::test::compileGrammar($schema)->filter(ele | $ele->instanceOf(Binding))->cast(@Binding)->toOne();
+
+  let b = meta::external::format::flatdata::binding::validation::bindDetails($binding)->cast(@FlatDataBindingDetail);
+
+  assertNotEmpty($b.schemaBindingDetail);
+
+  let headerSectionToProperty = $b.schemaBindingDetail.details->filter(secToProp | $secToProp.property.name == 'header');
+  assertNotEmpty($headerSectionToProperty);
+  assert($headerSectionToProperty->toOne().section.name == 'Header');
+
+  let rowSectionToProperty = $b.schemaBindingDetail.details->filter(secToProp | $secToProp.property.name == 'row');
+  assertNotEmpty($rowSectionToProperty);
+  assert($rowSectionToProperty->toOne().section.name == 'Row');
+}
+
+function meta::external::format::flatdata::binding::validation::test::compileGrammar(grammar:String[1]): PackageableElement[*]
+{
+  let fStr = 'meta::legend::compile_String_1__PackageableElement_MANY_';
+  let func = $fStr->pathToElement()->cast(@Function<{String[1]->PackageableElement[*]}>);
+  $func->eval($grammar);
+}

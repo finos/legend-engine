@@ -1,0 +1,8 @@
+{
+  "name": "core_function_activator",
+  "pattern": "(meta::external::function::activator|meta::protocols)(::.*)?",
+  "dependencies": [
+    "platform",
+    "core"
+  ]
+}

@@ -1,0 +1,159 @@
+###Relational
+Database test::TestDb
+(
+  Schema TESTDB
+  (
+    Table PERSON_TABLE
+    (
+      ID DOUBLE PRIMARY KEY,
+      FIRSTNAME VARCHAR(2147483647),
+      LASTNAME VARCHAR(2147483647)
+    )
+  )
+)
+
+###Mapping
+Mapping test::TestMapping
+(
+  *test::model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [test::TestDb]TESTDB.PERSON_TABLE.ID
+    )
+    ~mainTable [test::TestDb]TESTDB.PERSON_TABLE
+    firstName: [test::TestDb]TESTDB.PERSON_TABLE.FIRSTNAME,
+    lastName: [test::TestDb]TESTDB.PERSON_TABLE.LASTNAME
+  }
+
+  MappingTests
+  [
+    test_1
+    (
+      query: |test::model::Person.all()->project(
+  [
+    x|$x.firstName,
+    x|$x.lastName
+  ],
+  [
+    'First Name',
+    'Last Name'
+  ]
+);
+      data:
+      [
+        <Relational, SQL, test::TestDb,
+          'create schema if not exists TESTDB;\n'+
+          'create table if not exists TESTDB.PERSON_TABLE(id FLOAT PRIMARY KEY, firstName varchar, lastName varchar);\n'+
+          'delete from TESTDB.PERSON_TABLE;\n'+
+          'insert into TESTDB.PERSON_TABLE values(1,\'John\',\'Doe\');\n'
+        >
+      ];
+      assert: '[{"values":["John","Doe"]}]';
+    )
+  ]
+)
+
+###Pure
+Class test::model::Person {
+    firstName: String[1];
+    lastName: String[1];
+    id: Integer[1];
+}
+
+###Service
+Service test::TestServiceNoProfile
+{
+  pattern: '/service/test';
+  owners:
+  [
+    'anonymous',
+    'testuser'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::model::Person.all()->project(
+  [
+    x|$x.firstName,
+    x|$x.lastName
+  ],
+  [
+    'First Name',
+    'Last Name'
+  ]
+);
+    mapping: test::TestMapping;
+    runtime: test::TestRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Relational
+            #{
+              TESTDB.PERSON_TABLE:
+                'ID,FIRSTNAME,LASTNAME\n'+
+                '1,JOHN,DOE\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test_1:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            assertion_1:
+              EqualToJson
+              #{
+                expected :
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{\r\n  "columns" : [ {\r\n    "name" : "First Name",\r\n    "type" : "String"\r\n  }, {\r\n    "name" : "Last Name",\r\n    "type" : "String"\r\n  } ],\r\n  "rows" : [ {\r\n    "values" : [ "JOHN", "DOE" ]\r\n  } ]\r\n}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###Runtime
+Runtime test::TestRuntime
+{
+  mappings:
+  [
+    test::TestMapping
+  ];
+  connections:
+  [
+    test::TestDb:
+    [
+      connection_1:
+      #{
+        RelationalDatabaseConnection
+        {
+          store: test::TestDb;
+          type: H2;
+          specification: LocalH2
+          {
+            testDataSetupSqls: [
+              'create schema if not exists TESTDB;\ncreate table if not exists TESTDB.PERSON_TABLE(id FLOAT PRIMARY KEY, firstName varchar, lastName varchar);\ndelete from TESTDB.PERSON_TABLE;\ninsert into TESTDB.PERSON_TABLE values(1,\'John\',\'Doe\');'
+              ];
+          };
+          auth: DefaultH2;
+        }
+      }#
+    ]
+  ];
+}

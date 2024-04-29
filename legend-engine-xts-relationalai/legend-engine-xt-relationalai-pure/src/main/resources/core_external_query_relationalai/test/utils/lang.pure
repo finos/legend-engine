@@ -1,0 +1,29 @@
+import meta::external::store::rel::utils::lang::*;
+
+function <<test.Test>> meta::external::store::rel::test::utils::lang::testSwitch(): Any[*] {
+  let x = 3;
+
+  assertEquals(
+    '3',
+    switch([
+      case($x == 1, | '1'),
+      case($x == 2, | '2')
+    ], | '3')
+  );
+
+  assertEquals(
+    '1',
+    switch([
+      case($x == 3, | '1'),
+      case($x == 2, | '2')
+    ], | '3')
+  );
+
+  assertEquals(
+    '2',
+    switch([
+      case($x == 1, | '1'),
+      case($x == 3, | '2')
+    ], | '3')
+  );
+}

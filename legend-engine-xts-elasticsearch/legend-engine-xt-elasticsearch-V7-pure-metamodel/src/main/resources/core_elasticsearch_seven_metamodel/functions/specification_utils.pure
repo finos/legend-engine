@@ -1,0 +1,221 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::elasticsearch::v7::metamodel::specification::*;
+import meta::external::store::elasticsearch::v7::specification::utils::*;
+import meta::external::store::elasticsearch::v7::specification::utils::property::*;
+import meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::*;
+import meta::external::store::elasticsearch::v7::metamodel::mappping::*;
+import meta::external::store::elasticsearch::v7::metamodel::store::*;
+
+function meta::external::store::elasticsearch::v7::specification::utils::literal<T|m>(v: T[m]): LiteralOrExpression<T>[m]
+{
+  $v->map(x | ^LiteralOrExpression<T>(value = $x));
+}
+
+function meta::external::store::elasticsearch::v7::specification::utils::taggedUnionValue(union: Any[1]): Any[1]
+{
+  $union->type()->hasStereotype('TaggedUnion', ESProfile)->assert(|'Does not have TaggedUnion stereotype');
+  $union->type()->cast(@Class<Any>).properties
+      ->map(p | $p->eval($union))
+      ->toOne('union should only return a single value (generated constraints enforce this)');
+}
+
+function <<test.Test>> meta::external::store::elasticsearch::v7::specification::utils::testTaggedUnionValue(): Boolean[1]
+{
+  ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())
+    ->taggedUnionValue()
+    ->instanceOf(KeywordProperty)
+    ->assert(|'wrong union value');
+
+  ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(integer = ^IntegerNumberProperty())
+    ->taggedUnionValue()
+    ->instanceOf(IntegerNumberProperty)
+    ->assert(|'wrong union value');  
+}
+
+function meta::external::store::elasticsearch::v7::specification::utils::property::propertySupport(property: PropertyBase[1]): PropertySupport[1]
+{    
+  $property->match(propertySupports());
+}
+
+Class meta::external::store::elasticsearch::v7::specification::utils::property::PropertySupport
+{
+  propertyType: Class<PropertyBase>[1];
+  pureType: Type[1];
+  defaultIfMissingAsString: String[0..1]; 
+}
+
+function <<access.private>> meta::external::store::elasticsearch::v7::specification::utils::property::newPropertySupport(
+    propertyType: Class<PropertyBase>[1],
+    pureType: Type[1],
+    defaultIfMissingAsString: String[0..1]
+  ): PropertySupport[1]
+{
+  ^PropertySupport(propertyType = $propertyType, pureType = $pureType, defaultIfMissingAsString = $defaultIfMissingAsString);
+}
+
+function meta::external::store::elasticsearch::v7::specification::utils::property::propertySupports(): Function<{Nil[1] -> PropertySupport[1]}>[1..*]
+{
+  [
+    // structured
+    p:ObjectProperty[1] | newPropertySupport(ObjectProperty, Map, []),
+    p:NestedProperty[1] | newPropertySupport(NestedProperty, Map, []),
+
+    // string    
+    p:TextProperty[1]     | newPropertySupport(TextProperty,     String, '~'->repeatString(20)), // todo this is special for searches, and not good on terms
+    p:KeywordProperty[1]  | newPropertySupport(KeywordProperty,  String, '~'->repeatString(20)),
+    p:WildcardProperty[1] | newPropertySupport(WildcardProperty, String, '~'->repeatString(20)),
+
+    // boolean
+    p:BooleanProperty[1] | newPropertySupport(BooleanProperty,  Boolean, 'false'),
+
+    // date
+    p:DateNanosProperty[1] | newPropertySupport(DateNanosProperty, Date, []),
+    p:DateProperty[1]      | newPropertySupport(DateProperty,      Date, '9999-12-31T23:59:59.999Z'),
+
+    // integer
+    p:ShortNumberProperty[1]   | newPropertySupport(ShortNumberProperty,   Integer, '32767'),
+    p:ByteNumberProperty[1]    | newPropertySupport(ByteNumberProperty,    Integer, '127'),
+    p:IntegerNumberProperty[1] | newPropertySupport(IntegerNumberProperty, Integer, '2147483647'),
+    p:LongNumberProperty[1]    | newPropertySupport(LongNumberProperty,    Integer, '9223372036854775807'),
+    
+    //float
+    p:FloatNumberProperty[1]     | newPropertySupport(FloatNumberProperty,     Float, []),
+    p:HalfFloatNumberProperty[1] | newPropertySupport(HalfFloatNumberProperty, Float, []),
+    p:DoubleNumberProperty[1]    | newPropertySupport(DoubleNumberProperty,    Float, []),
+    
+    //decimal (?)
+    p:ScaledFloatNumberProperty[1]  | newPropertySupport(ScaledFloatNumberProperty,  Decimal, []),
+    p:UnsignedLongNumberProperty[1] | newPropertySupport(UnsignedLongNumberProperty, Decimal, []), // big integer equivalent?
+
+    // catch all - not supported
+    {p:PropertyBase[1] | fail('Type not supported: ' + $p->type()->elementToPath()); newPropertySupport(ObjectProperty, Map, []);}
+  ]
+}
+
+function meta::external::store::elasticsearch::v7::specification::utils::property::collectAllSelectablesAndFilterableProperties(properties: Elasticsearch7StoreIndexProperty[*]): Pair<List<String>, PropertyBase>[*]
+{
+  let primitiveProperties = $properties->collectPrimitiveTypeProperties();
+  let fieldProperties = $primitiveProperties->map(pp | $pp->collectFieldsFromProperties());
+  $primitiveProperties->concatenate($fieldProperties);
+}
+
+function meta::external::store::elasticsearch::v7::specification::utils::property::collectPrimitiveTypeProperties(properties: Elasticsearch7StoreIndexProperty[*]): Pair<List<String>, PropertyBase>[*]
+{
+  $properties->map(p | $p.property->taggedUnionValue()->cast(@PropertyBase)->map(x | $x->collectPrimitiveTypeProperties($p.propertyName)));
+}
+
+function meta::external::store::elasticsearch::v7::specification::utils::property::collectFieldsFromProperties(property: Pair<List<String>, PropertyBase>[1]): Pair<List<String>, PropertyBase>[*]
+{
+  $property.second.fields->map(b | $b->keyValues()->map(p | $p.second->toOne()->taggedUnionValue()->cast(@PropertyBase)->map(x | $x->collectPrimitiveTypeProperties($property.first.values->concatenate($p.first)))));
+}
+
+function <<access.private>> meta::external::store::elasticsearch::v7::specification::utils::property::collectPrimitiveTypeProperties(property: PropertyBase[1], currentName: String[*]): Pair<List<String>, PropertyBase>[*]
+{
+  let ps = $property->propertySupport();  
+  let pairs = if ($ps.pureType->instanceOf(DataType), 
+    | pair(list($currentName), $property),
+    | $property.properties->map(b | $b->keyValues()->map(p | $p.second->toOne()->taggedUnionValue()->cast(@PropertyBase)->map(x | $x->collectPrimitiveTypeProperties($currentName->concatenate($p.first)))))
+  );
+}
+
+function <<test.Test>> meta::external::store::elasticsearch::v7::specification::utils::property::testCollectPrimitiveTypeProperties(): Boolean[1]
+{
+  let nested2 = newMap([
+      pair('Int', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(integer = ^IntegerNumberProperty()))
+  ]);
+
+  let withFields = ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(text = ^TextProperty(
+        fields = newMap(pair('asKeyword', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty()))
+  )));  
+
+  let nested = newMap([
+      pair('Float', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(_float = ^FloatNumberProperty())),
+      pair('Nested2', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(nested = ^NestedProperty(properties = $nested2)))
+  ]);
+
+  let properties = [
+      ^Elasticsearch7StoreIndexProperty(propertyName = 'Text', property = $withFields),
+      ^Elasticsearch7StoreIndexProperty(propertyName = 'Title', property = ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())),
+      ^Elasticsearch7StoreIndexProperty(propertyName = 'Nested', property = ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(object = ^ObjectProperty(properties = $nested)))
+    ];
+
+  let actual = $properties->collectPrimitiveTypeProperties()
+      ->sortBy(x | $x.first.values->joinStrings('.'));
+
+  let expected = [
+    pair(^List<String>(values = ['Nested', 'Float']), ^FloatNumberProperty()),
+    pair(^List<String>(values = ['Nested', 'Nested2', 'Int']), ^IntegerNumberProperty()),
+    pair(^List<String>(values = ['Text']), $withFields.text->toOne()),
+    pair(^List<String>(values = ['Title']), ^KeywordProperty())
+  ];
+
+  assertJsonStringsEqual($expected->meta::json::toJSON(), $actual->meta::json::toJSON());
+}
+
+function <<test.Test>> meta::external::store::elasticsearch::v7::specification::utils::property::testCollectAllSelectablesAndFilterableProperties(): Boolean[1]
+{
+  let nested2 = newMap([
+      pair('Int', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(integer = ^IntegerNumberProperty()))
+  ]);
+
+  let withFields = ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(text = ^TextProperty(
+        fields = newMap(pair('asKeyword', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty()))
+  )));  
+
+  let nested = newMap([
+      pair('Float', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(_float = ^FloatNumberProperty())),
+      pair('Nested2', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(nested = ^NestedProperty(properties = $nested2)))
+  ]);
+
+  let properties = [
+      ^Elasticsearch7StoreIndexProperty(propertyName = 'Text', property = $withFields),
+      ^Elasticsearch7StoreIndexProperty(propertyName = 'Title', property = ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())),
+      ^Elasticsearch7StoreIndexProperty(propertyName = 'Nested', property = ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(object = ^ObjectProperty(properties = $nested)))
+    ];
+
+  let actual = $properties->collectAllSelectablesAndFilterableProperties()
+      ->sortBy(x | $x.first.values->joinStrings('.'));
+
+  let expected = [
+    pair(^List<String>(values = ['Nested', 'Float']), ^FloatNumberProperty()),
+    pair(^List<String>(values = ['Nested', 'Nested2', 'Int']), ^IntegerNumberProperty()),
+    pair(^List<String>(values = ['Text']), $withFields.text->toOne()),
+    pair(^List<String>(values = ['Text', 'asKeyword']), ^KeywordProperty()),
+    pair(^List<String>(values = ['Title']), ^KeywordProperty())
+  ];
+
+  assertJsonStringsEqual($expected->meta::json::toJSON(), $actual->meta::json::toJSON());
+}
+
+function meta::external::store::elasticsearch::v7::specification::utils::property::defaultRuntimePropertyForPureType(type: DataType[1]): PropertyBase[1]
+{
+  if ($type == String || $type->_subTypeOf(Enum),
+    | ^KeywordProperty(),
+    | if ($type == Integer,
+      | ^LongNumberProperty(),
+      | if ($type == Float,
+        | ^DoubleNumberProperty(),
+        | if ($type == Boolean,
+          | ^BooleanProperty(),
+          | if ($type == Date || $type == DateTime || $type == StrictDate,
+            | ^DateProperty(),
+            | fail(|'Datatype not supported for runtime mapping: ' + $type->elementToPath())->cast(@PropertyBase)
+          )
+        )
+      )
+    )
+  )
+}

@@ -1,0 +1,40 @@
+import apps::pure::quality::*;
+import meta::analytics::quality::*;
+import meta::analytics::quality::model::domain::tests::*;
+import meta::analytics::quality::model::*;
+
+Class meta::analytics::quality::model::domain::tests::MyOtherTestClass
+{
+   name: String[1];
+
+   nameReversed() {
+      $this.name->chunk(1)->reverse()->joinStrings()
+   }:String[1];
+
+   nameReversed_Untested() {
+      $this.nameReversed()
+   }:String[1];
+
+}
+
+function <<test.Test>>   meta::analytics::quality::model::domain::tests::myOtherTestClassNameReversed():Boolean[1]
+{
+   assertEquals('cba', ^MyOtherTestClass(name='abc').nameReversed());
+}
+
+
+// function <<test.Test>>   meta::analytics::quality::tests::qualifiedPropertiesShouldBeTestedTest():Boolean[1]
+// {
+//    let v = runClassPropertyQualityCheck(MyOtherTestClass, qualifiedPropertiesShouldBeTested_AbstractProperty_1__CheckResult_MANY_, true);
+//    let failedMessages = $v.detail->filter(v|!$v.isValid).message;
+
+//    assertEquals(['Property nameReversed_Untested not found in any test'], $failedMessages);
+// }
+
+
+function <<access.private>> meta::analytics::quality::model::domain::tests::runClassPropertyQualityCheck(c : Class<Any>[1], ruleFunction: FunctionDefinition<{AbstractProperty<Any>[1]->Any[*]}>[1], forceNotSkipTestsFlag : Boolean[1]) : ViolationInstance<Any>[*]
+{
+   let propRules = meta::analytics::quality::model::domain::createRule($ruleFunction)->cast(@Rule<AbstractProperty<Any>>)->map(r|if($forceNotSkipTestsFlag, | ^$r(hasSkipTestsFlag=false), | $r));
+
+   let v = meta::analytics::quality::model::domain::runClassPropertyQualityChecks(MyOtherTestClass, $propRules);
+}

@@ -1,0 +1,291 @@
+import meta::relational::functions::sqlQueryToString::trino::*;
+import meta::relational::functions::sqlQueryToString::default::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
+
+function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::trino::dbExtensionLoaderForTrino():DbExtensionLoader[1]
+{
+  ^DbExtensionLoader(dbType = DatabaseType.Trino, loader = createDbExtensionForTrino__DbExtension_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::createDbExtensionForTrino():DbExtension[1]
+{
+   let reservedWords = defaultReservedWords();
+   let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsForTrino());
+   let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
+   let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
+     getDynaFunctionToSqlForTrino()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
+
+   ^DbExtension(
+      isBooleanLiteralSupported = true,
+      isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
+      literalProcessor = $literalProcessor,
+      windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
+      joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
+      selectSQLQueryProcessor = processSelectSQLQueryForTrino_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      schemaNameToIdentifier = schemaNameToIdentifierForTrino_String_1__DbConfig_1__String_1_,
+      columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
+      identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
+      ddlCommandsTranslator = getDDLCommandsTranslatorForTrino(),
+      dynaFuncDispatch = $dynaFuncDispatch
+   );
+}
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::getLiteralProcessorsForTrino():Map<Type,LiteralProcessor>[1]
+{
+   newMap([
+         pair(StrictDate,     ^LiteralProcessor(format = 'Date(\'%s\')',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+         pair(DateTime,       ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+         pair(Date,           ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+         pair(Boolean,        ^LiteralProcessor(format = '%s', transform = toString_Any_1__String_1_->literalTransform()))
+      ])
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::getDynaFunctionToSqlForTrino(): DynaFunctionToSql[*]
+{
+  let allStates = allGenerationStates();
+
+  [
+    dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | '\'' + $p->at(2)->mapToDBUnitType() + '\', ' + $p->at(1) + ', ' + $p->at(0)})),
+    dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
+    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)', transform={p:String[*] | joinStrings($p, ', ')})),    
+    dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateTrino()})),
+    dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeTrino()})),
+    dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='cast(%s as VARCHAR(128))')),
+    dynaFnToSql('cot',                    $allStates,            ^ToSql(format='cos(%s) / sin(%s)', transform={p:String[1] | [$p->at(0), $p->at(0)]})),
+    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='date_diff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForTrino(),$p->at(0),$p->at(1)]})),
+    dynaFnToSql('datePart',               $allStates,            ^ToSql(format='date(%s)')),
+    dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='day_of_month(%s)')),
+    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='format(\'%%A\', %s)')),
+    dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='day_of_year(%s)')),
+    dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='mod(day_of_week(%s),7)+1')),
+    dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='date_trunc(\'month\', %s)')),
+    dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='date_trunc(\'quarter\', %s)')),
+    dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='cast(date_trunc(\'month\', current_date) as timestamp)%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfThisQuarter',  $allStates,            ^ToSql(format='cast(date_trunc(\'quarter\', current_date) as timestamp)%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='cast(date_trunc(\'year\', current_date) as timestamp)%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='date_trunc(\'week\', %s)')),
+    dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='date_trunc(\'year\', %s)')),
+    dynaFnToSql('firstHourOfDay',         $allStates,            ^ToSql(format='date_trunc(\'day\', %s)')),
+    dynaFnToSql('firstMillisecondOfSecond', $allStates,          ^ToSql(format='date_trunc(\'second\', %s)')),
+    dynaFnToSql('firstMinuteOfHour',      $allStates,            ^ToSql(format='date_trunc(\'hour\', %s)')),
+    dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='date_trunc(\'minute\', %s)')),    
+    dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
+    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='strpos(%s)', transform={p:String[2] | $p->at(0) + ', ' + $p->at(1)})),
+    dynaFnToSql('left',                   $allStates,            ^ToSql(format='substr(%s,1,%s)')),
+    dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
+    dynaFnToSql('lpad',                   $allStates,            ^ToSql(format='lpad(%s)', transform={p:String[2..*] | $p->concatenate(if ($p->size() == 2, | '\' \'', | []))->joinStrings(', ')})),
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpLikePattern('%s','%s'), transform={p:String[2]|$p->transformRegexpParams()})),
+    dynaFnToSql('md5',                    $allStates,            ^ToSql(format='lower(to_hex(md5(to_utf8(%s))))')),
+    dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
+    dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('monthName',              $allStates,            ^ToSql(format='format(\'%%B\', %s)')),
+    dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='date_add(\'day\', case when %s - day_of_week(%s) > 0 then %s - day_of_week(%s) - 7 else %s - day_of_week(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentTrino('current_date')}, parametersWithinWhenClause = [false, false])),
+    dynaFnToSql('now',                    $allStates,            ^ToSql(format='current_timestamp')),
+    dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='date_parse(%s,%s)')),
+    dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as double)')),
+    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
+    dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),
+    dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='date_add(\'day\', case when %s - day_of_week(%s) >= 0 then %s - day_of_week(%s) - 7 else %s - day_of_week(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentTrino('current_date')}, parametersWithinWhenClause = [false, false])),
+    dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('repeatString',           $allStates,            ^ToSql(format='rpad(%s, length(%s) * %s, %s)', transform={p:String[2] | [$p->at(0), $p->at(0), $p->at(1), $p->at(0)]})),    
+    dynaFnToSql('right',                  $allStates,            ^ToSql(format='substr(%s,-%s)')),
+    dynaFnToSql('rpad',                   $allStates,            ^ToSql(format='rpad(%s)', transform={p:String[2..*] | $p->concatenate(if ($p->size() == 2, | '\' \'', | []))->joinStrings(', ')})),    
+    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
+    dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='lower(to_hex(sha1(to_utf8(%s))))')),
+    dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='lower(to_hex(sha256(to_utf8(%s))))')),
+    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
+    dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
+    dynaFnToSql('today',                  $allStates,            ^ToSql(format='cast(current_date as timestamp)')),
+    dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
+    dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampTrino()})),
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
+  ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::processSelectSQLQueryForTrino(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForTrino($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::processSelectSQLQueryForTrino(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
+{
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+
+  $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), false, $extensions)->makeString(','))+
+  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
+  + processLimit($s, $dbConfig, $format, $extensions, processTakeDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_, processSliceOrDropForTrino_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::schemaNameToIdentifierForTrino(schemaName: String[1], dbConfig: DbConfig[1]): String[1]
+{
+   $schemaName->replace('$', '.');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::convertToDateTrino(params:String[*]):String[1]
+{
+   assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDate: convertDate(column,[dateformat])');
+   assert($params->size()==1 || dateFormatsTrino()->contains($params->at(1)->replace('\'', '')) , | $params->at(1) +' not supported ');
+   let dateFormat = if( $params->size() == 1,|'\'%Y-%m-%d\'' ,| $params->at(1););
+   'date( date_parse('+$params->at(0)+','+$dateFormat +') )';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::dateFormatsTrino():String[*]
+{
+   ['YYYY-MM-DD', 'MMMYYYY', 'YYYYMMDD'];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::convertToDateTimeTrino(params:String[*]):String[1]
+{
+   $params->convertDateTimeFunctionHasCorrectParams();
+   let dateTimeFormat = if( $params->size() == 1,|'\'%Y-%m-%d %H:%i:%s\'',| $params->at(1););
+   'date_parse('+$params->at(0)+','+$dateTimeFormat +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::transformToTimestampTrino(params:String[2]):String[1]
+{
+  //Standardizing the format as per Postgres specification, will include mappings for the formats in future.
+   assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
+   let timestampFormat = '\'%Y-%m-%d %H:%i:%s\'';
+   'date_parse('+$params->at(0)+','+$timestampFormat+')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::processDateDiffDurationUnitForTrino(durationUnit:String[1]):String[1]
+{
+   let durationEnumNames = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
+   let durationDbNames = ['\'year\'', '\'month\'', '\'week\'', '\'day\'', '\'hour\'', '\'minute\'', '\'second\'', '\'millisecond\''];
+   $durationEnumNames->zip($durationDbNames)->filter(h | $h.first == $durationUnit).second->toOne();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::formatMostRecentTrino(p:String[1..2], defaultDay:String[1]):String[*]
+{
+   let day = $p->last()->toOne()->mapToDBDayOfWeekNumberTrino()->toString();
+   let current = if ($p->size() == 2, | $p->first()->toOne(), | $defaultDay);
+   [$day, $current, $day, $current, $day, $current, $current];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::mapToDBDayOfWeekNumberTrino(day:String[1]):Integer[1]
+{
+   [
+      pair(DayOfWeek.Monday->toString(), 1),
+      pair(DayOfWeek.Tuesday->toString(), 2),
+      pair(DayOfWeek.Wednesday->toString(), 3),
+      pair(DayOfWeek.Thursday->toString(), 4),
+      pair(DayOfWeek.Friday->toString(), 5),
+      pair(DayOfWeek.Saturday->toString(), 6),
+      pair(DayOfWeek.Sunday->toString(), 7)
+   ]->filter(p | $p.first == $day).second->toOne();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::processSliceOrDropForTrino(s:SelectSQLQuery[1], format:Format[1], dbConfig: DbConfig[1], extensions:Extension[*], size:Any[1]):String[1]
+{
+   if ($s.fromRow->isNotEmpty(),
+       | if ($size == -1,
+            | '%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake($format, $dbConfig, $extensions)]),
+            | '%s offset %s rows fetch next %s rows only'->format([$format.separator, $s.fromRow->toOne()->getValueForTake($format, $dbConfig, $extensions), $size])),
+       | '%s limit %s'->format($size));
+}
+
+
+
+
+
+
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::getDDLCommandsTranslatorForTrino(): RelationalDDLCommandsTranslator[1]
+{
+  ^RelationalDDLCommandsTranslator(
+                createSchema = translateCreateSchemaStatementForTrino_CreateSchemaSQL_1__DbConfig_1__String_MANY_,
+                dropSchema =  translateDropSchemaStatementForTrino_DropSchemaSQL_1__DbConfig_1__String_MANY_,
+                createTable =  translateCreateTableStatementForTrino_CreateTableSQL_1__DbConfig_1__String_MANY_,
+                dropTable = translateDropTableStatementForTrino_DropTableSQL_1__DbConfig_1__String_MANY_,
+                loadTable =  loadValuesToDbTableForTrino_LoadTableSQL_1__DbConfig_1__String_MANY_
+              );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::translateCreateSchemaStatementForTrino(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
+{
+   // sql is enclosed in [] to signify that its failure due to schema already existing should not stop us from running other DDL commands
+   if($createSchemaSQL.schema.name == 'default', |[], |'[Create Schema ' + $createSchemaSQL.schema.name + ']');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::translateDropSchemaStatementForTrino(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
+{
+   // dropping the schema is not needed for test setup
+   [];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::translateDropTableStatementForTrino(dropTableSQL:DropTableSQL[1], dbConfig:DbConfig[1]) : String[*]
+{
+  let t = $dropTableSQL.table;
+  'Drop table if exists '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name;
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::translateCreateTableStatementForTrino(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[*]
+{
+  let t = $createTableSQL.table;
+  let applyConstraints = $createTableSQL.applyConstraints;
+  'Create Table '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+
+      + '('
+      + $t.columns->cast(@meta::relational::metamodel::Column)
+        ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextForTrino($c.type) )
+        ->joinStrings(',')
+      +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::getColumnTypeSqlTextForTrino(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
+{
+   $columnType->match([
+      s : meta::relational::metamodel::datatype::Timestamp[1] | 'TIMESTAMP',
+      f : meta::relational::metamodel::datatype::Float[1] | 'DOUBLE',
+      a : Any[*] | meta::relational::metamodel::datatype::dataTypeToSqlText($columnType)
+   ])
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::loadValuesToDbTableForTrino(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
+{
+    'insert into ' + if($loadTableSQL.table.schema.name=='default', |'' ,|$loadTableSQL.table.schema.name + '.') + $loadTableSQL.table.name + ' ('
+        + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
+        + ') values '
+        + $loadTableSQL.parsedData.values->map(row | '('
+            + $row.values->meta::relational::functions::sqlQueryToString::trino::convertValuesToCsv($loadTableSQL.columnsToLoad.type)
+            + ')')->makeString(',') ;
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::convertValuesToCsv(str : String[*], types : Any[*]):String[1]
+{
+   // the split function is not working properly: csv records of the form x,,x,,e are not split with empty Strings
+   // Therefor we insert ---null--- for now instead of empty set.
+   // $value == '---null---' needs to be removed when split is fixed
+   let stringToken = map(range($types->size()), {x |if($str->at($x) == '' || $str->at($x) == '---null---', |'null', |$types->at($x)->match([
+                 s:meta::relational::metamodel::datatype::Varchar[*] | '\'' + $str->at($x)->replace('\'', '\'\'') + '\'',
+                 s:meta::relational::metamodel::datatype::SemiStructured[*] | '\'' + $str->at($x)->replace('\'', '\'\'') + '\'',
+                 s:meta::relational::metamodel::datatype::Char[*] | '\'' + $str->at($x)->replace('\'', '\'\'') + '\'',
+                 d:meta::relational::metamodel::datatype::Date[*] |  'date \'' + $str->at($x) + '\'',
+                 t:meta::relational::metamodel::datatype::Timestamp[*] |  'timestamp \'' + if($str->at($x)->length() > 10, |$str->at($x), |$str->at($x)) + '\'',
+                 a:Any[*] | $str->at($x)
+                 ]))})->joinStrings(',');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::processIdentifierForTrino(identifier:String[1], dbConfig: DbConfig[1]):String[1]
+{
+   assert($identifier->matches('[a-zA-Z0-9_"]*'), '[unsupported-api] special chars are not supported in table/column names');
+   $identifier->processIdentifierWithQuoteChar('"', $dbConfig);
+}

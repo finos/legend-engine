@@ -1,0 +1,48 @@
+{
+  "logging": {
+    "level": "info",
+    "appenders": [
+      {
+        "type": "console",
+        "logFormat": "%msg\r\n"
+      }
+    ]
+  },
+  "pac4j": {
+    "clients": [
+      {
+        "org.pac4j.core.client.direct.AnonymousClient": {
+        }
+      }
+    ]
+  },
+  "server": {
+    "type": "simple",
+    "applicationContextPath": "/",
+    "adminContextPath": "/admin",
+    "connector": {
+      "maxRequestHeaderSize": "32KiB",
+      "type": "http",
+      "port": 6060
+    },
+    "requestLog": {
+      "appenders": [
+      ]
+    }
+  },
+  "relationalexecution": {
+    "tempPath": "/tmp/",
+    "temporarytestdb": {
+      "port": 9099
+    },
+    "flowProviderClass": "org.finos.legend.engine.authentication.${DbType}TestDatabaseAuthenticationFlowProvider",
+    "flowProviderConfiguration": {
+      "_type": "${dbType}Test"
+    }
+  },
+  "testConnectionsToEnable" : ["${dbType}"],
+  "staticTestConnections": {
+  },
+  "dynamicTestConnectionCreators": {
+  }
+}

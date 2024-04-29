@@ -1,0 +1,89 @@
+[
+  {
+    "defects": [],
+    "source": {
+      "number": 1,
+      "record": "{\"name\":\"Name A\",\"ranking\":75,\"description\":\"A valid description\"}"
+    },
+    "value": {
+      "name": "Name A",
+      "ranking": 75,
+      "description": "A valid description"
+    }
+  },
+  {
+    "defects": [
+      {
+        "id": "highRankValidRanking",
+        "externalId": null,
+        "message": "Constraint :[highRankValidRanking] violated in the Class HighRankFirm",
+        "enforcementLevel": "Error",
+        "ruleType": "ClassConstraint",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::constraints::HighRankFirm",
+        "path": []
+      }
+    ],
+    "source": {
+      "number": 2,
+      "record": "{\"name\":\"Name B\",\"description\":\"A valid description\"}"
+    },
+    "value": {
+      "name": "Name B",
+      "ranking": null,
+      "description": "A valid description"
+    }
+  },
+  {
+    "defects": [
+      {
+        "id": "highRankValidRanking",
+        "externalId": null,
+        "message": "Constraint :[highRankValidRanking] violated in the Class HighRankFirm",
+        "enforcementLevel": "Error",
+        "ruleType": "ClassConstraint",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::constraints::HighRankFirm",
+        "path": []
+      },
+      {
+        "id": "validRanking",
+        "externalId": null,
+        "message": "Constraint :[validRanking] violated in the Class Firm",
+        "enforcementLevel": "Error",
+        "ruleType": "ClassConstraint",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::constraints::Firm",
+        "path": []
+      }
+    ],
+    "source": {
+      "number": 3,
+      "record": "{\"name\":\"Name C\",\"ranking\":-1,\"description\":\"A valid description\"}"
+    },
+    "value": {
+      "name": "Name C",
+      "ranking": -1,
+      "description": "A valid description"
+    }
+  },
+  {
+    "defects": [
+      {
+        "id": "descriptionLength",
+        "externalId": null,
+        "message": "Constraint :[descriptionLength] violated in the Class HighRankFirm",
+        "enforcementLevel": "Error",
+        "ruleType": "ClassConstraint",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::constraints::HighRankFirm",
+        "path": []
+      }
+    ],
+    "source": {
+      "number": 4,
+      "record": "{\"name\":\"Name D\",\"ranking\":90,\"description\":\"invalid\"}"
+    },
+    "value": {
+      "name": "Name D",
+      "ranking": 90,
+      "description": "invalid"
+    }
+  }
+]

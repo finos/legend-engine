@@ -1,0 +1,40 @@
+import meta::external::function::activator::*;
+
+Class meta::external::function::activator::FunctionActivator extends PackageableElement
+{
+  {doc.doc = 'The function that needs to be activated.'} function : PackageableFunction<Any>[1];
+  {doc.doc = 'The activation configuration.'} activationConfiguration : DeploymentConfiguration[0..1];
+  {doc.doc = 'The ownership criteria.'} ownership : Ownership[1];
+  
+}
+
+Class meta::external::function::activator::DeploymentConfiguration extends PackageableElement
+{
+}
+
+Class meta::external::function::activator::DeploymentResult
+{
+  successful:Boolean[1];
+}
+
+Enum  meta::external::function::activator::DeploymentStage
+{
+  SANDBOX,
+  PRODUCTION
+}
+
+//ownership
+Class meta::external::function::activator::Ownership
+{
+}
+
+Class meta::external::function::activator::DeploymentOwnership extends meta::external::function::activator::Ownership
+{
+  id: String[1];
+}
+
+// This section needs to be code generated from the section above 
+Class meta::protocols::pure::vX_X_X::metamodel::function::activator::FunctionActivator extends meta::protocols::pure::vX_X_X::metamodel::PackageableElement, meta::protocols::pure::vX_X_X::metamodel::domain::AnnotatedElement
+{
+  {doc.doc = 'The function that needs to be activated. Needs to provide the path to the function using its signature.'} function : String[1];
+}

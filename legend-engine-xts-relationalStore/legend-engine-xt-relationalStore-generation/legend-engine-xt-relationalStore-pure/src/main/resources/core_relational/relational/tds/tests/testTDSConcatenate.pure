@@ -1,0 +1,225 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::metamodel::join::*;
+import meta::relational::functions::sqlstring::*;
+import meta::relational::tests::csv::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::mapping::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+
+function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testSimpleConcatenate():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project([col(p|$p.lastName, 'lastName')])
+         ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))
+      ,
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   let tds = $result.values->toOne()->sort([asc('lastName')]);
+
+   assertSize($tds.columns, 1);
+
+   assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
+      $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
+      $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testMultiConcatenate():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project([col(p|$p.lastName + '_0', 'lastName')])
+         ->concatenate([
+            Person.all()->project([col(p|$p.lastName + '_1', 'lastName')]),
+            Person.all()->project([col(p|$p.lastName + '_2', 'lastName')]),
+            Person.all()->project([col(p|$p.lastName + '_3', 'lastName')])
+            ])
+      ,
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   let tds = $result.values->toOne()->sort([asc('lastName')]);
+
+   assertSize($tds.columns, 1);
+
+   assertEquals('Allen_0,Allen_1,Allen_2,Allen_3,Harris_0,Harris_1,Harris_2,Harris_3,Hill_0,Hill_0,Hill_1,Hill_1,Hill_2,Hill_2,Hill_3,Hill_3,Johnson_0,Johnson_1,Johnson_2,Johnson_3,Roberts_0,Roberts_1,Roberts_2,Roberts_3,Smith_0,Smith_1,Smith_2,Smith_3',
+      $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select concat("root".LASTNAME, \'_0\') as "lastName" from personTable as "root" UNION ALL select concat("root".LASTNAME, \'_1\') as "lastName" from personTable as "root" UNION ALL select concat("root".LASTNAME, \'_2\') as "lastName" from personTable as "root" UNION ALL select concat("root".LASTNAME, \'_3\') as "lastName" from personTable as "root") as "unionalias_0"',
+      $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcatenateWithPreOperation1():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project([col(p|$p.lastName, 'lastName')])
+         ->filter(row:TDSRow[1]| $row.getString('lastName') != 'hello')
+         ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))
+      ,
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   let tds = $result.values->toOne()->sort([asc('lastName')]);
+
+   assertSize($tds.columns, 1);
+
+   assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
+      $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" where ("root".LASTNAME <> \'hello\' OR "root".LASTNAME is null) UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
+      $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcatenateWithPreOperation2():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project([col(p|$p.lastName, 'lastName')])
+         ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')])->filter(row:TDSRow[1]| $row.getString('lastName') != 'hello'))
+      ,
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   let tds = $result.values->toOne()->sort([asc('lastName')]);
+
+   assertSize($tds.columns, 1);
+
+   assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
+      $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root" where ("root".LASTNAME <> \'hello\' OR "root".LASTNAME is null)) as "unionalias_0"',
+      $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcatenateWithPreOperation3():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project([col(p|$p.lastName, 'lastName')])
+         ->filter(row:TDSRow[1]| $row.getString('lastName') == 'hello')
+         ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))
+      ,
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   let tds = $result.values->toOne()->sort([asc('lastName')]);
+
+   assertSize($tds.columns, 1);
+
+   assertEquals('Allen,Harris,Hill,Hill,Johnson,Roberts,Smith',
+      $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME = \'hello\' UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
+      $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcatenateWithPreOperation4():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project([col(p|$p.lastName, 'lastName')])
+         ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')])->filter(row:TDSRow[1]| $row.getString('lastName') == 'hello'))
+      ,
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   let tds = $result.values->toOne()->sort([asc('lastName')]);
+
+   assertSize($tds.columns, 1);
+
+   assertEquals('Allen,Harris,Hill,Hill,Johnson,Roberts,Smith',
+      $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME = \'hello\') as "unionalias_0"',
+      $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcatenateWithPostOperation1():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project([col(p|$p.lastName, 'lastName')])
+         ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))
+         ->filter(row:TDSRow[1]| $row.getString('lastName') != 'hello')
+      ,
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   let tds = $result.values->toOne()->sort([asc('lastName')]);
+
+   assertSize($tds.columns, 1);
+
+   assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
+      $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0" where ("unionalias_0"."lastName" <> \'hello\' OR "unionalias_0"."lastName" is null)',
+      $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcatenateWithPostOperation2():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project([col(p|$p.lastName, 'lastName')])
+         ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))
+         ->filter(row:TDSRow[1]| $row.getString('lastName') == 'hello')
+      ,
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   let tds = $result.values->toOne()->sort([asc('lastName')]);
+
+   assertSize($tds.columns, 1);
+
+   assertEquals('',
+      $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0" where "unionalias_0"."lastName" = \'hello\'',
+      $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test, test.ToFix>> meta::relational::tests::tds::tdsConcatenate::testConcatenateWithJoin():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project([col(p|$p.lastName, 'lhs_lastName')])
+         ->concatenate(Person.all()->project([col(p|$p.lastName, 'lhs_lastName')]))
+         ->join(Person.all()->project([col(p|$p.lastName, 'rhs_lastName'),col(p|$p.lastName, 'rhs_firstName')]), JoinType.INNER, 'lhs_lastName', 'rhs_lastName')
+         ->restrict(['lhs_lastName', 'rhs_firstName'])
+      ,
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   let tds = $result.values->toOne()->sort([asc('lastName')]);
+
+   assertSize($tds.columns, 2);
+
+   //assertEquals('',
+   //   $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
+   //assertEquals('select "union"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "union" where "union"."lastName" = \'hello\'',
+   //   $result->sqlRemoveFormatting());
+
+   fail('Expectations need updating once it works');
+}

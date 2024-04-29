@@ -1,0 +1,50 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "mapping",
+      "classMappings": [],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "dummyMapping",
+      "package": "model",
+      "tests": []
+    },
+    {
+      "_type": "runtime",
+      "name": "dummyRuntime",
+      "package": "model",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connections": [],
+        "mappings": [
+          {
+            "path": "model::dummyMapping",
+            "type": "MAPPING"
+          }
+        ]
+      }
+    },
+    {
+      "_type": "dataSpace",
+      "defaultExecutionContext": "dummyContext",
+      "executionContexts": [
+        {
+          "defaultRuntime": {
+            "path": "model::dummyRuntime",
+            "type": "RUNTIME"
+          },
+          "mapping": {
+            "path": "model::dummyMapping",
+            "type": "MAPPING"
+          },
+          "name": "dummyContext"
+        }
+      ],
+      "name": "AnimalDS",
+      "package": "model::animal",
+      "stereotypes": [],
+      "taggedValues": []
+    }
+  ]
+}

@@ -31,19 +31,23 @@ jobs:
   release:
     name: Run Image Checks
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module: [ {parent: legend-engine-config/legend-engine-server, name: legend-engine-server-http-server}, {parent: legend-engine-pure/legend-engine-pure-ide, name: legend-engine-pure-ide-light-http-server} ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Build simplified Docker image for checks
         # NOTE: if this gets more complicated, consider having this as a bash script
-        run: mkdir -p ./legend-engine-server/target && touch ./legend-engine-server/target/legend-engine-server-dummy.jar && docker build --quiet --tag local/legend-engine-server:${{ github.sha }} ./legend-engine-server
+        run: mkdir -p ./${{ matrix.module.parent }}/${{ matrix.module.name }}/target && touch ./${{ matrix.module.parent }}/${{ matrix.module.name }}/target/${{ matrix.module.name }}-dummy.jar && docker build --quiet --tag local/${{ matrix.module.name }}:${{ github.sha }} ./${{ matrix.module.parent }}/${{ matrix.module.name }}
       - name: Scan image for security issues
         uses: aquasecurity/trivy-action@0.2.2
         with:
           # TODO: we should probably also setup misconfiguration scanning
           # See https://github.com/aquasecurity/trivy-action#using-trivy-to-scan-infrastucture-as-code
           scan-type: image
-          image-ref: local/legend-engine-server:${{ github.sha }}
+          image-ref: local/${{ matrix.module.name }}:${{ github.sha }}
           format: table
           exit-code: 1
           # Ignore unpatched/unfixed vulnerabilities/CVEs

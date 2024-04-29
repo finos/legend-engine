@@ -1,5 +1,0 @@
-{
-  "name" : "core_servicestore",
-  "pattern" : "(meta::external::store::service|meta::protocols::pure)(::.*)?",
-  "dependencies" : ["platform", "core", "core_external_format_json"]
-}

@@ -1,0 +1,12 @@
+{
+  "name": "core_relational_trino",
+  "pattern": "(meta::relational::functions::sqlQueryToString::trino|meta::relational::tests::sqlQueryToString::trino|meta::pure::alloy::connections|meta::external::store::relational::runtime|meta::protocols::pure)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_store_relational",
+    "core_functions",
+    "core",
+    "core_relational"
+  ]
+}

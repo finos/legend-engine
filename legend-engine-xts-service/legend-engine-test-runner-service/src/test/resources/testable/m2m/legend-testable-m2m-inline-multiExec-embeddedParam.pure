@@ -1,0 +1,88 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+ExecutionEnvironment test::executionEnvironment
+{
+  executions:
+  [
+    QA:
+    {
+      mapping: testModelStoreTestSuites::mapping::DocM2MMapping;
+      runtime: testModelStoreTestSuites::runtime::DocM2MRuntime;
+    },
+    UAT:
+    {
+      mapping: testModelStoreTestSuites::mapping::DocM2MMapping;
+      runtime: testModelStoreTestSuites::runtime::DocM2MRuntime2;
+    }
+  ];
+}
+
+Service testModelStoreTestSuites::service::DocM2MService
+{
+  pattern: '/testModelStoreTestSuites/service/{env}';
+  owners:
+  [
+    'dummy',
+    'dummy1'
+  ];
+  documentation: 'Service to test refiner flow';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: env:String[1]|testModelStoreTestSuites::model::Doc.all()->graphFetchChecked(#{testModelStoreTestSuites::model::Doc{firm_tbl{addressId,firmId,legalName,ceoId},person_tbl{addressId,age,firmId,firstName,id,lastName}}}#)->serialize(#{testModelStoreTestSuites::model::Doc{firm_tbl{addressId,firmId,legalName,ceoId},person_tbl{addressId,age,firmId,firstName,id,lastName}}}#)->from(test::executionEnvironment->get($env));
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference
+            #{
+              testServiceStoreTestSuites::TestData
+            }#
+        ]
+      ]
+      tests:
+      [
+        test1:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            env = 'QA'
+          ]
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected :
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"sFirm_tbl\\":{\\"legalName\\":\\"legalName 18\\",\\"firmId\\":22,\\"ceoId\\":49,\\"addressId\\":88,\\"employees\\":{\\"firstName\\":\\"firstName 69\\",\\"lastName\\":\\"lastName 2\\",\\"age\\":14,\\"id\\":52,\\"addressId\\":83,\\"firmId\\":73}},\\"sPerson_tbl\\":{\\"firstName\\":\\"firstName 69\\",\\"lastName\\":\\"lastName 4\\",\\"age\\":98,\\"id\\":87,\\"addressId\\":46,\\"firmId\\":26}}"},"value":{"sFirm_tbl":{"addressId":88,"firmId":22,"legalName":"legalName 18","ceoId":49},"sPerson_tbl":{"addressId":46,"age":98,"firmId":26,"firstName":"firstName 69","id":87,"lastName":"lastName 4"}}},"value":{"firm_tbl":{"addressId":88,"firmId":22,"legalName":"legalName 18","ceoId":49},"person_tbl":{"addressId":46,"age":98,"firmId":26,"firstName":"firstName 69","id":87,"lastName":"lastName 4"}}}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

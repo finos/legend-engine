@@ -1,0 +1,7 @@
+{
+  "purePackage": "meta::external::store::elasticsearch::v7::metamodel::specification",
+  "javaPackage": "org.finos.legend.engine.protocol.store.elasticsearch.v7.specification",
+  "elementsToBeExcluded": [
+
+  ]
+}

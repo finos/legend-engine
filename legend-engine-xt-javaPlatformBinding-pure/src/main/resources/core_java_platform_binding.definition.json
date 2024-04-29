@@ -1,5 +1,0 @@
-{
-    "name" : "core_java_platform_binding",
-    "pattern" : "(meta::pure::executionPlan::platformBinding::legendJava|meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava|meta::pure::mapping::modelToModel::graphFetch::executionPlan::platformBinding::legendJava|meta::pure::mapping::modelToModel::graphFetch::executionPlan::storeStreamReading::platformBinding::legendJava|meta::external::shared::format::executionPlan::platformBinding::legendJava|meta::pure::executionPlan::engine|meta::external::shared::format::executionPlan::engine::java)(::.*)?",
-    "dependencies" : ["platform", "core", "core_external_language_java"]
-}

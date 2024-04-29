@@ -1,0 +1,199 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//--------------------------------------
+// assert semantically same json strings
+//--------------------------------------
+
+function meta::pure::functions::asserts::assertJsonStringsEqual(expected:String[1], actual:String[1]):Boolean[1]
+{
+    assert(equalJsonStrings($expected,$actual), | 'JSON strings don\'t represent semantically same object \n expected: ' + $expected + '\n actual: ' + $actual);
+}
+
+
+
+
+
+
+function meta::pure::functions::asserts::assert<T>(collection : T[*], func:Function<{T[1]->Boolean[1]}>[1]) : Boolean[1]
+{
+    let r = $collection->fold({item, result |
+    if ($result == false,
+    | $result,
+    | assert($func->eval($item))
+    )
+    }, true);
+
+    assert($r);
+}
+
+function meta::pure::functions::test::findTestPackagesFor(elements:PackageableElement[*], extensions:meta::pure::extension::Extension[*]): Package[*]
+{
+   $elements->findTestsFor($extensions).package->distinct();
+}
+
+function meta::pure::functions::test::findTestsFor(elements:PackageableElement[*], extensions:meta::pure::extension::Extension[*]): PackageableFunction<Any>[*]
+{
+   findTestsFor($elements, 25, 10000, $extensions);
+}
+
+function meta::pure::functions::test::findTestsFor(elements:PackageableElement[*], maxDepth:Integer[1], maxVisited:Integer[1], extensions:meta::pure::extension::Extension[*]): PackageableFunction<Any>[*]
+{
+   $elements->fold({pe, result| let testedByResult = $pe->testedBy($result, $extensions);
+                                assertFalse($testedByResult.maxDepthExceeded(), 'Exceeded maxDepth %d.', $testedByResult.maxDepth);
+                                assertFalse($testedByResult.maxVisitedExceeded(), 'Exceeded maxVisited %d.', $testedByResult.maxVisited);
+                                $testedByResult;
+                   }, ^TestedByResult(
+                        results = [],
+                        visited = [],
+                        depth = 0,
+                        maxDepth = $maxDepth,
+                        maxVisited = $maxVisited
+                  )).results;
+}
+
+function meta::pure::functions::test::isTestIncludingToFix(element:PackageableElement[1]):Boolean[1]
+{
+    $element->hasStereotype('Test', test) || $element->hasStereotype('ToFix', test);
+}
+
+function meta::pure::functions::test::isBeforePackage(element:PackageableElement[1]):Boolean[1]
+{
+    $element->hasStereotype('BeforePackage', test);
+}
+
+function <<access.private>> meta::pure::functions::test::hasTaggedValue(ae:AnnotatedElement[1], taggedValue:String[1]):Boolean[1]
+{
+   $ae->value4Tag('sensitiveToStereotype', test)->filter(tv:TaggedValue[1]|$tv.value == $taggedValue)->isNotEmpty();
+}
+
+function <<access.private>> meta::pure::functions::test::allPackageableElementsTaggedAsSensitiveToAnyStereotype():PackageableElement[*]
+{
+   test->tag('sensitiveToStereotype').modelElements->map(ae:AnnotatedElement[1]|$ae->match([
+      pe:PackageableElement[1] | $pe,
+      _:AnnotatedElement[1]    | []
+   ]));
+}
+
+function <<access.private>> meta::pure::functions::test::getPackageableElementsSensitiveToStereotype(s:Stereotype[1]):PackageableElement[*]
+{
+   let stereotypeAsTagValue = [$s.profile->elementToPath(), $s.value]->joinStrings('.');
+   allPackageableElementsTaggedAsSensitiveToAnyStereotype()->filter(pe|$pe->hasTaggedValue($stereotypeAsTagValue));
+}
+
+Class meta::pure::functions::test::TestedByResult
+{
+   results: PackageableFunction<Any>[*];
+   visited: String[*];
+   depth: Integer[1];
+   maxDepth: Integer[1];
+   maxVisited: Integer[1];
+
+   maxDepthExceeded(){
+      $this.depth > $this.maxDepth;
+   }:Boolean[1];
+
+   maxVisitedExceeded(){
+      $this.visited->size() > $this.maxVisited;
+   }:Boolean[1];
+
+   failed(){
+      $this.maxDepthExceeded() || $this.maxVisitedExceeded();
+   }:Boolean[1];
+}
+
+function meta::pure::functions::test::testedBy(pe:Any[1], soFar:TestedByResult[1], extensions:meta::pure::extension::Extension[*]):TestedByResult[1]
+{   
+   let named = $pe->match([p:PackageableElement[1]|true, p:Function<Any>[1]|!$p->instanceOf(LambdaFunction), z:Any[1]|false]);
+   //$epath->size() > 0 && ($epath->size() > 1 || $epath->at(0).name->size() == 1);
+   let path = $pe->match([p:PackageableElement[1]|$p->elementToPath(), p:AbstractProperty<Any>[1]|$p.name->toOne(), z:Any[1]|'']);
+
+   if (($named && $soFar.visited->contains($path) || $soFar.failed()),
+      | $soFar,
+      | let allReferenceUses = $pe->match([p:PackageableElement[1]|$p.referenceUsages, z:Function<Any>[1]|$z.referenceUsages, k:Any[1]|[]])->evaluateAndDeactivate();
+
+        let visit = {soFarr:TestedByResult[1]|if($named, |$path->visitPackageableElement($soFarr), |$soFarr)};
+        let thisIsATest = {soFarr:TestedByResult[1]| $pe->filter(o|$o->instanceOf(PackageableFunction))->cast(@PackageableFunction<Any>)->map(f|if($f->isTest() || $f->isBeforePackage(), |$f->addResult($soFarr), |[]))->defaultIfEmpty($soFarr)->toOne()};
+        let applications = {soFarr:TestedByResult[1]| $pe->filter(o|$o->instanceOf(Function))->cast(@Function<Any>).applications->evaluateAndDeactivate()->fold({vs,tbr|$vs->testedBy($tbr, $extensions)}, $soFarr)};
+        let referenceUsesFromMappingInclude = {soFarr:TestedByResult[1]| $allReferenceUses.owner->filter(o|$o->instanceOf(meta::pure::mapping::MappingInclude))->cast(@meta::pure::mapping::MappingInclude)->fold({mi,tbr|$mi.owner->testedBy($tbr, $extensions)}, $soFarr)};
+        let referenceUses = {soFarr:TestedByResult[1]| $allReferenceUses.owner->filter(o|$o->instanceOf(ValueSpecification))->cast(@ValueSpecification)->fold({vs,tbr|$vs->testedBy($tbr, $extensions)}, $soFarr)};
+        let stereotypeUses = {soFarr:TestedByResult[1]| if($pe->instanceOf(AnnotatedElement), |$pe->cast(@AnnotatedElement).stereotypes->filter(s|$s.profile != test)->map(s|$s->getPackageableElementsSensitiveToStereotype())->fold({vs,tbr|$vs->testedBy($tbr, $extensions)}, $soFarr), |$soFarr)};
+        let resetDepth = {soFarr:TestedByResult[1]|^$soFarr(depth=$soFar.depth)};
+
+        [$visit, $thisIsATest, $applications, $referenceUsesFromMappingInclude, $referenceUses, $stereotypeUses, $resetDepth]->concatenate($extensions.testExtension_testedBy->map(e|$e->eval($allReferenceUses, $extensions)))->fold({f,tbr|eval($f, $tbr)}, $soFar);
+   );
+}
+
+function <<access.private>> meta::pure::functions::test::visitPackageableElement(path:String[1], soFar:TestedByResult[1]):TestedByResult[1]
+{
+   ^TestedByResult(
+      results=$soFar.results,
+      visited=$soFar.visited->add($path),
+      depth=$soFar.depth+1,
+      maxDepth=$soFar.maxDepth,
+      maxVisited=$soFar.maxVisited
+   );
+}
+
+function <<access.private>> meta::pure::functions::test::addResult(f:PackageableFunction<Any>[1], soFar:TestedByResult[1]):TestedByResult[1]
+{
+   ^TestedByResult(
+      results=$soFar.results->add($f),
+      visited=$soFar.visited,
+      depth=$soFar.depth,
+      maxDepth=$soFar.maxDepth,
+      maxVisited=$soFar.maxVisited
+   );
+}
+
+function <<access.private>> meta::pure::functions::test::testedBy(vs:ValueSpecification[1], soFar:TestedByResult[1], extensions:meta::pure::extension::Extension[*]):TestedByResult[1]
+{
+   $vs.usageContext->match([
+      es:ExpressionSequenceValueSpecificationContext[1] | $es.functionDefinition->testedBy($soFar, $extensions),
+      iv:InstanceValueSpecificationContext[1]           | $iv.instanceValue->testedBy($soFar, $extensions),
+      pv:ParameterValueSpecificationContext[1]          | $pv.functionExpression->testedBy($soFar, $extensions),
+      kv:KeyValueValueSpecificationContext[1]           | $kv.functionExpression->testedBy($soFar, $extensions),
+      cc:ClassConstraintValueSpecificationContext[1]    | $cc.class->testedBy($soFar, $extensions),
+      an:Any[*]                                         | $soFar
+   ]);
+}
+
+function {doc.doc = 'Return whether the given function is a test.'} meta::pure::functions::test::isTest(func:Function<Any>[1]):Boolean[1]
+{
+    $func->hasStereotype('Test', test)
+}
+
+function {doc.doc = 'Return whether the given element is some kind of testing element.  This is true if it has any stereotype from the meta::pure::profiles::test profile.'} meta::pure::functions::test::isTestElement(element:Any[1]):Boolean[1]
+{
+    $element->instanceOf(AnnotatedElement) && $element->cast(@AnnotatedElement).stereotypes->exists(st | $st.profile == test);
+}

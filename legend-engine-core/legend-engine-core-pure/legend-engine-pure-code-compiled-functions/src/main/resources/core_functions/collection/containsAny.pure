@@ -1,0 +1,59 @@
+import meta::pure::functions::collection::tests::containsAny::*;
+
+function meta::pure::functions::collection::containsAny(collection:Any[*], values:Any[*]):Boolean[1]
+{
+    $values->exists(v | $collection->contains($v))
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::containsAny::testContainsAnyPrimitive():Boolean[1]
+{
+    let col = [1, 2, 5, 2, 'a', true, %2014-02-01, 'c'];
+    assert($col->containsAny(1));
+    assert($col->containsAny(2));
+    assert($col->containsAny(5));
+    assert($col->containsAny('a'));
+    assert($col->containsAny(true));
+    assert($col->containsAny(%2014-02-01));
+    assert($col->containsAny('c'));
+
+    assert($col->containsAny([1, 2]));
+    assert($col->containsAny([2, 'k', 2]));
+    assert($col->containsAny([%2014-02-02, 5]));
+    assert($col->containsAny([-9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]));
+    assert($col->containsAny([true]));
+    assert($col->containsAny([%2014-02-01, 1, 2, 5, 'a', 'c']));
+
+    assertFalse($col->containsAny(-5));
+    assertFalse($col->containsAny(%2014-02-02));
+    assertFalse($col->containsAny('the quick brown fox'));
+    assertFalse($col->containsAny(false));
+
+    assertFalse($col->containsAny([-1, -2, -5]));
+    assertFalse($col->containsAny([%2014-02-02, 'k']));
+    assertFalse($col->containsAny([-5, -2, -1, 'the quick brown fox']));
+    assertFalse($col->containsAny([false]));
+}
+
+Class meta::pure::functions::collection::tests::containsAny::Firm
+{
+    <<equality.Key>> legalName : String[1];
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::containsAny::testContainsAnyNonPrimitive():Boolean[1]
+{
+    let f1 = ^Firm(legalName='f1');
+    let f2 = ^Firm(legalName='f2');
+    let col = [$f1, $f2];
+    assert($col->containsAny($f1));
+    assert($col->containsAny(^Firm(legalName='f1')));
+    assert($col->containsAny($f2));
+    assert($col->containsAny(^Firm(legalName='f2')));
+
+    assert($col->containsAny([$f1, $f2]));
+    assert($col->containsAny([$f2, 3, $f2, 'f2']));
+    assert($col->containsAny([$f2, $f1, $f1, $f2]));
+    assert($col->containsAny([^Firm(legalName='f3'), ^Firm(legalName='f1')]));
+
+    assertFalse($col->containsAny([1, 2, 3]));
+    assertFalse($col->containsAny([^Firm(legalName='f3'), ^Firm(legalName='f4'), 5, 4, 3, 2, 1]));
+}

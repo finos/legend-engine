@@ -1,0 +1,104 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class simple::model::Query
+{
+  allFirms() {simple::model::Firm.all()}: simple::model::Firm[*];
+  firmByLegalName(legalName: String[1]) {simple::model::Firm.all()->filter(f|$f.legalName == $legalName)->first()}: simple::model::Firm[0..1];
+  firmByEmployees(firstName: String[1],lastName: String[1]) {simple::model::Firm.all()->filter(f|$f.employees.firstName == $firstName &&  $f.employees.lastName == $lastName )->first()}: simple::model::Firm[0..1];
+  personByNames(firstName: String[0..1],lastName: String[0..1]) {simple::model::Person.all()->filter(f|$f.firstName == $firstName  || $f.lastName == $lastName    )}: simple::model::Person[*];
+  selectEmployees(offset: Integer[1],limit: Integer[1])  {
+                                                           let start = $offset - 1;
+                                                           let end = $start + $limit;
+                                                           simple::model::Person.all()->slice($start, $end);
+                                                         }: simple::model::Person[*];
+}
+
+Class simple::model::Firm
+{
+  legalName: String[1];
+}
+
+Class simple::model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  address: simple::model::Address[1];
+}
+
+Class simple::model::Address
+{
+  line1: String[1];
+}
+
+Association simple::model::Firm_Employees
+{
+    employees: simple::model::Person[*];
+    employer: simple::model::Firm[0..1];
+}
+
+###Relational
+Database simple::store::DB
+(
+  Table FIRM_TABLE
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGAL_NAME VARCHAR(100)
+  )
+
+  Table PERSON_TABLE
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRST_NAME VARCHAR(100),
+    LAST_NAME VARCHAR(100),
+    FIRM_ID INTEGER
+  )
+
+  Table ADDRESS_TABLE
+  (
+     ID INTEGER PRIMARY KEY,
+     LINE1 VARCHAR(100),
+     PERSON_ID INTEGER
+  )
+
+  Join PERSON_FIRM(PERSON_TABLE.FIRM_ID = FIRM_TABLE.ID)
+  Join PERSON_ADDRESS(PERSON_TABLE.ID = ADDRESS_TABLE.PERSON_ID)
+)
+
+###Mapping
+import simple::model::*;
+import simple::store::*;
+
+Mapping simple::mapping::Map
+(
+  simple::model::Firm : Relational
+  {
+    legalName: [simple::store::DB]FIRM_TABLE.LEGAL_NAME,
+    employees: [simple::store::DB]@PERSON_FIRM
+  }
+
+  simple::model::Person : Relational
+  {
+    firstName: [simple::store::DB]PERSON_TABLE.FIRST_NAME,
+    lastName: [simple::store::DB]PERSON_TABLE.LAST_NAME,
+    employer: [simple::store::DB]@PERSON_FIRM,
+    address: [simple::store::DB]@PERSON_ADDRESS
+  }
+
+  simple::model::Address : Relational
+  {
+    line1: [simple::store::DB]ADDRESS_TABLE.LINE1
+  }
+)

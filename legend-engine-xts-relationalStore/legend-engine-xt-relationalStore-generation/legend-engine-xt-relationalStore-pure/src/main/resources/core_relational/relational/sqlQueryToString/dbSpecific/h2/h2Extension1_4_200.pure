@@ -1,0 +1,354 @@
+import meta::relational::metamodel::relation::*;
+import meta::pure::extension::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::functions::sqlQueryToString::default::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::functions::sqlQueryToString::h2::v1_4_200::*;
+
+function meta::relational::functions::sqlQueryToString::h2::v1_4_200::createDbExtensionForH2():DbExtension[1]
+{
+   let reservedWords = h2ReservedWords();
+   let literalProcessors = getDefaultLiteralProcessors();
+   let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
+   let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
+     getDynaFunctionToSqlForH2()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
+
+   ^DbExtension(
+      isBooleanLiteralSupported = true,
+      aliasLimit = 1000,
+      isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
+      literalProcessor = $literalProcessor,
+      windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
+      lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForH2_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
+      semiStructuredElementProcessor = processSemiStructuredElementForH2_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
+      joinStringsProcessor = processJoinStringsOperationForH2_JoinStrings_1__SqlGenerationContext_1__String_1_,
+      selectSQLQueryProcessor = processSelectSQLQueryDefault_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      upsertSQLQueryProcessor = processUpsertSQLQueryForH2_UpsertSQLQuery_1__SqlGenerationContext_1__String_1_,
+      identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
+      dynaFuncDispatch = $dynaFuncDispatch,
+      ddlCommandsTranslator = getDDLCommandsTranslator(),
+      processTempTableName = processTempTableNameDefault_String_1__DatabaseConnection_1__String_1_
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::getDDLCommandsTranslator(): RelationalDDLCommandsTranslator[1]
+{
+  ^RelationalDDLCommandsTranslator(
+                createSchema = translateCreateSchemaStatementDefault_CreateSchemaSQL_1__DbConfig_1__String_1_,
+                dropSchema = translateDropSchemaStatementDefault_DropSchemaSQL_1__DbConfig_1__String_1_,
+                createTable = translateCreateTableStatementForH2_CreateTableSQL_1__DbConfig_1__String_1_,
+                dropTable = translateDropTableStatementDefault_DropTableSQL_1__DbConfig_1__String_1_,
+                loadTable = loadValuesToDbTableForH2_LoadTableSQL_1__DbConfig_1__String_MANY_
+              );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::translateCreateTableStatementForH2(c:CreateTableSQL[1], dbConfig: DbConfig[1]): String[1]
+{
+  if($c.isTempTable->isTrue(),| 'CREATE LOCAL TEMPORARY TABLE ' + $c.table->tableToString($dbConfig) + '('+ $c.table.columns->map(r|$r->match([c:Column[1]| $c.name->processColumnName($dbConfig) + ' ' + getColumnTypeSqlTextDefault($c.type),
+                                                                                                                                   r:RelationalOperationElement[1]| fail('Only \'Column\' types are supported when creating temporary tables, found: '+$r->type()->toOne()->elementToPath());'';]))->joinStrings(',') + ');'
+                             ,| $c->meta::relational::functions::sqlQueryToString::default::translateCreateTableStatementDefault($dbConfig))
+
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::loadValuesToDbTableForH2(l:LoadTableSQL[1], dbConfig: DbConfig[1]): String[*]
+{
+  if($l.absolutePathToFile->isNotEmpty(),| 'INSERT INTO ' + $l.table->tableToString($dbConfig) + ' SELECT * FROM CSVREAD(\''+$l.absolutePathToFile->toOne()->processOperation($dbConfig.dbType, []) + '\');'
+                              ,| $l->meta::relational::functions::sqlQueryToString::default::loadValuesToDbTableDefault($dbConfig))
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::h2ReservedWords():String[*]
+{
+   [
+      'all','array','case','check','constraint','cross','current_date','current_time','current_timestamp','current_user','distinct','except','exists','false','fetch','for','foreign','from',
+      'full','group','having','if','inner','intersect','intersects','interval','is','join','like','limit','localtime','localtimestamp','minus','natural','not','null','offset','on','order','primary',
+      'qualify','row','rownum','select','sysdate','systime','systimestamp','table','today','top','true','union','unique','values','where','window','with'
+   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::getDynaFunctionToSqlForH2(): DynaFunctionToSql[*]
+{
+  let allStates = allGenerationStates();
+
+  [
+    dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
+    dynaFnToSql('booland',                $allStates,            ^ToSql(format='every(%s)')),
+    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='any(%s)')),    
+    dynaFnToSql('char',                   $allStates,            ^ToSql(format='char(%s)')),
+    dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateH2()})),
+    dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeH2()})),
+    dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='convert(%s, VARCHAR(128))')),
+    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForH2(),$p->at(0),$p->at(1)]})),
+    dynaFnToSql('datePart',               $allStates,            ^ToSql(format='cast(truncate(%s) as date)')),
+    dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='DAY_OF_MONTH(%s)')),
+    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='dayname(%s)')),
+    dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='%s',transform={p:String[1..2]| if($p->size()==1,| 'DAY_OF_WEEK('+$p->at(0)+')',|$p->dayOfWeekNumberH2());})),
+    dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='DAY_OF_YEAR(%s)')),
+    dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_decode(%s)')),
+    dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_encode(%s)')),
+    dynaFnToSql('extractFromSemiStructured', $allStates,         ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsForH2()})),
+    dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='dateadd(DAY, -(dayofmonth(%s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
+    dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='dateadd(MONTH, 3 * quarter(%s) - 3, dateadd(DAY, -(dayofyear(%s) - 1), %s))', transform={p:String[1] | $p->repeat(3)})),
+    dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='dateadd(DAY, -(dayofmonth(current_date()) - 1), current_date())')),
+    dynaFnToSql('firstDayOfThisQuarter',  $allStates,            ^ToSql(format='dateadd(MONTH, 3 * quarter(current_date) - 3, dateadd(DAY, -(dayofyear(current_date()) - 1), current_date()))')),
+    dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='dateadd(DAY, -(dayofyear(current_date()) - 1), current_date())')),
+    dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='dateadd(DAY, -(mod(dayofweek(%s)+5, 7)), %s)', transform={p:String[1] | $p->repeat(2)})),
+    dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='dateadd(DAY, -(dayofyear(%s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
+    dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
+    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='LOCATE(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
+    dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),
+    dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[1]|$p->transformAlphaNumericParamsDefault()})),
+    dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='group_concat(%s separator %s)')),
+    dynaFnToSql('length',                 $allStates,            ^ToSql(format='char_length(%s)')),
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
+    dynaFnToSql('md5',                    $allStates,            ^ToSql(format='legend_h2_extension_hash_md5(%s)')),
+    dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
+    dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('monthName',              $allStates,            ^ToSql(format='monthname(%s)')),
+    dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='dateadd(DAY, case when %s - DAY_OF_WEEK(%s) > 0 then %s - DAY_OF_WEEK(%s) - 7 else %s - DAY_OF_WEEK(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentH2('current_date()')}, parametersWithinWhenClause = [false, false])),
+    dynaFnToSql('now',                    $allStates,            ^ToSql(format='current_timestamp()')),
+    dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='parsedatetime(%s,%s)')),
+    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as decimal)')),
+    dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
+    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
+    dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='legend_h2_extension_json_parse(%s)')),
+    dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s, %s)')),
+    dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='dateadd(DAY, case when %s - DAY_OF_WEEK(%s) >= 0 then %s - DAY_OF_WEEK(%s) - 7 else %s - DAY_OF_WEEK(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentH2('current_date()')}, parametersWithinWhenClause = [false, false])),
+    dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('reverseString',          $allStates,            ^ToSql(format='legend_h2_extension_reverse_string(%s)')),
+    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
+    dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='legend_h2_extension_hash_sha1(%s)')),
+    dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='rawtohex(hash(\'SHA256\', %s))')),
+    dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='legend_h2_extension_split_part(%s, %s, %s)')),
+    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
+    dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
+    dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date()')),
+    dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
+    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double precision)')),
+    dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
+    dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampH2()})),
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
+  ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processUpsertSQLQueryForH2(upsertQuery: UpsertSQLQuery[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  // Map of Column to Literals of VarPlaceHolder
+  let keyValues = $upsertQuery.equalityStatements->keyValues()->sortBy(kv | $kv.first);
+  let columnNames = $keyValues->map(kv | $kv.first)->joinStrings(', ');
+  let literalValues = $keyValues->map(kv | meta::relational::functions::sqlQueryToString::processLiteralValue($kv.second.value, $sgc.dbConfig))->joinStrings(', ');
+
+  'merge into ' + $upsertQuery.data.name + ' (' + $columnNames + ') values (' + $literalValues + ')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processJoinTreeNodeWithLateralJoinForH2(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
+{
+  // keeping consistent with snowflake
+  assert(processOperation($j.join.operation, $dbConfig, $format->indent(), ^Config(), $extensions) == '1 = 1', | 'Filter in column projections is not supported. Use a Post Filter if filtering is necessary');
+
+  assert($j.alias.relationalElement->instanceOf(SemiStructuredArrayFlatten), | 'Lateral join in H2 should be followed by flatten operation');
+
+  let lhs = ^TableAliasColumn(column = ^Column(name = '__INPUT__', type = ^meta::relational::metamodel::datatype::SemiStructured()),alias = $j.alias);
+  let rhs = $j.alias.relationalElement->cast(@SemiStructuredArrayFlatten).navigation->cast(@SemiStructuredObjectNavigation);
+  let joinOperation = ^DynaFunction(name= 'equal', parameters = [$lhs, ^$rhs(returnType=String)]);
+
+  ' ' + $format.separator() + 'left outer join '
+  + $j.alias
+        ->map(a|^$a(name = '"' + $a.name + '"'))
+        ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()
+        + ' ' + 'on (' + processOperation($joinOperation, $dbConfig, $format->indent(), ^Config(), $extensions) + ')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processExtractFromSemiStructuredParamsForH2(params:String[3]):String[1]
+{
+  let baseRelationalOp = $params->at(0);
+  let pathNavigation = $params->at(1);
+  let returnType = $params->at(2);
+
+  let parsedPathNavigation = $pathNavigation->parseSemiStructuredPathNavigation();
+  let relationalPropertyAccess = $parsedPathNavigation->fold({property,relational | $relational->semiStructuredPathAccessForH2($property)}, $baseRelationalOp);
+
+  let castTo = if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'varchar', |
+  if ($returnType->in(['DATETIME', 'TIMESTAMP']), | 'timestamp', |
+  if ($returnType == 'DATE', | 'date', |
+  if ($returnType == 'BOOLEAN', | 'boolean', |
+  if ($returnType == 'FLOAT', | 'float', |
+  if ($returnType == 'INTEGER', | 'integer', |
+  $returnType))))));
+
+  format('cast(%s as %s)', [$relationalPropertyAccess, $castTo]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::semiStructuredPathAccessForH2(elementAccess: String[1], property: String[1]): String[1]
+{
+  if($property->isDigit(), | $elementAccess->semiStructuredArrayElementAccessForH2($property), | $elementAccess->semiStructuredPropertyAccessForH2($property->substring(1, $property->length()-1))); // remove double quotes
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::semiStructuredPropertyAccessForH2(elementAccess: String[1], property: String[1]): String[1]
+{
+  format('legend_h2_extension_json_navigate(%s, \'%s\', null)', [$elementAccess, $property]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::semiStructuredArrayElementAccessForH2(elementAccess: String[1], index: String[1]): String[1]
+{
+  format('legend_h2_extension_json_navigate(%s, null, %s)', [$elementAccess, $index]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processSemiStructuredElementForH2(s:RelationalOperationElement[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   $s->match([
+      o:SemiStructuredObjectNavigation[1] | $o->processSemiStructuredObjectNavigationForH2($sgc),
+      a:SemiStructuredArrayFlatten[1] | $a->processSemiStructuredArrayFlattenForH2($sgc),
+      a:SemiStructuredArrayFlattenOutput[1] | $a->processSemiStructuredArrayFlattenOutputForH2($sgc)
+   ])
+}
+
+/*
+* returns property accesses to extract the semi structured property starting from root
+*/
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::propertyAccessForSemiStructuredObjectNavigationH2(z:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[*]
+{
+  let elementAccess = $z->match([
+    p: SemiStructuredPropertyAccess[1] |
+        let propertyAccess = '"' + $p.property->cast(@Literal).value->cast(@String) + '"';
+        if ($p.index->isNotEmpty(),
+            | $propertyAccess->concatenate($p.index->toOne()->cast(@Literal).value->toString()),
+            | $propertyAccess
+        );,
+    a: SemiStructuredArrayElementAccess[1] | $a.index->toOne()->cast(@Literal).value->toString()
+  ]);
+  $z.operand->match([
+    s: SemiStructuredObjectNavigation[1] | $s->propertyAccessForSemiStructuredObjectNavigationH2($sgc),
+    a: SemiStructuredArrayFlatten[1] | $a.navigation->cast(@SemiStructuredObjectNavigation)->propertyAccessForSemiStructuredObjectNavigationH2($sgc)->concatenate('"*"'),
+    s: SemiStructuredArrayFlattenOutput[1] | let flattening = $s.tableAliasColumn.alias.relationalElement->cast(@SemiStructuredArrayFlatten);
+                                             $flattening.navigation->cast(@SemiStructuredObjectNavigation)->propertyAccessForSemiStructuredObjectNavigationH2($sgc)->concatenate('"*"');,
+    a: Any[1] | []
+  ])->concatenate($elementAccess);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processSemiStructuredArrayFlattenForH2(s:SemiStructuredArrayFlatten[1], sgc:SqlGenerationContext[1]): String[1]
+{
+  let rootTableAndColumnName = $s->meta::relational::functions::pureToSqlQuery::findTableForColumnInAlias([]);
+
+  let jsonPaths = $s.navigation->match([  // assumes input to ssaf is always sson
+    s: SemiStructuredObjectNavigation[1] | $s->propertyAccessForSemiStructuredObjectNavigationH2($sgc)
+  ]);
+  
+  let schema = $rootTableAndColumnName.first.schema.name;
+
+  let processedNavigation = $s.navigation->processOperation($sgc);
+  'legend_h2_extension_flatten_array(' + '\'' + $rootTableAndColumnName.first->processOperation($sgc) + '\',\'' + $rootTableAndColumnName.second->processColumnName($sgc.dbConfig) + '\',ARRAY[\'' + $jsonPaths->joinStrings('\',\'') + '\'])';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processSemiStructuredArrayFlattenOutputForH2(s:SemiStructuredArrayFlattenOutput[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   let doubleQuote = if($sgc.config.useQuotesForTableAliasColumn == false, |'', |'"');
+   let processedIdentifier = $sgc.dbConfig.identifierProcessor($doubleQuote + $s.tableAliasColumn.alias.name->toOne() + $doubleQuote);
+   let elementAccess = $processedIdentifier + '.' + processColumnName('VALUE', $sgc.dbConfig);
+   $elementAccess->castToReturnTypeForSemiStructuredData($s.returnType);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::castToReturnTypeForSemiStructuredData(elementAccess:String[1], returnType:Type[0..1]): String[1]
+{
+  if ($returnType == String, | 'cast(' + $elementAccess + ' as varchar)', |
+  if ($returnType == Boolean, | 'cast(' + $elementAccess + ' as boolean)', |
+  if ($returnType == Float, | 'cast(' + $elementAccess + ' as float)', |
+  if ($returnType == Integer, | 'cast(' + $elementAccess + ' as integer)', |
+  if ($returnType == StrictDate, | 'cast(' + $elementAccess + ' as date)', |
+  if ($returnType->isNotEmpty() && $returnType->toOne()->_subTypeOf(Date), | 'cast(' + $elementAccess + ' as timestamp)', |
+  if ($returnType->isNotEmpty() && $returnType->toOne()->instanceOf(Enumeration), | 'cast(' + $elementAccess + ' as varchar)', |
+  $elementAccess)))))));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processSemiStructuredObjectNavigationForH2(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   // Use a user defined function for H2 (testing purpose)
+
+   let processedOperand = $s.operand->processOperation($sgc);
+
+   let udfName = 'legend_h2_extension_json_navigate';
+
+   let elementAccess = $s->match([
+      p: SemiStructuredPropertyAccess[1] |
+         let propertyAccess = semiStructuredPropertyAccessForH2($processedOperand,  $p.property->cast(@Literal).value->cast(@String));
+         if ($p.index->isNotEmpty(),
+             | semiStructuredArrayElementAccessForH2($propertyAccess, $p.index->toOne()->cast(@Literal).value->toString()),
+             | $propertyAccess
+         );,
+
+      a: SemiStructuredArrayElementAccess[1] | semiStructuredArrayElementAccessForH2($processedOperand, $a.index->cast(@Literal).value->toString())
+   ]);
+
+   $elementAccess->castToReturnTypeForSemiStructuredData($s.returnType);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processJoinStringsOperationForH2(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   processJoinStringsOperation($js, $sgc, {col, sep| 'group_concat(' + $col + if($sep == '\'\'', |'', |' separator ' + $sep) + ' )'},
+    {strs, sep| $strs->joinStrings('concat(', if('\'\'' == $sep, |', ', |',' + $sep + ',') , ')')});
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::convertToDateH2(params:String[*]):String[1]
+{
+
+      assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDate: convertDate(column,[dateformat])');
+      let dateFormat = if( $params->size() == 1,|'\'yyyy-MM-dd\'' ,| let normalizedFormat = $params->at(1)->normalizeH2DateFormat();
+                                                                     assert(dateFormatsH2()->contains($normalizedFormat->replace('\'', '')), $normalizedFormat +' not supported ');
+                                                                     $normalizedFormat;
+                                                                     );
+      'cast( parseDateTime('+$params->at(0)+','+$dateFormat +') as date)';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::normalizeH2DateFormat(params:String[1]):String[1]
+{
+   [pair('YYYY', 'yyyy'), pair('DD', 'dd')]->fold({e, a| $a->replace($e.first,$e.second)}, $params);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::dateFormatsH2():String[*]
+{
+   ['yyyy-MM-dd', 'MMMyyyy', 'yyyyMMdd'];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::convertToDateTimeH2(params:String[*]):String[1]
+{
+   $params->convertDateTimeFunctionHasCorrectParams();
+   let dateTimeFormat = if( $params->size() == 1,|'\'yyyy-MM-dd hh:mm:ss[.nnnnnnnnn]\'',| $params->at(1););
+   'parseDateTime('+$params->at(0)+','+$dateTimeFormat +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::transformToTimestampH2(params:String[2]):String[1]
+{
+  //Standardizing the format as per Postgres specification, will include mappings for the formats in future.
+   assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
+   let timestampFormat = '\'yyyy-MM-dd hh:mm:ss\'';
+   'parsedatetime('+$params->at(0)+','+ $timestampFormat+')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processDateDiffDurationUnitForH2(durationUnit:String[1]):String[1]
+{
+   let durationEnumNames = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
+   let durationDbNames = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond'];
+   $durationEnumNames->zip($durationDbNames)->filter(h | $h.first == $durationUnit).second->toOne();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::formatMostRecentH2(p:String[1..2], defaultDay:String[1]):String[*]
+{
+   let day = $p->last()->toOne()->mapToDBDayOfWeekNumber()->toString();
+   let current = if ($p->size() == 2, | $p->first()->toOne(), | $defaultDay);
+   [$day, $current, $day, $current, $day, $current, $current];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::dayOfWeekNumberH2(dayOfWeek: String[*]):String[1]
+{
+   assert(or($dayOfWeek->at(1)=='Sunday',$dayOfWeek->at(1)=='Monday'),'DayOfWeekNumber Function requires either Sunday or Monday as First Day of Week');
+   if($dayOfWeek->at(1)=='Sunday',|'DAY_OF_WEEK('+$dayOfWeek->at(0)+')',|'ISO_DAY_OF_WEEK('+$dayOfWeek->at(0)+')');
+}

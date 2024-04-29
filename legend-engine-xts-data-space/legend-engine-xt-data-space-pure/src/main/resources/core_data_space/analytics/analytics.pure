@@ -1,0 +1,200 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::milestoning::*;
+import meta::pure::metamodel::dataSpace::*;
+import meta::pure::metamodel::dataSpace::analytics::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+import meta::pure::functions::doc::*;
+
+Class meta::pure::metamodel::dataSpace::analytics::DataSpaceAnalysisResult
+{
+  diagramModels: meta::pure::metamodel::diagram::analytics::modelCoverage::DiagramModelCoverageAnalysisResult[1];
+  executionContexts: DataSpaceExecutionContextAnalysisResult[*];
+  elementDocs: DataSpaceModelDocumentationEntry[*];
+}
+
+Class meta::pure::metamodel::dataSpace::analytics::DataSpaceCoverageAnalysisResult
+{
+  executionContexts: DataSpaceExecutionContextAnalysisResult[*];
+}
+
+function meta::pure::metamodel::dataSpace::analytics::analyzeDataSpace(dataSpace: DataSpace[1], allAvailableRuntimes: meta::pure::runtime::PackageableRuntime[*], returnLightGraph: Boolean[1]): DataSpaceAnalysisResult[1]
+{
+  ^DataSpaceAnalysisResult
+  (
+    diagramModels = meta::pure::metamodel::diagram::analytics::modelCoverage::getDiagramModelCoverage($dataSpace.diagrams.diagram),
+    executionContexts = analyzeDataSpaceExecutionContexts($dataSpace, $allAvailableRuntimes, $returnLightGraph),
+    elementDocs = getModelsDoc($dataSpace)
+  );
+}
+
+function meta::pure::metamodel::dataSpace::analytics::analyzeDataSpaceCoverage(dataSpace: DataSpace[1], allAvailableRuntimes: meta::pure::runtime::PackageableRuntime[*], returnLightGraph: Boolean[1]): DataSpaceCoverageAnalysisResult[1]
+{
+  ^DataSpaceCoverageAnalysisResult
+  (
+    executionContexts = analyzeDataSpaceExecutionContexts($dataSpace, $allAvailableRuntimes, $returnLightGraph)
+  );
+}
+
+
+// ------------------------- Execution Context ----------------------------
+
+Class meta::pure::metamodel::dataSpace::analytics::DataSpaceExecutionContextAnalysisResult
+{
+  name: String[1];
+  compatibleRuntimes: meta::pure::runtime::PackageableRuntime[*];
+  mappingCoverage: meta::analytics::mapping::modelCoverage::MappingModelCoverageAnalysisResult[1];
+}
+
+function <<access.private>> meta::pure::metamodel::dataSpace::analytics::analyzeDataSpaceExecutionContexts(dataSpace: DataSpace[1], allAvailableRuntimes: meta::pure::runtime::PackageableRuntime[*], returnLightGraph: Boolean[1]): DataSpaceExecutionContextAnalysisResult[*]
+{
+  $dataSpace.executionContexts->map(context|^DataSpaceExecutionContextAnalysisResult(
+    name = $context.name,
+    compatibleRuntimes = getMappingCompatibleRuntimes($context.mapping, $allAvailableRuntimes),
+    mappingCoverage = meta::analytics::mapping::modelCoverage::analyze($context.mapping, $returnLightGraph, false, $returnLightGraph)
+  ));
+}
+
+// NOTE: this compatibility check is fairly simple and only do static analysis on the runtimes
+// However, we could be more advanced and do some router analysis, etc.
+function <<access.private>> meta::pure::metamodel::dataSpace::analytics::getMappingCompatibleRuntimes(mappingToCheck: Mapping[1], runtimes: meta::pure::runtime::PackageableRuntime[*]): meta::pure::runtime::PackageableRuntime[*]
+{
+  $runtimes->removeDuplicates()->filter(runtime|isRuntimeCompatibleWithMapping($runtime, $mappingToCheck));
+}
+
+function <<access.private>> meta::pure::metamodel::dataSpace::analytics::getAllIncludedMappings(mapping: Mapping[1]): Mapping[*]
+{
+   $mapping.includes.included->concatenate($mapping.includes->map(i | $i.included->getAllIncludedMappings()))->removeDuplicates();
+}
+
+function <<access.private>> meta::pure::metamodel::dataSpace::analytics::isRuntimeCompatibleWithMapping(runtime: meta::pure::runtime::PackageableRuntime[1], mappingToCheck: Mapping[1]): Boolean[1]
+{
+  $runtime.runtimeValue.mappings
+    ->map(mapping|[$mapping]->concatenate($mapping->getAllIncludedMappings())->removeDuplicates())
+    ->exists(mappings|$mappings->contains($mappingToCheck));
+}
+
+
+// ------------------------- Elements ----------------------------
+
+Class meta::pure::metamodel::dataSpace::analytics::DataSpaceBasicDocumentationEntry
+{
+  name: String[1];
+  docs: String[*];
+}
+
+Class meta::pure::metamodel::dataSpace::analytics::DataSpacePropertyDocumentationEntry extends DataSpaceBasicDocumentationEntry
+{
+  milestoning: String[0..1];
+  type: String[0..1];
+  multiplicity: Multiplicity[1];
+}
+
+Class meta::pure::metamodel::dataSpace::analytics::DataSpaceModelDocumentationEntry extends DataSpaceBasicDocumentationEntry
+{
+  element: PackageableElement[1];
+  path: String[1];
+}
+
+Class meta::pure::metamodel::dataSpace::analytics::DataSpaceClassDocumentationEntry extends DataSpaceModelDocumentationEntry
+{
+  properties: DataSpacePropertyDocumentationEntry[*];
+  milestoning: String[0..1];
+}
+
+Class meta::pure::metamodel::dataSpace::analytics::DataSpaceEnumerationDocumentationEntry extends DataSpaceModelDocumentationEntry
+{
+  enumValues: DataSpaceBasicDocumentationEntry[*];
+}
+
+Class meta::pure::metamodel::dataSpace::analytics::DataSpaceAssociationDocumentationEntry extends DataSpaceModelDocumentationEntry
+{
+  properties: DataSpacePropertyDocumentationEntry[*];
+}
+
+function <<access.private>> meta::pure::metamodel::dataSpace::analytics::getClassMilestoning(class: Class<Any>[1]): String[0..1]
+{
+  if (
+    ['bitemporal']->exists(s| $class->hasStereotype($s, temporal)), | 'bitemporal', | if (
+    ['businesstemporal']->exists(s| $class->hasStereotype($s, temporal)), | 'businesstemporal', | if (
+    ['processingtemporal']->exists(s| $class->hasStereotype($s, temporal)), | 'processingtemporal', | []))
+  );
+}
+
+function <<access.private>> meta::pure::metamodel::dataSpace::analytics::getPropertyMilestoning(property: AbstractProperty<Any>[1]): String[0..1]
+{
+  let type = $property.genericType.rawType;
+  if (!$type->isEmpty() && $type->toOne()->instanceOf(Class), | $type->toOne()->cast(@Class<Any>)->getClassMilestoning(), | []);
+}
+
+function <<access.private>> meta::pure::metamodel::dataSpace::analytics::getClassDoc(class: Class<Any>[1]): DataSpaceClassDocumentationEntry[1]
+{
+  let allDefinedProperties = $class->allProperties()->reverseMilestoningTransforms();
+
+  ^DataSpaceClassDocumentationEntry(
+    element = $class,
+    name = $class.name->toOne(),
+    path = $class->elementToPath(),
+    docs = getDocs($class),
+    milestoning = $class->getClassMilestoning(),
+    properties = $allDefinedProperties->map(p|^DataSpacePropertyDocumentationEntry(
+      name=if($p->instanceOf(QualifiedProperty), | $p.name->toOne() + '()', | $p.name->toOne()), docs=getDocs($p),
+      milestoning=$p->getPropertyMilestoning(),
+      multiplicity=$p.multiplicity,
+      type=if(!$p.genericType.rawType->isEmpty(), | $p.genericType.rawType->toOne()->elementToPath(), | [])
+    ))
+  );
+}
+
+function <<access.private>> meta::pure::metamodel::dataSpace::analytics::getEnumerationDoc(enumeration: Enumeration<Enum>[1]): DataSpaceEnumerationDocumentationEntry[1]
+{
+  ^DataSpaceEnumerationDocumentationEntry(
+    element = $enumeration,
+    name = $enumeration->enumName(),
+    path = $enumeration->elementToPath(),
+    docs = getDocs($enumeration),
+    enumValues = $enumeration->enumValues()->map(p|^DataSpaceBasicDocumentationEntry(name=$p.name->toOne(), docs=getDocs($p)))
+  )
+}
+
+function <<access.private>> meta::pure::metamodel::dataSpace::analytics::getAssociationDoc(association: Association[1]): DataSpaceAssociationDocumentationEntry[1]
+{
+  ^DataSpaceAssociationDocumentationEntry(
+    element = $association,
+    name = $association.name->toOne(),
+    path = $association->elementToPath(),
+    docs = getDocs($association),
+    properties = []
+     ->concatenate($association.properties)
+     ->concatenate($association.qualifiedProperties)
+     ->reverseMilestoningTransforms()
+     ->map(p|^DataSpacePropertyDocumentationEntry(
+      name=if($p->instanceOf(QualifiedProperty), | $p.name->toOne() + '()', | $p.name->toOne()), docs=getDocs($p),
+      milestoning=$p->getPropertyMilestoning(),
+      multiplicity=$p.multiplicity,
+      type=if(!$p.genericType.rawType->isEmpty(), | $p.genericType.rawType->toOne()->elementToPath(), | [])
+    ))
+  )
+}
+
+function <<access.private>> meta::pure::metamodel::dataSpace::analytics::getModelsDoc(dataSpace: DataSpace[1]): DataSpaceModelDocumentationEntry[*]
+{
+  $dataSpace.elements->removeDuplicates()->map(el | $el->match([
+    class: Class<Any>[1] | getClassDoc($class),
+    enumeration: Enumeration<Enum>[1] | getEnumerationDoc($enumeration),
+    association: Association[1] | getAssociationDoc($association)
+  ]));
+}

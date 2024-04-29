@@ -1,0 +1,40 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Note: Purposefully using reflection here because compile/execute functions are available only for development and test scope and should notbe used in production
+function meta::legend::compileLegendGrammar(grammar:String[1]): PackageableElement[*]
+{
+  let fStr = 'meta::legend::compile_String_1__PackageableElement_MANY_';
+  let func = $fStr->pathToElement()->cast(@Function<{String[1]->PackageableElement[*]}>);
+  $func->eval($grammar);
+}
+
+function meta::legend::executeLegendQuery(f: FunctionDefinition<Any>[1], vars: Pair<String, Any>[*], extensions:meta::pure::extension::Extension[*]): String[1]
+{
+  meta::legend::executeLegendQuery($f, $vars, ^meta::pure::runtime::ExecutionContext(), $extensions);
+}
+
+function meta::legend::executeLegendQuery(f: FunctionDefinition<Any>[1], vars: Pair<String, Any>[*], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*]): String[1]
+{
+  let fStr = 'meta::legend::execute_FunctionDefinition_1__Pair_MANY__ExecutionContext_1__Extension_MANY__String_1_';
+  let func = $fStr->pathToElement()->cast(@Function<{FunctionDefinition<Any>[1], Pair<String, Any>[*], meta::pure::runtime::ExecutionContext[1], meta::pure::extension::Extension[*]->String[1]}>);
+  $func->eval($f, $vars, $exeCtx, $extensions);
+}
+
+function meta::legend::compileLegendValueSpecification(s : String[1]):Any[1]
+{
+  let fStr = 'meta::legend::compileVS_String_1__Any_1_';
+  let func = $fStr->pathToElement()->cast(@Function<{String[1]->Any[1]}>);
+  $func->eval($s);
+}

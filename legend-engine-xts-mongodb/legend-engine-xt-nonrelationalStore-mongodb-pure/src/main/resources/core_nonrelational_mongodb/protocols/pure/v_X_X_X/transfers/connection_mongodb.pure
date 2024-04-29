@@ -1,0 +1,58 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::mongodb::*;
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::*;
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::*;
+import meta::external::store::mongodb::metamodel::pure::runtime::*;
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::mongodb::transformDatabaseConnection(otherConnection: MongoDBConnection[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::store::mongodb::connection::MongoDBConnection[1]
+{
+   let _type = $otherConnection->class()->toString();
+   let element = '';
+   let type = $otherConnection.type->toString();
+   $otherConnection->match($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).moduleSerializerExtension('mongoDB')->cast(@meta::protocols::pure::vX_X_X::extension::store::mongodb::MongoDBModuleSerializerExtension).transfers_connection_transformDatabaseConnection->map(f | $f->eval($_type, $element, $type))->concatenate([
+
+      dbCon: MongoDBConnection[1]|
+         ^meta::protocols::pure::vX_X_X::metamodel::store::mongodb::connection::MongoDBConnection(
+                  _type = $_type,
+                  element = $element,
+                  dataSourceSpecification = $dbCon.dataSourceSpecification->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::mongodb::transformSourceSpec(),
+                  authenticationSpecification = $dbCon.authenticationSpecification->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformAuthenticationSpecification($extensions),
+                  type = $type
+                   )
+      ]
+    )->toOneMany());
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::mongodb::transformSourceSpec(sourceSpec: meta::external::store::mongodb::metamodel::runtime::MongoDBDatasourceSpecification[1]):meta::protocols::pure::vX_X_X::metamodel::store::mongodb::connection::MongoDBDatasourceSpecification[1]
+{
+  ^meta::protocols::pure::vX_X_X::metamodel::store::mongodb::connection::MongoDBDatasourceSpecification(
+    serverURLs = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::mongodb::transformServerURLs($sourceSpec.serverURLs),
+    databaseName = $sourceSpec.databaseName,
+    useSSL = $sourceSpec.useSSL,
+    connectionTimeoutMS = $sourceSpec.connectionTimeoutMS,
+    socketTimeoutMS = $sourceSpec.socketTimeoutMS,
+    maxIdleTimeMS = $sourceSpec.maxIdleTimeMS,
+    maxLifeTimeMS = $sourceSpec.maxLifeTimeMS,
+    maxPoolSize = $sourceSpec.maxPoolSize,
+    waitQueueMultiple = $sourceSpec.waitQueueMultiple,
+    waitQueueTimeoutMS = $sourceSpec.waitQueueTimeoutMS
+  )
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::mongodb::transformServerURLs(urls: meta::external::store::mongodb::metamodel::runtime::MongoDBURL[1..*]):meta::protocols::pure::vX_X_X::metamodel::store::mongodb::connection::MongoDBURL[1..*]
+{
+  $urls->map(url | ^meta::protocols::pure::vX_X_X::metamodel::store::mongodb::connection::MongoDBURL(baseUrl = $url.baseUrl, port = $url.port));
+}

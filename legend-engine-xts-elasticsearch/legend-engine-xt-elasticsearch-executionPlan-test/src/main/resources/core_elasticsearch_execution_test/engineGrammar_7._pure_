@@ -1,0 +1,55 @@
+###Elasticsearch
+Elasticsearch7Cluster test::Store
+{
+    indices: [
+        'omdb-common': {
+            properties: [
+                Title: Keyword,
+                Director: Keyword,
+                MPAA: Keyword,
+                ReleaseDate: Date,
+                Budget: Integer,
+                Revenue: Float,
+                Description: Text {
+                  fields: [
+                    asKeyword: Keyword
+                  ];
+                },
+                MainActor: Object {
+                  properties: [
+                    Name: Keyword
+                  ];
+                }
+            ];
+        }
+    ];
+}
+
+###Connection
+Elasticsearch7ClusterConnection test::Connection
+{
+    store: test::Store;
+    clusterDetails: # URL { %_url_% }#;
+    authentication: # UserPassword {
+        username: 'elastic';
+        password: SystemPropertiesSecret
+        {
+            systemPropertyName: 'org.finos.legend.engine.plan.execution.stores.elasticsearch.test.password';
+        };
+    }#;
+}
+
+###Runtime
+Runtime test::Runtime
+{
+  mappings:
+  [
+  ];
+  connections:
+  [
+    test::Store:
+    [
+      connection: test::Connection
+    ]
+  ];
+}

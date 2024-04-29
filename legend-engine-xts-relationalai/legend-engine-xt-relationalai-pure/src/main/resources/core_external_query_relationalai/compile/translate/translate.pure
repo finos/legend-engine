@@ -1,0 +1,1091 @@
+/**
+  * The main logic of the compiler from PURE to Rel queries.
+  *
+  * The compiler receives instances of `PExpr`, which is the parent
+  * (abstract) type of each IR object. For each type `T` of IR object,
+  * we provide a function
+  * ```
+  * compile(T[1], VariableSubstitution[1], ColumnAccessRewrite[1], CompilationState[1], Trace[1]): Result<CompilationState|0..1>[1]
+  * ```
+  * which carries out the actual compilation step. The second argument is
+  * a generic callback function that can be used by parent expression
+  * to guide compilation of child expressions, while `CompilationState`
+  * tracks outputs of previous compilation steps.
+  */
+
+import meta::external::store::rel::compile::*;
+import meta::external::store::rel::compile::ir::*;
+import meta::external::store::rel::compile::ir::tds::*;
+import meta::external::store::rel::compile::ir::utils::*;
+import meta::external::store::rel::compile::substitution::*;
+import meta::external::store::rel::compile::utils::*;
+import meta::external::store::rel::lib::*;
+import meta::external::store::rel::mapping::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::metamodel::syntactic::*;
+import meta::external::store::rel::metamodel::utils::*;
+import meta::external::store::rel::trace::*;
+import meta::external::store::rel::utils::*;
+import meta::external::store::rel::utils::collection::*;
+import meta::external::store::rel::utils::lang::*;
+
+
+function meta::external::store::rel::compile::compile(
+  expr: PExpr[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('compile(PExpr[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+      ->detailLazy('expr', $expr->describeLazy());
+  $expr->match([
+    s: ConstString[1]          | ^$state(current=meta::external::store::rel::metamodel::const($s.value)->annotate(String))->ok(),
+    i: ConstInteger[1]         | ^$state(current=meta::external::store::rel::metamodel::const($i.value)->annotate(Integer))->ok(),
+    f: ConstFloat[1]           | ^$state(current=meta::external::store::rel::metamodel::const($f.value)->annotate(Float))->ok(),
+    b: ConstBoolean[1]         | ^$state(
+      current=
+        if($b.value, | booleanTrue(), | booleanFalse())
+          ->annotate(Boolean)
+      )
+      ->ok(),
+    d: ConstStrictDate[1]      | ^$state(current=meta::external::store::rel::metamodel::const($d.value)->annotate(StrictDate))->ok(),
+    d: ConstDateTime[1]        | ^$state(current=meta::external::store::rel::metamodel::const($d.value)->annotate(DateTime))->ok(),
+    d: ConstEmpty[1]           | ^$state(current=meta::external::store::rel::metamodel::relfalse())->ok(),
+    e: PExprAt[1]              | $e->compile($substitution, $rewrite, $state, $newTrace),
+    e: PExprAll[1]             | $e->compile($substitution, $rewrite, $state, $newTrace),
+    e: PExprCast[1]            | $e->compile($substitution, $rewrite, $state, $newTrace),
+    e: PExprPropertyAccess[1]  | $e->compile($substitution, $rewrite, $state, $newTrace),
+    e: PExprSet[1]             | $e->compile($substitution, $rewrite, $state, $newTrace),
+    e: PExprSetAccess[1]       | $e->compile($substitution, $rewrite, $state, $newTrace),
+    e: PExprColumnAccess[1]    | $e->compile($substitution, $rewrite, $state, $newTrace),
+    e: PExprFilter[1]          | $e->compile($substitution, $rewrite, $state, $newTrace),
+    e: PExprMap[1]             | $e->compile($substitution, $rewrite, $state, $newTrace),
+    e: PExprMatch[1]           | $e->compile($substitution, $rewrite, $state, $newTrace),
+    e: PExprProject[1]         | $e->compile($substitution, $rewrite, $state, $newTrace),
+    e: PExprRestrict[1]        | $e->compile($substitution, $rewrite, $state, $newTrace),
+    e: PExprScope[1]           | $e->compile($substitution, $rewrite, $state, $newTrace),
+    e: PExprGroupBy[1]         | $e->compile($substitution, $rewrite, $state, $newTrace),
+    e: VariablePlaceholder[1]  | $e->compile($substitution, $rewrite, $state, $newTrace),
+    e: PExprFunction<|*>[1]    | $e->compile($substitution, $rewrite, $state, $newTrace),
+    e: PExprExists[1]          | $e->compile($substitution, $rewrite, $state, $newTrace),
+    e: PExprForAll[1]          | $e->compile($substitution, $rewrite, $state, $newTrace),
+    s: PExprCompilationStep[1] | $s.logic->eval($substitution, $rewrite, $state),
+    e: PExprIfThenElse[1]      | $e->compile($substitution, $rewrite, $state, $newTrace),
+    e: PExprIn[1]              | $e->compile($substitution, $rewrite, $state, $newTrace),
+    j: PExprTDSJoin[1]         | $j->meta::external::store::rel::compile::tds::compile($substitution, $rewrite, $state, $newTrace),
+    f: PExprTDSFilter[1]       | $f->meta::external::store::rel::compile::tds::compile($substitution, $rewrite, $state, $newTrace)
+  ]);
+}
+
+function meta::external::store::rel::compile::compile(
+  at: PExprAt[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('compile(PExprAt[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+      ->detailLazy('at', $at->describeLazy());
+  /*
+   * Recursively compile the parent and apply partial relational application
+   * using the index of the `at` operator.
+   */
+  let indexExpr = meta::external::store::rel::metamodel::const($at.index);
+  $at.parent
+    ->compile($substitution, $rewrite, $state, $newTrace)
+    ->step(parent: RelExpr[1] |
+      $parent
+        ->appl($indexExpr)
+        ->annotate($parent.annotation)
+        ->ok()
+    );
+}
+
+function meta::external::store::rel::compile::compile(
+  all: PExprAll[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  $all.set.classExpr
+    ->okOr(|
+        errorTrace('Mappings with empty class expressions not yet supported. No class expression found ' +
+          'for class ' + $all.set.class.name->else(| '<<unknown>>')->quote())
+    )
+    ->then(expr: RelExpr[1] | ^$state(current=$expr->annotate($all.set.class)))
+}
+
+function meta::external::store::rel::compile::compile(
+  cast: PExprCast[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('compile(PExprCast[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+      ->detailLazy('cast', $cast->describeLazy());
+  let bound = var($state.variableFactory->next());
+  /*
+   * TODO:
+   * Here we compile to Rel that looks like the following:
+   * def output[:query](x) = ((x2 in Karenbury: Wrapper:Guerrerofurt[x1][x2]) from x1 in Wrapper)(x)
+   *
+   * However, it would be cleaner to compile to Rel of the form:
+   * def output = (Karenbury(Wrapper:Guerrerofurt[x1]) from x1 in Wrapper)
+   */
+  $cast.set.classExpr
+    ->okOr(|
+      errorTrace('Mappings with empty class expressions not yet supported. No class expression found ' +
+        'for class ' + $cast.set.class.name->else(| '<<unknown>>')->quote(), $newTrace)
+    )
+    ->andThen(classExpr: RelExpr[1] |
+
+      $cast.parent
+        ->compile($substitution, $rewrite, $state, $newTrace)
+        ->step(parent: RelExpr[1] |
+          $parent
+            ->appl($bound)
+            ->abstract($bound->in($classExpr))
+            ->annotate($parent.annotation)
+            ->ok()
+        )
+    );
+}
+
+function meta::external::store::rel::compile::compile(
+  filter: PExprFilter[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  traceOld: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace =
+    emptyTrace()
+      ->stage('compile(PExprFilter[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+      ->detailLazy('filter', $filter->describeLazy());
+  $filter.parent
+    ->compile($substitution, $rewrite, $state, $newTrace)
+    ->step({parent: RelExpr[1] |
+      let bound = var($state.variableFactory->next());
+
+      $filter.predicate
+        ->compile(
+          $substitution->addBinding($filter.predicate->variable(), $bound),
+          $rewrite,
+          $state,
+          $newTrace
+        )
+        ->step({predicate: RelExpr[1] |
+          $predicate
+            ->abstract($bound->in($parent))
+            ->annotate($parent.annotation)
+            ->ok();
+          /*$parent
+            ->atom([$index, $bound])
+            ->and($predicate)
+            ->abstract(vars([$index, $bound]))
+            ->annotate($parent.annotation)
+            ->ok();*/
+        })
+        ->current();
+    });
+}
+
+function meta::external::store::rel::compile::compile<|n>(
+  fexpr: PExprFunction<|n>[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('compile(PExprFilter[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+      ->detailLazy('fexpr', $fexpr->describeLazy());
+  $fexpr.arguments
+    ->map(a | $a->compile($substitution, $rewrite, $state, $newTrace)->current())
+    ->collect()
+    ->them(params: RelExpr[*] | $fexpr.fn->eval($params))
+    ->then(result: RelExpr[1] | ^$state(current=$result));
+}
+
+function meta::external::store::rel::compile::compile(
+  exists: PExprExists[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('compile(PExprFilter[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+      ->detailLazy('exists', $exists->describeLazy());
+  $exists.parent
+    ->compile($substitution, $rewrite, $state, $newTrace)
+    ->step({parent: RelExpr[1] |
+      let bound = var($state.variableFactory->next());
+
+      $exists.predicate
+        ->compile(
+          $substitution->addBinding($exists.predicate->variable(), $bound),
+          $rewrite,
+          $state,
+          $newTrace
+        )
+        ->step({predicate: RelExpr[1] |
+            /*[
+              meta::external::store::rel::metamodel::const(1),
+              $parent
+                ->atom([$index, $bound])
+                ->and($predicate)
+                ->abstract(vars([$index, $bound]))
+                ->exists()
+            ]
+            ->product()
+            ->group()
+            ->annotate(Boolean)
+            ->ok()*/
+            $bound->in($parent)
+              ->exists($predicate)
+              ->annotate(Boolean)
+              ->ok()
+        })
+        ->current();
+    });
+}
+
+function meta::external::store::rel::compile::compile(
+  forAll: PExprForAll[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace =
+    emptyTrace()
+      ->stage('compile(PExprForAll[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+      ->detailLazy('forAll', $forAll->describeLazy());
+  $forAll.parent
+    ->compile($substitution, $rewrite, $state, $newTrace)
+    ->step({parent: RelExpr[1] |
+      let bound = var($state.variableFactory->next());
+
+      $forAll.predicate
+        ->compile(
+          $substitution->addBinding($forAll.predicate->variable(), $bound),
+          $rewrite,
+          $state,
+          $newTrace
+        )
+        ->step({predicate: RelExpr[1] |
+          $bound
+            ->in($parent)
+            ->forAll($predicate)
+            ->annotate(Boolean)
+            ->ok();
+
+            /*[
+              meta::external::store::rel::metamodel::const(1),
+              vars([$index, $bound])
+              ->where(
+                $parent
+                  ->atom([$index, $bound])
+              )
+              ->forAll($predicate)
+            ]
+            ->product()
+            ->group()
+            ->annotate(Boolean)
+            ->ok();*/
+        })
+        ->current();
+    });
+}
+
+function meta::external::store::rel::compile::compile(
+  set: PExprSet[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('compile(PExprSet[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+      ->detailLazy('set', $set->describeLazy());
+  ^$state(current=$set.set.classExpr)->ok();
+}
+
+function meta::external::store::rel::compile::compile(
+  access: PExprSetAccess[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('compile(PExprSetAccess[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+      ->detailLazy('access', $access->describeLazy());
+  $substitution
+    ->apply($access.variable,$newTrace)
+    ->then(var: RelExpr[1] |
+      ^$state(current=$var->annotate($access.set.class))
+    );
+}
+
+function meta::external::store::rel::compile::compile(
+  access: PExprColumnAccess[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('compile(PExprColumnAccess[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+      ->detailLazy('access', $access->describeLazy());
+  $rewrite
+    ->apply($access, $newTrace)
+    ->then(expr: RelExpr[1] |
+      ^$state(current=$expr)
+    );
+}
+
+function meta::external::store::rel::compile::compile(
+  access: PExprPropertyAccess[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('compile(PExprPropertyAccess[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+      ->detailLazy('access', $access->describeLazy());
+  $access.parent
+    ->compile($substitution, $rewrite, $state, $newTrace)
+    ->step(parent: RelExpr[1] |
+      let propertyMapping = $access.propertyMapping;
+      $propertyMapping.property.genericType.rawType
+        ->okOr(| errorTrace('Could not determine type of property ' + $propertyMapping.property.name->orElse('[NO NAME]'), $newTrace))
+        ->then(type: Type[1] |
+          $propertyMapping.target->appl($parent)
+        );
+    );
+}
+
+function meta::external::store::rel::compile::compile(
+  expr: PExprMap[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('compile(PExprPropertyAccess[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+      ->detailLazy('expr', $expr->describeLazy());
+  $expr.parent
+    ->compile($substitution, $rewrite, $state, $newTrace)
+    ->step(parent: RelExpr[1] |
+      let bound = var($state.variableFactory->next());
+
+      $expr.body
+        ->compile(
+          $substitution->addBinding($expr.body->variable(), $bound),
+          $rewrite,
+          $state,
+          $newTrace
+        )
+        ->step({body: RelExpr[1] |
+          $body
+            ->from($bound->in($parent))
+            ->annotate($body.annotation)
+            ->ok()
+
+          /*[$index, $body]
+            ->product()
+            ->from(
+              vars([$index, $bound])
+                ->where($parent->group()->atom([$index, $bound]))
+            )
+            ->group()
+            ->annotate($body.annotation)
+            ->ok()*/
+        })
+        ->current();
+    );
+}
+
+function meta::external::store::rel::compile::compile(
+  expr: PExprIn[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('compile(PExprIn[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+      ->detailLazy('expr', $expr->describeLazy());
+  $expr.parent
+    ->compile($substitution, $rewrite, $state, $newTrace)
+    ->step(parent: RelExpr[1] |
+      $expr.inExprs
+        ->map(inExpr: PExpr[1] |
+         $inExpr
+          ->compile($substitution, $rewrite, $state, $newTrace)
+          ->current()
+      )
+      ->collect()
+      ->them(exprs: RelExpr[*] |
+        if ( $exprs->isEmpty(),
+           | relfalse(),
+           | $parent->intersection(union($exprs->toOneMany())->parenthesise())->empty();
+           )
+      );
+    );
+}
+
+function meta::external::store::rel::compile::compile(
+  expr: PExprScope[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('compile(PExprScoped[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+      ->detailLazy('expr', $expr->describeLazy());
+  $expr.inner->compile($substitution, $rewrite, $state, $newTrace);
+}
+
+function meta::external::store::rel::compile::compile(
+  expr: PExprProject[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace = $trace
+    ->stage('compile(PExprProject[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+    ->detailLazy('expr', $expr->describeLazy());
+
+  $expr.parent
+    ->compile($substitution, $rewrite, $state, $newTrace)
+    ->andThen({state: CompilationState[1] |
+      let parent = $state.current->toOne();
+      let targetTable = $state.relFactory->next('tbl');
+
+      if ($parent.annotation == TabularDataSet, {|
+        $expr.projections
+          ->map({pair: Pair<String, PExprScope>[1] |
+            let name = $pair.first;
+            let vi = var('i');
+
+            $pair.second
+              ->compile(/*{a: Any[1] |
+                $a->tryCast(@PExprColumnAccess, $newTrace)
+                  ->andThen({access: PExprColumnAccess[1] |
+                    $parent
+                      ->appl([label($access.column), $vi])
+                      ->ok();
+                  });
+              }*/ $substitution, $rewrite, $state, $newTrace)
+              ->current()
+              ->then({map: RelExpr[1] |
+                let head =
+                  rel($targetTable)
+                    ->appl(label($name));
+                let body = $map->for($vi);
+
+                def($head, $body);
+              });
+          })
+          ->collect();
+      }, {|
+        let vx = var('x');
+
+        let baseRule =
+          def(
+            rel($targetTable)->appl(label('base')),
+            $vx->from($vx->in($parent))
+          );
+
+        $expr.projections
+          ->map({pair: Pair<String, PExprScope>[1] |
+            let name = $pair.first;
+            let vx = var('x');
+
+            $pair.second
+              ->compile(
+                $substitution->addBinding($pair.second->variable(), $vx),
+                $rewrite,
+                $state,
+                $newTrace
+              )
+              ->current()
+              ->then({scope: RelExpr[1] |
+                def(
+                  rel($targetTable)
+                    ->appl([label($name), $vx]),
+                  [
+                    /*
+                     * For readability put the target table first for an output query fragment of this form:
+                     * def tbl1[:Col1, x] = tbl1(:base, x), TestClass:property1[x]
+                     */
+                    rel($targetTable)->atom([label('base'), $vx]),
+                    $scope
+                  ]->product()
+                );
+              });
+          })
+          ->collect()
+          ->them({projections: RelRule[*] | $baseRule->concatenate($projections)});
+      })
+      ->them({rules: RelRule[*] |
+        ^$state(
+          program=$state.program->with($rules),
+          current=rel($targetTable)->annotate(TabularDataSet),
+          cols=columns($expr.projections.first)
+        );
+      });
+    });
+}
+
+function meta::external::store::rel::compile::compile(
+  expr: PExprRestrict[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace = $trace
+    ->stage('compile(PExprRestrict[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1],Trace[1])')
+    ->detailLazy('expr', $expr->describeLazy());
+
+  $expr.parent
+    ->compile($substitution, $rewrite, $state, $newTrace)
+    ->then(state: CompilationState[1] |
+      let parent = $state.current->toOne();
+      ^$state(cols=columns($expr.columns));
+    );
+}
+
+function meta::external::store::rel::compile::compile(
+  expr: VariablePlaceholder[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('compile(VariablePlaceholder[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+      ->detailLazy('expr', $expr->describeLazy());
+  $substitution
+    ->apply($expr.identifier, $newTrace)
+    ->then(subst: RelExpr[1] | ^$state(current=$subst));
+}
+
+function meta::external::store::rel::compile::compile(
+  expr: PExprGroupBy[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('compile(PExprGroupByScopes[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+      ->detailLazy('expr', $expr->describeLazy());
+  $expr->match([
+    gs: PExprGroupByScopes[1] | $gs->compile($substitution, $rewrite, $state, $newTrace),
+    gc: PExprGroupByColumns[1] | $gc->compile($substitution, $rewrite, $state, $newTrace)
+  ]);
+}
+
+function meta::external::store::rel::compile::compile(
+  expr: PExprGroupByScopes[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('compile(PExprGroupByScopes[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+      ->detailLazy('expr', $expr->describeLazy());
+
+  $expr.parent
+    ->compile($substitution, $rewrite, $state, $newTrace)
+    ->andThen({parentState: CompilationState[1] |
+      let parent = $parentState.current->toOne();
+      let parentVariable = var($parentState.variableFactory->next());
+      let indexVariable = var($parentState.variableFactory->next());
+      let baseTable = $parentState.relFactory->next('tbl');
+
+      $expr.group->map({g: PExprScope[1] |
+        $g->compile(
+          $substitution->addBinding($g->variable(), $parentVariable),
+          $rewrite,
+          $parentState,
+          $newTrace
+        )
+        ->current();
+      })
+      ->collect()
+      ->them({group: RelExpr[*] |
+        let rules =
+          $group
+            ->toIndexed()
+            ->fold({pair: Pair<Integer, RelExpr>[1], accum |
+              let body =
+                $pair.second
+                  ->for(
+                    $parentVariable
+                      ->where($baseTable->atom([label('base'), $parentVariable]))
+                  );
+
+              let head =
+                rel($baseTable)
+                  ->appl([label('group'), label($pair.first->toString())]);
+
+              let rule = def($head, $body);
+
+              $accum->concatenate($rule);
+            }, [])
+            ->concatenate(
+              rel($baseTable)
+                ->appl(label('base'))
+                ->def(var('x')->from(var('x')->in($parent)))
+            )
+            // def tbl1[:groups] = sort[(tbl1:group[:"0"][j], tbl1:group[:"1"][j] from j)]
+            ->concatenate(
+              if ($expr.group->isEmpty(), | [], {|
+                def(
+                  rel($baseTable)
+                    ->appl(label('groups')),
+                  rel('sort')
+                    ->appl(
+                      $expr.group
+                        ->toIndexed()
+                        ->map({pair: Pair<Integer, PExprScope>[1] |
+                          rel($baseTable)
+                            ->appl([label('group'), label($pair.first->toString()), var('j')])
+                        })
+                        ->toOneMany()
+                        ->product()
+                        ->from(var('j'))
+                        ->parenthesise()
+                    )
+                )
+              })
+            )
+            ->concatenate(
+              //def tbl1[:Underlying] = tbl1[:groups][i, x, _] for i, x
+              $expr.group
+                ->toIndexed()
+                ->map({pair: Pair<Integer, PExprScope>[1] |
+                  let index = $pair.first;
+                  let name = $expr.names->at($index);
+
+                  def(
+                    rel($baseTable)
+                      ->appl(label($name)),
+                    rel($baseTable)
+                      ->appl([label('groups'), var('i')])
+                      ->appl(
+                        range(0, $index)
+                          ->map(i | dontCare())
+                          ->concatenate(var('x'))
+                          ->concatenate(
+                            range($index + 1, $expr.group->size())
+                              ->map(i | dontCare())
+                          )
+                      )
+                      ->for(vars(['i', 'x']))
+                  );
+                })
+            );
+
+        pair(
+          ^$parentState(
+            program = $parentState.program->with($rules),
+            variableFactory=$parentState.variableFactory->reset(),
+            cols=$parentState.cols->clear()
+          ),
+          $baseTable
+        );
+      });
+    })
+    ->andThen({pair: Pair<CompilationState, String>[1] |
+      let state = $pair.first;
+      let baseTable = $pair.second;
+
+      let factory = $state.variableFactory->reset();
+      let groupByVariables = $expr.group->map(_g | $factory->next()->var());
+      let head = $state.current->toOne();
+
+      $expr.aggregates->map({agg: PExprAggregate[1] |
+        let aggVarOld = $agg.aggregateFunction->variable();
+        let aggVarNew = $factory->next()->var();
+
+        $agg.aggregateFunction->compile(
+          $substitution->addBinding(
+            $aggVarOld,
+            {|
+                $agg.map->compile(
+                  $substitution->addBinding($aggVarOld, $aggVarNew),
+                  $rewrite,
+                  $state,
+                  $newTrace
+                )
+                ->step({mapExpr: RelExpr[1] |
+                  let body = $groupByVariables
+                    ->toIndexed()
+                    ->fold({pair: Pair<Integer, RelVariable>[1], accum |
+                      let groupBy = $pair.second;
+                      let head =
+                        rel($baseTable)
+                          ->appl([label('group'), label($pair.first->toString())]);
+
+                      $accum->and($head->atom([$aggVarNew, $groupBy]));
+                    },
+                      rel($baseTable)
+                        ->appl(label('base'))
+                        ->atom($aggVarNew)
+                    );
+
+                  $mapExpr
+                    ->from(
+                      $aggVarNew
+                        ->where($body)
+                    )
+                    ->ok();
+                })
+                ->current()
+              }
+          ),
+          $rewrite,
+          $state,
+          $newTrace)
+        ->current();
+      })
+      ->collect()
+      ->them({aggregates: RelExpr[*] |
+        let offset = $groupByVariables->size();
+        let vi = var('i');
+
+        let grouper = $groupByVariables
+          ->toIndexed()
+          ->map({pair: Pair<Integer, RelVariable>[1] |
+            rel($baseTable)
+              ->appl($expr.names->at($pair.first)->label())
+              ->atom([$vi, $pair.second])
+          });
+
+        let rules =
+          $aggregates
+            ->toIndexed()
+            ->map({pair: Pair<Integer, RelExpr>[1] |
+              let head = rel($baseTable)
+                ->appl($expr.names->at($pair.first + $offset)->label());
+
+              let binding = vars($vi->concatenate($groupByVariables)->toOneMany());
+              let bound =
+                [$vi, $pair.second]
+                    ->product();
+
+              let body =
+                if($grouper->size() == 0, {|
+                  $bound->from($vi->in(meta::external::store::rel::metamodel::const(1)));
+                }, {|
+                  $bound->from(
+                      $binding
+                        ->where(
+                          $grouper
+                            ->toOneMany()
+                            ->and()
+                        )
+                  );
+                });
+
+              def($head, $body);
+            });
+
+        ^$state(
+          current=rel($baseTable)->annotate(TabularDataSet),
+          program=$state.program->with($rules),
+          cols=columns($expr.names)
+        );
+      });
+    });
+}
+
+function meta::external::store::rel::compile::compile(
+  expr: PExprGroupByColumns[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('compile(PExprGroupByColumns[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+      ->detailLazy('expr', $expr->describeLazy());
+
+  $expr.parent
+    ->compile($substitution, $rewrite, $state, $newTrace)
+    ->andThen({parentState: CompilationState[1] |
+      let parent = $parentState.current->toOne();
+      let targetTable = $parentState.relFactory->next('tbl');
+
+      let groupRules =
+        $expr.group
+          ->toIndexed()
+          ->fold({pair: Pair<Integer, String>[1], accum |
+            let index = $pair.first;
+            let column = $pair.second;
+            let vx = var('x');
+            let vi = var('i');
+
+            // Group reference rules of the form `tbl:group[:"i"] = ...`
+            let rules = [
+              def(
+                rel($targetTable)
+                  ->appl([label('group'), label($index->toString())]),
+                $parent->appl(label($column))
+              ),
+              // Target rules of the form `tbl:column = ...`
+              def(
+                rel($targetTable)
+                  ->appl(label($column)),
+                rel($targetTable)
+                  ->appl([label('groups'), $vi])
+                  ->appl(
+                    range(0, $index)
+                      ->map(i | dontCare())
+                      ->concatenate(var('x'))
+                      ->concatenate(
+                        range($index + 1, $expr.group->size())
+                          ->map(i | dontCare())
+                      )
+                  )
+                  ->for(vars([$vi, $vx]))
+              )
+            ];
+
+            $accum->concatenate($rules);
+          }, [])
+          ->concatenate(
+            if ($expr.group->isEmpty(), | [], {|
+              def(
+                rel($targetTable)
+                  ->appl(label('groups')),
+                rel('sort')
+                  ->appl(
+                    $expr.group
+                      ->toIndexed()
+                      ->map({pair: Pair<Integer, PExprScope>[1] |
+                          rel($targetTable)
+                            ->appl([label('group'), label($pair.first->toString()), var('j')])
+                        })
+                      ->toOneMany()
+                      ->product()
+                      ->from(var('j'))
+                      ->parenthesise()
+                  )
+              )
+            })
+          );
+
+      $expr.aggregates
+        ->map({agg: PExprAggregate[1] |
+          let head = rel($targetTable)
+            ->appl($agg.name->toOne()->label());
+          let vxs = $expr.group->map(g | $parentState.variableFactory->next('x')->var());
+          let vj = var('j');
+
+          let oldAggVar = $agg.aggregateFunction->variable();
+
+          let andThenFunc = {map: RelExpr[1] |
+            let binding =
+              if ($expr.group->isEmpty(), {|
+                $vj->where($parent->appl([dontCare(), $vj, dontCare()]))
+              }, {|
+                $vj->where(
+                  range($expr.group->size())
+                    ->fold({i, accum |
+                      $accum->concatenate(
+                        rel($targetTable)
+                          ->atom([label('group'), label($i->toString()), $vj, $vxs->at($i)])
+                      )
+                    }, [])
+                    ->toOneMany()
+                    ->and()
+                );
+              });
+
+            $map->for($binding);
+          };
+
+          $agg.aggregateFunction->compile(
+              $substitution->addBinding($oldAggVar, {|
+                $agg.map->compile(
+                  $substitution->addBinding($agg.map->variable(),{| ok(reltrue())->then($andThenFunc) }),
+                  newColumnAccessRewrite(
+                    {access: PExprColumnAccess[1], trace: Trace[1] |
+                      $access.parent
+                        ->compile(
+                          $substitution->addBinding($agg.map->variable(),{| $parent->appl([label($access.column), $vj])->ok() }),
+                          $rewrite,
+                          $state,
+                          $newTrace)
+                        ->current()
+                        ->then($andThenFunc);
+                    }),
+                  $parentState,
+                  $newTrace)
+                ->current();
+              }),
+              $rewrite,
+              $parentState,
+              $newTrace
+            )
+          ->current()
+          ->then({aggBody: RelExpr[1] |
+            let vi = var('i');
+
+            let binding =
+              if ($expr.group->isEmpty(), {|
+                //vars($vi->concatenate($vxs)->toOneMany())
+                $vi->in(meta::external::store::rel::metamodel::const(1));
+              }, {|
+                vars([$vi]->concatenate($vxs)->toOneMany())
+                  ->where(
+                    $expr.group
+                      ->zip($vxs)
+                      ->fold({group, accum |
+                        $accum->concatenate(
+                          rel($targetTable)
+                            ->appl(label($group.first))
+                            ->appl([$vi, $group.second])
+                        )
+                      }, [])
+                      ->toOneMany()
+                      ->and()
+                  );
+              });
+
+            let body =
+              [$vi, $aggBody]
+                ->product()
+                ->from($binding);
+
+            def($head, $body);
+          });
+        })
+        ->collect()
+        ->them({aggregateRules: RelRule[*] |
+          ^$parentState(
+            program=$parentState.program
+              ->with($groupRules)
+              ->with($aggregateRules),
+            current=rel($targetTable)->annotate(TabularDataSet),
+            cols=columns($expr.names)
+          );
+        });
+    });
+}
+
+function meta::external::store::rel::compile::compile(
+  ifThenElse: PExprIfThenElse[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('compile(PExprIfThenElse[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+      ->detailLazy('ifThenElse', $ifThenElse->describeLazy());
+  $ifThenElse.condition
+    ->compile($substitution, $rewrite, $state, $newTrace)
+    ->andThen({state: CompilationState[1] |
+      let condition = $state->current()->unwrap();
+      $ifThenElse.then
+        ->compile($substitution, $rewrite, $state, $newTrace)
+        ->andThen({state: CompilationState[1] |
+          let then = $state->current()->unwrap();
+
+          $ifThenElse.else
+            ->compile($substitution, $rewrite, $state, $newTrace)
+            ->step(else: RelExpr[1] |
+              $condition
+                ->meta::external::store::rel::metamodel::ifThenElse($then, $else)
+                ->ok()
+            );
+        });
+    });
+}
+
+function meta::external::store::rel::compile::compile(
+  match: PExprMatch[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('compile(PExprMatch[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
+      ->detailLazy('match', $match->describeLazy());
+
+  $match.parent
+    ->compile($substitution, $rewrite, $state, $newTrace)
+    ->step(parent: RelExpr[1] |
+      assert(!$match.cases->isEmpty(), 'Cases should not be empty.');
+
+      let parentVar = var($state.variableFactory->next());
+
+      /*
+       * Build the expression from the last case to the first because
+       * the conditions are nested in the else branches.
+       */
+      let nestedConditionals =
+        $match.cases->reverse()->fold({ caseExpr: PExprScopeTyped[1], accum: RelExpr[1] |
+
+          let condition =
+            $caseExpr.exprType->match([
+              classType: PExprTypeClass[1]        | $classType.set.classExpr->atom($parentVar),
+              primtiveType: PExprTypePrimitive[1] | $primtiveType.kind->name()->atom($parentVar)
+            ]);
+
+          $caseExpr
+            ->compile(
+              $substitution->addBinding($caseExpr->variable(), $parentVar),
+              $rewrite,
+              $state,
+              $newTrace
+            )
+            ->step(caseExprBody: RelExpr[1] |
+              $condition->meta::external::store::rel::metamodel::ifThenElse($caseExprBody, $accum)->ok();
+            )
+            ->current()
+            ->unwrap();
+        }, relfalse());
+
+      $parentVar->exists($parentVar->equals($parent)->and($nestedConditionals))->ok();
+    );
+}

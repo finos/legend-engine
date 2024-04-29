@@ -1,0 +1,26 @@
+{
+  "includeElementPaths": [
+    "model::MyEnum"
+  ],
+  "model": {
+    "_type": "data",
+    "elements": [
+      {
+        "_type": "Enumeration",
+        "name": "MyEnum",
+        "package": "model",
+        "values": [
+          {
+            "value": "A"
+          },
+          {
+            "value": "B"
+          },
+          {
+            "value": "C"
+          }
+        ]
+      }
+    ]
+  }
+}

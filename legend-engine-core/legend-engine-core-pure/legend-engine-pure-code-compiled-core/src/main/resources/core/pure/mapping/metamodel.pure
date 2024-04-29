@@ -1,0 +1,203 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::data::*;
+import meta::pure::test::*;
+import meta::pure::mapping::metamodel::*;
+
+
+//Mapping Test Model
+
+Class meta::pure::mapping::metamodel::MappingTestSuite extends meta::pure::test::TestSuite
+{
+  query: FunctionDefinition<Any>[1];
+}
+
+Class  meta::pure::mapping::metamodel::MappingTest extends meta::pure::test::AtomicTest
+{
+  storeTestData: meta::pure::data::StoreTestData[*];
+}
+
+###Diagram
+Diagram meta::pure::mapping::metamodel::diagram::MappingMetamodel(width=0.0, height=0.0)
+{
+    TypeView cview_3(
+        type=meta::pure::test::Test,
+        position=(1463.00000, 296.00000),
+        width=127.38965,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::pure::mapping::Mapping,
+        position=(2534.00000, 637.00000),
+        width=376.36133,
+        height=254.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::pure::test::Testable,
+        position=(2684.00000, 289.00000),
+        width=87.64893,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_7(
+        type=meta::pure::mapping::metamodel::MappingTest,
+        position=(1266.00000, 586.00000),
+        width=186.47168,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::pure::test::TestSuite,
+        position=(2011.00000, 406.00000),
+        width=137.15967,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::pure::mapping::metamodel::MappingTestSuite,
+        position=(1936.00000, 511.00000),
+        width=284.85400,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::pure::test::AtomicTest,
+        position=(1269.00000, 430.00000),
+        width=179.96191,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::pure::data::StoreTestData,
+        position=(1547.18066, 616.00000),
+        width=144.69531,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_1,
+        target=cview_2,
+        points=[(2722.18066,764.00000),(2727.82446,311.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_4,
+        target=cview_3,
+        points=[(2079.57983,435.00000),(1526.69483,325.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_5,
+        target=cview_3,
+        points=[(1358.98096,466.00000),(1526.69483,325.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_6,
+        target=cview_4,
+        points=[(2078.42700,533.00000),(2079.57983,435.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_7,
+        target=cview_5,
+        points=[(1359.23584,608.00000),(1358.98096,466.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::pure::test::Testable.tests,
+        source=cview_2,
+        target=cview_3,
+        points=[(2727.82446,311.00000),(1526.69483,325.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::pure::mapping::metamodel::MappingTest.storeTestData,
+        source=cview_7,
+        target=cview_8,
+        points=[(1359.23584,608.00000),(1619.52832,652.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

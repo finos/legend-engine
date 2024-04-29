@@ -1,0 +1,102 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::toString::*;
+import meta::relational::extension::*;
+import meta::relational::tests::tds::window::routing::*;
+
+Class meta::relational::tests::tds::window::routing::ACCOUNT
+{
+  id: String[1];
+  firstName: String[1];
+  lastName: String[1];
+  age:Integer[1];
+
+}
+
+function <<test.Test>> meta::relational::tests::tds::window::routing::testExecutionPlanGeneration():Boolean[1]
+{
+  let plan =  {limit:Integer[1]|$limit->function1()->function2()->function3()}
+              ->meta::pure::executionPlan::executionPlan(meta::relational::tests::tds::window::routing::AccountMapping,
+                                                        meta::external::store::relational::tests::testRuntime(), relationalExtensions());
+  let expectedPlan ='Sequence\n'+
+                    '(\n'+
+                    '  type = TDS[(firstName, String, VARCHAR(200), ""), (lastName, String, VARCHAR(200), ""), (id, Integer, BIGINT, ""), (ageSum, Integer, INT, ""), (olapcolumn, Integer, INT, "")]\n'+
+                    '  (\n'+
+                    '    FunctionParametersValidationNode\n'+
+                    '    (\n'+
+                    '      functionParameters = [limit:Integer[1]]\n'+
+                    '    )\n'+
+                    '    Relational\n'+
+                    '    (\n'+
+                    '      type = TDS[(firstName, String, VARCHAR(200), ""), (lastName, String, VARCHAR(200), ""), (id, Integer, BIGINT, ""), (ageSum, Integer, INT, ""), (olapcolumn, Integer, INT, "")]\n'+
+                    '      resultColumns = [("firstName", VARCHAR(200)), ("lastName", VARCHAR(200)), ("id", ""), ("ageSum", ""), ("olapcolumn", "")]\n'+
+                    '      sql = select "root".firstname as "firstName", "root".lastname as "lastName", char_length("root".id) as "id", sum("root".age) as "ageSum", count(sum("root".age)) OVER (Partition By "root".firstname,"root".lastname Order By char_length("root".id) ASC) as "olapcolumn" from AccountSchema.AccountTable as "root" where ("root".age > ${limit} and "root".firstname like \'D%\') group by "firstName","lastName","id"\n'+
+                    '      connection = TestDatabaseConnection(type = "H2")\n'+
+                    '    )\n'+
+                    '  )\n'+
+                    ')\n';
+
+  assertEquals($expectedPlan, $plan->planToString(relationalExtensions()));
+}
+
+function meta::relational::tests::tds::window::routing::function1(ageLimit:Integer[1]):TabularDataSet[1]
+{
+   meta::relational::tests::tds::window::routing::ACCOUNT.all()->filter(x| $x.age>$ageLimit && $x.firstName->startsWith('D'))
+   ->project(
+    [x|$x.id->length(), x|$x.firstName, x|$x.lastName, x|$x.age],
+    ['id', 'firstName','lastName','age']
+   )
+}
+
+function meta::relational::tests::tds::window::routing::function2(accounts: TabularDataSet[1]):TabularDataSet[1]
+{
+   $accounts->groupBy(['firstName','lastName','id'], 'ageSum'->agg(x|$x.getInteger('age'), y|$y->sum()) )
+}
+
+function meta::relational::tests::tds::window::routing::function3(accountsGrouped: TabularDataSet[1]):TabularDataSet[1]
+{
+   $accountsGrouped->olapGroupBy(['firstName','lastName'], asc('id'), 'ageSum'->func(x:Number[*]|$x->count()), 'olapcolumn')
+}
+
+
+###Mapping
+Mapping meta::relational::tests::tds::window::routing::AccountMapping
+(
+  meta::relational::tests::tds::window::routing::ACCOUNT:Relational
+  {
+    id: [meta::relational::tests::tds::window::routing::AccountStore]AccountSchema.AccountTable.id,
+    firstName: [meta::relational::tests::tds::window::routing::AccountStore]AccountSchema.AccountTable.firstname,
+    lastName: [meta::relational::tests::tds::window::routing::AccountStore]AccountSchema.AccountTable.lastname,
+    age: [meta::relational::tests::tds::window::routing::AccountStore]AccountSchema.AccountTable.age
+  }
+)
+
+
+###Relational
+Database meta::relational::tests::tds::window::routing::AccountStore
+(
+  Schema AccountSchema
+  (
+    Table AccountTable
+    (
+      id INTEGER PRIMARY KEY,
+      age INTEGER ,
+      firstname VARCHAR(200),
+      lastname VARCHAR(200),
+      businessDate DATE PRIMARY KEY
+    )
+  )
+)
+

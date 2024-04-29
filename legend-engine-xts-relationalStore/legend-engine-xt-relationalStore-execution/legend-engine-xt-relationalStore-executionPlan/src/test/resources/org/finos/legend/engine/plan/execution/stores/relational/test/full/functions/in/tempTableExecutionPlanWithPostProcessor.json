@@ -1,0 +1,331 @@
+{
+  "rootExecutionNode": {
+    "executionNodes": [
+      {
+        "_type": "function-parameters-validation",
+        "resultType": {
+          "dataType": "Boolean",
+          "_type": "dataType"
+        },
+        "functionParameters": [
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "_type": "var",
+            "name": "str",
+            "class": "String",
+            "supportsStream": true
+          }
+        ]
+      },
+      {
+        "sqlQuery": "SET LOCK_TIMEOUT 100000000;",
+        "_type": "sql",
+        "connection": {
+          "_type": "RelationalDatabaseConnection",
+          "authenticationStrategy": {
+            "_type": "h2Default"
+          },
+          "type": "H2",
+          "datasourceSpecification": {
+            "_type": "h2Local"
+          },
+          "element": "meta::relational::tests::db"
+        },
+        "resultType": {
+          "_type": "void"
+        }
+      },
+      {
+        "executionNodes": [
+          {
+            "trueBlock": {
+              "executionNodes": [
+                {
+                  "_type": "createAndPopulateTempTable",
+                  "connection": {
+                    "_type": "RelationalDatabaseConnection",
+                    "authenticationStrategy": {
+                      "_type": "h2Default"
+                    },
+                    "type": "H2",
+                    "datasourceSpecification": {
+                      "_type": "h2Local"
+                    },
+                    "element": "meta::relational::tests::db"
+                  },
+                  "tempTableName": "tempTableForIn_str",
+                  "tempTableColumnMetaData": [
+                    {
+                      "column": {
+                        "dataType": "VARCHAR(200)",
+                        "label": "ColumnForStoringInCollection"
+                      }
+                    }
+                  ],
+                  "inputVarNames": [
+                    "str"
+                  ],
+                  "resultType": {
+                    "_type": "void"
+                  }
+                },
+                {
+                  "values": {
+                    "_type": "string",
+                    "value": "select \"temptableforin_str_0\".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_str as \"temptableforin_str_0\""
+                  },
+                  "_type": "constant",
+                  "resultType": {
+                    "dataType": "String",
+                    "_type": "dataType"
+                  }
+                }
+              ],
+              "_type": "sequence",
+              "resultType": {
+                "dataType": "String",
+                "_type": "dataType"
+              }
+            },
+            "falseBlock": {
+              "values": {
+                "_type": "string",
+                "value": "${renderCollection(str![] \",\" \"'\" \"'\" {\"'\" : \"''\" } \"null\")}"
+              },
+              "_type": "constant",
+              "resultType": {
+                "dataType": "String",
+                "_type": "dataType"
+              }
+            },
+            "freeMarkerBooleanExpression": "${(instanceOf(str, \"Stream\") || ((collectionSize(str![])?number) > 50))?c}",
+            "_type": "freeMarkerConditionalExecutionNode",
+            "resultType": {
+              "dataType": "String",
+              "_type": "dataType"
+            }
+          }
+        ],
+        "varName": "inFilterClause_str",
+        "_type": "allocation",
+        "resultType": {
+          "dataType": "String",
+          "_type": "dataType"
+        }
+      },
+      {
+        "sqlQuery": "SET LOCK_TIMEOUT 100000000;",
+        "_type": "sql",
+        "connection": {
+          "_type": "RelationalDatabaseConnection",
+          "authenticationStrategy": {
+            "_type": "h2Default"
+          },
+          "type": "H2",
+          "datasourceSpecification": {
+            "_type": "h2Local"
+          },
+          "element": "meta::relational::tests::db"
+        },
+        "resultType": {
+          "_type": "void"
+        }
+      },
+      {
+        "executionNodes": [
+          {
+            "executionNodes": [
+              {
+                "sqlQuery": "SET LOCK_TIMEOUT 100000000;",
+                "_type": "sql",
+                "connection": {
+                  "_type": "RelationalDatabaseConnection",
+                  "authenticationStrategy": {
+                    "_type": "h2Default"
+                  },
+                  "type": "H2",
+                  "datasourceSpecification": {
+                    "_type": "h2Local"
+                  },
+                  "element": "meta::relational::tests::db"
+                },
+                "resultType": {
+                  "_type": "void"
+                }
+              },
+              {
+                "executionNodes": [
+                  {
+                    "sqlComment": "-- \"executionTraceID\" : \"${execID}\"",
+                    "sqlQuery": "select case when \"root\".CptyrRole like 'ebusiness\\_%' then 'ebusiness_' else \"root\".CptyrRole end as \"userRole\" from user_view.UV_User_Roles_Public as \"root\" where (\"root\".UserID = '${userId!}' and \"root\".CptyrRole in ('cadm', 'sales_fg', 'rfq_mgmt', 'ebusiness_credit', 'ebusiness_rates', 'ebusiness_fx', 'ebusiness_commod', 'desk_sales_trading', 'sales_person'))",
+                    "resultColumns": [
+                      {
+                        "dataType": "",
+                        "label": "\"userRole\""
+                      }
+                    ],
+                    "_type": "sql",
+                    "connection": {
+                      "_type": "RelationalDatabaseConnection",
+                      "authenticationStrategy": {
+                        "_type": "h2Default"
+                      },
+                      "type": "H2",
+                      "datasourceSpecification": {
+                        "_type": "h2Local"
+                      },
+                      "element": "meta::relational::tests::db"
+                    },
+                    "resultType": {
+                      "dataType": "meta::pure::metamodel::type::Any",
+                      "_type": "dataType"
+                    }
+                  }
+                ],
+                "_type": "relationalTdsInstantiation",
+                "resultType": {
+                  "tdsColumns": [
+                    {
+                      "name": "userRole",
+                      "type": "String"
+                    }
+                  ],
+                  "_type": "tds"
+                }
+              }
+            ],
+            "_type": "relationalBlock",
+            "finallyExecutionNodes": [
+              {
+                "sqlQuery": "SET LOCK_TIMEOUT 100000000;",
+                "_type": "sql",
+                "connection": {
+                  "_type": "RelationalDatabaseConnection",
+                  "authenticationStrategy": {
+                    "_type": "h2Default"
+                  },
+                  "type": "H2",
+                  "datasourceSpecification": {
+                    "_type": "h2Local"
+                  },
+                  "element": "meta::relational::tests::db"
+                },
+                "resultType": {
+                  "_type": "void"
+                }
+              }
+            ],
+            "resultType": {
+              "tdsColumns": [
+                {
+                  "name": "userRole",
+                  "type": "String"
+                }
+              ],
+              "_type": "tds"
+            }
+          }
+        ],
+        "varName": "role",
+        "authDependent": true,
+        "_type": "allocation",
+        "realizeInMemory": true,
+        "resultType": {
+          "tdsColumns": [
+            {
+              "name": "userRole",
+              "type": "String"
+            }
+          ],
+          "_type": "tds"
+        }
+      },
+      {
+        "executionNodes": [
+          {
+            "sqlComment": "-- \"executionTraceID\" : \"${execID}\"",
+            "sqlQuery": "select \"root\".rpt_inq_sourceinquiryid as \"Source Inquiry ID\" from ${roleSpecificTable(role, \"user_view.UV_Inquiry__PL_Cadm\")} as \"root\" where \"root\".rpt_inq_sourceinquiryid in (${inFilterClause_str})",
+            "resultColumns": [
+              {
+                "dataType": "VARCHAR(64)",
+                "label": "\"Source Inquiry ID\""
+              }
+            ],
+            "_type": "sql",
+            "connection": {
+              "_type": "RelationalDatabaseConnection",
+              "authenticationStrategy": {
+                "_type": "h2Default"
+              },
+              "type": "H2",
+              "datasourceSpecification": {
+                "_type": "h2Local"
+              },
+              "element": "meta::relational::tests::db"
+            },
+            "resultType": {
+              "dataType": "meta::pure::metamodel::type::Any",
+              "_type": "dataType"
+            }
+          }
+        ],
+        "_type": "relationalTdsInstantiation",
+        "resultType": {
+          "tdsColumns": [
+            {
+              "relationalType": "VARCHAR(64)",
+              "name": "Source Inquiry ID",
+              "type": "String"
+            }
+          ],
+          "_type": "tds"
+        }
+      }
+    ],
+    "_type": "relationalBlock",
+    "finallyExecutionNodes": [
+      {
+        "sqlQuery": "SET LOCK_TIMEOUT 100000000;",
+        "_type": "sql",
+        "connection": {
+          "_type": "RelationalDatabaseConnection",
+          "authenticationStrategy": {
+            "_type": "h2Default"
+          },
+          "type": "H2",
+          "datasourceSpecification": {
+            "_type": "h2Local"
+          },
+          "element": "meta::relational::tests::db"
+        },
+        "resultType": {
+          "_type": "void"
+        }
+      }
+    ],
+    "resultType": {
+      "tdsColumns": [
+        {
+          "relationalType": "VARCHAR(64)",
+          "name": "Source Inquiry ID",
+          "type": "String"
+        }
+      ],
+      "_type": "tds"
+    }
+  },
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  },
+  "templateFunctions": [
+    "<#function roleSpecificTable roleMaps tableName>\n  <#assign roles = []> \n   <#list roleMaps as role>\n    <#assign roles += [role[\"userRole\"]]>\n   </#list>\n <#assign roleMap>\n  <#assign roleSorted = roles?sort?join(\", \")/>\n  <#if  \"\"==roleSorted>{\"user_view.UV_gross_credits_estimate__PL_Cadm\":\"user_view.UV_gross_credits_estimate__PL_IncomeFunction\"}\n    <#elseif \"cadm\" ==roleSorted>{\"user_view.UV_gross_credits_estimate__PL_Cadm\":\"user_view.UV_gross_credits_estimate__PL_Cadm\"}\n    <#elseif \"cadm, sales_fg\" ==roleSorted>{\"user_view.UV_gross_credits_estimate__PL_Cadm\":\"user_view.UV_gross_credits_estimate__PL_Cadm_sales_fg\"}\n  <#else> {\"user_view.UV_gross_credits_estimate__PL_Cadm\":\"user_view.UV_gross_credits_estimate__PL_Cadm_sales_fg\",\"user_view.UV_Inquiry_Risk__PL_TradingGroup\":\"user_view.UV_Inquiry_Risk__PL_RfqMgmt\",\"user_view.UV_NIRB__PL_Secdivregulatory\":\"user_view.UV_NIRB__PL_Secdivregulatory\"}\n  </#if>\n </#assign>\n <#return roleMap?eval[tableName]!tableName>\n</#function>",
+    "<#function renderCollection collection separator prefix suffix replacementMap defaultValue><#if collection?size == 0><#return defaultValue><\/#if><#assign newCollection = collection><#list replacementMap as oldValue, newValue>   <#assign newCollection = collection?map(ele -> ele?replace(oldValue, newValue))><\/#list><#return prefix + newCollection?join(suffix + separator + prefix) + suffix><\/#function>",
+    "<#function collectionSize collection> <#return collection?size?c> <\/#function>",
+    "<#function optionalVarPlaceHolderOperationSelector optionalParameter trueClause falseClause><#if optionalParameter?has_content || optionalParameter?is_string><#return trueClause><#else><#return falseClause><\/#if><\/#function>",
+    "<#function varPlaceHolderToString optionalParameter prefix suffix replacementMap defaultValue><#if optionalParameter?is_enumerable && !optionalParameter?has_content><#return defaultValue><#else><#assign newParam = optionalParameter><#list replacementMap as oldValue, newValue>   <#assign newParam = newParam?replace(oldValue, newValue)><\/#list><#return prefix + newParam + suffix><\/#if><\/#function>",
+    "<#function equalEnumOperationSelector enumVal inDyna equalDyna><#assign enumList = enumVal?split(\",\")><#if enumList?size = 1><#return equalDyna><#else><#return inDyna><\/#if><\/#function>"
+  ]
+}

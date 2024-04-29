@@ -1,0 +1,13 @@
+{
+  "port": 9998,
+  "authenticationMethod": "NO_PASSWORD",
+  "identityType": "ANONYMOUS",
+  "handler": {
+    "className": "org.finos.legend.engine.postgres.config.LegendHandlerConfig",
+    "protocol": "http",
+    "host": "localhost",
+    "port": "6300",
+    "type": "LEGEND"
+  },
+  "logConfigFile": "legend-engine-xt-sql-postgres-server/src/test/resources/logback-test.xml"
+}

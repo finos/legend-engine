@@ -1,0 +1,87 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import simple::model::*;
+
+Class simple::model::Query
+{
+  allFirms() {Firm.all()}: Firm[*];
+}
+
+Class simple::model::Firm
+{
+  legalName: String[1];
+  employees: Person[*];
+}
+
+Class simple::model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  employer: Firm[0..1];
+}
+
+Class simple::model::S_Firm
+{
+  name: String[1];
+  employees: S_Person[*];
+}
+
+Class simple::model::S_Person
+{
+  name: String[1];
+}
+
+###Mapping
+import simple::model::*;
+
+Mapping simple::mapping::Map
+(
+  Firm : Pure
+  {
+    ~src S_Firm
+    legalName: $src.name,
+    employees: $src.employees
+  }
+
+  Person : Pure
+  {
+    ~src S_Person
+    firstName: $src.name->split(' ')->at(0),
+    lastName: $src.name->split(' ')->at(1)
+  }
+)
+
+
+###Runtime
+Runtime simple::runtime::Runtime
+{
+    mappings :
+    [
+        simple::mapping::Map
+    ];
+    connections :
+    [
+        ModelStore :
+        [
+            connection_1 : #{
+                JsonModelConnection {
+                    class: simple::model::S_Firm;
+                    url: 'data:application/json,[{"name": "Firm X", "employees": [{"name": "Peter Smith"}, {"name": "John Johnson"}]}, {"name": "Firm A", "employees": [{"name": "Fabrice Roberts"}]}]';
+                }
+            }#
+        ]
+    ];
+}

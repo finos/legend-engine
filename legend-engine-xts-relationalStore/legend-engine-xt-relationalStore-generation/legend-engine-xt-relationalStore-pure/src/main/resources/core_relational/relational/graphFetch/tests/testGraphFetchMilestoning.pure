@@ -1,0 +1,730 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::milestoning::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+
+function <<test.BeforePackage>> meta::relational::graphFetch::tests::milestoning::setup(): Any[*]
+{
+   meta::relational::tests::milestoning::initDatabase();
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::milestoning::testMilestonedClassAtRoot(): Boolean[1]
+{
+   let tree = #{
+      Product {
+         id,
+         name,
+         type,
+         classificationTypeStr
+      }
+   }#;
+   let query = {|Product.all(%2015-10-16)->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::milestoning::milestoningmap;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"name":"ProductName2","classificationTypeStr()":"STOCK","id":2,"type":"STOCK"},'+
+      '{"name":"ProductName3","classificationTypeStr()":null,"id":3,"type":"OPTION"}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::milestoning::testMilestonedClassAtRootQualifierWithBD(): Boolean[1]
+{
+   let tree = #{
+      Product {
+         id,
+         name,
+         type,
+         classificationExchangeName1
+      }
+   }#;
+   let query = {|Product.all(%2015-10-16)->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::milestoning::milestoningmap;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"name":"ProductName2","classificationExchangeName1()":"LNSE","id":2,"type":"STOCK"},'+
+      '{"name":"ProductName3","classificationExchangeName1()":null,"id":3,"type":"OPTION"}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::milestoning::testMilestonedProperty(): Boolean[1]
+{
+   let tree = #{
+      Order {
+         id,
+         product(%2015-10-16) {
+            name,
+            type,
+            classificationTypeStr
+         }
+      }
+   }#;
+   let query = {|Order.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::milestoning::milestoningmap;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"id":1,"product(2015-10-16)":[]},'+
+      '{"id":2,"product(2015-10-16)":[{"name":"ProductName2","classificationTypeStr()":"STOCK","type":"STOCK"}]}]',
+      $result
+   );
+
+   // Adding plan test to assert on composite PK not null check generated (should be AND)
+   let plan = meta::pure::executionPlan::executionPlan($query, $mapping, $runtime, meta::relational::extension::relationalExtensions())->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions());
+   assertEquals(
+    'PureExp\n' +
+    '(\n' +
+    '  type = String\n' +
+    '  expression =  -> serialize(#{meta::relational::tests::milestoning::Order {id, product(2015-10-16) {name, type, classificationTypeStr()}}}#)\n' +
+    '  (\n' +
+    '    StoreMappingGlobalGraphFetch\n' +
+    '    (\n' +
+    '      type = PartialClass[impls=[(meta::relational::tests::milestoning::Order | milestoningmap.meta_relational_tests_milestoning_Order)], propertiesWithParameters = [id, product(2015-10-16)]]\n' +
+    '      resultSizeRange = *\n' +
+    '      store = meta::relational::tests::milestoning::db\n' +
+    '      localGraphFetchExecutionNode = \n' +
+    '         RelationalGraphFetch\n' +
+    '         (\n' +
+    '           type = PartialClass[impls=[(meta::relational::tests::milestoning::Order | milestoningmap.meta_relational_tests_milestoning_Order)], propertiesWithParameters = [id, product(2015-10-16)]]\n' +
+    '           nodeIndex = 0\n' +
+    '           relationalNode = \n' +
+    '              SQL\n' +
+    '              (\n' +
+    '                type = meta::pure::metamodel::type::Any\n' +
+    '                resultColumns = [("pk_0", INT), ("id", INT)]\n' +
+    '                sql = select "root".id as "pk_0", "root".id as "id" from OrderTable as "root"\n' +
+    '                connection = TestDatabaseConnection(type = "H2")\n' +
+    '              )\n' +
+    '           children = [\n' +
+    '              RelationalGraphFetch\n' +
+    '              (\n' +
+    '                type = PartialClass[impls=[(meta::relational::tests::milestoning::Product | milestoningmap.meta_relational_tests_milestoning_Product)], propertiesWithParameters = [classificationTypeStr(), name, type]]\n' +
+    '                nodeIndex = 2\n' +
+    '                relationalNode = \n' +
+    '                   SQL\n' +
+    '                   (\n' +
+    '                     type = meta::pure::metamodel::type::Any\n' +
+    '                     resultColumns = [("parent_key_gen_0", INT), ("pk_0", INT), ("pk_1", VARCHAR(200)), ("name", VARCHAR(200)), ("type", VARCHAR(200)), ("k_businessDate", VARCHAR(10))]\n' +
+    '                     sql = select distinct "temp_table_node_0_0".pk_0 as "parent_key_gen_0", "producttable_0".id as "pk_0", "producttable_0".name as "pk_1", "producttable_0".name as "name", "producttable_0".type as "type", \'2015-10-16\' as "k_businessDate" from (select * from (${temp_table_node_0}) as "root") as "temp_table_node_0_0" inner join OrderTable as "root" on ("temp_table_node_0_0".pk_0 = "root".id) left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= DATE\'2015-10-16\' and "producttable_0".thru_z > DATE\'2015-10-16\') where "producttable_0".name is not null and "producttable_0".id is not null and "producttable_0".from_z <= DATE\'2015-10-16\' and "producttable_0".thru_z > DATE\'2015-10-16\'\n' +
+    '                     connection = TestDatabaseConnection(type = "H2")\n' +
+    '                   )\n' +
+    '                children = [\n' +
+    '                   RelationalGraphFetch\n' +
+    '                   (\n' +
+    '                     type = String\n' +
+    '                     nodeIndex = 5\n' +
+    '                     relationalNode = \n' +
+    '                        SQL\n' +
+    '                        (\n' +
+    '                          type = meta::pure::metamodel::type::Any\n' +
+    '                          resultColumns = [("parent_key_gen_0", INT), ("parent_key_gen_1", VARCHAR(200)), ("node_5_result", VARCHAR(200))]\n' +
+    '                          sql = select distinct "temp_table_node_2_0".pk_0 as "parent_key_gen_0", "temp_table_node_2_0".pk_1 as "parent_key_gen_1", "productclassificationtable_0".type as "node_5_result" from (select * from (${temp_table_node_2}) as "root") as "temp_table_node_2_0" inner join ProductTable as "root" on ("temp_table_node_2_0".pk_1 = "root".name and "temp_table_node_2_0".pk_0 = "root".id) left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type) where "productclassificationtable_0".type is not null and "productclassificationtable_0".from_z <= DATE\'2015-10-16\' and "productclassificationtable_0".thru_z > DATE\'2015-10-16\'\n' +
+    '                          connection = TestDatabaseConnection(type = "H2")\n' +
+    '                        )\n' +
+    '                     children = [\n' +
+    '                        \n' +
+    '                     ]\n' +
+    '                   )\n\n' +
+    '                ]\n' +
+    '              )\n\n' +
+    '           ]\n' +
+    '         )\n' +
+    '      children = [\n' +
+    '         \n' +
+    '      ]\n' +
+    '      localTreeIndices = [0, 1, 2, 3, 4, 5]\n' +
+    '      dependencyIndices = []\n' +
+    '    )\n' +
+    '  )\n' +
+    ')\n',
+    $plan
+  );
+}
+
+// How to resolve %latest in serialize?
+function <<test.Test, test.AlloyOnly, test.ToFix>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::milestoning::testMilestonedPropertyWithLatest(): Boolean[1]
+{
+   let tree = #{
+      Order {
+         id,
+         product(%latest) {
+            name,
+            type,
+            classificationTypeStr
+         }
+      }
+   }#;
+   let query = {|Order.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::milestoning::milestoningmap;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"id":1,"product(2015-10-16)":[]},'+
+      '{"id":2,"product(2015-10-16)":[{"name":"ProductName2","classificationTypeStr()":"STOCK","type":"STOCK"}]}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::milestoning::testMilestonedPropertyAllVersions(): Boolean[1]
+{
+   let tree = #{
+      Order {
+         id,
+         productAllVersions{
+            name,
+            type
+         }
+      }
+   }#;
+   let query = {|Order.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::milestoning::milestoningmap;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+    '[{"id":1, "productAllVersions":[{"name":"ProductName","type":"STOCK"}]},'+
+     '{"id":2,"productAllVersions":[{"name":"ProductName1","type":"STOCK"},{"name":"ProductName2","type":"STOCK"}]}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::milestoning::testMilestonedRootWithFilter(): Boolean[1]
+{
+   let tree = #{
+      StockProduct {
+         id,
+         name
+      }
+   }#;
+   let query = {|StockProduct.all(%2015-10-16)->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::milestoning::milestoningmap;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '{"name":"ProductName2","id":2}',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::milestoning::testMilestonedRootWithMilestonedPropertyAllVersions(): Boolean[1]
+{
+   let tree = #{ meta::relational::tests::milestoning::Product{
+                    id,
+                    name,
+                    synonymsAllVersions{
+                      synonym
+                    }
+                  }}#;
+   let query = {|Product.all(%2023-10-15T00:00:00)->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::milestoning::milestoningmap;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"id":2,"name":"ProductName2","synonymsAllVersions":[{"synonym":"GS-Mod-S0"},{"synonym":"GS-Mod-S1"},{"synonym":"GS-Mod-S2"},{"synonym":"GS-Mod-S3"}]},' +
+      ' {"id":3,"name":"ProductName3","synonymsAllVersions":[]}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::milestoning::testMilestonedRootAndMilestonedProperty(): Boolean[1]
+{
+  let tree = #{ meta::relational::tests::milestoning::Product{
+                    id,
+                    name,
+                    synonyms(%2023-10-15T00:00:00)
+                    {
+                      synonym
+                    }
+                  }}#;
+   let query = {|Product.all(%2023-10-15T00:00:00)->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::milestoning::milestoningmap;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+    '[{"id":2,"name":"ProductName2","synonyms(2023-10-15T00:00:00+0000)":[{"synonym":"GS-Mod-S1"},{"synonym":"GS-Mod-S3"}]},' +
+    ' {"id":3,"name":"ProductName3","synonyms(2023-10-15T00:00:00+0000)":[]}]"'
+    ,$result);
+}
+
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::milestoning::testMultiLevelMilestoning(): Boolean[1]
+{
+   let query = {|
+      let bd =  %2017-6-9;
+      Order.all()->graphFetch(#{
+         Order {
+            id,
+            orderDate,
+            product($bd) {
+               id,
+               stockProductName,
+               type,
+               name,
+               classificationType,
+               classification($bd) {
+                  type,
+                  description,
+                  exchangeName
+               }
+            }
+         }
+      }#)
+      ->serialize(#{
+         Order {
+            id,
+            orderDate,
+            product($bd) {
+               businessDate,
+               id,
+               name,
+               type,
+               inlinedExchangeName,
+               inlinedCreatedBy,
+               stockProductName,
+               isBrexitClassificationTypeExchange,
+               classificationType,
+               classification($bd)
+               {
+                  businessDate,
+                  type,
+                  description,
+                  exchangeName
+               }
+            }
+         }
+      }#);
+   };
+   let mapping = meta::relational::tests::milestoning::milestoningmap;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"product($bd)":[],"id":1,"orderDate":"2015-08-26T00:00:00.000000000"},'+
+      '{"product($bd)":[{"businessDate":"2017-06-09","inlinedCreatedBy":null,"stockProductName":"ProductName2","name":"ProductName2","classification($bd)":{"businessDate":"2017-06-09","description":"STOCK DESC-V4","exchangeName":"LNSE","type":"STOCK"},"classificationType":"STOCK","id":2,"isBrexitClassificationTypeExchange":null,"type":"STOCK","inlinedExchangeName":null}],"id":2,"orderDate":"2015-08-26T00:00:00.000000000"}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::milestoning::testDateTimeInQuery(): Boolean[1]
+{
+   let query = {|
+      Order.all()->graphFetch(#{
+         Order {
+            id,
+            orderDate,
+            product(%2019-08-26T00:00:00.000000000)
+            {
+               stockProductName,
+               name,
+               classificationType,
+               id,
+               type
+            }
+         }
+      }#)
+      ->serialize(#{
+         Order {
+            id,
+            orderDate,
+            product(%2019-08-26T00:00:00.000000000)
+            {
+               businessDate,
+               inlinedCreatedBy,
+               stockProductName,
+               name,
+               classificationType,
+               id,
+               isBrexitClassificationTypeExchange,
+               type,
+               inlinedExchangeName
+            }
+         }
+      }#);
+   };
+   let mapping = meta::relational::tests::milestoning::milestoningmap;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"id":1,"orderDate":"2015-08-26T00:00:00.000000000","product(2019-08-26T00:00:00.000000000+0000)":[]},'+
+      '{"id":2,"orderDate":"2015-08-26T00:00:00.000000000","product(2019-08-26T00:00:00.000000000+0000)":[{"businessDate":"2019-08-26T00:00:00.000000000","inlinedCreatedBy":null,"stockProductName":"ProductName2","name":"ProductName2","classificationType":"STOCK","id":2,"isBrexitClassificationTypeExchange":null,"type":"STOCK","inlinedExchangeName":null}]}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::milestoning::testBiTemporalRoot(): Boolean[1]
+{
+   let query = {|
+      BiTemporalProduct.all(%2017-6-10, %2017-6-9)->graphFetch(#{
+         BiTemporalProduct {
+            id,
+            processingDate,
+            businessDate
+         }
+      }#)
+      ->serialize(#{
+         BiTemporalProduct {
+            id,
+            processingDate,
+            businessDate
+         }
+      }#);
+   };
+   let mapping = meta::relational::tests::milestoning::milestoningmap;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '{"businessDate":"2017-06-09","processingDate":"2017-06-10","id":1}',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::milestoning::testBiTemporalProperty(): Boolean[1]
+{
+   let query = {|
+      let pd = %2017-6-11;
+      let bd = %2017-6-10;
+
+      BiTemporalProduct.all($pd, $bd)->graphFetch(#{
+         BiTemporalProduct {
+            id,
+            processingDate,
+            businessDate,
+            biTemporalClassification($pd, $bd) {
+               type
+            }
+         }
+      }#)
+      ->serialize(#{
+         BiTemporalProduct {
+            id,
+            processingDate,
+            businessDate,
+            biTemporalClassification($pd, $bd)
+            {
+               businessDate,
+               processingDate,
+               type
+            }
+         }
+      }#);
+   };
+   let mapping = meta::relational::tests::milestoning::milestoningmap;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '{"businessDate":"2017-06-10","biTemporalClassification($pd, $bd)":{"businessDate":"2017-06-10","processingDate":"2017-06-11","type":"STOCK"},"processingDate":"2017-06-11","id":1}',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::milestoning::testSnapshotMilestoning(): Boolean[1]
+{
+   let query = {|
+      let bd = %2015-08-26;
+
+      Product.all($bd)->filter(p|$p.classification.description == 'STOCK DESC-V2')->graphFetch(#{
+         Product {
+            name,
+            classification($bd) {
+               type
+            }
+         }
+      }#)
+      ->serialize(#{
+         Product {
+            name,
+            classification($bd) {
+               type
+            }
+         }
+      }#);
+   };
+   let mapping = meta::relational::tests::milestoning::businessSnapshotMilestoningMap;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '{"name":"ProductName1","classification($bd)":{"type":"STOCK"}}',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::milestoning::testInnerJoinIsolationAtRoot(): Boolean[1]
+{
+   let query = {|
+      let bd = %2015-10-16;
+
+      Product.all($bd)->graphFetch(#{
+         Product {
+            id,
+            cancelProductActivityCreatedBy
+         }
+      }#)
+      ->serialize(#{
+         Product {
+            id,
+            cancelProductActivityCreatedBy
+         }
+      }#);
+   };
+   let mapping = meta::relational::tests::milestoning::propagationMapping;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"cancelProductActivityCreatedBy":null,"id":2},{"cancelProductActivityCreatedBy":null,"id":3}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::milestoning::testInnerJoinIsolationAtChild(): Boolean[1]
+{
+   let query = {|
+      let bd = %2015-10-16;
+
+      Order.all()->graphFetch(#{
+         Order {
+            id,
+            'product': product($bd) {
+               id,
+               cancelProductActivityCreatedBy
+            }
+         }
+      }#)
+      ->serialize(#{
+         Order {
+            id,
+            'product': product($bd) {
+               id,
+               cancelProductActivityCreatedBy
+            }
+         }
+      }#);
+   };
+   let mapping = meta::relational::tests::milestoning::propagationMapping;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"product":[],"id":1},{"product":[{"cancelProductActivityCreatedBy":null,"id":2}],"id":2}]',
+      $result
+   );
+}
+
+function  <<test.ToFix>> meta::relational::graphFetch::tests::milestoning::testMilestoningWithUnionMapping(): Boolean[1]
+{
+  let tree = #{
+      Order {
+         id,
+         product(%2015-10-16) {
+            name,
+            classificationTypeStr
+         }
+      }
+   }#;
+   let query = {|Order.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::milestoning::partiallyMilestoningUnionMap;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"id":1,"product(2015-10-16)":[]},'+
+      '{"id":2,"product(2015-10-16)":[{"name":"ProductName2","classificationTypeStr()":"STOCK","type":"STOCK"}]}]',
+      $result
+   );
+}
+
+
+function meta::pure::graphFetch::tests::milestoning::getAlloyTestH2Connection():meta::core::runtime::ConnectionStore[1]
+{
+  let setupSqls='drop table if exists ProductTable;\n'+
+                'create table ProductTable (id Integer, name VARCHAR(200),type VARCHAR(200),exchange VARCHAR(200), referenceSystemName VARCHAR(200), EXTERNALREFERENCESYSTEMNAME VARCHAR(200), classificationSystemId Integer, from_z TIMESTAMP, thru_z TIMESTAMP);\n'+
+                'insert into ProductTable values(1,\'ProductName\',\'STOCK\',\'ISE\', \'SYS1\',\'SYS1\', 1, \'2015-8-15 00:00:00\', \'2015-8-26 00:00:00\');\n'+
+                'insert into ProductTable values(2,\'ProductName1\',\'STOCK\',\'LNSE\', \'SYS1\',\'SYS1\', 1, \'2015-8-26 00:00:00\', \'2015-10-16 00:00:00\');\n'+
+                'insert into ProductTable values(2,\'ProductName2\',\'STOCK\',\'LNSE\', \'SYS1\', \'SYS1\',1, \'2015-10-16 00:00:00\', \'9999-12-31 00:00:00\');\n'+
+                'insert into ProductTable values(3,\'ProductName3\',\'OPTION\',\'ISE\', \'SYS1\', \'SYS1\',1, \'2015-8-26 00:00:00\', \'9999-12-31 00:00:00\');\n'+
+                'drop table if exists ProductSynonymTable;\n'+
+                'create table ProductSynonymTable (prodId Integer, name VARCHAR(200), synonym VARCHAR(200), type VARCHAR(10), createdBy VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);\n'+
+                'insert into ProductSynonymTable values(1, \'ProductName1\',\'GS-Mod-S1\',\'STOCK\',\'Scottd\',\'2015-8-26 00:00:00\',\'2015-9-26 00:00:00\');\n'+
+                'insert into ProductSynonymTable values(1, \'ProductName1\',\'GS-Mod-S2\',\'STOCK\',\'Scottd\',\'2015-9-26 00:00:00\',\'2015-8-16 00:00:00\');\n'+
+                'insert into ProductSynonymTable values(2, \'ProductName2\',\'GS-Mod-S0\',\'CUSIP\',\'smith\',\'2015-1-1 00:00:00\',\'2015-10-15 00:00:00\');\n'+
+                'insert into ProductSynonymTable values(2, \'ProductName2\',\'GS-Mod-S1\',\'CUSIP\',\'smith\',\'2015-8-15 00:00:00\',\'9999-12-31 00:00:00\');\n'+
+                'insert into ProductSynonymTable values(2, \'ProductName2\',\'GS-Mod-S2\',\'CUSIP\',\'smith\',\'2015-8-15 00:00:00\',\'2015-10-17 00:00:00\');\n'+
+                'insert into ProductSynonymTable values(2, \'ProductName2\',\'GS-Mod-S3\',\'CUSIP\',\'smith\',\'2015-10-17 00:00:00\',\'9999-12-31 00:00:00\');\n'+
+                'insert into ProductSynonymTable values(2, \'ProductName3\',\'GS-Mod-S2\',\'CUSIP\',\'smith\',\'2015-8-15 00:00:00\',\'2015-10-17 00:00:00\');\n'+
+                'insert into ProductSynonymTable values(2, \'ProductName3\',\'GS-Mod-S3\',\'CUSIP\',\'smith\',\'2015-10-17 00:00:00\',\'9999-12-31 00:00:00\');\n'
+                ;
+    ^meta::core::runtime::ConnectionStore(
+              element = meta::relational::tests::milestoning::db,
+              connection =
+                ^meta::external::store::relational::runtime::RelationalDatabaseConnection(
+                    type = meta::relational::runtime::DatabaseType.H2,
+                    authenticationStrategy = ^ meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy(),
+                    datasourceSpecification = ^ meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupSqls=[$setupSqls])
+            )
+    );
+}
+
+// Milestoning date Propagation
+//> following are only supported in engine compiler, Pure ide compiler raises compilation error that property needs date-arg
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::milestoning::testDatePropagationFromMilestonedRootToMilestonedProperty(): Boolean[1]
+{
+  let mapping = meta::relational::tests::milestoning::milestoningmap;
+  let runtime = meta::external::store::relational::tests::testRuntime();
+
+  let queryString = 'function my::func():String[1]{\n'+
+                    'meta::relational::tests::milestoning::Product.all(%2023-10-15T00:00:00)\n'+
+                      '->graphFetch(#{ \n'+
+                      '    meta::relational::tests::milestoning::Product\n'+
+                      '    {\n'+
+                      '        id,\n'+
+                      '        name,\n'+
+                      '        synonyms\n'+
+                      '        {\n'+
+                      '            synonym\n'+
+                      '        }\n'+
+                      '    } \n'+
+                      '  }#)\n'+
+                      // ' ->from(meta::relational::tests::milestoning::milestoningmap ,meta::relational::graphFetch::tests::milestoning::getLegendTestRuntime())\n'+    //fix legendCompile to work correctly with pure ide
+                      ' ->serialize(#{ \n'+
+                      '    meta::relational::tests::milestoning::Product\n'+
+                      '    {\n'+
+                      '        id,\n'+
+                      '        name,\n'+
+                      '        synonyms()\n'+
+                      '        {\n'+
+                      '            synonym\n'+
+                      '        }\n'+
+                      '    } \n'+
+                      '  }#);'+
+                  '}';
+  let query = meta::legend::compileLegendGrammar($queryString)->at(0)->cast(@FunctionDefinition<{->String[1]}>);
+
+  let result = meta::pure::router::execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+  assertJsonStringsEqual(
+    '[{"id":2,"name":"ProductName2","synonyms(2023-10-15T00:00:00+0000)":[{"synonym":"GS-Mod-S1"},{"synonym":"GS-Mod-S3"}]},' +
+    ' {"id":3,"name":"ProductName3","synonyms(2023-10-15T00:00:00+0000)":[]}]',
+    $result);
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::milestoning::testDatePropagationFromMilestonedRootToMilestonedProperty_WithPropertyAliasing(): Boolean[1]
+{
+  let mapping = meta::relational::tests::milestoning::milestoningmap;
+  let runtime = meta::external::store::relational::tests::testRuntime();
+
+  let queryString = 'function my::func():String[1]{\n'+
+                    'meta::relational::tests::milestoning::Product.all(%2023-10-15T00:00:00)\n'+
+                      '->graphFetch(#{ \n'+
+                      '    meta::relational::tests::milestoning::Product\n'+
+                      '    {\n'+
+                      '        id,\n'+
+                      '        name,\n'+
+                      '        \'synonyms\':synonyms\n'+
+                      '        {\n'+
+                      '            synonym\n'+
+                      '        }\n'+
+                      '    } \n'+
+                      '  }#)\n'+
+                      ' ->serialize(#{ \n'+
+                      '    meta::relational::tests::milestoning::Product\n'+
+                      '    {\n'+
+                      '        id,\n'+
+                      '        name,\n'+
+                      '        \'synonyms\': synonyms()\n'+
+                      '        {\n'+
+                      '            synonym\n'+
+                      '        }\n'+
+                      '    } \n'+
+                      '  }#);'+
+                  '}';
+  let query = meta::legend::compileLegendGrammar($queryString)->at(0)->cast(@FunctionDefinition<{->String[1]}>);
+
+  let result = meta::pure::router::execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+  assertJsonStringsEqual(
+    '[{"id":2,"name":"ProductName2","synonyms":[{"synonym":"GS-Mod-S1"},{"synonym":"GS-Mod-S3"}]},' +
+    ' {"id":3,"name":"ProductName3","synonyms":[]}]',
+    $result);
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::milestoning::testDatePropagationFromMilestonedRootToMilestonedProperty_Checked(): Boolean[1]
+{
+  let mapping = meta::relational::tests::milestoning::milestoningmap;
+  let runtime = meta::external::store::relational::tests::testRuntime();
+
+  let queryString = 'function my::func():String[1]{\n'+
+                    'meta::relational::tests::milestoning::Product.all(%2023-10-15T00:00:00)\n'+
+                      '->graphFetchChecked(#{ \n'+
+                      '    meta::relational::tests::milestoning::Product\n'+
+                      '    {\n'+
+                      '        id,\n'+
+                      '        name,\n'+
+                      '        synonyms\n'+
+                      '        {\n'+
+                      '            synonym\n'+
+                      '        }\n'+
+                      '    } \n'+
+                      '  }#)\n'+
+                      ' ->serialize(#{ \n'+
+                      '    meta::relational::tests::milestoning::Product\n'+
+                      '    {\n'+
+                      '        id,\n'+
+                      '        name,\n'+
+                      '        synonyms()\n'+
+                      '        {\n'+
+                      '            synonym\n'+
+                      '        }\n'+
+                      '    } \n'+
+                      '  }#);'+
+                  '}';
+  let query = meta::legend::compileLegendGrammar($queryString)->at(0)->cast(@FunctionDefinition<{->String[1]}>);
+
+  let result = meta::pure::router::execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+  assertJsonStringsEqual(
+    '[{"defects":[],"value":{"name":"ProductName2","id":2,"synonyms(2023-10-15T00:00:00+0000)":[{"synonym":"GS-Mod-S1"},{"synonym":"GS-Mod-S3"}]}},'+
+     '{"defects":[],"value":{"name":"ProductName3","id":3,"synonyms(2023-10-15T00:00:00+0000)":[]}}]',
+    $result);
+}

@@ -1,0 +1,251 @@
+###Pure
+import meta::external::query::graphQL::binding::*;
+import meta::external::query::graphQL::metamodel::sdl::*;
+import meta::external::query::graphQL::metamodel::sdl::value::*;
+import meta::external::query::graphQL::metamodel::sdl::typeSystem::*;
+import meta::external::query::graphQL::binding::toPure::*;
+import meta::external::query::graphQL::binding::toPure::sdl::*;
+
+function meta::external::query::graphQL::binding::toPure::sdl::graphQLTypeSystemtoPure(doc:Document[1], package:String[1]) : meta::pure::metamodel::type::Type[*]
+{
+  graphQLTypeSystemtoPure($doc, $package, []);
+}
+
+function meta::external::query::graphQL::binding::toPure::sdl::graphQLTypeSystemtoPure(doc:Document[1], package:String[1], pureTypeToGraphQLScalarOverride:PureTypeToGraphQLScalarOverride[0..1]) : meta::pure::metamodel::type::Type[*]
+{
+  let pack = buildTransientPackageFromString($package);
+
+  let operationTypes = $doc.definitions->map(def | if($def->instanceOf(SchemaDefinition), | $def->cast(@SchemaDefinition).rootOperationTypeDefinitions.type, | []));
+
+  // Pass 1a -- shell types used as type references
+  let allShellTypesByName = $doc.definitions->map(def|
+    $def->match(
+      [
+        o : ObjectTypeDefinition[1] | let no = newClass($o.name);
+                                      let temporality = $o.directives.name->intersection(temporalityToDirectives()->keys())->map(td | ^Stereotype(profile = meta::pure::profiles::temporal, value = $td));
+                                      let cp = ^$no(package = $pack, stereotypes = $temporality,  generalizations = []);
+                                      pair($o.name, $cp);,
+        i : InputObjectTypeDefinition[1] | let no = newClass($i.name);
+                                      let temporality = $i.directives.name->intersection(temporalityToDirectives()->keys())->map(td | ^Stereotype(profile = meta::pure::profiles::temporal, value = $td));
+                                      let cp = ^$no(package = $pack, stereotypes = $temporality, generalizations = []);
+                                      pair($i.name, $cp);,
+        e : EnumTypeDefinition[1] | let ne = newEnumeration($e.name, $e.values.value);
+                                    let ep = ^$ne(package = $pack);
+                                    pair($e.name, $ep);,
+        s : SchemaDefinition[1]   | [],
+        d : DirectiveDefinition[1] | [],
+        s : ScalarTypeDefinition[1] | [],
+        i : InterfaceTypeDefinition[1] | []
+      ]
+    )
+  )->concatenate(graphQLScalarTypesToPurePrimitives($pureTypeToGraphQLScalarOverride))->newMap();
+
+  // Pass 1b -- add hierarchy
+  $doc.definitions->map(def|
+    $def->match(
+      [
+        o : ObjectTypeDefinition[1] | buildHierarchy($o.name, $o.directives, $allShellTypesByName),
+        i : InputObjectTypeDefinition[1] | buildHierarchy($i.name, $i.directives, $allShellTypesByName),
+        a : Any[1] | []
+      ]
+    )
+  );
+
+  let graphQLTypesByName = $doc.definitions->map(def|
+    $def->match(
+      [
+        o : ObjectTypeDefinition[1] | pair($o.name, $o),
+        i : InputObjectTypeDefinition[1] | pair($i.name, $i),
+        a : Any[1] | []
+      ]
+    ))->newMap();
+
+  // Pass 2a -- build non-operation object and enum types
+  let builtObjectTypesByName = $doc.definitions->map(def |
+    $def->match(
+      [
+        o : ObjectTypeDefinition[1] | if($o.name->in($operationTypes), | [], | $o->buildPureType($allShellTypesByName, $graphQLTypesByName)),
+        i : InputObjectTypeDefinition[1] | [],
+        e : EnumTypeDefinition[1] | $allShellTypesByName->get($e.name)->toOne(),
+        s : SchemaDefinition[1]   | [],
+        d : DirectiveDefinition[1] | [],
+        s : ScalarTypeDefinition[1] | [],
+        i : InterfaceTypeDefinition[1] | []
+      ]
+    )
+  )->map(t | pair($t.name->toOne(), $t))->newMap();
+
+  // Pass 2b -- build operation object and input types
+  let builtInputAndOperationTypesByName = $doc.definitions->map(def |
+    $def->match(
+      [
+        o : ObjectTypeDefinition[1] | if($o.name->in($operationTypes), | $o->buildPureType($allShellTypesByName, $graphQLTypesByName), | []),
+        i : InputObjectTypeDefinition[1] | $i->buildPureType($allShellTypesByName, $graphQLTypesByName),
+        e : EnumTypeDefinition[1] | [],
+        s : SchemaDefinition[1]   | [],
+        d : DirectiveDefinition[1] | [],
+        s : ScalarTypeDefinition[1] | [],
+        i : InterfaceTypeDefinition[1] | []
+      ]
+    )
+  )->map(t | pair($t.name->toOne(), $t))->newMap();
+
+  // Pass 3 -- deduplicate redundant type definitions and replace corresponding properties
+  let existingTypesByName = $builtObjectTypesByName->putAll(graphQLScalarTypesToPurePrimitives($pureTypeToGraphQLScalarOverride)->newMap());
+  let allTypesByName = $existingTypesByName->putAll($builtInputAndOperationTypesByName);
+  let inputAndOperationTypesToAdd = $builtInputAndOperationTypesByName->values()
+    ->cast(@Class<Any>)
+    ->map(i | 
+      let potentiallyCompatibleType = $existingTypesByName->get($i.name->toOne()->fromInputTypeName());
+      let type = $allTypesByName->get($i.name->toOne())->toOne();
+      if ($potentiallyCompatibleType->isNotEmpty() && $potentiallyCompatibleType->toOne()->isTypeCompatible($type), 
+        // Object type compatible, use existing
+        | [], 
+        // Object type not compatible, check properties and qualified properties
+        | 
+          let no = newClass($i.name->toOne());
+          let mutatedClass = ^$no(package = $i.package);
+          let ownerGType = ^GenericType(rawType = $mutatedClass);
+          let properties = $i.properties->map(p |
+            let propertyTypeName = $p.genericType.rawType->toOne().name->toOne();
+            let potentiallyCompatibleType = $existingTypesByName->get($propertyTypeName->fromInputTypeName());
+            let type = $allTypesByName->get($propertyTypeName)->toOne();
+            let targetType = if ($potentiallyCompatibleType->isNotEmpty() && $potentiallyCompatibleType->toOne()->isTypeCompatible($type), |  $potentiallyCompatibleType->toOne(), | $type);
+            meta::pure::functions::meta::newProperty($p.name->toOne(), $ownerGType, ^GenericType(rawType = $targetType), $p.multiplicity);
+          );
+          let qualifiedProperties = $i.qualifiedProperties->map(p |
+            let propertyTypeName = $p.genericType.rawType->toOne().name->toOne();
+            // No chance for duplication as this must be an object type
+            let targetType = $allTypesByName->get($propertyTypeName)->toOne();
+            let vars = $p->functionType().parameters->evaluateAndDeactivate()->map(p |
+                                      let propertyTypeName = $p.genericType.rawType->toOne().name->toOne();
+                                      let potentiallyCompatibleType = $existingTypesByName->get($propertyTypeName->fromInputTypeName());
+                                      let type = $allTypesByName->get($propertyTypeName)->toOne();
+                                      let targetType = if ($potentiallyCompatibleType->isNotEmpty() && $potentiallyCompatibleType->toOne()->isTypeCompatible($type), |  $potentiallyCompatibleType->toOne(), | $type);
+                                      ^VariableExpression(name = $p.name, multiplicity = $p.multiplicity, genericType = ^GenericType(rawType = $targetType));
+                                );
+            newQualifiedProperty($p.name->toOne(), $ownerGType, ^GenericType(rawType = $targetType), $p.multiplicity, $vars);
+          );
+          $mutatedClass->mutateAdd('properties', $properties);
+          $mutatedClass->mutateAdd('qualifiedProperties', $qualifiedProperties);
+       );
+    );
+  
+  $builtObjectTypesByName->values()->concatenate($inputAndOperationTypesToAdd);
+}
+
+function meta::external::query::graphQL::binding::toPure::buildTransientPackageFromString(package:String[1]) : Package[1]
+{
+  $package->split('::')->fold({a,b|^Package(name = $a, package=$b)}, ^Package());
+}
+
+function <<access.private>> meta::external::query::graphQL::binding::toPure::sdl::buildPureType(graphQLType: meta::external::query::graphQL::metamodel::sdl::typeSystem::Type[1], shellTypesByName: Map<String, meta::pure::metamodel::type::Type>[1], graphQLTypesByName: Map<String, meta::external::query::graphQL::metamodel::sdl::typeSystem::Type>[1]) : meta::pure::metamodel::type::Type[*]
+{
+  $graphQLType->match(
+    [
+      o : ObjectTypeDefinition[1] | 
+            let shellType = $shellTypesByName->get($o.name)->toOne();
+            if ($shellType->cast(@Class<Any>).properties->isNotEmpty(), 
+              | [],
+              | let allGeneralizations = $shellType->hierarchicalAllGeneralizations();
+                let builtGeneralizations = $allGeneralizations->map(c | buildPureType($graphQLTypesByName->get($c.name->toOne())->toOne(), $shellTypesByName, $graphQLTypesByName));
+                let generalizationProps = $allGeneralizations->filter(t | $t->instanceOf(Class))->map(t | $t->cast(@Class<Any>)).properties.name;
+                let properties = $o.fields->map(f | 
+                  if ($generalizationProps->contains($f.name),
+                    | [], 
+                    | let fieldTypeMultiplicityAndName = $f.type->extractPureMultiplicityAndTypeName();
+                      let fieldType = $shellTypesByName->get($fieldTypeMultiplicityAndName.second);
+                      assert($fieldType->isNotEmpty(), 'Unable to find type ' + $fieldTypeMultiplicityAndName.second);
+                      // Has arguments -- wil be qualified property
+                      let fieldVariableExpressions = $f.argumentDefinitions->map(a |
+                        let argumentMultiplicityAndName = $a.type->extractPureMultiplicityAndTypeName();
+                        let argumentType = $shellTypesByName->get($argumentMultiplicityAndName.second);
+                        assert($argumentType->isNotEmpty(), 'Unable to find type ' + $argumentMultiplicityAndName.second);
+                        ^VariableExpression(name = $a.name, multiplicity = $argumentMultiplicityAndName.first, genericType = ^GenericType(rawType = $argumentType->toOne()));
+                      );
+                      if ($fieldVariableExpressions->isEmpty(), 
+                          | 
+                            meta::pure::functions::meta::newProperty($f.name, ^GenericType(rawType = $shellType), ^GenericType(rawType = $fieldType->toOne()), $fieldTypeMultiplicityAndName.first), 
+                          | 
+                            newQualifiedProperty($f.name, ^GenericType(rawType = $shellType), ^GenericType(rawType = $fieldType->toOne()), $fieldTypeMultiplicityAndName.first, $fieldVariableExpressions);
+                      );
+                  );
+                );
+                $shellType->mutateAdd('properties', $properties->filter(p | $p->instanceOf(Property)));
+                $shellType->mutateAdd('qualifiedProperties', $properties->filter(p | $p->instanceOf(QualifiedProperty)))->concatenate($builtGeneralizations);
+            );,
+      i : InputObjectTypeDefinition[1] | 
+            let shellType = $shellTypesByName->get($i.name)->toOne();
+            if ($shellType->cast(@Class<Any>).properties->isNotEmpty(), 
+              | [],
+              | let allGeneralizations = $shellType->hierarchicalAllGeneralizations();
+                let builtGeneralizations = $allGeneralizations->map(c | buildPureType($graphQLTypesByName->get($c.name->toOne())->toOne(), $shellTypesByName, $graphQLTypesByName));
+                let generalizationProps = $allGeneralizations->filter(t | $t->instanceOf(Class))->map(t | $t->cast(@Class<Any>)).properties.name;
+                let properties = $i.fields->map(f | 
+                  if ($generalizationProps->contains($f.name),
+                    | [], 
+                    | let fieldTypeMultiplicityAndName = $f.type->extractPureMultiplicityAndTypeName();
+                      let fieldType = $shellTypesByName->get($fieldTypeMultiplicityAndName.second);
+                      assert($fieldType->isNotEmpty(), 'Unable to find type ' + $fieldTypeMultiplicityAndName.second);
+                      meta::pure::functions::meta::newProperty($f.name, ^GenericType(rawType = $shellType), ^GenericType(rawType = $fieldType->toOne()), $fieldTypeMultiplicityAndName.first);
+                  );
+                );
+                $shellType->mutateAdd('properties', $properties)->concatenate($builtGeneralizations);
+            );
+    ]
+  )
+}
+
+function <<access.private>> meta::external::query::graphQL::binding::toPure::sdl::buildHierarchy(graphQLTypeName: String[1], graphQLTypeDirectives: Directive[*], allShellTypesByName: Map<String, meta::pure::metamodel::type::Type>[1]): Nil[0]
+{
+  let extendedClassNames = $graphQLTypeDirectives->filter(d | $d.name == hierarchyDirective().name)->map(hd | $hd.arguments->filter(a | $a.name == 'class').value->cast(@StringValue).value->toOne());
+  let thisClass = $allShellTypesByName->get($graphQLTypeName)->toOne();
+  let generalizations = $extendedClassNames->map(n | ^Generalization(specific = $thisClass, general = ^GenericType(rawType = $allShellTypesByName->get($n)->toOne())));
+  if ($generalizations->isEmpty(), | $thisClass->mutateAdd('generalizations', ^Generalization(specific = $thisClass, general = ^GenericType(rawType = Any))), | $thisClass->mutateAdd('generalizations', $generalizations));
+  $extendedClassNames->map(n | $allShellTypesByName->get($n)->toOne()->mutateAdd('specializations', $generalizations));
+  [];
+}
+
+function <<access.private>> meta::external::query::graphQL::binding::toPure::sdl::extractPureMultiplicityAndTypeName(typeReference: TypeReference[1]): Pair<Multiplicity, String>[1]
+{
+  $typeReference
+    ->match(
+      [
+        o : NamedTypeReference[1] | pair(if($o.nullable, | ZeroOne, | PureOne), $o.name),
+        l : ListTypeReference[1]  | pair(ZeroMany, $l.itemType->cast(@NamedTypeReference).name)
+      ]
+    )
+}
+
+function meta::external::query::graphQL::binding::toPure::isTypeCompatible(one: meta::pure::metamodel::type::Type[1], two: meta::pure::metamodel::type::Type[1]) : Boolean[1]
+{
+  if ($one->instanceOf(PrimitiveType) == $two->instanceOf(PrimitiveType), 
+    | 
+      if ($one->instanceOf(PrimitiveType) || $one->instanceOf(Enumeration), 
+        | $one == $two, 
+        | let oneGeneralizations = $one->validGeneralizations()->sort();
+          let twoGeneralizations = $two->validGeneralizations()->sort();
+          let matchedGeneralizations = $oneGeneralizations->zip($twoGeneralizations)->map(pair | $pair.first->isTypeCompatible($pair.second))->distinct();
+          
+          $oneGeneralizations->size() == $twoGeneralizations->size()
+          && ($matchedGeneralizations->isEmpty() || $matchedGeneralizations->equal([true]))
+          && $one->cast(@Class<Any>).properties->sortBy(p | $p.name->toOne())
+                ->zip($two->cast(@Class<Any>).properties->sortBy(p | $p.name->toOne()))
+                ->map(pair | $pair.first->isPropertyCompatible($pair.second))
+                ->distinct()
+                ->equal([true]);
+      ),
+    | false
+  )
+}
+
+function meta::external::query::graphQL::binding::toPure::isPropertyCompatible(one: AbstractProperty<Any>[1], two: AbstractProperty<Any>[1]) : Boolean[1]
+{
+  equal($one.name, $two.name)
+    && $one.multiplicity == $two.multiplicity
+    && 
+      if ($one.genericType.rawType->toOne()->instanceOf(Class) == $two.genericType.rawType->toOne()->instanceOf(Class),
+        | $one.genericType.rawType->toOne()->isTypeCompatible($two.genericType.rawType->toOne()),
+        | false
+      )
+}

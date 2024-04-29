@@ -1,0 +1,34 @@
+import meta::core::runtime::*;
+import meta::external::store::rel::runtime::*;
+import meta::pure::mapping::*;
+
+Class meta::external::store::rel::runtime::TestConnection extends meta::core::runtime::Connection {
+  onExecute: Function<{String[1]->Any[*]}>[0..1];
+}
+
+function meta::external::store::rel::runtime::TestConnection(
+  element: Any[1],
+  onExecute: Function<{String[1]->Any[*]}>[0..1]
+): ConnectionStore[1] {
+  ^ConnectionStore(element=$element,connection=^TestConnection(onExecute=$onExecute));
+}
+
+function meta::external::store::rel::runtime::TestConnection(element: Any[1]): ConnectionStore[1] {
+  TestConnection($element, []);
+}
+
+function meta::external::store::rel::runtime::query(connection: ConnectionStore[1], query: FunctionDefinition<{->Any[*]}>[1]): Activity[*] {
+  let schema = $connection.element->cast(@meta::external::store::rel::mapping::schema::RAISchema);
+
+  let runtime = ^meta::core::runtime::Runtime(connectionStores=$connection);
+
+  let result = execute(
+    $query,
+    $schema.mapping,
+    $runtime,
+    meta::external::store::rel::extension::defaultRAIExtension()
+  );
+
+  // Function `execute()` does not populate `values` so just return the activity.
+  $result.activities;
+}

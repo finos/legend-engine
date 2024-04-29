@@ -1,0 +1,6 @@
+{
+  "purePackage": "meta::external::query::graphQL::metamodel::sdl",
+  "javaPackage": "org.finos.legend.engine.protocol.graphQL.metamodel",
+  "elementsToBeExcluded": [
+  ]
+}

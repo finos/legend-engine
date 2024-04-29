@@ -1,0 +1,48 @@
+###Runtime
+Runtime simple::runtime::Runtime
+{
+    mappings :
+    [
+        simple::mapping::Map
+    ];
+    connections :
+    [
+        simple::store::DB :
+        [
+            connection_1 : #{
+                RelationalDatabaseConnection {
+                    store: simple::store::DB;
+                    type: H2;
+                    specification: LocalH2{
+                        testDataSetupSqls: [
+                            'DROP TABLE IF EXISTS PERSON_TABLE;',
+                            'CREATE TABLE PERSON_TABLE(ID INT PRIMARY KEY, FIRST_NAME VARCHAR(100), LAST_NAME VARCHAR(100), FIRM_ID INT);',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (1,\'Peter\',\'Smith\',1);',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (2,\'John\',\'Johnson\',1);',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (3,\'John\',\'Hill\',1);',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (4,\'Anthony\',\'Allen\',1)',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (5,\'Fabrice\',\'Roberts\',2)',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (6,\'Oliver\',\'Hill\',3)',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (7,\'David\',\'Harris\',3)',
+                            'DROP TABLE IF EXISTS FIRM_TABLE;',
+                            'CREATE TABLE FIRM_TABLE(ID INT PRIMARY KEY, LEGAL_NAME VARCHAR(100));',
+                            'INSERT INTO FIRM_TABLE(ID,LEGAL_NAME) VALUES (1,\'Firm X\');',
+                            'INSERT INTO FIRM_TABLE(ID,LEGAL_NAME) VALUES (2,\'Firm A\');',
+                            'INSERT INTO FIRM_TABLE(ID,LEGAL_NAME) VALUES (3,\'Firm B\');',
+                            'DROP TABLE IF EXISTS ADDRESS_TABLE;',
+                            'CREATE TABLE ADDRESS_TABLE(ID INT PRIMARY KEY, PERSON_ID INT, LINE1 VARCHAR(100));',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1) VALUES (100, 1, \'peter address\');',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1) VALUES (101, 2, \'John address\');',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1) VALUES (102, 3, \'John hill address\');',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1) VALUES (103, 4, \'Anthony address\');',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1) VALUES (104, 5, \'Fabrice address\');',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1) VALUES (105, 6, \'Oliver address\');',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1) VALUES (106, 7, \'David address\');'
+                        ];
+                    };
+                    auth: Test;
+                }
+            }#
+        ]
+    ];
+}

@@ -1,0 +1,335 @@
+import meta::analytics::search::transformation::*;
+
+function meta::analytics::search::transformation::buildDocument(element: PackageableElement[1], config: meta::analytics::search::metamodel::ProjectCoordinates[1]): meta::analytics::search::metamodel::BaseRootDocument[1]
+{
+  let document = $element->match([
+    d: meta::pure::metamodel::dataSpace::DataSpace[1]| $d->meta::analytics::search::transformation::dataspace::buildDocument(),
+    s: meta::legend::service::metamodel::Service[1]| $s->meta::analytics::search::transformation::hackLegendServiceTests()->meta::analytics::search::transformation::service::buildDocument(),
+    d: meta::pure::metamodel::diagram::Diagram[1]| $d->meta::analytics::search::transformation::diagram::buildDocument(),
+    m: meta::pure::mapping::Mapping[1]| $m->meta::analytics::search::transformation::mapping::buildDocument(),
+    c: Class<Any>[1]| $c->meta::analytics::search::transformation::class::buildDocument(),
+    d: meta::relational::metamodel::Database[1]| $d->meta::analytics::search::transformation::database::buildDocument(),
+    p: PackageableElement[1]| $p->meta::analytics::search::transformation::packageableelement::buildDocument()
+  ]);
+
+  ^$document(
+    projectCoordinates = ^meta::analytics::search::metamodel::ProjectCoordinates(groupId = $config.groupId, artifactId = $config.artifactId, versionId = $config.versionId),
+    stereotypes = meta::analytics::search::transformation::getStereotypes($element.stereotypes),
+    taggedValues = meta::analytics::search::transformation::getTaggedValues($element.taggedValues)
+ );
+
+}
+
+function meta::analytics::search::transformation::getStereotypes(stereotypes: Stereotype[*]): String[*]
+{
+  $stereotypes->map(s| joinStrings([$s.profile->toString(), $s.value], '.'))
+}
+
+function meta::analytics::search::transformation::getTaggedValues(taggedValues: TaggedValue[*]): Map<String, String>[0..1]
+{
+  $taggedValues->map(t| ^meta::pure::functions::collection::Pair<String,String> (first = joinStrings([$t.tag.profile->toString(), $t.tag.value], '.'), second = $t.value))->newMap()
+}
+
+function meta::analytics::search::transformation::hackLegendServiceTests(s: meta::legend::service::metamodel::Service[1]): meta::legend::service::metamodel::Service[1]
+{
+  ^$s(
+    test = ^meta::legend::service::metamodel::SingleExecutionTest(
+      data = '',
+      asserts = [
+        ^meta::legend::service::metamodel::TestContainer(
+          parametersValues = [],
+          assert = {r: meta::pure::mapping::Result<Any|1>[1]|true}
+        )
+      ]
+    )
+  );
+}
+
+// PACKAGEABLEELEMENT DOCUMENT
+function meta::analytics::search::transformation::packageableelement::buildDocument(packageableElement: PackageableElement[1]): meta::analytics::search::metamodel::PackageableRootDocument[1]
+{
+  ^meta::analytics::search::metamodel::PackageableRootDocument(
+    id = meta::analytics::search::transformation::getId($packageableElement),
+    name = meta::analytics::search::transformation::getName($packageableElement),
+    package = meta::analytics::search::transformation::getPackage($packageableElement),
+    type = $packageableElement->match([
+      f: PackageableFunction<Any>[1]| meta::analytics::search::metamodel::DocumentType.Function,
+      c: meta::pure::runtime::PackageableConnection[1]| meta::analytics::search::metamodel::DocumentType.Connection,
+      r: meta::pure::runtime::PackageableRuntime[1]| meta::analytics::search::metamodel::DocumentType.Runtime,
+      p: PackageableElement[1]|  meta::analytics::search::metamodel::DocumentType.PackageableElement
+    ])
+  );
+}
+
+
+// CLASS DOCUMENT
+function meta::analytics::search::transformation::class::buildDocument(class: Class<Any>[1]): meta::analytics::search::metamodel::class::ClassDocument[1]
+{
+  ^meta::analytics::search::metamodel::class::ClassDocument(
+    id = meta::analytics::search::transformation::getId($class),
+    name = meta::analytics::search::transformation::getName($class),
+    package = meta::analytics::search::transformation::getPackage($class),
+    description = $class.taggedValues->filter(t|$t.tag.profile == meta::pure::profiles::doc && $t.tag.value == 'doc')->map(t| $t.value)->joinStrings('', ',', ''),
+    type = meta::analytics::search::metamodel::DocumentType.Class,
+    properties = $class.properties->meta::analytics::search::transformation::class::buildPropertyList()
+  );
+}
+
+function meta::analytics::search::transformation::class::buildPropertyList(properties: Property<Any,Any|*>[*]): meta::analytics::search::metamodel::class::ClassProperty[*]
+{
+  $properties->map(p|
+    ^meta::analytics::search::metamodel::class::ClassProperty(
+      name = $p.name->toOne(),
+      stereotypes = meta::analytics::search::transformation::getStereotypes($p.stereotypes),
+      taggedValues = meta::analytics::search::transformation::getTaggedValues($p.taggedValues)
+    );
+  );
+}
+
+// DATASPACE DOCUMENT
+function meta::analytics::search::transformation::dataspace::buildDocument(dataspace: meta::pure::metamodel::dataSpace::DataSpace[1]): meta::analytics::search::metamodel::dataspace::DataSpaceDocument[1]
+{
+  ^meta::analytics::search::metamodel::dataspace::DataSpaceDocument(
+    id = meta::analytics::search::transformation::getId($dataspace),
+    name = meta::analytics::search::transformation::getName($dataspace),
+    package = meta::analytics::search::transformation::getPackage($dataspace),
+    description = $dataspace.description,
+    defaultExecutionContext = $dataspace.defaultExecutionContext.name,
+    diagrams = $dataspace.diagrams->map(d|$d.diagram->elementToPath()),
+    executionContexts = $dataspace.executionContexts->map(c|$c->meta::analytics::search::transformation::dataspace::buildExecutionContextDocument()),
+    taxonomies = $dataspace.taggedValues->filter(t|$t.tag.value == 'taxonomyNodes').value,
+    type = meta::analytics::search::metamodel::DocumentType.DataSpace
+  );
+}
+
+function meta::analytics::search::transformation::dataspace::buildExecutionContextDocument(executionContext: meta::pure::metamodel::dataSpace::DataSpaceExecutionContext[1]): meta::analytics::search::metamodel::dataspace::ExecutionContext[1]
+{
+  ^meta::analytics::search::metamodel::dataspace::ExecutionContext(
+    name = $executionContext.name,
+    mappingPath = $executionContext.mapping->elementToPath(),
+    runtimePath = $executionContext.defaultRuntime->elementToPath(),
+    classes = $executionContext.mapping->meta::analytics::search::transformation::dataspace::buildClassDocuments()
+  )
+}
+
+function meta::analytics::search::transformation::dataspace::buildClassDocuments(mapping: meta::pure::mapping::Mapping[1]): meta::analytics::search::metamodel::class::SimpleClassElement[*]
+{
+  let analysedMapping = meta::analytics::mapping::modelCoverage::analyze($mapping, true, true, false);
+  $analysedMapping.mappedEntities->filter(e|$e.info.isRootEntity == true)->map(e|
+    ^meta::analytics::search::metamodel::class::SimpleClassElement(
+      name = $e.path->split('::')->last()->toOne(),
+      package = $e.path,
+      properties = $e.path->meta::pure::functions::meta::pathToElement()->cast(@Class<Any>).properties->map(p| ^meta::analytics::search::metamodel::class::ClassProperty(
+          name = $p.name->toOne(),
+          stereotypes = meta::analytics::search::transformation::getStereotypes($p.stereotypes),
+          taggedValues = meta::analytics::search::transformation::getTaggedValues($p.taggedValues))
+        ),
+      stereotypes = meta::analytics::search::transformation::getStereotypes($e.path->meta::pure::functions::meta::pathToElement()->cast(@Class<Any>).stereotypes),
+      taggedValues = meta::analytics::search::transformation::getTaggedValues($e.path->meta::pure::functions::meta::pathToElement()->cast(@Class<Any>).taggedValues))
+    );
+}
+
+// DIAGRAM DOCUMENT
+function meta::analytics::search::transformation::diagram::buildDocument(diagram: meta::pure::metamodel::diagram::Diagram[1]): meta::analytics::search::metamodel::diagram::DiagramDocument[1]
+{
+  ^meta::analytics::search::metamodel::diagram::DiagramDocument(
+    id = meta::analytics::search::transformation::getId($diagram),
+    name = meta::analytics::search::transformation::getName($diagram),
+    package = meta::analytics::search::transformation::getPackage($diagram),
+    type = meta::analytics::search::metamodel::DocumentType.Diagram,
+    classes = $diagram->meta::analytics::search::transformation::diagram::buildClassDocuments()
+  );
+}
+
+function meta::analytics::search::transformation::diagram::buildClassDocuments(diagram: meta::pure::metamodel::diagram::Diagram[1]): meta::analytics::search::metamodel::class::SimpleClassElement[*]
+{
+  let diagramCoverage = meta::pure::metamodel::diagram::analytics::modelCoverage::getDiagramModelCoverage($diagram);
+  $diagramCoverage.classes->map(c|
+    ^meta::analytics::search::metamodel::class::SimpleClassElement(
+      package = $c->cast(@Class<Any>).package->toOne()->elementToPath(),
+      name = $c.name->toOne(),
+      properties = $c->cast(@Class<Any>).properties->meta::analytics::search::transformation::class::buildPropertyList(),
+      stereotypes = meta::analytics::search::transformation::getStereotypes($c->cast(@Class<Any>).stereotypes),
+      taggedValues = meta::analytics::search::transformation::getTaggedValues($c->cast(@Class<Any>).taggedValues)
+    );
+  );
+}
+
+// MAPPING DOCUMENT
+function meta::analytics::search::transformation::mapping::buildDocument(mapping: meta::pure::mapping::Mapping[1]): meta::analytics::search::metamodel::mapping::MappingDocument[1]
+{
+  ^meta::analytics::search::metamodel::mapping::MappingDocument(
+    id = meta::analytics::search::transformation::getId($mapping),
+    name = meta::analytics::search::transformation::getName($mapping),
+    package = meta::analytics::search::transformation::getPackage($mapping),
+    type = meta::analytics::search::metamodel::DocumentType.Mapping,
+    classes = $mapping->meta::analytics::search::transformation::mapping::buildClassDocuments(),
+    includedMappings = $mapping.includes->map(m| $m.included->elementToPath())
+  );
+}
+
+function meta::analytics::search::transformation::mapping::buildClassDocuments(mapping: meta::pure::mapping::Mapping[1]): meta::analytics::search::metamodel::class::SimpleClassElement[*]
+{
+  let classMappings = $mapping.classMappings;
+  $classMappings->filter(m|$m.root == true)->map(m|
+    ^meta::analytics::search::metamodel::class::SimpleClassElement(
+      name = $m.class.name->toOne(),
+      package = $m.class.package->toOne()->elementToPath(),
+      properties = $m->filter(c | $c->instanceOf(meta::pure::mapping::PropertyMappingsImplementation))->cast(@meta::pure::mapping::PropertyMappingsImplementation)->map(i|$i->meta::pure::mapping::allPropertyMappings())->meta::analytics::search::transformation::mapping::buildPropertyList(),
+      stereotypes = meta::analytics::search::transformation::getStereotypes($m.class.stereotypes),
+      taggedValues = meta::analytics::search::transformation::getTaggedValues($m.class.taggedValues)
+    );
+  );
+}
+
+function meta::analytics::search::transformation::mapping::buildPropertyList(propertyMappings: meta::pure::mapping::PropertyMapping[*]): meta::analytics::search::metamodel::class::ClassProperty[*]
+{
+  $propertyMappings->filter(m|$m.property->hasStereotype('generatedmilestoningdateproperty', meta::pure::profiles::milestoning) == false && $m.property->hasStereotype('generatedmilestoningproperty', meta::pure::profiles::milestoning) == false)->map(m| ^meta::analytics::search::metamodel::class::ClassProperty(
+    name = $m.property.name->toOne(),
+    stereotypes = meta::analytics::search::transformation::getStereotypes($m.property.stereotypes),
+    taggedValues = meta::analytics::search::transformation::getTaggedValues($m.property.taggedValues)
+    );
+  )->removeDuplicates();
+}
+
+
+// SERVICE DOCUMENT
+function meta::analytics::search::transformation::service::buildDocument(service: meta::legend::service::metamodel::Service[1]): meta::analytics::search::metamodel::service::ServiceDocument[1]
+{
+  ^meta::analytics::search::metamodel::service::ServiceDocument(
+    id = meta::analytics::search::transformation::getId($service),
+    name = $service.pattern,
+    package = meta::analytics::search::transformation::getPackage($service),
+    type = meta::analytics::search::metamodel::DocumentType.Service,
+    owners = $service.owners,
+    description = $service.documentation,
+    executions = $service.execution->meta::analytics::search::transformation::service::buildExecutionDocuments()
+  );
+}
+
+function meta::analytics::search::transformation::service::buildExecutionDocuments(execution: meta::legend::service::metamodel::Execution[1]): meta::analytics::search::metamodel::service::Execution[*]
+{
+  $execution->match([
+    s: meta::legend::service::metamodel::PureSingleExecution[1]|
+        ^meta::analytics::search::metamodel::service::Execution(
+          mapping = $s.mapping->toOne()->elementToPath(),
+          classes = $s->meta::analytics::search::transformation::service::buildClassDocuments(),
+          databaseColumns = $s.func->meta::analytics::search::transformation::service::buildDatabaseColumnDocuments($s.mapping->toOne(), $s.runtime->toOne())
+        ),
+    m: meta::legend::service::metamodel::PureMultiExecution[1]|
+        $m.executionParameters->map(e|
+          ^meta::analytics::search::metamodel::service::Execution(
+            mapping = $e.mapping->elementToPath(),
+            classes = $m->meta::analytics::search::transformation::service::buildClassDocuments(),
+            databaseColumns = $m.func->meta::analytics::search::transformation::service::buildDatabaseColumnDocuments($e.mapping, $e.runtime)
+          );
+        )
+  ]);
+}
+
+function meta::analytics::search::transformation::getExtensions(): meta::pure::extension::Extension[*]
+{
+  meta::pure::extension::defaultExtensions()->concatenate(meta::relational::extension::relationalExtensions());
+}
+
+function meta::analytics::search::transformation::service::buildDatabaseColumnDocuments(funcDefinition: FunctionDefinition<Any>[1], mapping: meta::pure::mapping::Mapping[1], runtime: meta::core::runtime::Runtime[1]): meta::analytics::search::metamodel::mapping::DatabaseColumn[*]
+{
+  let lineage = $funcDefinition->meta::analytics::lineage::computeLineage($mapping, $runtime, meta::analytics::search::transformation::getExtensions());
+
+  let columnLineage = $lineage.reportLineage->meta::analytics::lineage::transformColumns();
+  let tables = $columnLineage->map(l|
+    $l.columns->map(c|
+      ^meta::analytics::search::metamodel::mapping::DatabaseColumn(
+        database = $c.database,
+        schema = $c.schema,
+        table = $c.table,
+        columns = $c.name
+      );
+    )
+  );
+
+  $tables->map(t|
+    let cols = $tables->filter(table|$table.database == $t.database && $table.schema == $t.schema && $table.table == $t.table)->map(table|$table.columns);
+    ^meta::analytics::search::metamodel::mapping::DatabaseColumn(
+      database = $t.database,
+      schema = $t.schema,
+      table = $t.table,
+      columns = $cols
+    );
+  )->removeDuplicates({t1,t2|$t1.database == $t2.database && $t1.schema == $t2.schema && $t1.table == $t2.table});
+}
+
+function meta::analytics::search::transformation::service::buildClassDocuments(execution: meta::legend::service::metamodel::Execution[1]): meta::analytics::search::metamodel::class::SimpleClassElement[*]
+{
+  let pureExecution = $execution->cast(@meta::legend::service::metamodel::PureExecution);
+  let valueSpec = $pureExecution.func.expressionSequence->first()->toOne()->evaluateAndDeactivate();
+
+  $valueSpec
+        ->meta::pure::lineage::scanProperties::scanProperties().result
+        ->meta::pure::lineage::scanProperties::propertyTree::buildPropertyTree().children
+        ->meta::analytics::search::transformation::service::buildClassDocuments();
+}
+
+function meta::analytics::search::transformation::service::buildClassDocuments(tree: meta::pure::lineage::scanProperties::propertyTree::PropertyPathTree[*]): meta::analytics::search::metamodel::class::SimpleClassElement[*]
+{
+  let traversedTree = $tree->meta::analytics::search::transformation::service::traversePropertyPathTree();
+  $traversedTree.classPath->removeDuplicates()->map(c|
+    ^meta::analytics::search::metamodel::class::SimpleClassElement(
+      name = $c->split('::')->last()->toOne(),
+      package = $c,
+      properties = $traversedTree->filter(n|$n->cast(@meta::analytics::search::metamodel::service::LinkedPropertyElement).classPath == $c)
+                                 ->removeDuplicatesBy(x|$x.name)
+                                 ->map(n| ^meta::analytics::search::metamodel::class::ClassProperty(
+                                    name = $n.name,
+                                    stereotypes = meta::analytics::search::transformation::getStereotypes($n.class.properties->filter(p| $p.name == $n.name).stereotypes),
+                                    taggedValues = meta::analytics::search::transformation::getTaggedValues($n.class.properties->filter(p| $p.name == $n.name).taggedValues))),
+    stereotypes = meta::analytics::search::transformation::getStereotypes($c->pathToElement().stereotypes),
+    taggedValues = meta::analytics::search::transformation::getTaggedValues($c->pathToElement().taggedValues)
+    );
+  );
+}
+
+function meta::analytics::search::transformation::service::traversePropertyPathTree(tree: meta::pure::lineage::scanProperties::propertyTree::PropertyPathTree[*]): meta::analytics::search::metamodel::service::LinkedPropertyElement[*]
+{
+  $tree->map(t|
+    if(
+      $t.children->isEmpty(),
+      |
+        let property = $t.value->cast(@meta::pure::lineage::scanProperties::PropertyPathNode);
+        ^meta::analytics::search::metamodel::service::LinkedPropertyElement(
+          name = $property.property.name->toOne(),
+          classPath = $property.class->elementToPath(),
+          class = $property.class
+        );,
+      |$t.children->map(c|$c->meta::analytics::search::transformation::service::traversePropertyPathTree())
+    );
+  );
+}
+
+// DATABASE DOCUMENT
+function meta::analytics::search::transformation::database::buildDocument(database: meta::relational::metamodel::Database[1]): meta::analytics::search::metamodel::database::DatabaseDocument[1]
+{
+  ^meta::analytics::search::metamodel::database::DatabaseDocument(
+    id = meta::analytics::search::transformation::getId($database),
+    name = meta::analytics::search::transformation::getName($database),
+    package = meta::analytics::search::transformation::getPackage($database),
+    type = meta::analytics::search::metamodel::DocumentType.DatabaseStore,
+    includedStores = $database.includes->map(s| $s->elementToPath()),
+    schemas = $database.schemas->map(s| ^meta::analytics::search::metamodel::database::Schema(name = $s.name, tables = $s.tables->map(t| ^meta::analytics::search::metamodel::database::Table(name = $t.name, columns = $t.columns->map(c| $c->cast(@meta::relational::metamodel::Column)->map(c| $c.name))))))
+  );
+}
+
+function meta::analytics::search::transformation::getId(element: PackageableElement[1]): String[1]
+{
+  $element->elementToPath()
+}
+
+function meta::analytics::search::transformation::getName(element: PackageableElement[1]): String[1]
+{
+  $element.name->toOne()
+}
+
+function meta::analytics::search::transformation::getPackage(element: PackageableElement[1]): String[1]
+{
+  $element.package->toOne()->elementToPath()
+}

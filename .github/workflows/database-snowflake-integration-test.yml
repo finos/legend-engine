@@ -63,12 +63,23 @@ jobs:
       - name: Build
         env:
           MAVEN_OPTS: -Xmx4g
-        run: mvn clean install -DskipTests=true
+        run: mvn -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-snowflake/legend-engine-xt-relationalStore-snowflake-execution-tests -am clean install -DskipTests=true
       - name: Run Integration Tests
         env:
           MAVEN_OPTS: -Xmx4g
           SNOWFLAKE_INTEGRATION_USER1_PRIVATEKEY: ${{ secrets.SNOWFLAKE_INTEGRATION_USER1_PRIVATEKEY }}
           SNOWFLAKE_INTEGRATION_USER1_PASSWORD: ${{ secrets.SNOWFLAKE_INTEGRATION_USER1_PASSWORD }}
         run: |
-          mvn -pl legend-engine-xt-relationalStore-executionPlan-connection  -Dtest="ExternalIntegration*Snowflake*" test
-          mvn -pl legend-engine-xt-relationalStore-executionPlan-connection-tests  -Dtest="ExternalIntegration*Snowflake*" test
+          mvn -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-snowflake/legend-engine-xt-relationalStore-snowflake-execution-tests -Dtest="ExternalIntegration*Snowflake" test
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-snowflake/legend-engine-xt-relationalStore-snowflake-execution-tests/target/surefire-reports/*.xml
+      - name: Upload CI Event
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: event-file
+          path: ${{ github.event_path }}

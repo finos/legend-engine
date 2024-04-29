@@ -1,0 +1,63 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::elasticsearch::executionTest::testCase::tds::schema::*;
+import meta::pure::test::*;
+import meta::pure::extension::*;
+import meta::external::store::elasticsearch::executionTest::test::*;
+
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test TDS Schema Extensions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::schema::testTDSSchema(config:TestConfig[1]):Boolean[1]
+{
+  assertSchemaRoundTripEquality([
+    ^TDSColumn(name = 'Title', offset = 0, type = String),
+    ^TDSColumn(name = 'Director', offset = 1, type = String),
+    ^TDSColumn(name = 'MPAA', offset = 2, type = String),
+    ^TDSColumn(name = 'ReleaseDate', offset = 3, type = Date),
+    ^TDSColumn(name = 'Budget', offset = 4, type = Integer),
+    ^TDSColumn(name = 'Revenue', offset = 5, type = Float),
+    ^TDSColumn(name = 'Description', offset = 6, type = String),
+    ^TDSColumn(name = 'MainActor.Name', offset = 7, type = String),
+    ^TDSColumn(name = 'Description.asKeyword', offset = 8, type = String),
+    ^TDSColumn(name = '_id', offset = 9, type = String)
+  ], '{| indexToTDS(test::Store, \'omdb-common\')}', $config);
+}
+
+function meta::external::store::elasticsearch::executionTest::testCase::tds::schema::compileFunction(code:String[1], config:TestConfig[1]):FunctionDefinition<{->TabularDataSet[1]}>[1]
+{
+  let toCompile = $config.model->replace('%_url_%', 'http://localhost:1') + '\n\n' + 
+  '###Pure \n\n ' + 
+  'function test::tdsSchema::func():FunctionDefinition[1] ' + 
+  '{\n' + 
+      $code + 
+  '}';
+
+  meta::legend::compile($toCompile)->filter(x | $x->elementToPath()->startsWith('test::tdsSchema::func'))
+      ->toOne()->cast(@ConcreteFunctionDefinition<{->Any[1]}>).expressionSequence->at(0)->evaluateAndDeactivate()
+      ->cast(@InstanceValue).values->toOne()->cast(@FunctionDefinition<{->TabularDataSet[1]}>);
+}
+
+function meta::external::store::elasticsearch::executionTest::testCase::tds::schema::assertSchemaRoundTripEquality(expected:TDSColumn[*], code : String[1], config:TestConfig[1]) : Boolean[1]
+{   
+  let query = compileFunction($code, $config);
+  meta::pure::tds::schema::tests::assertSchemaRoundTripEquality($expected, $query, extensions());
+}  
+
+function meta::external::store::elasticsearch::executionTest::testCase::tds::schema::extensions(): Extension[*]
+{
+  defaultExtensions()->concatenate(meta::external::store::elasticsearch::v7::extension::elasticsearchV7Extension());
+} 

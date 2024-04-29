@@ -1,0 +1,1291 @@
+/**
+  * Intermediate representation (IR) for PURE queries
+  *
+  * Here we define classes that model the part of PURE expressions
+  * which are supported for compilation into Rel code. Most of this file
+  * consists of functions that take instances of `ValueSpecification` and
+  * translate these instances into IR objects. IR objects exist so that
+  * subsequent compilation can rely on well-defined type signatures without
+  * having to manually parse `ValueSpecification`s first.
+  */
+
+import meta::external::store::rel::compile::ir::*;
+import meta::external::store::rel::compile::ir::typeinfo::*;
+import meta::external::store::rel::compile::ir::utils::*;
+import meta::external::store::rel::compile::substitution::*;
+import meta::external::store::rel::lib::*;
+import meta::external::store::rel::mapping::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::trace::*;
+import meta::external::store::rel::utils::*;
+import meta::external::store::rel::utils::lang::*;
+import meta::pure::router::metamodel::*;
+import meta::pure::router::store::metamodel::*;
+
+///////////////////////////
+// Translation functions //
+///////////////////////////
+
+function <<access.private>> meta::external::store::rel::compile::ir::storeMappingRoutedValueSpecToRelSet(
+  spec: StoreMappingRoutedValueSpecification[1],
+  trace: Trace[1]
+): Result<RelSetImplementation|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('storeMappingRoutedValueSpecToRelSet(StoreMappingRoutedValueSpecification[1],Trace[1])');
+  $spec.sets
+    ->first()
+    ->okOr(| errorTrace('Cannot obtain set implementation from supplied StoreMappingRoutedValueSpecification.', $newTrace))
+    ->tryCast(@RelSetImplementation, $newTrace);
+}
+
+function meta::external::store::rel::compile::ir::valueSpecToPExpr(
+  spec: ValueSpecification[1],
+  typeInfo: TranspileTypeInfo[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  let newTrace = $trace->stage('valueSpecToPExpr(ValueSpecification[1],Trace[1])');
+  $spec->valueSpecToPExpr($typeInfo, [], $newTrace);
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::valueSpecToPExpr(
+  spec: ValueSpecification[1],
+  typeInfo: TranspileTypeInfo[1],
+  set: RelSetImplementation[0..1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('valueSpecToPExpr(ValueSpecification[1],RelSetImplementation[0..1],Trace[1])')
+      ->detail('spec', $spec->class().name->orElse('(no name)'))
+      ->detailLazy('typeInfo', $typeInfo->describeLazy())
+      ->detailLazy('set', $set->describeLazy());
+
+  $spec->match([
+    {
+      routed: StoreMappingRoutedValueSpecification[1] |
+        let traceDetail = $newTrace->detail('case', 'StoreMappingRoutedValueSpecification');
+        $routed
+          ->storeMappingRoutedValueSpecToRelSet($newTrace)
+          ->andThen(this: RelSetImplementation[1] |
+            $routed.value->match([
+              func: FunctionExpression[1]  | $func->functionExprToPExpr($typeInfo, $this, $traceDetail),
+              var: VariableExpression[1]   | $this->setAccess($var.name)->ok(),
+              other: ValueSpecification[1] | $other->valueSpecToPExpr($typeInfo, $this, $traceDetail)
+            ])
+          );
+    },
+    {
+      value: InstanceValue[1] |
+        let traceDetail = $newTrace->detail('case', 'InstanceValue');
+        /*
+         * Here we require only a single value in the instance value in all cases.
+         */
+        $value
+          ->instanceValueToPExpr($set, true, $traceDetail)
+          ->them(exprs: PExpr[*] | $exprs->first());
+    },
+    {
+      func: FunctionExpression[1] |
+        let traceDetail = $newTrace->detail('case', 'FunctionExpression');
+        $func->functionExprToPExpr($typeInfo, $set, $traceDetail);
+    },
+    {
+      variable: VariableExpression[1] |
+        variablePlaceholder($variable.name)->ok()
+    },
+    {
+      notrouted: NoSetRoutedValueSpecification[1] |
+        assert($set == [], 'Set implementation passed when not expected.');
+        let traceDetail = $newTrace->detail('case', 'NoSetRoutedValueSpecification');
+
+        let requiredClass = $notrouted.genericType.rawType->toOne();
+        $requiredClass
+          ->tryCast(@Class<Any>, $newTrace)
+          ->then(c: Class<Any>[1] |
+            $typeInfo->setForClass($c)
+          )
+          ->andThen(typeInfoSet: RelSetImplementation[1] |
+
+            $notrouted.value->match([
+              func: FunctionExpression[1]  | $func->functionExprToPExpr($typeInfo, $typeInfoSet, $traceDetail),
+              var: VariableExpression[1]   | $typeInfoSet->setAccess($var.name)->ok(),
+              other: ValueSpecification[1] | $other->valueSpecToPExpr($typeInfo, $typeInfoSet, $traceDetail)
+            ])
+          );
+    },
+    {
+      other: Any[1] |
+        let traceDetail = $newTrace->detail('case', 'Any');
+        $other->valueToPExpr($set, $traceDetail);
+    }
+  ]);
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::instanceValueToPExpr(
+  spec: InstanceValue[1],
+  trace: Trace[1]
+): Result<PExpr|*>[1] {
+  let newTrace =
+    $trace
+      ->stage('instanceValueToPExpr(InstanceValue[1],Trace[1])');
+  instanceValueToPExpr($spec, [], false, $newTrace);
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::instanceValueToPExpr(
+  spec: InstanceValue[1],
+  set: RelSetImplementation[0..1],
+  requireAtMostOne: Boolean[1],
+  trace: Trace[1]
+): Result<PExpr|*>[1] {
+  let newTrace =
+    $trace
+      ->stage('instanceValueToPExpr(InstanceValue[1],RelSetImplementation[0..1],Boolean[1],Trace[1])')
+      ->detailLazy('set', $set->describeLazy());
+  if($spec.values->isEmpty(),
+    | constEmpty()->ok(),
+    | $spec.values
+        ->okm()
+        ->andThem(values: Any[*] |
+          if ($requireAtMostOne && $values->size() != 1,
+            | error('Expected exactly one value in `InstanceValue`.', $newTrace),
+            | $values->map(value | $value->valueToPExpr($set, $newTrace))->collect()
+          )
+        );
+  );
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::valueToPExpr(
+  value: Any[1],
+  set: RelSetImplementation[0..1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('valueToPExpr(Any[1],RelSetImplementation[0..1],Trace[1])')
+      ->detail('value', $value->type())
+      ->detailLazy('set', $set->describeLazy());
+  $value->match([
+    s: String[1] | ok(string($s)),
+    i: Integer[1] | ok(integer($i)),
+    f: Float[1] | ok(float($f)),
+    b: Boolean[1] | ok(boolean($b)),
+    d: StrictDate[1] | ok(strictDate($d)),
+    d: DateTime[1] | ok(dateTime($d)),
+    {class: Class<Any>[1] |
+      $set
+        ->map(set: RelSetImplementation[1] | exprSet($set))
+        ->okOr(| errorTrace(format('Encountered class `%s` but no set implementation has been provided.', $class.name), $newTrace))
+    },
+    {a: Any[1] |
+      let message =
+        'Encountered unknown instance when constructing PExpr for value with type: ' +
+          $a
+            ->type()
+            ->elementToPath()
+            ->else(| '<<unknown>>')
+            ->quote();
+      error($message, $newTrace);
+    }
+  ]);
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::propertyToPExpr(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  set: RelSetImplementation[0..1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('propertyToPExpr(Property<Nil,Any|*>[1],RelSetImplementation[0..1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy())
+      ->detailLazy('set', $set->describeLazy());
+
+  let param0 = $func.parametersValues->at(0);
+
+  $func.func->match([
+    {property: Property<Nil, Any|*>[1] |
+      let traceWithDetail = $newTrace->detail('property.name', $property.name->orElse('(no property name)'));
+      $typeInfo
+        ->mappingForProperty($property)
+        ->okOr(|
+          errorTrace(format('No mapping for property `%s`.', $property.name), $newTrace)
+        )
+        ->andThen(propertyMapping: RelPropertyMapping[1] |
+          $param0
+            ->valueSpecToPExpr($typeInfo, $traceWithDetail)
+            ->then(inner: PExpr[1] |
+              $inner->propertyAccess($propertyMapping);
+            )
+        );
+    },
+    other: Any[*] |
+      error('Expected function to be a property.', $newTrace)
+  ]);
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::recursivelyConstructTypeInfo(
+  valueSpec: ValueSpecification[1]
+): TranspileTypeInfo[1] {
+  $valueSpec->match([
+    {
+      routed: StoreMappingRoutedValueSpecification[1] |
+        constructTypeInfo($routed)
+    },
+    {
+      expr: SimpleFunctionExpression[1] |
+        let next = $expr.parametersValues->at(0);
+        recursivelyConstructTypeInfo($next);
+    },
+    {
+      other: ValueSpecification[1] |
+        ^TranspileTypeInfo()
+    }
+  ]);
+}
+
+function meta::external::store::rel::compile::ir::entryPointPExpr(
+  func: FunctionExpression[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  /*
+   * Determine whether any additional RelSetImplementations are available from a
+   * StoreMappingRoutedValueSpecification parameter, and if so union these with the
+   * set implementations passed as argument.
+   */
+  let newTypeInfo = recursivelyConstructTypeInfo($func);
+
+  let newTrace = $trace->stage('entryPointPExpr(FunctionExpression[1],Trace[1])');
+  functionExprToPExpr($func, $newTypeInfo, [], $newTrace);
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::functionExprToPExpr(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  set: RelSetImplementation[0..1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('functionExprToPExpr(FunctionExpression[1],RelSetImplementation[0..1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy())
+      ->detailLazy('set', $set->describeLazy());
+
+  $func.func->match([
+    {property: Property<Nil, Any|*>[1] |
+      propertyToPExpr($func, $typeInfo, $set, $trace)
+    },
+    {property: QualifiedProperty<Any>[1] |
+      $func.parametersValues
+        ->at(0)
+        ->valueSpecToPExpr($typeInfo, $newTrace)
+        ->andThen({parent: PExpr[1] |
+          switch([
+            // TODO check whether the first argument is a `TDSRow`
+            case($property.name == 'getString' || $property.name == 'getInteger' || $property.name == 'getDate', {|
+              // Existence of these values guaranteed by signature
+              let column = $func.parametersValues
+                ->at(1)
+                ->cast(@InstanceValue)
+                .values
+                ->toOne()
+                ->cast(@String);
+
+              $parent->columnAccess($column)->ok();
+            })
+          ], {|
+            let exprs = $func.func->cast(@FunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate();
+            if ($exprs->size() == 1, {|
+              compilationStep({substitution: VariableSubstitution[1], mapping: ColumnAccessRewrite[1], state: meta::external::store::rel::compile::CompilationState[1] |
+                $parent
+                  ->meta::external::store::rel::compile::compile($substitution, $mapping, $state, $newTrace)
+                  ->andThen({prev: meta::external::store::rel::compile::CompilationState[1] |
+                    let parent = $prev.current->toOne();
+
+                    $exprs
+                      ->at(0)
+                      ->valueSpecToPExpr($typeInfo, $newTrace)
+                      ->andThen({pexpr: PExpr[1] |
+                        $pexpr->meta::external::store::rel::compile::compile(
+                          $substitution->addBinding('this', {| $parent->ok() }),
+                          $mapping,
+                          $prev,
+                          $newTrace
+                        );
+                      });
+                  });
+              })
+              ->ok();
+            }, {|
+              let message =
+                format('Encountered unknown qualified property while translating: `%s`', $property.name);
+              error($message, $newTrace);
+            });
+          });
+        });
+    },
+    {other: Function<Any>[1] |
+      switch([
+        case($other == at_T_MANY__Integer_1__T_1_,|
+          handleCaseAt($func, $typeInfo, $newTrace)),
+        case($other == filter_T_MANY__Function_1__T_MANY_,|
+          handleCaseFilter($func, $typeInfo, $newTrace)),
+        case($other == getAll_Class_1__T_MANY_,|
+          handleCaseGetAll($func, $newTrace)),
+        case($other == map_T_m__Function_1__V_m_ ||
+             $other == map_T_MANY__Function_1__V_MANY_ ||
+             $other == map_T_$0_1$__Function_1__V_$0_1$_,|
+          handleCaseMap($func, $typeInfo, $newTrace)),
+        case($other == match_Any_MANY__Function_$1_MANY$__T_m_,|
+          handleCaseMatch($func, $typeInfo, $newTrace)),
+        case($other == exists_T_MANY__Function_1__Boolean_1_,|
+          handleCaseExists($func, $typeInfo, $newTrace)),
+        case($other == forAll_T_MANY__Function_1__Boolean_1_,|
+          handleCaseForAll($func, $typeInfo, $newTrace)),
+        case($other == project_T_MANY__Path_MANY__TabularDataSet_1_,|
+          handleCaseProject1($func, $typeInfo, $newTrace)),
+        case($other == project_T_MANY__ColumnSpecification_MANY__TabularDataSet_1_ ||
+             $other == project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_,|
+          handleCaseProject2($func, $typeInfo, $newTrace)),
+        case($other == project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_,|
+          handleCaseProject3($func, $typeInfo, $newTrace)),
+        case($other == restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_,|
+          handleCaseRestrict($func, $typeInfo, $newTrace)),
+        case($other == groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_,|
+          handleCaseGroupBy1($func, $typeInfo, $newTrace)),
+        case($other == groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_,|
+          handleCaseGroupBy2($func, $typeInfo, $newTrace)),
+        case($other == and_Boolean_1__Boolean_1__Boolean_1_ ||
+             $other == or_Boolean_1__Boolean_1__Boolean_1_ ||
+             $other == equal_Any_MANY__Any_MANY__Boolean_1_ ||
+             $other == greaterThan_Number_1__Number_1__Boolean_1_ ||
+             $other == greaterThanEqual_Number_1__Number_1__Boolean_1_ ||
+             $other == greaterThan_Date_1__Date_1__Boolean_1_ ||
+             $other == greaterThanEqual_Date_1__Date_1__Boolean_1_ ||
+             $other == lessThan_Number_1__Number_1__Boolean_1_ ||
+             $other == lessThanEqual_Number_1__Number_1__Boolean_1_ ||
+             $other == lessThan_Date_1__Date_1__Boolean_1_ ||
+             $other == lessThanEqual_Date_1__Date_1__Boolean_1_ ||
+             $other == divide_Number_1__Number_1__Float_1_,|
+          handleCaseBinaryOperator($func, $typeInfo, $newTrace)),
+        case($other == not_Boolean_1__Boolean_1_ || $other == isEmpty_Any_$0_1$__Boolean_1_ ||
+             $other == toOne_T_MANY__T_1_,|
+          handleCaseUnaryOperator($func, $typeInfo, $newTrace)),
+        case($other == plus_Number_MANY__Number_1_ || $other == plus_String_MANY__String_1_ ||
+             $other == plus_Integer_MANY__Integer_1_ || $other == plus_Float_MANY__Float_1_ ||
+             $other == times_Number_MANY__Number_1_ || $other == times_Integer_MANY__Integer_1_ ||
+             $other == times_Float_MANY__Float_1_ || $other == minus_Number_MANY__Number_1_ ||
+             $other == minus_Integer_MANY__Integer_1_ || $other == minus_Float_MANY__Float_1_,|
+          handleCaseBigOperator1($func, $typeInfo, $newTrace)),
+        case($other == sum_Integer_MANY__Integer_1_ || $other == sum_Float_MANY__Float_1_ || $other == sum_Number_MANY__Number_1_ ||
+             $other == count_Any_MANY__Integer_1_ ||
+             $other == max_Integer_MANY__Integer_$0_1$_ || $other == max_Float_MANY__Float_$0_1$_ ||
+             $other == min_Integer_MANY__Integer_$0_1$_ || $other == min_Float_MANY__Float_$0_1$_ ||
+             $other == toString_Any_1__String_1_,|
+          handleCaseBigOperator2($func, $typeInfo, $newTrace)),
+        case($other == if_Boolean_1__Function_1__Function_1__T_m_,|
+          handleCaseIf($func, $typeInfo, $newTrace)),
+        case ($other == in_Any_$0_1$__Any_MANY__Boolean_1_,|
+           handleCaseIn($func, $typeInfo, $newTrace)),
+        case($other == instanceOf_Any_1__Type_1__Boolean_1_,|
+          handleCaseInstanceOf($func, $typeInfo, $newTrace)),
+        case($other == cast_Any_m__T_1__T_m_,|
+          handleCaseCast($func, $typeInfo, $newTrace)),
+        case($other == meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_,|
+          handleCaseSerialize($func, $typeInfo, $newTrace)),
+        case($other == meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_,|
+          handleCaseGraphFetch($func, $typeInfo, $newTrace)),
+        case($other == extractEnumValue_Enumeration_1__String_1__T_1_,|
+          handleCaseExtractEnumValue($func, $newTrace)),
+        case($other == join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_ ||
+             $other == filter_TabularDataSet_1__Function_1__TabularDataSet_1_,|
+          meta::external::store::rel::compile::ir::tds::intoPExpr($func, $typeInfo, $newTrace))
+//
+// FIXME: Commented out to fix the build.
+//        case($other == meta::external::store::rel::query::def_String_1__FunctionDefinition_1__Any_MANY_, {|
+//          // TODO not implemented yet
+//          let query = $func.parametersValues->at(1)->intoScoped()->unwrap()->inspect();
+//
+//          meta::external::store::rel::compile::ir::const(1)->ok();
+//      )
+//
+      ], |
+        error(
+          'Encountered unknown instance when constructing PExpr for function with type: ' +
+            $other
+              ->elementToPath()
+              ->else(| '<<unknown>>')
+              ->quote(),
+          $newTrace
+        )
+      )
+    }
+  ]);
+}
+
+//////////////////
+// Handle cases //
+//////////////////
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseAt(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  assert($func.func == at_T_MANY__Integer_1__T_1_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseAt(FunctionExpression[1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
+
+  let param0 = $func.parametersValues->at(0);
+  let param1 = $func.parametersValues->at(1);
+
+  $param0
+    ->valueSpecToPExpr($typeInfo, $newTrace)
+    ->andThen({parent: PExpr[1] |
+      $param1
+        ->tryCast(@InstanceValue, $newTrace)
+        ->andThen(v: InstanceValue[1] |
+          $v.values
+            ->toOne()
+            ->tryCast(@Integer, $newTrace)
+        )
+        ->then(index: Integer[1] |
+          $parent->atExpr($index)
+        )
+    });
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseFilter(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  assert($func.func == filter_T_MANY__Function_1__T_MANY_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseFilter(FunctionExpression[1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
+
+  let param0 = $func.parametersValues->at(0);
+  let param1 = $func.parametersValues->at(1);
+
+  $param0
+    ->valueSpecToPExpr($typeInfo, $newTrace)
+    ->andThen(parent: PExpr[1] |
+      $param1
+        ->valueSpecToUntypedScoped($typeInfo, $parent, $newTrace)
+        ->then(scoped: PExprScope[1] | $parent->filter($scoped))
+    );
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseIn(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  assert($func.func == in_Any_$0_1$__Any_MANY__Boolean_1_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseIn(FunctionExpression[1],TranspileTypeInfo[1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
+
+  let param0 = $func.parametersValues->at(0);
+  let param1 = $func.parametersValues->at(1);
+
+  $param0
+    ->valueSpecToPExpr($typeInfo, $newTrace)
+    ->andThen(parent: PExpr[1] |
+      $param1->match([
+        {
+          value: InstanceValue[1] |
+            $value
+              ->instanceValueToPExpr($newTrace)
+              ->them(exprs: PExpr[*] |
+                $parent->inExpr($exprs);
+              );
+        },
+        {
+          other: ValueSpecification[1] |
+            error('Only instance values are supported within an `in` expression.', $newTrace)
+        }
+      ])
+    );
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseGetAll(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+  assert($func.func == getAll_Class_1__T_MANY_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseGetAll(FunctionExpression[1],Trace[1])');
+
+  let param0 = $func.parametersValues->at(0);
+
+  $param0
+    ->map(spec: StoreMappingRoutedValueSpecification[1] |
+      $spec->storeMappingRoutedValueSpecToRelSet($newTrace)
+    )
+    ->then(set: RelSetImplementation[1] | all($set));
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseMap(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  assert($func.func == map_T_m__Function_1__V_m_ || $func.func == map_T_MANY__Function_1__V_MANY_ || $func.func == map_T_$0_1$__Function_1__V_$0_1$_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseMap(FunctionExpression[1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
+
+  let param0 = $func.parametersValues->at(0);
+  let param1 = $func.parametersValues->at(1);
+
+  $param0
+    ->valueSpecToPExpr($typeInfo, $newTrace)
+    ->andThen(parent: PExpr[1] |
+      $param1
+        ->valueSpecToUntypedScoped($typeInfo, $parent, $newTrace)
+        ->then(scoped: PExprScope[1] | $parent->mapExpr($scoped))
+    );
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseMatch(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  assert($func.func == match_Any_MANY__Function_$1_MANY$__T_m_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseMatch(FunctionExpression[1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
+
+  let param0 = $func.parametersValues->at(0);
+  let param1 = $func.parametersValues->at(1);
+
+  $param0
+    ->valueSpecToPExpr($typeInfo, $newTrace)
+    ->andThen(parent: PExpr[1] |
+      $param1
+        ->valueSpecToTypedScopes($typeInfo, $parent, $newTrace)
+        ->collect()
+        ->them(predicates: PExprScopeTyped[*] |
+          $parent->matchExpr($predicates)
+        );
+    );
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseExists(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  assert($func.func == exists_T_MANY__Function_1__Boolean_1_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseExists(FunctionExpression[1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
+
+  let param0 = $func.parametersValues->at(0);
+  let param1 = $func.parametersValues->at(1);
+
+  $param0
+    ->valueSpecToPExpr($typeInfo, $newTrace)
+    ->andThen(parent: PExpr[1] |
+      $param1
+        ->valueSpecToUntypedScoped($typeInfo, $parent, $newTrace)
+        ->then(predicate: PExprScope[1] | $parent->exists($predicate))
+    );
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseForAll(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  assert($func.func == forAll_T_MANY__Function_1__Boolean_1_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseForAll(FunctionExpression[1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
+
+  let param0 = $func.parametersValues->at(0);
+  let param1 = $func.parametersValues->at(1);
+
+  $param0
+    ->valueSpecToPExpr($typeInfo, $newTrace)
+    ->andThen(parent: PExpr[1] |
+      $param1
+        ->valueSpecToUntypedScoped($typeInfo, $parent, $newTrace)
+        ->then(predicate: PExprScope[1] | $parent->forAll($predicate))
+    );
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseGroupBy1(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  assert($func.func == groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseGroupBy1(FunctionExpression[1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
+
+  let param0 = $func.parametersValues->at(0);
+  let param1 = $func.parametersValues->at(1);
+  let param2 = $func.parametersValues->at(2);
+  let param3 = $func.parametersValues->at(3);
+
+  $param0
+    ->valueSpecToPExpr($typeInfo, $newTrace)
+    ->andThen({parent: PExpr[1] |
+      $param1
+        ->valueSpecToUntypedScopes($typeInfo, $parent, $newTrace)
+        ->collect()
+        ->andThem({group: PExprScope[*] |
+          $param2
+            ->intoAggregates($typeInfo, $parent, $newTrace)
+            ->collect()
+            ->andThem({aggregates: PExprAggregate[*] |
+              $param3
+                ->tryCast(@InstanceValue, $newTrace)
+                ->andThen(i: InstanceValue[1] |
+                  $i.values
+                    ->map(v | $v->tryCast(@String, $newTrace))
+                    ->collect()
+                )
+                ->andThem({names: String[*] |
+                  if ($names->size() != $group->size() + $aggregates->size(),
+                    | error('Number of specified columns does not match the arity of the `group by` expression.', $newTrace),
+                    {|
+                      let namedAggregates =
+                        $aggregates
+                          ->toNumbered()
+                          ->map({pair: Pair<Integer, PExprAggregate>[1] |
+                            let agg = $pair.second;
+                            ^$agg(name=$names->at($group->size() + $pair.first - 1));
+                          });
+                      $parent
+                        ->groupBy($group, $namedAggregates, $names)
+                        ->ok();
+                    }
+                  );
+                })
+            })
+        });
+    });
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseGroupBy2(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  assert($func.func == groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseGroupBy2(FunctionExpression[1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
+
+  let param0 = $func.parametersValues->at(0);
+  let param1 = $func.parametersValues->at(1);
+  let param2 = $func.parametersValues->at(2);
+
+  $param0
+    ->valueSpecToPExpr($typeInfo, $newTrace)
+    ->andThen(parent: PExpr[1] |
+      $param1
+        ->tryCast(@InstanceValue, $newTrace)
+        ->andThen(v: InstanceValue[1] |
+          $v.values
+            ->map(s | $s->tryCast(@String, $newTrace))
+            ->collect()
+        )
+        ->andThem(columns: String[*] |
+          $param2
+            ->map(vs: ValueSpecification[1] | $vs->intoAggregates($typeInfo, $parent, $newTrace)->collect())
+            ->them(aggregates: PExprAggregate[*] |
+              $parent->groupBy($columns, $aggregates)
+            )
+        )
+    );
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseBinaryOperator(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  assert($func.func == and_Boolean_1__Boolean_1__Boolean_1_ ||
+         $func.func == or_Boolean_1__Boolean_1__Boolean_1_ ||
+         $func.func == equal_Any_MANY__Any_MANY__Boolean_1_ ||
+         $func.func == greaterThan_Number_1__Number_1__Boolean_1_ ||
+         $func.func == greaterThanEqual_Number_1__Number_1__Boolean_1_ ||
+         $func.func == greaterThan_Date_1__Date_1__Boolean_1_ ||
+         $func.func == greaterThanEqual_Date_1__Date_1__Boolean_1_ ||
+         $func.func == lessThan_Number_1__Number_1__Boolean_1_ ||
+         $func.func == lessThanEqual_Number_1__Number_1__Boolean_1_ ||
+         $func.func == lessThan_Date_1__Date_1__Boolean_1_ ||
+         $func.func == lessThanEqual_Date_1__Date_1__Boolean_1_ ||
+         $func.func == divide_Number_1__Number_1__Float_1_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseBinaryOperator(FunctionExpression[1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
+
+  let left = $func.parametersValues->at(0);
+  let right = $func.parametersValues->at(1);
+
+  [$left, $right]
+    ->evaluateAndDeactivate()
+    ->tryCastm(@ValueSpecification, $newTrace)
+    ->andThem(specs: ValueSpecification[*] |
+      $specs
+        ->map(spec | $spec->valueSpecToPExpr($typeInfo, $newTrace))
+        ->collect()
+    )
+    ->andThem(arguments: PExpr[*] |
+      $func
+        ->getFunctionExpr($newTrace)
+        ->then(fn | $arguments->fexpr($fn));
+    );
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseUnaryOperator(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  assert($func.func == not_Boolean_1__Boolean_1_ ||
+         $func.func == isEmpty_Any_$0_1$__Boolean_1_ ||
+         $func.func == toOne_T_MANY__T_1_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseUnaryOperator(FunctionExpression[1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
+
+  let param0 = $func.parametersValues->at(0);
+
+  $param0
+    ->valueSpecToPExpr($typeInfo, $newTrace)
+    ->andThen(inner: PExpr[1] |
+      $func
+        ->getFunctionExpr($newTrace)
+        ->then(fn | $inner->fexpr($fn))
+    );
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseBigOperator1(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  assert($func.func == plus_Number_MANY__Number_1_ || $func.func == plus_String_MANY__String_1_ ||
+         $func.func == plus_Integer_MANY__Integer_1_ || $func.func == plus_Float_MANY__Float_1_ ||
+         $func.func == times_Number_MANY__Number_1_ || $func.func == times_Integer_MANY__Integer_1_ ||
+         $func.func == times_Float_MANY__Float_1_ || $func.func == minus_Number_MANY__Number_1_ ||
+         $func.func == minus_Integer_MANY__Integer_1_ || $func.func == minus_Float_MANY__Float_1_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseBigOperator1(FunctionExpression[1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
+
+  let param0 = $func.parametersValues->at(0);
+
+  $param0
+    ->tryCast(@InstanceValue, $newTrace)
+    ->andThen(spec: InstanceValue[1] |
+      $spec.values
+        ->map(v: ValueSpecification[1] | $v->valueSpecToPExpr($typeInfo, $newTrace))
+        ->collect()
+    )
+    ->andThem(params: PExpr[*] |
+      $func
+        ->getFunctionExpr($newTrace)
+        ->then(fn | $params->fexpr($fn))
+    );
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseBigOperator2(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  assert($func.func == sum_Integer_MANY__Integer_1_ || $func.func == sum_Float_MANY__Float_1_ || $func.func == sum_Number_MANY__Number_1_ ||
+         $func.func == count_Any_MANY__Integer_1_ ||
+         $func.func == max_Integer_MANY__Integer_$0_1$_ || $func.func == max_Float_MANY__Float_$0_1$_ ||
+         $func.func == min_Integer_MANY__Integer_$0_1$_ || $func.func == min_Float_MANY__Float_$0_1$_ ||
+         $func.func == toString_Any_1__String_1_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseBigOperator2(FunctionExpression[1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
+
+  let param0 = $func.parametersValues->at(0);
+
+  $param0
+    ->valueSpecToPExpr($typeInfo, $newTrace)
+    ->andThen(parent: PExpr[1] |
+      $func
+        ->getFunctionExpr($newTrace)
+        ->then(fun | $parent->fexpr($fun))
+    );
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseIf(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  assert($func.func == if_Boolean_1__Function_1__Function_1__T_m_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseIf(FunctionExpression[1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
+
+  let param0 = $func.parametersValues->at(0);
+  let param1 = $func.parametersValues->at(1);
+  let param2 = $func.parametersValues->at(2);
+
+  $param0
+    ->valueSpecToPExpr($typeInfo, $newTrace)
+    ->andThen(condition: PExpr[1] |
+      $param1
+        ->valueSpecToUntypedScoped($typeInfo, $newTrace)
+        ->andThen(then: PExprScope[1] |
+          $param2
+            ->valueSpecToUntypedScoped($typeInfo, $newTrace)
+            ->then(else: PExprScope[1] | $condition->ifThenElse($then, $else))
+        )
+    );
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseInstanceOf(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  assert($func.func == instanceOf_Any_1__Type_1__Boolean_1_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseInstanceOf(FunctionExpression[1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
+
+  let object = $func.parametersValues->at(0);
+  let type = $func.parametersValues->at(1);
+
+  $object
+    ->valueSpecToPExpr($typeInfo, $newTrace)
+    ->andThen({obj: PExpr[1] |
+      $type
+        ->tryCast(@ExtendedRoutedValueSpecification, $newTrace)
+        ->andThen({spec: ExtendedRoutedValueSpecification[1] |
+          $spec
+            ->valueSpecToPExpr($typeInfo, $newTrace)
+            ->then({class: PExpr[1] |
+              compilationStep({substitution: VariableSubstitution[1], mapping: ColumnAccessRewrite[1], state: meta::external::store::rel::compile::CompilationState[1] |
+                $obj
+                  ->meta::external::store::rel::compile::compile($substitution, $mapping, $state, $newTrace)
+                  ->andThen({state: meta::external::store::rel::compile::CompilationState[1] |
+                    let objExpr = $state.current->toOne();
+                    $class
+                      ->meta::external::store::rel::compile::compile($substitution, $mapping, $state, $newTrace)
+                      ->then({next: meta::external::store::rel::compile::CompilationState[1] |
+                        let typeExpr = $next.current->toOne();
+                        let current = $typeExpr->atom($objExpr);
+
+                        ^$next(current=$current->annotate(Boolean));
+                      });
+                  });
+              });
+            });
+        });
+    });
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseCast(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  assert($func.func == cast_Any_m__T_1__T_m_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseCast(FunctionExpression[1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
+
+  let param0 = $func.parametersValues->at(0);
+  let param1 = $func.parametersValues->at(1);
+
+  $param0
+    ->valueSpecToPExpr($typeInfo, $newTrace)
+    ->andThen(parent: PExpr[1] |
+        $param1
+          ->tryCast(@StoreMappingRoutedValueSpecification, $newTrace)
+          ->andThen(spec: StoreMappingRoutedValueSpecification[1] |
+            $spec
+              ->storeMappingRoutedValueSpecToRelSet($newTrace)
+              ->then(set: RelSetImplementation[1] |
+                castExpr($parent, $set)
+              )
+          )
+    );
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseSerialize(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  assert($func.func == meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseSerialize(FunctionExpression[1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
+
+  let param0 = $func.parametersValues->at(0);
+
+  $param0
+    ->valueSpecToPExpr($typeInfo, $newTrace)
+    ->then(parent: PExpr[1] |
+      compilationStep({substitution: VariableSubstitution[1], mapping: ColumnAccessRewrite[1], state: meta::external::store::rel::compile::CompilationState[1] |
+        $parent
+          ->meta::external::store::rel::compile::compile($substitution, $mapping, $state, $newTrace)
+          ->then(state: meta::external::store::rel::compile::CompilationState[1] | $state)
+      })
+    );
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseGraphFetch(
+  func: FunctionExpression[1],
+  typeInfo: TranspileTypeInfo[1],
+  trace: Trace[1]
+): Result<PExpr|0..1>[1] {
+  assert($func.func == meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseGraphFetch(FunctionExpression[1],Trace[1])')
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
+
+  let param0 = $func.parametersValues->at(0);
+
+  $param0
+    ->valueSpecToPExpr($typeInfo, $newTrace)
+    ->then(parent: PExpr[1] |
+      compilationStep({substitution: VariableSubstitution[1], mapping: ColumnAccessRewrite[1], state: meta::external::store::rel::compile::CompilationState[1] |
+        // TODO: Implement!
+        $parent
+          ->meta::external::store::rel::compile::compile($substitution, $mapping, $state, $newTrace)
+          ->then(state: meta::external::store::rel::compile::CompilationState[1] | $state)
+      })
+    );
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseExtractEnumValue(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+  assert($func.func == meta::pure::functions::lang::extractEnumValue_Enumeration_1__String_1__T_1_);
+
+  let newTrace =
+    $trace
+      ->stage('handleCaseExtractEnumValue(FunctionExpression[1],Trace[1])');
+
+  let param0 = $func.parametersValues->at(0);
+  let param1 = $func.parametersValues->at(1);
+
+  $param0
+    ->tryCast(@InstanceValue, $newTrace)
+    ->andThen({value: InstanceValue[1] |
+      let enum = $value.values
+        ->at(0)
+        ->cast(@Enumeration<Any>);
+
+      $param1
+        ->tryCast(@InstanceValue, $newTrace)
+        ->then({val: InstanceValue[1] |
+          let enumValue = $val.values
+            ->at(0)
+            ->cast(@String);
+
+          compilationStep({callback: VariableSubstitution[1], mapping: ColumnAccessRewrite[1], state: meta::external::store::rel::compile::CompilationState[1] |
+            ^$state(current=
+              $enum
+                ->enumName()
+                ->meta::external::store::rel::metamodel::rel()
+                ->appl(meta::external::store::rel::metamodel::label($enumValue))
+            )
+            ->ok();
+          });
+        });
+    });
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::intoAggregates(
+  spec: ValueSpecification[1],
+  typeInfo: TranspileTypeInfo[1],
+  parent: PExpr[1],
+  trace: Trace[1]
+): Result<PExprAggregate|0..1>[*] {
+  let newTrace =
+    $trace
+      ->stage('intoAggregates(ValueSpecification[1],PExpr[1],Trace[1])')
+      ->detailLazy('parent', $parent->describeLazy())
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
+  $spec->match([
+    {fexpr: SimpleFunctionExpression[1] |
+      switch([
+        case($fexpr.func == agg_FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_, {|
+          $fexpr.parametersValues
+            ->at(0)
+            ->valueSpecToUntypedScoped($typeInfo, $parent, $newTrace)
+            ->andThen({map: PExprScope[1] |
+              $fexpr.parametersValues
+                ->at(1)
+                ->valueSpecToUntypedScoped($typeInfo, $parent, $newTrace)
+                ->then(aggFn: PExprScope[1] | aggregate($map, $aggFn));
+            })
+        }),
+        case($fexpr.func == agg_String_1__FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_, {|
+          $fexpr.parametersValues
+            ->at(0)
+            ->tryCast(@InstanceValue, $newTrace)
+            ->andThen(v: InstanceValue[1] |
+              $v.values
+                ->toOne()
+                ->tryCast(@String, $newTrace)
+            )
+            ->andThen({name: String[1] |
+              $fexpr.parametersValues
+                ->at(1)
+                ->valueSpecToUntypedScoped($typeInfo, $parent, $newTrace)
+                ->andThen({map: PExprScope[1] |
+                  $fexpr.parametersValues
+                    ->at(2)
+                    ->valueSpecToUntypedScoped($typeInfo, $parent, $newTrace)
+                    ->then(aggFn: PExprScope[1] | aggregate($map, $aggFn, $name))
+                });
+            });
+        })
+      ], {|
+        let message =
+          format('Encountered unexpected aggregation function during translation: `%s`', $fexpr.func->elementToPath());
+        error($message, $newTrace);
+      });
+    },
+    {value: InstanceValue[1] |
+      $value.values
+        ->tryCastm(@ValueSpecification, $newTrace)
+        ->map(casted: Result<ValueSpecification|0..1>[1] |
+          $casted->andMany(v: ValueSpecification[1] |
+            $v->intoAggregates($typeInfo, $parent, $newTrace)
+          )
+        )
+    }
+  ]);
+}
+
+function <<access.private>> meta::external::store::rel::compile::ir::getFunctionExpr(
+  fn: FunctionExpression[1],
+  trace: Trace[1]
+): Result<FunctionDefinition<{RelExpr[*]->RelExpr[1]}>|0..1>[1] {
+  let newTrace =
+    $trace
+      ->stage('getFunctionExpr(FunctionExpression[1],Trace[1])');
+  let eval =
+    switch([
+      case($fn.func == sum_Integer_MANY__Integer_1_ || $fn.func == sum_Float_MANY__Float_1_ || $fn.func == sum_Number_MANY__Number_1_, {|
+        {exprs: RelExpr[*] |
+          $exprs
+            ->at(0)
+            ->sum()
+        }->ok()
+      }),
+      case($fn.func == count_Any_MANY__Integer_1_, {|
+        {exprs: RelExpr[*] |
+          $exprs
+            ->at(0)
+            ->count()
+        }
+        ->ok()
+      }),
+      case($fn.func == max_Integer_MANY__Integer_$0_1$_ || $fn.func == max_Float_MANY__Float_$0_1$_,  {|
+        {exprs: RelExpr[*] |
+          $exprs
+            ->at(0)
+            ->max()
+        }
+        ->ok()
+      }),
+      case($fn.func == min_Integer_MANY__Integer_$0_1$_ || $fn.func == min_Float_MANY__Float_$0_1$_,  {|
+        {exprs: RelExpr[*] |
+          $exprs
+            ->at(0)
+            ->min()
+        }
+        ->ok()
+      }),
+      case($fn.func == equal_Any_MANY__Any_MANY__Boolean_1_, {|
+        {exprs: RelExpr[*] |
+          $exprs
+            ->at(0)
+            ->equals($exprs->at(1))
+        }
+        ->ok()
+      }),
+      case($fn.func == and_Boolean_1__Boolean_1__Boolean_1_, {|
+        {exprs: RelExpr[*] |
+          $exprs
+            ->at(0)
+            ->and($exprs->at(1))
+        }
+        ->ok()
+      }),
+      case($fn.func == or_Boolean_1__Boolean_1__Boolean_1_, {|
+        {exprs: RelExpr[*] |
+          $exprs
+            ->at(0)
+            ->or($exprs->at(1))
+            ->annotate(Boolean)
+        }
+        ->ok()
+      }),
+      case($fn.func == greaterThan_Number_1__Number_1__Boolean_1_ || $fn.func == greaterThan_Date_1__Date_1__Boolean_1_, {|
+        {exprs: RelExpr[*] |
+          $exprs
+            ->at(0)
+            ->greaterThan($exprs->at(1))
+        }
+        ->ok()
+      }),
+      case($fn.func == greaterThanEqual_Number_1__Number_1__Boolean_1_ || $fn.func == greaterThanEqual_Date_1__Date_1__Boolean_1_, {|
+        {exprs: RelExpr[*] |
+          $exprs
+            ->at(0)
+            ->greaterThanEqual($exprs->at(1))
+        }
+        ->ok()
+      }),
+      case($fn.func == lessThan_Number_1__Number_1__Boolean_1_ || $fn.func == lessThan_Date_1__Date_1__Boolean_1_, {|
+        {exprs: RelExpr[*] |
+          $exprs
+            ->at(0)
+            ->lessThan($exprs->at(1))
+        }
+        ->ok()
+      }),
+      case($fn.func == lessThanEqual_Number_1__Number_1__Boolean_1_ || $fn.func == lessThanEqual_Date_1__Date_1__Boolean_1_, {|
+        {exprs: RelExpr[*] |
+          $exprs
+            ->at(0)
+            ->lessThanEqual($exprs->at(1))
+        }
+        ->ok()
+      }),
+      case($fn.func == plus_Number_MANY__Number_1_ || $fn.func == plus_Integer_MANY__Integer_1_ ||
+          $fn.func == plus_Float_MANY__Float_1_, {|
+        {exprs: RelExpr[*] |
+          $exprs->plus()
+        }
+        ->ok()
+      }),
+      case($fn.func == minus_Number_MANY__Number_1_ || $fn.func == minus_Integer_MANY__Integer_1_ ||
+          $fn.func == minus_Float_MANY__Float_1_, {|
+        {exprs: RelExpr[*] |
+          $exprs->minus()
+        }
+        ->ok()
+      }),
+      case($fn.func == plus_String_MANY__String_1_, {|
+        {exprs: RelExpr[*] |
+          $exprs->concat()
+        }
+        ->ok()
+      }),
+      case($fn.func == times_Number_MANY__Number_1_ || $fn.func == times_Integer_MANY__Integer_1_ ||
+          $fn.func == times_Float_MANY__Float_1_, {|
+        {exprs: RelExpr[*] |
+          $exprs->times()
+        }
+        ->ok()
+      }),
+      case($fn.func == divide_Number_1__Number_1__Float_1_, {|
+        {exprs: RelExpr[*] |
+          $exprs->at(0)->divide($exprs->at(1))
+        }
+        ->ok()
+      }),
+      case($fn.func == not_Boolean_1__Boolean_1_, {|
+        {exprs: RelExpr[*] |
+          $exprs
+            ->at(0)
+            ->not()
+        }
+        ->ok()
+      }),
+      case($fn.func == isEmpty_Any_$0_1$__Boolean_1_, {|
+        {exprs: RelExpr[*] |
+          $exprs
+            ->at(0)
+            ->empty()
+        }
+        ->ok()
+      }),
+      case($fn.func == toOne_T_MANY__T_1_, {|
+        {exprs: RelExpr[*] |
+          $exprs
+            ->at(0)
+        }
+        ->ok()
+      }),
+      case($fn.func == toString_Any_1__String_1_, {|
+        {exprs: RelExpr[*] |
+          $exprs
+            ->at(0)
+            ->string()
+        }
+        ->ok()
+      })
+    ], {|
+      let message =
+        'Encountered unknown instance when constructing Expr for function with type: ' +
+          $fn.func
+            ->elementToPath()
+            ->else(| '<<unknown>>')
+            ->quote();
+      error($message, $newTrace);
+    });
+
+  let type = $fn.genericType.rawType;
+
+  // Annotate function result with `type`.
+  $eval
+    ->then(inner: FunctionDefinition<{RelExpr[*]->RelExpr[1]}>[1] |
+      {exprs: RelExpr[*] |
+        $inner
+          ->eval($exprs)
+          ->annotate($type);
+      };
+    );
+}

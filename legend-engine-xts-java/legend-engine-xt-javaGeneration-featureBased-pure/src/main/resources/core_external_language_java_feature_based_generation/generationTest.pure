@@ -1,0 +1,220 @@
+import meta::external::language::java::generation::featureBased::*;
+import meta::external::language::java::generation::featureBased::tests::model::*;
+import meta::external::language::java::generation::featureBased::tests::*;
+import meta::external::language::java::generation::featureBased::tests::optionals::*;
+import meta::external::language::java::generation::featureBased::tests::utils::*;
+import meta::external::language::java::generation::featureBased::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::generation::featureBased::pojo::*;
+import meta::external::language::java::generation::featureBased::definition::*;
+
+Enum meta::external::language::java::generation::featureBased::tests::constructorInjection::ASimpleChoice {
+   A, B
+}
+
+Class meta::external::language::java::generation::featureBased::tests::constructorInjection::Person
+{
+   firstName : String[1];
+   lastName : String[1];
+   addresses : String[*];
+   firm : meta::external::language::java::generation::featureBased::tests::constructorInjection::Firm[0..1];
+   drives: Boolean[1];
+   choice: meta::external::language::java::generation::featureBased::tests::constructorInjection::ASimpleChoice[1];
+   preferredName: String[0..1];
+}
+
+Class meta::external::language::java::generation::featureBased::tests::constructorInjection::Firm
+{
+   legalName : String[1];
+   employees : meta::external::language::java::generation::featureBased::tests::constructorInjection::Person[*];
+   addresses : String[*];
+   count : Integer[1];
+}
+
+Enum meta::external::language::java::generation::featureBased::tests::model::ASimpleChoice {
+   A, B
+}
+
+Class meta::external::language::java::generation::featureBased::tests::model::Person
+{
+   firstName : String[1];
+   lastName : String[1];
+   addresses : meta::external::language::java::generation::featureBased::tests::model::Address[*];
+   firm : Firm[0..1];
+   drives: Boolean[1];
+   choice: ASimpleChoice[1];
+   preferredName: String[0..1];
+}
+
+Class meta::external::language::java::generation::featureBased::tests::model::Firm
+{
+   legalName : String[1];
+   employees : Person[*];
+   addresses : meta::external::language::java::generation::featureBased::tests::model::Address[*];
+   count : Integer[1];
+}
+
+Class meta::external::language::java::generation::featureBased::tests::model::Address
+{
+  number:  Number[1];
+  street : String[1];
+  value: Float[1];
+  distanceFromCentre : Decimal[1];
+  built: Date[1];
+  lastVisisted: DateTime[1];
+  anotherDate:StrictDate[1];
+}
+
+Class meta::external::language::java::generation::featureBased::tests::model::AddressExtension extends meta::external::language::java::generation::featureBased::tests::model::Address
+{
+   city : String[0..1];
+}
+
+Class meta::external::language::java::generation::featureBased::tests::optionals::model::OptionalsSample
+{
+  optionalString :  String[0..1];
+  optionalBoolean : Boolean[0..1];
+  aBoolean: Boolean[1];
+  aInteger : Integer[0..1];
+  optionalInteger : Integer[0..1];
+  optionalFloat : Float[0..1];
+  optionalNumber : Number[0..1];
+  optionalDecimal : Decimal[0..1];
+  optionalDate : Date[0..1];
+  optionalDateTime : DateTime[0..1];
+  optionalStrincDate :StrictDate[0..1];
+  optionalList:String[0..*];
+  aList:String[1..*];
+  aString:String[1];
+}
+    
+function meta::external::language::java::generation::featureBased::tests::utils::testJavaCodeGenerationContext(scope:String[1],config:JavaCodeGenerationConfig[0..1],withFeatures:Feature[*],debug:DebugContext[1]):JavaCodeGenerationContext[1]
+{
+  let finalConfig = if ($config->isEmpty()
+                      ,|^JavaCodeGenerationConfig(javaPrimitives=true,scopeElements=[$scope->pathToElement()]);
+                      ,|let copy = $config->toOne();
+                        ^$copy(scopeElements=[$scope->pathToElement()]);
+                     );
+  let conventions = defaultConventions($finalConfig);
+  let context = ^JavaCodeGenerationContext(conventions=$conventions,featuresToApply=$withFeatures,config=$finalConfig,debug=$debug);
+}
+
+function meta::external::language::java::generation::featureBased::tests::utils::split(classString: String[1]): String[*]
+{
+    $classString -> split('\r\n');
+}
+
+function meta::external::language::java::generation::featureBased::tests::utils::compareJavaCode(expectedSources:Map<String,String>[1],fileName:String[1],actualCode:String[1]):Boolean[1]
+{
+  let expected = $expectedSources->get($fileName)->toOne();
+  compareJavaCode($fileName,$expected,$actualCode);
+  true;
+}
+
+function meta::external::language::java::generation::featureBased::tests::utils::compareJavaCode(fileName:String[1],expectedCode:String[1],actualCode:String[1]):Boolean[1]
+{
+  let expected = $expectedCode->split();
+  let actual = $actualCode->split();
+  assertEquals($expected->size(),$actual->size(),'lines number dont match %d, %d', [$expected->size(),$actual->size()]);
+  let size = $actual->size();
+  range($actual->size())->map( i | assertEquals($expected->at($i),$actual->at($i),'found line differences at line %s:\nexpected: [%s] \nactual :[%s]:',[$i,$expected->at($i),$actual->at($i)]));
+
+  true;
+}
+
+function <<test.Test>> meta::external::language::java::generation::featureBased::tests::testJavaGeneration():Boolean[1]
+{
+  let package = 'meta::external::language::java::generation::featureBased::tests::model';
+  let testGenerationContext = testJavaCodeGenerationContext($package,[],pojoGenerationFeatures(),noDebug());
+  let sources = $testGenerationContext->generateJava();
+  assertEquals(5, $sources->size());
+  let expectedSources = expectedSources();
+  $sources->map( source | $expectedSources->compareJavaCode($source.fileName,$source.content));
+  true;
+}
+
+function <<test.Test>> meta::external::language::java::generation::featureBased::tests::testJavaGenerationNonPrimitives():Boolean[1]
+{
+
+  let scope = 'meta::external::language::java::generation::featureBased::tests::model::Address';
+  let testGenerationContext = testJavaCodeGenerationContext($scope,^JavaCodeGenerationConfig(javaPrimitives=false),pojoGenerationFeatures(),noDebug());                                       
+  let sources = $testGenerationContext->generateJava();
+  assertEquals(1, $sources->size());
+  let source = $sources->at(0);
+  compareJavaCode($source.fileName,expectedSourceForAddressNonPrimtives(),$source.content);
+  true;
+}
+
+function <<test.Test>> meta::external::language::java::generation::featureBased::tests::testJavaGenerationPrimitives():Boolean[1]
+{  
+  let scope = 'meta::external::language::java::generation::featureBased::tests::model::Address';
+  let testGenerationContext = testJavaCodeGenerationContext($scope,^JavaCodeGenerationConfig(javaPrimitives=true),pojoGenerationFeatures(),noDebug());                                       
+  let sources = $testGenerationContext->generateJava();
+  assertEquals(1, $sources->size());
+  let source = $sources->at(0);
+  compareJavaCode($source.fileName,expectedSources()->get($source.fileName)->toOne(),$source.content);
+  true;
+}
+
+
+function <<test.Test, test.ToFix>> meta::external::language::java::generation::featureBased::tests::optionals::testJavaGenerationOptionals():Boolean[1]
+{
+ 
+  let scope = 'meta::external::language::java::generation::featureBased::tests::optionals::model::OptionalsSample';
+  let testGenerationContext = testJavaCodeGenerationContext($scope,^JavaCodeGenerationConfig(javaPrimitives=false,optionals=true),pojoGenerationFeatures(),noDebug());                                       
+  let sources = $testGenerationContext->generateJava();
+  assertEquals(1, $sources->size());
+  let source = $sources->at(0);
+  compareJavaCode($source.fileName,expectedSourceForOptionalsSample(),$source.content);
+  true;
+}
+
+function <<test.Test, test.ToFix>> meta::external::language::java::generation::featureBased::tests::optionals::testJavaGenerationPrimitiveOptionals():Boolean[1]
+{ 
+  let scope = 'meta::external::language::java::generation::featureBased::tests::optionals::model::OptionalsSample';
+  let testGenerationContext = testJavaCodeGenerationContext($scope,^JavaCodeGenerationConfig(javaPrimitives=true,optionals=true),pojoGenerationFeatures(),noDebug());                                       
+  let sources = $testGenerationContext->generateJava();
+  assertEquals(1, $sources->size());
+  let source = $sources->at(0);
+  compareJavaCode($source.fileName,expectedSourceForOptionalsSampleWithPrimitives(),$source.content);
+  true;
+}
+
+
+function <<test.Test>> meta::external::language::java::generation::featureBased::tests::testJavaGenerationVersions():Boolean[1]
+{
+  let versionConfig=[ meta::external::language::java::generation::featureBased::versions::buildVersionsConfig([],'1.0.0')];
+
+  let scope = 'meta::external::language::java::generation::featureBased::tests::model::AddressExtension';
+  let features = pojoGenerationFeatures()->add(versionInformation());
+  let testGenerationContext = testJavaCodeGenerationContext($scope,^JavaCodeGenerationConfig(javaPrimitives=true,featureConfig=$versionConfig),$features,noDebug());                                       
+  let sources = $testGenerationContext->generateJava();
+  assertEquals(1, $sources->size());
+  let source = $sources->at(0);
+  compareJavaCode($source.fileName,expectedSourceForAddressExtensionVersions(),$source.content);
+  true;
+}
+
+function <<test.Test>> meta::external::language::java::generation::featureBased::tests::testJavaGenerationVersionsEmptyConfig():Boolean[1]
+{
+  let versionConfig = [ meta::external::language::java::generation::featureBased::versions::buildVersionsConfig([],[])];
+  let scope = 'meta::external::language::java::generation::featureBased::tests::model::AddressExtension';
+  let features = pojoGenerationFeatures()->add(versionInformation());
+  let testGenerationContext = testJavaCodeGenerationContext($scope,^JavaCodeGenerationConfig(javaPrimitives=false,featureConfig=$versionConfig),$features,noDebug());                                       
+  let sources = $testGenerationContext->generateJava();
+  assertEquals(1, $sources->size());
+  let source = $sources->at(0);
+  compareJavaCode($source.fileName,expectedSourceForAddressExtension(),$source.content);
+  true;
+}
+
+function <<test.Test>> meta::external::language::java::generation::featureBased::tests::testJavaGenerationConstructorInjection():Boolean[1]
+{
+  let package = 'meta::external::language::java::generation::featureBased::tests::constructorInjection';
+  let testGenerationContext = testJavaCodeGenerationContext($package,[],constructorInjectedPojoGenerationFeatures(),noDebug());
+  let sources = $testGenerationContext->generateJava();
+  assertEquals(3, $sources->size());
+  let expectedSources = expectedSources();
+  $sources->map( source | $expectedSources->compareJavaCode($source.fileName,$source.content));
+  true;
+}

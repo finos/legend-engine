@@ -1,0 +1,56 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::*;
+import meta::external::store::elasticsearch::executionTest::testCase::*;
+import meta::external::store::elasticsearch::executionTest::testCase::tds::*;
+import meta::external::store::elasticsearch::executionTest::test::*;
+import meta::external::store::elasticsearch::executionTest::utils::*;
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test _id filter on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::id::testEqualsID(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getString('_id') == 'a9e1a35bc5296c5578b16d789c18c16b'));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test _id equality filter on Elasticsearch using variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::id::testEqualsID_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let id = 'a9e1a35bc5296c5578b16d789c18c16b';
+  $config->testTdsExpression(x | $x->filter(x | $x.getString('_id') == $id));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test _ID in filter on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::id::testInID(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getString('_id')->in(['a9e1a35bc5296c5578b16d789c18c16b', 'bbced6da633daf82be81a145f661bdb0'])));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test _ID in filter on Elasticsearch using variables'}  
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::id::testInID_PureManyVariable(config:TestConfig[1]):Boolean[1]
+{
+  let oneId = asZeroMany(['a9e1a35bc5296c5578b16d789c18c16b']);
+  $config->testTdsExpression(x | $x->filter(x | $x.getString('_id')->in($oneId)));
+
+  let multipleIds = asZeroMany(['a9e1a35bc5296c5578b16d789c18c16b', 'bbced6da633daf82be81a145f661bdb0']);
+  $config->testTdsExpression(x | $x->filter(x | $x.getString('_id')->in($multipleIds)));
+}

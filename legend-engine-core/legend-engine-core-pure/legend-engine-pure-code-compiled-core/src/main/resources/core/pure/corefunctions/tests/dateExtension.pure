@@ -1,0 +1,63 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+function <<test.Test>> meta::pure::functions::tests::date::firstDayOfThisWeekTest():Boolean[1]
+{
+   assertEquals(%2017-09-18, %2017-09-18->firstDayOfWeek());
+   assertEquals(%2017-09-11, %2017-09-17->firstDayOfWeek());
+}
+
+function <<test.Test>> meta::pure::functions::tests::date::firstHourOfDayTest():Boolean[1]
+{
+  assertEquals(%2023-02-03T00, %2023-02-03T12:11:10->firstHourOfDay());
+  assertEquals(%2023-02-03T00, %2023-02-03->firstHourOfDay());
+}
+
+
+function <<test.Test>> meta::pure::functions::tests::date::firstMinuteOfHourTest():Boolean[1]
+{
+  assertEquals(%2023-02-03T12:00, %2023-02-03T12:11:10->firstMinuteOfHour());
+}
+
+function <<test.Test>> meta::pure::functions::tests::date::firstSecondOfMinuteTest():Boolean[1]
+{
+  assertEquals(%2023-02-03T12:11:00, %2023-02-03T12:11:10->firstSecondOfMinute());
+}
+
+function <<test.Test>> meta::pure::functions::tests::date::firstMillisecondOfSecondTest():Boolean[1]
+{
+  assertEquals(%2023-02-03T12:11:10.000+0000, %2023-02-03T12:11:10.123->firstMillisecondOfSecond());
+}
+
+function <<test.Test>> meta::pure::functions::tests::date::testLeapYear():Boolean[1]
+{
+   let allLeaps = ![2020, 2016, 2012, 2008]->map(d|$d->meta::pure::functions::date::isLeap())->contains(false);
+   let allNotLeaps = ![2019, 2015, 2011, 2007]->map(d|$d->meta::pure::functions::date::isLeap())->contains(true);
+   assert($allLeaps && $allNotLeaps);
+}
+
+function <<test.Test>> meta::pure::functions::tests::date::fromEpochValue():Boolean[1]
+{
+  assertEquals(%1970-01-01T00:00:00.000+0000, 0->fromEpochValue());
+  assertEquals(%1970-01-01T00:00:10.000+0000, 10->fromEpochValue());
+  assertEquals(%2023-05-04T10:09:57.000+0000, 1683194997->fromEpochValue());
+}
+
+function <<test.Test>> meta::pure::functions::tests::date::toEpochValue():Boolean[1]
+{
+  assertEquals(0, %1970-01-01T00:00:00->toEpochValue());
+  assertEquals(10, %1970-01-01T00:00:10->toEpochValue());
+  assertEquals(1683194997, %2023-05-04T10:09:57+0000->toEpochValue());
+}

@@ -1,0 +1,645 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::pureToSqlQuery::calendarAggregations::*;
+
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation annualized function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation:= Aggregating over the endDate\'s year, annualising based on number of fiscalDays in the year.'} meta::pure::functions::date::calendar::annualized(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation cme function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the endDate\'s month, projecting based on number of fiscalDays in the month (similar to \'annualized\', but for a month). Acronym:= Current Month Estimate.'} meta::pure::functions::date::calendar::cme(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation cw function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the current week. Acronym: Current Week.'} meta::pure::functions::date::calendar::cw(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation cw_fm function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the current week, including the previous weekend (Franchise Manager\'s use-case). Acronym: Current Week, Franchise Manager.'} meta::pure::functions::date::calendar::cw_fm(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation CYMinus2 function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the Current Year minus 2.'} meta::pure::functions::date::calendar::CYMinus2(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation CYMinus3 function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the Current Year minus 3.'} meta::pure::functions::date::calendar::CYMinus3(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation mtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over month-to-date.'} meta::pure::functions::date::calendar::mtd(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation p12wa function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous 12 weeks, divided by 12. Acronym:= Previous 12 Weeks Averaged.'} meta::pure::functions::date::calendar::p12wa(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation p12wtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous 12 weeks until endDate. Acronym:= Previous 12 Weeks To Date.'} meta::pure::functions::date::calendar::p12wtd(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation p4wa function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous 4 weeks, divided by 4. Acronym:= Previous 4 Weeks Averaged.'} meta::pure::functions::date::calendar::p4wa(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation p4wtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous 4 weeks until endDate. Acronym:= Previous 4 Weeks To Date.'} meta::pure::functions::date::calendar::p4wtd(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation p52wtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous 52 weeks until endDate. Acronym:= Previous 52 Weeks To Date.'} meta::pure::functions::date::calendar::p52wtd(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation p52wa function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous 52 weeks, divided by 52. Acronym:= Previous 52 Weeks Averaged.'} meta::pure::functions::date::calendar::p52wa(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation p12mtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous 12 months until endDate. Acronym:= Previous 12 Months To Date.'} meta::pure::functions::date::calendar::p12mtd(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pma function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= If endDate is not in January, aggregating over the previous months of endDate\'s year, divided by number of number of months elapsed. If endDate is in January, aggregating over endDate\'s previous year, divided by 12. Acronym:= Previous Months Averaged.'} meta::pure::functions::date::calendar::pma(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pmtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous month, for the same number of fiscalDays as endDate\'s fiscalDayInMonth. Acronym:= Previous Month To Date.'} meta::pure::functions::date::calendar::pmtd(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pqtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous quarter, for the same number of fiscalDays as endDate\'s fiscalDayInQuarter. Acronym:= Previous Quarter To Date.'} meta::pure::functions::date::calendar::pqtd(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation priorDay function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the business day previous to endDate.'} meta::pure::functions::date::calendar::priorDay(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation priorYear function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the (entire) year previous to endDate.'} meta::pure::functions::date::calendar::priorYear(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pw function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous week. Acronym: Previous Week.'} meta::pure::functions::date::calendar::pw(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pw_fm function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous week, including the weekend before (Franchise Manager\'s use-case). Acronym: Previous Week, Franchise Manager.'} meta::pure::functions::date::calendar::pw_fm(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pwa function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= If endDate is in the first 5 weeks of the year, aggregating over the previous year, dividing by 5 (there are typically 5 business days in a week). If endDate is not in the first 5 weeks of the year, aggregating over current year until endDate, dividing by the number of weeks elapsed. Acronym:= Past Weeks\' Average.'} meta::pure::functions::date::calendar::pwa(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pwtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous week, for the same number of fiscalDays as endDate\'s fiscalDayInWeek. Acronym:= Previous Week To Date.'} meta::pure::functions::date::calendar::pwtd(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pymtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous year\'s (same) month, for the same number of fiscalDays as endDate\'s fiscalDayInMonth. Acronym:= Previous Year\'s Month To Date.'} meta::pure::functions::date::calendar::pymtd(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pyqtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous year\'s (same) quarter, for the same number of fiscalDays as endDate\'s fiscalDayInQuarter. Acronym:= Previous Year\'s Quarter To Date.'} meta::pure::functions::date::calendar::pyqtd(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pytd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous year, for the same number of fiscalDays as endDate\'s fiscalDayInYear. Acronym:= Previous Year To Date.'} meta::pure::functions::date::calendar::pytd(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pywa function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous year, dividing by 5 (there are typically 5 business days in a week). This function returns null if endDate is not in the first 5 weeks of the year. Acronym:= Previous Year\'s Weekly Average.'} meta::pure::functions::date::calendar::pywa(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pywtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous year\'s (same) week, for the same number of fiscalDays as endDate\'s fiscalDayInWeek. Acronym:= Previous Year\'s Week To Date.'} meta::pure::functions::date::calendar::pywtd(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation qtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over quarter-to-date.'} meta::pure::functions::date::calendar::qtd(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation reportEndDay function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over endDate.'} meta::pure::functions::date::calendar::reportEndDay(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation wtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over week-to-date.'} meta::pure::functions::date::calendar::wtd(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation ytd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over year-to-date.'} meta::pure::functions::date::calendar::ytd(inputDate: Date[1], calendarType: String[1], endDate: Date[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+
+function meta::pure::functions::date::daysOfMonth(date:Date[1]):Integer[*]
+{
+   if ($date->hasDay(),
+       | $date->dayOfMonth(),
+       | if ($date->hasMonth(), | range(1, date($date->year(), $date->monthNumber(), 1)->adjust(1, DurationUnit.MONTHS)->adjust(-1, DurationUnit.DAYS)->dayOfMonth() + 1),
+                                 | fail('Not supported for dates with only a year'); 0;))
+}
+
+function meta::pure::functions::date::firstDayOfThisQuarter():StrictDate[1]
+{
+   today()->firstDayOfQuarter();
+}
+
+function meta::pure::functions::date::firstDayOfQuarter(date:Date[1]):StrictDate[1]
+{
+   date($date->year(), ($date->quarterNumber() * 3) - 2, 1);
+}
+
+function meta::pure::functions::date::firstDayOfThisWeek():Date[1]
+{
+   today()->firstDayOfWeek();
+}
+
+function meta::pure::functions::date::firstDayOfWeek(date:Date[1]):Date[1]
+{
+   $date->mostRecentDayOfWeek(DayOfWeek.Monday);
+}
+
+function meta::pure::functions::date::firstHourOfDay(date:Date[1]):DateTime[1]
+{
+  assert($date->hasMonth(), 'date must have month');
+  assert($date->hasDay(), 'date must have day');
+
+  date($date->year(), $date->monthNumber(), $date->dayOfMonth(), 0);
+}
+
+function meta::pure::functions::date::firstMinuteOfHour(date:Date[1]):DateTime[1]
+{
+  assert($date->hasMonth(), 'date must have month');
+  assert($date->hasDay(), 'date must have day');
+  assert($date->hasHour(), 'date must have hour');
+
+  date($date->year(), $date->monthNumber(), $date->dayOfMonth(), $date->hour(), 0);
+}
+
+function meta::pure::functions::date::firstSecondOfMinute(date:Date[1]):DateTime[1]
+{
+  assert($date->hasMonth(), 'date must have month');
+  assert($date->hasDay(), 'date must have day');
+  assert($date->hasHour(), 'date must have hour');
+  assert($date->hasMinute(), 'date must have minute');
+
+  date($date->year(), $date->monthNumber(), $date->dayOfMonth(), $date->hour(), $date->minute(), 0);
+}
+
+function meta::pure::functions::date::firstMillisecondOfSecond(date:Date[1]):DateTime[1]
+{
+  assert($date->hasMonth(), 'date must have month');
+  assert($date->hasDay(), 'date must have day');
+  assert($date->hasHour(), 'date must have hour');
+  assert($date->hasMinute(), 'date must have minute');
+  assert($date->hasSecond(), 'date must have second');
+  assert($date->hasSubsecond(), 'date must have subsecond');
+
+  let result = date($date->year(), $date->monthNumber(), $date->dayOfMonth(), $date->hour(), $date->minute(), $date->second());
+  let diff = dateDiff($date, $result, DurationUnit.MILLISECONDS);
+
+  $date->adjust($diff, DurationUnit.MILLISECONDS)->cast(@DateTime);
+}
+
+function meta::pure::functions::date::datePart(d:Date[0..1]):Date[0..1]
+{
+    $d->toOne()->datePart();
+}
+
+function meta::pure::functions::date::max(dates:Date[*]):Date[0..1]
+{
+    $dates->fold({n, m | max($n, $m->toOne())}, $dates->first())
+}
+
+function meta::pure::functions::date::max(dates:StrictDate[*]):StrictDate[0..1]
+{
+    $dates->fold({n, m | max($n, $m->toOne())}, $dates->first())
+}
+
+function meta::pure::functions::date::max(dates:DateTime[*]):DateTime[0..1]
+{
+    $dates->fold({n, m | max($n, $m->toOne())}, $dates->first())
+}
+
+function meta::pure::functions::date::max(left:Date[1], right:Date[1]):Date[1]
+{
+    if($left < $right, | $right, | $left)
+}
+
+function meta::pure::functions::date::max(left:StrictDate[1], right:StrictDate[1]):StrictDate[1]
+{
+    if($left < $right, | $right, | $left)
+}
+
+function meta::pure::functions::date::max(left:DateTime[1], right:DateTime[1]):DateTime[1]
+{
+    if($left < $right, | $right, | $left)
+}
+
+function meta::pure::functions::date::min(dates:Date[*]):Date[0..1]
+{
+    $dates->fold({n, m | min($n, $m->toOne())}, $dates->first())
+}
+
+function meta::pure::functions::date::min(dates:StrictDate[*]):StrictDate[0..1]
+{
+    $dates->fold({n, m | min($n, $m->toOne())}, $dates->first())
+}
+
+function meta::pure::functions::date::min(dates:DateTime[*]):DateTime[0..1]
+{
+    $dates->fold({n, m | min($n, $m->toOne())}, $dates->first())
+}
+
+function meta::pure::functions::date::min(left:Date[1], right:Date[1]):Date[1]
+{
+    if($right < $left, | $right, | $left)
+}
+
+function meta::pure::functions::date::min(left:StrictDate[1], right:StrictDate[1]):StrictDate[1]
+{
+    if($right < $left, | $right, | $left)
+}
+
+function meta::pure::functions::date::min(left:DateTime[1], right:DateTime[1]):DateTime[1]
+{
+    if($right < $left, | $right, | $left)
+}
+
+function meta::pure::functions::date::weekOfYear(d:Date[0..1]):Integer[0..1]
+{
+   $d->toOne()->weekOfYear();
+}
+
+function meta::pure::functions::date::monthNumber(d:Date[0..1]):Integer[0..1]
+{
+   $d->toOne()->monthNumber();
+}
+
+function meta::pure::functions::date::year(d:Date[0..1]):Integer[0..1]
+{
+   $d->toOne()->year();
+}
+
+//TODO: the challenge here is that
+//      - the return type is Integer, hence the Date may not be returned if null
+//      - if [] is returned as part of an if stm then this requires a change in SQLQueryToString since the number of arguments is different
+//      - returning a default Integer is also not correct
+function meta::pure::functions::date::dateDiff(d1:Date[0..1], d2:Date[0..1], du:DurationUnit[1]):Integer[0..1]
+{
+   $d1->toOne()->dateDiff($d2->toOne(), $du);
+   //if($d1->isEmpty(),|[], | if ($d2->isEmpty(),|[], |$d1->toOne()->dateDiff($d2->toOne(), $du)));
+}
+
+function meta::pure::functions::date::isOnDay(d1:Date[1], d2:Date[1]):Boolean[1]
+{
+   ($d1 >= $d2->datePart()) && ($d1 < $d2->datePart()->adjust(1, DurationUnit.DAYS))
+}
+
+function meta::pure::functions::date::isOnDay(d1:Date[0..1], d2:Date[0..1]):Boolean[1]
+{
+   $d1->isNotEmpty() && $d2->isNotEmpty() && $d1->toOne()->isOnDay($d2->toOne())
+}
+
+function meta::pure::functions::date::isOnDay(d1:Date[1], d2:Date[0..1]):Boolean[1]
+{
+   $d2->isNotEmpty() && $d1->isOnDay($d2->toOne())
+}
+
+function meta::pure::functions::date::isOnDay(d1:Date[0..1], d2:Date[1]):Boolean[1]
+{
+   $d1->isNotEmpty() && $d1->toOne()->isOnDay($d2)
+}
+
+function meta::pure::functions::date::isOnOrAfterDay(d1:Date[1], d2:Date[1]):Boolean[1]
+{
+   $d1 > $d2 || $d1->isOnDay($d2)
+}
+
+function meta::pure::functions::date::isOnOrAfterDay(d1:Date[0..1], d2:Date[0..1]):Boolean[1]
+{
+   $d1->isNotEmpty() && $d2->isNotEmpty() && $d1->toOne()->isOnOrAfterDay($d2->toOne())
+}
+
+function meta::pure::functions::date::isOnOrAfterDay(d1:Date[1], d2:Date[0..1]):Boolean[1]
+{
+   $d2->isNotEmpty() && $d1->isOnOrAfterDay($d2->toOne())
+}
+
+function meta::pure::functions::date::isOnOrAfterDay(d1:Date[0..1], d2:Date[1]):Boolean[1]
+{
+   $d1->isNotEmpty() && $d1->toOne()->isOnOrAfterDay($d2)
+}
+
+function meta::pure::functions::date::isAfterDay(d1:Date[1], d2:Date[1]):Boolean[1]
+{
+   $d1 >= $d2->datePart()->adjust(1, DurationUnit.DAYS)
+}
+
+function meta::pure::functions::date::isAfterDay(d1:Date[0..1], d2:Date[0..1]):Boolean[1]
+{
+   $d1->isNotEmpty() && $d2->isNotEmpty() && $d1->toOne()->isAfterDay($d2->toOne())
+}
+
+function meta::pure::functions::date::isAfterDay(d1:Date[1], d2:Date[0..1]):Boolean[1]
+{
+   $d2->isNotEmpty() && $d1->isAfterDay($d2->toOne())
+}
+
+function meta::pure::functions::date::isAfterDay(d1:Date[0..1], d2:Date[1]):Boolean[1]
+{
+   $d1->isNotEmpty() && $d1->toOne()->isAfterDay($d2)
+}
+
+function meta::pure::functions::date::isOnOrBeforeDay(d1:Date[1], d2:Date[1]):Boolean[1]
+{
+   $d1 < $d2 || $d1->isOnDay($d2)
+}
+
+function meta::pure::functions::date::isOnOrBeforeDay(d1:Date[0..1], d2:Date[0..1]):Boolean[1]
+{
+   $d1->isNotEmpty() && $d2->isNotEmpty() && $d1->toOne()->isOnOrBeforeDay($d2->toOne())
+}
+
+function meta::pure::functions::date::isOnOrBeforeDay(d1:Date[1], d2:Date[0..1]):Boolean[1]
+{
+   $d2->isNotEmpty() && $d1->isOnOrBeforeDay($d2->toOne())
+}
+
+function meta::pure::functions::date::isOnOrBeforeDay(d1:Date[0..1], d2:Date[1]):Boolean[1]
+{
+   $d1->isNotEmpty() && $d1->toOne()->isOnOrBeforeDay($d2)
+}
+
+function meta::pure::functions::date::isBeforeDay(d1:Date[1], d2:Date[1]):Boolean[1]
+{
+   $d1 < $d2->datePart()
+}
+
+function meta::pure::functions::date::isBeforeDay(d1:Date[0..1], d2:Date[0..1]):Boolean[1]
+{
+   $d1->isNotEmpty() && $d2->isNotEmpty() && $d1->toOne()->isBeforeDay($d2->toOne())
+}
+
+function meta::pure::functions::date::isBeforeDay(d1:Date[1], d2:Date[0..1]):Boolean[1]
+{
+   $d2->isNotEmpty() && $d1->isBeforeDay($d2->toOne())
+}
+
+function meta::pure::functions::date::isBeforeDay(d1:Date[0..1], d2:Date[1]):Boolean[1]
+{
+   $d1->isNotEmpty() && $d1->toOne()->isBeforeDay($d2)
+}
+
+function meta::pure::functions::date::ISO8601DateTimeFormat():String[1]
+{
+   '%t{yyyy-MM-dd"T"HH:mm:ss.SSSSSSSSSZ}';
+}
+
+function meta::pure::functions::date::SimpleDateTimeFormat():String[1]
+{
+   '%t{yyyy-MM-dd HH:mm:ss}';
+}
+
+function meta::pure::functions::date::ISO8601DateFormat():String[1]
+{
+   '%t{yyyy-MM-dd}';
+}
+
+function meta::pure::functions::date::inSeconds(time:Time[1]):Integer[1]
+{
+   ((($time.hours * 60) + $time.minutes) * 60) + $time.seconds
+}
+
+function meta::pure::functions::date::timeFromSeconds(seconds:Integer[1]):Time[1]
+{
+   ^Time(hours=$seconds->divide(3600)->floor(),minutes=$seconds->mod(3600)->divide(60)->floor(),seconds=$seconds->mod(60))
+}
+
+function meta::pure::functions::date::average(times:Time[1..*]):Time[1]
+{
+   $times->map(t | $t->inSeconds())->average()->round()->timeFromSeconds();
+}
+
+function meta::pure::functions::date::systemDefaultTimeZones():String[*]
+{
+  ['GMT', 'UTC']
+}   
+
+function meta::pure::functions::date::hasYear(d:Date[1]):Boolean[1]
+{
+    true;
+}
+
+function meta::pure::functions::date::dayOfWeek(d:Date[1]):DayOfWeek[1]
+{
+    $d->dayOfWeekNumber()->dayOfWeek()
+}
+
+function meta::pure::functions::date::month(d:Date[1]):Month[1]
+{
+    $d->monthNumber()->month()
+}
+
+function meta::pure::functions::date::quarterNumber(d:Date[1]):Integer[1]
+{
+    let monthNumber = $d->monthNumber();
+    if ($monthNumber <= 3,
+        | 1,
+        | if ($monthNumber <= 6,
+              | 2,
+              | if ($monthNumber <= 9,
+                    | 3,
+                    | 4)));
+}
+
+function meta::pure::functions::date::quarter(d:Date[1]):Quarter[1]
+{
+    $d->quarterNumber()->quarter()
+}
+
+function {doc.doc = 'Returns the most recent instance of the given day of the week that is no later than the given date.'} meta::pure::functions::date::mostRecentDayOfWeek(date:Date[1], day:DayOfWeek[1]):Date[1]
+{
+    $date->datePart()->adjust(if(($day->dayOfWeekNumber() - $date->dayOfWeekNumber()) > 0, |($day->dayOfWeekNumber() - $date->dayOfWeekNumber()) - 7, |($day->dayOfWeekNumber() - $date->dayOfWeekNumber())), DurationUnit.DAYS);
+}
+
+function {doc.doc = 'Returns the most recent instance of the given day of the week that is no later than today.'} meta::pure::functions::date::mostRecentDayOfWeek(day:DayOfWeek[1]):Date[1]
+{
+    today()->mostRecentDayOfWeek($day)
+}
+
+function {doc.doc = 'Returns the most recent instance of the given day of the week that is strictly before the given date.'} meta::pure::functions::date::previousDayOfWeek(date:Date[1], day:DayOfWeek[1]):Date[1]
+{
+    $date->datePart()->adjust(if(($day->dayOfWeekNumber() - $date->dayOfWeekNumber()) >= 0, |($day->dayOfWeekNumber() - $date->dayOfWeekNumber()) - 7, |($day->dayOfWeekNumber() - $date->dayOfWeekNumber())), DurationUnit.DAYS);
+}
+
+function {doc.doc = 'Returns the most recent instance of the given day of the week that is strictly before today.'} meta::pure::functions::date::previousDayOfWeek(day:DayOfWeek[1]):Date[1]
+{
+    today()->previousDayOfWeek($day)
+}
+
+function meta::pure::functions::date::firstDayOfMonth(date:Date[1]):Date[1]
+{
+    date($date->year(), $date->monthNumber(), 1)
+}
+
+function meta::pure::functions::date::firstDayOfThisMonth():Date[1]
+{
+    today()->firstDayOfMonth()
+}
+
+function meta::pure::functions::date::firstDayOfYear(date:Date[1]):Date[1]
+{
+    date($date->year(), 1, 1)
+}
+
+function meta::pure::functions::date::firstDayOfThisYear():Date[1]
+{
+    today()->firstDayOfYear()
+}
+
+function meta::pure::functions::date::quarterNumber(quarter:Quarter[1]):Integer[1]
+{
+    Quarter->enumValues()->indexOf($quarter) + 1
+}
+
+function meta::pure::functions::date::quarter(number:Integer[1]):Quarter[1]
+{
+    Quarter->enumValues()->at($number - 1)
+}
+
+function meta::pure::functions::date::monthNumber(month:Month[1]):Integer[1]
+{
+    Month->enumValues()->indexOf($month) + 1
+}
+
+function meta::pure::functions::date::month(number:Integer[1]):Month[1]
+{
+    Month->enumValues()->at($number - 1)
+}
+
+function meta::pure::functions::date::dayOfWeekNumber(day:DayOfWeek[1]):Integer[1]
+{
+    DayOfWeek->enumValues()->indexOf($day) + 1
+}
+
+function meta::pure::functions::date::dayOfWeekNumber(day:Date[1], firstDay:DayOfWeek[1]):Integer[1]
+[
+   firstDayMondayOrSundayOnly : $firstDay->in([DayOfWeek.Monday, DayOfWeek.Sunday])
+]
+{
+  if($firstDay==DayOfWeek.Sunday,| dayOfWeekNumber($day)->mod(7)+1;
+                                ,| dayOfWeekNumber($day));
+}
+
+function meta::pure::functions::date::dayOfWeek(number:Integer[1]):DayOfWeek[1]
+{
+    DayOfWeek->enumValues()->at($number - 1)
+}
+
+function meta::pure::functions::date::add(date:Date[1], duration:Duration[1]):Date[1]
+{
+   $date->adjust($duration.number, $duration.unit)
+}
+
+function meta::pure::functions::date::add(date:StrictDate[1], duration:Duration[1]):StrictDate[1]
+{
+   $date->adjust($duration.number, $duration.unit)->cast(@StrictDate)
+}
+
+function meta::pure::functions::date::add(date:DateTime[1], duration:Duration[1]):DateTime[1]
+{
+   $date->adjust($duration.number, $duration.unit)->cast(@DateTime)
+}
+
+function meta::pure::functions::date::subtract(date:Date[1], duration:Duration[1]):Date[1]
+{
+   $date->adjust(-$duration.number, $duration.unit)
+}
+
+function meta::pure::functions::date::subtract(date:StrictDate[1], duration:Duration[1]):StrictDate[1]
+{
+   $date->adjust(-$duration.number, $duration.unit)->cast(@StrictDate)
+}
+
+function meta::pure::functions::date::subtract(date:DateTime[1], duration:Duration[1]):DateTime[1]
+{
+   $date->adjust(-$duration.number, $duration.unit)->cast(@DateTime)
+}
+
+function meta::pure::functions::date::isLeap(year:Integer[1]):Boolean[1]
+{
+   (date($year, 3, 1)->adjust(-1, DurationUnit.DAYS)->dayOfMonth())==29
+}
+
+
+function meta::pure::functions::date::fromEpochValue(secondsSinceEpoch:Integer[1]):DateTime[1]
+{
+  fromEpochValue($secondsSinceEpoch, DurationUnit.SECONDS);
+}
+
+function meta::pure::functions::date::fromEpochValue(value:Integer[1], unit:DurationUnit[1]):DateTime[1]
+{
+   adjust(%1970-01-01T00:00:00.000+0000, $value, $unit)->cast(@DateTime);
+}
+
+function meta::pure::functions::date::toEpochValue(d:Date[1]):Integer[1]
+{
+  toEpochValue($d, DurationUnit.SECONDS);
+}
+
+function meta::pure::functions::date::toEpochValue(d:Date[1], unit:DurationUnit[1]):Integer[1]
+{
+   dateDiff(%1970-01-01T00:00:00.000+0000, $d, $unit);
+}
+
+function meta::pure::functions::date::validateDateTimeFormat(dateTimeFormat:String[1]):Boolean[1]
+{
+  // Supported Formats : yyyy, yyyy-M, yyyy-MM, yyyy-MM-d, yyyy-M-d, yyyy-MM-dd, yyyy/mm/dd, yyyyMMdd, yyyyMd, yyMd, dd/MM/yyyy, MM/dd/yyyy, MM/dd/yyyy "at" hh:mma z, yyyy-MM-dd HH:mm:ss, yyyy-MM-dd h:mm:ssa, yyyy-MM-dd HH:mm:ss.SSS, yyyy-MM-dd HH:mm:ss.SSSX, yyyy-MM-dd HH:mm:ss.SSSZ, yyyy-MM-dd HH:mm:ss.SSS z, yyyy-MM-dd HH:mm:ss.SSSS z, yyyy-MM-dd"T"HH:mm:ss, yyyy-MM-dd"T"HH:mm:ssZ, yyyy-MM-dd"T"HH:mm:ss.SSS, yyyy-MM-dd"T"HH:mm:ss.SSSZ, yyyy-MM-dd"T"HH:mm:ss.SSSSZ, yy-MM-dd"T"HH:mm:ss."000000", , 'yyyy-MM-dd"T"HH:mm:ss."000000"X', [EST]yyyy-MM-dd HH:mm:ss.SSSZ, [CST]yyyy-MM-dd HH:mm:ss.SSS z, [CET]yyyy-MM-dd HH:mm:ss.SSSX, [EST]yyyy-MM-dd and other timezones
+  $dateTimeFormat->matches('(\\[[A-Z][A-Z]([ACDKLMNORSTUVW])?([DSWT])?([T])?\\])?(MM/dd/|dd/MM/)?(?:y{4}|y{2})(([-/])?[mM]{1,2}(([-/])?(d{1,2}) *((\"T\")?(H{2}|h{1}):m{2}:s{2}.?((?:S{3,4} *[zZX]?|\"000000\"))?)?)?)? *(\"at\")? *(h{2}:m{2}a)? *[zZxX]?');
+}

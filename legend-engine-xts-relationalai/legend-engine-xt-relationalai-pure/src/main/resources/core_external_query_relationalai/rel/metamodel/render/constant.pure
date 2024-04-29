@@ -1,0 +1,58 @@
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::metamodel::render::constant::*;
+import meta::external::store::rel::utils::*;
+import meta::pure::functions::collection::*;
+
+
+/////////////////////////
+// Rendering constants //
+/////////////////////////
+
+function meta::external::store::rel::metamodel::render::constant::toRelLiteral(constant: RelString[1]): String[1] {
+  format('"%s"', $constant.value)
+}
+
+function meta::external::store::rel::metamodel::render::constant::toRelLiteral(constant: RelInteger[1]): String[1] {
+  $constant.value->toString()
+}
+
+function meta::external::store::rel::metamodel::render::constant::toRelLiteral(constant: RelFloat[1]): String[1] {
+  $constant.value->toString()
+}
+
+function meta::external::store::rel::metamodel::render::constant::toRelLiteral(constant: RelDate[1]): String[1] {
+  $constant.value->toString()
+}
+
+function meta::external::store::rel::metamodel::render::constant::toRelLiteral(constant: RelDateTime[1]): String[1] {
+  format(
+    '%d-%02d-%02dT%02d:%02d:%02dZ',
+    [
+      $constant.value->year(),
+      $constant.value->monthNumber(),
+      $constant.value->dayOfMonth()->toOne(),
+      $constant.value->hour(),
+      $constant.value->minute(),
+      $constant.value->second()
+    ]
+  )
+}
+
+function meta::external::store::rel::metamodel::render::constant::toRelLiteral(dontCare: RelDontCare[1]): String[1] {
+  '_'
+}
+
+function meta::external::store::rel::metamodel::render::constant::toRelLiteral(constant: RelConstant[1]): String[1] {
+  $constant->match([
+    c: RelString[1]   | $c->toRelLiteral(),
+    c: RelInteger[1]  | $c->toRelLiteral(),
+    c: RelFloat[1]    | $c->toRelLiteral(),
+    c: RelDate[1]     | $c->toRelLiteral(),
+    c: RelDateTime[1] | $c->toRelLiteral(),
+    c: Label[1] |
+      if ($c.identifier->isAlphaNumeric() && ($c.identifier->size() > 0) && !$c.identifier->substring(0, 1)->isDigit(),
+        | format(':%s', $c.identifier),
+        | format(':"%s"', $c.identifier)
+        )
+  ])
+}

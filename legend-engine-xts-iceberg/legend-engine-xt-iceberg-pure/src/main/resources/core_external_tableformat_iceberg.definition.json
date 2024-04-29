@@ -1,0 +1,8 @@
+{
+  "name": "core_external_tableformat_iceberg",
+  "pattern": "(meta::external::catalog::iceberg|meta::protocols::pure)(::.*)?",
+  "dependencies": [
+    "platform",
+    "core"
+  ]
+}

@@ -1,0 +1,76 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+###Relational
+Database meta::relational::functions::pureToSqlQuery::calendarAggregations::CalendarDatabase
+(
+  Schema LegendCalendarSchema
+  (
+    Table NY_Calendar
+    (
+      date                      DATE,
+      dayOfCalendarYear         INTEGER,
+      shortNameWeekDay          VARCHAR(3),
+      adjustedDate              DATE,
+      fiscalWeekOffset          INTEGER,
+      fiscalDay                 INTEGER,
+      fiscalDayOfMonth          INTEGER,
+      fiscalDayOfQuarter        INTEGER,
+      fiscalDayOfWeek           INTEGER,
+      prior12WeekDate           DATE,
+      prior4WeekDate            DATE,
+      prior52WeekDate           DATE,
+      currentMonthNum           INTEGER,
+      fiscalMonthEnd            DATE,
+      currentQuarterNum         INTEGER,
+      currentWeek               INTEGER,
+      fiscalWeekStart           DATE,
+      currentYear               INTEGER,
+      previousBusinessDay       DATE,
+      previousFiscalMonth       INTEGER,
+      previousFiscalQuarter     INTEGER,
+      previousFiscalYear        INTEGER,
+      numberOfFiscalDaysInMonth INTEGER,
+      numberOfFiscalDaysInYear  INTEGER
+    )
+    Table London_Calendar
+    (
+      date                      DATE,
+      dayOfCalendarYear         INTEGER,
+      shortNameWeekDay          VARCHAR(3),
+      adjustedDate              DATE,
+      fiscalWeekOffset          INTEGER,
+      fiscalDay                 INTEGER,
+      fiscalDayOfMonth          INTEGER,
+      fiscalDayOfQuarter        INTEGER,
+      fiscalDayOfWeek           INTEGER,
+      prior12WeekDate           DATE,
+      prior4WeekDate            DATE,
+      prior52WeekDate           DATE,
+      currentMonthNum           INTEGER,
+      fiscalMonthEnd            DATE,
+      currentQuarterNum         INTEGER,
+      currentWeek               INTEGER,
+      fiscalWeekStart           DATE,
+      currentYear               INTEGER,
+      previousBusinessDay       DATE,
+      previousFiscalMonth       INTEGER,
+      previousFiscalQuarter     INTEGER,
+      previousFiscalYear        INTEGER,
+      numberOfFiscalDaysInMonth INTEGER,
+      numberOfFiscalDaysInYear  INTEGER
+    )
+  )
+)

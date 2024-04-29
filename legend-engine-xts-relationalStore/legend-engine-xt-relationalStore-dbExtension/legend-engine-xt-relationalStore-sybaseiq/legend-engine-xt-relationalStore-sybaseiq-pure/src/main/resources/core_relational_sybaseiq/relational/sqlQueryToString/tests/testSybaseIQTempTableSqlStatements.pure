@@ -1,0 +1,37 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::sqlQueryToString::tests::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::*;
+import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::metamodel::relation::*;
+
+function <<test.Test>> meta::relational::tests::sqlToString::sybaseIQ::testTempTableSqlStatementsForSybaseIQ(): Boolean[*]
+{
+ let actualSqls = getTempTableSqlStatements(DatabaseType.SybaseIQ);
+ let expectedSqls = [
+   'DECLARE LOCAL TEMPORARY TABLE temp_table_test([integer_Column] INT,[float_Column] FLOAT,[string_Column] VARCHAR(128),[datetime_Column] TIMESTAMP,[date_Column] DATE) ON COMMIT PRESERVE ROWS',
+   ['load table temp_table_test( [integer_Column] null(blanks),[float_Column] null(blanks),[string_Column] null(blanks),[datetime_Column] null(blanks),[date_Column] null(blanks) ) USING CLIENT FILE \'${csv_file_location}\' FORMAT BCP ',
+   '\nwith checkpoint on ',
+   '\nquotes on ',
+   '\nescapes off ',
+   '\ndelimited by \',\' ',
+   '\nROW DELIMITED BY \'\r\n\'']->joinStrings(''),
+   'Drop table if exists temp_table_test;'
+  ];
+  meta::relational::functions::sqlQueryToString::tests::compareSqls($actualSqls, $expectedSqls);
+}

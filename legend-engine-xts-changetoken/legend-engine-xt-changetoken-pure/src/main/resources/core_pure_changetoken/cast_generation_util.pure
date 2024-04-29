@@ -1,0 +1,85 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::json::*;
+import meta::pure::changetoken::cast_generation::*;
+import meta::pure::changetoken::cast_generation::expand::*;
+
+function <<access.private>> meta::pure::changetoken::cast_generation::getValueAsFieldType(typeMultiplicityString: String[1], anyValue: Any[0..1], typeKeyName: String[1], obsoleteJsonAsString: Boolean[1]): Code[1]
+{
+    let typeMultiplicity = $typeMultiplicityString->extractTypeMultiplicity();
+    let type = $typeMultiplicity.first;
+    let multiplicity = $typeMultiplicity.second;
+    let isOptional = if($multiplicity->getLowerBound() == 0, | true, | false);
+    let isSingle = $multiplicity == PureOne || $multiplicity == PureZero || $multiplicity == ZeroOne;
+    let oneValue = if ($anyValue->size() == 0, | if($isSingle, | ^JSONNull(), | ^JSONArray()), | $anyValue->toOne());
+    let jsonValue = if ($oneValue->instanceOf(JSONElement), | $oneValue->cast(@JSONElement), | $oneValue->expandValue($typeKeyName));
+    if($obsoleteJsonAsString,
+        | inlineJsonValueWithUnescaping($type, $isOptional, $isSingle, $jsonValue),
+        | inlineJsonValue($jsonValue)
+    );
+}
+
+function meta::pure::changetoken::cast_generation::extractTypeMultiplicity(type: String[1]): Pair<String, Multiplicity>[1]
+{
+    let touple = $type->split('[');
+    let multiplicity = $touple->at(1)->replace(']', '');
+    pair($touple->at(0), toMultiplicity($multiplicity));
+}
+
+function meta::pure::changetoken::cast_generation::toMultiplicity(type: String[1]): Multiplicity[1]
+{
+    let touple = $type->split('..');
+    let lowerBound = $touple->at(0);
+    let upperBound = if ($touple->size() == 2, | $touple->at(1), | $touple->at(0));
+    let min = if($lowerBound == '*', | 0, | $lowerBound->parseInteger());
+    let max = if($upperBound == '*', | -1, | $upperBound->parseInteger());
+    if($min == 0 && $max == 0,
+        | PureZero,
+        |
+    if($min == 0 && $max == 1,
+        | ZeroOne,
+        |
+    if($min == 1 && $max == 1,
+        | PureOne,
+        |
+    if($min == 0 && $max == -1,
+        | ZeroMany,
+        | 
+    if($min == 1 && $max == -1,
+        | OneMany,
+        | ^Multiplicity(
+            lowerBound=if($min == -1, | ^MultiplicityValue(), | ^MultiplicityValue(value=$min)),
+            upperBound=if($max == -1, | ^MultiplicityValue(), | ^MultiplicityValue(value=$max))
+        )
+    )))));
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::inlineJsonValue(json: JSONElement[1]): Code[1]
+{
+    $json->match([
+        b: JSONBoolean[1] | j_boolean($b.value),
+        s: JSONString[1] | j_string($s.value),
+        n: JSONNumber[1] | $n.value->match([i:Integer[1] | j_int($i), f:Float[1] | j_double($f)]),
+        o: JSONObject[1] | javaStream()->j_invoke('of',
+            $o.keyValuePairs->map(kv | simpleEntry()->j_new([j_string($kv.key.value), inlineJsonValue($kv.value)])),
+            javaVoid())->j_invoke('collect', [javaCollectors()->j_invoke('toMap', [j_methodReference(AbstractMap_SimpleEntry(), 'getKey', javaFunctionType([], javaObject())), j_methodReference(AbstractMap_SimpleEntry(), 'getValue', javaFunctionType([], javaObject()))], javaVoid())], javaVoid()),
+        a: JSONArray[1] | javaStream()->j_invoke('of',
+            $a.values->map(v | inlineJsonValue($v)),
+            javaVoid())->j_invoke('collect', [javaCollectors()->j_invoke('toList', [], javaVoid())], javaVoid()),
+        n: JSONNull[1] | j_null()
+    ])
+}

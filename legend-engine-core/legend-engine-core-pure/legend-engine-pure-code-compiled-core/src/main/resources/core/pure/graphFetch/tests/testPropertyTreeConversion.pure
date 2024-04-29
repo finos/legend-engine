@@ -1,0 +1,684 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+###Pure
+import meta::pure::graphFetch::tests::utils::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::tests::propertyTreeConversion::*;
+import meta::pure::lineage::scanProperties::*;
+import meta::pure::lineage::scanProperties::propertyTree::*;
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::testPropertyTreeConversion():Boolean[1]
+{
+  let propertyTree= pTree('root', [
+                            pTree(A, 
+                              [
+                                  pTree( pNode(A,'myB'), [pTreeN(B,'s1') ]),
+                                  pTree( pNode(A,'myB'), [pTreeN(B,'s2') ]),
+                                  pTree( pNode(A,'myB'), [pTreeN(BPlus,'i1') ]),
+                                  pTree( pNode(Z,'d1'),  [])
+                              ])
+                    ]); 
+   let actual = $propertyTree->propertyTreeToGraphFetchTree(A);
+
+   let expected = #{ A {
+      myB {s1, s2},
+      myB->subType(@BPlus) {i1}
+   }}#;
+
+   assertEquals($expected->asString(true), $actual->asString(true));
+}
+
+Class meta::pure::graphFetch::tests::propertyTreeConversion::A
+{
+   myB: B[1];
+}
+
+Class meta::pure::graphFetch::tests::propertyTreeConversion::B
+{
+   s1 : String[1];
+   s2 : String[1];
+}
+
+Class meta::pure::graphFetch::tests::propertyTreeConversion::BPlus extends B
+{
+   i1 : Integer[1];   
+}
+
+Class meta::pure::graphFetch::tests::propertyTreeConversion::Z
+{
+   d1 : StrictDate[1];
+}
+
+// 'root
+//  c_ComplexMatchRequest
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketMic
+//    p_MarketListing.tradingCurrencyCode
+//    p_MarketListing.tradingParameters
+//     p_TradingParameters.countryOfRegisterCode
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketMic
+//    p_MarketListing.tradingCurrencyCode
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketListingId
+//    p_MarketListing.marketMic
+//    p_MarketListing.mtfPrimaryMarketMic
+//    p_MarketListing.tradingCurrencyCode
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//    p_MarketListing.marketMic
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//    p_MarketListing.marketMic
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//    p_MarketListing.marketMic
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketMic
+//    p_MarketListing.mtfPrimaryMarketMic
+//    p_MarketListing.tradingCurrencyCode
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.currentCollection
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//    p_MarketListing.marketMic
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.effectiveDate
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketMic
+//    p_MarketListing.mtfPrimaryMarketMic
+//    p_MarketListing.tradingCurrencyCode
+//    p_MarketListing.tradingParameters
+//     p_TradingParameters.countryOfRegisterCode
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketMic
+//    p_MarketListing.mtfPrimaryMarketMic
+//    p_MarketListing.tradingCurrencyCode
+//    p_MarketListing.tradingParameters
+//     p_TradingParameters.countryOfRegisterCode
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketMic
+//    p_MarketListing.mtfPrimaryMarketMic
+//    p_MarketListing.tradingCurrencyCode
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketMic
+//    p_MarketListing.mtfPrimaryMarketMic
+//    p_MarketListing.tradingCurrencyCode
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketMic
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketMic
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketMic
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//   p_ComplexMatchRequest.proposedItem
+//    p_MarketListing.marketListingIdentifier
+//     p_MarketListingIdentifier.identifier
+//     p_MarketListingIdentifier.identifierType
+//     p_MilestonedData.FROM_Z
+//     p_MilestonedData.THRU_Z
+//  c_StaticMarket
+//   p_StaticMarket.mic
+//   p_StaticMarket.micType
+//   p_StaticMarket.operatingMic
+
+
+###Pure
+import meta::pure::graphFetch::tests::utils::*;
+import meta::pure::graphFetch::*;
+import meta::pure::lineage::scanProperties::*;
+import meta::pure::lineage::scanProperties::propertyTree::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::*;
+
+// assumption: nodes are well formed : 
+    //  classNode and embedded propertyPathNode have same classes  , should not have something like  :  c_classA( p_classB_prop1 )
+    //  a class node doesnt have any non existing propertyPathNodes  :  c_classA( p_classA_prop1, p_classA_nonExistentPropertyInClassA )
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_accessFromBaseType_baseTypeProperties():Boolean[1]
+{
+  let propertyTree= pTree('root', [ pTree(Location, [pTreeN(Location,'coordinates')]) ]);
+
+  let expectedWithBaseClassOwner =
+      'Location\n'+
+      '(\n' +
+      '  coordinates\n' +
+      ')';
+
+   let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Location);
+   assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+  let expectedWithSubClassOwner =
+      'Street\n'+
+      '(\n' +
+      '  coordinates\n' +
+      ')';
+
+   let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Street);
+    assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+}   
+
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_accessFromSubType_baseTypeProperties():Boolean[1]
+{
+  let propertyTree= pTree('root', [ pTree(Street,[pTreeN(Street,'coordinates', Location)]) ]);
+
+  let  expectedWithBaseClassOwner = 
+   'Location\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  ->SubType(Street)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '  )\n'+
+      ')';
+   let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Location);
+  assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+
+  let  expectedWithSubClassOwner = 
+   'Street\n'+
+      '(\n' +
+      '  coordinates\n' +
+      ')'; 
+  let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Street);
+  assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+}   
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_accessFromSubType_subTypeProperties():Boolean[1]
+{
+  let propertyTree= pTree('root', [ pTree(Street, [pTreeN(Street,'street')]) ]);  
+
+  let  expectedWithBaseClassOwner ='Location\n'+
+      '(\n' +
+      '  ->SubType(Street)\n' +
+      '  (\n' +
+      '    street\n' +
+      '  )\n'+
+      ')';
+  let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Location);
+  assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+  let  expectedWithSubClassOwner =
+      'Street\n'+
+      '(\n' +
+      '  street\n' +
+      ')';
+  let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Street);
+  assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+}   
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_accessFromSubType_baseAndSingleSubTypeProperties():Boolean[1]
+{
+  let propertyTree= pTree('root', [ pTree(Street, [pTreeN(Street,'coordinates', Location), pTreeN(Street,'street')]) ]);
+
+  let expectedWithBaseClassOwner =
+   'Location\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  ->SubType(Street)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '    street\n' +
+      '  )\n'+
+      ')';
+  let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Location);
+  assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+  let expectedWithSubClassOwner = 
+    'Street\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  street\n' +
+      ')'
+   ; 
+  let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Street);
+  assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+}   
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_accessFromBaseAndSubType_baseTypeProperties():Boolean[1]
+{
+  let propertyTree= pTree('root', [ pTree(Location, [pTreeN(Location,'coordinates')]),  pTree(Street, [pTreeN(Street,'coordinates',Location)]) ]);
+
+  let  expectedWithBaseClassOwner =
+   'Location\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  ->SubType(Street)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '  )\n'+
+      ')';
+  let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Location);
+  assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+
+  let  expectedWithSubClassOwner = 
+   'Street\n'+
+      '(\n' +
+      '  coordinates\n' +
+      ')';
+  let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Street);
+  assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+}   
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_accessFromBaseAndSubType_subTypeProperties():Boolean[1]
+{
+  let propertyTree= pTree('root', [
+                          pTree(Location, [pTreeN(Location,'coordinates')] ),
+                          pTree(Street,   [pTreeN(Street,'street')] )
+                        ]); 
+
+  let  expectedWithBaseClassOwner =
+   'Location\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  ->SubType(Street)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '    street\n' +
+      '  )\n'+
+      ')';
+  let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Location);
+  assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+  let  expectedWithSubClassOwner = 
+    'Street\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  street\n'+
+      ')';
+  let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Street);
+  assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+}   
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_accessFromBaseAndSubType_baseAndSingleSubTypeProperties():Boolean[1]
+{
+  let propertyTree= pTree('root', [
+                          pTree(Location, [pTreeN(Location,'coordinates')] ),
+                          pTree(Street,   [pTreeN(Street,'coordinates',Location), pTreeN(Street, 'street')] )
+                        ]);  
+
+  let  expectedWithBaseClassOwner =
+   'Location\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  ->SubType(Street)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '    street\n' +
+      '  )\n'+
+      ')';
+  let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Location);
+  assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+  let  expectedWithSubClassOwner = 
+    'Street\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  street\n'+
+      ')';
+  let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Street);
+  assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+}   
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_accessFromBaseAndMultipleSubTypes_baseTypeProperties():Boolean[1]
+{
+  let propertyTree= pTree('root', [
+                      pTree(Location, [pTreeN(Location,'coordinates')] ),
+                      pTree(Street,   [pTreeN(Street,'coordinates',Location)] ),
+                      pTree(Road,     [pTreeN(Road,'coordinates',Location)] )
+                    ]); 
+
+  let  expectedWithBaseClassOwner = 
+  'Location\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  ->SubType(Road)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '  )\n' +
+      '  ->SubType(Street)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '  )\n'+
+      ')';
+  let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Location);
+  assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+
+  let  expectedWithSubClassOwner = 
+   'Street\n'+
+      '(\n' +
+      '  coordinates\n' +
+      ')';
+  let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Street);
+  assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+}   
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_accessFromBaseAndMultipleSubTypes_subTypeProperties():Boolean[1]
+{
+  let propertyTree= pTree('root', [
+                    pTree(Location, [pTreeN(Location,'coordinates')] ),
+                    pTree(Street,   [pTreeN(Street,'street')] ),
+                    pTree(Road,     [pTreeN(Road,'road')] )
+                  ]); 
+
+  let  expectedWithBaseClassOwner =
+   'Location\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  ->SubType(Road)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '    road\n' +
+      '  )\n' +
+      '  ->SubType(Street)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '    street\n' +
+      '  )\n'+
+      ')';
+  let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Location);
+  assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+   let expectedWithSubClassOwner = 
+  'Street\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  street\n'+
+      ')';
+  let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Street);
+  assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+}   
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_accessFromBaseAndMultipleSubTypes_baseAndSingleSubTypeProperties():Boolean[1]
+{
+  let propertyTree= pTree('root', [
+                          pTree(Location, [pTreeN(Location,'coordinates')]),
+                          pTree(Street,   [pTreeN(Street,'coordinates',Location), pTreeN(Street, 'street')]),
+                          pTree(Road,     [pTreeN(Road,'coordinates',Location),   pTreeN(Road,'road')])
+                        ]);  
+
+  let  expectedWithBaseClassOwner =
+   'Location\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  ->SubType(Road)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '    road\n' +
+      '  )\n' +
+      '  ->SubType(Street)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '    street\n' +
+      '  )\n'+
+      ')';
+  let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Location);
+  assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+  let  expectedWithSubClassOwner =
+    'Street\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  street\n'+
+      ')';
+  let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Street);
+  assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+}   
+
+
+###Pure
+import meta::pure::graphFetch::tests::utils::*;
+import meta::pure::graphFetch::*;
+import meta::pure::lineage::scanProperties::*;
+import meta::pure::lineage::scanProperties::propertyTree::*;
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_propertiesInSubTypeOnly_WithInheritedPropertiesViaAssociation():Boolean[1]
+{
+  let propertyTree= pTree('root', [
+                        pTree(_S_PersonA, 
+                            [
+                              pTreeN(_S_PersonA,'aName'),
+                              pTree(pNode(_S_PersonA,'address',_S_Person) , 
+                                  [ pTree( pNode(S_Person_Address, 'street'), []) ])
+                            ])
+                      ]);
+   
+  let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(_S_Person);
+  let expectedWithBaseClassOwner  = 
+      '_S_Person\n'+
+      '(\n' +
+      '  address\n' +
+      '  (\n'+
+      '    street\n'+
+      '  )\n'+
+      '  ->SubType(_S_PersonA)\n' +
+      '  (\n' +
+      '    aName\n' +
+      '    address\n' +
+      '    (\n'+
+      '      street\n'+
+      '    )\n'+
+      '  )\n' +
+      ')';
+  assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+  let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(_S_PersonA);
+  let expectedWithSubClassOwner = 
+      '_S_PersonA\n'+ 
+      '(\n' +
+      '  aName\n' +
+      '  address\n' +
+      '  (\n'+
+      '    street\n'+
+      '  )\n'+
+      ')';
+  assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+}
+
+function meta::pure::graphFetch::tests::utils::pTreeN(clazz:Class<Any>[1], propertyName:String[1]):PropertyPathTree[1]
+{
+  pTree(pNode($clazz, $propertyName), []);
+}
+
+function meta::pure::graphFetch::tests::utils::pTreeN(clazz:Class<Any>[1], propertyName:String[1], propertyOwner: PropertyOwner[1]):PropertyPathTree[1]
+{
+  pTree(pNode($clazz, $propertyName, $propertyOwner), []);
+}
+
+function meta::pure::graphFetch::tests::utils::pTree(value:Any[1],  children:PropertyPathTree[*]):PropertyPathTree[1]
+{
+  let display = $value->match([
+    s:String[1] | $s,
+    c:Class<Any>[1] | $c.name->toOne(),
+    pn:PropertyPathNode[1] | $pn.property.name->toOne(),
+    a:Any[1] | $a->toString()
+  ]);
+
+   ^PropertyPathTree( 
+      display  = $display,
+      value    = $value,
+      children = $children
+   );
+}
+
+function meta::pure::graphFetch::tests::utils::pNode(clazz:Class<Any>[1], propertyName:String[1]):PropertyPathNode[1]
+{
+  pNode($clazz, $propertyName, $clazz);
+}
+
+function meta::pure::graphFetch::tests::utils::pNode(clazz:Class<Any>[1], propertyName:String[1], propertyOwner : PropertyOwner[1]):PropertyPathNode[1]
+{
+  let property = $propertyOwner->match([
+    c:Class<Any>[1] | $c->propertyByName($propertyName)->toOne(),
+    a:Association[1] | $a->propertyByName($propertyName)->toOne()
+  ]);
+
+  ^PropertyPathNode(class=$clazz, property=$property);
+}

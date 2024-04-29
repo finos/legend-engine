@@ -1,0 +1,109 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::*;
+import meta::external::store::elasticsearch::executionTest::testCase::*;
+import meta::external::store::elasticsearch::executionTest::testCase::tds::*;
+import meta::external::store::elasticsearch::executionTest::test::*;
+import meta::external::store::elasticsearch::executionTest::utils::*;
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test filter on + expression'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::expressions::testPlusExpression(config:TestConfig[1]):Boolean[1]
+{
+  let val = 20;
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget') == ($val + 5)));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test filter on * expression'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::expressions::testTimesExpression(config:TestConfig[1]):Boolean[1]
+{
+  let val = 6;
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget') == ($val * 10)));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test and filter with expressions'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::expressions::testExpressionsAnd(config:TestConfig[1]):Boolean[1]
+{
+  let val1 = 6;
+  let val2 = 100;
+  $config->testTdsExpression(x | $x->filter(x | ($x.getInteger('Budget') >= ($val1 * 10)) && ($x.getInteger('Budget') <= ($val2 + 5))));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test or filter with expressions'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::expressions::testExpressionsOr(config:TestConfig[1]):Boolean[1]
+{
+  let val1 = 6;
+  let val2 = 100;
+  $config->testTdsExpression(x | $x->filter(x | ($x.getInteger('Budget') == ($val1 * 10)) || ($x.getInteger('Budget') == ($val2 + 5))));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test filter NOT on expression'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::expressions::testNotExpression(config:TestConfig[1]):Boolean[1]
+{
+  let val = 20;
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget') != ($val + 5)));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test filter if expression'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::expressions::testIfExpression(config:TestConfig[1]):Boolean[1]
+{
+  let val = true;
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget') == if($val, |105, |60)));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test filter date adjust expression'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::expressions::testAdjustExpression(config:TestConfig[1]):Boolean[1]
+{
+  let val = %1984-06-07T00:00:00.700+0000;
+  $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') == adjust($val, 1, DurationUnit.DAYS)));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test filter now expression'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::expressions::testNowExpression(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpressionReturnsEmpty(x | $x->filter(x | $x.getDate('ReleaseDate') == now()));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test filter today expression'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::expressions::testTodayExpression(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpressionReturnsEmpty(x | $x->filter(x | $x.getDate('ReleaseDate') == today()));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test filter adjust today expression'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::expressions::testAdjustTodayExpression(config:TestConfig[1]):Boolean[1]
+{
+  let val = -1 * dateDiff(%1984-06-08T00:00:00.700+0000, now(), DurationUnit.DAYS);
+  $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') == adjust(parseDate(today()->toString() + 'T00:00:00.700'), $val, DurationUnit.DAYS)));
+}

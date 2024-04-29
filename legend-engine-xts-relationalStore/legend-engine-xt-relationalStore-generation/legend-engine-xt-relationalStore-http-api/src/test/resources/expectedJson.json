@@ -1,0 +1,1157 @@
+{
+  "elements": [
+    {
+      "package": "meta::relational::transform::autogen::tests",
+      "_type": "mapping",
+      "name": "testDBMapping",
+      "associationMappings": [
+        {
+          "stores": [
+            "meta::relational::transform::autogen::tests::testDB"
+          ],
+          "_type": "relational",
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "joins": [
+                  {
+                    "name": "CompanyEmployee",
+                    "db": "meta::relational::transform::autogen::tests::testDB"
+                  }
+                ],
+                "_type": "elemtWithJoins"
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "companyEmployeeTestSchema1Company",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::Employee"
+              },
+              "source": "meta_relational_transform_autogen_tests_testSchema1_Employee",
+              "target": "meta_relational_transform_autogen_tests_testSchema1_Company"
+            },
+            {
+              "relationalOperation": {
+                "joins": [
+                  {
+                    "name": "CompanyEmployee",
+                    "db": "meta::relational::transform::autogen::tests::testDB"
+                  }
+                ],
+                "_type": "elemtWithJoins"
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "companyEmployeeTestSchema1Employee",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::Company"
+              },
+              "source": "meta_relational_transform_autogen_tests_testSchema1_Company",
+              "target": "meta_relational_transform_autogen_tests_testSchema1_Employee"
+            }
+          ],
+          "association": "meta::relational::transform::autogen::tests::CompanyEmployee",
+          "id": "meta_relational_transform_autogen_tests_CompanyEmployee"
+        },
+        {
+          "stores": [
+            "meta::relational::transform::autogen::tests::testDB"
+          ],
+          "_type": "relational",
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "joins": [
+                  {
+                    "name": "EmployeeCity",
+                    "db": "meta::relational::transform::autogen::tests::testDB"
+                  }
+                ],
+                "_type": "elemtWithJoins"
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "employeeCityTestSchema1Employee",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::City"
+              },
+              "source": "meta_relational_transform_autogen_tests_testSchema1_City",
+              "target": "meta_relational_transform_autogen_tests_testSchema1_Employee"
+            },
+            {
+              "relationalOperation": {
+                "joins": [
+                  {
+                    "name": "EmployeeCity",
+                    "db": "meta::relational::transform::autogen::tests::testDB"
+                  }
+                ],
+                "_type": "elemtWithJoins"
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "employeeCityTestSchema1City",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::Employee"
+              },
+              "source": "meta_relational_transform_autogen_tests_testSchema1_Employee",
+              "target": "meta_relational_transform_autogen_tests_testSchema1_City"
+            }
+          ],
+          "association": "meta::relational::transform::autogen::tests::EmployeeCity",
+          "id": "meta_relational_transform_autogen_tests_EmployeeCity"
+        },
+        {
+          "stores": [
+            "meta::relational::transform::autogen::tests::testDB"
+          ],
+          "_type": "relational",
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "joins": [
+                  {
+                    "name": "EmployeePassport",
+                    "db": "meta::relational::transform::autogen::tests::testDB"
+                  }
+                ],
+                "_type": "elemtWithJoins"
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "employeePassportTestSchema1Employee",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::Passport"
+              },
+              "source": "meta_relational_transform_autogen_tests_testSchema1_Passport",
+              "target": "meta_relational_transform_autogen_tests_testSchema1_Employee"
+            },
+            {
+              "relationalOperation": {
+                "joins": [
+                  {
+                    "name": "EmployeePassport",
+                    "db": "meta::relational::transform::autogen::tests::testDB"
+                  }
+                ],
+                "_type": "elemtWithJoins"
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "employeePassportTestSchema1Passport",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::Employee"
+              },
+              "source": "meta_relational_transform_autogen_tests_testSchema1_Employee",
+              "target": "meta_relational_transform_autogen_tests_testSchema1_Passport"
+            }
+          ],
+          "association": "meta::relational::transform::autogen::tests::EmployeePassport",
+          "id": "meta_relational_transform_autogen_tests_EmployeePassport"
+        },
+        {
+          "stores": [
+            "meta::relational::transform::autogen::tests::testDB"
+          ],
+          "_type": "relational",
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "joins": [
+                  {
+                    "name": "PassportCountry",
+                    "db": "meta::relational::transform::autogen::tests::testDB"
+                  }
+                ],
+                "_type": "elemtWithJoins"
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "passportCountryTestSchema1Passport",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::Country"
+              },
+              "source": "meta_relational_transform_autogen_tests_testSchema1_Country",
+              "target": "meta_relational_transform_autogen_tests_testSchema1_Passport"
+            },
+            {
+              "relationalOperation": {
+                "joins": [
+                  {
+                    "name": "PassportCountry",
+                    "db": "meta::relational::transform::autogen::tests::testDB"
+                  }
+                ],
+                "_type": "elemtWithJoins"
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "passportCountryTestSchema1Country",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::Passport"
+              },
+              "source": "meta_relational_transform_autogen_tests_testSchema1_Passport",
+              "target": "meta_relational_transform_autogen_tests_testSchema1_Country"
+            }
+          ],
+          "association": "meta::relational::transform::autogen::tests::PassportCountry",
+          "id": "meta_relational_transform_autogen_tests_PassportCountry"
+        },
+        {
+          "stores": [
+            "meta::relational::transform::autogen::tests::testDB"
+          ],
+          "_type": "relational",
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "joins": [
+                  {
+                    "name": "CompanyEmployeeFromDifferentSchemas",
+                    "db": "meta::relational::transform::autogen::tests::testDB"
+                  }
+                ],
+                "_type": "elemtWithJoins"
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "companyEmployeeFromDifferentSchemasTestSchema2Company",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::Employee"
+              },
+              "source": "meta_relational_transform_autogen_tests_testSchema1_Employee",
+              "target": "meta_relational_transform_autogen_tests_testSchema2_Company"
+            },
+            {
+              "relationalOperation": {
+                "joins": [
+                  {
+                    "name": "CompanyEmployeeFromDifferentSchemas",
+                    "db": "meta::relational::transform::autogen::tests::testDB"
+                  }
+                ],
+                "_type": "elemtWithJoins"
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "companyEmployeeFromDifferentSchemasTestSchema1Employee",
+                "class": "meta::relational::transform::autogen::tests::testSchema2::Company"
+              },
+              "source": "meta_relational_transform_autogen_tests_testSchema2_Company",
+              "target": "meta_relational_transform_autogen_tests_testSchema1_Employee"
+            }
+          ],
+          "association": "meta::relational::transform::autogen::tests::CompanyEmployeeFromDifferentSchemas",
+          "id": "meta_relational_transform_autogen_tests_CompanyEmployeeFromDifferentSchemas"
+        }
+      ],
+      "classMappings": [
+        {
+          "mainTable": {
+            "schema": "testSchema1",
+            "database": "meta::relational::transform::autogen::tests::testDB",
+            "_type": "table",
+            "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+            "table": "Company"
+          },
+          "root": true,
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "name",
+                "tableAlias": "Company",
+                "table": {
+                  "schema": "testSchema1",
+                  "database": "meta::relational::transform::autogen::tests::testDB",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                  "table": "Company"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "name",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::Company"
+              },
+              "target": ""
+            },
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "location",
+                "tableAlias": "Company",
+                "table": {
+                  "schema": "testSchema1",
+                  "database": "meta::relational::transform::autogen::tests::testDB",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                  "table": "Company"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "location",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::Company"
+              },
+              "target": ""
+            }
+          ],
+          "_type": "relational",
+          "distinct": false,
+          "id": "meta_relational_transform_autogen_tests_testSchema1_Company",
+          "class": "meta::relational::transform::autogen::tests::testSchema1::Company",
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "name",
+              "tableAlias": "Company",
+              "table": {
+                "schema": "testSchema1",
+                "database": "meta::relational::transform::autogen::tests::testDB",
+                "_type": "table",
+                "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                "table": "Company"
+              }
+            }
+          ]
+        },
+        {
+          "mainTable": {
+            "schema": "testSchema1",
+            "database": "meta::relational::transform::autogen::tests::testDB",
+            "_type": "table",
+            "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+            "table": "Employee"
+          },
+          "root": true,
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "fullname",
+                "tableAlias": "Employee",
+                "table": {
+                  "schema": "testSchema1",
+                  "database": "meta::relational::transform::autogen::tests::testDB",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                  "table": "Employee"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "fullname",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::Employee"
+              },
+              "target": ""
+            },
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "passportId",
+                "tableAlias": "Employee",
+                "table": {
+                  "schema": "testSchema1",
+                  "database": "meta::relational::transform::autogen::tests::testDB",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                  "table": "Employee"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "passportId",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::Employee"
+              },
+              "target": ""
+            },
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "firmname",
+                "tableAlias": "Employee",
+                "table": {
+                  "schema": "testSchema1",
+                  "database": "meta::relational::transform::autogen::tests::testDB",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                  "table": "Employee"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "firmname",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::Employee"
+              },
+              "target": ""
+            },
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "location",
+                "tableAlias": "Employee",
+                "table": {
+                  "schema": "testSchema1",
+                  "database": "meta::relational::transform::autogen::tests::testDB",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                  "table": "Employee"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "location",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::Employee"
+              },
+              "target": ""
+            }
+          ],
+          "_type": "relational",
+          "distinct": false,
+          "id": "meta_relational_transform_autogen_tests_testSchema1_Employee",
+          "class": "meta::relational::transform::autogen::tests::testSchema1::Employee",
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "fullname",
+              "tableAlias": "Employee",
+              "table": {
+                "schema": "testSchema1",
+                "database": "meta::relational::transform::autogen::tests::testDB",
+                "_type": "table",
+                "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                "table": "Employee"
+              }
+            },
+            {
+              "_type": "column",
+              "column": "passportId",
+              "tableAlias": "Employee",
+              "table": {
+                "schema": "testSchema1",
+                "database": "meta::relational::transform::autogen::tests::testDB",
+                "_type": "table",
+                "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                "table": "Employee"
+              }
+            }
+          ]
+        },
+        {
+          "mainTable": {
+            "schema": "testSchema1",
+            "database": "meta::relational::transform::autogen::tests::testDB",
+            "_type": "table",
+            "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+            "table": "City"
+          },
+          "root": true,
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "city_id",
+                "tableAlias": "City",
+                "table": {
+                  "schema": "testSchema1",
+                  "database": "meta::relational::transform::autogen::tests::testDB",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                  "table": "City"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "cityId",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::City"
+              },
+              "target": ""
+            },
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "name",
+                "tableAlias": "City",
+                "table": {
+                  "schema": "testSchema1",
+                  "database": "meta::relational::transform::autogen::tests::testDB",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                  "table": "City"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "name",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::City"
+              },
+              "target": ""
+            }
+          ],
+          "_type": "relational",
+          "distinct": false,
+          "id": "meta_relational_transform_autogen_tests_testSchema1_City",
+          "class": "meta::relational::transform::autogen::tests::testSchema1::City",
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "city_id",
+              "tableAlias": "City",
+              "table": {
+                "schema": "testSchema1",
+                "database": "meta::relational::transform::autogen::tests::testDB",
+                "_type": "table",
+                "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                "table": "City"
+              }
+            }
+          ]
+        },
+        {
+          "mainTable": {
+            "schema": "testSchema1",
+            "database": "meta::relational::transform::autogen::tests::testDB",
+            "_type": "table",
+            "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+            "table": "Passport"
+          },
+          "root": true,
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "passportId",
+                "tableAlias": "Passport",
+                "table": {
+                  "schema": "testSchema1",
+                  "database": "meta::relational::transform::autogen::tests::testDB",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                  "table": "Passport"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "passportId",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::Passport"
+              },
+              "target": ""
+            },
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "countryName",
+                "tableAlias": "Passport",
+                "table": {
+                  "schema": "testSchema1",
+                  "database": "meta::relational::transform::autogen::tests::testDB",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                  "table": "Passport"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "countryName",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::Passport"
+              },
+              "target": ""
+            }
+          ],
+          "_type": "relational",
+          "distinct": false,
+          "id": "meta_relational_transform_autogen_tests_testSchema1_Passport",
+          "class": "meta::relational::transform::autogen::tests::testSchema1::Passport",
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "passportId",
+              "tableAlias": "Passport",
+              "table": {
+                "schema": "testSchema1",
+                "database": "meta::relational::transform::autogen::tests::testDB",
+                "_type": "table",
+                "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                "table": "Passport"
+              }
+            }
+          ]
+        },
+        {
+          "mainTable": {
+            "schema": "testSchema1",
+            "database": "meta::relational::transform::autogen::tests::testDB",
+            "_type": "table",
+            "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+            "table": "Country"
+          },
+          "root": true,
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "name",
+                "tableAlias": "Country",
+                "table": {
+                  "schema": "testSchema1",
+                  "database": "meta::relational::transform::autogen::tests::testDB",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                  "table": "Country"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "name",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::Country"
+              },
+              "target": ""
+            }
+          ],
+          "_type": "relational",
+          "distinct": false,
+          "id": "meta_relational_transform_autogen_tests_testSchema1_Country",
+          "class": "meta::relational::transform::autogen::tests::testSchema1::Country",
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "name",
+              "tableAlias": "Country",
+              "table": {
+                "schema": "testSchema1",
+                "database": "meta::relational::transform::autogen::tests::testDB",
+                "_type": "table",
+                "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                "table": "Country"
+              }
+            }
+          ]
+        },
+        {
+          "mainTable": {
+            "schema": "testSchema2",
+            "database": "meta::relational::transform::autogen::tests::testDB",
+            "_type": "table",
+            "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+            "table": "Company"
+          },
+          "root": true,
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "name",
+                "tableAlias": "Company",
+                "table": {
+                  "schema": "testSchema2",
+                  "database": "meta::relational::transform::autogen::tests::testDB",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                  "table": "Company"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "name",
+                "class": "meta::relational::transform::autogen::tests::testSchema2::Company"
+              },
+              "target": ""
+            },
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "location",
+                "tableAlias": "Company",
+                "table": {
+                  "schema": "testSchema2",
+                  "database": "meta::relational::transform::autogen::tests::testDB",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                  "table": "Company"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "location",
+                "class": "meta::relational::transform::autogen::tests::testSchema2::Company"
+              },
+              "target": ""
+            }
+          ],
+          "_type": "relational",
+          "distinct": false,
+          "id": "meta_relational_transform_autogen_tests_testSchema2_Company",
+          "class": "meta::relational::transform::autogen::tests::testSchema2::Company",
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "name",
+              "tableAlias": "Company",
+              "table": {
+                "schema": "testSchema2",
+                "database": "meta::relational::transform::autogen::tests::testDB",
+                "_type": "table",
+                "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                "table": "Company"
+              }
+            }
+          ]
+        },
+        {
+          "mainTable": {
+            "schema": "SCHEMA3",
+            "database": "meta::relational::transform::autogen::tests::testDB",
+            "_type": "table",
+            "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+            "table": "Company"
+          },
+          "root": true,
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "name",
+                "tableAlias": "Company",
+                "table": {
+                  "schema": "SCHEMA3",
+                  "database": "meta::relational::transform::autogen::tests::testDB",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                  "table": "Company"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "name",
+                "class": "meta::relational::transform::autogen::tests::SCHEMA3::Company"
+              },
+              "target": ""
+            },
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "location",
+                "tableAlias": "Company",
+                "table": {
+                  "schema": "SCHEMA3",
+                  "database": "meta::relational::transform::autogen::tests::testDB",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                  "table": "Company"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "location",
+                "class": "meta::relational::transform::autogen::tests::SCHEMA3::Company"
+              },
+              "target": ""
+            }
+          ],
+          "_type": "relational",
+          "distinct": false,
+          "id": "meta_relational_transform_autogen_tests_SCHEMA3_Company",
+          "class": "meta::relational::transform::autogen::tests::SCHEMA3::Company",
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "name",
+              "tableAlias": "Company",
+              "table": {
+                "schema": "SCHEMA3",
+                "database": "meta::relational::transform::autogen::tests::testDB",
+                "_type": "table",
+                "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                "table": "Company"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "Generated Element"
+        }
+      ],
+      "package": "meta::relational::transform::autogen::tests::testSchema1",
+      "_type": "class",
+      "name": "Company",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "location",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "Generated Element"
+        }
+      ],
+      "package": "meta::relational::transform::autogen::tests::testSchema1",
+      "_type": "class",
+      "name": "Employee",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "fullname",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "passportId",
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 0
+          },
+          "name": "firmname",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 0
+          },
+          "name": "location",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "Generated Element"
+        }
+      ],
+      "package": "meta::relational::transform::autogen::tests::testSchema1",
+      "_type": "class",
+      "name": "City",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "cityId",
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 0
+          },
+          "name": "name",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "Generated Element"
+        }
+      ],
+      "package": "meta::relational::transform::autogen::tests::testSchema1",
+      "_type": "class",
+      "name": "Passport",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "passportId",
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 0
+          },
+          "name": "countryName",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "Generated Element"
+        }
+      ],
+      "package": "meta::relational::transform::autogen::tests::testSchema1",
+      "_type": "class",
+      "name": "Country",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "Generated Element"
+        }
+      ],
+      "package": "meta::relational::transform::autogen::tests::testSchema2",
+      "_type": "class",
+      "name": "Company",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "location",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "Generated Element"
+        }
+      ],
+      "package": "meta::relational::transform::autogen::tests::SCHEMA3",
+      "_type": "class",
+      "name": "Company",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "location",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "Generated Element"
+        }
+      ],
+      "package": "meta::relational::transform::autogen::tests",
+      "_type": "association",
+      "name": "CompanyEmployee",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "companyEmployeeTestSchema1Company",
+          "type": "meta::relational::transform::autogen::tests::testSchema1::Company"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "companyEmployeeTestSchema1Employee",
+          "type": "meta::relational::transform::autogen::tests::testSchema1::Employee"
+        }
+      ]
+    },
+    {
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "Generated Element"
+        }
+      ],
+      "package": "meta::relational::transform::autogen::tests",
+      "_type": "association",
+      "name": "EmployeeCity",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "employeeCityTestSchema1Employee",
+          "type": "meta::relational::transform::autogen::tests::testSchema1::Employee"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "employeeCityTestSchema1City",
+          "type": "meta::relational::transform::autogen::tests::testSchema1::City"
+        }
+      ]
+    },
+    {
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "Generated Element"
+        }
+      ],
+      "package": "meta::relational::transform::autogen::tests",
+      "_type": "association",
+      "name": "EmployeePassport",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "employeePassportTestSchema1Employee",
+          "type": "meta::relational::transform::autogen::tests::testSchema1::Employee"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "employeePassportTestSchema1Passport",
+          "type": "meta::relational::transform::autogen::tests::testSchema1::Passport"
+        }
+      ]
+    },
+    {
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "Generated Element"
+        }
+      ],
+      "package": "meta::relational::transform::autogen::tests",
+      "_type": "association",
+      "name": "PassportCountry",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "passportCountryTestSchema1Passport",
+          "type": "meta::relational::transform::autogen::tests::testSchema1::Passport"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "passportCountryTestSchema1Country",
+          "type": "meta::relational::transform::autogen::tests::testSchema1::Country"
+        }
+      ]
+    },
+    {
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "Generated Element"
+        }
+      ],
+      "package": "meta::relational::transform::autogen::tests",
+      "_type": "association",
+      "name": "CompanyEmployeeFromDifferentSchemas",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "companyEmployeeFromDifferentSchemasTestSchema2Company",
+          "type": "meta::relational::transform::autogen::tests::testSchema2::Company"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "companyEmployeeFromDifferentSchemasTestSchema1Employee",
+          "type": "meta::relational::transform::autogen::tests::testSchema1::Employee"
+        }
+      ]
+    }
+  ],
+  "_type": "data",
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}

@@ -1,0 +1,347 @@
+import meta::relational::functions::sqlQueryToString::postgres::*;
+import meta::relational::functions::sqlQueryToString::default::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
+
+function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::postgres::dbExtensionLoaderForPostgres():DbExtensionLoader[1]
+{
+  ^DbExtensionLoader(dbType = DatabaseType.Postgres, loader = createDbExtensionForPostgres__DbExtension_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::createDbExtensionForPostgres():DbExtension[1]
+{
+   let reservedWords = postgresReservedWords();
+   let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsForPostgres());
+   let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
+   let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
+     getDynaFunctionToSqlForPostgres()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
+
+   ^DbExtension(
+      isBooleanLiteralSupported = true,
+      isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
+      literalProcessor = $literalProcessor,
+      windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
+      joinStringsProcessor = processJoinStringsOperationForPostgres_JoinStrings_1__SqlGenerationContext_1__String_1_,
+      selectSQLQueryProcessor = processSelectSQLQueryForPostgres_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
+      dynaFuncDispatch = $dynaFuncDispatch,
+      ddlCommandsTranslator = getDDLCommandsTranslatorForPostgres()
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::postgresReservedWords():String[*]
+{
+  // https://www.postgresql.org/docs/current/sql-keywords-appendix.html
+  [
+    'all', 
+    'analyse', 
+    'analyze', 
+    'and', 
+    'any', 
+    'array', 
+    'as', 
+    'asc', 
+    'asymmetric', 
+    'authorization', 
+    'binary', 
+    'both', 
+    'case', 
+    'cast', 
+    'check', 
+    'collate', 
+    'collation', 
+    'column', 
+    'concurrently', 
+    'constraint', 
+    'create', 
+    'cross', 
+    'current_catalog', 
+    'current_date', 
+    'current_role', 
+    'current_schema', 
+    'current_time', 
+    'current_timestamp', 
+    'current_user', 
+    'default', 
+    'deferrable', 
+    'desc', 
+    'distinct', 
+    'do', 
+    'else', 
+    'end', 
+    'except', 
+    'false', 
+    'fetch', 
+    'for', 
+    'foreign', 
+    'freeze', 
+    'from', 
+    'full', 
+    'grant', 
+    'group', 
+    'having', 
+    'ilike', 
+    'in', 
+    'initially', 
+    'inner', 
+    'intersect', 
+    'into', 
+    'is', 
+    'isnull', 
+    'join', 
+    'lateral', 
+    'leading', 
+    'left', 
+    'like', 
+    'limit', 
+    'localtime', 
+    'localtimestamp', 
+    'natural', 
+    'not', 
+    'notnull', 
+    'null', 
+    'offset', 
+    'on', 
+    'only', 
+    'or', 
+    'order', 
+    'outer', 
+    'overlaps', 
+    'placing', 
+    'primary', 
+    'references', 
+    'returning', 
+    'right', 
+    'select', 
+    'session_user', 
+    'similar', 
+    'some', 
+    'symmetric', 
+    'system_user', 
+    'table', 
+    'tablesample', 
+    'then', 
+    'to', 
+    'trailing', 
+    'true', 
+    'union', 
+    'unique', 
+    'user', 
+    'using', 
+    'variadic', 
+    'verbose', 
+    'when', 
+    'where', 
+    'window', 
+    'with'
+  ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::getLiteralProcessorsForPostgres():Map<Type,LiteralProcessor>[1]
+{
+   let literalReplacementPairForString = ^LiteralReplacement(old = '\'', new = '\'\'');
+
+   newMap([
+      pair(Enum,           ^LiteralProcessor(format = 'Text%s',          transform = toString_Any_1__String_1_->literalTransform())),
+      pair(String,         ^LiteralProcessor(format = 'Text\'%s\'',      transform = convertStringToSQLString($literalReplacementPairForString)->literalTransform(), literalReplacements = $literalReplacementPairForString)),
+      pair(Boolean,        ^LiteralProcessor(format = 'Boolean\'%s\'',   transform = toString_Any_1__String_1_->literalTransform())),
+      pair(StrictDate,     ^LiteralProcessor(format = 'Date\'%s\'',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::getDynaFunctionToSqlForPostgres(): DynaFunctionToSql[*]
+{
+  let allStates = allGenerationStates();
+
+  [
+    dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='(%s + (INTERVAL \'1 %s\' * %s))', transform={p:String[3] | [$p->at(0), $p->at(2)->replace('Text', '')->removeQuotesIfExist(), $p->at(1)]})), //https://www.postgresql.org/message-id/2B704E31-B533-4159-B6F0-EC284CFE824C%40skype.net,
+    dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
+    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
+    dynaFnToSql('concat',                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' || ')})),
+    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|generateDateDiffExpressionForPostgres($p)})),
+    dynaFnToSql('datePart',               $allStates,            ^ToSql(format='Date(%s)')),
+    dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='date_part(\'day\', %s)')),
+    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='to_char(%s, \'FMDay\')')),
+    dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='date_part(\'dow\', %s)')),
+    dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='date_part(\'doy\', %s)')),
+    dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='convert_from(decode(%s, \'base64\'), \'utf8\')')),
+    dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='encode(%s, \'base64\')')),
+    dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='date_trunc(\'month\', %s)')),
+    dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='date_trunc(\'quarter\', %s)')),
+    dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='date_trunc(\'month\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfThisQuarter',  $allStates,            ^ToSql(format='date_trunc(\'quarter\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='date_trunc(\'year\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='date_trunc(\'week\', %s)')),
+    dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='date_trunc(\'year\', %s)')),
+    dynaFnToSql('firstHourOfDay',         $allStates,            ^ToSql(format='date_trunc(\'day\', %s)')),
+    dynaFnToSql('firstMillisecondOfSecond', $allStates,          ^ToSql(format='date_trunc(\'second\', %s)')),
+    dynaFnToSql('firstMinuteOfHour',      $allStates,            ^ToSql(format='date_trunc(\'hour\', %s)')),
+    dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='date_trunc(\'minute\', %s)')),
+    dynaFnToSql('hour',                   $allStates,            ^ToSql(format='date_part(\'hour\', %s)')),
+    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='strpos(%s, %s)')),
+    dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='string_agg(%s, %s)')),
+    dynaFnToSql('length',                 $allStates,            ^ToSql(format='char_length(%s)')),
+    dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log(%s)')),
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpMatchPostgres('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
+    dynaFnToSql('minute',                 $allStates,            ^ToSql(format='date_part(\'minute\', %s)')),
+    dynaFnToSql('month',                  $allStates,            ^ToSql(format='date_part(\'month\', %s)')),
+    dynaFnToSql('monthName',              $allStates,            ^ToSql(format='to_char(%s, \'FMMonth\')')),
+    dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='date_part(\'month\', %s)')),
+    dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='cast(%s as date) + cast(case when %s - date_part(\'dow\', %s) > 0 then %s - date_part(\'dow\', %s) - 7 else %s - date_part(\'dow\', %s) end as integer)', transform={p:String[1..2] | $p->formatMostRecentPostgres('current_date')}, parametersWithinWhenClause = [false, false])),
+    dynaFnToSql('now',                    $allStates,            ^ToSql(format='now()')),
+    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as decimal)')),
+    dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
+    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
+    dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),
+    dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='cast(%s as date) + cast(case when %s - date_part(\'dow\', %s) >= 0 then %s - date_part(\'dow\', %s) - 7 else %s - date_part(\'dow\', %s) end as integer)', transform={p:String[1..2] | $p->formatMostRecentPostgres('current_date')}, parametersWithinWhenClause = [false, false])),
+    dynaFnToSql('quarter',                $allStates,            ^ToSql(format='date_part(\'quarter\', %s)')),
+    dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='date_part(\'quarter\', %s)')),
+    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round((%s)::numeric, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('second',                 $allStates,            ^ToSql(format='date_part(\'second\', %s)')),
+    dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='encode(digest(%s, \'sha1\'), \'hex\')')),
+    dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='encode(digest(%s, \'sha256\'), \'hex\')')),
+    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
+    dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
+    dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
+    dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
+    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double precision)')),
+    dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
+    dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='to_timestamp(%s, %s)')),
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='date_part(\'week\', %s)')),
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='date_part(\'year\', %s)'))
+  ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::generateDateDiffExpressionForPostgres(params:String[*]):String[1]
+{
+  let enumList = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
+
+  let indexOfDiff = $enumList->indexOf($params->at(2)->replace('\'', '')->replace('Text', ''));
+
+  let dbSpecificUnits = [
+
+     { | format('(%s)', [
+        'DATE_PART(\'year\', %s) - DATE_PART(\'year\', %s)'
+     ])},
+     {| format('(%s * 12 + (%s))', [
+        generateDateDiffExpressionForPostgres([$params->at(0), $params->at(1), DurationUnit.YEARS->toString()]),
+        'DATE_PART(\'month\', %s) - DATE_PART(\'month\', %s)'
+     ])},
+     {| format('(%s)', [
+        'TRUNC(DATE_PART(\'day\', %s - %s)/7)'
+     ])},
+     {| format('(%s)', [
+        'DATE_PART(\'day\', %s - %s)'
+     ])},
+     {| format('(%s * 24 + (%s))', [
+        generateDateDiffExpressionForPostgres([$params->at(0), $params->at(1), DurationUnit.DAYS->toString()]),
+        'DATE_PART(\'hour\', %s - %s)'
+     ])},
+     {| format('(%s * 60 + (%s))', [
+        generateDateDiffExpressionForPostgres([$params->at(0), $params->at(1), DurationUnit.HOURS->toString()]),
+        'DATE_PART(\'minute\', %s - %s)'
+     ])},
+     {| format('(%s * 60 + (%s))', [
+        generateDateDiffExpressionForPostgres([$params->at(0), $params->at(1), DurationUnit.MINUTES->toString()]),
+        'DATE_PART(\'second\', %s - %s)'
+     ])},
+     {| format('(%s * 1000 + (%s))', [
+        generateDateDiffExpressionForPostgres([$params->at(0), $params->at(1), DurationUnit.SECONDS->toString()]),
+        'DATE_PART(\'milliseconds\', %s - %s)'
+     ])}
+  ];
+
+  format($dbSpecificUnits->at($indexOfDiff)->eval(), [$params->at(0), $params->at(1)]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processJoinStringsOperationForPostgres(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   processJoinStringsOperation($js, $sgc, [], {strs, sep| $strs->joinStrings('concat(', if('Text\'\'' == $sep, |', ', |',' + $sep + ',') , ')')});
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processSelectSQLQueryForPostgres(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForPostgres($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processSelectSQLQueryForPostgres(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
+{
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+
+  $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
+  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
+  + processLimit($s, $dbConfig, $format, $extensions, processTakeDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_, processSliceOrDropForPostgres_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processSliceOrDropForPostgres(s:SelectSQLQuery[1], format:Format[1],dbConfig : DbConfig[1], extensions:Extension[*], size:Any[1]):String[1]
+{
+   '%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake($format, $dbConfig, $extensions)]) + if ($size == -1, | '', | ' limit %s'->format($size));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::getDDLCommandsTranslatorForPostgres(): RelationalDDLCommandsTranslator[1]
+{
+  ^RelationalDDLCommandsTranslator(
+                createSchema = translateCreateSchemaStatementForPostgres_CreateSchemaSQL_1__DbConfig_1__String_$0_1$_,
+                dropSchema =  translateDropSchemaStatementForPostgres_DropSchemaSQL_1__DbConfig_1__String_$0_1$_,
+                createTable =  translateCreateTableStatementDefault_CreateTableSQL_1__DbConfig_1__String_1_,
+                dropTable = translateDropTableStatementDefault_DropTableSQL_1__DbConfig_1__String_1_,
+                loadTable =  loadValuesToDbTableDefault_LoadTableSQL_1__DbConfig_1__String_MANY_
+              );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::translateCreateSchemaStatementForPostgres(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[0..1]
+{
+   if ($createSchemaSQL.schema.name == 'default', 
+    | [], 
+    | 'Create Schema if not exists ' + $createSchemaSQL.schema.name + ';';);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::translateDropSchemaStatementForPostgres(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[0..1]
+{
+  if ($dropSchemaSQL.schema.name == 'default', 
+    |  [], 
+    | 'Drop schema if exists ' + $dropSchemaSQL.schema.name + ';')
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::regexpMatchPostgres(query: String[1]): String[1]
+{
+   '%s ~ \'^' + $query + '$\''
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::formatMostRecentPostgres(p: String[1..2], defaultDay: String[1]): String[*]
+{
+   let day = $p->last()->toOne()->mapToDBDayOfWeekNumberPostgres()->toString();
+   let current = if ($p->size() == 2, | $p->first()->toOne(), | $defaultDay);
+   [$current, $day, $current, $day, $current, $day, $current];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::mapToDBDayOfWeekNumberPostgres(day: String[1]): Integer[1]
+{
+   let stringProc = getLiteralProcessorsForPostgres()->get(String)->toOne();
+   let enumProc = getLiteralProcessorsForPostgres()->get(Enum)->toOne();
+
+   [
+      pair(list([$enumProc.formatValue(DayOfWeek.Monday, []), $stringProc.formatValue(DayOfWeek.Monday->toString(), [])]), 1),
+      pair(list([$enumProc.formatValue(DayOfWeek.Tuesday, []), $stringProc.formatValue(DayOfWeek.Tuesday->toString(), [])]), 2),
+      pair(list([$enumProc.formatValue(DayOfWeek.Wednesday, []), $stringProc.formatValue(DayOfWeek.Wednesday->toString(), [])]), 3),
+      pair(list([$enumProc.formatValue(DayOfWeek.Thursday, []), $stringProc.formatValue(DayOfWeek.Thursday->toString(), [])]), 4),
+      pair(list([$enumProc.formatValue(DayOfWeek.Friday, []), $stringProc.formatValue(DayOfWeek.Friday->toString(), [])]), 5),
+      pair(list([$enumProc.formatValue(DayOfWeek.Saturday, []), $stringProc.formatValue(DayOfWeek.Saturday->toString(), [])]), 6),
+      pair(list([$enumProc.formatValue(DayOfWeek.Sunday, []), $stringProc.formatValue(DayOfWeek.Sunday->toString(), [])]), 0)
+   ]->filter(p | $p.first.values->contains($day)).second->toOne();
+}

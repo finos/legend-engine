@@ -1,0 +1,38 @@
+import meta::analytics::quality::tests::*;
+import meta::analytics::quality::*;
+
+function <<test.Test>> meta::analytics::quality::model::domain::tests::associationNameShouldStartWithUpperCaseTest():Boolean[1]
+{
+   assertEquals(true, meta::analytics::quality::model::domain::associationNameShouldStartWithUpperCase(meta::analytics::quality::model::domain::tests::TestsInProgress_NoMatchForTest).isValid);
+   assertEquals(false, meta::analytics::quality::model::domain::associationNameShouldStartWithUpperCase(meta::analytics::quality::model::domain::tests::testsInProgress_BadCase).isValid);
+   assertEquals(false, meta::analytics::quality::model::domain::associationNameShouldStartWithUpperCase(meta::analytics::quality::model::domain::tests::TestsInProgressAnotherBadCase).isValid);
+   assertEquals(false, meta::analytics::quality::model::domain::associationNameShouldStartWithUpperCase(meta::analytics::quality::model::domain::tests::TestsInProgress_yetAnotherBadCase).isValid);
+}
+
+Association
+meta::analytics::quality::model::domain::tests::TestsInProgress_NoMatchForTest
+{
+   test: meta::analytics::quality::model::domain::tests::TestsInProgress[1];
+   testMatch: meta::analytics::quality::model::domain::tests::NoMatchForTest[0..1];
+}
+
+Association
+meta::analytics::quality::model::domain::tests::testsInProgress_BadCase
+{
+   testOne: meta::analytics::quality::model::domain::tests::TestsInProgress[1];
+   testMatchOne: meta::analytics::quality::model::domain::tests::NoMatchForTest[0..1];
+}
+
+Association
+meta::analytics::quality::model::domain::tests::TestsInProgressAnotherBadCase
+{
+   testTwo: meta::analytics::quality::model::domain::tests::TestsInProgress[1];
+   testMatchTwo: meta::analytics::quality::model::domain::tests::NoMatchForTest[0..1];
+}
+
+Association
+meta::analytics::quality::model::domain::tests::TestsInProgress_yetAnotherBadCase
+{
+   testThree: meta::analytics::quality::model::domain::tests::TestsInProgress[1];
+   testMatchThree: meta::analytics::quality::model::domain::tests::NoMatchForTest[0..1];
+}

@@ -1,0 +1,188 @@
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::metamodel::utils::*;
+import meta::pure::functions::collection::*;
+
+function meta::external::store::rel::metamodel::utils::with(program: RelProgram[1], elements: RelProgramElement[*]): RelProgram[1] {
+  //TODO: In general, room for improvement by adding some indexed structure to programs.
+  let concat =
+    $elements->fold({e, acc |
+      if (!$e->in($acc), | $acc->concatenate($e), | $acc);
+    }, $program.elements);
+
+  ^RelProgram(identifier=$program.identifier, elements=$concat);
+}
+
+function meta::external::store::rel::metamodel::utils::combine(programs: RelProgram[*]): RelProgram[1] {
+  $programs->fold({p, acc |
+    $acc->with($p.elements);
+  }, program());
+}
+
+///////////////////////////
+// Expression complexity //
+///////////////////////////
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelAbstraction[1]): Integer[1] {
+  $expr.bindings->size() + $expr.body->complexity()
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelAnd[1]): Integer[1] {
+  $expr.conjuncts->map(e: RelExpr[1] | $e->complexity())->sum()
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelApplication[1]): Integer[1] {
+  $expr.head->complexity() + $expr.arguments->map(e: RelExpr[1] | $e->complexity())->sum()
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelAtom[1]): Integer[1] {
+  1
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelComposition[1]): Integer[1] {
+  $expr.from->complexity() + $expr.to->complexity() + 1
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelConstant[1]): Integer[1] {
+  0
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelDontCare[1]): Integer[1] {
+  0
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelEquals[1]): Integer[1] {
+  $expr.left->complexity() + $expr.right->complexity() + 1
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelExists[1]): Integer[1] {
+  $expr.inner->complexity() + 1
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelExprGroup[1]): Integer[1] {
+  $expr.parent->complexity()
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelFor[1]): Integer[1] {
+  $expr.bindings->size() + $expr.expr->complexity()
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelForAll[1]): Integer[1] {
+  $expr.inner->complexity() + 1
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelFragment[1]): Integer[1] {
+  /*
+   * We cannot return a good measure for the complexity of a code fragment
+   * because it is just a string of Rel code.
+   */
+  1
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelFrom[1]): Integer[1] {
+  $expr.expr->complexity()
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelHeadExpr[1]): Integer[1] {
+  1
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelIfThenElse[1]): Integer[1] {
+  $expr.condition->complexity() + $expr.then->complexity() + $expr.else->complexity() + 1
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelImplies[1]): Integer[1] {
+  $expr.antecedence->complexity() + $expr.consequence->complexity() + 1
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelNamedApplication[1]): Integer[1] {
+  1
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelNamedAtom[1]): Integer[1] {
+  1
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelNot[1]): Integer[1] {
+  $expr.inner->complexity() + 1
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelOr[1]): Integer[1] {
+  $expr.disjuncts->map(e: RelExpr[1] | $e->complexity())->sum()
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelProduct[1]): Integer[1] {
+  $expr.exprs->map(e: RelExpr[1] | $e->complexity())->sum()
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelRelationCons[1]): Integer[1] {
+  $expr.arguments->map(t: RelTuple[1] | $t->complexity())->sum()
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelTuple[1]): Integer[1] {
+  $expr.arguments->map(e: RelExpr[1] | $e->complexity())->sum()
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelUnion[1]): Integer[1] {
+  $expr.exprs->map(e: RelExpr[1] | $e->complexity())->sum()
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelVariable[1]): Integer[1] {
+  1
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelVariables[1]): Integer[1] {
+  $expr.inner->map(v: RelVariable[1] | $v->complexity())->sum()
+}
+
+/**
+  * Returns a measure of complexity of the structure of the formula.
+  */
+function meta::external::store::rel::metamodel::utils::complexity(expr: RelExpr[1]): Integer[1] {
+  $expr->match([
+    e: RelAbstraction[1]      | $e->complexity(),
+    e: RelAnd[1]              | $e->complexity(),
+    e: RelApplication[1]      | $e->complexity(),
+    e: RelAtom[1]             | $e->complexity(),
+    e: RelComposition[1]      | $e->complexity(),
+    e: RelConstant[1]         | $e->complexity(),
+    e: RelDontCare[1]         | $e->complexity(),
+    e: RelEquals[1]           | $e->complexity(),
+    e: RelExists[1]           | $e->complexity(),
+    e: RelExprGroup[1]        | $e->complexity(),
+    e: RelFor[1]              | $e->complexity(),
+    e: RelForAll[1]           | $e->complexity(),
+    e: RelFragment[1]         | $e->complexity(),
+    e: RelFrom[1]             | $e->complexity(),
+    e: RelHeadExpr[1]         | $e->complexity(),
+    e: RelIfThenElse[1]       | $e->complexity(),
+    e: RelImplies[1]          | $e->complexity(),
+    e: RelNamedApplication[1] | $e->complexity(),
+    e: RelNamedAtom[1]        | $e->complexity(),
+    e: RelNot[1]              | $e->complexity(),
+    e: RelOr[1]               | $e->complexity(),
+    e: RelProduct[1]          | $e->complexity(),
+    e: RelRelationCons[1]     | $e->complexity(),
+    e: RelTuple[1]            | $e->complexity(),
+    e: RelUnion[1]            | $e->complexity(),
+    e: RelVariable[1]         | $e->complexity(),
+    e: RelVariables[1]        | $e->complexity()
+  ]);
+}
+
+function meta::external::store::rel::metamodel::utils::complexity(exprs: RelExpr[*]): Integer[1] {
+  $exprs->map(e: RelExpr[1] | $e->complexity())->sum()
+}
+
+/**
+  * Returns true if the formula is considered to be complex and should use a vertical layout when rendering.
+  */
+function meta::external::store::rel::metamodel::utils::isComplex(expr: RelExpr[1]): Boolean[1] {
+  $expr->complexity() > 5
+}
+
+/**
+  * Returns true if the formula is considered to be complex and should use a vertical layout when rendering.
+  */
+function meta::external::store::rel::metamodel::utils::isComplex(exprs: RelExpr[*]): Boolean[1] {
+  $exprs->complexity() > 5
+}

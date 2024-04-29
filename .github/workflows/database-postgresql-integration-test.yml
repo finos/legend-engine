@@ -66,9 +66,21 @@ jobs:
         env:
           MAVEN_OPTS: -Xmx4g
         run: |
-          mvn clean install -DskipTests=true
+          mvn -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-postgres/legend-engine-xt-relationalStore-postgres-execution-tests -am clean install -DskipTests=true
       - name : Run Connection Protocol Integration Tests
         env:
           MAVEN_OPTS: -Xmx4g
         run :
-          mvn -pl legend-engine-xt-relationalStore-executionPlan-connection-tests  -Dtest="ExternalIntegration*Postgres*" test
+          mvn -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-postgres/legend-engine-xt-relationalStore-postgres-execution-tests  -Dtest="ExternalIntegration*Postgres*" test
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-postgres/legend-engine-xt-relationalStore-postgres-execution-tests/target/surefire-reports/*.xml
+      - name: Upload CI Event
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: event-file
+          path: ${{ github.event_path }}

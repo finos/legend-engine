@@ -1,0 +1,86 @@
+[
+  {
+    "defects": [],
+    "source": {
+      "number": 1,
+      "record": "{\"name\":\"Name A\",\"ranking\":1,\"employees\":[{\"firstName\":\"FirstName A\",\"lastName\":\"La\"},{\"firstName\":\"FirstName B\",\"lastName\":\"LastName B\",\"addresses\":{\"addressType\":\"Home\",\"address\":{\"firstLine\":\"firstLine\"}}}]}"
+    },
+    "value": {
+      "name": "Name A",
+      "ranking": 1,
+      "employees": [
+        {
+          "firstName": "FirstName A"
+        },
+        {
+          "firstName": "FirstName B"
+        }
+      ]
+    }
+  },
+  {
+    "defects": [
+      {
+        "id": "validRanking",
+        "externalId": null,
+        "message": "Constraint :[validRanking] violated in the Class Firm",
+        "enforcementLevel": "Error",
+        "ruleType": "ClassConstraint",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::constraints::Firm",
+        "path": []
+      },
+      {
+        "id": "validEmployeesSize",
+        "externalId": null,
+        "message": "Constraint :[validEmployeesSize] violated in the Class Firm",
+        "enforcementLevel": "Error",
+        "ruleType": "ClassConstraint",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::constraints::Firm",
+        "path": []
+      }
+    ],
+    "source": {
+      "number": 2,
+      "record": "{\"name\":\"Name A\",\"ranking\":-1}"
+    },
+    "value": {
+      "name": "Name A",
+      "ranking": -1,
+      "employees": []
+    }
+  },
+  {
+    "defects": [
+      {
+        "id": "firstNameLength",
+        "externalId": null,
+        "message": "Constraint :[firstNameLength] violated in the Class Person",
+        "enforcementLevel": "Error",
+        "ruleType": "ClassConstraint",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::constraints::Person",
+        "path": [
+          {
+            "propertyName": "employees",
+            "index": 0
+          }
+        ]
+      }
+    ],
+    "source": {
+      "number": 3,
+      "record": "{\"name\":\"Name A\",\"ranking\":1,\"employees\":[{\"firstName\":\"First\",\"lastName\":\"Last\"},{\"firstName\":\"FirstName B\",\"lastName\":\"LastName B\",\"addresses\":{\"addressType\":\"Home\",\"address\":{\"firstLine\":\"firstLine\"}}}]}"
+    },
+    "value": {
+      "name": "Name A",
+      "ranking": 1,
+      "employees": [
+        {
+          "firstName": "First"
+        },
+        {
+          "firstName": "FirstName B"
+        }
+      ]
+    }
+  }
+]

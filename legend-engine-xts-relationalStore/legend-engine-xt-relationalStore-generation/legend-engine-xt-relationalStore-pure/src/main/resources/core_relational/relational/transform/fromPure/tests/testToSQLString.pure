@@ -1,0 +1,762 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::sqlQueryToString::h2::*;
+import meta::pure::functions::hash::*;
+import meta::relational::tests::functions::sqlstring::*;
+import meta::pure::mapping::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+import meta::pure::profiles::*;
+import meta::relational::functions::sqlstring::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+
+
+Class meta::relational::tests::functions::sqlstring::TestCase
+{
+   id: String[1];
+   query: FunctionDefinition<{->Any[*]}>[1];
+   mapping: Mapping[1];
+   dbType: DatabaseType[1];
+   expectedSql: String[1];
+   generateUsageFor: Function<Any>[*];
+
+}
+
+function meta::relational::tests::functions::sqlstring::testCasesForDocGeneration():TestCase[*]
+{
+   [
+      ^TestCase(
+         id ='testToSQLStringWithAggregation',
+         query = |Person.all()->project(p|$p.firstName,'firstName')->groupBy('firstName', agg('new', e|$e, y|$y->count())),
+         mapping = meta::relational::tests::simpleRelationalMapping,
+         dbType = meta::relational::runtime::DatabaseType.H2,
+         expectedSql = 'select "root".FIRSTNAME as "firstName", count(*) as "new" from personTable as "root" group by "firstName"',
+         generateUsageFor = [meta::pure::tds::groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_]
+      ),
+
+      ^TestCase(
+         id ='testToSQLStringWithAbs_2',
+         query = |Person.all()->project(p|$p.firstName,'firstName')->groupBy('firstName', agg('new', e|$e, y| abs($y->count()))),
+         mapping = meta::relational::tests::simpleRelationalMapping,
+         dbType = meta::relational::runtime::DatabaseType.H2,
+         expectedSql = 'select "root".FIRSTNAME as "firstName", abs(count(*)) as "new" from personTable as "root" group by "firstName"',
+         generateUsageFor = [meta::pure::functions::math::abs_Integer_1__Integer_1_]
+      )
+   ]
+}
+
+function meta::relational::tests::functions::sqlstring::runTestCaseById(testCaseId: String[1]): Boolean[1]
+{
+   let filtered = meta::relational::tests::functions::sqlstring::testCasesForDocGeneration()->filter(c|$c.id==$testCaseId);
+   assert($filtered->size()==1, 'Number of test cases found is not 1.');
+   let testCase = $filtered->toOne();
+
+   let result = toSQLString($testCase.query, $testCase.mapping, $testCase.dbType, meta::relational::extension::relationalExtensions());
+   assertEquals($testCase.expectedSql, $result, '\nSQL not as expected for \'%s\'\n\nexpected: %s\nactual:   %s', [$testCase.id, $testCase.expectedSql, $result]);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLString():Boolean[1]
+{
+   let s = toSQLString(|Person.all()->filter(p|$p.firstName == 'John'), meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringNonPrestoSchemaNameShouldNotConvertDollarSign():Boolean[1]
+{
+   let s = toSQLString(|Person.all(), meta::relational::tests::simpleRelationalMappingPersonForPresto, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age" from catalog$schema.personTable as "root"', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringComposite():Boolean[1]
+{
+   let s = toSQLString(|Person.all()->filter(p|$p.firstName == 'John'), meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Composite, meta::relational::extension::relationalExtensions());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithAggregation():Boolean[1]
+{
+   meta::relational::tests::functions::sqlstring::runTestCaseById('testToSQLStringWithAggregation');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithAggregationDB2():Boolean[1]
+{
+   let s = toSQLString(|Person.all()->groupBy([p:Person[1]|$p.firstName],
+                                                agg(e|$e.age, y|$y->sum()),
+                                                ['firstName', 'age']),
+                                                meta::relational::tests::simpleRelationalMapping,
+                                                meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
+   assertEquals('select "root".FIRSTNAME as "firstName", sum("root".AGE) as "age" from personTable as "root" group by "root".FIRSTNAME', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithRelativeDateDB2():Boolean[1]
+{
+   let s1 = toSQLString(|Trade.all()->filter(t|$t.settlementDateTime > today()->adjust(-1, DurationUnit.MONTHS))->project([t| $t.id, t| $t.settlementDateTime] ,['id', 'settlementDateTime']),
+         meta::relational::tests::simpleRelationalMapping,
+         meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
+
+   assertEquals('select "root".ID as "id", "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where ("root".settlementDateTime is not null and "root".settlementDateTime > date(current date) - 1 MONTHS)', $s1);
+
+   let s2 = toSQLString(|Trade.all()->filter(t|$t.settlementDateTime > today()->adjust(-3, DurationUnit.DAYS))->project([t| $t.id, t| $t.settlementDateTime] ,['id', 'settlementDateTime']),
+         meta::relational::tests::simpleRelationalMapping,
+         meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
+
+   assertEquals('select "root".ID as "id", "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where ("root".settlementDateTime is not null and "root".settlementDateTime > date(current date) - 3 DAYS)', $s2);
+
+   let s3 = toSQLString(|Trade.all()->filter(t|$t.settlementDateTime > today()->adjust(-2, DurationUnit.WEEKS))->project([t| $t.id, t| $t.settlementDateTime] ,['id', 'settlementDateTime']),
+         meta::relational::tests::simpleRelationalMapping,
+         meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
+
+   assertEquals('select "root".ID as "id", "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where ("root".settlementDateTime is not null and "root".settlementDateTime > date(current date) - 14 DAYS)', $s3);
+
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithAbs():Boolean[1]
+{
+   let s = toSQLString(|Trade.all()->project([t| abs($t.quantity), a| abs(-2)] ,['absoluteQuantity', 'positiveTwo']), meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select abs("root".quantity) as "absoluteQuantity", abs(-2) as "positiveTwo" from tradeTable as "root"', $s);
+
+   meta::relational::tests::functions::sqlstring::runTestCaseById('testToSQLStringWithAbs_2');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringJoinStrings():Boolean[1]
+{
+   let fn = {|Firm.all()->groupBy([f|$f.legalName],
+                                     agg(x|$x.employees.firstName,y|$y->joinStrings('*')),
+                                     ['legalName', 'employeesFirstName']
+                                  )};
+
+   let h2Sql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select "root".LEGALNAME as "legalName", group_concat("personTable_d#4_d_m1".FIRSTNAME separator \'*\') as "employeesFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "legalName"', $h2Sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringJoinStringsSimpleConcat():Boolean[1]
+{
+   let fn = {|Person.all()->project([p | $p.firstName + '_' + $p.lastName], ['firstName_lastName'])};
+
+   let h2Sql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select concat("root".FIRSTNAME, \'_\', "root".LASTNAME) as "firstName_lastName" from personTable as "root"', $h2Sql);
+
+   let db2Sql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
+   assertEquals('select ("root".FIRSTNAME concat \'_\' concat "root".LASTNAME) as "firstName_lastName" from personTable as "root"', $db2Sql);
+
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithCodeBlock():Boolean[1]
+{
+   let fn = {| let endDate = %2015-01-01->add(^Duration(number=1, unit=DurationUnit.MONTHS));
+               let datePath = #/meta::relational::tests::model::simple::Trade/date#;
+
+               Trade.all()->filter(x | $x->meta::relational::tests::functions::sqlstring::filterReportDates($endDate, $datePath))
+                          ->project([t|$t.account.name, t|$t.quantity], ['accountName', 'quantity']);
+   };
+   let s = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEqualsH2Compatible(
+    'select "accountTable_d#4_d_m1".name as "accountName", "root".quantity as "quantity" from tradeTable as "root" left outer join accountTable as "accountTable_d#4_d_m1" on ("root".accountID = "accountTable_d#4_d_m1".ID) where "root".tradeDate <= \'2015-02-01\'',
+    'select "accountTable_d#4_d_m1".name as "accountName", "root".quantity as "quantity" from tradeTable as "root" left outer join accountTable as "accountTable_d#4_d_m1" on ("root".accountID = "accountTable_d#4_d_m1".ID) where "root".tradeDate <= DATE\'2015-02-01\'',
+    $s->sqlRemoveFormatting()
+  );
+}
+
+function meta::relational::tests::functions::sqlstring::filterReportDates<T>(x:T[1], end:Date[1], path:Function<{T[1]->Date[0..1]}>[1]):Boolean[1]
+{
+   $x->map($path)->toOne() <= $end;
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testNonExecutableSQLString():Boolean[1]
+{
+   let s = toNonExecutableSQLString(|Trade.all()->filter(t | $t.product.cusipSynonym.name == 'CUSIP1')
+                                         ->groupBy([t|$t.product.cusipSynonym.name],
+                                           agg(x|$x.quantity, y|$y->sum()),
+                                             ['Cusip', 'Total Quantity']),
+                                    meta::relational::tests::simpleRelationalMapping,
+                                    meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
+
+   assertSameSQL('select "synonymTable_d#4_f_d#5".NAME as "Cusip", sum("root".quantity) as "Total Quantity" from tradeTable as "root" left outer join productSchema.productTable as "productTable_d#6" on ("root".prodId = "productTable_d#6".ID) left outer join (select "synonymTable_d#4_f_d#5".PRODID as PRODID, "synonymTable_d#4_f_d#5".NAME as NAME from productSchema.synonymTable as "synonymTable_d#4_f_d#5" where "synonymTable_d#4_f_d#5".TYPE = \'CUSIP\' and 1 = 2) as "synonymTable_d#4_f_d#5" on ("synonymTable_d#4_f_d#5".PRODID = "productTable_d#6".ID) left outer join productSchema.synonymTable as "synonymTable_d#6_f_d#5_d#2_m1_r_d_m2_md" on ("synonymTable_d#6_f_d#5_d#2_m1_r_d_m2_md".PRODID = "productTable_d#6".ID and "synonymTable_d#6_f_d#5_d#2_m1_r_d_m2_md".TYPE = \'CUSIP\') where "synonymTable_d#6_f_d#5_d#2_m1_r_d_m2_md".NAME = \'CUSIP1\' and 1 = 2 group by "Cusip"', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithLength():Boolean[1]
+{
+   [DatabaseType.H2, DatabaseType.Composite]->map(db|
+      let s = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, $db, meta::relational::extension::relationalExtensions());
+      assertEquals('select char_length("root".FIRSTNAME) as "nameLength" from personTable as "root"', $s);
+   );
+
+   let db2sql = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, DatabaseType.DB2, meta::relational::extension::relationalExtensions());
+   assertEquals('select CHARACTER_LENGTH("root".FIRSTNAME,CODEUNITS32) as "nameLength" from personTable as "root"', $db2sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringReverse():Boolean[1]
+{
+   let h2Sql = toSQLString(|Person.all()->project(p|reverseString($p.firstName), 'reverse'), simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select legend_h2_extension_reverse_string("root".FIRSTNAME) as "reverse" from personTable as "root"', $h2Sql);
+
+   let db2Sql = toSQLString(|Person.all()->project(p|reverseString($p.firstName), 'reverse'), simpleRelationalMapping, DatabaseType.DB2, meta::relational::extension::relationalExtensions());
+   assertEquals('select reverse("root".FIRSTNAME) as "reverse" from personTable as "root"', $db2Sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringSplitPart():Boolean[1]
+{
+   let sql = toSQLString({|Person.all()
+    ->project([
+      col(p|splitPart($p.firstName, '|', 0), 'splitBar'),
+      col(p|splitPart($p.firstName, '|', 1 + 1), 'splitBarExpression')
+    ])->project([
+      col(row:TDSRow[1] | splitPart($row.getString('splitBar'), ',', 1), 'splitComma'),
+      col(row:TDSRow[1] | splitPart($row.getString('splitBarExpression'), ',', 1 + 1), 'splitCommaExpression')
+    ])}, simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+
+   assertEquals('select legend_h2_extension_split_part(legend_h2_extension_split_part("root".FIRSTNAME, \'|\', 1), \',\', 2) as "splitComma", legend_h2_extension_split_part(legend_h2_extension_split_part("root".FIRSTNAME, \'|\', ((1 + 1) + 1)), \',\', ((1 + 1) + 1)) as "splitCommaExpression" from personTable as "root"', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringAscii():Boolean[1]
+{
+   let sql = toSQLString(|Person.all()->project(p|ascii($p.firstName), 'ascii'), simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select ascii("root".FIRSTNAME) as "ascii" from personTable as "root"', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringChar():Boolean[1]
+{
+   let sql = toSQLString(|Person.all()->project(p|char($p.age->toOne()), 'char'), simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select char("root".AGE) as "char" from personTable as "root"', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithPosition():Boolean[1]
+{
+   [DatabaseType.H2, DatabaseType.Composite]->map(db|
+      let s = toSQLString(
+              |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
+               meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, $db, meta::relational::extension::relationalExtensions());
+
+      assertEquals('select substring("root".FULLNAME, 0, position(\',\', "root".FULLNAME)-1) as "firstName" from personTable as "root"', $s);
+   );
+
+   let db2sql = toSQLString(
+              |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
+               meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, DatabaseType.DB2, meta::relational::extension::relationalExtensions());
+
+   assertEquals('select substr("root".FULLNAME, 0, position(\',\', "root".FULLNAME)-1) as "firstName" from personTable as "root"', $db2sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithStdDevSample():Boolean[1]
+{
+   [DatabaseType.H2, DatabaseType.DB2]->map(db|
+      let s = toSQLString(
+              |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevSample, 'stdDevSample'),
+               meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, $db, meta::relational::extension::relationalExtensions());
+
+      assertEquals('select stddev_samp("root".int1) as "stdDevSample" from dataTable as "root"', $s);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithStdDevPopulation():Boolean[1]
+{
+   [DatabaseType.H2, DatabaseType.DB2]->map(db|
+      let s = toSQLString(
+              |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevPopulation, 'stdDevPopulation'),
+               meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, $db, meta::relational::extension::relationalExtensions());
+
+      assertEquals('select stddev_pop("root".int1) as "stdDevPopulation" from dataTable as "root"', $s);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInYears():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.YEARS)
+                                                  ],
+                                                  ['DiffYears']),
+                            simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select datediff(year,"root".settlementDateTime,current_timestamp()) as "DiffYears" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInMonths():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.MONTHS)
+                                                  ],
+                                                  ['DiffMonths']),
+                            simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select datediff(month,"root".settlementDateTime,current_timestamp()) as "DiffMonths" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInWeeks():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.WEEKS)
+                                                  ],
+                                                  ['DiffWeeks']),
+                            simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select datediff(week,"root".settlementDateTime,current_timestamp()) as "DiffWeeks" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInDays():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.DAYS)
+                                                  ],
+                                                  ['DiffDays']),
+                            simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select datediff(day,"root".settlementDateTime,current_timestamp()) as "DiffDays" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInHours():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.HOURS)
+                                                  ],
+                                                  ['DiffHours']),
+                            simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select datediff(hour,"root".settlementDateTime,current_timestamp()) as "DiffHours" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInMinutes():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.MINUTES)
+                                                  ],
+                                                  ['DiffMinutes']),
+                            simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select datediff(minute,"root".settlementDateTime,current_timestamp()) as "DiffMinutes" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInSeconds():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.SECONDS)
+                                                  ],
+                                                  ['DiffSeconds']),
+                            simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select datediff(second,"root".settlementDateTime,current_timestamp()) as "DiffSeconds" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInMilliseconds():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->project([
+                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.MILLISECONDS)
+                                                  ],
+                                                  ['DiffMilliseconds']),
+                            simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select datediff(millisecond,"root".settlementDateTime,current_timestamp()) as "DiffMilliseconds" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testDayOfYear():Boolean[1]
+{
+   let expected = [
+      pair(DatabaseType.H2, 'select DAY_OF_YEAR("root".tradeDate) as "doy" from tradeTable as "root"'),
+      pair(DatabaseType.DB2, 'select dayofyear("root".tradeDate) as "doy" from tradeTable as "root"')
+   ];
+
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+
+      let result = toSQLString(
+         |Trade.all()
+            ->project(col(t|$t.date->dayOfYear(), 'doy')),
+         simpleRelationalMapping,
+         $driver, meta::relational::extension::relationalExtensions());
+
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testTrim():Boolean[1]
+{
+  let common = 'select ltrim("root".FIRSTNAME) as "ltrim", trim("root".FIRSTNAME) as "trim", rtrim("root".FIRSTNAME) as "rtrim" from personTable as "root"';
+
+   let expected = [
+    pair(DatabaseType.DB2, $common),
+    pair(DatabaseType.H2, $common),
+    pair(DatabaseType.Composite, $common)
+  ];
+
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+
+      let result = toSQLString(
+        |Person.all()->project([
+          a | $a.firstName->ltrim(),
+          a | $a.firstName->trim(),
+          a | $a.firstName->rtrim()
+         ],
+         ['ltrim', 'trim', 'rtrim']),
+         simpleRelationalMapping,
+         $driver, meta::relational::extension::relationalExtensions());
+
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testPad():Boolean[1]
+{
+  let common = 'select lpad("root".FIRSTNAME, 1) as "lpad", lpad("root".FIRSTNAME, 1, \'0\') as "lpad2", rpad("root".FIRSTNAME, 1) as "rpad", rpad("root".FIRSTNAME, 1, \'0\') as "rpad2" from personTable as "root"';
+
+   let expected = [
+    pair(DatabaseType.DB2, $common),
+    pair(DatabaseType.H2, $common),
+    pair(DatabaseType.Composite, $common)
+  ];
+
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+
+      let result = toSQLString(
+        |Person.all()->project([
+          a | $a.firstName->lpad(1),
+          a | $a.firstName->lpad(1, '0'),
+          a | $a.firstName->rpad(1),
+          a | $a.firstName->rpad(1, '0')
+         ],
+         ['lpad', 'lpad2', 'rpad', 'rpad2']),
+         simpleRelationalMapping,
+         $driver, meta::relational::extension::relationalExtensions());
+
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testLeftRight():Boolean[1]
+{
+
+   let expected = [
+    pair(DatabaseType.DB2, 'select trim(left("root".FIRSTNAME, 1)) as "left", trim(right("root".FIRSTNAME, 1)) as "right" from personTable as "root"'),
+    pair(DatabaseType.H2, 'select left("root".FIRSTNAME,1) as "left", right("root".FIRSTNAME,1) as "right" from personTable as "root"')
+  ];
+
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+
+      let result = toSQLString(
+        |Person.all()->project([
+          a | $a.firstName->left(1),
+          a | $a.firstName->right(1)
+         ],
+         ['left', 'right']),
+         simpleRelationalMapping,
+         $driver, meta::relational::extension::relationalExtensions());
+
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testCbrt():Boolean[1]
+{
+  let common = 'select cbrt("root".quantity) as "cbrt" from tradeTable as "root"';
+
+   let expected = [
+    pair(DatabaseType.DB2, $common),
+    pair(DatabaseType.H2, $common),
+    pair(DatabaseType.Composite, $common)
+   ];
+
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+
+      let result = toSQLString(
+        |Trade.all()->project([
+          a | $a.quantity->cbrt()
+         ],
+         ['cbrt']),
+         simpleRelationalMapping,
+         $driver, meta::relational::extension::relationalExtensions());
+
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForAdjustStrictDateUsageInProjectionForH2():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | adjust(%2011-12-30, 86400, DurationUnit.SECONDS)
+                                                   ],
+                                                   ['a']),
+                              simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEqualsH2Compatible(
+    'select dateadd(SECOND, 86400, \'2011-12-30\') as "a" from personTable as "root"',
+    'select dateadd(SECOND, 86400, DATE\'2011-12-30\') as "a" from personTable as "root"',
+    $result->sqlRemoveFormatting()
+  );
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForAdjustStrictDateUsageInFiltersForH2():Boolean[1]
+{
+   let result = toSQLString(|Trade.all()->filter(it| adjust(%2011-12-30, 86400, DurationUnit.SECONDS) > %2011-12-30)->project([
+                                                      a | 'a'
+                                                   ],
+                                                   ['a']),
+                              simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEqualsH2Compatible(
+    'select \'a\' as "a" from tradeTable as "root" where dateadd(SECOND, 86400, \'2011-12-30\') > \'2011-12-30\'',
+    'select \'a\' as "a" from tradeTable as "root" where dateadd(SECOND, 86400, DATE\'2011-12-30\') > DATE\'2011-12-30\'',
+    $result->sqlRemoveFormatting()
+  );
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForDatePartForH2():Boolean[1]
+{
+   let result = toSQLString(|Location.all()->project([
+                                                      a | $a.censusdate->toOne()->datePart()
+                                                   ],
+                                                   ['a']),
+                              simpleRelationalMappingInc, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select cast(truncate("root".date) as date) as "a" from locationTable as "root"', $result);
+}
+
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfMonth():Boolean[1]
+{
+   let expected = [
+      pair(DatabaseType.H2, 'select dateadd(DAY, -(dayofmonth("root".tradeDate) - 1), "root".tradeDate) as "date" from tradeTable as "root"'),
+      pair(DatabaseType.DB2, 'select date(1) + (year("root".tradeDate)-1) YEARS + (month("root".tradeDate)-1) MONTHS as "date" from tradeTable as "root"')
+   ];
+
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+
+      let result = toSQLString(
+         |Trade.all()
+            ->project(col(t|$t.date->firstDayOfMonth(), 'date')),
+         simpleRelationalMapping,
+         $driver, meta::relational::extension::relationalExtensions());
+
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfYear():Boolean[1]
+{
+   let expected = [
+      pair(DatabaseType.H2, 'select dateadd(DAY, -(dayofyear("root".tradeDate) - 1), "root".tradeDate) as "date" from tradeTable as "root"'),
+      pair(DatabaseType.DB2, 'select date(1) + (year("root".tradeDate)-1) YEARS as "date" from tradeTable as "root"')
+   ];
+
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+
+      let result = toSQLString(
+         |Trade.all()
+            ->project(col(t|$t.date->firstDayOfYear(), 'date')),
+         simpleRelationalMapping,
+         $driver, meta::relational::extension::relationalExtensions());
+
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfThisYear():Boolean[1]
+{
+   let expected = [
+      pair(DatabaseType.H2, 'select dateadd(DAY, -(dayofyear(current_date()) - 1), current_date()) as "date" from tradeTable as "root"'),
+      pair(DatabaseType.DB2, 'select date(1) + (year(current date)-1) YEARS as "date" from tradeTable as "root"')
+   ];
+
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+
+      let result = toSQLString(
+         |Trade.all()
+            ->project(col(t|firstDayOfThisYear(), 'date')),
+         simpleRelationalMapping,
+         $driver, meta::relational::extension::relationalExtensions());
+
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfQuarter(databaseType:DatabaseType[1], expectedSql:String[1]):Boolean[1]
+{
+   let result = toSQLString(
+      |Trade.all()
+         ->project(col(t|$t.date->firstDayOfQuarter(), 'date')),
+      simpleRelationalMapping,
+      $databaseType, meta::relational::extension::relationalExtensions());
+
+   assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$databaseType, $expectedSql, $result]);
+
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfQuarter_H2():Boolean[1]
+{
+   testToSqlGenerationFirstDayOfQuarter(DatabaseType.H2, 'select dateadd(MONTH, 3 * quarter("root".tradeDate) - 3, dateadd(DAY, -(dayofyear("root".tradeDate) - 1), "root".tradeDate)) as "date" from tradeTable as "root"');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfQuarter_DB2():Boolean[1]
+{
+   testToSqlGenerationFirstDayOfQuarter(DatabaseType.DB2, 'select date(1) + ((year("root".tradeDate)-1) YEARS) + (3 * QUARTER("root".tradeDate) - 3) MONTHS as "date" from tradeTable as "root"');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfWeek():Boolean[1]
+{
+   let expected = [
+      pair(DatabaseType.H2, 'select dateadd(DAY, -(mod(dayofweek("root".tradeDate)+5, 7)), "root".tradeDate) as "date" from tradeTable as "root"')
+   ];
+
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+
+      let result = toSQLString(
+         |Trade.all()
+            ->project(col(t|$t.date->firstDayOfWeek(), 'date')),
+         simpleRelationalMapping,
+         $driver, meta::relational::extension::relationalExtensions());
+
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationMonth():Boolean[1]
+{
+   let expected = [
+      pair(DatabaseType.H2, 'select monthname("root".tradeDate) as "month" from tradeTable as "root"')
+   ];
+
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+
+      let result = toSQLString(
+         |Trade.all()
+            ->project(col(t|$t.date->month(), 'month')),
+         simpleRelationalMapping,
+         $driver, meta::relational::extension::relationalExtensions());
+
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithRepeatString():Boolean[1]
+{
+    let sql = toSQLString(|Person.all()->project(p| repeatString('a', 2), 'repeat'), simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+    assertEquals('select repeat(\'a\', 2) as "repeat" from personTable as "root"', $sql);
+
+    let db2Sql    = toSQLString(|Person.all()->project(p|$p.firstName->replace('A', 'a'), 'lowerA'), simpleRelationalMapping, DatabaseType.DB2, meta::relational::extension::relationalExtensions());
+    assertEquals('select replace("root".FIRSTNAME, \'A\', \'a\') as "lowerA" from personTable as "root"', $db2Sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithReplace():Boolean[1]
+{
+    let db2Sql    = toSQLString(|Person.all()->project(p|$p.firstName->replace('A', 'a'), 'lowerA'), simpleRelationalMapping, DatabaseType.DB2, meta::relational::extension::relationalExtensions());
+    assertEquals('select replace("root".FIRSTNAME, \'A\', \'a\') as "lowerA" from personTable as "root"', $db2Sql);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationDivide_AllDBs():Boolean[1]
+{
+   let query = {|Trade.all()->filter(t | $t.id == 2)->map(t | $t.quantity->divide(1000000))};
+   let expectedSQL = 'select ((1.0 * "root".quantity) / 1000000) from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeEventViewMaxTradeEventDate_d#4_d#4_m5" on ("root".ID = "tradeEventViewMaxTradeEventDate_d#4_d#4_m5".trade_id) where "root".ID = 2';
+
+   let resultDB2 = meta::relational::functions::sqlstring::toSQLString($query, simpleRelationalMapping, DatabaseType.DB2, meta::relational::extension::relationalExtensions());
+   assertSameSQL($expectedSQL, $resultDB2);
+   let resultComposite = meta::relational::functions::sqlstring::toSQLString($query, simpleRelationalMapping, DatabaseType.Composite, meta::relational::extension::relationalExtensions());
+   assertSameSQL($expectedSQL, $resultComposite);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testIsDistinctSQLGeneration():Boolean[1]
+{
+   let func = {|Firm.all()->groupBy(
+      [t|$t.legalName],
+      [agg(x|$x.employees.firstName,y|$y->isDistinct())],
+      ['LegalName', 'IsDistinctFirstName']
+   )};
+
+   let h2 = toSQLString($func, simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertSameSQL('select "root".LEGALNAME as "LegalName", count(distinct("personTable_d#4_d_m1".FIRSTNAME)) = count("personTable_d#4_d_m1".FIRSTNAME) as "IsDistinctFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "LegalName"', $h2);
+
+   let db2 = toSQLString($func, simpleRelationalMapping, DatabaseType.DB2, meta::relational::extension::relationalExtensions());
+   assertSameSQL('select "root".LEGALNAME as "LegalName", case when (count(distinct("personTable_d#4_d_m1".FIRSTNAME)) = count("personTable_d#4_d_m1".FIRSTNAME)) then \'true\' else \'false\' end as "IsDistinctFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "root".LEGALNAME', $db2);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringToNumericCasts():Boolean[1]
+{
+    let result = toSQLString(
+     |Trade.all()
+        ->project([
+          col(t|$t.quantity->toDecimal(), 'decimal'),
+          col(t|$t.quantity->toFloat(), 'float')
+        ]), simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+
+    assertEquals('select cast("root".quantity as decimal) as "decimal", cast("root".quantity as double precision) as "float" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGreatestLeast():Boolean[1]
+{
+    let result = toSQLString(
+     |Trade.all()
+        ->project([
+          col(t| greatest([$t.quantity, 1, 3]), 'greatest'),
+          col(t| greatest([]->cast(@String)), 'greatest_empty'),
+          col(t| least([$t.quantity, 1, 3]), 'least'),
+          col(t| least([]->cast(@String)), 'least_empty')
+        ]), simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+
+    assertEquals('select greatest("root".quantity, 1, 3) as "greatest", greatest(null) as "greatest_empty", least("root".quantity, 1, 3) as "least", least(null) as "least_empty" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringForTDSStringJoin():Boolean[1]
+{
+    let result = toSQLString(
+     |Person.all()
+        ->project([
+          col(p|$p.firstName, 'firstName'),
+          col(p|$p.lastName, 'lastName')
+        ])
+        ->extend([
+          col(row:TDSRow[1]|joinStrings([$row.getString('firstName'), ' ', $row.getString('lastName')]), 'name1'),
+          col(row:TDSRow[1]|joinStrings([$row.getString('firstName'), ' ', $row.getString('lastName')], '|'), 'name2'),
+          col(row:TDSRow[1]|joinStrings([$row.getString('firstName'), ' ', $row.getString('lastName')], '[', ',', ']'), 'name3'),
+          col(row:TDSRow[1]|joinStrings(['myValue', $row.getString('firstName'), ' ', $row.getString('lastName')], '[', ',', ']'), 'name4')
+        ]), simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+
+    assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", concat("root".FIRSTNAME, \' \', "root".LASTNAME, \'\', \'\', \'\') as "name1", concat("root".FIRSTNAME, \' \', "root".LASTNAME, \'|\') as "name2", '
+      +'concat("root".FIRSTNAME, \' \', "root".LASTNAME, \'[\', \',\', \']\') as "name3", concat(\'myValue\', "root".FIRSTNAME, \' \', "root".LASTNAME, \'[\', \',\', \']\') as "name4" from personTable as "root"', $result);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::functions::sqlstring::testHashFunctions():Boolean[1]
+{
+    let result = toSQLString(
+     |Person.all()
+        ->project([
+          col(p|$p.firstName, 'firstName'),
+          col(p|$p.lastName, 'lastName'),
+          col(p|$p.firstName->hash(HashType.MD5), 'md5'),
+          col(p|$p.firstName->hash(HashType.SHA1), 'sha1'),
+          col(p|$p.firstName->hash(HashType.SHA256), 'sha256')
+        ])
+        ->project([
+           col({row:TDSRow[1]|$row.getString('firstName')->hash(HashType.MD5)}, 'tds_md5'),
+           col({row:TDSRow[1]|$row.getString('firstName')->hash(HashType.SHA1)}, 'tds_sha1'),
+           col({row:TDSRow[1]|$row.getString('firstName')->hash(HashType.SHA256)}, 'tds_sha256'),
+           col({row:TDSRow[1]|hash(($row.getString('firstName') + $row.getString('lastName')), HashType.MD5)}, 'tds_concat_md5'),
+           col({row:TDSRow[1]|hash(joinStrings([$row.getString('firstName'), $row.getString('lastName')]), HashType.MD5)}, 'tds_joinstrings_md5'),
+           col({row:TDSRow[1]|[$row.getString('firstName'), $row.getString('lastName')]->joinStrings('|')->hash(HashType.MD5)}, 'tds_digest')
+        ])
+        , simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+
+    assertEquals('select rawtohex(hash(\'MD5\', "root".FIRSTNAME)) as "tds_md5", rawtohex(hash(\'SHA-1\', "root".FIRSTNAME)) as "tds_sha1", rawtohex(hash(\'SHA-256\', "root".FIRSTNAME)) as "tds_sha256", '
+          + 'rawtohex(hash(\'MD5\', concat("root".FIRSTNAME, "root".LASTNAME))) as "tds_concat_md5", rawtohex(hash(\'MD5\', concat("root".FIRSTNAME, "root".LASTNAME, \'\', \'\', \'\'))) as "tds_joinstrings_md5", '
+          + 'rawtohex(hash(\'MD5\', concat("root".FIRSTNAME, "root".LASTNAME, \'|\'))) as "tds_digest" from personTable as "root"', $result);
+
+}

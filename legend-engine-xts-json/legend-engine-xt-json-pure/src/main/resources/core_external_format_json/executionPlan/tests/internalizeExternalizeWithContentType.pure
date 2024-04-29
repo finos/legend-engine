@@ -1,0 +1,142 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::core::runtime::*;
+import meta::pure::dataQuality::*;
+import meta::pure::graphFetch::execution::*;
+import meta::external::format::shared::functions::*;
+import meta::external::format::json::executionPlan::test::withContentType::*;
+import meta::external::format::json::functions::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::withContentType::testSimpleJsonQuery(): Boolean[1]
+{
+  let query   = {data:String[1]| Person->fromJson($data)->toJson(#{Person{firstName, lastName}}#)};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
+
+  assertEquals('{"firstName":"John","lastName":"Doe"}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::withContentType::testSimpleJsonQueryWithByte(): Boolean[1]
+{
+  let query   = {data:Byte[*]| Person->fromJson($data)->toJson(#{Person{firstName, lastName}}#)};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', meta::external::format::json::executionPlan::test::convertStringToBytes('{"firstName": "John", "lastName":"Doe"}')));
+
+  assertEquals('{"firstName":"John","lastName":"Doe"}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::withContentType::testSimpleJsonQueryWithPartialTree(): Boolean[1]
+{
+  let query   = {data:String[1]| Person->fromJson($data)->graphFetch(#{Person{firstName, lastName}}#)->toJson(#{Person{firstName, lastName}}#)};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
+
+  assertEquals('{"firstName":"John","lastName":"Doe"}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::withContentType::testSimpleJsonQueryWithNestedTree(): Boolean[1]
+{
+  let query   = {data:String[1]| Person->fromJson($data)->graphFetch(#{Person{firstName, lastName, firm {legalName}, addresses{street}}}#)->toJson(#{Person{firstName, lastName, firm {legalName}, addresses{street}}}#)};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName": "Firm A"}, "addresses": {"street": "Street A"}}'));
+
+  assertEquals('{"firstName":"John","lastName":"Doe","firm":{"legalName":"Firm A"},"addresses":[{"street":"Street A"}]}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::withContentType::testSimpleJsonQueryWithIncompleteData(): Boolean[1]
+{
+  let query   = {data:String[1]| Person->fromJson($data)->graphFetchChecked(#{Person{firstName, lastName, firm {legalName}, addresses{street}}}#)->toJson(checked(#{Person{firstName, lastName, firm {legalName}, addresses{street}}}#, 'application/json'))};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
+
+  assertEquals('{"defects":[{"id":null,"externalId":null,"message":"Invalid multiplicity for firm: expected [1] found [0]","enforcementLevel":"Critical","ruleType":"ClassStructure","ruleDefinerPath":"meta::external::format::json::executionPlan::test::withContentType::Person","path":[]}],"source":{"number":1,"record":"{\\\"firstName\\\":\\\"John\\\",\\\"lastName\\\":\\\"Doe\\\"}"},"value":null}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::withContentType::testM2MChainingWithJson(): Boolean[1]
+{
+  let query   = {data:String[1]| TargetPerson.all()->graphFetch(#{TargetPerson{fullName, firm {legalName}, addresses{street}}}#)->from(M2MMapping, getRuntimeWithModelQueryConnection(Person, 'application/json', $data))->toJson(#{TargetPerson{fullName, firm {legalName}, addresses{street}}}#)};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName": "Firm A"}}'));
+
+  assertEquals('{"fullName":"John Doe","firm":{"legalName":"Firm A"},"addresses":[]}', $result);
+}
+
+// =========================================================================================================
+// Models
+// =========================================================================================================
+###Pure
+import meta::legend::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::json::executionPlan::test::withContentType::*;
+
+Class meta::external::format::json::executionPlan::test::withContentType::RefinedPerson
+{
+  fullName  : String[1];
+  firm      : Firm[1];
+  addresses : Address[*];
+}
+
+Class meta::external::format::json::executionPlan::test::withContentType::TargetPerson
+{
+  fullName  : String[1];
+  firm      : Firm[1];
+  addresses : Address[*];
+}
+
+Class meta::external::format::json::executionPlan::test::withContentType::Person
+{
+  firstName : String[1];
+  lastName  : String[1];
+  firm      : Firm[1];
+  addresses : Address[*];
+}
+
+Class meta::external::format::json::executionPlan::test::withContentType::Firm
+{
+  legalName : String[1];
+}
+
+Class meta::external::format::json::executionPlan::test::withContentType::Address
+{
+  street : String[1];
+}
+
+###Mapping
+Mapping meta::external::format::json::executionPlan::test::withContentType::M2MMapping
+(
+  meta::external::format::json::executionPlan::test::withContentType::TargetPerson: Pure
+  {
+    ~src meta::external::format::json::executionPlan::test::withContentType::Person
+
+    fullName : $src.firstName + ' ' + $src.lastName,
+    firm : $src.firm,
+    addresses : $src.addresses
+  }
+
+  meta::external::format::json::executionPlan::test::withContentType::Firm: Pure
+  {
+    ~src meta::external::format::json::executionPlan::test::withContentType::Firm
+
+    legalName : $src.legalName
+  }
+
+  meta::external::format::json::executionPlan::test::withContentType::Address: Pure
+  {
+    ~src meta::external::format::json::executionPlan::test::withContentType::Address
+
+    street : $src.street
+  }
+)

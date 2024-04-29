@@ -1,0 +1,190 @@
+{
+  "_type": "lambda",
+  "body": [
+    {
+      "_type": "func",
+      "function": "take",
+      "parameters": [
+        {
+          "_type": "func",
+          "function": "project",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "filter",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "getAll",
+                  "parameters": [
+                    {
+                      "_type": "packageableElementPtr",
+                      "fullPath": "domain::Example"
+                    }
+                  ]
+                },
+                {
+                  "_type": "lambda",
+                  "body": [
+                    {
+                      "_type": "func",
+                      "function": "and",
+                      "parameters": [
+                        {
+                          "_type": "func",
+                          "function": "equal",
+                          "parameters": [
+                            {
+                              "_type": "property",
+                              "parameters": [
+                                {
+                                  "_type": "var",
+                                  "name": "x"
+                                }
+                              ],
+                              "property": "cases"
+                            },
+                            {
+                              "_type": "float",
+                              "value": 10
+                            }
+                          ]
+                        },
+                        {
+                          "_type": "func",
+                          "function": "and",
+                          "parameters": [
+                            {
+                              "_type": "func",
+                              "function": "equal",
+                              "parameters": [
+                                {
+                                  "_type": "property",
+                                  "parameters": [
+                                    {
+                                      "_type": "var",
+                                      "name": "x"
+                                    }
+                                  ],
+                                  "property": "caseType"
+                                },
+                                {
+                                  "_type": "string",
+                                  "value": "abc"
+                                }
+                              ]
+                            },
+                            {
+                              "_type": "func",
+                              "function": "and",
+                              "parameters": [
+                                {
+                                  "_type": "func",
+                                  "function": "equal",
+                                  "parameters": [
+                                    {
+                                      "_type": "property",
+                                      "parameters": [
+                                        {
+                                          "_type": "var",
+                                          "name": "x"
+                                        }
+                                      ],
+                                      "property": "caseType"
+                                    },
+                                    {
+                                      "_type": "packageableElementPtr",
+                                      "fullPath": "test::pure::mapping::modelToModel::test::shared::dest::Person"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "_type": "func",
+                                  "function": "equal",
+                                  "parameters": [
+                                    {
+                                      "_type": "property",
+                                      "parameters": [
+                                        {
+                                          "_type": "var",
+                                          "name": "x"
+                                        }
+                                      ],
+                                      "property": "date"
+                                    },
+                                    {
+                                      "_type": "strictDate",
+                                      "value": "2023-06-02"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "parameters": [
+                    {
+                      "_type": "var",
+                      "name": "x"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "values": [
+                {
+                  "_type": "lambda",
+                  "body": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "x"
+                        }
+                      ],
+                      "property": "cases"
+                    }
+                  ],
+                  "parameters": [
+                    {
+                      "_type": "var",
+                      "name": "x"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "values": [
+                {
+                  "_type": "string",
+                  "value": "Cases"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "integer",
+          "value": 1000
+        }
+      ]
+    }
+  ],
+  "parameters": []
+}

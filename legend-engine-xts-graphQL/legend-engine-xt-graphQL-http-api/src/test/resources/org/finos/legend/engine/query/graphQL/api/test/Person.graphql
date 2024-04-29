@@ -1,0 +1,17 @@
+type Person {
+  firstName: String!
+  lastName: String!
+  addresses: [Address!]!
+  firm: Firm
+}
+input Person_bool_exp {
+  firstName: String_comparison_exp
+  lastName: String_comparison_exp
+  addresses: Address_exists_exp
+  firm: Firm_bool_exp
+  _and: [Person_bool_exp!]
+  _or: [Person_bool_exp!]
+}
+input Person_exists_exp {
+  _exists: Person_bool_exp
+}

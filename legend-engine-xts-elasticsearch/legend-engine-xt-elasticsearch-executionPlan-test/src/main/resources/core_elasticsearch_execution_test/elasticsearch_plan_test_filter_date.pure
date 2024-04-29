@@ -1,0 +1,205 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::*;
+import meta::external::store::elasticsearch::executionTest::testCase::*;
+import meta::external::store::elasticsearch::executionTest::testCase::tds::*;
+import meta::external::store::elasticsearch::executionTest::test::*;
+import meta::external::store::elasticsearch::executionTest::utils::*;
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Keyword property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testEqualValueFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') == %1984-06-08T00:00:00.700+0000));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Keyword property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testNotEqualValueFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') != %1984-06-08T00:00:00.700+0000));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than filter on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testGreaterThanDate(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') > %1985-01-01T00:00:00+0000));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than filter on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testGreaterThanReversedDate(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | %2000-01-01T00:00:00+0000 > $x.getDate('ReleaseDate')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than equal filter on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testGreaterThanEqualDate(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') >= %1984-06-08T00:00:00+0000));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than equal filter on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testGreaterThanEqualReversedDate(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | %2010-04-26T00:00:00.200+0000 >= $x.getDate('ReleaseDate')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than filter on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testLessThanDate(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') < %2010-04-26T00:00:00.200+0000));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than filter on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testLessThanReversedDate(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | %2010-04-26T00:00:00.200+0000 < $x.getDate('ReleaseDate')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than equal filter on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testLessThanEqualDate(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') <= %2010-04-26T00:00:00.200+0000));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than equal filter on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testLessThanEqualReversedDate(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | %2010-04-26T00:00:00.200+0000 <= $x.getDate('ReleaseDate')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Keyword property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testEqualValueFilter_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = %1984-06-08T00:00:00.700+0000;
+  $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') == $var));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Keyword property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testNotEqualValueFilter_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = %1984-06-08T00:00:00.700+0000;
+  $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') != $var));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than filter on Elasticsearch Integer property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testGreaterThanDate_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = %1985-01-01T00:00:00+0000;
+  $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') > $var));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than filter on Elasticsearch Integer property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testGreaterThanReversedDate_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = %2000-01-01T00:00:00+0000;
+  $config->testTdsExpression(x | $x->filter(x | $var > $x.getDate('ReleaseDate')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than equal filter on Elasticsearch Integer property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testGreaterThanEqualDate_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = %1984-06-08T00:00:00.700+0000;
+  $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') >= $var));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than equal filter on Elasticsearch Integer property with variable mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testGreaterThanEqualReversedDate_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = %2010-04-26T00:00:00.200+0000;
+  $config->testTdsExpression(x | $x->filter(x | $var >= $x.getDate('ReleaseDate')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than filter on Elasticsearch Integer property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testLessThanDate_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = %2010-04-26T00:00:00.200+0000;
+  $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') < $var));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than filter on Elasticsearch Integer property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testLessThanReversedDate_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = %2010-04-26T00:00:00.200+0000;
+  $config->testTdsExpression(x | $x->filter(x | $var < $x.getDate('ReleaseDate')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than equal filter on Elasticsearch Integer property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testLessThanEqualDate_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = %2010-04-26T00:00:00.200+0000;
+  $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') <= $var));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than equal filter on Elasticsearch Integer property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testLessThanEqualReversedDate_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = %2010-04-26T00:00:00.200+0000;
+  $config->testTdsExpression(x | $x->filter(x | $var <= $x.getDate('ReleaseDate')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than equal filter on Elasticsearch Integer property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testFilterUsingValueFromAdjustNowFunctions(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') >= now()->adjust(-15, DurationUnit.YEARS)));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than equal filter on Elasticsearch Integer property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testFilterUsingValueFromAdjustTodayFunctions(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') >= today()->adjust(-15, DurationUnit.YEARS)));
+}

@@ -1,0 +1,117 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::query::paginate::helper::*;
+import meta::json::*;
+import meta::pure::mapping::*;
+import meta::core::runtime::*;
+import meta::pure::graphFetch::execution::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+import meta::pure::profiles::*;
+import meta::relational::functions::sqlstring::*;
+
+function meta::relational::tests::query::paginate::helper::runtime(): Runtime[1]
+{
+  let sqls = 'Drop table if exists PersonTable;' +
+            'Create Table PersonTable(id INT, firstName VARCHAR(200), lastName VARCHAR(200), age INT, addressId INT, firmId INT, managerId INT);' +
+            'insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (1, \'Peter\', \'Smith\',23, 1,1,2);' +
+            'insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (2, \'John\', \'Johnson\',22, 2,1,4);' +
+            'insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (3, \'John\', \'Hill\',12, 3,1,2);' +
+            'insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (4, \'Anthony\', \'Allen\',22, 4,1,null);' +
+            'insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (5, \'Fabrice\', \'Roberts\',34, 5,2,null);' +
+            'insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (6, \'Oliver\', \'Hill\',32, 6,3,null);' +
+            'insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (7, \'David\', \'Harris\',35, 7,4,null);';
+  ^Runtime(connectionStores=[
+    ^ConnectionStore(
+        element = meta::relational::tests::db,
+        connection=^meta::external::store::relational::runtime::RelationalDatabaseConnection
+      (
+        type = meta::relational::runtime::DatabaseType.H2,
+        datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupSqls=[$sqls]),
+        authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
+      ))
+    ]);
+}
+
+function meta::relational::tests::query::paginate::helper::resultSQL(res:String[1]): String[1]
+{
+  let jsonElement = $res->parseJSON();
+  $jsonElement->cast(@JSONObject).keyValuePairs
+    ->filter(kv|$kv.key.value == 'activities').value
+    ->cast(@JSONArray).values
+    ->cast(@JSONObject).keyValuePairs
+    ->filter(kv|$kv.key.value == 'sql').value
+    ->cast(@JSONString).value->toOne();
+}
+
+function meta::relational::tests::query::paginate::helper::resultObjectsCount(res:String[1],key:String[1]): Integer[1]
+{
+  let jsonElement = $res->parseJSON();
+  $jsonElement->cast(@JSONObject).keyValuePairs
+    ->filter(kv|$kv.key.value == $key).value
+    ->cast(@JSONArray).values->size();
+}
+
+function meta::relational::tests::query::paginate::helper::runTest(f: FunctionDefinition<Any>[1], expectedSql: String[1], expectedObjectCount:Integer[1]): Boolean[1]
+{
+  let result = meta::legend::executeLegendQuery($f,[], ^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
+  assertEquals($expectedSql,resultSQL($result));
+  assertEquals($expectedObjectCount,resultObjectsCount($result,'objects'));
+}
+
+function meta::relational::tests::query::paginate::helper::runGraphFetchTest(f: FunctionDefinition<Any>[1], expectedObjectCount:Integer[1]): Boolean[1]
+{
+  let result = meta::legend::executeLegendQuery($f,[], ^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
+  assertEquals($expectedObjectCount,resultObjectsCount($result,'values'));
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::query::paginate::testPaginated():Boolean[1]
+{
+  runGraphFetchTest(
+    |Person.all()->from(simpleRelationalMapping, runtime())->sortBy(#/Person/firstName!fn#)->paginated(2,4)->graphFetch(#{Person{firstName}}#)->serialize(#{Person{firstName}}#),
+    3
+  );
+
+  runTest(
+    |Person.all()->from(simpleRelationalMapping, runtime())->sortBy(#/Person/firstName!fn#)->paginated(1,4),
+    'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME offset 0 rows fetch next 4 rows only',
+    4
+  );
+
+  runTest(
+    |Person.all()->from(simpleRelationalMapping, runtime())->sortBy(#/Person/firstName!fn#)->paginated(2,2),
+    'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME offset 2 rows fetch next 2 rows only',
+    2
+  );
+
+  runTest(
+    |Person.all()->from(simpleRelationalMapping, runtime())->sortBy(#/Person/firstName!fn#)->paginated(2,4),
+    'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME offset 4 rows fetch next 4 rows only',
+    3
+  );
+}
+
+function <<test.Test>> meta::relational::tests::query::paginate::testPaginatedByVendor():Boolean[1]
+{
+   // First type of function - simple query
+
+   let f1 = {|Person.all()->sortBy(#/Person/firstName!fn#)->paginated(1,4);};
+
+   let s = toSQLString($f1, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME offset ${((1?number - 1?number)?number * 4?number)} rows fetch next ${4?number} rows only', $s);
+}
+

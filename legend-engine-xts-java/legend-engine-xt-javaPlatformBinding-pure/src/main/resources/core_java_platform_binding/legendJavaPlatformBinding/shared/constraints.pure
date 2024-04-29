@@ -1,0 +1,426 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::pure::dataQuality::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::graphFetch::executionPlan::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::lineage::scanProperties::*;
+import meta::pure::lineage::scanProperties::propertyTree::*;
+import meta::pure::mapping::*;
+import meta::external::store::model::*;
+import meta::pure::mapping::modelToModel::inMemory::*;
+import meta::pure::metamodel::constraint::*;
+import meta::pure::milestoning::*;
+
+Class meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::ConstraintCheckingGenerationContext
+{
+   enableConstraints    : Boolean[1];
+   topLevelOnly         : Boolean[1];                       //TODO: This would be removed, once we have shifted from legacy flow
+   constraintsToExclude : String[*];                        //TODO: This would be removed, once we have shifted from legacy flow
+   graphFetchTree       : RootGraphFetchTree<Any>[0..1];    //TODO: This would be made mandatory, once we have shifted from legacy flow
+}
+
+function <<doc.deprecated>> meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::createConstraintCheckingForClass(jClass: meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], constraintsToExclude: String[*], context:GenerationContext[1], debug:DebugContext[1]) : Project[1]
+{
+   createConstraintCheckingForClass($jClass, $class, [], $context, ^ConstraintCheckingGenerationContext(constraintsToExclude=$constraintsToExclude, enableConstraints=true, topLevelOnly=false), $debug);
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::createConstraintCheckingForClass(jClass: meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], path:String[0..1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[1], debug:DebugContext[1]) : Project[1]
+{
+   print(if($debug.debug,|$debug.space+'createConstraintCheckingForClass: \''+$class.name->toOne()+'\'\n',|''));
+
+   let typeInfo       = $context.typeInfos->forClass($class);
+   let conventions    = $context.conventions;
+   let iface          = $conventions->className($typeInfo.type);
+   let checked        = $conventions->checkedClass();
+   let defect         = $conventions->defectClass();
+   let defectList     = javaList($defect);
+   let constrained    = $conventions->className(DataQualityConstrainedInterface);
+
+   let constrainedClass = $jClass
+      ->implements(javaParameterizedType($constrained, $iface))
+      ->addMethod(cls|
+         javaMethod('public', $defectList, 'allConstraints', [],
+            j_return(j_this($cls)->j_invoke('allConstraints', j_new($conventions->className(DataQualityGraphContextClass), []), $defectList))
+         )
+      )
+      ->addMethod(
+         javaMethod('public', $iface, 'withConstraintsApplied', [],
+            $conventions->codeType($defectList)->codeToString($jClass)+' defects = allConstraints();\n' +
+            'if (!defects.isEmpty())\n' +
+            '{\n' +
+            '    throw new IllegalStateException(defects.stream().map('+$conventions->codeType($defect)->codeToString($jClass)+'::' + $conventions->getterName(defectProperty('message')) +').collect('+$conventions->codeType(javaClass('java.util.stream.Collectors'))->codeToString($jClass)+'.joining('+escapedString('\n')+')));\n' +
+            '}\n' +
+            'return this;'
+         )
+      )
+      ->addMethod(
+         javaMethod('public', javaParameterizedType($checked, $iface), 'toChecked', [],
+            'return this.toChecked(null, true);'
+         )
+      )
+      ->addMethod(
+         javaMethod('public', javaParameterizedType($checked, $iface), 'toChecked', [ javaParam(javaBoolean(), 'applyConstraints') ],
+            'return this.toChecked(null, applyConstraints);'
+         )
+      )
+      ->addMethod(
+         javaMethod('public', javaParameterizedType($checked, $iface), 'toChecked', [ javaParam(javaObject(), 'source') ],
+            'return this.toChecked(source, true);'
+         )
+      )
+      ->addMethod(
+         javaMethod('public', javaParameterizedType($checked, $iface), 'toChecked', [ javaParam(javaObject(), 'source'), javaParam(javaBoolean(), 'applyConstraints') ],
+            $conventions->codeType($defectList)->codeToString($jClass)+' defects = applyConstraints ? allConstraints() : '+$conventions->codeType(javaType('java.util.Collections'))->codeToString($jClass)+'.emptyList();\n' +
+            'return '+$conventions->dynamicChecked($iface, 'defects', 'source', $jClass.simpleName+'.this')+';'
+         )
+      );
+
+   if($constraintContext.graphFetchTree->isEmpty(), // TODO: We should always get a graphFetchTree once we migrate from legacy flow
+      | let constraindClassWithAllConstraintsMethod = $constrainedClass->addMethod(cls | $cls->createLegacyAllConstraintsMethod($class, $context, $constraintContext, $debug));
+        mergeProjects(
+            newProject()
+              ->addClass($constraindClassWithAllConstraintsMethod)
+              ->concatenate($typeInfo.supertypes->map(super| $context.typeInfos->forClass($super).constraints->generateConstraintMethods($constrainedClass, $super, $constraintContext.constraintsToExclude, $conventions, $debug->indent())))
+              ->concatenate($typeInfo.constraints->generateConstraintMethods($constrainedClass, $typeInfo.class, $constraintContext.constraintsToExclude, $conventions, $debug->indent()))
+              ->toOneMany()
+        );,
+      | let allConstraintsMethodWithDependantCode = $constrainedClass->createConstraintCheckingForTree($path->toOne(), $context, $constraintContext.graphFetchTree->toOne(), $debug);
+        mergeProjects(
+            newProject()
+              ->addClass($constrainedClass->addMethod($allConstraintsMethodWithDependantCode.first))
+              ->concatenate($allConstraintsMethodWithDependantCode.second)
+              ->toOneMany()
+        );
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::generateConstraintMethods(infos:ConstraintInfo[*], javaClass:meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], constraintsToExclude: String[*], conventions:Conventions[1], debug:DebugContext[1]): Project[1]
+{
+   print(if($debug.debug,|$debug.space+'generateConstraintMethods\n',|''));
+   $infos->filter(c | !$c.constraint.name->in($constraintsToExclude))->fold(
+      {info, project|
+         let thisProject = $javaClass->generateConstraintMethod($info, $class, $conventions, $debug);
+
+         mergeProjects([$project, $thisProject]);
+      },
+      newProject()
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::generateConstraintMethod(javaClass:meta::external::language::java::metamodel::Class[1], info:ConstraintInfo[1], class:meta::pure::metamodel::type::Class<Any>[1], conventions:Conventions[1], debug:DebugContext[1]): Project[1]
+{
+   let constraint     = $info.constraint;
+   print(if($debug.debug,|$debug.space+'- generateConstraintMethod \''+$info.id+'\'\n',|''));
+
+   let optionalDefect = javaOptional($conventions->defectClass());
+   let enfLevelClass  = $conventions->enforcementLevelClass();
+
+   let messageVar     = j_variable(javaString(), 'message');
+   let ex             = j_parameter(javaException(), 'e');
+
+   let testExpr       = $constraint.functionDefinition.expressionSequence->toOne()->evaluateAndDeactivate()->generateJava($conventions, $debug->indent());
+   let externalIdCode = if($constraint.externalId->isEmpty(), |j_null(), |j_string($constraint.externalId->toOne()));
+   let message        = if($constraint.messageFunction->isEmpty(),
+                           | j_string('Constraint :['+$info.id+'] violated in the Class ' + $class.name->toOne()),
+                           | $constraint.messageFunction.expressionSequence->toOne()->evaluateAndDeactivate()->generateJava($conventions)
+                        );
+   let enfLevelCode   = $enfLevelClass->j_field(if($constraint.enforcementLevel->isEmpty(), |'Error', |$constraint.enforcementLevel->toOne()), $enfLevelClass);
+   let returnDefect   = j_return($optionalDefect.rawType->j_invoke('of', $conventions->className(DataQualityBasicDefectClass)->j_invoke('newConstraintDefect', [j_string($info.id), $externalIdCode, $messageVar, $enfLevelCode, j_string($class->elementToPath())]), $optionalDefect));
+
+   let method = javaMethod('public',  $optionalDefect, constraintMethodName($info), [],
+      j_try(
+         [
+            j_if(j_not($testExpr),
+               [
+                  $messageVar->j_declare($message),
+                  $returnDefect
+               ]
+            ),
+            j_return($optionalDefect.rawType->j_invoke('empty', [], $optionalDefect))
+         ],
+         j_catch($ex,
+            [
+               $messageVar->j_declare(j_string('Unable to evaluate constraint ['+$info.id+']: ')->j_plus(j_conditional(j_eq($ex->j_invoke('getMessage', []), j_null()), j_string('data not available - check your mappings')  , $ex->j_invoke('getMessage', [])))),
+               $returnDefect
+            ]
+         )
+      )
+   );
+
+   mergeProjects([
+      newProject()->addClass($javaClass->addMethod($method))
+         ->concatenate($testExpr->dependencies()->resolveAndGetProjects())
+         ->concatenate($message->dependencies()->resolveAndGetProjects())
+         ->toOneMany()
+   ]);
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::constraintMethodName(info:ConstraintInfo[1]): String[1]
+{
+   'constraint_' + $info.id;
+}
+
+Class meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::ConstraintCheckingState
+{
+   conventions  : Conventions[1];
+   path         : String[1];
+   treePath     : String[1];
+   typeInfos    : TypeInfoSet[1];
+   gfTree       : GraphFetchTree[1];
+   class        : meta::pure::metamodel::type::Class<Any>[1];
+   defectJType  : meta::external::language::java::metamodel::Class[1];
+   defects      : Code[1];
+   addToDefects : Code[1];
+   toCheck      : Code[1];
+   pathNodes    : Code[*];
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::createConstraintCheckingForTree(jClass:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1], tree:RootGraphFetchTree<Any>[1], debug:DebugContext[1]) : Pair<Method, Project>[1]
+{
+   let conventions   = $context.conventions;
+   let defect        = $conventions->defectClass();
+   let defectList    = javaList($defect);
+
+   let toCheck       = j_parameter($jClass, 'this');
+   let result        = j_variable($defectList, 'result');
+
+   let state = ^ConstraintCheckingState(
+      conventions  = $conventions,
+      typeInfos    = $context.typeInfos,
+      path         = $path,
+      treePath     = '',
+      gfTree       = $tree,
+      class        = $tree.class,
+      defectJType  = $defect,
+      defects      = $result,
+      addToDefects = $result->j_methodReference('add', javaFunctionType($defect, javaVoid())),
+      toCheck      = $toCheck
+   );
+
+   let constraintCallsWithDependantProjects = $state->createConstraintCheckingForTree_recurse($debug);
+   let allConstraintsMethod                 = javaMethod('public', $defectList, 'allConstraints', [javaParam($conventions->className(DataQualityGraphContextClass), 'context')],
+                                                         $result->j_declare(j_new(javaArrayList($defect), []))
+                                                         ->concatenate($constraintCallsWithDependantProjects.first)
+                                                         ->concatenate(j_return($result))
+                                              );
+   let dependantProject                     = $constraintCallsWithDependantProjects.second->concatenate(newProject())->toOneMany()->mergeProjects();
+
+   pair($allConstraintsMethod, $dependantProject);
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::createConstraintCheckingForTree_recurse(state:ConstraintCheckingState[1], debug:DebugContext[1]): Pair<Code, Project>[*]
+{
+   let typeInfo         = $state.typeInfos->forClass($state.class);
+   let allConstraints   = $typeInfo.constraints->map(c | pair($c, $state.class))->concatenate($typeInfo.supertypes->map(super| $state.typeInfos->forClass($super).constraints->map(c | pair($c, $super))));
+   let constraints      = $allConstraints->filter(c| $c.first.propertyTree->propertyTreeToGraphFetchTree($c.second)->canEvaluateForTree(if($state.gfTree->instanceOf(RootGraphFetchTree), |$state.gfTree, |$state.gfTree->cast(@PropertyGraphFetchTree)->propertyGraphFetchTreeToRootGraphFetchTree())));
+
+   let checkThisClassConstraints = $constraints.first->map({c|
+      let runConstraint = $state.toCheck->j_invoke($c->constraintMethodName(), [], javaOptional($state.defectJType));
+      let withPath      = $state.pathNodes->fold(
+                             {node, code|
+                                let param = j_parameter($state.defectJType, 'd');
+                                $code->j_invoke('map', j_lambda($param, $state.conventions->prefixDefectPath($param, $node)), javaOptional($state.defectJType));
+                             },
+                             $runConstraint
+                          );
+      $withPath->j_invoke('ifPresent', $state.addToDefects);
+   });
+
+   let jClass           = $state.conventions->dataClass($state.class, $state.path);
+
+   let project          = $constraints->map(c | $c.first->generateConstraintMethods($jClass, $c.second, [], $state.conventions, $debug))->concatenate(newProject())->toOneMany()->mergeProjects();
+
+   let complexSubTrees = $state.gfTree.subTrees
+      ->cast(@PropertyGraphFetchTree)
+      ->filter(st| $st.property->functionReturnType().rawType->toOne()->instanceOf(meta::pure::metamodel::type::Class))
+      ->groupBy(st| $st.property);
+
+   let complexSubTreesKeyValues = $complexSubTrees->keyValues()->sortBy(p | $p.first);
+   let subTreeClauses = $complexSubTreesKeyValues->map(
+      {kv|
+          let childIndex  = $complexSubTreesKeyValues->indexOf($kv);
+          let childPath   = $state.treePath + '_' + $childIndex->toString();
+          let prop        = $kv.first;
+          let subTrees    = $kv.second.values;
+
+          let propJType   = $state.conventions->pureTypeToJavaType($prop);
+          let getterName  = $state.conventions->getterName($prop);
+
+          if($propJType->isJavaList(),
+            {|
+              let i      = j_variable(javaInt(), 'i'+$childPath);
+              let j      = j_variable(javaInt(), 'j'+$childPath);
+
+              let subToCheck = $state.toCheck->j_invoke($getterName, [], $propJType)->j_invoke('get', $i);
+              let pathNode   = $state.conventions->newRelativePathNode(j_string($prop.name->toOne()), $j);
+              let childConstraintCodes = getChildContraintCodes($subTrees, $state, $childPath, $pathNode,$subToCheck, $debug);
+              if($childConstraintCodes->isEmpty(),
+                | [],
+                | let getter = $state.toCheck->j_invoke($getterName, [], $propJType);
+                  pair(
+                    j_for($i->j_declare(j_int(0)), $i->j_lt($getter->j_invoke('size', [])), $i->j_inc(),
+                      $j->j_declare($i)
+                      ->concatenate($childConstraintCodes.first.values)
+                      ->toOneMany()
+                    ),
+                    $childConstraintCodes.second->toOneMany()->mergeProjects());
+                );
+            },
+            {|
+              let subToCheck = $state.toCheck->j_invoke($getterName, [], $propJType);
+              let pathNode   = $state.conventions->newRelativePathNode(j_string($prop.name->toOne()));
+              let  childConstraintCodes  = getChildContraintCodes($subTrees, $state, $childPath, $pathNode,$subToCheck, $debug);
+              if($childConstraintCodes->isEmpty(),
+                  | [],
+                  | pair(
+                      j_if($subToCheck->j_ne(j_null()),
+                        $childConstraintCodes.first.values
+                        ->toOneMany()
+                      ),
+                      $childConstraintCodes.second->toOneMany()->mergeProjects());
+              );
+            }
+          );
+      });
+
+  $checkThisClassConstraints->map(c | pair($c, $project))->concatenate($subTreeClauses);
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::getChildContraintCodes(propTrees : PropertyGraphFetchTree[*], state : ConstraintCheckingState[1], childPath : String[1], relativePathNode : Code[*], subToCheck : Code[1], debug : DebugContext[1]):Pair<List<Code>,Project>[*]
+{
+  let prop = $propTrees->at(0).property;
+  let childConstraintCodes = $propTrees->map(propTree | let propType  = if($propTree.subType->isEmpty(),
+                                                                          | $prop->functionReturnType().rawType->cast(@meta::pure::metamodel::type::Class<Any>)->toOne(),
+                                                                          | $propTree.subType->toOne()
+                                                                        );
+                                                        let subDataType = $state.conventions->dataClass($propType, $state.path);
+                                                        let subVar      = j_variable($subDataType, 'child'+$childPath);
+                                                        let subState    = ^$state(
+                                                                                  gfTree   = $propTree,
+                                                                                  class    = $propType,
+                                                                                  toCheck  = $subVar,
+                                                                                  treePath = $childPath,
+                                                                                  pathNodes = $relativePathNode->concatenate($state.pathNodes)
+                                                                                  );
+                                                        let childCode = $subState->createConstraintCheckingForTree_recurse($debug);
+                                                        let subVarDeclarationCode = $subVar->j_declare($subToCheck->j_cast($subDataType));
+
+                                                        let subTypeCheck = $subToCheck->j_instanceof($subDataType);
+                                                        if($childCode->isEmpty(),
+                                                          | [],
+                                                          | pair($subTypeCheck, pair(list($subVar->j_declare($subToCheck->j_cast($subDataType))->concatenate($childCode.first)),$childCode.second->toOneMany()->mergeProjects()))
+                                                        );
+                                            );
+  if($childConstraintCodes->isEmpty(),
+  | [],
+  | if($propTrees->size() > 1,
+      |pair(list(j_if(list($childConstraintCodes->map(code | pair($code.first, j_block($code.second.first.values))))))
+                                            ,$childConstraintCodes->map(code | $code.second.second)->toOneMany()->mergeProjects()),
+      | pair($childConstraintCodes->toOne().second.first, $childConstraintCodes->toOne().second.second)
+    );
+  );
+}
+
+// Legacy
+function meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::createLegacyAllConstraintsMethod(jClass: meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[1], debug:DebugContext[1]) : Method[1]
+{
+   print(if($debug.debug,|$debug.space+'createLegacyAllConstraintsMethod: \''+$class.name->toOne()+'\'\n',|''));
+
+   let typeInfo       = $context.typeInfos->forClass($class);
+   let conventions    = $context.conventions;
+   let defect         = $conventions->defectClass();
+   let defectList     = javaList($defect);
+   let constrained    = $conventions->className(DataQualityConstrainedInterface);
+   let allConstraints = $context.typeInfos->forSupertypesOf($class).constraints->concatenate($typeInfo.constraints);
+   let result         = j_variable($defectList, 'result');
+   let ctext          = j_parameter($conventions->className(DataQualityGraphContextClass), 'context');
+   let index          = j_variable(javaInt(), 'index');
+
+   let propertyConstraintCalls = if($constraintContext.topLevelOnly,
+      | [],
+      {|
+         $typeInfo.properties
+            ->filter(p| $p->functionReturnType().rawType->toOne()->instanceOf(meta::pure::metamodel::type::Class))
+            ->map({p|
+               let propertyType     = $conventions->pureTypeToJavaType($p);
+               let getterCall       = j_this($jClass)->j_invoke($conventions->getterName($p), [], $propertyType);
+               let constrainedClass = javaParameterizedType($constrained, if($propertyType->isJavaList(), |$propertyType->elementType(), |$propertyType));
+
+               let pathNode = if($p.multiplicity->isToOne() || $p.multiplicity->isZeroOne(),
+                  | $conventions->className(DataQualityBasicRelativePathNodeClass)->j_invoke('newRelativePathNode', j_string($p.name->toOne())),
+                  | $conventions->className(DataQualityBasicRelativePathNodeClass)->j_invoke('newRelativePathNode', [j_string($p.name->toOne()), $index])
+               );
+               let d      = j_parameter($defect, 'd');
+               let prefix = j_lambda($d, $conventions->className(DataQualityBasicDefectClass)->j_invoke('prefixPath', [$d, $pathNode]));
+
+               if($p.multiplicity->hasToOneUpperBound(), // Properties with multiplicity [1] might not be set if not accessed in the fetch tree
+                  {|
+                     j_if($getterCall->j_ne(j_null()),
+                          $result->j_invoke('addAll', $getterCall->j_cast($constrainedClass)->j_invoke('allConstraints', $ctext, $defectList)->j_streamOf()->js_map($prefix)->js_resolve($defectList))
+                     )
+                  },
+                  {|
+                     let i = j_variable(javaInt(), 'i');
+                     j_if($getterCall->j_ne(j_null()),
+                          j_for($i->j_declare(j_int(0)), $i->j_lt($getterCall->j_invoke('size', [])), $i->j_inc(),
+                             [
+                                j_declare('final', $index, $i),
+                                $result->j_invoke('addAll', $getterCall->j_invoke('get', $i)->j_cast($constrainedClass)->j_invoke('allConstraints', $ctext, $defectList)->j_streamOf()->js_map($prefix)->js_resolve($defectList))
+                             ]
+                          )
+                     );
+                  }
+               );
+            });
+      }
+   );
+
+   javaMethod('public', $defectList, 'allConstraints', $ctext,
+      [
+         $result->j_declare(j_new(javaArrayList($defect), [])),
+         j_if(j_not($ctext->j_field('visited', javaList(javaObject()))->j_invoke('contains', j_this($jClass))),
+               $ctext->j_field('visited', javaList(javaObject()))->j_invoke('add', j_this($jClass))
+                 ->concatenate(
+                    if($constraintContext.enableConstraints,
+                       {|
+                          $allConstraints->filter(c | !$c.constraint.name->in($constraintContext.constraintsToExclude))->toNumbered()
+                            ->map(nc| j_this($jClass)->j_invoke(constraintMethodName($nc.second), [], javaOptional($defect))->j_invoke('ifPresent', $result->j_methodReference('add', javaFunctionType($defect, javaVoid())), javaVoid()))
+                            ->concatenate($propertyConstraintCalls->sortBy(pc | $pc->codeToString($jClass)))
+                       },
+                       | []
+                    )
+                 )
+                 ->toOneMany()
+         ),
+         j_return($result)
+      ]
+   );
+}

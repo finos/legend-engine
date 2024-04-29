@@ -1,0 +1,23 @@
+Class meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::alloy::specification::TrinoDatasourceSpecification extends meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
+{
+   host: String[1];
+   port: Integer[1];
+   catalog: String[0..1];
+   schema: String[0..1];
+   clientTags: String[0..1];
+   sslSpecification: meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::alloy::specification::TrinoSSLSpecification[0..1];
+}
+
+Class meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::alloy::specification::TrinoSSLSpecification
+{
+   ssl: Boolean[1];
+   trustStorePathVaultReference: String[0..1];
+   trustStorePasswordVaultReference: String[0..1];
+}
+
+Class meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::alloy::authentication::TrinoDelegatedKerberosAuthenticationStrategy extends meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::alloy::authentication::DelegatedKerberosAuthenticationStrategy
+{
+       kerberosRemoteServiceName: String[1];
+       kerberosUseCanonicalHostname:  Boolean[0..1];
+}
+

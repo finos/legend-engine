@@ -1,0 +1,341 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::graphFetch::execution::*;
+import meta::external::format::shared::functions::*;
+import meta::pure::dataQuality::*;
+import meta::legend::*;
+import meta::external::format::json::executionPlan::test::*;
+import meta::external::format::json::functions::*;
+import meta::external::format::json::executionPlan::test::constraints::*;
+
+// ===========================================================================================
+// Internalize and Checked
+// ===========================================================================================
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::constraints::testInternalize():Boolean[1]
+{
+  let query  = {data:Byte[*] | Firm->fromJson($data)->toJson(#{Firm{name, ranking}}#)};
+
+  let input  = '[{"name":"Name A", "ranking" : 1}, {"name":"Name B"}]';                                                                               // Not adding employees data on purpose
+  let result = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+  
+  // Execution should not run "validEmployeesSize" constraint and not complain on addresses multiplicity
+  assertJsonStringsEqual('[{"name":"Name A","ranking":1},{"name":"Name B","ranking":null}]', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::constraints::testInternalizeWithChecked():Boolean[1]
+{
+  let query  = {data:Byte[*] | Firm->fromJson($data)->checked()->toJson(checked(#{Firm{name, ranking}}#, 'application/json'))};
+
+  let input  = '[{"name":"Name A", "ranking" : 1}, {"name":"Name B"}, {"name":"Name C", "ranking": -1}, {"ranking": 10}]';                            // Not adding employees data on purpose
+  let result = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+  
+  // Execution should not run "validEmployeesSize" constraint and not complain on addresses multiplicity, it should complain on name multiplicity and validRanking constraint
+  assertJsonStringsEqual(readFile('/core_external_format_json/executionPlan/tests/resources/checkedResult.json')->toOne(), $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::constraints::testInternalizeWithCheckedOnASuperClass():Boolean[1]
+{
+  let query  = {data:Byte[*] | HighRankFirm->fromJson($data)->checked()->toJson(checked(#{HighRankFirm{name, ranking, description}}#, 'application/json'))};
+
+  let input  = '[{"name":"Name A", "ranking" : 75, "description": "A valid description"}, {"name":"Name B", "description": "A valid description"}, {"name":"Name C", "ranking": -1, "description": "A valid description"}, {"name": "Name D", "ranking": 90, "description": "invalid"}]';                                             // Not adding employees size on purpose
+  let result = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+  
+  // Execution should not run "validEmployeesSize" constraint and not complain on addresses multiplicity, it should complain on validRanking, highRankValidRanking, descriptionLength constraints
+  assertJsonStringsEqual(readFile('/core_external_format_json/executionPlan/tests/resources/checkedResultOnSupertype.json')->toOne(), $result);
+}
+
+// ===========================================================================================
+// GraphFetch and GraphFetchChecked
+// ===========================================================================================
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::constraints::testInternalizeWithGraphFetch():Boolean[1]
+{
+  // Tree used in query does not have ref to - Firm.addresses, Firm.employees.lastName & Firm.employees.addresses on purpose
+  let query  = {data:Byte[*] | Firm->fromJson($data)->graphFetch(#{Firm{name, ranking, employees {firstName}}}#)->toJson(#{Firm{name, ranking, employees {firstName}}}#)};
+
+  let input  = '[{"name":"Name A", "ranking" : 1, "employees": [{"firstName": "FirstName A", "lastName": "LastName A", "addresses": {"addressType": "Home", "address": {"firstLine": "firstLine"}}}, {"firstName": "FirstName B", "lastName": "LastName B", "addresses": {"addressType": "Home", "address": {"firstLine": "firstLine"}}}]}]';                                                                            
+  let result = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+  
+  // Execution should not complain on Firm.addresses multiplicity, it should complain on validEmployeesSize, validRanking, firstNameLength, lastNameLength & addressesLength constraints
+  assertJsonStringsEqual('{"name":"Name A","ranking":1,"employees":[{"firstName":"FirstName A"},{"firstName":"FirstName B"}]}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::constraints::testInternalizeWithGraphFetchChecked():Boolean[1]
+{
+  // Tree used in query does not have ref to - Firm.addresses, Firm.employees.lastName & Firm.employees.addresses on purpose
+  let query  = {data:Byte[*] | Firm->fromJson($data)->graphFetchChecked(#{Firm{name, ranking, employees {firstName}}}#)->toJson(checked(#{Firm{name, ranking, employees {firstName}}}#, 'application/json'))};
+
+  let input  = '[{"name":"Name A", "ranking" : 1, "employees": [{"firstName": "FirstName A", "lastName": "LastName A", "addresses": {"addressType": "Home", "address": {"firstLine": "firstLine"}}}, {"firstName": "FirstName B", "lastName": "LastName B", "addresses": {"addressType": "Home", "address": {"firstLine": "firstLine"}}}]},' +
+                '{"name":"Name A", "ranking" : -1},' +
+                '{"name":"Name A", "ranking" : 1, "employees": [{"firstName": "First", "lastName": "Last"}, {"firstName": "FirstName B", "lastName": "LastName B", "addresses": {"addressType": "Home", "address": {"firstLine": "firstLine"}}}]}]';                                                                               
+  let result = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+  
+  // Execution should not complain on Firm.addresses multiplicity, it should complain on validEmployeesSize, validRanking, firstNameLength, lastNameLength & addressesLength constraints
+  assertJsonStringsEqual(readFile('/core_external_format_json/executionPlan/tests/resources/graphFetchCheckedResult.json')->toOne(), $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::constraints::testInternalizeWithGraphFetchCheckedWithMultipleSubTypes():Boolean[1]
+{
+  let tree    = #{meta::external::format::json::executionPlan::test::constraints::Firm {
+                    name, 
+                    ranking,
+                    addresses{
+                      address{
+                        firstLine,
+                        secondLine
+                      }
+                    },
+                    addresses->subType(@AddressUseSubType1){
+                      addressSubType1,
+                      address->subType(@Street) {
+                        street
+                      },
+                      address->subType(@Road) {
+                        road,
+                        roadLength
+                      }
+                    },
+                    addresses->subType(@AddressUseSubType2){
+                      addressSubType2,
+                      address->subType(@Street) {
+                        street,
+                        streetLength
+                      },
+                      address->subType(@Road) {
+                        road
+                      }
+                    }
+                }}#;
+
+  let query  = {data:Byte[*] | Firm->fromJson($data)->graphFetchChecked($tree)->toJson(checked($tree, 'application/json'))};
+
+  let input  =  '[{"name":"Name A", "ranking" : 1, "addresses": [{"addressType": "Home", "address": {"firstLine": "firstLine", "secondLine" : "secondLine"}}, {"addressType": "Home", "@type":"AddressUseSubType1", "addressSubType1":"Street", "address": {"firstLine": "street1FirstLine", "street" : "street1", "streetLength" : 2 , "@type":"Street"}}, {"addressType": "Home", "@type":"AddressUseSubType2", "addressSubType2":"Road", "address": {"firstLine": "road1FirstLine", "road" : "road1", "roadLength" : 2 , "@type":"Road"}}]},' +
+                '{"name":"Name B", "ranking" : 2, "addresses": [{"addressType": "Home", "address": {"firstLine": "firstLine", "secondLine" : "secondLine"}}, {"addressType": "Home", "@type":"AddressUseSubType1", "address": {"firstLine": "street1FirstLine", "street" : "street1", "streetLength" : 2 , "@type":"Street"}}, {"addressType": "Home", "@type":"AddressUseSubType2", "address": {"firstLine": "road1FirstLine", "road" : "road1", "roadLength" : 2 , "@type":"Road"}}]},' +
+                '{"name":"Name C", "ranking" : 3, "addresses": [{"addressType": "Home", "address": {"firstLine": "firstLine", "secondLine" : "secondLine"}}, {"addressType": "Home", "@type":"AddressUseSubType1", "addressSubType1":"Street", "address": {"firstLine": "street1FirstLine", "street" : "street1", "streetLength" : 0 , "@type":"Street"}}, {"addressType": "Home", "@type":"AddressUseSubType2", "addressSubType2":"Road", "address": {"firstLine": "road1FirstLine", "road" : "road1", "roadLength" : 0 , "@type":"Road"}}, {"addressType": "Home", "@type":"AddressUseSubType1", "addressSubType1":"Road", "address": {"firstLine": "road2FirstLine", "road" : "road2", "roadLength" : 0 , "@type":"Road"}}, {"addressType": "Home", "@type":"AddressUseSubType2", "addressSubType2":"Street", "address": {"firstLine": "street2FirstLine", "street" : "street2", "streetLength" : 0 , "@type":"Street"}}]}]';
+
+  let result = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+
+  assertJsonStringsEqual(readFile('/core_external_format_json/executionPlan/tests/resources/graphFetchCheckedWithSubtypes.json')->toOne(), $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::constraints::testInternalizeWithGraphFetchCheckedOnASuperClass():Boolean[1]
+{
+  let query  = {data:Byte[*] | HighRankFirm->fromJson($data)->graphFetchChecked(#{HighRankFirm{name, ranking, employees {firstName}}}#)->toJson(checked(#{HighRankFirm{name, ranking, employees {firstName}}}#, 'application/json'))};
+
+  let input  = '[{"name":"Name A", "ranking" : 80, "description": "A valid description", "employees": [{"firstName": "FirstName A", "lastName": "LastName A", "addresses": {"addressType": "Home", "address": {"firstLine": "firstLine"}}}, {"firstName": "FirstName B", "lastName": "LastName B", "addresses": {"addressType": "Home", "address": {"firstLine": "firstLine"}}}]},' +
+                '{"name":"Name A", "ranking" : -1},' +
+                '{"name":"Name A", "ranking" : -1, "description": "invalid"},' +
+                '{"name":"Name A", "ranking" : 90, "description": "A valid description", "employees": [{"firstName": "First", "lastName": "Last"}, {"firstName": "FirstName B", "lastName": "LastName B", "addresses": {"addressType": "Home", "address": {"firstLine": "firstLine"}}}]}]';
+  let result = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+  
+  // Execution should not complain on Firm.addresses multiplicity, it should complain on validEmployeesSize, validRanking, highRankValidRanking, descriptionLength, firstNameLength, lastNameLength & addressesLength constraints
+  assertJsonStringsEqual(readFile('/core_external_format_json/executionPlan/tests/resources/graphFetchCheckedOnSupertypeResult.json')->toOne(), $result);
+}
+
+// ===========================================================================================
+// GraphFetchUnexpanded and GraphFetchCheckedUnexpanded
+// ===========================================================================================
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::constraints::testInternalizeWithGraphFetchUnexpanded():Boolean[1]
+{
+  // Tree used in query does not have ref to - Firm.addresses, Firm.employees.lastName & Firm.employees.addresses on purpose
+  let query  = {data:Byte[*] | Firm->fromJson($data)->graphFetchUnexpanded(#{Firm{name, ranking, employees {firstName}}}#)->toJson(#{Firm{name, ranking, employees {firstName}}}#)};
+
+  let input  = '[{"name":"Name A", "ranking" : 1, "employees": [{"firstName": "FirstName A", "lastName": "La"}, {"firstName": "FirstName B", "lastName": "Lb"}]}]';                                                                               
+  let result = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+  
+  // Execution should not complain on Firm.addresses multiplicity, lastNameLength & addressesLength constraints, it should complain on validEmployeesSize, validRanking & firstNameLength constraints
+  assertJsonStringsEqual('{"name":"Name A","ranking":1,"employees":[{"firstName":"FirstName A"},{"firstName":"FirstName B"}]}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::constraints::testInternalizeWithGraphFetchUnexpandedChecked():Boolean[1]
+{
+  // Tree used in query does not have ref to - Firm.addresses, Firm.employees.lastName & Firm.employees.addresses on purpose
+  let query  = {data:Byte[*] | Firm->fromJson($data)->graphFetchCheckedUnexpanded(#{Firm{name, ranking, employees {firstName}}}#)->toJson(checked(#{Firm{name, ranking, employees {firstName}}}#, 'application/json'))};
+
+  let input  = '[{"name":"Name A", "ranking" : 1, "employees": [{"firstName": "FirstName A", "lastName": "La"}, {"firstName": "FirstName B", "lastName": "LastName B", "addresses": {"addressType": "Home", "address": {"firstLine": "firstLine"}}}]},' +
+                '{"name":"Name A", "ranking" : -1},' +
+                '{"name":"Name A", "ranking" : 1, "employees": [{"firstName": "First", "lastName": "Last"}, {"firstName": "FirstName B", "lastName": "LastName B", "addresses": {"addressType": "Home", "address": {"firstLine": "firstLine"}}}]}]';                                                                               
+  let result = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+  
+  // Execution should not complain on Firm.addresses multiplicity, lastNameLength & addressesLength constraints, it should complain on validEmployeesSize, validRanking & firstNameLength constraints
+  assertJsonStringsEqual(readFile('/core_external_format_json/executionPlan/tests/resources/graphFetchCheckedUnexpandedResult.json')->toOne(), $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::constraints::testInternalizeWithGraphFetchUnexpandedCheckedOnASuperClass():Boolean[1]
+{
+  let query  = {data:Byte[*] | HighRankFirm->fromJson($data)->graphFetchCheckedUnexpanded(#{HighRankFirm{name, ranking, employees {firstName}}}#)->toJson(checked(#{HighRankFirm{name, ranking, employees {firstName}}}#, 'application/json'))};
+
+  let input  = '[{"name":"Name A", "ranking" : 80, "description": "A valid description", "employees": [{"firstName": "FirstName A", "lastName": "Las", "addresses": {"addressType": "Home", "address": {"firstLine": "firstLine"}}}, {"firstName": "FirstName B", "lastName": "LastName B", "addresses": {"addressType": "Home", "address": {"firstLine": "firstLine"}}}]},' +
+                '{"name":"Name A", "ranking" : -1, "description": "invalid"},' +
+                '{"name":"Name A", "ranking" : 90, "description": "A valid description", "employees": [{"firstName": "First", "lastName": "Last"}, {"firstName": "FirstName B", "lastName": "LastName B", "addresses": {"addressType": "Home", "address": {"firstLine": "firstLine"}}}]}]';
+  let result = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+  
+  // Execution should not complain on Firm.addresses multiplicity, descriptionLength, lastNameLength & addressesLength constraints, it should complain on validEmployeesSize, validRanking, highRankValidRanking & firstNameLength constraints
+  assertJsonStringsEqual(readFile('/core_external_format_json/executionPlan/tests/resources/graphFetchCheckedUnexpandedOnSupertypeResult.json')->toOne(), $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::constraints::testInternalizeWithGraphFetchCheckedUnexpandedWithMultipleSubTypes():Boolean[1]
+{
+  let tree    = #{meta::external::format::json::executionPlan::test::constraints::Firm {
+                    name, 
+                    ranking,
+                    addresses{
+                      address{
+                        firstLine,
+                        secondLine
+                      }
+                    },
+                    addresses->subType(@AddressUseSubType1){
+                      addressSubType1,
+                      address->subType(@Street) {
+                        street
+                      },
+                      address->subType(@Road) {
+                        road,
+                        roadLength
+                      }
+                    },
+                    addresses->subType(@AddressUseSubType2){
+                      addressSubType2,
+                      address->subType(@Street) {
+                        street,
+                        streetLength
+                      },
+                      address->subType(@Road) {
+                        road
+                      }
+                    }
+                }}#;
+  let query  = {data:Byte[*] | Firm->fromJson($data)->graphFetchCheckedUnexpanded($tree)->toJson(checked($tree, 'application/json'))};
+
+  let input  =  '[{"name":"Name A", "ranking" : 1, "addresses": [{"addressType": "Home", "address": {"firstLine": "firstLine", "secondLine" : "secondLine"}}, {"addressType": "Home", "@type":"AddressUseSubType1", "addressSubType1":"Street", "address": {"firstLine": "street1FirstLine", "street" : "street1", "streetLength" : 2 , "@type":"Street"}}, {"addressType": "Home", "@type":"AddressUseSubType2", "addressSubType2":"Road", "address": {"firstLine": "road1FirstLine", "road" : "road1", "roadLength" : 2 , "@type":"Road"}}]},' +
+                '{"name":"Name B", "ranking" : 2, "addresses": [{"addressType": "Home", "address": {"firstLine": "firstLine", "secondLine" : "secondLine"}}, {"addressType": "Home", "@type":"AddressUseSubType1", "address": {"firstLine": "street1FirstLine", "street" : "street1", "streetLength" : 2 , "@type":"Street"}}, {"addressType": "Home", "@type":"AddressUseSubType2", "address": {"firstLine": "road1FirstLine", "road" : "road1", "roadLength" : 2 , "@type":"Road"}}]},' +
+                '{"name":"Name C", "ranking" : 3, "addresses": [{"addressType": "Home", "address": {"firstLine": "firstLine", "secondLine" : "secondLine"}}, {"addressType": "Home", "@type":"AddressUseSubType1", "addressSubType1":"Street", "address": {"firstLine": "street1FirstLine", "street" : "street1", "streetLength" : 0 , "@type":"Street"}}, {"addressType": "Home", "@type":"AddressUseSubType2", "addressSubType2":"Road", "address": {"firstLine": "road1FirstLine", "road" : "road1", "roadLength" : 0 , "@type":"Road"}}, {"addressType": "Home", "@type":"AddressUseSubType1", "addressSubType1":"Road", "address": {"firstLine": "road2FirstLine", "road" : "road2", "roadLength" : 0 , "@type":"Road"}}, {"addressType": "Home", "@type":"AddressUseSubType2", "addressSubType2":"Street", "address": {"firstLine": "street2FirstLine", "street" : "street2", "streetLength" : 0 , "@type":"Street"}}]}]';
+
+  let result = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+
+  assertJsonStringsEqual(readFile('/core_external_format_json/executionPlan/tests/resources/graphFetchCheckedUnexpandedWithSubTypes.json')->toOne(), $result);
+}
+
+
+// =========================================================================================================
+// Models
+// =========================================================================================================
+
+###Pure
+import meta::external::format::json::executionPlan::test::constraints::*;
+
+Enum meta::external::format::json::executionPlan::test::constraints::AddressType
+{
+  Headquarters,
+  RegionalOffice,
+  Home,
+  Holiday
+}
+
+Enum meta::external::format::json::executionPlan::test::constraints::AddressSubType
+{
+  Street,
+  Road
+}
+
+Class meta::external::format::json::executionPlan::test::constraints::Firm
+[
+  validRanking : $this.ranking->isEmpty() || (($this.ranking > 0) && ($this.ranking < 100)),
+  validEmployeesSize : $this.employees->size() > 0
+]
+{
+  name      : String[1];
+  ranking   : Integer[0..1];
+  addresses : AddressUse[1..*];
+}
+
+Class meta::external::format::json::executionPlan::test::constraints::HighRankFirm extends Firm
+[
+  highRankValidRanking : $this.ranking->isNotEmpty() && ($this.ranking > 10),
+  descriptionLength : $this.description->length() > 10
+]
+{
+  description : String[1];
+}
+
+Class meta::external::format::json::executionPlan::test::constraints::Address
+{
+  firstLine  : String[1];
+  secondLine : String[0..1];
+}
+
+Class meta::external::format::json::executionPlan::test::constraints::Street extends Address
+[
+  validStreetLength : $this.streetLength > 0
+]
+{
+  street: String[1];
+  streetLength : Integer[1];
+}
+ 
+Class meta::external::format::json::executionPlan::test::constraints::Road extends Address
+[
+  validRoadLength : $this.roadLength > 0
+]
+{
+  road: String[1];
+  roadLength : Integer[1];
+}
+
+Class meta::external::format::json::executionPlan::test::constraints::AddressUse
+[
+  typeValidation : $this.addressType->isNotEmpty()
+]
+{
+  addressType : AddressType[1];
+  address     : Address[1];
+}
+
+Class meta::external::format::json::executionPlan::test::constraints::AddressUseSubType1 extends AddressUse
+[
+  subTypeValidation1 : $this.addressSubType1->isNotEmpty()
+]
+{
+  addressSubType1 : AddressSubType[*];
+}
+
+Class meta::external::format::json::executionPlan::test::constraints::AddressUseSubType2 extends AddressUse
+[
+  subTypeValidation2 : $this.addressSubType2->isNotEmpty()
+]
+{
+  addressSubType2 : AddressSubType[*];
+}
+
+Class meta::external::format::json::executionPlan::test::constraints::Person
+[
+  firstNameLength: $this.firstName->length() > 6,
+  lastNameLength: $this.lastName->length() > 6,
+  addressesLength : $this.addresses->size() > 0
+]
+{
+  firstName      : String[1];
+  lastName       : String[1];
+  addresses      : AddressUse[*];
+}
+
+Association meta::external::format::json::executionPlan::test::constraints::Firm_Person
+{
+  firm      : Firm[1];
+  employees : Person[*];
+}

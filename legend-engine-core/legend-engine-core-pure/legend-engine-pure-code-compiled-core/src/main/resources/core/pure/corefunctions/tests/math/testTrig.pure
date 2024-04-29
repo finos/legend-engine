@@ -1,0 +1,41 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+
+
+
+
+
+
+
+
+
+
+
+function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testCalculatingDistanceHaversine():Boolean[1]
+{
+   assertEqWithinTolerance(314.3490784335, distanceHaversineRadians(toRadians(1.5), toRadians(2.5), toRadians(3.5), toRadians(4.5)), 0.0000000001);
+   assertEqWithinTolerance(0.0, distanceHaversineRadians(toRadians(1.5), toRadians(2.5), toRadians(1.5), toRadians(2.5)), 0.0000000001);
+   assertEqWithinTolerance(0.0, distanceHaversineRadians(1, 0, 1, 0), 0.0000000001);
+   assertEqWithinTolerance(49.10256209097, distanceHaversineDegrees(37.42205, -122.084347, 37.77493, -122.419416), 0.0000000001);
+}
+
+function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testCalculatingDistancesphericalLawOfCosines():Boolean[1]
+{
+   assertEqWithinTolerance(314.3490784335, distanceSphericalLawOfCosinesRadians(toRadians(1.5), toRadians(2.5), toRadians(3.5), toRadians(4.5)), 0.0000000001);
+   assertEqWithinTolerance(0.0, distanceSphericalLawOfCosinesRadians(toRadians(1.5), toRadians(2.5), toRadians(1.5), toRadians(2.5)), 0.0001);
+   assertEqWithinTolerance(0.0, distanceSphericalLawOfCosinesRadians(1, 0, 1, 0), 0.0001);
+   assertEqWithinTolerance(49.10256209097, distanceSphericalLawOfCosinesDegrees(37.42205, -122.084347, 37.77493, -122.419416), 0.0000000001);
+}

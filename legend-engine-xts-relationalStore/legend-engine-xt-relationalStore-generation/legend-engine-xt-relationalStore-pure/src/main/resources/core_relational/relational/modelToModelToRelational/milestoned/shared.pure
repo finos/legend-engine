@@ -1,0 +1,119 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::mapping::*;
+import meta::pure::milestoning::*;
+import meta::pure::graphFetch::tests::m2m2r::milestoning::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::alloy::connections::alloy::specification::*;
+import meta::pure::alloy::connections::alloy::authentication::*;
+import meta::relational::runtime::*;
+import meta::core::runtime::*;
+
+function meta::pure::graphFetch::tests::m2m2r::milestoning::getModelChainRuntime(m2m:meta::pure::mapping::Mapping[1]):meta::core::runtime::Runtime[1]
+{
+ ^meta::core::runtime::Runtime(
+      connectionStores=[
+        meta::pure::graphFetch::tests::milestoning::getAlloyTestH2Connection(),
+        ^meta::core::runtime::ConnectionStore(element = ^meta::external::store::model::ModelStore(), connection=^meta::external::store::model::ModelChainConnection(mappings = [$m2m]))
+      ]
+  );
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::TargetProductMilestoned
+{
+  id: Integer[1];
+  name: String[1];
+  type: String[1];
+  synonymsMilestoned: meta::relational::tests::milestoning::TargetProductSynonymMilestoned[*];
+  synonymsNonMilestoned : meta::relational::tests::milestoning::TargetProductSynonymNonMilestoned[*];
+}
+
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::TargetProductFlattened
+{
+  id: Integer[1];
+  name: String[1];
+  type: String[1];
+  synonymNames: String[*];
+}
+
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::TargetProductSynonymMilestoned
+{
+  synonym: String[1];
+}
+
+
+Class meta::relational::tests::milestoning::TargetProductSynonymNonMilestoned
+{
+  synonym: String[1];
+}
+
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::ProductMilestoned
+{
+  id: Integer[1];
+  name: String[1];
+  type: String[1];
+  synonymsMilestoned: meta::relational::tests::milestoning::ProductSynonymMilestoned[*];
+  synonymsNonMilestoned : meta::relational::tests::milestoning::ProductSynonymNonMilestoned[*];
+}
+
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::ProductSynonymMilestoned
+{
+   synonym : String[1];
+   type : String[1];
+}
+
+Class meta::relational::tests::milestoning::ProductSynonymNonMilestoned
+{
+   synonym : String[1];
+   type : String[1];
+}
+
+Association meta::relational::tests::milestoning::ProductMilestoned_ProductSynonymMilestoned
+{
+  product : meta::relational::tests::milestoning::ProductMilestoned[1];
+  synonymsMilestonedViaAssociation : meta::relational::tests::milestoning::ProductSynonymMilestoned[*];
+}
+
+
+###Mapping
+import meta::relational::tests::milestoning::*;
+Mapping meta::relational::tests::milestoning::milestoningMapSmall
+(
+   meta::relational::tests::milestoning::ProductMilestoned : Relational{
+      id : [db]ProductTable.id,
+      name : [db]ProductTable.name,
+      type : [db]ProductTable.type,
+      synonymsMilestoned : [db]@Product_Synonym,
+       synonymsMilestonedViaAssociation : [db]@Product_Synonym,
+      synonymsNonMilestoned : [db]@Product_Synonym
+   }
+
+   meta::relational::tests::milestoning::ProductSynonymMilestoned : Relational{
+      synonym : [db]ProductSynonymTable.synonym,
+      type : [db]ProductSynonymTable.type
+   }
+
+  meta::relational::tests::milestoning::ProductSynonymNonMilestoned : Relational{
+      synonym : [meta::relational::tests::milestoning::db]ProductSynonymTable.synonym,
+      type : [meta::relational::tests::milestoning::db]ProductSynonymTable.type
+   }
+
+)
+

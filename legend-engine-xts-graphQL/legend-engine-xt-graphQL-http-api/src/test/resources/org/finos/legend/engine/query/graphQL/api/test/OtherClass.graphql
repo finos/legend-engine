@@ -1,0 +1,11 @@
+type OtherClass {
+  stuff: String!
+}
+input OtherClass_bool_exp {
+  stuff: String_comparison_exp
+  _and: [OtherClass_bool_exp!]
+  _or: [OtherClass_bool_exp!]
+}
+input OtherClass_exists_exp {
+  _exists: OtherClass_bool_exp
+}

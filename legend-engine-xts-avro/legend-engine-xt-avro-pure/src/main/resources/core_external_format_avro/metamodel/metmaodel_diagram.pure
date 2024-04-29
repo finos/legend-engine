@@ -1,0 +1,445 @@
+###Diagram
+Diagram meta::external::format::avro::Avro_Diagram(width=0.0, height=0.0)
+{
+    TypeView cview_10(
+        type=meta::external::format::avro::metamodel::AvroProperties,
+        position=(168.00000, -33.00000),
+        width=148.52728,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_11(
+        type=meta::external::format::avro::metamodel::AvroRecordSchema,
+        position=(235.00000, 465.00000),
+        width=160.25454,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::external::format::avro::metamodel::AvroEnumSchema,
+        position=(219.00000, 401.00000),
+        width=126.23637,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::external::format::avro::metamodel::AvroNamedSchema,
+        position=(230.00000, 297.00000),
+        width=172.43636,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_14(
+        type=meta::external::format::avro::metamodel::AvroSchemaName,
+        position=(33.00000, 299.00000),
+        width=125.60000,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_13(
+        type=meta::external::format::avro::metamodel::AvroSchemaField,
+        position=(-224.00000, 384.00000),
+        width=175.00000,
+        height=140.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_17(
+        type=meta::external::format::avro::metamodel::LogicalType,
+        position=(63.00000, 394.00000),
+        width=120.00000,
+        height=93.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::external::format::avro::metamodel::AvroDoubleSchema,
+        position=(408.00000, 291.00000),
+        width=133.56364,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_12(
+        type=meta::external::format::avro::metamodel::AvroSchema,
+        position=(360.00000, 170.00000),
+        width=536.00000,
+        height=81.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::external::format::avro::metamodel::AvroIntSchema,
+        position=(455.00000, 330.00000),
+        width=107.56364,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_7(
+        type=meta::external::format::avro::metamodel::AvroLongSchema,
+        position=(468.00000, 374.00000),
+        width=122.21819,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::external::format::avro::metamodel::AvroBooleanSchema,
+        position=(479.00000, 417.00000),
+        width=140.23637,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_15(
+        type=meta::external::format::avro::metamodel::AvroStringSchema,
+        position=(613.00000, 292.00000),
+        width=127.56364,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::external::format::avro::metamodel::AvroNullSchema,
+        position=(648.00000, 328.00000),
+        width=115.56364,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::external::format::avro::metamodel::AvroFloatSchema,
+        position=(663.00000, 370.00000),
+        width=121.56364,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::external::format::avro::metamodel::AvroArraySchema,
+        position=(665.00000, 417.00000),
+        width=174.01818,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_16(
+        type=meta::external::format::avro::metamodel::AvroUnionSchema,
+        position=(816.00000, 302.00000),
+        width=126.89091,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_4,
+        target=cview_8,
+        points=[(282.11818,423.00000),(283.00000,362.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_11,
+        target=cview_8,
+        points=[(376.00000,479.00000),(377.00000,364.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_1,
+        target=cview_12,
+        points=[(809.00000,427.00000),(808.00000,243.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_2,
+        target=cview_12,
+        points=[(607.00000,425.00000),(607.00000,247.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_3,
+        target=cview_12,
+        points=[(474.78182,306.00000),(475.00000,236.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_5(
+        source=cview_5,
+        target=cview_12,
+        points=[(774.00000,386.00000),(774.00000,236.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_6(
+        source=cview_6,
+        target=cview_12,
+        points=[(549.00000,332.00000),(549.00000,241.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_7(
+        source=cview_7,
+        target=cview_12,
+        points=[(579.00000,377.00000),(580.00000,236.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_8(
+        source=cview_8,
+        target=cview_12,
+        points=[(388.00000,306.00000),(388.00000,247.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_9(
+        source=cview_9,
+        target=cview_12,
+        points=[(749.00000,343.00000),(749.00000,244.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_10(
+        source=cview_12,
+        target=cview_10,
+        points=[(628.00000,210.50000),(628.00000,119.00000),(266.00000,42.00000),(266.00000,4.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_11(
+        source=cview_13,
+        target=cview_10,
+        points=[(-212.00000,390.00000),(-213.00000,186.00000),(210.00000,42.00000),(210.00000,0.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_12(
+        source=cview_15,
+        target=cview_12,
+        points=[(635.00000,299.00000),(635.00000,249.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_13(
+        source=cview_16,
+        target=cview_12,
+        points=[(835.00000,309.00000),(835.00000,241.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::external::format::avro::metamodel::AvroArraySchema.elementType,
+        source=cview_1,
+        target=cview_12,
+        points=[(756.00000,436.00000),(982.00000,437.00000),(980.00000,175.00000),(830.00000,175.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::external::format::avro::metamodel::AvroRecordSchema.fields,
+        source=cview_11,
+        target=cview_13,
+        points=[(240.00000,506.00000),(-71.00000,506.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::external::format::avro::metamodel::AvroSchemaField.schema,
+        source=cview_13,
+        target=cview_12,
+        points=[(-57.00000,392.00000),(-30.00000,392.00000),(-30.00000,183.00000),(428.00000,180.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::external::format::avro::metamodel::AvroNamedSchema.name,
+        source=cview_8,
+        target=cview_14,
+        points=[(232.00000,363.00000),(154.00000,363.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_4(
+        property=meta::external::format::avro::metamodel::AvroNamedSchema.aliases,
+        source=cview_8,
+        target=cview_14,
+        points=[(233.00000,311.00000),(154.00000,311.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_5(
+        property=meta::external::format::avro::metamodel::AvroUnionSchema.types,
+        source=cview_16,
+        target=cview_12,
+        points=[(855.00000,314.00000),(950.00000,313.00000),(949.00000,245.00000),(881.00000,245.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_6(
+        property=meta::external::format::avro::metamodel::AvroSchema.logicalType,
+        source=cview_12,
+        target=cview_17,
+        points=[(440.00000,241.00000),(4.00000,244.00000),(3.00000,402.00000),(73.00000,402.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_7(
+        property=meta::external::format::avro::metamodel::AvroSchemaField.logicalType,
+        source=cview_13,
+        target=cview_17,
+        points=[(-55.00000,468.00000),(69.00000,467.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

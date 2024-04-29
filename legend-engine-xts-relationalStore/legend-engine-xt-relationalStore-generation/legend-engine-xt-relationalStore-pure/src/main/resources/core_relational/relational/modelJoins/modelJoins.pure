@@ -1,0 +1,120 @@
+import meta::pure::store::*;
+import meta::pure::executionPlan::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
+import meta::alloy::objectReference::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+import meta::relational::functions::pureToSqlQuery::union::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::pure::metamodel::valuespecification::*;
+import meta::relational::mapping::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::relational::functions::pureToSqlQuery::relationalmappingspecification::*;
+import meta::pure::mapping::*;
+import meta::pure::metamodel::path::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::milestoning::*;
+import meta::pure::tds::*;
+import meta::relational::functions::*;
+import meta::relational::milestoning::*;
+import meta::pure::router::clustering::*;
+import meta::pure::router::printer::*;
+import meta::pure::router::routing::*;
+import meta::pure::router::store::embedded::*;
+import meta::pure::router::store::metamodel::*;
+import meta::pure::router::store::metamodel::clustering::*;
+import meta::pure::router::utils::*;
+import meta::relational::extension::*;
+import meta::pure::mapping::xStore::*;
+import meta::external::store::relational::modelJoins::*;
+
+function meta::external::store::relational::modelJoins::localizeXStoreAssociation(xstoreAssociation: XStoreAssociationImplementation[1], setImpl:SetImplementation[*], stores:Store[*]):AssociationImplementation[1]
+{
+  let database = ^Database(includes=$stores->cast(@Database));
+  let relationalPropertyMappings = $xstoreAssociation.propertyMappings->cast(@XStorePropertyMapping)->map(xstorePropertyMapping | transformXStorePropertyIntoRelationalProperty($xstorePropertyMapping, $setImpl, $database));
+  ^RelationalAssociationImplementation(association=$xstoreAssociation.association,parent=$xstoreAssociation.parent,id=$xstoreAssociation.id, stores=$database, propertyMappings=$relationalPropertyMappings);
+}
+
+function <<access.private>> meta::external::store::relational::modelJoins::transformXStorePropertyIntoRelationalProperty(xstoreProperty: meta::pure::mapping::xStore::XStorePropertyMapping[1], setImpl:SetImplementation[*], database:Database[1]): RelationalPropertyMapping[1]
+{
+  let expressionSequence = $xstoreProperty.crossExpression.expressionSequence->cast(@SimpleFunctionExpression)->toOne()->evaluateAndDeactivate();
+  let sourceId = $xstoreProperty.sourceSetImplementationId->toOne();
+  let targetId = $xstoreProperty.targetSetImplementationId->toOne();
+  let classMappings = $setImpl->cast(@RootRelationalInstanceSetImplementation);
+  let sourceMainTableAlias = $classMappings->filter(c| $c.id == $sourceId)->toOne().mainTableAlias;
+
+  let join = transformExpressionSequenceIntoJoin($expressionSequence, $sourceId, $targetId, $classMappings);
+
+  let joinTreeNode = ^JoinTreeNode(
+    joinName=$join.name,
+    database=$join.database->toOne(),
+    alias=$join.target->toOne(),
+    join=$join
+  );
+
+  let ro = ^RelationalOperationElementWithJoin(joinTreeNode=$joinTreeNode);
+  let r = ^RelationalPropertyMapping(sourceSetImplementationId=$sourceId,property=$xstoreProperty.property->toOne(),relationalOperationElement=$ro,targetSetImplementationId=$targetId);
+}
+
+function <<access.private>> meta::external::store::relational::modelJoins::getClassMappingAtId(classMappings:RootRelationalInstanceSetImplementation[*], id:String[1]):RootRelationalInstanceSetImplementation[1]
+{
+  $classMappings->filter(c| $c.id == $id)->toOne('More than one class mapping at the given id: ' + $id);
+}
+
+function <<access.private>> meta::external::store::relational::modelJoins::getAttributeRelationalOperationElement(propertyImplementations:SimpleFunctionExpression[*], thisOrThat:String[1], id:String[1], classMappings:RootRelationalInstanceSetImplementation[*]):RelationalOperationElement[1]
+{
+  let propertyImplementation = $propertyImplementations->filter(p|$p.parametersValues->cast(@VariableExpression).name->toOne()==$thisOrThat).func->toOne();
+  let classMapping = $classMappings->getClassMappingAtId($id);
+  let relationalPropertyMapping = $classMapping.propertyMappings->filter(p|$p.property==$propertyImplementation)->cast(@RelationalPropertyMapping)->toOne();
+  $relationalPropertyMapping.relationalOperationElement->toOne('Localized relational model joins cannot support more than one relational operation element per property mapping. Found on class mapping id: ' + $id);
+}
+
+function <<access.private>> meta::external::store::relational::modelJoins::transformExpressionSequenceIntoJoin(expressionSequence: SimpleFunctionExpression[1], sourceId:String[1], targetId:String[1], classMappings:RootRelationalInstanceSetImplementation[*]): Join[1]
+{
+  let functionOperator = $expressionSequence.functionName->toOne();
+  let joinName = $sourceId + '_' + $targetId + '_GeneratedRelationalJoin';
+  let sourceMainTableAlias = $classMappings->getClassMappingAtId($sourceId).mainTableAlias->map(alias|^$alias(name=$alias.relation->cast(@NamedRelation).name));
+  let targetMainTableAlias = $classMappings->getClassMappingAtId($targetId).mainTableAlias->map(alias|^$alias(name=$alias.relation->cast(@NamedRelation).name));
+  let sourceDatabase = $sourceMainTableAlias.database->toOne();
+  let targetDatabase = $targetMainTableAlias.database->toOne();
+  let aggregatedDatabase = ^Database(includes=[$sourceDatabase, $targetDatabase]);
+
+  assertContains(['equal', 'not', 'and', 'or'], $functionOperator, 'Failed to translate XStore Property into Relational Property because function operator is not in standard list');
+
+  let join = if(
+    $functionOperator=='equal' || $functionOperator=='not',
+    | let propertyImplementations = $expressionSequence.parametersValues->cast(@SimpleFunctionExpression)->evaluateAndDeactivate();
+
+      let sourceRelationalOperationElement = getAttributeRelationalOperationElement($propertyImplementations, 'this', $sourceId, $classMappings);
+      let targetRelationalOperationElement = getAttributeRelationalOperationElement($propertyImplementations, 'that', $targetId, $classMappings);
+
+      let parameters = $sourceRelationalOperationElement->concatenate($targetRelationalOperationElement);
+      let operation = ^DynaFunction(name=$functionOperator, parameters=$parameters);
+      ^Join(
+        name=$joinName,
+        operation=$operation, 
+        target=$targetMainTableAlias,
+        database=$aggregatedDatabase,
+        aliases = [^Pair<TableAlias,TableAlias>(first=$targetMainTableAlias,second=$sourceMainTableAlias), ^Pair<TableAlias,TableAlias>(first=$sourceMainTableAlias,second=$targetMainTableAlias)]
+      );, 
+    | let childJoins = $expressionSequence.parametersValues->map(p | 
+        transformExpressionSequenceIntoJoin($p->cast(@SimpleFunctionExpression)->evaluateAndDeactivate(), $sourceId, $targetId, $classMappings)
+      );
+      let operation = ^DynaFunction(name=$functionOperator, parameters=$childJoins.operation->evaluateAndDeactivate());
+      ^Join(
+        name=$joinName,
+        operation=$operation,
+        target=$targetMainTableAlias,
+        database=$aggregatedDatabase,
+        aliases = [^Pair<TableAlias,TableAlias>(first=$targetMainTableAlias,second=$sourceMainTableAlias), ^Pair<TableAlias,TableAlias>(first=$sourceMainTableAlias,second=$targetMainTableAlias)]->concatenate($childJoins.aliases)
+      );
+  );
+
+}
+

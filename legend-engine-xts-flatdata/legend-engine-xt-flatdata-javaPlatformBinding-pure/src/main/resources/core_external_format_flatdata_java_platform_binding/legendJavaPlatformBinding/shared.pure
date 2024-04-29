@@ -1,0 +1,163 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::flatdata::binding::validation::*;
+import meta::external::format::flatdata::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::flatdata::metamodel::*;
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::transform::*;
+
+import meta::pure::graphFetch::*;
+
+function <<access.protected>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::createSchema(jClass:meta::external::language::java::metamodel::Class[1], flatData:FlatData[1], schemaVar:Code[1], conventions:Conventions[1]): Code[*]
+{ 
+  let schemaDec    = $schemaVar->j_declare(j_new($conventions->className(_FlatData), []));
+  let sectionAssgn = $schemaVar->j_field('sections', javaList($conventions->className(_FlatDataSection)))->j_assign(javaArrays()->j_invoke($conventions->className(_FlatDataSection), 'asList', $flatData.sections->map(s | j_this($jClass)->j_invoke($s->sectionMethodName(), [])), javaList($conventions->className(_FlatDataSection))));
+  $schemaDec->concatenate($sectionAssgn);
+}
+
+function <<access.protected>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::sectionMethodName(section:FlatDataSection[1]): String[1]
+{   
+  'flatDataSection_' + $section.name;
+}
+
+function <<access.protected>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::sectionFactoryMethodName(section:FlatDataSection[1]): String[1]
+{   
+  'flatDataSection_Factory_' + $section.name;
+}
+
+function <<access.protected>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::addSectionMethods(jClass:meta::external::language::java::metamodel::Class[1], flatData:FlatData[1], bindingDetail:FlatDataBindingDetail[1], tree:RootGraphFetchTree<Any>[0..1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+{  
+  assert($tree.subTrees->cast(@PropertyGraphFetchTree).property->filter(p | $p->functionReturnType().rawType->toOne()->instanceOf(meta::pure::metamodel::type::Class))->isEmpty(), |'Multi Section serialization is not yet supported !!');
+
+  $jClass
+    ->addMethods({cls|
+        $flatData.sections->map({section|
+          let sectionBindingDetail = $bindingDetail.sectionBindingDetails->filter(s | $s.section ==  $section);
+          let fieldToPropertyMap   = $sectionBindingDetail.details->map(d | pair($d.field, $d.property))->newMap();
+          let sectionVar           = j_variable($conventions->className(_FlatDataSection), 'section');
+          javaMethod('public', $conventions->className(_FlatDataSection), $section->sectionMethodName(), [],
+            [
+              $sectionVar->j_declare(j_new($conventions->className(_FlatDataSection), [])),
+              $sectionVar->j_field('name', javaString())->j_assign(j_string($section.name)),
+              $sectionVar->j_field('driverId', javaString())->j_assign(j_string($section.driverId))
+            ]->concatenate(
+              $section.sectionProperties->toIndexed()
+                                        ->map(indexedSp|let propVar    = j_variable($conventions->className(_FlatDataProperty), 'flatDataProperty_' + $indexedSp.first->toString());
+                                                        let decVar     = $propVar->j_declare(j_new($conventions->className(_FlatDataProperty), []));
+                                                        let assnName   = $propVar->j_field('name', javaString())->j_assign(j_string($indexedSp.second.name));
+                                                        let assnValues = $indexedSp.second.values->match([
+                                                                            i:Integer[1]  | $propVar->j_field('values', javaList(javaObject()))->j_assign(javaArrays()->j_invoke('asList', j_long($i), javaList(javaObject()))), 
+                                                                            s:String[1]   | $propVar->j_field('values', javaList(javaObject()))->j_assign(javaArrays()->j_invoke('asList', j_string($s), javaList(javaObject()))), 
+                                                                            b:Boolean[1]  | $propVar->j_field('values', javaList(javaObject()))->j_assign(javaArrays()->j_invoke('asList', j_boolean($b), javaList(javaObject()))),
+                                                                            is:Integer[*] | $propVar->j_field('values', javaList(javaObject()))->j_assign(javaArrays()->j_invoke('asList', $is->map(i|j_long($i)), javaList(javaObject()))),
+                                                                            ss:String[*]  | $propVar->j_field('values', javaList(javaObject()))->j_assign(javaArrays()->j_invoke('asList', $ss->map(s|j_string($s)), javaList(javaObject())))
+                                                                          ]);
+                                                        [$decVar, $assnName, $assnValues];)
+            )->concatenate(
+              $sectionVar->j_field('sectionProperties', javaList($conventions->className(_FlatDataProperty)))
+                         ->j_assign(javaArrays()->j_invoke($conventions->className(_FlatDataProperty), 
+                                                           'asList', 
+                                                           $section.sectionProperties->toIndexed()->map(indexedSp|j_variable($conventions->className(_FlatDataProperty), 'flatDataProperty_' + $indexedSp.first->toString())), 
+                                                           javaList($conventions->className(_FlatDataProperty))))
+            )->concatenate(
+              $section.recordType->map(rt|let recordTypeVar  = j_variable($conventions->className(_FlatDataRecordType), 'recordType');
+                                          let recordTypeDec  = $recordTypeVar->j_declare(j_new($conventions->className(_FlatDataRecordType), []));
+                                          let requiredFields = if($tree->isEmpty(),
+                                                                  | $rt.fields,
+                                                                  | $rt.fields->filter(f | $tree.subTrees->cast(@PropertyGraphFetchTree).property->contains($fieldToPropertyMap->get($f)->toOne())));
+                                          let fieldsAssgn    = $recordTypeVar->j_field('fields', javaList($conventions->className(_FlatDataRecordField)))->j_assign(javaClass('public', javaPackage('org.eclipse.collections.impl.factory'), 'Lists')->j_field('mutable', javaObject())->j_invoke('empty', [], javaList($conventions->className(_FlatDataRecordField))));
+                                          let fieldsUpdate   = $requiredFields->toIndexed()->map(indexedField | $recordTypeVar->codeWithField($indexedField.second, $indexedField.first, $conventions));
+                                          let secUpdate      = $sectionVar->j_field('recordType', $conventions->className(_FlatDataRecordType))->j_assign($recordTypeVar);
+                                          $recordTypeDec->concatenate($fieldsAssgn)->concatenate($fieldsUpdate)->concatenate($secUpdate);)
+            )->concatenate(
+              j_return($sectionVar)
+            )
+          );            
+        });
+    });
+}
+
+function <<access.protected>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::codeWithField(recordTypeVar:Code[1], field:FlatDataRecordField[1], fieldIndex:Integer[1], conventions:Conventions[1]): Code[*]
+{
+  let fieldVar      = j_variable($conventions->className(_FlatDataRecordField), 'flatDataRecordField_' + $fieldIndex->toString());
+  let fieldVarDec   = $fieldVar->j_declare(j_new($conventions->className(_FlatDataRecordField), []));
+  let fieldVarLabel = $fieldVar->j_field('label', javaString())->j_assign(j_string($field.label));
+  let fieldVarAddr  = $field.address->map(a| $fieldVar->j_field('address', javaString())->j_assign(j_string($a)));
+  let fieldTypeSts  = $field.type->codeFlatDataDatatype($fieldVar->cast(@Variable), $conventions);
+
+  let recordTypeUpd = $recordTypeVar->j_field('fields', javaList($conventions->className(_FlatDataRecordField)))->j_invoke('add', $fieldVar);
+  
+  $fieldVarDec->concatenate($fieldVarLabel)->concatenate($fieldVarAddr)->concatenate($fieldTypeSts)->concatenate($recordTypeUpd);
+}
+
+function <<access.protected>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::codeFlatDataDatatype(type:FlatDataDataType[1], fieldVar:Variable[1], conventions:Conventions[1]): Code[*]
+{  
+  let typeVarName = $fieldVar.name + 'Type';
+  let optional    = j_boolean($type.optional);
+   
+   $type->match([
+      {str:FlatDataString[1]|
+        let typeVar         = j_variable($conventions->className(_FlatDataString), $typeVarName);
+        let typeVarDec      = $typeVar->j_declare(j_new($conventions->className(_FlatDataString), []));
+        let optionalAssn    = $typeVar->j_field('optional', javaBoolean())->j_assign($optional);
+        let typeAssn        = $fieldVar->j_field('type', $conventions->className(_FlatDataDataType))->j_assign($typeVar);
+        [$typeVarDec, $optionalAssn, $typeAssn];
+      },
+      {bool:FlatDataBoolean[1]|
+        let typeVar         = j_variable($conventions->className(_FlatDataBoolean), $typeVarName);
+        let typeVarDec      = $typeVar->j_declare(j_new($conventions->className(_FlatDataBoolean), []));
+        let optionalAssn    = $typeVar->j_field('optional', javaBoolean())->j_assign($optional);
+        let trueStringAssn  = $bool.trueString->map(ts | $typeVar->j_field('trueString', javaString())->j_assign(j_string($ts)));
+        let falseStringAssn = $bool.falseString->map(fs | $typeVar->j_field('falseString', javaString())->j_assign(j_string($fs)));
+        let typeAssn        = $fieldVar->j_field('type', $conventions->className(_FlatDataDataType))->j_assign($typeVar);
+        [$typeVarDec, $optionalAssn]->concatenate($trueStringAssn)->concatenate($falseStringAssn)->concatenate([$typeAssn]);
+      },
+      {int:FlatDataInteger[1]|
+        let typeVar         = j_variable($conventions->className(_FlatDataInteger), $typeVarName);
+        let typeVarDec      = $typeVar->j_declare(j_new($conventions->className(_FlatDataInteger), []));
+        let optionalAssn    = $typeVar->j_field('optional', javaBoolean())->j_assign($optional);
+        let formatAssn      = $int.format->map(f | $typeVar->j_field('format', javaString())->j_assign(j_string($f)));
+        let typeAssn        = $fieldVar->j_field('type', $conventions->className(_FlatDataDataType))->j_assign($typeVar);
+        [$typeVarDec, $optionalAssn]->concatenate($formatAssn)->concatenate([$typeAssn]);
+      },
+      {dec:FlatDataDecimal[1]|
+        let typeVar         = j_variable($conventions->className(_FlatDataDecimal), $typeVarName);
+        let typeVarDec      = $typeVar->j_declare(j_new($conventions->className(_FlatDataDecimal), []));
+        let optionalAssn    = $typeVar->j_field('optional', javaBoolean())->j_assign($optional);
+        let formatAssn      = $dec.format->map(f | $typeVar->j_field('format', javaString())->j_assign(j_string($f)));
+        let typeAssn        = $fieldVar->j_field('type', $conventions->className(_FlatDataDataType))->j_assign($typeVar);
+        [$typeVarDec, $optionalAssn]->concatenate($formatAssn)->concatenate([$typeAssn]);
+      },
+      {date:FlatDataDate[1]|
+        let typeVar         = j_variable($conventions->className(_FlatDataDate), $typeVarName);
+        let typeVarDec      = $typeVar->j_declare(j_new($conventions->className(_FlatDataDate), []));
+        let optionalAssn    = $typeVar->j_field('optional', javaBoolean())->j_assign($optional);
+        let formatAssn      = $typeVar->j_field('format', javaList(javaString()))->j_assign(javaArrays()->j_invoke(javaString(), 'asList', $date.format->map(fmt | j_string($fmt)), javaList(javaString())));
+        let typeAssn        = $fieldVar->j_field('type', $conventions->className(_FlatDataDataType))->j_assign($typeVar);
+        [$typeVarDec, $optionalAssn]->concatenate($formatAssn)->concatenate([$typeAssn]);
+      },
+      {dateTime:FlatDataDateTime[1]|
+        let typeVar         = j_variable($conventions->className(_FlatDataDateTime), $typeVarName);
+        let typeVarDec      = $typeVar->j_declare(j_new($conventions->className(_FlatDataDateTime), []));
+        let optionalAssn    = $typeVar->j_field('optional', javaBoolean())->j_assign($optional);
+        let formatAssn      = $typeVar->j_field('format', javaList(javaString()))->j_assign(javaArrays()->j_invoke(javaString(), 'asList', $dateTime.format->map(fmt | j_string($fmt)), javaList(javaString())));
+        let timeZoneAssn    = $dateTime.timeZone->map(tz | $typeVar->j_field('timeZone', javaString())->j_assign(j_string($tz)));
+        let typeAssn        = $fieldVar->j_field('type', $conventions->className(_FlatDataDataType))->j_assign($typeVar);
+        [$typeVarDec, $optionalAssn]->concatenate($formatAssn)->concatenate($timeZoneAssn)->concatenate([$typeAssn]);
+      }
+   ]);
+}

@@ -1,0 +1,23 @@
+###ExternalFormat
+SchemaSet meta::external::format::xml::executionPlan::test::customSchema::PersonWithFirmSchema
+{
+  format: XSD;
+  schemas: [
+    {
+      id: PersonWithFirm;
+      location: 'PersonWithFirm.xsd';
+      content: '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">\n    <xs:complexType name="Address">\n        <xs:sequence>\n            <xs:element name="street" minOccurs="1" maxOccurs="1" type="xs:string" />\n        </xs:sequence>\n    </xs:complexType>\n    <xs:complexType name="Firm">\n        <xs:sequence>\n            <xs:element name="legalName" minOccurs="1" maxOccurs="1" type="xs:string" />\n            <xs:element name="firmAddress" minOccurs="0" maxOccurs="unbounded" type="Address" />\n            <xs:element name="active" minOccurs="1" maxOccurs="1" type="xs:boolean" />\n        </xs:sequence>\n    </xs:complexType>\n    <xs:complexType name="Personwithfirm">\n        <xs:sequence>\n            <xs:element name="firstName" minOccurs="1" maxOccurs="1" type="xs:string" />\n            <xs:element name="lastName" minOccurs="1" maxOccurs="1" type="xs:string" />\n            <xs:element name="age" minOccurs="0" maxOccurs="1" type="xs:integer" />\n            <xs:element name="dateOfBirth" minOccurs="0" maxOccurs="1" type="xs:date" />\n            <xs:element name="firm" minOccurs="1" maxOccurs="1" type="Firm" />\n            <xs:element name="addresses" minOccurs="1" maxOccurs="unbounded" type="Address" />\n        </xs:sequence>\n    </xs:complexType>\n</xs:schema>';
+    }
+  ];
+}
+
+Binding meta::external::format::xml::executionPlan::test::customSchema::PersonWithFirmBinding
+{
+  schemaSet: meta::external::format::xml::executionPlan::test::customSchema::PersonWithFirmSchema;
+  contentType: 'application/xml';
+  modelIncludes: [
+    meta::external::format::xml::executionPlan::test::PersonWithFirmConstraint,
+    meta::external::format::xml::executionPlan::test::Firm,
+    meta::external::format::xml::executionPlan::test::Address
+  ];
+}

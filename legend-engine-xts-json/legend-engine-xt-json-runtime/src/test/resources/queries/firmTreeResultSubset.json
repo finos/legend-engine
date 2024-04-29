@@ -1,0 +1,15 @@
+{
+  "builder": {
+    "_type": "json"
+  },
+  "values": [
+    {
+      "name": "Firm A",
+      "ranking": 1
+    },
+    {
+      "name": "Firm B",
+      "ranking": null
+    }
+  ]
+}

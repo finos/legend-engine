@@ -1,0 +1,1018 @@
+###Diagram
+Diagram meta::external::store::mongodb::metamodel::Mongo_QueryModel_Diagram(width=0.0, height=0.0)
+{
+    TypeView cview_14(
+        type=meta::external::store::mongodb::metamodel::aggregation::IntTypeValue,
+        position=(758.81357, 919.48853),
+        width=106.80762,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_12(
+        type=meta::external::store::mongodb::metamodel::aggregation::BaseTypeValue,
+        position=(592.13163, 766.94902),
+        width=450.00000,
+        height=90.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_34(
+        type=meta::external::store::mongodb::metamodel::aggregation::EqOperatorExpression,
+        position=(37.92831, 970.80789),
+        width=150.70508,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_42(
+        type=meta::external::store::mongodb::metamodel::aggregation::LTEOperatorExpression,
+        position=(206.14887, 969.56601),
+        width=157.14453,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_44(
+        type=meta::external::store::mongodb::metamodel::aggregation::LTOperatorExpression,
+        position=(116.89877, 1018.12857),
+        width=148.92383,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_46(
+        type=meta::external::store::mongodb::metamodel::aggregation::NorOperatorExpression,
+        position=(70.16487, 779.02401),
+        width=156.03711,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::external::store::mongodb::metamodel::aggregation::Stage,
+        position=(458.70837, 178.41015),
+        width=800.00000,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::external::store::mongodb::metamodel::aggregation::MatchStage,
+        position=(266.07819, 313.96349),
+        width=228.79883,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::external::store::mongodb::metamodel::aggregation::ProjectStage,
+        position=(1174.66959, 313.96349),
+        width=221.79102,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_48(
+        type=meta::external::store::mongodb::metamodel::aggregation::NullTypeValue,
+        position=(552.86780, 998.95282),
+        width=101.13477,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_50(
+        type=meta::external::store::mongodb::metamodel::aggregation::DecimalTypeValue,
+        position=(829.69110, 1000.69425),
+        width=124.49609,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_31(
+        type=meta::external::store::mongodb::metamodel::aggregation::AndOperatorExpression,
+        position=(-300.33165, 780.88430),
+        width=158.69727,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_41(
+        type=meta::external::store::mongodb::metamodel::aggregation::GTOperatorExpression,
+        position=(-144.28903, 972.19101),
+        width=151.81836,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_32(
+        type=meta::external::store::mongodb::metamodel::aggregation::OrOperatorExpression,
+        position=(-108.15832, 780.11223),
+        width=149.37500,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_11(
+        type=meta::external::store::mongodb::metamodel::aggregation::LiteralValue,
+        position=(573.65926, 661.16738),
+        width=450.00000,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_53(
+        type=meta::external::store::mongodb::metamodel::aggregation::InOperatorExpression,
+        position=(91.52546, 1086.26486),
+        width=146.03516,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_54(
+        type=meta::external::store::mongodb::metamodel::aggregation::NinOperatorExpression,
+        position=(283.80658, 1086.26486),
+        width=154.70117,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_15(
+        type=meta::external::store::mongodb::metamodel::aggregation::StringTypeValue,
+        position=(889.69382, 923.20089),
+        width=113.13477,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_55(
+        type=meta::external::store::mongodb::metamodel::aggregation::KeyValuePair,
+        position=(1176.02377, 1073.81073),
+        width=96.04883,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_49(
+        type=meta::external::store::mongodb::metamodel::aggregation::LongTypeValue,
+        position=(693.05226, 1000.69425),
+        width=107.79102,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_13(
+        type=meta::external::store::mongodb::metamodel::aggregation::BoolTypeValue,
+        position=(614.01557, 919.48853),
+        width=113.52686,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_51(
+        type=meta::external::store::mongodb::metamodel::aggregation::ObjectTypeValue,
+        position=(894.15510, 1072.45881),
+        width=163.09131,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_52(
+        type=meta::external::store::mongodb::metamodel::aggregation::ArrayTypeValue,
+        position=(645.25445, 1076.49531),
+        width=109.82422,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_57(
+        type=meta::external::store::mongodb::metamodel::aggregation::LogicalOperatorExpression,
+        position=(-293.20264, 660.61894),
+        width=700.00000,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::external::store::mongodb::metamodel::aggregation::AggregationPipeline,
+        position=(198.06749, 178.41015),
+        width=136.67773,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_58(
+        type=meta::external::store::mongodb::metamodel::aggregation::JsonSchemaExpression,
+        position=(1247.47247, 743.47973),
+        width=184.46826,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_59(
+        type=meta::external::store::mongodb::metamodel::aggregation::FieldPathExpression,
+        position=(1050.47247, 665.47973),
+        width=231.78125,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::external::store::mongodb::metamodel::aggregation::DatabaseCommand,
+        position=(-255.82195, 104.32319),
+        width=254.08838,
+        height=226.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_62(
+        type=meta::external::store::mongodb::metamodel::aggregation::WriteConcern,
+        position=(-619.67970, 181.74060),
+        width=139.18457,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_61(
+        type=meta::external::store::mongodb::metamodel::aggregation::ReadConcern,
+        position=(-623.85362, 116.00146),
+        width=166.72754,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_63(
+        type=meta::external::store::mongodb::metamodel::Collation,
+        position=(-614.92162, 279.93625),
+        width=104.96533,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_64(
+        type=meta::external::store::mongodb::metamodel::aggregation::Cursor,
+        position=(-862.92162, 243.93625),
+        width=130.02686,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_65(
+        type=meta::external::store::mongodb::metamodel::aggregation::GTEOperatorExpression,
+        position=(-91.29080, 1016.48578),
+        width=160.03906,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_66(
+        type=meta::external::store::mongodb::metamodel::aggregation::ObjectQueryExpression,
+        position=(1392.44704, 688.69473),
+        width=156.71680,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_69(
+        type=meta::external::store::mongodb::metamodel::aggregation::QueryExprKeyValue,
+        position=(1579.44704, 755.69473),
+        width=134.72656,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_70(
+        type=meta::external::store::mongodb::metamodel::MongoDBOperationElement,
+        position=(-248.05272, -158.89815),
+        width=1680.00195,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_71(
+        type=meta::external::store::mongodb::metamodel::aggregation::ComparisonOperatorExpression,
+        position=(-278.37791, 862.21442),
+        width=742.43945,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_17(
+        type=meta::external::store::mongodb::metamodel::aggregation::ArgumentExpression,
+        position=(71.15673, 442.95106),
+        width=1608.42578,
+        height=150.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_45(
+        type=meta::external::store::mongodb::metamodel::aggregation::NEOperatorExpression,
+        position=(344.26307, 1017.45745),
+        width=152.04102,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_72(
+        type=meta::external::store::mongodb::metamodel::aggregation::NotOperatorExpression,
+        position=(259.26271, 781.32558),
+        width=155.36328,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_4,
+        target=cview_3,
+        points=[(476.96306,314.70129),(479.19682,189.61073)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_5,
+        target=cview_3,
+        points=[(1195.13519,349.83236),(1195.01869,202.57158)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_13,
+        target=cview_12,
+        points=[(670.77900,941.48853),(670.80066,792.75318)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_14,
+        target=cview_12,
+        points=[(812.21738,942.69923),(814.68713,796.67736)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_15,
+        target=cview_12,
+        points=[(946.26121,949.05922),(952.03330,794.06124)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_5(
+        source=cview_11,
+        target=cview_17,
+        points=[(797.51612,663.25770),(798.32610,574.79997)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_6(
+        source=cview_48,
+        target=cview_12,
+        points=[(603.43518,1013.95282),(603.58139,771.54301)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_7(
+        source=cview_49,
+        target=cview_12,
+        points=[(746.94777,1022.69425),(744.69110,792.91759)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_8(
+        source=cview_50,
+        target=cview_12,
+        points=[(880.69110,1001.69425),(878.99337,776.11417)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_9(
+        source=cview_51,
+        target=cview_12,
+        points=[(1023.30951,1079.97074),(1023.30951,816.76907)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_10(
+        source=cview_52,
+        target=cview_12,
+        points=[(709.77046,1086.67600),(710.24189,849.43700)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_11(
+        source=cview_46,
+        target=cview_57,
+        points=[(148.18342,794.02401),(147.63850,690.76662)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_12(
+        source=cview_31,
+        target=cview_57,
+        points=[(-220.98302,795.88430),(-222.76062,679.70993)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_13(
+        source=cview_32,
+        target=cview_57,
+        points=[(-33.47082,795.11223),(-33.21736,690.76662)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_14(
+        source=cview_57,
+        target=cview_17,
+        points=[(137.93457,666.93669),(138.93457,533.93669)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_15(
+        source=cview_58,
+        target=cview_17,
+        points=[(1339.70660,765.47973),(1337.44704,579.69473)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_16(
+        source=cview_59,
+        target=cview_17,
+        points=[(1166.36309,694.47973),(1163.47247,564.47973)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_17(
+        source=cview_66,
+        target=cview_17,
+        points=[(1470.80543,703.69473),(1472.44704,559.69473)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_18(
+        source=cview_69,
+        target=cview_17,
+        points=[(1646.81032,770.69473),(1645.44704,527.69473)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_19(
+        source=cview_3,
+        target=cview_70,
+        points=[(858.70837,200.41015),(860.51381,-148.10171)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_20(
+        source=cview_17,
+        target=cview_70,
+        points=[(979.51381,454.89829),(981.51381,-150.10171)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_21(
+        source=cview_2,
+        target=cview_70,
+        points=[(266.40636,200.41015),(266.51381,-146.10171)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_22(
+        source=cview_1,
+        target=cview_70,
+        points=[(-123.48619,115.89829),(-124.48619,-138.10171)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_23(
+        source=cview_34,
+        target=cview_71,
+        points=[(113.28085,985.80789),(114.26271,882.32558)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_24(
+        source=cview_42,
+        target=cview_71,
+        points=[(284.72114,984.56601),(284.26271,870.32558)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_25(
+        source=cview_44,
+        target=cview_71,
+        points=[(198.26271,1021.32558),(200.26271,905.32558)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_26(
+        source=cview_41,
+        target=cview_71,
+        points=[(-68.37985,987.19101),(-65.73729,887.32558)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_27(
+        source=cview_53,
+        target=cview_71,
+        points=[(159.26271,1089.32558),(160.26271,893.32558)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_28(
+        source=cview_54,
+        target=cview_71,
+        points=[(369.26271,1096.32558),(367.26271,905.32558)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_29(
+        source=cview_45,
+        target=cview_71,
+        points=[(420.28358,1032.45745),(420.26271,893.32558)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_30(
+        source=cview_71,
+        target=cview_17,
+        points=[(438.26271,873.32558),(439.26271,585.32558)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_31(
+        source=cview_65,
+        target=cview_71,
+        points=[(21.26271,1029.32558),(20.26271,897.32558)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_32(
+        source=cview_72,
+        target=cview_57,
+        points=[(336.94435,796.32558),(338.26271,679.32558)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::external::store::mongodb::metamodel::aggregation::DatabaseCommand.aggregationPipeline,
+        source=cview_1,
+        target=cview_2,
+        points=[(-128.77776,217.32319),(266.40636,214.41015)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::external::store::mongodb::metamodel::aggregation::AggregationPipeline.stages,
+        source=cview_2,
+        target=cview_3,
+        points=[(266.40636,214.41015),(485.04724,214.41015)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::external::store::mongodb::metamodel::aggregation::LiteralValue.value,
+        source=cview_11,
+        target=cview_12,
+        points=[(585.16515,692.80401),(522.73924,692.96842),(522.40413,782.91796),(608.08481,782.89977)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::external::store::mongodb::metamodel::aggregation::ProjectStage.projections,
+        source=cview_5,
+        target=cview_17,
+        points=[(1285.56510,351.79085),(1082.93457,352.93669),(1083.88182,447.07269)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_4(
+        property=meta::external::store::mongodb::metamodel::aggregation::MatchStage.expression,
+        source=cview_4,
+        target=cview_17,
+        points=[(480.05176,350.13633),(556.75536,350.58562),(555.55767,444.60417)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_5(
+        property=meta::external::store::mongodb::metamodel::aggregation::ArrayTypeValue.items,
+        source=cview_52,
+        target=cview_12,
+        points=[(700.16656,1091.49531),(508.06828,1090.84597),(509.41676,845.42159),(603.81075,845.42159)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_6(
+        property=meta::external::store::mongodb::metamodel::aggregation::KeyValuePair.value,
+        source=cview_55,
+        target=cview_12,
+        points=[(1224.04819,1095.81073),(1225.50011,782.91796),(817.13163,781.94902)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_7(
+        property=meta::external::store::mongodb::metamodel::aggregation::ObjectTypeValue.keyValues,
+        source=cview_51,
+        target=cview_55,
+        points=[(975.70076,1094.45881),(1224.04819,1095.81073)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_8(
+        property=meta::external::store::mongodb::metamodel::aggregation::LogicalOperatorExpression.expressions,
+        source=cview_57,
+        target=cview_17,
+        points=[(-292.06543,676.93669),(-334.06543,676.93669),(-336.06543,564.93669),(75.26271,561.32558)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_9(
+        property=meta::external::store::mongodb::metamodel::aggregation::DatabaseCommand.readConcern,
+        source=cview_1,
+        target=cview_61,
+        points=[(-231.50579,137.91451),(-540.48985,138.00146)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_10(
+        property=meta::external::store::mongodb::metamodel::aggregation::DatabaseCommand.writeConcern,
+        source=cview_1,
+        target=cview_62,
+        points=[(-128.77776,217.32319),(-550.08742,217.74060)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_11(
+        property=meta::external::store::mongodb::metamodel::aggregation::DatabaseCommand.collation,
+        source=cview_1,
+        target=cview_63,
+        points=[(-220.92162,298.93625),(-562.43896,301.93625)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_12(
+        property=meta::external::store::mongodb::metamodel::aggregation::DatabaseCommand.cursor,
+        source=cview_1,
+        target=cview_64,
+        points=[(-247.92162,264.93625),(-797.90820,265.93625)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_13(
+        property=meta::external::store::mongodb::metamodel::aggregation::ObjectQueryExpression.keyValues,
+        source=cview_66,
+        target=cview_17,
+        points=[(1470.80543,703.69473),(1770.44704,702.69473),(1770.44704,579.69473),(1677.44704,579.69473)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_14(
+        property=meta::external::store::mongodb::metamodel::aggregation::QueryExprKeyValue.key,
+        source=cview_69,
+        target=cview_17,
+        points=[(1711.44704,778.69473),(1901.44704,778.69473),(1905.44704,457.69473),(1674.44704,460.69473)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_15(
+        property=meta::external::store::mongodb::metamodel::aggregation::QueryExprKeyValue.value,
+        source=cview_69,
+        target=cview_17,
+        points=[(1712.44704,766.69473),(1877.44704,766.69473),(1879.44704,513.69473),(875.36962,517.95106)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_16(
+        property=meta::external::store::mongodb::metamodel::aggregation::ComparisonOperatorExpression.expressions,
+        source=cview_71,
+        target=cview_17,
+        points=[(-157.15818,884.21442),(-447.73729,883.32558),(-447.73729,499.32558),(101.26271,494.32558)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

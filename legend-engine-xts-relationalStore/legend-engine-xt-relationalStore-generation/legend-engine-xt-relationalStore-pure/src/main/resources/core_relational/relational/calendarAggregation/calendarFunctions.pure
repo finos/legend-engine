@@ -1,0 +1,545 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::metamodel::datatype::*;
+import meta::relational::functions::pureToSqlQuery::calendarAggregations::*;
+import meta::relational::metamodel::*;
+import meta::pure::functions::date::calendar::*;
+import meta::relational::functions::pureToSqlQuery::calendarAggregations::*;
+
+Class meta::relational::functions::pureToSqlQuery::calendarAggregations::AggHandler
+{
+ aggFunction : Function<{Date[1], String[1], StrictDate[1], Number[0..1] -> Number[0..1]}>[1];       // user function used in the query
+ handler     : Function<{TableAlias[1], TableAlias[1], TableAliasColumn[1] -> DynaFunction[1]}>[1];  // synthetiseXYZCaseCondition function
+}
+
+/////////////////////////////////
+// column operations functions //
+/////////////////////////////////
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::getCalendarColumnType(table: TableAlias[1], columnName: String[1]):meta::relational::metamodel::datatype::DataType[1]
+{
+  let tableName = $table.relationalElement->cast(@meta::relational::metamodel::relation::Table).name;
+  meta::relational::functions::database::tableReference(CalendarDatabase,'LegendCalendarSchema',$tableName)->toOne().columns->cast(@Column)->filter(c | $c.name == $columnName).type->toOne();
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::instanciateType(type: meta::relational::metamodel::datatype::DataType[1]):meta::relational::metamodel::datatype::DataType[1]
+{
+  $type->match([
+    d: meta::relational::metamodel::datatype::Date[1]    | ^meta::relational::metamodel::datatype::Date(),
+    i: meta::relational::metamodel::datatype::Integer[1] | ^meta::relational::metamodel::datatype::Integer(),
+    o: meta::relational::metamodel::datatype::Double[1]  | ^meta::relational::metamodel::datatype::Double(),
+    c: meta::relational::metamodel::datatype::Varchar[1] | ^meta::relational::metamodel::datatype::Char(size=$c.size)
+  ]);
+}
+
+
+// builds the DynaFunction corresponding to Dyna1 and Dyna2 and ... .
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::andColumns(conditions: DynaFunction[1..*]):DynaFunction[1]
+{
+  if(size($conditions) == 1, |$conditions->toOne(), |^DynaFunction(name = 'and', parameters= [$conditions]));
+}
+
+// builds the DynaFunction corresponding to table1.column1 (comparator) table2.column2, resp. with DynaFunctions or constant values.
+// Examples: calendarAlias.fiscalDay <= calendarEndAlias.fiscalDay, or calendarEndAlias.adjustedDate == calendarEndAlias.date.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::columnOperation(table1: TableAlias[1],columnName1: String[1], comparator: columnsOperators[1], table2: TableAlias[1], columnName2: String[1]):DynaFunction[1]
+{
+  let columnType1 = getCalendarColumnType($table1, $columnName1)->instanciateType();
+  let columnType2 = getCalendarColumnType($table1, $columnName2)->instanciateType();
+  assert($columnType1.classifierGenericType.rawType == $columnType2.classifierGenericType.rawType, 'The two columns to be compared have different types.');
+
+  ^DynaFunction(name = $comparator->toString(), parameters= [^TableAliasColumn(alias=$table1, column=^Column(name = $columnName1, type = $columnType1) ),
+                                                             ^TableAliasColumn(alias=$table2, column=^Column(name = $columnName2, type = $columnType2) )]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::columnOperation(table1: TableAlias[1],columnName1: String[1], comparator: columnsOperators[1], DF2: DynaFunction[1]):DynaFunction[1]
+{
+  let columnType1 = getCalendarColumnType($table1, $columnName1)->instanciateType();
+  ^DynaFunction(name = $comparator->toString(), parameters= [^TableAliasColumn(alias=$table1, column=^Column(name = $columnName1, type = $columnType1) ),
+                                                             $DF2 ]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::columnOperation(table1: TableAlias[1],columnName1: String[1], comparator: columnsOperators[1], value: Any[1]):DynaFunction[1]
+{
+  let columnType1 = getCalendarColumnType($table1, $columnName1)->instanciateType();
+  ^DynaFunction(name = $comparator->toString(), parameters= [^TableAliasColumn(alias=$table1, column=^Column(name = $columnName1 , type = $columnType1) ),
+                                                             ^Literal(value=$value)]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::columnOperation(column1: RelationalOperationElement[1], comparator: columnsOperators[1], table2: TableAlias[1], columnName2: String[1]):DynaFunction[1]
+{
+  let columnType2 = getCalendarColumnType($table2, $columnName2)->instanciateType();
+  ^DynaFunction(name = $comparator->toString(), parameters= [$column1,
+                                                             ^TableAliasColumn(alias=$table2, column=^Column(name = $columnName2, type = $columnType2) )]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::columnOperation(column: RelationalOperationElement[1], comparator: columnsOperators[1], DF: DynaFunction[1]):DynaFunction[1]
+{
+  ^DynaFunction(name = $comparator->toString(), parameters= [$column,
+                                                             $DF]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::columnOperation(column: RelationalOperationElement[1], comparator: columnsOperators[1], value: Any[1]):DynaFunction[1]
+{
+  ^DynaFunction(name = $comparator->toString(), parameters= [$column,
+                                                             ^Literal(value=$value)]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::columnOperation(DF: DynaFunction[1], comparator: columnsOperators[1], value: Any[1]):DynaFunction[1]
+{
+  ^DynaFunction(name = $comparator->toString(), parameters= [$DF,
+                                                             ^Literal(value=$value)]);
+}
+
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::caseColumn(condition: DynaFunction[1..*], ifTrue: TableAliasColumn[1], ifFalse: TableAliasColumn[1]):DynaFunction[1]
+{
+  ^DynaFunction(name = 'case', parameters= [andColumns($condition), $ifTrue, $ifFalse]);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::caseColumn(condition: DynaFunction[1..*], ifTrue: TableAliasColumn[1], ifFalse: DynaFunction[1]):DynaFunction[1]
+{
+  ^DynaFunction(name = 'case', parameters= [andColumns($condition), $ifTrue, $ifFalse]);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::caseColumn(condition: DynaFunction[1..*], ifTrue: RelationalOperationElement[1], ifFalse: DynaFunction[1]):DynaFunction[1]
+{
+  ^DynaFunction(name = 'case', parameters= [andColumns($condition), $ifTrue, $ifFalse]);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::caseColumn(condition: DynaFunction[1..*], ifTrue: DynaFunction[1], ifFalse: DynaFunction[1]):DynaFunction[1]
+{
+  ^DynaFunction(name = 'case', parameters= [andColumns($condition), $ifTrue, $ifFalse]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::caseColumn(condition: DynaFunction[1..*], tableIfTrue: TableAlias[1],columnIfTrue: String[1], tableIfFalse: TableAlias[1], columnIfFalse: String[1]):DynaFunction[1]
+{
+    let columnType1 = getCalendarColumnType($tableIfTrue , $columnIfTrue )->instanciateType();
+    let columnType2 = getCalendarColumnType($tableIfFalse, $columnIfFalse)->instanciateType();
+  assert($columnType1.classifierGenericType.rawType == $columnType2.classifierGenericType.rawType, 'The two columns to be compared have different types.');
+
+  ^DynaFunction(name = 'case', parameters= [andColumns($condition),
+                                            ^TableAliasColumn(alias=$tableIfTrue , column=^Column(name = $columnIfTrue , type = $columnType1) ),
+                                            ^TableAliasColumn(alias=$tableIfFalse, column=^Column(name = $columnIfFalse, type = $columnType2) )]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::caseColumn(condition: DynaFunction[1..*], ifTrue: Integer[1], ifFalse: Integer[1]):DynaFunction[1]
+{
+  ^DynaFunction(name = 'case', parameters= [andColumns($condition), ^Literal(value=$ifTrue), ^Literal(value=$ifFalse)]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::caseColumn(condition: DynaFunction[1..*], tableIfTrueOrFalse: TableAlias[1],columnIfTrue: String[1], columnIfFalse: String[1]):DynaFunction[1]
+{
+  caseColumn(andColumns($condition), $tableIfTrueOrFalse, $columnIfTrue, $tableIfTrueOrFalse, $columnIfFalse);
+}
+
+// Generates: case when (caseCondition) then valueCol/normalisationFactor else null end. //
+function meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseCaseValue(caseCondition:DynaFunction[1..*], valueColumn: RelationalOperationElement[1], normalisationFactor: Number[1]):DynaFunction[1]
+{
+  assert($normalisationFactor != 0, | 'Cannot normalise (ie divide) the values by 0.');
+  let normalisedValueColumn = ^DynaFunction(name = 'divide', parameters= [$valueColumn, ^Literal(value=$normalisationFactor)]);
+  caseColumn(andColumns($caseCondition), $normalisedValueColumn, ^DynaFunction(name = 'sqlNull'));
+}
+
+// Generates: case when (caseCondition) then valueCol/normalisationFactor else null end. //
+function meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseCaseValue(caseCondition:DynaFunction[1..*], valueColumn: RelationalOperationElement[1], normalisationFactor: DynaFunction[1]):DynaFunction[1]
+{
+  let normalisedValueColumn = ^DynaFunction(name = 'divide', parameters= [$valueColumn, $normalisationFactor]);
+  caseColumn(andColumns($caseCondition), $normalisedValueColumn, ^DynaFunction(name = 'sqlNull'));
+}
+
+// Generates: case when (caseCondition) then valueCol else null end. //
+function meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseCaseValue(caseCondition:DynaFunction[1..*], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  caseColumn(andColumns($caseCondition), $valueColumn, ^DynaFunction(name = 'sqlNull'));
+}
+
+Enum meta::relational::functions::pureToSqlQuery::calendarAggregations::columnsOperators
+{
+  equal, lessThanEqual, lessThan, greaterThan, greaterThanEqual, divide, times, adjust, minus
+}
+
+///////////////////////////
+// 'current X' functions //
+///////////////////////////
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseReportEndDayCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let conditions = columnOperation($calendarAlias, 'date', columnsOperators.equal, $calendarEndAlias, 'date');
+  synthetiseCaseValue($conditions, $valueColumn);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseCWCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let WeekendCondition = ^DynaFunction(name = 'in'    , parameters= [^TableAliasColumn(alias=$calendarEndAlias, column=^Column(name = 'shortNameWeekDay', type = ^meta::relational::metamodel::datatype::Char(size=3))  ),
+                                                                     ^LiteralList(values=[^meta::relational::metamodel::Literal(value = 'Sat'),^meta::relational::metamodel::Literal(value = 'Sun')])]);
+  let WeekOffset  = caseColumn($WeekendCondition, 1, 0);
+  let CurrentWeek = columnOperation($calendarEndAlias, 'fiscalWeekOffset', columnsOperators.minus, $WeekOffset);
+  let conditions  = columnOperation($calendarAlias   , 'fiscalWeekOffset', columnsOperators.equal, $CurrentWeek);
+  synthetiseCaseValue($conditions, $valueColumn);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseCWFMCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let conditions = columnOperation($calendarAlias, 'fiscalWeekOffset', columnsOperators.equal, $calendarEndAlias, 'fiscalWeekOffset');
+  synthetiseCaseValue($conditions, $valueColumn);
+}
+
+///////////////////////////
+// 'X to date' functions //
+///////////////////////////
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseWtdCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let YearCondition      = columnOperation($calendarAlias, 'currentYear'      , columnsOperators.equal        , $calendarEndAlias, 'currentYear'      );
+  let WeekCondition      = columnOperation($calendarAlias, 'currentWeek'      , columnsOperators.equal        , $calendarEndAlias, 'currentWeek'      );
+  let FiscalDayCondition = columnOperation($calendarAlias, 'dayOfCalendarYear', columnsOperators.lessThanEqual, $calendarEndAlias, 'dayOfCalendarYear');
+
+  synthetiseCaseValue([$YearCondition, $WeekCondition, $FiscalDayCondition], $valueColumn);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseMtdCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let YearCondition      = columnOperation($calendarAlias, 'currentYear'    , columnsOperators.equal        , $calendarEndAlias, 'currentYear'    );
+  let MonthCondition     = columnOperation($calendarAlias, 'currentMonthNum', columnsOperators.equal        , $calendarEndAlias, 'currentMonthNum');
+  let FiscalDayCondition = columnOperation($calendarAlias, 'fiscalDay'      , columnsOperators.lessThanEqual, $calendarEndAlias, 'fiscalDay'      );
+
+  synthetiseCaseValue([$YearCondition, $MonthCondition, $FiscalDayCondition], $valueColumn);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseQtdCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let YearCondition      = columnOperation($calendarAlias, 'currentYear'      , columnsOperators.equal        , $calendarEndAlias, 'currentYear'      );
+  let QuarterCondition   = columnOperation($calendarAlias, 'currentQuarterNum', columnsOperators.equal        , $calendarEndAlias, 'currentQuarterNum');
+  let FiscalDayCondition = columnOperation($calendarAlias, 'fiscalDay'        , columnsOperators.lessThanEqual, $calendarEndAlias, 'fiscalDay'        );
+
+  synthetiseCaseValue([$YearCondition, $QuarterCondition, $FiscalDayCondition], $valueColumn);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseYtdCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let YearCondition      = columnOperation($calendarAlias, 'currentYear', columnsOperators.equal        , $calendarEndAlias, 'currentYear');
+  let FiscalDayCondition = columnOperation($calendarAlias, 'fiscalDay'  , columnsOperators.lessThanEqual, $calendarEndAlias, 'fiscalDay'  );
+
+  synthetiseCaseValue([$YearCondition, $FiscalDayCondition], $valueColumn);
+}
+
+////////////////////////////////////
+// 'previous X to date' functions //
+////////////////////////////////////
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetisePWtdCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let priorWeek          = columnOperation($calendarEndAlias, 'fiscalWeekOffset', columnsOperators.minus        , 1                                   );
+  let WeekCondition      = columnOperation($calendarAlias   , 'fiscalWeekOffset', columnsOperators.equal        , $priorWeek                          );
+  let FiscalDayCondition = columnOperation($calendarAlias   , 'fiscalDayOfWeek' , columnsOperators.lessThanEqual, $calendarEndAlias, 'fiscalDayOfWeek');
+
+  synthetiseCaseValue([$WeekCondition, $FiscalDayCondition], $valueColumn);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetisePMtdCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  // If currentMonthReport is Jan, then previousMonthReport is last year's December.
+  let isJanuary = columnOperation($calendarEndAlias, 'currentMonthNum', columnsOperators.equal, 1 );
+  let YearOfPreviousMonth  = caseColumn($isJanuary, $calendarEndAlias, 'previousFiscalYear', 'currentYear' );
+  let YearCondition       = columnOperation($calendarAlias, 'currentYear'     , columnsOperators.equal        ,$YearOfPreviousMonth );
+  let MonthCondition      = columnOperation($calendarAlias, 'currentMonthNum' , columnsOperators.equal        , $calendarEndAlias, 'previousFiscalMonth');
+  let FiscalDayCondition  = columnOperation($calendarAlias, 'fiscalDayOfMonth', columnsOperators.lessThanEqual, $calendarEndAlias, 'fiscalDayOfMonth'   );
+
+  synthetiseCaseValue([$YearCondition, $MonthCondition, $FiscalDayCondition], $valueColumn);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetisePQtdCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  // If currentQuarterReport is Q1, then previousQuarterReport is last year's Q4.
+  let isQ1 = columnOperation($calendarEndAlias, 'currentQuarterNum', columnsOperators.equal, 1 );
+  let YearOfPreviousQuarter  = caseColumn($isQ1, $calendarEndAlias, 'previousFiscalYear', 'currentYear' );
+
+  let YearCondition      = columnOperation($calendarAlias, 'currentYear'       , columnsOperators.equal        , $YearOfPreviousQuarter );
+  let QuarterCondition   = columnOperation($calendarAlias, 'currentQuarterNum' , columnsOperators.equal        , $calendarEndAlias, 'previousFiscalQuarter');
+  let FiscalDayCondition = columnOperation($calendarAlias, 'fiscalDayOfQuarter', columnsOperators.lessThanEqual, $calendarEndAlias, 'fiscalDayOfQuarter'   );
+
+  synthetiseCaseValue([$YearCondition, $QuarterCondition, $FiscalDayCondition], $valueColumn);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetisePYtdCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let YearCondition      = columnOperation($calendarAlias, 'currentYear' , columnsOperators.equal        , $calendarEndAlias, 'previousFiscalYear');
+  let FiscalDayCondition = columnOperation($calendarAlias, 'fiscalDay'   , columnsOperators.lessThanEqual, $calendarEndAlias, 'fiscalDay'         );
+
+  synthetiseCaseValue([$YearCondition, $FiscalDayCondition], $valueColumn);
+}
+
+///////////////////////////////////////////
+// 'previous year's X to date' functions //
+///////////////////////////////////////////
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetisePYWtdCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let YearCondition      = columnOperation($calendarAlias, 'currentYear'    , columnsOperators.equal        , $calendarEndAlias, 'previousFiscalYear');
+  let WeekCondition      = columnOperation($calendarAlias, 'currentWeek'    , columnsOperators.equal        , $calendarEndAlias, 'currentWeek'       );
+  let FiscalDayCondition = columnOperation($calendarAlias, 'fiscalDayOfWeek', columnsOperators.lessThanEqual, $calendarEndAlias, 'fiscalDayOfWeek'   );
+
+  synthetiseCaseValue([$YearCondition, $WeekCondition, $FiscalDayCondition], $valueColumn);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetisePYMtdCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let YearCondition  = columnOperation($calendarAlias, 'currentYear'    , columnsOperators.equal, $calendarEndAlias, 'previousFiscalYear');
+  let MonthCondition = columnOperation($calendarAlias, 'currentMonthNum', columnsOperators.equal, $calendarEndAlias, 'currentMonthNum'   );
+
+  // Either endDate == fiscalMonthEnd and we consider the whole month, or endDate <= fiscalMonthEnd and we consider all the previous fiscal days of the month.
+  let FiscalDayCondition = columnOperation($calendarAlias, 'fiscalDayOfMonth', columnsOperators.lessThanEqual, $calendarEndAlias, 'fiscalDayOfMonth');
+
+  synthetiseCaseValue([$YearCondition, $MonthCondition, $FiscalDayCondition], $valueColumn);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetisePYQtdCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let YearCondition      = columnOperation($calendarAlias, 'currentYear'       , columnsOperators.equal        , $calendarEndAlias, 'previousFiscalYear');
+  let QuarterCondition   = columnOperation($calendarAlias, 'currentQuarterNum' , columnsOperators.equal        , $calendarEndAlias, 'currentQuarterNum' );
+  let FiscalDayCondition = columnOperation($calendarAlias, 'fiscalDayOfQuarter', columnsOperators.lessThanEqual, $calendarEndAlias, 'fiscalDayOfQuarter');
+
+  synthetiseCaseValue([$YearCondition, $QuarterCondition, $FiscalDayCondition], $valueColumn);
+}
+
+////////////////////////////
+// 'previous X' functions //
+////////////////////////////
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetisePriorDayCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let conditions = columnOperation($calendarAlias, 'date', columnsOperators.equal, $calendarEndAlias, 'previousBusinessDay');
+  synthetiseCaseValue($conditions, $valueColumn);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetisePWCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  // Fiscal week starts on Saturday. Therefore:
+  // - if endDate is a Sat or a Sun, 'previous week' actually means the week ending on Friday 8 or 9 days ago (i.e. fiscalWeekOffset = -2).
+  // - else                        , 'previous week' actually means the week ending on Friday 1 or 2 days ago (i.e. fiscalWeekOffset = -1).
+  let WeekendCondition = ^DynaFunction(name = 'in'    , parameters= [^TableAliasColumn(alias=$calendarEndAlias, column=^Column(name = 'shortNameWeekDay', type = ^meta::relational::metamodel::datatype::Char(size=3))  ),
+                                                                     ^LiteralList(values=[^meta::relational::metamodel::Literal(value = 'Sat'),^meta::relational::metamodel::Literal(value = 'Sun')])]);
+  let WeekOffset       = caseColumn($WeekendCondition,2,1);
+
+  let PreviousWeek = columnOperation($calendarEndAlias, 'fiscalWeekOffset', columnsOperators.minus, $WeekOffset  );
+  let conditions   = columnOperation($calendarAlias   , 'fiscalWeekOffset', columnsOperators.equal, $PreviousWeek);
+
+  synthetiseCaseValue($conditions, $valueColumn);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetisePWFMCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let PreviousWeek = columnOperation($calendarEndAlias, 'fiscalWeekOffset', columnsOperators.minus, 1            );
+  let conditions   = columnOperation($calendarAlias   , 'fiscalWeekOffset', columnsOperators.equal, $PreviousWeek);
+
+  synthetiseCaseValue($conditions, $valueColumn);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetisePriorYearCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let conditions = columnOperation($calendarAlias, 'currentYear', columnsOperators.equal, $calendarEndAlias, 'previousFiscalYear');
+
+  synthetiseCaseValue($conditions, $valueColumn);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseCYMinus2CaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let CYMinus2   = columnOperation($calendarEndAlias, 'previousFiscalYear', columnsOperators.minus, 1        );
+  let conditions = columnOperation($calendarAlias   , 'currentYear'       , columnsOperators.equal, $CYMinus2);
+
+  synthetiseCaseValue($conditions, $valueColumn);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseCYMinus3CaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let CYMinus3   = columnOperation($calendarEndAlias, 'previousFiscalYear', columnsOperators.minus, 2        );
+  let conditions = columnOperation($calendarAlias   , 'currentYear'       , columnsOperators.equal, $CYMinus3);
+
+  synthetiseCaseValue($conditions, $valueColumn);
+}
+
+/////////////////////////////////////
+// 'Previous nX to date' functions //
+/////////////////////////////////////
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseP4WtdCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  // Running date in [ endDate.prior4WeekDate ; endDate.date                 ] if the latter is     adjusted.
+  // Running date in [ endDate.prior4WeekDate ; endDate.previousBusinessDay  ] if the latter is not adjusted.
+  let Last4WeeksCondition = columnOperation($calendarAlias   , 'date', columnsOperators.greaterThanEqual, $calendarEndAlias, 'prior4WeekDate');
+  let IsEndDateAdjusted   = columnOperation($calendarEndAlias, 'date', columnsOperators.equal           , $calendarEndAlias, 'adjustedDate'  );
+
+  let EndDateColumn = caseColumn($IsEndDateAdjusted, $calendarEndAlias, 'adjustedDate', 'previousBusinessDay');
+  let EndDateCondition = columnOperation($calendarAlias, 'date', columnsOperators.lessThanEqual, $EndDateColumn);
+
+  synthetiseCaseValue([$Last4WeeksCondition, $EndDateCondition], $valueColumn);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseP12WtdCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  // Running date in [ endDate.prior12WeekDate ; endDate.date                 ] if the latter is     adjusted.
+  // Running date in [ endDate.prior12WeekDate ; endDate.previousBusinessDay  ] if the latter is not adjusted.
+  let Last12WeeksCondition = columnOperation($calendarAlias   , 'date', columnsOperators.greaterThanEqual, $calendarEndAlias, 'prior12WeekDate');
+  let IsEndDateAdjusted    = columnOperation($calendarEndAlias, 'date', columnsOperators.equal           , $calendarEndAlias, 'adjustedDate'   );
+
+  let EndDateColumn = caseColumn($IsEndDateAdjusted, $calendarEndAlias, 'adjustedDate', 'previousBusinessDay');
+  let EndDateCondition = columnOperation($calendarAlias, 'date', columnsOperators.lessThanEqual, $EndDateColumn);
+
+  synthetiseCaseValue([$Last12WeeksCondition, $EndDateCondition], $valueColumn);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseP52WtdCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  // Running date in [ endDate.prior52WeekDate ; endDate.date                 ] if the latter is     adjusted.
+  // Running date in [ endDate.prior52WeekDate ; endDate.previousBusinessDay  ] if the latter is not adjusted.
+  let Last52WeeksCondition = columnOperation($calendarAlias   , 'date', columnsOperators.greaterThanEqual, $calendarEndAlias, 'prior52WeekDate');
+  let IsEndDateAdjusted    = columnOperation($calendarEndAlias, 'date', columnsOperators.equal           , $calendarEndAlias, 'adjustedDate'   );
+
+  let EndDateColumn = caseColumn($IsEndDateAdjusted, $calendarEndAlias, 'adjustedDate', 'previousBusinessDay');
+  let EndDateCondition = columnOperation($calendarAlias, 'date', columnsOperators.lessThanEqual, $EndDateColumn);
+
+  synthetiseCaseValue([$Last52WeeksCondition, $EndDateCondition], $valueColumn);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseP12MtdCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let startDate = ^DynaFunction(name = 'adjust', parameters= [^TableAliasColumn(alias=$calendarEndAlias, column=^Column(name = 'date', type = ^meta::relational::metamodel::datatype::Date())),
+                                                             ^Literal(value=-1), ^Literal(value=DurationUnit.YEARS)]);
+
+  let startDateCondition = columnOperation($calendarAlias   , 'date', columnsOperators.greaterThan  , $startDate);
+  let endDateCondition   = columnOperation($calendarAlias   , 'date', columnsOperators.lessThanEqual, $calendarEndAlias, 'date');
+
+  synthetiseCaseValue([$startDateCondition, $endDateCondition], $valueColumn);
+}
+
+/////////////////////////////////////////////////////////
+// 'Mean by X over previous or projected nX' functions //
+/////////////////////////////////////////////////////////
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseAnnualizedCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let conditions          = columnOperation($calendarAlias   , 'currentYear', columnsOperators.equal , $calendarEndAlias, 'currentYear'             );
+  let normalisationFactor = columnOperation($calendarEndAlias, 'fiscalDay'  , columnsOperators.divide, $calendarEndAlias, 'numberOfFiscalDaysInYear');
+  synthetiseCaseValue($conditions, $valueColumn, $normalisationFactor);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseCmeCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let YearCondition  = columnOperation($calendarAlias, 'currentYear'    , columnsOperators.equal, $calendarEndAlias, 'currentYear'    );
+  let MonthCondition = columnOperation($calendarAlias, 'currentMonthNum', columnsOperators.equal, $calendarEndAlias, 'currentMonthNum');
+
+  let normalisationFactor = columnOperation($calendarEndAlias, 'fiscalDay', columnsOperators.divide, $calendarEndAlias, 'numberOfFiscalDaysInMonth');
+
+  synthetiseCaseValue([$YearCondition, $MonthCondition], $valueColumn, $normalisationFactor);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseP4WaCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  // Running date in [ endDate.prior4WeekDate ; endDate.date                 ] if the latter is     adjusted.
+  // Running date in [ endDate.prior4WeekDate ; endDate.previousBusinessDay  ] if the latter is not adjusted.
+  let Last4WeeksCondition = columnOperation($calendarAlias   , 'date', columnsOperators.greaterThanEqual, $calendarEndAlias, 'prior4WeekDate');
+  let IsEndDateAdjusted   = columnOperation($calendarEndAlias, 'date', columnsOperators.equal           , $calendarEndAlias, 'adjustedDate'  );
+
+  let EndDateColumn = caseColumn($IsEndDateAdjusted, $calendarEndAlias, 'adjustedDate', 'previousBusinessDay');
+
+  let EndDateCondition = columnOperation($calendarAlias, 'date', columnsOperators.lessThanEqual, $EndDateColumn);
+
+  synthetiseCaseValue([$Last4WeeksCondition, $EndDateCondition], $valueColumn, 4);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseP12WaCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  // Running date in [ endDate.prior12WeekDate ; endDate.date                 ] if the latter is     adjusted.
+  // Running date in [ endDate.prior12WeekDate ; endDate.previousBusinessDay  ] if the latter is not adjusted.
+  let Last12WeeksCondition = columnOperation($calendarAlias   , 'date', columnsOperators.greaterThanEqual, $calendarEndAlias, 'prior12WeekDate');
+  let IsEndDateAdjusted    = columnOperation($calendarEndAlias, 'date', columnsOperators.equal           , $calendarEndAlias, 'adjustedDate'   );
+
+  let EndDateColumn = caseColumn($IsEndDateAdjusted, $calendarEndAlias, 'adjustedDate', 'previousBusinessDay');
+  let EndDateCondition = columnOperation($calendarAlias, 'date', columnsOperators.lessThanEqual, $EndDateColumn);
+
+  synthetiseCaseValue([$Last12WeeksCondition, $EndDateCondition], $valueColumn, 12);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetiseP52WaCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  // Running date in [ endDate.prior52WeekDate ; endDate.date                 ] if the latter is     adjusted.
+  // Running date in [ endDate.prior52WeekDate ; endDate.previousBusinessDay  ] if the latter is not adjusted.
+  let Last52WeeksCondition = columnOperation($calendarAlias   , 'date', columnsOperators.greaterThanEqual, $calendarEndAlias, 'prior52WeekDate');
+  let IsEndDateAdjusted    = columnOperation($calendarEndAlias, 'date', columnsOperators.equal           , $calendarEndAlias, 'adjustedDate'   );
+
+  let EndDateColumn = caseColumn($IsEndDateAdjusted, $calendarEndAlias, 'adjustedDate', 'previousBusinessDay');
+  let EndDateCondition = columnOperation($calendarAlias, 'date', columnsOperators.lessThanEqual, $EndDateColumn);
+
+  synthetiseCaseValue([$Last52WeeksCondition, $EndDateCondition], $valueColumn, 52);
+}
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetisePmaCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  // Average across previousYear if report is ran in Jan, average across current year to date if report is ran after Jan.
+  let isJanuary     = columnOperation($calendarEndAlias, 'currentMonthNum' , columnsOperators.equal        , 1);
+  let isNotJanuary  = columnOperation($calendarEndAlias, 'currentMonthNum' , columnsOperators.greaterThan  , 1);
+  let currentYear   = columnOperation($calendarAlias   , 'currentYear'     , columnsOperators.equal        , $calendarEndAlias, 'currentYear'        );
+  let previousYear  = columnOperation($calendarAlias   , 'currentYear'     , columnsOperators.equal        , $calendarEndAlias, 'previousFiscalYear' );
+  let monthsElapsed = columnOperation($calendarAlias   , 'currentMonthNum' , columnsOperators.lessThanEqual, $calendarEndAlias, 'previousFiscalMonth');
+
+  // Calculate based on the previous year if report is ran in Jan, or [Jan, previousMonth] if report ran after Jan.
+  let previousYearAverage = columnOperation($valueColumn, columnsOperators.divide, 12);
+  let currentYearAverage  = columnOperation($valueColumn, columnsOperators.divide, $calendarEndAlias, 'previousFiscalMonth');
+
+  let result = caseColumn([$isJanuary   ,$previousYear                ], $previousYearAverage,
+               caseColumn([$isNotJanuary,$currentYear , $monthsElapsed], $currentYearAverage ,
+               ^DynaFunction(name = 'sqlNull')));
+  $result;
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetisePwaCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let isFirst5Weeks     = columnOperation($calendarEndAlias, 'currentWeek', columnsOperators.lessThanEqual, 5 );
+  let isNotFirst5Weeks  = columnOperation($calendarEndAlias, 'currentWeek', columnsOperators.greaterThan  , 5 );
+  let currentYear       = columnOperation($calendarAlias   , 'currentYear', columnsOperators.equal        , $calendarEndAlias, 'currentYear'        );
+  let previousYear      = columnOperation($calendarAlias   , 'currentYear', columnsOperators.equal        , $calendarEndAlias, 'previousFiscalYear' );
+
+  let endOfPreviousWeek = columnOperation($calendarEndAlias, 'fiscalDay', columnsOperators.minus        , $calendarEndAlias, 'fiscalDayOfWeek');
+  let weeksElapsed      = columnOperation($calendarAlias   , 'fiscalDay', columnsOperators.lessThanEqual, $endOfPreviousWeek);
+
+  // Calculate based on the previous year if report is during the first 5 weeks of the year, or current year (excluding current week) if report ran after Jan.
+  let previousYearAverage = columnOperation($valueColumn, columnsOperators.divide, $calendarEndAlias, 'numberOfFiscalDaysInYear');
+  let currentYearAverage  = columnOperation($valueColumn, columnsOperators.divide, $endOfPreviousWeek );
+
+  caseColumn([$isFirst5Weeks   ,$previousYear               ], columnOperation($previousYearAverage, columnsOperators.times, 5),
+  caseColumn([$isNotFirst5Weeks,$currentYear , $weeksElapsed], columnOperation($currentYearAverage , columnsOperators.times, 5),
+                                                               ^DynaFunction(name = 'sqlNull')));
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::calendarAggregations::synthetisePYWaCaseCondition(calendarAlias:TableAlias[1], calendarEndAlias:TableAlias[1], valueColumn: RelationalOperationElement[1]):DynaFunction[1]
+{
+  let isFirst5Weeks     = columnOperation($calendarEndAlias, 'currentWeek', columnsOperators.lessThanEqual, 5 );
+  let previousYear      = columnOperation($calendarAlias   , 'currentYear', columnsOperators.equal        , $calendarEndAlias, 'previousFiscalYear' );
+
+  // Calculate based on the previous year if report is during the first 5 weeks of the year.
+  let previousYearAverage = columnOperation($valueColumn, columnsOperators.divide, $calendarEndAlias, 'numberOfFiscalDaysInYear');
+
+  let result = caseColumn([$isFirst5Weeks, $previousYear],
+                          columnOperation($previousYearAverage, columnsOperators.times, 5),
+                          ^DynaFunction(name = 'sqlNull'));
+  $result;
+}
+// Returns the mapping between user function, synthetiseXYZCaseCondition, normalisationFactor. //
+
+function meta::relational::functions::pureToSqlQuery::calendarAggregations::getSupportedCalendarFunctions():AggHandler[*]
+{
+ [
+  ^AggHandler(aggFunction = annualized_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_  , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetiseAnnualizedCaseCondition(  $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = cme_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_         , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetiseCmeCaseCondition(         $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = cw_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_          , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetiseCWCaseCondition(          $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = cw_fm_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_       , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetiseCWFMCaseCondition(        $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = CYMinus2_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_    , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetiseCYMinus2CaseCondition(    $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = CYMinus3_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_    , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetiseCYMinus3CaseCondition(    $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = mtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_         , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetiseMtdCaseCondition(         $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = p12wa_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_       , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetiseP12WaCaseCondition(       $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = p12wtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_      , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetiseP12WtdCaseCondition(      $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = p4wa_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_        , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetiseP4WaCaseCondition(        $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = p4wtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_       , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetiseP4WtdCaseCondition(       $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = p52wtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_      , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetiseP52WtdCaseCondition(      $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = p52wa_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_       , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetiseP52WaCaseCondition(       $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = p12mtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_      , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetiseP12MtdCaseCondition(      $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = pma_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_         , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetisePmaCaseCondition(         $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = pmtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_        , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetisePMtdCaseCondition(        $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = pqtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_        , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetisePQtdCaseCondition(        $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = priorDay_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_    , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetisePriorDayCaseCondition(    $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = priorYear_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_   , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetisePriorYearCaseCondition(   $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = pw_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_          , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetisePWCaseCondition(          $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = pw_fm_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_       , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetisePWFMCaseCondition(        $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = pwa_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_         , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetisePwaCaseCondition(         $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = pwtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_        , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetisePWtdCaseCondition(        $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = pymtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_       , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetisePYMtdCaseCondition(       $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = pyqtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_       , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetisePYQtdCaseCondition(       $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = pytd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_        , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetisePYtdCaseCondition(        $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = pywa_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_        , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetisePYWaCaseCondition(        $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = pywtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_       , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetisePYWtdCaseCondition(       $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = qtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_         , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetiseQtdCaseCondition(         $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = reportEndDay_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_, handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetiseReportEndDayCaseCondition($cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = wtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_         , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetiseWtdCaseCondition(         $cal,$calEnd,$valueCol)}),
+  ^AggHandler(aggFunction = ytd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_         , handler = {cal:TableAlias[1],calEnd:TableAlias[1],valueCol:RelationalOperationElement[1]|synthetiseYtdCaseCondition(         $cal,$calEnd,$valueCol)})
+  ]
+}

@@ -1,0 +1,151 @@
+{
+  "_type": "lambda",
+  "body": [
+    {
+      "_type": "func",
+      "function": "take",
+      "parameters": [
+        {
+          "_type": "func",
+          "function": "project",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "filter",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "getAll",
+                  "parameters": [
+                    {
+                      "_type": "packageableElementPtr",
+                      "fullPath": "domain::Example"
+                    }
+                  ]
+                },
+                {
+                  "_type": "lambda",
+                  "body": [
+                    {
+                      "_type": "func",
+                      "function": "in",
+                      "parameters": [
+                        {
+                          "_type": "property",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "x"
+                            }
+                          ],
+                          "property": "caseType"
+                        },
+                        {
+                          "_type": "collection",
+                          "multiplicity": {
+                            "lowerBound": 3,
+                            "upperBound": 3
+                          },
+
+                          "values": [
+                            {
+                              "_type": "string",
+                              "multiplicity": {
+                                "lowerBound": 1,
+                                "upperBound": 1
+                              },
+
+                              "values": [
+                                "Case 3"
+                              ]
+                            },
+                            {
+                              "_type": "string",
+                              "multiplicity": {
+                                "lowerBound": 1,
+                                "upperBound": 1
+                              },
+
+                              "values": [
+                                "Case 2"
+                              ]
+                            },
+                            {
+                              "_type": "string",
+                              "multiplicity": {
+                                "lowerBound": 1,
+                                "upperBound": 1
+                              },
+                              "values": [
+                                "Case 1"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+
+                  ],
+                  "parameters": [
+                    {
+                      "_type": "var",
+                      "name": "x"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "values": [
+                {
+                  "_type": "lambda",
+                  "body": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "x"
+                        }
+                      ],
+                      "property": "cases"
+                    }
+                  ],
+                  "parameters": [
+                    {
+                      "_type": "var",
+                      "name": "x"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "values": [
+                {
+                  "_type": "string",
+                  "value": "Cases"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "integer",
+          "value": 1000
+        }
+      ]
+    }
+  ],
+  "parameters": []
+}

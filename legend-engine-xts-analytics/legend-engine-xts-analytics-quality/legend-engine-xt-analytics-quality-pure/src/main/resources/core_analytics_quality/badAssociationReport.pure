@@ -1,0 +1,54 @@
+import meta::relational::mapping::*;
+
+
+///TEMPORARY BAD ASSOCIATIONS REPORT - DELETE THIS ONCE IT IS ALL CLEANED UP
+
+function {service.url='/badAssociations', service.contentType='text/csv', service.contentDisposition='attachment;filename=badAssociations.csv'}
+meta::analytics::quality::model::domain::badAssociationsReport() : String[1]
+{
+
+   let allAssoc = Association.all();
+
+   let badAsscs = $allAssoc->map(a |
+                             let rawType1 = $a.properties->at(0).genericType.rawType;
+                             let rawType2 = $a.properties->at(1).genericType.rawType;
+                             if ($rawType1->isEmpty() || $rawType2->isEmpty(),
+                               | [],
+                               | let source1 = $rawType1->toOne()->sourceInformation().source->toOne();
+                                 let source2 = $rawType2->toOne()->sourceInformation().source->toOne();
+                                 let repo1 = $source1->split('/')->first()->toOne();
+                                 let repo2 = $source2->split('/')->first()->toOne();
+
+                                 if($repo1 == $repo2 || ($repo1->startsWith('model') && $repo2->startsWith('model')), | [], | ^meta::analytics::quality::model::domain::badAssociations::BadAssociation(association=$a,
+                                                                                  nonModelRepo=if($repo1 == 'model', | $repo2, |$repo1));
+                              );
+                              );
+                        );
+
+   let vals = $badAsscs->map(a | $a.association->elementToPath())->sort();
+
+   $vals->makeString('\n');
+}
+
+
+Class meta::analytics::quality::model::domain::badAssociations::BadAssociation
+{
+   association:Association[1];
+   //name:String[1];
+   nonModelRepo:String[1];
+
+   isUsedInMapping()
+   {
+      !$this.modelProperty().referenceUsages.owner->evaluateAndDeactivate()->filter(e | $e->instanceOf(RelationalPropertyMapping))->isEmpty()
+   }:Boolean[1];
+
+   modelProperty()
+   {
+      let rawType1 = $this.association.properties->at(0).genericType.rawType->toOne();
+      let rawType2 = $this.association.properties->at(1).genericType.rawType->toOne();
+
+      if ($rawType1->sourceInformation().source->startsWith('/model'), | $this.association.properties->at(0),
+                                                                       | $this.association.properties->at(1));
+
+   }:Property<Nil,Any|*>[1];
+}

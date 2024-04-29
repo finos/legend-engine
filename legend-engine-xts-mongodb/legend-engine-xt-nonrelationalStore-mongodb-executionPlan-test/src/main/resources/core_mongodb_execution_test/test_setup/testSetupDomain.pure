@@ -1,0 +1,50 @@
+import meta::external::store::mongodb::executionTest::domain::*;
+
+Class meta::external::store::mongodb::executionTest::domain::Person
+{
+  firstName:         String[0..1];
+  lastName:          String[1];
+  age:               Integer[0..1];
+  birthDate:         DateTime[1];
+  otherPhoneNumbers: String[0..*];
+  legallyCompetent:  Boolean[1];
+  address:           Address[1];
+  firm:              Firm[0..1];
+}
+
+Class meta::external::store::mongodb::executionTest::domain::Firm
+{
+  legalName:         String[0..1];
+  numberOfEmployees: Integer[1];
+  dateFounded:       DateTime[1];
+  address:           Address[0..1];
+  public:            Boolean[0..1];
+}
+
+Class meta::external::store::mongodb::executionTest::domain::Address
+{
+  city:             String[1];
+  buildingNumber:   Integer[0..1];
+  isActive:         Boolean[0..1];
+  lastUpdated:      DateTime[1];
+}
+
+Class meta::external::store::mongodb::executionTest::domain::Department
+{
+  name:              String[1];
+  numberOfEmployees: Integer[0..1];
+  dateCreated:       DateTime[1];
+  isActive:          Boolean[1];
+}
+
+Association meta::external::store::mongodb::executionTest::domain::Person_Department
+{
+  person:     meta::external::store::mongodb::executionTest::domain::Person[0..1];
+  department: meta::external::store::mongodb::executionTest::domain::Department[0..1];
+}
+
+Association meta::external::store::mongodb::executionTest::domain::Firm_Department
+{
+  firm:         meta::external::store::mongodb::executionTest::domain::Firm[0..1];
+  department:   meta::external::store::mongodb::executionTest::domain::Department[*];
+}

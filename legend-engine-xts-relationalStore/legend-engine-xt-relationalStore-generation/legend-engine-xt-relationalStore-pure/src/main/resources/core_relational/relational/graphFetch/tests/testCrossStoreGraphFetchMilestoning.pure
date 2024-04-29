@@ -1,0 +1,261 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::graphFetch::tests::XStore::milestoning::*;
+
+Class meta::pure::graphFetch::tests::XStore::milestoning::Trade
+{
+  customerEntityId: Integer[0..1];
+  tradeID: String[0..1];
+}
+
+Class meta::pure::graphFetch::tests::XStore::milestoning::SourceTrade
+{
+  s_customerEntityId: Integer[0..1];
+  s_tradeID: String[0..1];
+
+}
+
+Class <<meta::pure::profiles::temporal.bitemporal>> meta::pure::graphFetch::tests::XStore::milestoning::LegalEntity
+{
+  id: Integer[1];
+  address: Address[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> meta::pure::graphFetch::tests::XStore::milestoning::Address
+{
+  country: String[1];
+}
+
+Association meta::pure::graphFetch::tests::XStore::milestoning::Trade_CustomerLegalEntity
+{
+  trade: Trade[*];
+  customer: LegalEntity[0..1];
+}
+
+
+###Relational
+Database meta::pure::graphFetch::tests::XStore::milestoning::EntityStore
+(
+  Schema Entity
+  (
+    Table Entity
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z, INFINITY_DATE=%9999-12-31T00:00:00.0000),
+        business(BUS_FROM=from_z, BUS_THRU=thru_z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+      )
+
+      entityId INTEGER PRIMARY KEY,
+      country VARCHAR(50),
+      in_z DATE,
+      out_z DATE,
+      from_z DATE,
+      thru_z DATE
+    )
+  )
+
+  Join Entity_Self(Entity.Entity.entityId = {target}.entityId)
+)
+
+###Relational
+Database meta::pure::graphFetch::tests::XStore::milestoning::TradeStore
+(
+  Schema Trade
+  (
+    Table Trade
+    (
+      tradeID  VARCHAR(50) PRIMARY KEY,
+      customerEntityId INTEGER
+    )
+  )
+
+)
+
+
+###Mapping
+import meta::pure::graphFetch::tests::XStore::milestoning::*;
+
+Mapping meta::pure::graphFetch::tests::XStore::milestoning::LegalEntityMapping
+(
+  *LegalEntity[legal_entity]: Relational
+  {
+    ~primaryKey
+    (
+      [EntityStore]Entity.Entity.entityId
+    )
+    ~mainTable [EntityStore]Entity.Entity
+    id: [EntityStore]Entity.Entity.entityId,
+    address
+    (
+      country: [EntityStore]Entity.Entity.country
+    )
+  }
+)
+
+Mapping meta::pure::graphFetch::tests::XStore::milestoning::TradeLinkageMapping
+(
+  include LegalEntityMapping
+
+  *Trade[trade_self]: Pure
+  {
+    ~src Trade
+    customerEntityId: $src.customerEntityId
+  }
+
+  Trade_CustomerLegalEntity: XStore
+  {
+    customer[trade_self, legal_entity]: $this.customerEntityId == $that.id
+  }
+)
+
+
+Mapping meta::pure::graphFetch::tests::XStore::milestoning::TradeLinkageMappingForModelChain
+(
+  include LegalEntityMapping
+
+  *Trade[trade_self]: Pure
+  {
+    ~src SourceTrade
+    customerEntityId: $src.s_customerEntityId,
+    tradeID: $src.s_tradeID
+  }
+
+    *SourceTrade: Relational
+  {
+    ~primaryKey
+    (
+      [TradeStore]Trade.Trade.tradeID
+    )
+    ~mainTable [TradeStore]Trade.Trade
+    s_customerEntityId: [TradeStore]Trade.Trade.customerEntityId,
+    s_tradeID: [TradeStore]Trade.Trade.tradeID
+
+  }
+  Trade_CustomerLegalEntity: XStore
+  {
+    customer[trade_self, legal_entity]: $this.customerEntityId == $that.id
+  }
+)
+
+###Pure
+import meta::pure::executionPlan::toString::*;
+import meta::pure::executionPlan::*;
+import meta::pure::graphFetch::tests::XStore::milestoning::*;
+import meta::pure::graphFetch::execution::*;
+import meta::core::runtime::*;
+function meta::pure::graphFetch::tests::XStore::milestoning::runtime():Runtime[1]
+{
+  let csvData = 'Create Schema if not exists Entity;\n' +
+                'Drop Table if exists Entity.Entity;\n' +
+                'Create Table Entity.Entity(entityId INTEGER, country VARCHAR(50), in_z TIMESTAMP, out_z TIMESTAMP, from_z TIMESTAMP, thru_z TIMESTAMP);\n' +
+                'INSERT INTO Entity.Entity(entityId,country,in_z, out_z,from_z,thru_z) VALUES (12,\'US\',\'2023-10-12 00:00:00\', \'9999-12-31 00:00:00\', \'2023-10-12 00:00:00\',\'9999-12-31 00:00:00\');\n' +
+                'INSERT INTO Entity.Entity(entityId,country,in_z, out_z,from_z,thru_z) VALUES (34,\'US\',\'2023-10-12 00:00:00\', \'9999-12-31 00:00:00\', \'2023-10-18 00:00:00\',\'9999-12-31 00:00:00\');\n' +
+                'INSERT INTO Entity.Entity(entityId,country,in_z, out_z,from_z,thru_z) VALUES (34,\'US\',\'2023-10-18 00:00:00\', \'9999-12-31 00:00:00\', \'2023-10-12 00:00:00\',\'9999-12-31 00:00:00\');\n' +
+                'INSERT INTO Entity.Entity(entityId,country,in_z, out_z,from_z,thru_z) VALUES (56,\'IE\',\'2023-10-12 00:00:00\', \'9999-12-31 00:00:00\', \'2023-10-12 00:00:00\',\'9999-12-31 00:00:00\');';
+  let runtime = ^Runtime( connectionStores = [
+                                        ^ConnectionStore(
+                                          element = ^meta::external::store::model::ModelStore(),
+                                          connection =
+                                          ^meta::external::store::model::JsonModelConnection
+                                            (
+                                              class = Trade,
+                                              url = 'data:application/json,\n{"customerEntityId": 12}\n{"customerEntityId": 34}\n{"customerEntityId": 56}\n'
+                                            )),
+                                        ^ConnectionStore(
+                                          element = EntityStore,
+                                          connection =
+                                          ^meta::external::store::relational::runtime::RelationalDatabaseConnection
+                                            (
+                                              type = meta::relational::runtime::DatabaseType.H2,
+                                              datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupSqls=[$csvData]),
+                                              authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
+                                            ))]);
+}
+
+
+function meta::pure::graphFetch::tests::XStore::milestoning::runtimeM2M2R():Runtime[1]
+{
+  let csvData = 'Create Schema if not exists Entity;\n' +
+                'Drop Table if exists Entity.Entity;\n' +
+                'Create Table Entity.Entity(entityId INTEGER, country VARCHAR(50), in_z TIMESTAMP, out_z TIMESTAMP, from_z TIMESTAMP, thru_z TIMESTAMP);\n' +
+                'INSERT INTO Entity.Entity(entityId,country,in_z, out_z,from_z,thru_z) VALUES (12,\'US\',\'2023-10-12 00:00:00\', \'9999-12-31 00:00:00\', \'2023-10-12 00:00:00\',\'9999-12-31 00:00:00\');\n' +
+                'INSERT INTO Entity.Entity(entityId,country,in_z, out_z,from_z,thru_z) VALUES (34,\'US\',\'2023-10-12 00:00:00\', \'9999-12-31 00:00:00\', \'2023-10-18 00:00:00\',\'9999-12-31 00:00:00\');\n' +
+                'INSERT INTO Entity.Entity(entityId,country,in_z, out_z,from_z,thru_z) VALUES (34,\'US\',\'2023-10-18 00:00:00\', \'9999-12-31 00:00:00\', \'2023-10-12 00:00:00\',\'9999-12-31 00:00:00\');\n' +
+                'INSERT INTO Entity.Entity(entityId,country,in_z, out_z,from_z,thru_z) VALUES (56,\'IE\',\'2023-10-12 00:00:00\', \'9999-12-31 00:00:00\', \'2023-10-12 00:00:00\',\'9999-12-31 00:00:00\');\n' +
+                'Create Schema if not exists Trade;\n' +
+                'Drop Table if exists Trade.Trade;\n' +
+                'Create Table Trade.Trade(tradeID VARCHAR(50), customerEntityId INTEGER);\n' +
+                'INSERT INTO Trade.Trade(tradeID,customerEntityId) VALUES (\'ABC\',12);\n'
+
+                ;
+  let runtime = ^Runtime( connectionStores = [
+                                     ^ConnectionStore(
+                                           element=^meta::external::store::model::ModelStore(),
+                                           connection=
+                                           ^meta::external::store::model::ModelChainConnection(mappings = TradeLinkageMappingForModelChain)),
+                                     ^ConnectionStore(
+                                          element = EntityStore,
+                                          connection =
+                                          ^meta::external::store::relational::runtime::RelationalDatabaseConnection
+                                            (
+                                              type = meta::relational::runtime::DatabaseType.H2,
+                                              datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupSqls=[$csvData]),
+                                              authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
+                                            )),
+                                    ^ConnectionStore(
+                                            element = TradeStore,
+                                            connection =
+                                           ^meta::external::store::relational::runtime::RelationalDatabaseConnection
+                                            (
+                                              type = meta::relational::runtime::DatabaseType.H2,
+                                              datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupSqls=[$csvData]),
+                                              authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
+                                            ))
+                                            ]
+                                            );
+}
+
+function <<meta::pure::profiles::test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::XStore::milestoning::CrossStoreGraphFetchWithRelationalMilestoned():Boolean[1]
+{
+   let query   = {processingDate: StrictDate[1], businessDate: StrictDate[1]|Trade.all()->graphFetch(#{Trade{customer($processingDate, $businessDate){id}}}#)->serialize(#{Trade{customer($processingDate, $businessDate){id}}}#)->meta::pure::mapping::from(TradeLinkageMapping, runtime())};
+   let result = meta::legend::executeLegendQuery($query,  [pair('processingDate', '2023-10-15'), pair('businessDate', '2023-10-15')], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+   assertJsonStringsEqual('{"builder":{"_type":"json"},"values":[{"customer($processingDate, $businessDate)":{"id":12}},{"customer($processingDate, $businessDate)":null},{"customer($processingDate, $businessDate)":{"id":56}}]}', $result);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::XStore::milestoning::CrossStoreGraphFetchWithRelationalMilestonedFlowDown():Boolean[1]
+{
+   let query   = {processingDate: StrictDate[1], businessDate: StrictDate[1]|Trade.all()->graphFetch(#{Trade{customer($processingDate, $businessDate){id, address($businessDate){country}}}}#)->serialize(#{Trade{customer($processingDate, $businessDate){id, address($businessDate){country}}}}#)->meta::pure::mapping::from(TradeLinkageMapping, runtime())};
+   let result = meta::legend::executeLegendQuery($query,  [pair('processingDate', '2023-10-15'), pair('businessDate', '2023-10-15')], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+   assertJsonStringsEqual('{"builder":{"_type":"json"},"values":[{"customer($processingDate, $businessDate)":{"id":12,"address($businessDate)":{"country":"US"}}},{"customer($processingDate, $businessDate)":null},{"customer($processingDate, $businessDate)":{"id":56,"address($businessDate)":{"country":"IE"}}}]}', $result);
+}
+
+
+
+function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::XStore::milestoning::CrossStoreGraphFetchWithRelationalMilestonedAllversions():Boolean[1]
+{
+  let query   = {processingDate: StrictDate[1], businessDate: StrictDate[1]|Trade.all()->graphFetch(#{Trade{ customerAllVersions{id},tradeID}}#)->serialize(#{Trade{customerAllVersions{id},tradeID}}#)->meta::pure::mapping::from(TradeLinkageMappingForModelChain, runtimeM2M2R())};
+  let result = meta::legend::executeLegendQuery($query,  [pair('processingDate', '2023-10-15'), pair('businessDate', '2023-10-15')], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+  assertJsonStringsEqual('{"builder":{"_type":"json"},"values":{"customerAllVersions":[{"id":12}],"tradeID":"ABC"}}', $result);
+
+}
+
+
+function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::XStore::milestoning::CrossStoreGraphFetchWithRelationalMilestonedFlowDownM2M():Boolean[1]
+{
+   let query   = {processingDate: StrictDate[1], businessDate: StrictDate[1]|Trade.all()->graphFetch(#{Trade{customer($processingDate, $businessDate){id, address($businessDate){country}}}}#)->serialize(#{Trade{customer($processingDate, $businessDate){id, address($businessDate){country}}}}#)->meta::pure::mapping::from(TradeLinkageMappingForModelChain, runtimeM2M2R())};
+   let result = meta::legend::executeLegendQuery($query,  [pair('processingDate', '2023-10-15'), pair('businessDate', '2023-10-15')], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+   assertJsonStringsEqual('{"builder":{"_type":"json"},"values":{"customer($processingDate, $businessDate)":{"id":12,"address($businessDate)":{"country":"US"}}}}', $result);
+}

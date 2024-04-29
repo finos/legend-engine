@@ -1,0 +1,254 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::alloy::connections::alloy::authentication::*;
+import meta::pure::alloy::connections::alloy::specification::*;
+import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
+import meta::pure::mapping::modelToModel::test::createInstances::*;
+import meta::relational::postProcessor::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
+import meta::pure::mapping::modelToModel::test::shared::*;
+import meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::mapping::*;
+import meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::*;
+import meta::pure::mapping::modelToModel::test::enumeration::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::executionPlan::tests::snowflake::datetime::*;
+import meta::relational::tests::tds::tabletds::*;
+import meta::pure::mapping::*;
+import meta::relational::mapping::*;
+import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::tests::mapping::inheritance::relational::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::tests::tds::tdsJoin::*;
+import meta::pure::executionPlan::toString::*;
+import meta::pure::executionPlan::tests::*;
+import meta::relational::tests::groupBy::datePeriods::mapping::*;
+import meta::relational::tests::groupBy::datePeriods::*;
+import meta::relational::tests::groupBy::datePeriods::domain::*;
+import meta::pure::executionPlan::*;
+import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::graphFetch::executionPlan::*;
+import meta::pure::functions::collection::*;
+import meta::relational::graphFetch::executionPlan::*;
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testFilterEqualsWithOptionalParameter_Snowflake():Boolean[1]
+{
+   let generatedPlan = executionPlan({optionalID: String[0..1], optionalActive: Boolean[0..1]|Interaction.all()->filter(i|$i.id==$optionalID && $i.active==$optionalActive)->project(col(i|$i.time, 'Time'))}, simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element = relationalDB,connection=meta::pure::executionPlan::tests::snowflake::relationalConnectionForSnowflake(true))), meta::relational::extension::relationalExtensions());
+   let expectedPlan = 'RelationalBlockExecutionNode(type=TDS[(Time,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[optionalID:String[0..1],optionalActive:Boolean[0..1]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(Time,Integer,INT,"")]resultColumns=[("Time",INT)]sql=select"root".timeas"Time"frominteractionTableas"root"where((${optionalVarPlaceHolderOperationSelector(optionalID![],\'"root".ID=${varPlaceHolderToString(optionalID![]"\\\'""\\\'"{"\\\'":"\\\'\\\'"}"null")}\',\'"root".IDisnull\')})and(${optionalVarPlaceHolderOperationSelector(optionalActive![],\'casewhen"root".active=\\\'Y\\\'then\\\'true\\\'else\\\'false\\\'end=${varPlaceHolderToString(optionalActive![]""""{}"null")}\',\'casewhen"root".active=\\\'Y\\\'then\\\'true\\\'else\\\'false\\\'endisnull\')}))connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))';
+   assertEquals($expectedPlan, $generatedPlan->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
+   assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
+}
+
+function <<access.private>> meta::pure::executionPlan::tests::snowflake::relationalConnectionForSnowflake(queryTags: Boolean[1]): RelationalDatabaseConnection[1]
+{
+  ^RelationalDatabaseConnection(
+    datasourceSpecification = ^SnowflakeDatasourceSpecification(region='', warehouseName= '', databaseName = '', accountName = '', enableQueryTags = $queryTags),
+    authenticationStrategy = ^AuthenticationStrategy(),
+    type=DatabaseType.Snowflake
+  )
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testExecutionPlanGenerationForNotInWithCollectionInputForSnowflake() : Boolean[1]
+{
+   let res = executionPlan(
+      {name:String[*] |_Person.all()->filter(x | !$x.fullName->in($name))->project([x | $x.fullName], ['fullName']);},
+      meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connectionStores=^ConnectionStore(element = relationalDB,connection=meta::pure::executionPlan::tests::snowflake::relationalConnectionForSnowflake(true))), meta::relational::extension::relationalExtensions()
+   );
+   let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||instanceOf(name,"StreamingResult")||((collectionSize(name![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_nameas"legend_temp_db.legend_temp_schema.temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'"{"\'":"\'\'"}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where("root".fullnamenotin(${inFilterClause_name})OR"root".fullnameisnull)connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))';
+   assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
+   assertEquals($res.rootExecutionNode->cast(@RelationalBlockExecutionNode).finallyExecutionNodes->cast(@SQLExecutionNode).sqlQuery, 'ALTER SESSION UNSET QUERY_TAG;');
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testExecutionPlanGenerationForMultipleInWithTwoCollectionInputsForSnowflake() : Boolean[1]
+{
+   let res = executionPlan({ids:Integer[*], dates:Date[*]|Trade.all()->filter(t|$t.settlementDateTime->in($dates) && $t.id->in($ids))->project([x | $x.id], ['TradeId'])},
+                           simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element = relationalDB,connection=meta::pure::executionPlan::tests::snowflake::relationalConnectionForSnowflake(true))), meta::relational::extension::relationalExtensions());
+   let expected = ['RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||instanceOf(dates,"StreamingResult")||((collectionSize(dates![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[dates]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datesas"legend_temp_db.legend_temp_schema.temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates![]",""\'""\'::timestamp"{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||instanceOf(ids,"StreamingResult")||((collectionSize(ids![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[ids]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idsas"legend_temp_db.legend_temp_schema.temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids![]","""""{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))',
+                   'RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||instanceOf(ids,"StreamingResult")||((collectionSize(ids![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[ids]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idsas"legend_temp_db.legend_temp_schema.temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids![]","""""{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||instanceOf(dates,"StreamingResult")||((collectionSize(dates![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[dates]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datesas"legend_temp_db.legend_temp_schema.temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates![]",""\'""\'::timestamp"{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))'];
+   assert($expected->contains($res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions())));
+   assertEquals($res.rootExecutionNode->cast(@RelationalBlockExecutionNode).finallyExecutionNodes->cast(@SQLExecutionNode).sqlQuery, 'ALTER SESSION UNSET QUERY_TAG;');
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testExecutionPlanGenerationForInWithRelationalResultInputForSnowflake(): Boolean[1]
+{
+   let res = executionPlan(
+      {|let name = _Person.all().fullName->take(10); _Person.all()->filter(x | $x.fullName->in($name))->project([x | $x.fullName], ['fullName']);},
+      meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connectionStores=^ConnectionStore(element = relationalDB,connection=meta::pure::executionPlan::tests::snowflake::relationalConnectionForSnowflake(true))), meta::relational::extension::relationalExtensions()
+   );
+   let expected = 'Sequence(type=TDS[(fullName,String,VARCHAR(1000),"")](Allocation(type=StringresultSizeRange=*name=namevalue=(RelationalBlockExecutionNode(type=StringresultSizeRange=*(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=StringresultSizeRange=*resultColumns=[("root".fullname,VARCHAR(1000))]sql=select"root".fullnamefromPersonas"root"limit10connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))))RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||instanceOf(name,"StreamingResult")||((collectionSize(name![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_nameas"legend_temp_db.legend_temp_schema.temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'"{"\'":"\'\'"}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(${inFilterClause_name})connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))))';
+   assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testExecutionPlanGenerationWithQueryTagsForSnowflake() : Boolean[1]
+{
+   let res = executionPlan({ids:Integer[*], dates:Date[*]|Trade.all()->filter(t|$t.settlementDateTime->in($dates) && $t.id->in($ids))->project([x | $x.id], ['TradeId'])},
+                           simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element = relationalDB,connection=meta::pure::executionPlan::tests::snowflake::relationalConnectionForSnowflake(true))), meta::relational::extension::relationalExtensions());
+   let expected = ['RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||instanceOf(dates,"StreamingResult")||((collectionSize(dates![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[dates]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datesas"legend_temp_db.legend_temp_schema.temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates![]",""\'""\'::timestamp"{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||instanceOf(ids,"StreamingResult")||((collectionSize(ids![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[ids]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idsas"legend_temp_db.legend_temp_schema.temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids![]","""""{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))',
+                   'RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||instanceOf(ids,"StreamingResult")||((collectionSize(ids![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[ids]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idsas"legend_temp_db.legend_temp_schema.temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids![]","""""{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||instanceOf(dates,"StreamingResult")||((collectionSize(dates![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[dates]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datesas"legend_temp_db.legend_temp_schema.temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates![]",""\'""\'::timestamp"{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))'];
+   assert($expected->contains($res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions())));
+   assertEquals($res.rootExecutionNode->cast(@RelationalBlockExecutionNode).finallyExecutionNodes->cast(@SQLExecutionNode).sqlQuery, 'ALTER SESSION UNSET QUERY_TAG;');
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testExecutionPlanGenerationWithoutQueryTagsForSnowflake() : Boolean[1]
+{
+   let res = executionPlan({ids:Integer[*], dates:Date[*]|Trade.all()->filter(t|$t.settlementDateTime->in($dates) && $t.id->in($ids))->project([x | $x.id], ['TradeId'])},
+                           simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element = relationalDB,connection=meta::pure::executionPlan::tests::snowflake::relationalConnectionForSnowflake(false))), meta::relational::extension::relationalExtensions());
+   let expected = ['RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||instanceOf(dates,"StreamingResult")||((collectionSize(dates![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[dates]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datesas"legend_temp_db.legend_temp_schema.temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates![]",""\'""\'::timestamp"{}"null")}])))))Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||instanceOf(ids,"StreamingResult")||((collectionSize(ids![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[ids]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idsas"legend_temp_db.legend_temp_schema.temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids![]","""""{}"null")}])))))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=RelationalDatabaseConnection(type="Snowflake"))))',
+                   'RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||instanceOf(ids,"StreamingResult")||((collectionSize(ids![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[ids]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idsas"legend_temp_db.legend_temp_schema.temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids![]","""""{}"null")}])))))Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||instanceOf(dates,"StreamingResult")||((collectionSize(dates![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[dates]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datesas"legend_temp_db.legend_temp_schema.temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates![]",""\'""\'::timestamp"{}"null")}])))))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=RelationalDatabaseConnection(type="Snowflake"))))'];
+   assert($expected->contains($res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions())));
+   assertEquals($res.rootExecutionNode->cast(@RelationalBlockExecutionNode).finallyExecutionNodes->cast(@SQLExecutionNode).sqlQuery, []);
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testRelationalDatabaseConnWithQueryTag():Boolean[1]
+{
+  let conn = ^RelationalDatabaseConnection(
+                  datasourceSpecification = ^SnowflakeDatasourceSpecification(region = 'us-east-1', warehouseName='ALLOY_DEV_WH',databaseName='ALLOY_INTEGRATION_TEST_DB1',accountName = 'sfceawseast1d01'),
+                  authenticationStrategy = ^SnowflakePublicAuthenticationStrategy(privateKeyVaultReference = 'privatekey', passPhraseVaultReference= 'passphrase', publicUserName = 'public'),
+                  type=DatabaseType.Snowflake
+              );
+  let generatedPlan = executionPlan({|Product.all()->project(p|$p.name, 'Name')}, simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element = 'database',connection=$conn)), meta::relational::extension::relationalExtensions());
+  let expectedPlan = 'RelationalBlockExecutionNode(type=TDS[(Name,String,VARCHAR(200),"")](SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))';
+  assertEquals($expectedPlan, $generatedPlan->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testRelationalDatabaseConnDisableQueryTag():Boolean[1]
+{
+  let conn = ^RelationalDatabaseConnection(
+                  datasourceSpecification = ^SnowflakeDatasourceSpecification(region = 'us-east-1', warehouseName='DEMO_WH',databaseName='SNOWFLAKE_SAMPLE_DATA',accountName = 'sfceawseast1d01', enableQueryTags = false),
+                  authenticationStrategy = ^SnowflakePublicAuthenticationStrategy(privateKeyVaultReference = 'privatekey', passPhraseVaultReference= 'passphrase', publicUserName = 'public'),
+                  type=DatabaseType.Snowflake
+              );
+  let generatedPlan = executionPlan({|Product.all()->project(p|$p.name, 'Name')}, simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element = 'database',connection=$conn)), meta::relational::extension::relationalExtensions());
+  let expectedPlan = 'Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"connection=RelationalDatabaseConnection(type="Snowflake"))';
+  assertEquals($expectedPlan, $generatedPlan->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testInExecutionWithLiteralListSnowflake():Boolean[1]
+{
+  let intList = range(1,17000);
+  let generatedPlan = executionPlan({|Person.all()->filter(p|$p.age->in($intList))->project([x |$x.name], ['fullName'])}, simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element = meta::relational::tests::db,connection=meta::pure::executionPlan::tests::snowflake::relationalConnectionForSnowflake(true))), meta::relational::extension::relationalExtensions());
+  let execNodesInRelBlockNode = $generatedPlan.rootExecutionNode.executionNodes;
+
+  let createAndPopulateTempTableNode = $execNodesInRelBlockNode->filter(e|$e->instanceOf(CreateAndPopulateTempTableExecutionNode));
+  
+  let tempTableName = $createAndPopulateTempTableNode->at(0)->cast(@CreateAndPopulateTempTableExecutionNode).tempTableName;
+  assertEquals('LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_8', $tempTableName);
+  let inputVarNames = $createAndPopulateTempTableNode->at(0)->cast(@CreateAndPopulateTempTableExecutionNode).inputVarNames;
+  assertEquals('tempVarForIn_8', $inputVarNames->at(0));
+
+  let allocationNode = $execNodesInRelBlockNode->filter(e|$e->instanceOf(AllocationExecutionNode));
+  let varName = $allocationNode->at(0)->cast(@AllocationExecutionNode).varName;
+  assertEquals('tempVarForIn_8', $varName);
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testGraphFetchSnowflakeTempTableDbAndSchemaSpecified():Boolean[1]
+{
+  let tree = #{
+      Person {
+         firstName,
+         lastName,
+         firm {
+            legalName
+         }
+      }
+   }#;
+  let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+
+  let conn1 = ^RelationalDatabaseConnection(
+                  datasourceSpecification = ^SnowflakeDatasourceSpecification(region = 'us-region-1', warehouseName='warehouseName',databaseName='databaseName',accountName = 'accountName'),
+                  authenticationStrategy = ^SnowflakePublicAuthenticationStrategy(privateKeyVaultReference = 'privatekey', passPhraseVaultReference= 'passphrase', publicUserName = 'public'),
+                  type=DatabaseType.Snowflake
+              );
+  let generatedPlan1 = executionPlan($query, simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element = 'database',connection=$conn1)), meta::relational::extension::relationalExtensions());
+  let rootNode1 = $generatedPlan1.rootExecutionNode.executionNodes->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode).localGraphFetchExecutionNode->cast(@RelationalRootQueryTempTableGraphFetchExecutionNode);
+  let processedTempTableName1 = $rootNode1.processedTempTableName;
+  assertEquals('LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.temp_table_node_0', $processedTempTableName1);
+
+  let conn2 = ^RelationalDatabaseConnection(
+                  datasourceSpecification = ^SnowflakeDatasourceSpecification(region = 'us-region-1', warehouseName='warehouseName',databaseName='databaseName',accountName = 'accountName',tempTableDb = 'temp_db1',tempTableSchema = 'temp_schema1'),
+                  authenticationStrategy = ^SnowflakePublicAuthenticationStrategy(privateKeyVaultReference = 'privatekey', passPhraseVaultReference= 'passphrase', publicUserName = 'public'),
+                  type=DatabaseType.Snowflake
+              );
+  let generatedPlan2 = executionPlan($query, simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element = 'database',connection=$conn2)), meta::relational::extension::relationalExtensions());
+  let rootNode2 = $generatedPlan2.rootExecutionNode.executionNodes->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode).localGraphFetchExecutionNode->cast(@RelationalRootQueryTempTableGraphFetchExecutionNode);
+  let processedTempTableName2 = $rootNode2.processedTempTableName;
+  assertEquals('temp_db1.temp_schema1.temp_table_node_0', $processedTempTableName2);
+
+  
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testGraphFetchSnowflakeTempTableDbAndSchemaWithQuoteIdentifiers():Boolean[1]
+{
+  let tree = #{
+      Person {
+         firstName,
+         lastName,
+         firm {
+            legalName
+         }
+      }
+   }#;
+  let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+  let conn = ^RelationalDatabaseConnection(
+                  datasourceSpecification = ^SnowflakeDatasourceSpecification(region = 'us-region-1', warehouseName='warehouseName',databaseName='databaseName',accountName = 'accountName',tempTableDb = 'temp_db1',tempTableSchema = 'temp_schema1'),
+                  authenticationStrategy = ^SnowflakePublicAuthenticationStrategy(privateKeyVaultReference = 'privatekey', passPhraseVaultReference= 'passphrase', publicUserName = 'public'),
+                  type=DatabaseType.Snowflake, quoteIdentifiers = true
+              );
+  let generatedPlan = executionPlan($query, simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element = 'database',connection=$conn)), meta::relational::extension::relationalExtensions());
+  let rootNode = $generatedPlan.rootExecutionNode.executionNodes->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode).localGraphFetchExecutionNode->cast(@RelationalRootQueryTempTableGraphFetchExecutionNode);
+  let processedTempTableName = $rootNode.processedTempTableName;
+  assertEquals('"temp_db1"."temp_schema1".temp_table_node_0', $processedTempTableName);
+}
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testCrossStoreGraphFetchSnowflakeTempTableDbAndSchemaSpecified():Boolean[1]
+{
+   let tree = #{
+      meta::relational::graphFetch::tests::crossDatabase::Firm {
+         legalName,
+         ceo {
+            name
+         },
+         employees {
+            name
+         }
+      }
+   }#;
+
+   let query = {|meta::relational::graphFetch::tests::crossDatabase::Firm.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::graphFetch::tests::crossDatabase::CrossMappingWithRelOpWithJoinKeys;
+   let conn1 = ^RelationalDatabaseConnection(
+                  datasourceSpecification = ^SnowflakeDatasourceSpecification(region = 'us-region-1', warehouseName='warehouseName',databaseName='databaseName',accountName = 'accountName', tempTableDb = 'temp_db1', tempTableSchema = 'temp_schema1'),
+                  authenticationStrategy = ^SnowflakePublicAuthenticationStrategy(privateKeyVaultReference = 'privatekey', passPhraseVaultReference= 'passphrase', publicUserName = 'public'),
+                  type=DatabaseType.Snowflake
+              );
+   let conn2 = ^RelationalDatabaseConnection(
+                  datasourceSpecification = ^SnowflakeDatasourceSpecification(region = 'us-region-1', warehouseName='warehouseName',databaseName='databaseName',accountName = 'accountName', tempTableDb = 'temp_db2', tempTableSchema = 'temp_schema2'),
+                  authenticationStrategy = ^SnowflakePublicAuthenticationStrategy(privateKeyVaultReference = 'privatekey', passPhraseVaultReference= 'passphrase', publicUserName = 'public'),
+                  type=DatabaseType.Snowflake
+              );              
+  let generatedPlan = executionPlan($query, $mapping, ^Runtime(connectionStores=[^ConnectionStore(element = meta::relational::graphFetch::tests::crossDatabase::FirmDB,connection=$conn1), ^ConnectionStore(element = meta::relational::graphFetch::tests::crossDatabase::EmployeeDB,connection=$conn2)]), meta::relational::extension::relationalExtensions());
+  let ceoChild = $generatedPlan.rootExecutionNode.executionNodes->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode).children->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode).localGraphFetchExecutionNode->cast(@RelationalCrossRootQueryTempTableGraphFetchExecutionNode);
+  let employeeChild = $generatedPlan.rootExecutionNode.executionNodes->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode).children->at(1)->cast(@StoreMappingGlobalGraphFetchExecutionNode).localGraphFetchExecutionNode->cast(@RelationalCrossRootQueryTempTableGraphFetchExecutionNode);
+
+  assertEquals($ceoChild.processedParentTempTableName, $employeeChild.processedParentTempTableName);
+  assertEquals('temp_db2.temp_schema2.cross_temp_table_node_0', $employeeChild.processedParentTempTableName);
+  assertEquals('temp_db2.temp_schema2.temp_table_node_2', $ceoChild.processedTempTableName);
+  assertEquals('temp_db2.temp_schema2.temp_table_node_5', $employeeChild.processedTempTableName);
+}  

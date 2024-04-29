@@ -1,0 +1,19 @@
+{
+  "port": 9998,
+  "authenticationMethod": "GSS",
+  "identityType": "KERBEROS",
+  "handler": {
+    "protocol": "http",
+    "host": "localhost",
+    "port": "123",
+    "projectId": "project",
+    "sessionCookie": "cookie",
+    "type": "LEGEND"
+  },
+  "gss": {
+    "kerberosConfigFile": "/etc/krb5.conf",
+    "kerberosUserPrincipal": "user@DOMAIN.COM",
+    "kerberosKeytabFile": "/secrets/cred.kt"
+  },
+  "logConfigFile": "legend-engine-xt-sql-postgres-server/src/test/resources/logback-test.xml"
+}

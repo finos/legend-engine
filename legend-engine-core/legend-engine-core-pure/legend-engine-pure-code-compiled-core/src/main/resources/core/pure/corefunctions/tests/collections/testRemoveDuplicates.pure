@@ -1,0 +1,37 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::functions::collection::tests::removeDuplicates::*;
+import meta::pure::profiles::*;
+
+function <<test.Test>> meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesBy():Boolean[1]
+{
+    assertEquals([pair('hello', 1)], [pair('hello', 1)]->removeDuplicatesBy(p|$p.first));
+    assertEquals([pair('hello', 1), pair('world', 5)], [pair('hello', 1), pair('world', 5)]->removeDuplicatesBy(p|$p.first));
+    assertEquals([pair('hello', 1), pair('world', 5)], [pair('hello', 1), pair('hello', 2), pair('world', 5)]->removeDuplicatesBy(p|$p.first));
+    assertEquals([pair('hello', 1), pair('world', 5)], [pair('hello', 1), pair('world', 5), pair('hello', 2)]->removeDuplicatesBy(p|$p.first));
+    assertEquals([pair('hello', 2), pair('world', 5)], [pair('hello', 2), pair('world', 5), pair('hello', 1)]->removeDuplicatesBy(p|$p.first));
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesNonPrimitives():Boolean[1]
+{
+    assertEquals([^List<Integer>(values=[1, 2, 3])], [^List<Integer>(values=[1, 2, 3]), ^List<Any>(values=[1, 2, 3])]->removeDuplicates(equal_Any_MANY__Any_MANY__Boolean_1_));
+    assertEquals([^List<Integer>(values=[1, 2, 3]), ^List<Any>(values=[2, 3])], [^List<Integer>(values=[1, 2, 3]), ^List<Any>(values=[2, 3])]->removeDuplicates(equal_Any_MANY__Any_MANY__Boolean_1_));
+    assertEquals([^List<Integer>(values=[1, 2, 3]), ^List<Any>(values=[2, 3])], [^List<Integer>(values=[1, 2, 3]), ^List<Any>(values=[2, 3])]->removeDuplicates());
+}
+
+function <<test.Test>> meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesLongList():Boolean[1]
+{
+    assertSameElements(range(100)->concatenate([^List<Integer>(values=[1, 2, 3]), 101, 'a']), range(100)->concatenate(^List<Integer>(values=[1, 2, 3])->repeat(100))->concatenate([3, 3, 101, 'a', 3, 101, 2, 'a', 101, 2, 1, 2, 'a'])->removeDuplicates());
+}

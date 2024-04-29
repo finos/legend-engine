@@ -1,0 +1,81 @@
+{
+  "_type" : "MongoDatabase",
+  "database": {
+    "databaseName": "my_database_2",
+    "collections": [
+      {
+        "options": {
+          "validator": {
+            "$jsonSchema": {
+              "bsonType": "object",
+              "title": "Record of employee",
+              "description": "This document records the details of an employee",
+              "properties": {
+                "hobbies": {
+                  "bsonType": "object",
+                  "description": "Two lists of indoor & outdoor hobbies",
+                  "properties": {
+                    "indoor": {
+                      "bsonType": "array",
+                      "description": "List of indoor hobbies",
+                      "items": {
+                        "bsonType": "string",
+                        "description": "indoor hobby"
+                      },
+                      "minItems": 2,
+                      "maxItems": 10,
+                      "uniqueItems": true
+                    },
+                    "outdoor": {
+                      "bsonType": "array",
+                      "description": "List of outdoor hobbies",
+                      "items": {
+                        "bsonType": "string",
+                        "description": "outdoor hobby"
+                      },
+                      "minItems": 1,
+                      "maxItems": 5,
+                      "uniqueItems": true
+                    }
+                  },
+                  "required": [
+                    "indoor",
+                    "outdoor"
+                  ],
+                  "additionalProperties": false
+                },
+                "id": {
+                  "bsonType": "long",
+                  "description": "employee ID",
+                  "minimum": 100000
+                },
+                "name": {
+                  "bsonType": "string",
+                  "description": "name of the employee",
+                  "minLength": 2
+                },
+                "age": {
+                  "bsonType": "int",
+                  "description": "age of the employee",
+                  "minimum": 16
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "age",
+                "hobbies"
+              ],
+              "additionalProperties": true
+            },
+            "validationLevel": "strict",
+            "validationAction": "error"
+          }
+        },
+        "uuid": "d69afaf3f1a94430a42f3dc7ecb66ada",
+        "collectionName": "employees",
+        "type": "collection"
+      }
+    ]
+  }
+}

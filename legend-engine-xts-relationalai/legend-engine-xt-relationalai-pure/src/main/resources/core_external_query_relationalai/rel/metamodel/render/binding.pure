@@ -1,0 +1,44 @@
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::metamodel::render::binding::*;
+import meta::external::store::rel::metamodel::render::buffer::*;
+import meta::external::store::rel::metamodel::render::expr::*;
+import meta::external::store::rel::utils::*;
+import meta::pure::functions::collection::*;
+
+
+////////////////////////
+// Rendering bindings //
+////////////////////////
+
+function meta::external::store::rel::metamodel::render::binding::renderBinding(buffer: RelQueryBuffer[1], var: RelVariable[1]): RelQueryBuffer[1] {
+  $buffer->append($var.identifier)
+}
+
+function meta::external::store::rel::metamodel::render::binding::renderBinding(buffer: RelQueryBuffer[1], vars: RelVariable[*]): RelQueryBuffer[1] {
+  $buffer->append($vars->stringify(v: RelVariable[1] | $v.identifier, ', '))
+}
+
+function meta::external::store::rel::metamodel::render::binding::renderBinding(buffer: RelQueryBuffer[1], vars: RelVariables[1]): RelQueryBuffer[1] {
+  $buffer->renderBinding($vars.inner)
+}
+
+function meta::external::store::rel::metamodel::render::binding::renderBinding(buffer: RelQueryBuffer[1], binding: RelInBinding[1]): RelQueryBuffer[1] {
+  $buffer->renderBinding($binding.variable)->append(' in ')->render($binding.in)
+}
+
+function meta::external::store::rel::metamodel::render::binding::renderBinding(buffer: RelQueryBuffer[1], binding: RelWhereBinding[1]): RelQueryBuffer[1] {
+  $buffer->renderBinding($binding.parents)->append(' where ')->render($binding.where)
+}
+
+function meta::external::store::rel::metamodel::render::binding::renderBinding(buffer: RelQueryBuffer[1], binding: RelBinding[1]): RelQueryBuffer[1] {
+  $binding->match([
+    b: RelInBinding[1]    | $buffer->renderBinding($b),
+    v: RelVariable[1]     | $buffer->renderBinding($v),
+    vs: RelVariables[1]   | $buffer->renderBinding($vs),
+    b: RelWhereBinding[1] | $buffer->renderBinding($b)
+  ])
+}
+
+function meta::external::store::rel::metamodel::render::binding::renderBinding(buffer: RelQueryBuffer[1], bindings: RelBinding[*]): RelQueryBuffer[1] {
+  $buffer->append($bindings, ', ', {accum: RelQueryBuffer[1], b: RelBinding[1] | $accum->renderBinding($b)})
+}

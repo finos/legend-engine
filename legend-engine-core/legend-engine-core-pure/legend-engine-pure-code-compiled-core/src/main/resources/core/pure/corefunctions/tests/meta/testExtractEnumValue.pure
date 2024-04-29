@@ -1,0 +1,101 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import meta::pure::functions::tests::model::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::test::alloy::utils::*;
+import meta::json::*;
+import meta::pure::mapping::modelToModel::test::alloy::enumeration::*;
+
+function <<test.Test>> meta::pure::functions::meta::tests::extractEnumValue::testExtractEnumValue():Boolean[1]
+{
+    assertIs(GeographicEntityType.CITY, GeographicEntityType->extractEnumValue('CITY'));
+    assertIs(GeographicEntityType.COUNTRY, GeographicEntityType->extractEnumValue('COUNTRY'));
+    assertIs(GeographicEntityType.REGION, GeographicEntityType->extractEnumValue('REGION'));
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::extractEnumValue::testExtractEnumValueReflectively():Boolean[1]
+{
+    assertIs(GeographicEntityType.REGION, meta::pure::functions::lang::extractEnumValue_Enumeration_1__String_1__T_1_->evaluate([^List<Enumeration<Any>>(values=GeographicEntityType), ^List<String>(values='REGION')])->cast(@GeographicEntityType)->toOne());
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  serverVersion.start='v1_19_0' }
+meta::pure::mapping::modelToModel::test::alloy::enumeration::extractEnum() : Boolean[1]
+{
+   let tree = #{TargetNotionalModel{currency, currencybyStr, countryCode, amount}}#;
+   let func = {|TargetNotionalModel.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = ExtractEnumFromSourceValue;
+   let runtime = testJsonRuntime(SourceNotionalModel, '[{"currencyIsoCode":"EUR", "currencyIsoCodeByStr":"EUR", "country":[{"country":"Italy", "code":"ITA"}], "amount":59.99}, {"currencyIsoCode":"USD", "currencyIsoCodeByStr":"USD", "country":[{"country":"America", "code":"usa"}], "amount":35}]');
+
+   let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
+   let json = $result.values->toOne();
+   let expected = '[{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"currencyIsoCode\\":\\"EUR\\",\\"currencyIsoCodeByStr\\":\\"EUR\\",\\"country\\":[{\\"country\\":\\"Italy\\",\\"code\\":\\"ITA\\"}],\\"amount\\":59.99}"},"value":{"country":{"code":"ITA"},"amount":59.99,"currencyIsoCode":"EUR"}},"value":{"currencybyStr":"USD","amount":59.99,"countryCode":"ITA","currency":"EUR"}},'+
+                   '{"defects":[],"source":{"defects":[],"source":{"number":2,"record":"{\\"currencyIsoCode\\":\\"USD\\",\\"currencyIsoCodeByStr\\":\\"USD\\",\\"country\\":[{\\"country\\":\\"America\\",\\"code\\":\\"usa\\"}],\\"amount\\":35}"},"value":{"country":{"code":"usa"},"amount":35.0,"currencyIsoCode":"USD"}},"value":{"currencybyStr":"USD","amount":35.0,"countryCode":"USA","currency":"USD"}}]';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+Enum meta::pure::mapping::modelToModel::test::alloy::enumeration::CurrencyIsoEnum
+{
+  USD, EUR, JPY
+}
+
+Enum meta::pure::mapping::modelToModel::test::alloy::enumeration::CountryCodeEnum
+{
+  USA, DEU, ITA, JPN
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::enumeration::Country
+{
+  country: String[1];
+  code: String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::enumeration::SourceNotionalModel
+{
+  currencyIsoCode: String[1];
+  country: Country[1];
+  currencyIsoCodeByStr: String[1];
+  amount: Float[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::enumeration::TargetNotionalModel
+{
+  currency : CurrencyIsoEnum[1];
+  countryCode : CountryCodeEnum[1];
+  currencybyStr : CurrencyIsoEnum[1];
+  amount: Float[1];
+}
+
+function meta::pure::mapping::modelToModel::test::alloy::enumeration::getCurrencyCode(src: SourceNotionalModel[1]): CountryCodeEnum[1]
+{
+  CountryCodeEnum->extractEnumValue($src.country.code->toUpper());
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::alloy::enumeration::*;
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::enumeration::ExtractEnumFromSourceValue
+(
+  *TargetNotionalModel: Pure
+  {
+    ~src SourceNotionalModel
+    currencybyStr : CurrencyIsoEnum->extractEnumValue('USD'),
+    currency      : CurrencyIsoEnum->extractEnumValue($src.currencyIsoCode),
+    countryCode   : getCurrencyCode($src),
+    amount        : $src.amount
+  }
+)

@@ -1,0 +1,474 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::*;
+import meta::pure::model::unit::*;
+import meta::external::format::shared::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::shared::utils::*;
+import meta::external::format::shared::*;
+import meta::external::format::json::executionPlan::platformBinding::legendJava::*;
+import meta::external::language::java::factory::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::*;
+import meta::external::language::java::transform::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::*;
+import meta::pure::extension::*;
+import meta::pure::mapping::*;
+import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
+
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::platformBinding::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
+import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
+
+import meta::external::format::shared::binding::validation::*;
+
+import meta::external::store::mongodb::executionPlan::platformBinding::legendJava::graphFetch::*;
+import meta::external::store::mongodb::executionPlan::platformBinding::legendJava::*;
+import meta::external::store::mongodb::metamodel::pure::graphFetch::executionPlan::*;
+import meta::external::store::mongodb::metamodel::pure::*;
+import meta::external::store::mongodb::metamodel::mapping::*;
+import meta::pure::executionPlan::platformBinding::localBinding::*;
+
+import meta::pure::executionPlan::platformBinding::legendJava::library::jackson::*;
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBStoreLegendJavaPlatformBindingExtension(): LegendJavaPlatformBindingExtension[1]
+{
+   ^LegendJavaPlatformBindingExtension
+   (
+      platformId = legendJavaPlatformBindingId(),
+
+      id = 'MongoDBStoreLegendJavaPlatformBindingExtension',
+
+      // Node based extensions ------------------------------------------------------
+
+      supportedExecutionNodes = [
+        MongoDBExecutionNode,
+        MongoDBDocumentInternalizeExecutionNode
+      ],
+      adhocExtensions = [
+
+         ^meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::LegendJavaInMemoryGraphFetchExtension
+         (
+
+            filterCodeGenerator = {set: InstanceSetImplementation[1], src: Code[1], withoutFilter: Code[1..*], context: GenerationContext[1], debug:DebugContext[1] |
+               [
+                  mdsi: MongoDBSetImplementation[1]  | $withoutFilter,
+                  emsi: EmbeddedMongoDBSetImplementation[1]  | $withoutFilter
+               ]
+            }
+
+            ,
+            mappingTransformExtractors = [
+               {spm : MongoDBPropertyMapping[1] | let dummyLambda = {|'ok'};
+                                                      let gen = ^GenericType
+                                                                  (
+                                                                     rawType = LambdaFunction,
+                                                                     typeArguments = ^GenericType
+                                                                                       (
+                                                                                          rawType = ^meta::pure::metamodel::type::FunctionType
+                                                                                                   (
+                                                                                                      parameters = [],
+                                                                                                      returnType = $spm.property->functionReturnType(),
+                                                                                                      returnMultiplicity= $spm.property->functionReturnMultiplicity()
+                                                                                                   )
+                                                                                       )
+                                                                  );
+                                                      let exp = ^SimpleFunctionExpression(func = $spm.property,
+                                                                                          genericType = $spm.property.genericType,
+                                                                                          importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
+                                                                                          multiplicity = $spm.property.multiplicity,
+                                                                                          parametersValues = ^VariableExpression(genericType=^GenericType(rawType = $spm.property.owner->cast(@meta::pure::metamodel::type::Class<Any>)), multiplicity = PureOne, name = 'src'),
+                                                                                          propertyName = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = $spm.property.name));
+                                                      ^$dummyLambda(classifierGenericType = $gen, expressionSequence = $exp);},
+                {epm : EmbeddedMongoDBSetImplementation[1] | let dummyLambda = {|'ok'};
+                                                      let gen = ^GenericType
+                                                                  (
+                                                                     rawType = LambdaFunction,
+                                                                     typeArguments = ^GenericType
+                                                                                       (
+                                                                                          rawType = ^meta::pure::metamodel::type::FunctionType
+                                                                                                   (
+                                                                                                      parameters = [],
+                                                                                                      returnType = $epm.property->functionReturnType(),
+                                                                                                      returnMultiplicity= $epm.property->functionReturnMultiplicity()
+                                                                                                   )
+                                                                                       )
+                                                                  );
+                                                      let exp = ^SimpleFunctionExpression(func = $epm.property,
+                                                                                          genericType = $epm.property.genericType,
+                                                                                          importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
+                                                                                          multiplicity = $epm.property.multiplicity,
+                                                                                          parametersValues = ^VariableExpression(genericType=^GenericType(rawType = $epm.property.owner->match([
+                                                                                            c : meta::pure::metamodel::type::Class<Any>[1] | $c,
+                                                                                            a : Association[1] | let classes = $a.properties.genericType.rawType->removeDuplicates()->cast(@meta::pure::metamodel::type::Class<Any>);
+                                                                                                                 if ($classes->size() == 1, | $classes->toOne(), | $classes->filter(c | $c != $epm.property.genericType.rawType->toOne())->toOne());
+                                                                                          ])), multiplicity = PureOne, name = 'src'),
+                                                                                          propertyName = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = $epm.property.name));
+                                                      ^$dummyLambda(classifierGenericType = $gen, expressionSequence = $exp);}
+            ],
+
+            valueTransformerExtractors = [
+               spm : MongoDBPropertyMapping[1]           | [],
+               epm : EmbeddedMongoDBSetImplementation[1] | []
+            ]
+         ),
+         ^LegendJavaPlatformDependencyUpdateExtension(
+                   platformDependencyUpdate = {conventions: Conventions[1], extensions: Extension[*] | extendMongoDocumentJavaEngineDependencies($conventions)})
+
+      ],
+      // Prep Context
+      updateGenerationContextForNode = {node: ExecutionNode[1], context: GenerationContext[1], path: String[1], extensions: Extension[*], debug: DebugContext[1] |
+         $node->match([
+            {node:MongoDBDocumentInternalizeExecutionNode[1] |
+               let externalFormatContract = $extensions.availableExternalFormats->getExternalFormatContractForContentType('application/json');
+               prepareForMongoDocumentInternalizeExecutionNode($node, $path, $context, $externalFormatContract, $extensions, $debug);
+            },
+            n: ExecutionNode[1] | $context
+         ])
+      },
+
+      // Code Generation
+      generateLegendJavaCodeForNode = {node: ExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1] |
+         $node->match([
+            s: MongoDBDocumentInternalizeExecutionNode[1] | $s->meta::external::store::mongodb::executionPlan::platformBinding::legendJava::generateForMongoDocumentInternalizeExecutionNode($path, $context, $debug),
+            n: ExecutionNode[1]                            | ^GeneratedCode()
+         ])
+      }
+   )
+}
+
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::generateForMongoDocumentInternalizeExecutionNode(node:MongoDBDocumentInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
+{
+   print(if($debug.debug,|$debug.space+'('+$path+') generate MongoDocumentInternalizeExecutionNode for JsonSchema \n', |''));
+
+   let conventions        = $context.conventions;
+   let pureClass          = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
+   let dependentClass     = $context.typeInfos->classDependenciesViaPropertiesWithSubTypes($pureClass);
+   let readableClasses    = $pureClass->concatenate($dependentClass);
+   let readableEnums      = $context.typeInfos->enumDependenciesViaProperties($pureClass);
+
+   let bindingDetail      = $context->nodeInfosForPath($path).data->toOne()->cast(@SuccessfulBindingDetail);
+   let mainClassProject   = $pureClass->createStreamReadingDataClass($path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=$node.enableConstraints, topLevelOnly=$node.tree->isEmpty(), graphFetchTree=$node.tree), $debug->indent());
+   let dataClassesProject = if($dependentClass->isEmpty(),
+                              | $mainClassProject,
+                              | $mainClassProject->concatenate($dependentClass->map(dc | $dc->createStreamReadingDataClass($path, $context, [], $debug->indent())))
+                              );
+
+   let storeReaderProject = createJsonReading($pureClass, $conventions->className($pureClass), $path, $node.config->cast(@MongoDBDocumentInternalizeConfig).path, $readableClasses, $readableEnums, $context, $debug->indent());
+   // Swap out the readChecked with Documents from cursor.next().toJson()
+   let expectedClass = $context.conventions->jsonReaderClass($path, $pureClass);
+   let existingJsonReaderClass = $storeReaderProject->allClasses()
+    ->filter(c | $c.simpleName == $context.conventions->jsonReaderClass($path, $pureClass).simpleName)->toOne();
+   let modifiedJsonReaderClass = $existingJsonReaderClass->modifyJsonReaderForMongoCursor($pureClass, $conventions->className($pureClass), $path, $context);
+   let modifiedStoreReaderProj = $storeReaderProject->replaceClass($modifiedJsonReaderClass);
+
+   let sourceDBResultParam       = j_parameter(javaMongoDBResult(), 'mResult');
+   let streamReaderMethodCodes = $conventions->jsonReaderClass($path, $pureClass)
+                                             ->j_new($sourceDBResultParam)
+                                             ->j_return();
+
+   let executeClassWithImports = $conventions->planNodeClass('public', $path, 'Execute')
+                                             ->usingKnownPackages($conventions->knownPackages())
+                                             ->imports($conventions->standardImports())
+                                             ->imports(javaMongoCursor())
+                                             ->imports(javaMongoDBResult())
+                                             ->imports([_IMongoDocumentDeserializeExecutionNodeSpecifics, StoreStreamReader]->map(x | $conventions->className($x)))
+                                             ->implements($conventions->className(_IMongoDocumentDeserializeExecutionNodeSpecifics));
+
+   let executeClass = $executeClassWithImports->addMethod(
+      javaMethod(['public'], $conventions->className(StoreStreamReader), 'streamReader', [$sourceDBResultParam], $streamReaderMethodCodes)
+   );
+
+   let executeProject = newProject()->addClasses($executeClass);
+   let allProjects    = $executeProject
+      ->concatenate($dataClassesProject)
+      ->concatenate($modifiedStoreReaderProj)
+      ->concatenate($streamReaderMethodCodes->dependencies()->resolveAndGetProjects())
+      ->toOneMany();
+
+   $allProjects->mergeProjects()->generatedCode($executeClass);
+}
+
+
+// Copy of prepareExternalFormatInternalizeExecutionNode($node, $path, $context, $externalFormatContract, $extensions, $debug);
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::prepareForMongoDocumentInternalizeExecutionNode(node:MongoDBDocumentInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], externalFormatContract:ExternalFormatContract<Any>[1], extensions:Extension[*], debug:DebugContext[1]): GenerationContext[1]
+{
+   print(if($debug.debug,|$debug.space+'('+$path+') prepare MongoDocumentInternalizeExecutionNode for ' + $externalFormatContract.id + ' \n', |''));
+
+   let externalFormatJavaBindingDescriptor = $extensions->extractLegendJavaAdhocExtensionsOfType(ExternalFormatLegendJavaPlatformBindingDescriptor)->filter(d | $d.externalFormatContract.contentTypes->contains($node.binding.contentType));
+   assert($externalFormatJavaBindingDescriptor->isNotEmpty(), | 'Java platform binding not found for - ' + $node.binding.contentType);
+   assert($externalFormatJavaBindingDescriptor.internalizeDescriptor->size() == 1, | 'Expected 1 internalize descriptor for - ' + $node.binding.contentType + '. Found - ' + $externalFormatJavaBindingDescriptor.internalizeDescriptor->size()->toString());
+
+   let conventions                         = $context.conventions;
+
+   let class                               = $node.resultType->cast(@ClassResultType).type->cast(@meta::pure::metamodel::type::Class<Any>);
+   let simpleType                          = ^SimpleJavaType(pureType=$class, javaType=$conventions->className($class));
+   let sourceRecordTree                    = $externalFormatContract.sourceRecordSerializeTree->toOne();
+   let returnType                          = if($node.checked, | ^CheckedJavaType(checkedOf=$simpleType, source=^SimpleJavaType(pureType=$sourceRecordTree.class, javaType=$conventions->className($sourceRecordTree.class))), | $simpleType);
+   let bindingDetail                       = if($externalFormatContract.externalFormatBindingValidator->isNotEmpty(),
+                                                | $externalFormatContract.externalFormatBindingValidator->toOne()->eval($node.binding),
+                                                | []);
+   let nodeInfo                            = ^NodeInfo(
+                                                  path            = $path,
+                                                  returnType      = $returnType,
+                                                  graphFetchTrees = $sourceRecordTree,
+                                                  data            = $bindingDetail
+                                              );
+   let contextWithNodeInfo                 = $context->addNodeInfo($nodeInfo);
+
+   let resolvedModel                       = $node.binding.modelUnit->resolve();
+   let updatedTypeInfo                     = $context.typeInfos->addForClassWithAllProperties(meta::pure::mapping::modelToModel::JsonDataRecord)
+                                                               ->map(ti| if($node.tree->isEmpty(),| $ti->addForClass($class)->addConstraints($class),| $ti->addForGraphFetchTree($node.tree->toOne())->addConstraintsForGraphFetchTree($node.tree->toOne())));
+
+   let newTypeInfos                        = if($externalFormatJavaBindingDescriptor.internalizeDescriptor.internalizePreparator->isNotEmpty(),
+                                                | $externalFormatJavaBindingDescriptor.internalizeDescriptor.internalizePreparator->toOne()->eval($node, $path, $contextWithNodeInfo->setTypeInfos($updatedTypeInfo), $debug),
+                                                | $updatedTypeInfo);
+
+   $contextWithNodeInfo->setTypeInfos($newTypeInfos);
+}
+
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::modifyJsonReaderForMongoCursor(origClass:meta::external::language::java::metamodel::Class[1], pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+  //proto:meta::external::language::java::metamodel::Class[1], pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1])
+  $origClass->imports(javaBsonDocument())
+      ->imports(javaMongoCursor())
+      ->imports(javaMongoDBResult())
+      ->removeUnusedImports()
+      ->addField(javaField('private', javaMongoDocumentCursor(), 'mCursor'))
+      ->addMongoResultConstructor()
+      ->replaceInitReading($context.typeInfos->hasDecimal())
+      ->replaceIsFinished()
+      ->replaceDestroyReading()
+      ->replaceAcceptMethod(DateTime, $context.conventions)
+      ->replaceAcceptMethod(Date, $context.conventions)
+      ->replaceAcceptMethod(StrictDate, $context.conventions)
+      ->replaceCheckedObjects($pureClass, $javaInterface, $path, $context)
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::javaMongoDocumentCursor(): meta::external::language::java::metamodel::ParameterizedType[1]
+{
+  let documentClass =    ^meta::external::language::java::metamodel::Class(simpleName = 'Document', package = ^meta::external::language::java::metamodel::Package(name = 'bson', parent = ^meta::external::language::java::metamodel::Package(name = 'org')));
+  ^meta::external::language::java::metamodel::ParameterizedType(rawType=javaClass('com.mongodb.client.MongoCursor'), typeArguments=$documentClass->toBoxed());
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::javaBsonDocument(): meta::external::language::java::metamodel::Class[1]
+{
+  javaClass('org.bson.Document');
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::javaMongoCursor(): meta::external::language::java::metamodel::Class[1]
+{
+  javaClass('com.mongodb.client.MongoCursor');
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::javaMongoDBResult(): meta::external::language::java::metamodel::Class[1]
+{
+  javaClass('org.finos.legend.engine.plan.execution.stores.mongodb.result.MongoDBResult');
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::removeUnusedImports(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+{
+   ^$class(additionalImports = $class.additionalImports
+    ->filter({m| $m->in(['com.fasterxml.jackson.core.JsonToken',
+      'com.fasterxml.jackson.core.filter.FilteringParserDelegate',
+      'com.fasterxml.jackson.core.filter.JsonPointerBasedFilter',
+      'com.fasterxml.jackson.core.JsonFactory'])->not()}));
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::addMongoResultConstructor(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let mResult = j_parameter(javaMongoDBResult(),'mongoResult');
+
+   $class->addConstructor(
+      javaConstructor([], [$mResult]->cast(@meta::external::language::java::metamodel::Parameter),
+         [
+            j_this($class)->j_field('mCursor')->j_assign($mResult->j_invoke('getMongoCursor', [], javaMongoDocumentCursor()))
+         ]
+      )
+   );
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::replaceInitReading(class:meta::external::language::java::metamodel::Class[1], useBigDecimalForFloats:Boolean[0..1]): meta::external::language::java::metamodel::Class[1]
+{
+   let jThis  = j_this($class);
+   let objectMapper = $jThis->j_field('objectMapper');
+   let objectMapperInstantiation = if($useBigDecimalForFloats->isTrue(),
+                                      | $objectMapper->j_assign(objectMapper()->j_new([])->j_invoke('configure', [deserializationFeatureBigDecimalForFloats()->j_field('USE_BIG_DECIMAL_FOR_FLOATS', deserializationFeatureBigDecimalForFloats()), j_true()] , objectMapper())),
+                                      | $objectMapper->j_assign(objectMapper()->j_new([]))
+                                    );
+   let newInitMethod = javaMethod('public', javaVoid(), 'initReading', [],[$objectMapperInstantiation]);
+
+   ^$class(methods = $class.methods->filter({m| $m.name != 'initReading'})->concatenate($newInitMethod));
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::replaceIsFinished(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let jThis  = j_this($class);
+   let exception        = j_parameter(javaIllegalStateException(), 'ex');
+   let exCheckExpression = $exception->j_invoke('getMessage', [], javaString())->j_invoke('equals', j_string('Cursor has been closed'))->j_if(j_boolean('true')->j_return(), $exception->j_throw());
+   //let exCheckExpression = $exception->j_throw();
+
+   let cursorFinished = j_not($jThis->j_field('mCursor')->j_invoke('hasNext',[], javaBoolean()))->j_return()->j_try(j_catch($exception, $exCheckExpression));
+
+   let newIsFinishedMethod = javaMethod('public', javaBoolean(), 'isFinished', [],[$cursorFinished]);
+   // Remove nextToken, getCurrentToken method as we don't need it.
+   ^$class(methods = $class.methods->filter({m| $m.name->in(['isFinished', 'nextToken','getCurrentToken'])->not()})->concatenate($newIsFinishedMethod));
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::replaceDestroyReading(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let jThis  = j_this($class);
+   //let closeCursor = $jThis->j_field('mCursor')->j_invoke('close',[], javaVoid());
+   //let newDestroyReadingMethod = javaMethod('public', javaVoid(), 'destroyReading', [],[$closeCursor]);
+   // Blank out destroyReading, as we are not maintaining anything internally.
+   let newDestroyReadingMethod = javaMethod('public', javaVoid(), 'destroyReading', [],[]);
+
+   ^$class(methods = $class.methods->filter({m| $m.name != 'destroyReading'})->concatenate($newDestroyReadingMethod));
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::replaceAcceptMethod(proto:meta::external::language::java::metamodel::Class[1], type:meta::pure::metamodel::type::Type[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let javaType         = $conventions->pureTypeToJavaType($type, PureOne);
+   let acceptableNodes  = $conventions->jsonNodeTypeForMongoDB($type);
+   let errorMessage     = j_variable(javaString(), 'errorMessage');
+   let dateAsLong       = j_variable(javaLong(), 'dateAsLong');
+   let dateKey          = j_string('$date');
+   let nodeParameter    = j_parameter(jsonNode(), 'node');
+   let jThis            = j_this($proto);
+   let exception        = j_parameter(javaIllegalArgumentException(), 'ex');
+   let methodName       = 'accept' + $type.name->toOne();
+   let pureDate         = $conventions->className(PureDate);
+
+   let newAcceptMethod = javaMethod('private', $javaType, $methodName, $nodeParameter,
+      [
+        $errorMessage->j_declare(j_string('Unexpected node type:')->j_plus($nodeParameter->j_invoke('getNodeType', [], jsonNodeType())->j_plus(j_string(' for PURE ' + $type.name->toOne())))),
+        $jThis->j_invoke('check', [javaArrays()->j_invoke('asList', $acceptableNodes, javaList(jsonNodeType())), $nodeParameter->j_invoke('getNodeType', [], jsonNodeType()), $errorMessage], javaVoid()),
+        j_if(j_and($nodeParameter->j_invoke('has',[$dateKey], javaBoolean()), $nodeParameter->j_invoke('get', [$dateKey], jsonNode())->j_invoke('isLong',[],javaBoolean())), j_return($conventions->codeType($pureDate)->j_invoke('fromDate', [javaDate()->j_new([$nodeParameter->j_invoke('get', [$dateKey], jsonNode())->j_invoke('longValue',[], javaLong())])], $pureDate)), j_throw(j_new(javaIllegalArgumentException(), j_string('Failed to parse $date from Mongo ISO Date field'))))
+      ]->j_try(j_catch($exception, $conventions->className(DataParsingException)->j_new($exception->j_invoke('getMessage', [], javaString()))->j_throw()))
+   );
+   ^$proto(methods = $proto.methods->filter({m| $m.name->in([$methodName])->not()})->concatenate($newAcceptMethod));
+}
+
+
+
+function  meta::external::store::mongodb::executionPlan::platformBinding::legendJava::jsonNodeTypeForMongoDB(conventions:Conventions[1], type:meta::pure::metamodel::type::Type[1]): Code[*]
+{
+   if($type == StrictDate || $type == DateTime || $type == Date,
+      | jsonNodeType()->j_invoke('valueOf', j_string('OBJECT'), jsonNodeType()),
+      | $conventions->jsonNodeTypesFor($type)
+  );
+}
+
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::replaceCheckedObjects(proto:meta::external::language::java::metamodel::Class[1], pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let conv            = $context.conventions;
+   let checkedClass    = $context.baseProject->toOne()->resolve($conv->className(meta::pure::dataQuality::Checked));
+   let checkedSource   = javaParameterizedType($checkedClass, $javaInterface);
+   let checked         = j_variable($checkedSource, 'object');
+   let sourceRead      = $pureClass->readMethodName($conv);
+   let ioEx            = j_parameter(javaIOException(), 'e');
+   let jThis           = j_this($proto);
+   let recordType      = $conv->className(meta::pure::mapping::modelToModel::JsonDataRecord);
+   let json            = j_variable(javaString(), 'json');
+   let recordNumber    = j_variable(javaLong(), 'recordNumber');
+   let source          = j_variable($recordType, 'source');
+   let node            = j_variable(jsonNode(), 'node');
+
+   let newReadChecked =
+      javaMethod('public', javaCollection($checkedSource), 'readCheckedObjects', [],
+         [
+            $jThis->j_field('recordCount')->j_inc(),
+
+            $node->j_declare($jThis->j_field('objectMapper', objectMapper())->j_invoke('readTree', [$jThis->j_field('mCursor', javaMongoDocumentCursor())->j_invoke('next', [], javaBsonDocument())->j_invoke('toJson', [], javaString())], jsonNode())),
+            $checked->j_declare($jThis->j_invoke($sourceRead, [$node], $checkedSource)),
+
+            $recordNumber->j_declare($jThis->j_field('recordCount')),
+            $json->j_declare($node->j_invoke('toString', [])),
+
+            $source->j_declare($recordType->j_newAnon([], [
+               j_method('public', javaLong(), $conv->getterName('number'), [], $recordNumber->j_return()),
+               j_method('public', javaString(), $conv->getterName('record'), [], $json->j_return())
+            ])),
+
+            javaCollections()->j_invoke('singleton', $conv->dynamicChecked($conv->checkedGetDefects($checked), $source, $conv->checkedGetValue($checked)), javaCollection($checkedSource))->j_return()
+         ]->j_ioExTryCatch()
+      );
+
+
+   ^$proto(methods = $proto.methods->filter({m| $m.name != 'readCheckedObjects'})->concatenate($newReadChecked));
+}
+
+// Used for tests
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBLegendJavaPlatformBindingExtensions(): Extension[*]
+{
+//Pulls together store extension + "all" PlatformBinding extension to a single method
+  [
+  meta::external::store::mongodb::extension::mongoDBExtensions('mongoDB'),
+  meta::external::format::json::extension::jsonSchemaFormatExtension(),
+  meta::pure::executionPlan::platformBinding::platformBindingExtension('PlatformBinding - LegendJava - InMemory, MongoDB, ExternalFormatCore, ExternalFormatJSON', [
+    meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+      meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
+      meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBStoreLegendJavaPlatformBindingExtension(),
+      meta::external::format::shared::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension(),
+      meta::external::format::shared::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension(meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor())
+    ])
+  ])
+  ]
+}
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBOnlyLegendJavaPlatformBindingExtensions(): Extension[*]
+{
+// Pulls together store extension + PlatformBinding extensions required for MongoDB, excludes
+// stuff already loaded by core..
+  [
+  meta::external::store::mongodb::extension::mongoDBExtensions('mongoDB'),
+  meta::pure::executionPlan::platformBinding::platformBindingExtension('PlatformBinding - LegendJava - MongoDB', [
+    meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+      meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBStoreLegendJavaPlatformBindingExtension()
+    ])
+  ])
+  ]
+}
+
+
+
+Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::_IMongoDocumentDeserializeExecutionNodeSpecifics {}
+
+/*
+ * This function should be assigned to the router extension:
+ *
+ *     plan_javaRuntime_enginePlatformDependencies_conventions = meta::external::format::json::executionPlan::platformBinding::legendJava::extendJavaEngineDependencies_Conventions_1__Conventions_1_
+ */
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::extendMongoDocumentJavaEngineDependencies(conventions:Conventions[1]):Conventions[1]
+{
+   let jIStoreStreamReader = $conventions->className(meta::pure::executionPlan::platformBinding::legendJava::StoreStreamReader);
+
+   let jIMongoDocumentDeserializeExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.execution.stores.mongodb.specifics.IMongoDocumentDeserializeExecutionNodeSpecifics')
+      ->addMethod(javaMethod('public', $jIStoreStreamReader, 'mCursor', [javaParam(javaMongoDocumentCursor(), 'p0')]));
+
+   $conventions
+      ->addProvidedType(meta::external::store::mongodb::executionPlan::platformBinding::legendJava::_IMongoDocumentDeserializeExecutionNodeSpecifics, $jIMongoDocumentDeserializeExecutionNodeSpecifics);
+}

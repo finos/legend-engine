@@ -1,0 +1,156 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::factory::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::platformBinding::legendJava::library::meta::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
+
+function meta::pure::executionPlan::platformBinding::legendJava::library::meta::registerMetaLibrary(conventions: Conventions[1]): Conventions[1]
+{
+    let lib = newConventionsLibrary()
+      ->addFunctionCoders([
+         fc1(id_Any_1__String_1_,                                      {ctx,obj                  | if($ctx.params->at(0).genericType.rawType->toOne()->instanceOf(meta::pure::metamodel::type::PrimitiveType),
+                                                                                                   |  javaString()->j_invoke('valueOf', $obj, javaString()),
+                                                                                                   |  if($ctx.params->at(0).genericType.rawType->toOne()->instanceOf(meta::pure::metamodel::type::Enumeration),
+                                                                                                      | $obj->j_invoke('getName', [], javaString()),
+                                                                                                      | j_string('@')->j_plus(javaInt()->toBoxed()->j_invoke('toHexString', javaSystem()->j_invoke('identityHashCode', $obj, javaInt()), javaString()))))}),
+         fc2(instanceOf_Any_1__Type_1__Boolean_1_,                     {ctx,candidate,type       | $candidate->j_cast(javaObject())->j_instanceof($type->cast(@Cast).expression.type->toBoxed());}),
+         fc(extractEnumValue_Enumeration_1__String_1__T_1_,            extractEnumValue_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
+         fc(enumValues_Enumeration_1__T_MANY_,                         enumValues_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
+         fc1(typeName_Any_1__String_1_,                                { ctx,obj | if($ctx.params->at(0).genericType.rawType->toOne()->instanceOf(meta::pure::metamodel::type::Class),
+                                                                                      | $obj->j_invoke(typeNameMethod(), [], javaString()),
+                                                                                      | j_string($ctx.params->at(0).genericType.rawType.name->toOne()))}),         
+         fc1(typePath_Any_1__String_1_,                                { ctx,obj | if($ctx.params->at(0).genericType.rawType->toOne()->instanceOf(meta::pure::metamodel::type::Class),
+                                                                                      | $obj->j_invoke(typePathMethod(), [], javaString()),
+                                                                                      | j_string($ctx.params->at(0).genericType.rawType->toOne()->elementToPath()))})
+      ]);
+   
+    $conventions->registerClassCoder(
+         ClassPurpose.ENUMERATION,
+         generateEnumeration_Type_1__Conventions_1__DebugContext_1__Class_1_
+      )->registerLibrary($lib);
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::library::meta::extractEnumValue(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
+{
+   let params    = $fe.parametersValues->evaluateAndDeactivate();
+   let type      = $params->at(0).genericType.typeArguments->at(0).rawType->toOne();
+   let enumType  = $conventions->className($type);
+
+   $params->at(1)->match([
+      iv:InstanceValue[1] | $enumType->j_invoke('getEnumFromPureName', j_string($params->at(1)->cast(@InstanceValue).values->cast(@String)->toOne()), $enumType)->dependsOn(enumTypeDependency($type, $conventions, $debug));,
+      sfe:SimpleFunctionExpression[1] | let srcPropValue = $sfe->generateJava($conventions, $debug->indent());
+                                        ^StaticMethodCall(class=$enumType, methodName='getEnumFromPureName', arguments=$srcPropValue, type=$enumType);
+	]);
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::library::meta::enumValues(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
+{
+   let params    = $fe.parametersValues->evaluateAndDeactivate();
+   let type      = $params->at(0).genericType.typeArguments->at(0).rawType->toOne();
+   let enumType  = $conventions->className($type);
+   
+   javaArrays()->j_invoke('asList', $enumType->j_invoke('values', [], javaArray($enumType)), javaList($enumType))->dependsOn(enumTypeDependency($type, $conventions, $debug));
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::meta::enumTypeDependency(type:meta::pure::metamodel::type::Type[1], conventions:Conventions[1], debug:DebugContext[1]) : CodeDependency[1]
+{
+   let name = $type->elementToPath();
+   let dep = newDependency(
+      $name,
+        {state |    let typeInfo = meta::pure::executionPlan::platformBinding::typeInfo::newTypeInfoSet()->meta::pure::executionPlan::platformBinding::typeInfo::addForType($type);
+                    let project = generateInterfacesAndEnums($conventions, $typeInfo, $debug);
+                    $state->addDependencyProject($name, $project);
+        });  
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::library::meta::generateEnumeration(type:meta::pure::metamodel::type::Type[1], conventions: Conventions[1], debug: DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+   print(if($debug.debug,|$debug.space+'generateEnumeration: \''+$type.name->toOne()+'\'\n', |''));
+
+   let enums = $type->cast(@meta::pure::metamodel::type::Enumeration<Any>)->enumValues();
+   if($enums->forAll(e | $e->cast(@Enum).name->isValidJavaIdentifier()),
+     | generateEnumerationIfValidJavaIdentifier($type, $conventions, $enums, $debug),
+     | generateEnumerationIfInValidJavaIdentifier($type, $conventions, $enums, $debug));
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::library::meta::generateEnumerationIfValidJavaIdentifier(type:meta::pure::metamodel::type::Type[1], conventions: Conventions[1], enums: Any[*], debug: DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+   print(if($debug.debug,|$debug.space+'generateEnumerationIfValidJavaIdentifier : \''+$type.name->toOne()+'\'\n', |''));
+   let enumPkgAndName   = $conventions->className($type);
+  
+   ^meta::external::language::java::metamodel::Enumeration(
+      simpleName  = $enumPkgAndName.simpleName,
+      package     = $enumPkgAndName.package,
+      modifiers   = meta::external::language::java::metamodel::Modifier.Public,
+      enumeration = $enums->map(e| ^meta::external::language::java::metamodel::EnumerationEntry(name=$conventions->identifier($e->cast(@Enum).name))),
+      methods     = [
+         javaMethod('public', meta::external::language::java::factory::javaString(), 'getName', [], 'return this.name();'),
+         javaMethod(['public', 'static'], $enumPkgAndName, 'getEnumFromPureName', javaParam(javaString(), 'pureName'), $enumPkgAndName->j_invoke('valueOf', j_parameter(javaString(), 'pureName'), $enumPkgAndName)->j_return())
+      ]
+   );
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::library::meta::generateEnumerationIfInValidJavaIdentifier(type:meta::pure::metamodel::type::Type[1], conventions: Conventions[1], enums: Any[*], debug: DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+   print(if($debug.debug,|$debug.space+'generateEnumerationIfInvalidJavaIdentifier : \''+$type.name->toOne()+'\'\n', |''));
+   let enumPkgAndName      = $conventions->className($type);
+   let mapType             = javaMap(javaString(), $enumPkgAndName);
+   let pureName            = j_parameter(javaString(), 'pureName');
+   let pureNameToEnumMap   = javaField(['private', 'static', 'final'], $mapType, 'pureNameToEnumMap', 'initValues()');
+   let values              = j_variable($mapType, 'values');
+   
+   let addValues           = $enums->size()->range()->map(index | $values->j_invoke('put',  [j_string($enums->at($index)->cast(@Enum).name), $enumPkgAndName->j_field('ENUM' + $index->toString())]));
+   let initCode            = j_block($values->j_declare(javaHashMap(javaString(), $enumPkgAndName)->j_new([]))->concatenate($addValues)->concatenate($values->j_return()));
+   let getEnumFromPureNameCode    = j_if($pureName->j_eq(j_null()),
+                                          javaNullPointerException()->j_new([j_string('pureName of Enum is null.')])->j_throw(),
+                                          j_if(
+                                                $enumPkgAndName->j_field($pureNameToEnumMap)->j_invoke('containsKey', $pureName),
+                                                $enumPkgAndName->j_field($pureNameToEnumMap)->j_invoke('get', $pureName)->j_return(),
+                                                javaIllegalArgumentException()->j_new([j_string('No Enum constant : ')->j_plus($pureName)])->j_throw()
+                                              )
+                                        );
+
+   ^meta::external::language::java::metamodel::Enumeration(
+      simpleName  = $enumPkgAndName.simpleName,
+      package     = $enumPkgAndName.package,
+      modifiers   = meta::external::language::java::metamodel::Modifier.Public,
+      enumeration = $enums->size()->range()->map(index | ^meta::external::language::java::metamodel::EnumerationEntry(name = $conventions->identifier('ENUM' + $index->toString()), value = $enums->at($index)->cast(@Enum).name)),
+      methods     = [
+         javaMethod('public', meta::external::language::java::factory::javaString(), 'getName', [], 'return this.pureName;'),
+         javaMethod(['public', 'static'], $enumPkgAndName, 'getEnumFromPureName', $pureName, $getEnumFromPureNameCode),
+         javaMethod(['private', 'static'], $mapType, 'initValues', [], $initCode)
+      ],
+      fields      = [javaField('private', javaString(), 'pureName'), $pureNameToEnumMap]
+   )
+   ->addConstructor(
+      javaConstructor([], [j_parameter(javaString(), 'pureName')], 'this.pureName = pureName;')
+   );
+}
+
+function <<access.private>>meta::pure::executionPlan::platformBinding::legendJava::library::meta::isValidJavaIdentifier(name:String[1]):Boolean[1]
+{
+  if($name->size() == 0,
+  | false,
+  | range(0, $name->length())->forAll(i | let c = $name->substring($i, $i + 1);
+                                          if($i == 0,
+                                            | $c->isLetter() || ['$','_']->contains($c),
+                                            | $c->isDigit() || $c->isLetter() || ['$','_']->contains($c)
+                                            );
+                                       );
+  );
+}

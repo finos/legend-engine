@@ -1,0 +1,129 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::elasticsearch::v7::metamodel::tds::*;
+import meta::external::store::elasticsearch::v7::metamodel::executionPlan::tds::*;
+import meta::json::*;
+import meta::pure::functions::io::http::*;
+import meta::external::store::elasticsearch::v7::metamodel::runtime::*;
+import meta::external::store::elasticsearch::v7::metamodel::executionPlan::*;
+import meta::pure::mapping::*;
+import meta::protocols::pure::v1_31_0::extension::*;
+import meta::pure::extension::*;
+
+function meta::external::store::elasticsearch::v7::protocol::v1_31_0::elasticsearchV7StoreExtension(type: String[1]): SerializerExtension[1]
+{
+  ^SerializerExtension_v1_31_0(
+      transfers_executionPlan_transformNode = {mapping:Mapping[1], extensions:Extension[*] |
+          [
+              esNode: Elasticsearch7RequestExecutionNode[1] | ^meta::external::store::elasticsearch::v7::protocol::v1_31_0::executionPlan::Elasticsearch7RequestExecutionNode(
+                _type = 'elasticsearch7RequestExecutionNode',
+                resultType = $esNode.resultType->meta::protocols::pure::v1_31_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                connection = $esNode.connection->meta::external::store::elasticsearch::v7::protocol::v1_31_0::runtime::transformConnection($extensions),
+                request = $esNode.request,
+                metadata = $esNode.metadata->match([
+                  tds: TDSMetadata[1] | ^meta::external::store::elasticsearch::v7::protocol::v1_31_0::executionPlan::tds::TDSMetadata(
+                    _type = 'tDSMetadata',
+                    columnResultPaths = $tds.columnResultPaths
+                        ->map(c | ^meta::external::store::elasticsearch::v7::protocol::v1_31_0::executionPlan::tds::TDSColumnResultPath(
+                            index = $c.index,
+                            resultPath = $c.resultPath->match([
+                              src: SourceFieldResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::SourceFieldResultPath(
+                                _type = 'sourceFieldResultPath',
+                                fieldPath = $src.fieldPath
+                              ),
+                              docValue: DocValueResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::DocValueResultPath(
+                                _type = 'docValueResultPath',
+                                fieldPath = $docValue.fieldPath
+                              ),
+                              agg: AggregateResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::AggregateResultPath(
+                                _type = 'aggregateResultPath',
+                                fieldPath = $agg.fieldPath
+                              )
+                            ])
+                          )
+                        )
+                    )
+                ])
+              )
+          ]
+      }
+  );
+}
+
+function meta::external::store::elasticsearch::v7::protocol::v1_31_0::runtime::transformConnection(conn: Elasticsearch7StoreConnection[1],extensions:Extension[*]): meta::external::store::elasticsearch::v7::protocol::v1_31_0::runtime::Elasticsearch7StoreConnection[1]
+{
+  ^meta::external::store::elasticsearch::v7::protocol::v1_31_0::runtime::Elasticsearch7StoreConnection(
+    _type = 'elasticsearch7StoreConnection',
+    element = '',
+    sourceSpec = ^meta::external::store::elasticsearch::v7::protocol::v1_31_0::runtime::Elasticsearch7StoreURLSourceSpecification(
+            url = '%s://%s:%d%s'->format([$conn.sourceSpec.url.scheme->defaultIfEmpty(URLScheme.http)->toOne(), $conn.sourceSpec.url.host, $conn.sourceSpec.url.port, $conn.sourceSpec.url.path])
+          ),
+    authSpec = $conn.authSpec->meta::protocols::pure::v1_31_0::transformation::fromPureGraph::authentication::transformAuthenticationSpecification($extensions)
+  )
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::v1_31_0::executionPlan::Elasticsearch7RequestExecutionNode extends meta::protocols::pure::v1_31_0::metamodel::executionPlan::ExecutionNode
+{
+   connection : meta::external::store::elasticsearch::v7::protocol::v1_31_0::runtime::Elasticsearch7StoreConnection[1];
+   request    : meta::external::store::elasticsearch::v7::metamodel::specification::types::RequestBase[1];
+   metadata   : meta::external::store::elasticsearch::v7::protocol::v1_31_0::executionPlan::tds::RequestResultMetadata[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::v7::protocol::v1_31_0::executionPlan::tds::RequestResultMetadata
+{
+   _type: String[1];
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::v1_31_0::executionPlan::tds::TDSMetadata extends meta::external::store::elasticsearch::v7::protocol::v1_31_0::executionPlan::tds::RequestResultMetadata
+{
+   columnResultPaths: meta::external::store::elasticsearch::v7::protocol::v1_31_0::executionPlan::tds::TDSColumnResultPath[1..*];
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::v1_31_0::executionPlan::tds::TDSColumnResultPath
+{
+  index: Integer[1];
+  resultPath: meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::ResultPath[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::ResultPath
+{
+  _type: String[1];
+  fieldPath: String[1..*];
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::SourceFieldResultPath extends meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::ResultPath
+{
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::DocValueResultPath extends meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::ResultPath
+{
+
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::AggregateResultPath extends meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::ResultPath
+{
+
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::v1_31_0::runtime::Elasticsearch7StoreConnection extends meta::protocols::pure::v1_31_0::metamodel::runtime::Connection
+{
+   sourceSpec: meta::external::store::elasticsearch::v7::protocol::v1_31_0::runtime::Elasticsearch7StoreURLSourceSpecification[1];
+   authSpec:  meta::protocols::pure::v1_31_0::metamodel::runtime::connection::authentication::AuthenticationSpecification[1];
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::v1_31_0::runtime::Elasticsearch7StoreURLSourceSpecification
+{
+   url: String[1];
+}

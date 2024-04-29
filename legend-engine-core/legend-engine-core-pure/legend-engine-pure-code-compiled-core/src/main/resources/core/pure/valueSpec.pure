@@ -1,0 +1,176 @@
+###Diagram
+Diagram meta::pure::ValueSpec(width=0.0, height=0.0)
+{
+    TypeView cview_12(
+        type=meta::pure::metamodel::valuespecification::ValueSpecification,
+        position=(237.00000, 156.00000),
+        width=673.95000,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_14(
+        type=meta::pure::metamodel::valuespecification::VariableExpression,
+        position=(863.00000, 588.49383),
+        width=227.90000,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::pure::metamodel::valuespecification::Expression,
+        position=(772.00000, 275.49383),
+        width=213.95000,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::pure::metamodel::valuespecification::FunctionExpression,
+        position=(524.00000, 405.49383),
+        width=374.46667,
+        height=170.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::pure::metamodel::valuespecification::InstanceValue,
+        position=(237.54654, 379.49383),
+        width=138.95000,
+        height=112.80244,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_10(
+        type=meta::pure::metamodel::valuespecification::SimpleFunctionExpression,
+        position=(621.00000, 619.49383),
+        width=174.66667,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_4,
+        target=cview_1,
+        points=[(815.95000,424.29627),(815.95000,284.29627)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_10,
+        target=cview_4,
+        points=[(708.33334,634.49383),(711.23333,490.49383)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_1,
+        target=cview_12,
+        points=[(878.97500,290.49383),(879.95000,185.80244)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_5,
+        target=cview_12,
+        points=[(307.02154,435.89505),(307.95000,195.80244)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_14,
+        target=cview_1,
+        points=[(976.95000,617.49383),(974.95000,302.29627)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::pure::metamodel::valuespecification::FunctionExpression.propertyName,
+        source=cview_4,
+        target=cview_5,
+        points=[(543.95000,487.29627),(355.52154,487.39505)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::pure::metamodel::valuespecification::FunctionExpression.qualifiedPropertyName,
+        source=cview_4,
+        target=cview_5,
+        points=[(543.95000,424.29627),(365.49654,424.29627)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::pure::metamodel::valuespecification::FunctionExpression.parametersValues,
+        source=cview_4,
+        target=cview_12,
+        points=[(551.00000,566.49383),(-24.58969,568.82479),(-24.05000,166.80244),(460.40000,167.50000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::pure::metamodel::valuespecification::FunctionExpression.originalMilestonedPropertyParametersValues,
+        source=cview_4,
+        target=cview_12,
+        points=[(544.95000,528.29627),(130.06425,529.68397),(130.06425,221.33075),(243.66807,221.33075)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

@@ -1,0 +1,132 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::elasticsearch::v7::specification::utils::*;
+import meta::pure::functions::io::http::*;
+import meta::pure::test::*;
+import meta::pure::store::*;
+import meta::core::runtime::*;
+import meta::pure::runtime::connection::authentication::*;
+
+import meta::external::store::elasticsearch::executionTest::test::*;
+import meta::external::store::elasticsearch::executionTest::test::v7::*;
+import meta::external::store::elasticsearch::executionTest::testCase::*;
+
+import meta::external::store::elasticsearch::v7::extension::*;
+
+import meta::external::store::elasticsearch::v7::metamodel::runtime::*;
+import meta::external::store::elasticsearch::v7::metamodel::store::*;
+
+import meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::*;
+import meta::external::store::elasticsearch::v7::metamodel::specification::indices::delete::*;
+import meta::external::store::elasticsearch::v7::metamodel::specification::indices::create::*;
+import meta::external::store::elasticsearch::v7::metamodel::specification::global::bulk::*;
+import meta::external::store::elasticsearch::v7::metamodel::specification::global::count::*;
+import meta::external::store::elasticsearch::v7::metamodel::specification::types::*;
+
+function <<access.private>> meta::external::store::elasticsearch::executionTest::test::v7::omdbMapping(): TypeMapping[1]
+{
+  ^TypeMapping(
+    properties = newMap([
+      pair('Title', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())),
+      pair('Description', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(text = ^TextProperty(
+                  fields = newMap(pair('asKeyword', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())))
+                )
+              )
+          ),
+      pair('Director', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())),
+      pair('MPAA', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())),
+      pair('ReleaseDate', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(date = ^DateProperty(format = 'yyyy-MM-dd hh:mm:ss.SSSa'->literal()))),
+      pair('Budget', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(integer = ^IntegerNumberProperty())),
+      pair('Revenue', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(_float = ^FloatNumberProperty())),
+      pair('MainActor', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(object =
+            ^ObjectProperty(properties = newMap([
+                pair('Name', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty()))
+            ]))
+      ))
+    ])
+  );
+}
+
+function <<access.private>> meta::external::store::elasticsearch::executionTest::test::v7::mapping(type: Type[1]): TypeMapping[1]
+{
+  $type->match([
+    a: Class<OmdbRecord>[1] | omdbMapping()
+  ]);
+}
+
+function <<access.private>> meta::external::store::elasticsearch::executionTest::test::v7::_id(any: Any[1]): String[0..1]
+{
+  $any->match([
+    o: OmdbRecord[1] | $o._id,
+    a: Any[1] | []
+  ]);
+}
+
+function <<access.private>> meta::external::store::elasticsearch::executionTest::test::v7::index(name: String[1], records: Any[*]): Any[*]
+{
+  let deleteIndex = ^DeleteRequest(
+      index = $name->literal(),
+      ignore_unavailable = true->literal()
+  );
+
+  let mappings = $records->type()->mapping();
+
+  let createIndex = ^CreateRequest(
+    body = ^CreateRequestBody(
+      mappings = $mappings
+    ),
+    index = $name->literal()
+  );
+
+  let indexData = ^BulkRequest<Any, Any>(
+      operations = $records->map(r | [^IndexOperation(_id = $r->_id()->literal()), $r])->map(x | $x->literal())->toOneMany(),
+      index = $name->literal(),
+      refresh = Refresh._true
+  );
+
+  let countData = ^CountRequest(
+      index = $name->literal(),
+      body = ^CountRequestBody()
+  );
+
+  [
+    $deleteIndex,
+    $createIndex,
+    $indexData,
+    $countData
+  ];
+}
+
+function <<access.private>> meta::external::store::elasticsearch::executionTest::test::v7::collectTest(tag: String[1], testFilter: Function<{FunctionDefinition<Any>[1] -> Boolean[1]}>[0..1]): PureTestCollection[1]
+{
+  collectTest(
+    $tag,
+    elasticsearchV7Extension(),
+    '/core_elasticsearch_execution_test/engineGrammar_7._pure_',
+    index_String_1__Any_MANY__Any_MANY_,
+    $testFilter
+  );
+}
+
+// this test if 7 is fwd compatible for now until we settle on 7 functionality, and create 8 officially...
+function <<test.TestCollection>> meta::external::store::elasticsearch::executionTest::test::v7::test_8_6_2(): PureTestCollection[1]
+{
+ '8.6.2'->collectTest([]);
+}
+
+function <<test.TestCollection>> meta::external::store::elasticsearch::executionTest::test::v7::test_7_17_0(): PureTestCollection[1]
+{
+  '7.17.7'->collectTest([]);
+}

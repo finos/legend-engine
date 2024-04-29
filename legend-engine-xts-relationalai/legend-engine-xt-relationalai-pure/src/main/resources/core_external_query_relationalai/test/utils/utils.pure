@@ -1,0 +1,79 @@
+import meta::external::store::rel::utils::*;
+import meta::external::store::rel::utils::collection::*;
+
+function <<test.Test>> meta::external::store::rel::test::utils::testResult(): Any[*] {
+  assertEquals(ok(1), ok(1));
+
+  assertEquals(1, ok(1)->unwrap());
+
+  assertEquals(
+    2,
+    ok(1)->then(v | $v + 1)->unwrap()
+  );
+
+  assertEquals(
+    ok(2),
+    ok(1)->then(v | $v + 1)
+  );
+
+  assertEquals(
+    ok(2),
+    // I do not know why I have to specify a type parameter here.
+    ok(1)->andThen(v: Integer[1] | ok($v + 1))
+  );
+
+  assertEquals(
+    2,
+    ok(1)->andThen(v: Integer[1] | ok($v + 1))->unwrap()
+  );
+
+  assertEquals(
+    okm([1, 2]),
+    [ok(1), ok(2)]->collect()
+  );
+
+  let x = ^Result<Any|*>(errors=[errorTrace('2')]);
+  let y = ^Result<Any|*>(errors=[errorTrace('2')]);
+  println($x);
+  println($y);
+  println($x->equal($y));
+  assertEquals(
+    ^Result<Any|*>(errors=[errorTrace('2')]),
+    [ok(1), ^Result<Any|0..1>(errors=[errorTrace('2')]), ok(3)]->collect()
+  );
+
+  assertEquals(
+    okm([]),
+    []->cast(@Result<String|0..1>)->collect()
+  );
+
+  assertEquals(
+    okm([1, 2]),
+    ok(1)->then({v: Integer[1] | let next = $v + 1; [$v, $next];})
+  );
+
+  assertEquals(
+    ok(1),
+    okm([1, 2])->them(vs: Integer[*] | $vs->at(0))
+  );
+}
+
+function <<test.Test>> meta::external::store::rel::test::utils::testHelpers(): Any[*] {
+  assertEquals(
+    '1 | 2 | 3',
+    [1, 2, 3]->stringify(e | $e->toString(), ' | ')
+  );
+}
+
+function <<test.Test>> meta::external::store::rel::test::utils::testMaybe(): Any[*] {
+  assertEquals(
+    [1, 2, 3],
+    [1, 2, 3]->unlessEmpty(xs | $xs, [])
+  );
+
+  assertEquals(
+    [1, 2, 3],
+    []->unlessEmpty(xs | $xs, [1, 2, 3])
+  );
+}
+

@@ -1,0 +1,143 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::xsd::tests::toPure::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::functions::*;
+import meta::external::format::xml::executionPlan::test::*;
+import meta::external::format::xml::metamodel::xml::*;
+import meta::external::format::xml::metamodel::xsd::*;
+import meta::external::shared::format::executionPlan::*;
+import meta::external::shared::functions::*;
+import meta::external::shared::format::metamodel::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::toString::*;
+import meta::pure::graphFetch::execution::*;
+import meta::external::store::model::*;
+import meta::pure::model::unit::*;
+import meta::core::runtime::*;
+import meta::legend::*;
+import meta::pure::dataQuality::*;
+
+function  <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::xml::executionPlan::test::testXmlMultiplicityError(): Boolean[1]
+{
+  let tree = #{meta::external::format::xml::executionPlan::test::PersonWithFirm{firstName, lastName, firm{legalName}, addresses{street}}}#;
+  let binding = compileLegendGrammar(readFile('/core_external_format_xml/executionPlan/tests/resources/composition.txt')->toOne())->filter(e | $e->instanceOf(Binding))->cast(@Binding)->toOne();
+  let query   = {data:String[1]| meta::external::format::xml::executionPlan::test::PersonWithFirm->internalize($binding, $data)->checked()->serialize($tree)};
+
+  let result  = meta::external::format::xml::executionPlan::test::executeXsdSchemaBindingQuery($query, pair('data', '<personWithFirm firstName="John" lastName="Doe" />'));
+
+  // TODO [internalize] should only fetch primitive properties
+  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[{"id":null,"externalId":null,"message":"Invalid multiplicity for firm: expected [1] found [0]","enforcementLevel":"Critical","ruleType":"ClassStructure","ruleDefinerPath":"meta::external::format::xml::executionPlan::test::PersonWithFirm","path":[]},{"id":null,"externalId":null,"message":"Invalid multiplicity for addresses: expected [1..*] found [0]","enforcementLevel":"Critical","ruleType":"ClassStructure","ruleDefinerPath":"meta::external::format::xml::executionPlan::test::PersonWithFirm","path":[]}],"source":{"number":1,"record":"<personWithFirm firstName=\\"John\\" lastName=\\"Doe\\"/>"},"value":null}}', $result);
+}
+
+function  <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::xml::executionPlan::test::testXmlNoOptionalAttributes(): Boolean[1]
+{
+  let tree = #{meta::external::format::xml::executionPlan::test::PersonWithFirm{firstName, lastName, firm{legalName, active}, addresses{street}}}#;
+  let binding = compileLegendGrammar(readFile('/core_external_format_xml/executionPlan/tests/resources/composition.txt')->toOne())->filter(e | $e->instanceOf(Binding))->cast(@Binding)->toOne();
+  let query   = {data:String[1]| meta::external::format::xml::executionPlan::test::PersonWithFirm->internalize($binding, $data)->checked()->serialize($tree)};
+  let data = '<personWithFirm>\n'+
+    '  <firstName>John</firstName>\n'+
+    '  <lastName>Doe</lastName>\n'+
+    '  <firm>\n'+
+    '    <legalName>FirmName</legalName>\n'+
+    '    <active>true</active>\n'+
+    '  </firm>\n'+
+    '  <addresses>\n'+
+    '    <street>StreetName</street>\n'+
+    '  </addresses>\n'+
+    '</personWithFirm>';
+
+  let result  = meta::external::format::xml::executionPlan::test::executeXsdSchemaBindingQuery($query, pair('data', $data));
+
+  // TODO [internalize] should only fetch primitive properties
+  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[],"source":{"number":1,"record":"<personWithFirm><firstName>John</firstName><lastName>Doe</lastName><firm><legalName>FirmName</legalName><active>true</active></firm><addresses><street>StreetName</street></addresses></personWithFirm>"},"value":{"firstName":"John","lastName":"Doe","firm":{"legalName":"FirmName","active":true},"addresses":[{"street":"StreetName"}]}}}', $result);
+}
+
+function  <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::xml::executionPlan::test::testXmlSingleQueryAttributes(): Boolean[1]
+{
+  let tree = #{meta::external::format::xml::executionPlan::test::PersonWithFirm{firstName}}#;
+  let binding = compileLegendGrammar(readFile('/core_external_format_xml/executionPlan/tests/resources/composition.txt')->toOne())->filter(e | $e->instanceOf(Binding))->cast(@Binding)->toOne();
+  let query   = {data:String[1]| meta::external::format::xml::executionPlan::test::PersonWithFirm->internalize($binding, $data)->checked()->serialize($tree)};
+  let data = '<personWithFirm>\n'+
+    '  <firstName>John</firstName>\n'+
+    '  <lastName>Doe</lastName>\n'+
+    '  <firm>\n'+
+    '    <legalName>FirmName</legalName>\n'+
+    '    <active>true</active>\n'+
+    '  </firm>\n'+
+    '  <addresses>\n'+
+    '    <street>StreetName</street>\n'+
+    '  </addresses>\n'+
+    '</personWithFirm>';
+
+  let result  = meta::external::format::xml::executionPlan::test::executeXsdSchemaBindingQuery($query, pair('data', $data));
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[],"source":{"number":1,"record":"<personWithFirm><firstName>John</firstName><lastName>Doe</lastName><firm><legalName>FirmName</legalName><active>true</active></firm><addresses><street>StreetName</street></addresses></personWithFirm>"},"value":{"firstName":"John"}}}', $result);
+}
+
+function  <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::xml::executionPlan::test::testXmlFewerQueryAttributes(): Boolean[1]
+{
+  let tree = #{meta::external::format::xml::executionPlan::test::PersonWithFirm{firstName, firm{legalName, active}, addresses{street}}}#;
+  let binding = compileLegendGrammar(readFile('/core_external_format_xml/executionPlan/tests/resources/composition.txt')->toOne())->filter(e | $e->instanceOf(Binding))->cast(@Binding)->toOne();
+  let query   = {data:String[1]| meta::external::format::xml::executionPlan::test::PersonWithFirm->internalize($binding, $data)->checked()->serialize($tree)};
+  let data = '<personWithFirm>\n'+
+    '  <firstName>John</firstName>\n'+
+    '  <lastName>Doe</lastName>\n'+
+    '  <firm>\n'+
+    '    <legalName>FirmName</legalName>\n'+
+    '    <active>true</active>\n'+
+    '  </firm>\n'+
+    '  <addresses>\n'+
+    '    <street>StreetName</street>\n'+
+    '  </addresses>\n'+
+    '</personWithFirm>';
+
+  let result  = meta::external::format::xml::executionPlan::test::executeXsdSchemaBindingQuery($query, pair('data', $data));
+
+  // TODO [internalize] should only fetch primitive properties
+  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[],"source":{"number":1,"record":"<personWithFirm><firstName>John</firstName><lastName>Doe</lastName><firm><legalName>FirmName</legalName><active>true</active></firm><addresses><street>StreetName</street></addresses></personWithFirm>"},"value":{"firstName":"John","firm":{"legalName":"FirmName","active":true},"addresses":[{"street":"StreetName"}]}}}', $result);
+}
+
+function  <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::xml::executionPlan::test::testXmlConstraintPass(): Boolean[0..1]
+{
+  let tree = #{meta::external::format::xml::executionPlan::test::PersonWithFirmConstraint{firstName, lastName, age, dateOfBirth, firm{legalName, firmAddress{street}, active}, addresses{street}}}#;
+  let binding  = compileLegendGrammar(readFile('/core_external_format_xml/executionPlan/tests/resources/constraint.txt')->toOne())->filter(e | $e->instanceOf(Binding))->cast(@Binding)->toOne();
+  let query   = {data:String[1]| meta::external::format::xml::executionPlan::test::PersonWithFirmConstraint->internalize($binding, $data)->checked()->serialize($tree)};
+  let data = '<personWithFirmConstraint firstName="John" lastName="Doe">\n'+
+    '  <age>23</age>\n'+
+    '  <dateOfBirth>2000-01-01</dateOfBirth>\n'+
+    '  <firm>\n'+
+    '    <legalName>FirmName</legalName>\n'+
+    '    <firmAddress>\n' +
+    '      <street>Mapletree</street>\n'+
+    '    </firmAddress>\n'+
+    '    <firmAddress>\n' +
+    '      <street>Anson</street>\n'+
+    '    </firmAddress>\n'+
+    '    <active>true</active>\n'+
+    '  </firm>\n'+
+    '  <addresses>\n'+
+    '    <street>Raffles</street>\n'+
+    '  </addresses>\n'+
+    '  <addresses>\n'+
+    '    <street>Link</street>\n'+
+    '  </addresses>\n'+
+    '</personWithFirmConstraint>';
+
+  let result  = meta::external::format::xml::executionPlan::test::executeXsdSchemaBindingQuery($query, pair('data', $data));
+
+  // TODO [internalize] should only fetch primitive properties
+  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[],"source":{"number":1,"record":"<personWithFirmConstraint firstName=\\"John\\" lastName=\\"Doe\\"><age>23</age><dateOfBirth>2000-01-01</dateOfBirth><firm><legalName>FirmName</legalName><firmAddress><street>Mapletree</street></firmAddress><firmAddress><street>Anson</street></firmAddress><active>true</active></firm><addresses><street>Raffles</street></addresses><addresses><street>Link</street></addresses></personWithFirmConstraint>"},"value":{"firstName":"John","lastName":"Doe","age":23,"dateOfBirth":"2000-01-01","firm":{"legalName":"FirmName","firmAddress":[{"street":"Mapletree"},{"street":"Anson"}],"active":true},"addresses":[{"street":"Raffles"},{"street":"Link"}]}}}', $result);
+}

@@ -1,0 +1,45 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::*;
+import meta::relational::metamodel::relation::*;
+import meta::pure::store::*;
+import meta::core::runtime::*;
+import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::functions::typeInference::*;
+
+Class meta::relational::runtime::RelationalExecutionContext extends meta::pure::runtime::ExecutionContext
+{
+   addDriverTablePkForProject : Boolean[0..1];
+   insertDriverTablePkInTempTable : String[0..1];
+   useTempTableAsDriver : String[0..1];
+   preserveJoinOrder:Boolean[0..1];
+   importDataFlow : Boolean[0..1];
+   importDataFlowAddFks : Boolean[0..1];
+   importDataFlowFksByTable : Map<Relation, List<Column>>[0..1];
+   importDataFlowImplementationCount : Integer[0..1];
+}
+
+Class meta::relational::runtime::FunctionActivatorExecutionContext extends meta::pure::runtime::ExecutionContext
+{
+  postProcessor:  ConcreteFunctionDefinition<Any>[1];
+}
+
+function meta::relational::runtime::hasFunctionActivatorExecutionContext(exeCtx:meta::pure::runtime::ExecutionContext[1]): Boolean[1]
+{
+  $exeCtx->allContextsOfType(meta::relational::runtime::FunctionActivatorExecutionContext)->size()>0;
+}

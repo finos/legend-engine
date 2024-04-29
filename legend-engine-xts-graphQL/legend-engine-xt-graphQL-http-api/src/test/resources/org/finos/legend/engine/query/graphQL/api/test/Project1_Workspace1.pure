@@ -1,0 +1,219 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import simple::model::*;
+
+Class simple::model::Query
+{
+  allFirms() {Firm.all()}: Firm[*];
+  firmByLegalName(legalName: String[1]) {simple::model::Firm.all()->filter(f|$f.legalName == $legalName)->first()}: simple::model::Firm[0..1];
+  firmByEmployees(firstName: String[1],lastName: String[1]) {simple::model::Firm.all()->filter(f|$f.employees.firstName == $firstName &&  $f.employees.lastName == $lastName )->first()}: simple::model::Firm[0..1];
+  personByNames(firstName: String[0..1],lastName: String[0..1]) {simple::model::Person.all()->filter(f|$f.firstName == $firstName  || $f.lastName == $lastName    )}: simple::model::Person[*];
+  selectEmployees(offset: Integer[1],limit: Integer[1])  {
+                                                           let start = $offset - 1;
+                                                           let end = $start + $limit;
+                                                           Person.all()->slice($start, $end);
+                                                         }: simple::model::Person[*];
+  personsByLastNames(lastNames: String[*]) {simple::model::Person.all()->filter(p|$p.lastName->in($lastNames))}: simple::model::Person[*];
+  addressesBiTemporal(processingDate: String[1], businessDate: String[1])
+  {
+    let pd = $processingDate->parseDate();
+    let bd = $businessDate->parseDate();
+    simple::model::AddressBiTemporal.all($pd, $bd);
+  }: simple::model::AddressBiTemporal[*];
+  addressesBusinessTemporal(businessDate: String[1])
+  {
+    let bd = $businessDate->parseDate();
+    simple::model::AddressBusinessTemporal.all($bd);
+  }: simple::model::AddressBusinessTemporal[*];
+  addressesProcessingTemporal(processingDate: String[1])
+  {
+    let pd = $processingDate->parseDate();
+    simple::model::AddressProcessingTemporal.all($pd);
+  }: simple::model::AddressProcessingTemporal[*];
+}
+
+Class simple::model::Firm
+{
+  legalName: String[1];
+}
+
+Class simple::model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.bitemporal>> simple::model::AddressBiTemporal
+{
+  line1: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> simple::model::AddressBusinessTemporal
+{
+  line1: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> simple::model::AddressProcessingTemporal
+{
+  line1: String[1];
+}
+
+Association simple::model::Firm_Employees
+{
+    employees: Person[*];
+    employer: Firm[0..1];
+}
+
+###Relational
+Database meta::relational::graphFetch::tests::domain::TestStore
+(
+)
+
+###Relational
+Database simple::store::DB
+(
+  Table FIRM_TABLE
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGAL_NAME VARCHAR(100)
+  )
+
+  Table PERSON_TABLE
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRST_NAME VARCHAR(100),
+    LAST_NAME VARCHAR(100),
+    FIRM_ID INTEGER
+  )
+
+  Table ADDRESS_TABLE
+  (
+    milestoning
+    (
+      business(BUS_FROM = valid_start, BUS_THRU = valid_end),
+      processing(PROCESSING_IN = system_start, PROCESSING_OUT = system_end)
+    )
+    ID INTEGER PRIMARY KEY,
+    LINE1 VARCHAR(100),
+    PERSON_ID INTEGER,
+    valid_start TIMESTAMP,
+    valid_end TIMESTAMP,
+    system_start TIMESTAMP,
+    system_end TIMESTAMP
+  )
+
+  Join PERSON_FIRM(PERSON_TABLE.FIRM_ID = FIRM_TABLE.ID)
+  Join PERSON_ADDRESS(PERSON_TABLE.ID = ADDRESS_TABLE.PERSON_ID)
+)
+
+###DataSpace
+DataSpace simple::dataspace
+{
+  executionContexts:
+  [
+    {
+      name: 'dummyContext';
+      mapping: simple::mapping::Map;
+      defaultRuntime: simple::runtime::Runtime;
+    }
+  ];
+  defaultExecutionContext: 'dummyContext';
+}
+
+
+###Mapping
+import simple::model::*;
+import simple::store::*;
+
+Mapping simple::mapping::Map
+(
+  Firm : Relational
+  {
+    legalName: [DB]FIRM_TABLE.LEGAL_NAME,
+    employees: [DB]@PERSON_FIRM
+  }
+
+  Person : Relational
+  {
+    firstName: [DB]PERSON_TABLE.FIRST_NAME,
+    lastName: [DB]PERSON_TABLE.LAST_NAME,
+    employer: [DB]@PERSON_FIRM
+  }
+
+  AddressBiTemporal : Relational
+  {
+    line1: [DB]ADDRESS_TABLE.LINE1
+  }
+
+  AddressBusinessTemporal : Relational
+  {
+    line1: [DB]ADDRESS_TABLE.LINE1
+  }
+
+  AddressProcessingTemporal : Relational
+  {
+    line1: [DB]ADDRESS_TABLE.LINE1
+  }
+)
+
+###Runtime
+Runtime simple::runtime::Runtime
+{
+    mappings :
+    [
+        simple::mapping::Map
+    ];
+    connections :
+    [
+        simple::store::DB :
+        [
+            connection_1 : #{
+                RelationalDatabaseConnection {
+                    store: simple::store::DB;
+                    type: H2;
+                    specification: LocalH2{
+                        testDataSetupSqls: [
+                            'DROP TABLE IF EXISTS PERSON_TABLE;',
+                            'CREATE TABLE PERSON_TABLE(ID INT PRIMARY KEY, FIRST_NAME VARCHAR(100), LAST_NAME VARCHAR(100), FIRM_ID INT);',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (1,\'Peter\',\'Smith\',1);',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (2,\'John\',\'Johnson\',1);',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (3,\'John\',\'Hill\',1);',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (4,\'Anthony\',\'Allen\',1)',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (5,\'Fabrice\',\'Roberts\',2)',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (6,\'Oliver\',\'Hill\',3)',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (7,\'David\',\'Harris\',3)',
+                            'DROP TABLE IF EXISTS FIRM_TABLE;',
+                            'CREATE TABLE FIRM_TABLE(ID INT PRIMARY KEY, LEGAL_NAME VARCHAR(100));',
+                            'INSERT INTO FIRM_TABLE(ID,LEGAL_NAME) VALUES (1,\'Firm X\');',
+                            'INSERT INTO FIRM_TABLE(ID,LEGAL_NAME) VALUES (2,\'Firm A\');',
+                            'INSERT INTO FIRM_TABLE(ID,LEGAL_NAME) VALUES (3,\'Firm B\');',
+                            'DROP TABLE IF EXISTS ADDRESS_TABLE;',
+                            'CREATE TABLE ADDRESS_TABLE(ID INT PRIMARY KEY, PERSON_ID INT, LINE1 VARCHAR(100), valid_start TIMESTAMP, valid_end TIMESTAMP, system_start TIMESTAMP, system_end TIMESTAMP);',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1, system_start, system_end, valid_start, valid_end) VALUES (100, 1, \'peter address\', \'2023-02-13\',\'9999-12-30 12:00:00.000\',\'2023-02-13\',\'9999-12-30 12:00:00.000\');',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1, system_start, system_end, valid_start, valid_end) VALUES (101, 2, \'John address\', \'2023-02-14\',\'9999-12-30 12:00:00.000\',\'2023-02-14\',\'9999-12-30 12:00:00.000\');',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1, system_start, system_end, valid_start, valid_end) VALUES (102, 3, \'John hill address\', \'2023-02-15\',\'9999-12-30 12:00:00.000\',\'2023-02-15\',\'9999-12-30 12:00:00.000\');',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1, system_start, system_end, valid_start, valid_end) VALUES (103, 4, \'Anthony address\', \'2023-02-16\',\'9999-12-30 12:00:00.000\',\'2023-02-16\',\'9999-12-30 12:00:00.000\');',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1, system_start, system_end, valid_start, valid_end) VALUES (104, 5, \'Fabrice address\', \'2023-02-17\',\'9999-12-30 12:00:00.000\',\'2023-02-17\',\'9999-12-30 12:00:00.000\');',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1, system_start, system_end, valid_start, valid_end) VALUES (105, 6, \'Oliver address\', \'2023-02-18\',\'9999-12-30 12:00:00.000\',\'2023-02-18\',\'9999-12-30 12:00:00.000\');',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1, system_start, system_end, valid_start, valid_end) VALUES (106, 7, \'David address\', \'2023-02-19\',\'9999-12-30 12:00:00.000\',\'2023-02-19\',\'9999-12-30 12:00:00.000\');'
+                        ];
+                    };
+                    auth: Test;
+                }
+            }#
+        ]
+    ];
+}

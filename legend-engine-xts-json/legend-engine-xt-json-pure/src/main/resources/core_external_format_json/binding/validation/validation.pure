@@ -1,0 +1,227 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::json::binding::validation::*;
+import meta::external::format::json::metamodel::*;
+import meta::external::format::json::transformation::fromPure::*;
+import meta::external::format::json::transformation::toPure::*;
+
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::binding::validation::*;
+import meta::external::format::shared::utils::*;
+
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::model::unit::*;
+
+// To be removed
+import meta::external::format::json::schema::fromSchema::*;
+// To be removed
+
+Class meta::external::format::json::binding::validation::JsonSchemaBindingDetail extends SuccessfulBindingDetail
+{
+  propertyToFieldNameGenerator : Function<{AbstractProperty<Any>[1] -> String[1]}>[1];
+  fieldNameForProperty(prop:AbstractProperty<Any>[1])
+  {
+    $this.propertyToFieldNameGenerator->eval($prop)
+  }:String[1];
+}
+
+function meta::external::format::json::binding::validation::bindDetails(binding: Binding[1]): BindingDetail[1]
+{
+  assert($binding.schemaSet->isEmpty() || $binding.schemaSet.format == 'JSON');
+  
+  if($binding.schemaSet->isEmpty(),
+    | getBindingDetailsWithoutSchemaSet($binding),
+    | getBindingDetailsWithSchemaSet($binding)
+  );
+}
+
+// ===============================================================================================================
+// Validation With SchemaSet : Currently we generate classes from schema and then match as we don't have schema metamodel. Ultimately this would be updated to macth schema with class
+// =============================================================================================================== 
+
+Class meta::external::format::json::binding::validation::State
+{
+  matchedSchema    : SchemaClassMatchState[*];
+  unMatchedSchemas : Class<Any>[*];
+
+  errorMessages()
+  {
+    let errorMessagesFromUnmatchedSchemas = $this.unMatchedSchemas->map(s | 'Could not match json schema : ' + $s->elementToPath()->meta::pure::generation::pathToFileName('json') + ' to any classes in the modelUnit');
+    let errorMessagesFromMatchedSchemas   = $this.matchedSchema.errorMessage;
+    $errorMessagesFromMatchedSchemas->concatenate($errorMessagesFromUnmatchedSchemas);
+  }:String[*];
+}
+
+Class meta::external::format::json::binding::validation::SchemaClassMatchState
+{
+  schema : Class<Any>[1];
+  class  : Class<Any>[1];
+
+  matchedFields   : Pair<AbstractProperty<Any>, String>[*];       // Pair include matched property and field name
+  unMatchedFields : Pair<String, String>[*];                      // Pair include unMatched field name and error message
+
+  errorMessage()
+  {
+    if($this.unMatchedFields->isNotEmpty(),
+      |'Faced issues matching json schema : ' + $this.schema->elementToPath()->meta::pure::generation::pathToFileName('json') + $this.unMatchedFields.second->joinStrings('[', ',', ']'),
+      |[])
+  }:String[0..1];
+}
+
+function <<access.private>> meta::external::format::json::binding::validation::getBindingDetailsWithSchemaSet(binding:Binding[1]): BindingDetail[1]
+{
+  let classesFromModelUnit = $binding.modelUnit->resolve().classes;
+  let targetPackage        = $binding->findTargetPackage($classesFromModelUnit);
+
+  if($targetPackage->isEmpty(),
+    | ^FailedBindingDetail(errorMessages = 'Could not match json schema to any classes in the modelUnit: ' + $classesFromModelUnit.name->joinStrings('(', ',', ')')),
+    | let jsonSchemaToPureConfig = ^JsonSchemaToModelConfiguration(
+                                      format = 'JSON',
+                                      sourceSchemaId = $binding.schemaId,
+                                      targetPackage = $targetPackage->toOne()
+                                    );
+
+      let classesFromSchemaSet  = jsonSchemaToPure($binding.schemaSet->toOne(), $jsonSchemaToPureConfig)->filter(pe| $pe->instanceOf(Class))->cast(@Class<Any>);
+      matchModelsAndSchemas($classesFromSchemaSet, $classesFromModelUnit);
+  );
+}
+
+function <<access.private>> meta::external::format::json::binding::validation::matchModelsAndSchemas(schemas:Class<Any>[*], models:Class<Any>[*]): BindingDetail[1]
+{
+  let schemaPaths = $schemas->map(s | $s->elementToPath())->removeDuplicates();
+
+  if($schemaPaths->size() != $schemas->size(),
+    | let duplicatedSchemas = $schemas->groupBy(s | $s->elementToPath())->keyValues()->filter(p | $p.second.values->size() > 1).first;
+      ^FailedBindingDetail(errorMessages = 'Conflictings schema(s) found for paths : ' + $duplicatedSchemas->map(s | $s->meta::pure::generation::pathToFileName('json'))->joinStrings('[', ',', ']'));,
+    | let modelsIndexedByPath = $models->map(m | pair($m->elementToPath(), $m))->newMap();
+
+      let initialState  = ^State();
+      let finalState    = $schemas->fold({s, st | let matchedModel = $modelsIndexedByPath->get($s->elementToPath());
+                                                  if($matchedModel->isNotEmpty(),
+                                                    | ^$st(matchedSchema += $s->matchModelAndSchema($matchedModel->toOne())),
+                                                    | ^$st(unMatchedSchemas += $s));
+                                                  },
+                                         $initialState);
+
+      let errorMessages = $finalState.errorMessages;  
+      if($errorMessages->isEmpty(),
+          | let classToPropertiesMap = $finalState.matchedSchema->map(ms | pair($ms.class, $ms.matchedFields.first->list()))->newMap();
+            let propertiesToFieldMap = $finalState.matchedSchema.matchedFields->map(p | pair($p.first, $p.second))->newMap();
+            ^JsonSchemaBindingDetail(fetchMappedPropertiesForClass = {class:Class<Any>[1] | $classToPropertiesMap->get($class).values;},
+                                     propertyToFieldNameGenerator  = {property:AbstractProperty<Any>[1] | $propertiesToFieldMap->get($property)->toOne('Property ' + $property.name->toOne() + ' not bound to any field.')});,
+          | ^FailedBindingDetail(errorMessages = $errorMessages));
+  );
+}
+
+function <<access.private>> meta::external::format::json::binding::validation::matchModelAndSchema(schema:Class<Any>[1], model:Class<Any>[1]): SchemaClassMatchState[1]
+{
+  let fields                  = $schema.properties;
+  let propertiesIndexedByName = $model->hierarchicalProperties()->concatenate($model->hierarchicalPropertiesFromAssociations())->groupBy(p | $p.name->toOne());
+
+  let initialState            = ^SchemaClassMatchState(class = $model, schema = $schema);
+  // First Pass  - match by exact name, type and multiplicity 
+  let intermediateState       = $fields->fold({f, st | let matchedProperty = $propertiesIndexedByName->get($f.name->toOne()).values;
+                                                       if($matchedProperty->isEmpty(),
+                                                          | $st,
+                                                          | let error = matchFieldAndProperty($f, $matchedProperty->toOne());
+                                                            if($error->isEmpty(),
+                                                              | ^$st(matchedFields += pair($matchedProperty->toOne()->cast(@AbstractProperty<Any>), $f.name->toOne())),
+                                                              | ^$st(unMatchedFields += pair($f.name->toOne(), $error->toOne()))
+                                                            );
+                                                        );
+                                              },
+                                              $initialState);
+
+  // Second Pass - match by relaxed name, type and multiplicity 
+  let matchedFields       = $intermediateState.matchedFields.second->concatenate($intermediateState.unMatchedFields.first);
+  let remainingFields     = $fields->filter(f | !$f.name->in($matchedFields));
+  let remainingProperties = $model.properties->filter(p | !$p.name->in($matchedFields))->groupBy(p | $p.name->toOne()->handleNonAlphaNumerics()->joinStrings('')->toLower());
+
+  let finalState          = $remainingFields->fold({f, st | let purifiedFieldName = $f.name->toOne()->handleNonAlphaNumerics()->joinStrings('')->toLower();
+                                                            let matchedProperty   = $remainingProperties->get($purifiedFieldName).values;
+                                                            if($matchedProperty->isEmpty(),
+                                                              | ^$st(unMatchedFields += pair($f.name->toOne(), 'Could not match json schema property : ' + $f.name->toOne() + '.')),
+                                                              | let error = matchFieldAndProperty($f, $matchedProperty->toOne());
+                                                                if($error->isEmpty(),
+                                                                  | ^$st(matchedFields += pair($matchedProperty->toOne()->cast(@AbstractProperty<Any>), $f.name->toOne())),
+                                                                  | ^$st(unMatchedFields += pair($f.name->toOne(), $error->toOne()))
+                                                                );
+                                                            );
+                                                   },
+                                                   $intermediateState);
+
+  $finalState;
+}
+
+function <<access.private>> meta::external::format::json::binding::validation::matchFieldAndProperty(field:AbstractProperty<Any>[1], property:AbstractProperty<Any>[1]): String[0..1]
+{
+  let fieldType    = $field->functionReturnType().rawType->toOne();
+  let propertyType = $property->functionReturnType().rawType->toOne();
+    
+  let fieldMultiplicity    = $field->functionReturnMultiplicity();
+  let propertyMultiplicity = $property->functionReturnMultiplicity();
+    
+  if( !subsumesType($fieldType, $propertyType) && !subsumesType($propertyType, $fieldType), 
+    | 'Incompatible return type for json schema property(' + $field.name->orElse('Unknown property name') + '). expected:' + $fieldType->elementToPath() + ', Found : ' + $propertyType->elementToPath() + '.',
+    |
+  if( !multiplicitySubsumes($fieldMultiplicity, $propertyMultiplicity), 
+    | 'Incompatible multiplicity for json schema property(' + $field.name->orElse('Unknown property name') + '). expected:' + $fieldMultiplicity->printMultiplicity() + ', Found : ' + $propertyMultiplicity->printMultiplicity() + '.',
+    |[];));
+}
+
+
+function <<access.private>> meta::external::format::json::binding::validation::subsumesType(subsuming:Type[1], subsumed:Type[1]) :Boolean[1]
+{
+  $subsuming->getAllTypeGeneralisations()->cast(@PackageableElement)->map(x | $x->elementToPath())->contains($subsumed->cast(@PackageableElement)->elementToPath())
+  || ($subsuming == Decimal && $subsumed == Float) //Json Schema does not differntiate between decimal & float
+  || ($subsumed == Decimal && $subsuming == Float) //Json Schema does not differntiate between decimal & float
+}
+
+function <<access.private>> meta::external::format::json::binding::validation::findTargetPackage(binding:Binding[1], packageableElements:PackageableElement[*]): String[0..1]
+{
+  let rootJsonSchema = if($binding.schemaId->isEmpty(),
+                          |$binding.schemaSet.schemas->at(0),
+                          |$binding.schemaSet.schemas->filter(s | $s.id == $binding.schemaId)->toOne());
+  
+  let schemaLocation = $rootJsonSchema.location->toOne();
+  
+  let pureTypeName   = $schemaLocation->typeFullPath([]);
+  
+  let packageableElementName = $packageableElements->map(ele | $ele->elementToPath());
+
+  $packageableElementName->filter(path | $path->endsWith($pureTypeName))
+                        ->map(path | if(($path->length() - $pureTypeName->length()) == 0, |'', | $path->substring(0, $path->length() - $pureTypeName->length() -2)))
+                        ->sortBy(path | $path->length())
+                        ->first();
+}
+
+// ===============================================================================================================
+// Validation Without SchemaSet
+// ===============================================================================================================
+
+function <<access.private>> meta::external::format::json::binding::validation::getBindingDetailsWithoutSchemaSet(binding:Binding[1]): JsonSchemaBindingDetail[1]
+{
+  let resolvedModel   = $binding.modelUnit->resolve();
+  let associations    = $resolvedModel.associations;
+  let availableModels = $resolvedModel.classes->map(c | let classProperties = $c->hierarchicalProperties()->cast(@AbstractProperty<Any>);
+                                                        let assocProperties = $c->hierarchicalPropertiesFromAssociations()->filter(p | $p.owner->in($associations))->cast(@AbstractProperty<Any>);
+                                                        pair($c, $classProperties->concatenate($assocProperties)->list());)->newMap(); 
+
+  ^JsonSchemaBindingDetail
+  (
+    fetchMappedPropertiesForClass = {class:Class<Any>[1] | $availableModels->get($class).values->filter(p | $p->isPrimitiveValueProperty() || $availableModels->get($p.genericType.rawType->toOne())->isNotEmpty())},
+    propertyToFieldNameGenerator  = {property:AbstractProperty<Any>[1] | $property.name->toOne()}
+  );
+}

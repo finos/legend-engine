@@ -1,0 +1,10 @@
+{
+  "name": "core_diagram",
+  "pattern": "(meta::pure::milestoning|meta::pure::functions::meta|meta::pure::metamodel::diagram)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "core_functions",
+    "core_diagram_metamodel"
+  ]
+}

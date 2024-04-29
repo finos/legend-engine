@@ -1,0 +1,95 @@
+[
+  {
+    "defects": [],
+    "source": {
+      "number": 1,
+      "record": "{\"name\":\"Name A\",\"ranking\":80,\"description\":\"A valid description\",\"employees\":[{\"firstName\":\"FirstName A\",\"lastName\":\"Las\",\"addresses\":{\"addressType\":\"Home\",\"address\":{\"firstLine\":\"firstLine\"}}},{\"firstName\":\"FirstName B\",\"lastName\":\"LastName B\",\"addresses\":{\"addressType\":\"Home\",\"address\":{\"firstLine\":\"firstLine\"}}}]}"
+    },
+    "value": {
+      "name": "Name A",
+      "ranking": 80,
+      "employees": [
+        {
+          "firstName": "FirstName A"
+        },
+        {
+          "firstName": "FirstName B"
+        }
+      ]
+    }
+  },
+  {
+    "defects": [
+      {
+        "id": "highRankValidRanking",
+        "externalId": null,
+        "message": "Constraint :[highRankValidRanking] violated in the Class HighRankFirm",
+        "enforcementLevel": "Error",
+        "ruleType": "ClassConstraint",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::constraints::HighRankFirm",
+        "path": []
+      },
+      {
+        "id": "validRanking",
+        "externalId": null,
+        "message": "Constraint :[validRanking] violated in the Class Firm",
+        "enforcementLevel": "Error",
+        "ruleType": "ClassConstraint",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::constraints::Firm",
+        "path": []
+      },
+      {
+        "id": "validEmployeesSize",
+        "externalId": null,
+        "message": "Constraint :[validEmployeesSize] violated in the Class Firm",
+        "enforcementLevel": "Error",
+        "ruleType": "ClassConstraint",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::constraints::Firm",
+        "path": []
+      }
+    ],
+    "source": {
+      "number": 2,
+      "record": "{\"name\":\"Name A\",\"ranking\":-1,\"description\":\"invalid\"}"
+    },
+    "value": {
+      "name": "Name A",
+      "ranking": -1,
+      "employees": []
+    }
+  },
+  {
+    "defects": [
+      {
+        "id": "firstNameLength",
+        "externalId": null,
+        "message": "Constraint :[firstNameLength] violated in the Class Person",
+        "enforcementLevel": "Error",
+        "ruleType": "ClassConstraint",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::constraints::Person",
+        "path": [
+          {
+            "propertyName": "employees",
+            "index": 0
+          }
+        ]
+      }
+    ],
+    "source": {
+      "number": 3,
+      "record": "{\"name\":\"Name A\",\"ranking\":90,\"description\":\"A valid description\",\"employees\":[{\"firstName\":\"First\",\"lastName\":\"Last\"},{\"firstName\":\"FirstName B\",\"lastName\":\"LastName B\",\"addresses\":{\"addressType\":\"Home\",\"address\":{\"firstLine\":\"firstLine\"}}}]}"
+    },
+    "value": {
+      "name": "Name A",
+      "ranking": 90,
+      "employees": [
+        {
+          "firstName": "First"
+        },
+        {
+          "firstName": "FirstName B"
+        }
+      ]
+    }
+  }
+]

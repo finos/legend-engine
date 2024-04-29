@@ -1,0 +1,21 @@
+{
+  "_type": "databaseCommand",
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$project": {
+        "name": 1,
+        "age": true
+      },
+      "$match": {
+        "$expr": {
+          "$gt": [
+            "$age",
+            20
+          ]
+        }
+      }
+    }
+  ],
+  "cursor": {}
+}

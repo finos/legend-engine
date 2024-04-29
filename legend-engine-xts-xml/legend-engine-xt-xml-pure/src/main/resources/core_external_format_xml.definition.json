@@ -1,0 +1,10 @@
+{
+  "name": "core_external_format_xml",
+  "pattern": "(meta::external::format::xml|meta::protocols::pure)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "core_functions",
+    "core"
+  ]
+}

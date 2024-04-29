@@ -21,6 +21,7 @@ env:
   DOCKER_USERNAME: finos
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
   MAVEN_OPTS: -Xmx4g
+
 on:
   workflow_dispatch:
     inputs:
@@ -61,6 +62,11 @@ jobs:
           nextPatch=$((${a[2]} + 1))
           developmentVersion="${a[0]}.${a[1]}.${nextPatch}-SNAPSHOT"
           echo "DEVELOPMENT_VERSION=${developmentVersion}" >> $GITHUB_ENV
+
+      - name: Collect Workflow Telemetry
+        uses: runforesight/workflow-telemetry-action@v1
+        with:
+          theme: dark
 
       - name: Prepare release
         run: mvn -B -e release:prepare -Darguments='-B -e' -DpreparationGoals=clean -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release

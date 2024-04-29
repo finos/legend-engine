@@ -1,0 +1,300 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::dataQuality::*;
+import meta::pure::mapping::*;
+import meta::core::runtime::*;
+import meta::pure::graphFetch::execution::*;
+import meta::external::format::shared::functions::*;
+import meta::external::format::flatdata::executionPlan::test::*;
+import meta::external::format::flatdata::executionPlan::test::types::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::types::testAllDataTypesInternalize(): Boolean[1]
+{
+  let binding = getAllTypesBinding();
+  let tree    = #{AllTypes{
+                    string,
+                    optionalString,
+                    integer,
+                    optionalInteger,
+                    customInteger,
+                    float,
+                    optionalFloat,
+                    customFloat,
+                    decimal,
+                    optionalDecimal,
+                    customDecimal,
+                    boolean,
+                    optionalBoolean,
+                    customBoolean,
+                    date,
+                    optionalDate,
+                    customDate,
+                    dateTime,
+                    optionalDateTime,
+                    customDateTime}}#;
+
+  let data    = readFile('/core_external_format_flatdata/executionPlan/tests/resources/allTypes.csv')->toOne();
+  let query   = {data:String[1]|AllTypes->internalize($binding, $data)->serialize($tree)};
+
+  let result  = executeFlatdataBindingQuery($query, pair('data', $data));
+
+  assertEquals('{"builder":{"_type":"json"},"values":[{"string":"test","optionalString":null,"integer":1,"optionalInteger":null,"customInteger":1000,"float":1.0,"optionalFloat":null,"customFloat":1000.23,"decimal":1,"optionalDecimal":null,"customDecimal":1000.23,"boolean":true,"optionalBoolean":null,"customBoolean":true,"date":"2022-12-12","optionalDate":null,"customDate":"2022-12-12","dateTime":"2022-12-12T01:14:12.123","optionalDateTime":null,"customDateTime":"2022-08-13T02:14:12.000"},{"string":"test","optionalString":"testOptional","integer":1,"optionalInteger":23,"customInteger":1000,"float":1.0,"optionalFloat":1.23,"customFloat":1000.23,"decimal":1,"optionalDecimal":3.54,"customDecimal":1000.23,"boolean":true,"optionalBoolean":false,"customBoolean":false,"date":"2022-12-12","optionalDate":"2022-12-12","customDate":"2022-12-12","dateTime":"2022-12-12T06:14:12.123","optionalDateTime":"2022-12-12T01:14:12.123","customDateTime":"2022-08-13T02:14:12.000"}]}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::types::testAllDataTypesInternalizeWithAnotherDateFormat(): Boolean[1]
+{
+  let binding = getAllTypesBinding();
+  let tree    = #{AllTypes{
+                    string,
+                    optionalString,
+                    integer,
+                    optionalInteger,
+                    customInteger,
+                    float,
+                    optionalFloat,
+                    customFloat,
+                    decimal,
+                    optionalDecimal,
+                    customDecimal,
+                    boolean,
+                    optionalBoolean,
+                    customBoolean,
+                    date,
+                    optionalDate,
+                    customDate,
+                    dateTime,
+                    optionalDateTime,
+                    customDateTime}}#;
+
+  let data    = readFile('/core_external_format_flatdata/executionPlan/tests/resources/allTypes1.csv')->toOne();
+  let query   = {data:String[1]|AllTypes->internalize($binding, $data)->serialize($tree)};
+
+  let result  = executeFlatdataBindingQuery($query, pair('data', $data));
+
+  assertEquals('{"builder":{"_type":"json"},"values":[{"string":"test","optionalString":null,"integer":1,"optionalInteger":null,"customInteger":1000,"float":1.0,"optionalFloat":null,"customFloat":1000.23,"decimal":1,"optionalDecimal":null,"customDecimal":1000.23,"boolean":true,"optionalBoolean":null,"customBoolean":true,"date":"2022-12-12","optionalDate":null,"customDate":"2022-12-12","dateTime":"2022-12-12T01:14:12.123","optionalDateTime":null,"customDateTime":"2022-08-13T02:14:12.000"},{"string":"test","optionalString":"testOptional","integer":1,"optionalInteger":23,"customInteger":1000,"float":1.0,"optionalFloat":1.23,"customFloat":1000.23,"decimal":1,"optionalDecimal":3.54,"customDecimal":1000.23,"boolean":true,"optionalBoolean":false,"customBoolean":false,"date":"2022-12-12","optionalDate":"2022-12-12","customDate":"2022-12-12","dateTime":"2022-12-12T06:14:12.123","optionalDateTime":"2022-12-12T01:14:12.123","customDateTime":"2022-08-13T02:14:12.000"}]}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::types::testAllDataTypesInternalizeAndExternalize(): Boolean[1]
+{
+  let binding = getAllTypesBinding();
+  let tree    = #{AllTypes{
+                    string,
+                    optionalString,
+                    integer,
+                    optionalInteger,
+                    customInteger,
+                    float,
+                    optionalFloat,
+                    customFloat,
+                    decimal,
+                    optionalDecimal,
+                    customDecimal,
+                    boolean,
+                    optionalBoolean,
+                    customBoolean,
+                    date,
+                    optionalDate,
+                    customDate,
+                    dateTime,
+                    optionalDateTime,
+                    customDateTime}}#;
+
+  let data    = readFile('/core_external_format_flatdata/executionPlan/tests/resources/allTypes.csv')->toOne();
+  let query   = {data:String[1]|AllTypes->internalize($binding, $data)->externalize($binding, $tree)};
+
+  let result  = executeFlatdataBindingQuery($query, pair('data', $data));
+
+  assertEquals('string~optionalString~integer~optionalInteger~customInteger~float~optionalFloat~customFloat~decimal~optionalDecimal~customDecimal~boolean~optionalBoolean~customBoolean~date~optionalDate~customDate~dateTime~optionalDateTime~customDateTime\ntest~null~1~null~1,000~1.0~null~1,000.23~1~null~1,000.23~true~null~Y~2022-12-12~null~12/12/2022~2022-12-12T01:14:12.123Z~null~13/08/2022 02:14:12\ntest~testOptional~1~23~1,000~1.0~1.23~1,000.23~1~3.54~1,000.23~true~false~N~2022-12-12~2022-12-12~12/12/2022~2022-12-12T06:14:12.123Z~2022-12-12T01:14:12.123Z~13/08/2022 02:14:12', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::types::testInternalizeWithBadData(): Boolean[1]
+{
+  let binding = getAllTypesBinding();
+  let tree    = #{AllTypes{
+                    string,
+                    optionalString,
+                    integer,
+                    optionalInteger,
+                    customInteger,
+                    float,
+                    optionalFloat,
+                    customFloat,
+                    decimal,
+                    optionalDecimal,
+                    customDecimal,
+                    boolean,
+                    optionalBoolean,
+                    customBoolean,
+                    date,
+                    optionalDate,
+                    customDate,
+                    dateTime,
+                    optionalDateTime,
+                    customDateTime}}#;
+
+  let data    = readFile('/core_external_format_flatdata/executionPlan/tests/resources/allTypesBadData.csv')->toOne();
+  let query   = {data:String[1]|AllTypes->internalize($binding, $data)->checked()->serialize($tree)};
+
+  let result  = executeFlatdataBindingQuery($query, pair('data', $data));
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[{"id":null,"externalId":null,"message":"Failed to read mandatory \'integer\' with value: XX, error: ParseException Should be digits optionally preceded by \'+\' or \'-\'","enforcementLevel":"Critical","ruleType":"InvalidInput","ruleDefinerPath":"meta::external::format::flatdata::executionPlan::test::types::AllTypesSchemaSet","path":[]},{"id":null,"externalId":null,"message":"Failed to read \'optionalFloat\' with value: YY, error: ParseException Should be an optionally signed simple floating point number or one in scientific notation","enforcementLevel":"Error","ruleType":"InvalidInput","ruleDefinerPath":"meta::external::format::flatdata::executionPlan::test::types::AllTypesSchemaSet","path":[]},{"id":null,"externalId":null,"message":"Failed to read \'optionalDecimal\' with value: ZZ, error: ParseException Should be an optionally signed simple floating point number or one in scientific notation","enforcementLevel":"Error","ruleType":"InvalidInput","ruleDefinerPath":"meta::external::format::flatdata::executionPlan::test::types::AllTypesSchemaSet","path":[]},{"id":null,"externalId":null,"message":"Failed to read mandatory \'date\' with value: 2022-20-20, error: ParseException Unparseable date: \\\"2022-20-20\\\" for format \'yyyy-MM-dd\'","enforcementLevel":"Critical","ruleType":"InvalidInput","ruleDefinerPath":"meta::external::format::flatdata::executionPlan::test::types::AllTypesSchemaSet","path":[]},{"id":null,"externalId":null,"message":"Failed to read \'optionalInteger\' with value: 1.0, error: ParseException Should be digits optionally preceded by \'+\' or \'-\'","enforcementLevel":"Error","ruleType":"InvalidInput","ruleDefinerPath":"meta::external::format::flatdata::executionPlan::test::types::AllTypesSchemaSet","path":[]}],"source":{"number":1,"lineNumber":2,"record":"test~null~XX~1.0~1,000~1.0~YY~1,000.23~1.0~ZZ~1,000.23~true~null~Y~2022-20-20~null~12/20/2022~2022-12-12T01:14:12.123Z~null~13/08/2022 02:14:12","recordValues":[{"address":"string","rawValue":"test"},{"address":"optionalString","rawValue":"null"},{"address":"integer","rawValue":"XX"},{"address":"optionalInteger","rawValue":"1.0"},{"address":"customInteger","rawValue":"1,000"},{"address":"float","rawValue":"1.0"},{"address":"optionalFloat","rawValue":"YY"},{"address":"customFloat","rawValue":"1,000.23"},{"address":"decimal","rawValue":"1.0"},{"address":"optionalDecimal","rawValue":"ZZ"},{"address":"customDecimal","rawValue":"1,000.23"},{"address":"boolean","rawValue":"true"},{"address":"optionalBoolean","rawValue":"null"},{"address":"customBoolean","rawValue":"Y"},{"address":"date","rawValue":"2022-20-20"},{"address":"optionalDate","rawValue":"null"},{"address":"customDate","rawValue":"12/20/2022"},{"address":"dateTime","rawValue":"2022-12-12T01:14:12.123Z"},{"address":"optionalDateTime","rawValue":"null"},{"address":"customDateTime","rawValue":"13/08/2022 02:14:12"}]},"value":null}}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::types::testEnumInternalize(): Boolean[1]
+{
+  let binding = getEnumClassBinding();
+  let tree    = #{meta::external::format::flatdata::executionPlan::test::types::Person{
+                    name,
+                    gender}}#;
+
+  let data    = 'name,gender\nJohn Doe,Male';
+  let query   = {data:String[1]|meta::external::format::flatdata::executionPlan::test::types::Person->internalize($binding, $data)->serialize($tree)};
+
+  let result  = executeFlatdataBindingQuery($query, pair('data', $data));
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"name":"John Doe","gender":"MALE"}}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::types::testEnumInternalizeWithInvalidValue(): Boolean[1]
+{
+  let binding = getEnumClassBinding();
+  let tree    = #{meta::external::format::flatdata::executionPlan::test::types::Person{
+                    name,
+                    gender}}#;
+
+  let data    = 'name,gender\nJohn Doe,Neuter';
+  let query   = {data:String[1]|meta::external::format::flatdata::executionPlan::test::types::Person->internalize($binding, $data)->checked()->serialize($tree)};
+
+  let result  = executeFlatdataBindingQuery($query, pair('data', $data));
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[{"id":null,"externalId":null,"message":"Neuter does not match to any value in Gender","enforcementLevel":"Critical","ruleType":"ClassStructure","ruleDefinerPath":"meta::external::format::flatdata::executionPlan::test::types::Person","path":[]}],"source":{"number":1,"lineNumber":2,"record":"John Doe,Neuter","recordValues":[{"address":"name","rawValue":"John Doe"},{"address":"gender","rawValue":"Neuter"}]},"value":null}}', $result);
+}
+
+function <<meta::pure::profiles::test.ToFix>> meta::external::format::flatdata::executionPlan::test::types::testEnumInternalizeAndExternalize(): Boolean[1]
+{
+  let binding = getEnumClassBinding();
+  let tree    = #{meta::external::format::flatdata::executionPlan::test::types::Person{
+                    name,
+                    gender}}#;
+
+  let data    = 'name,gender\nJohn Doe,Male';
+  let query   = {data:String[1]|meta::external::format::flatdata::executionPlan::test::types::Person->internalize($binding, $data)->externalize($binding, $tree)};
+
+  let result  = executeFlatdataBindingQuery($query, pair('data', $data));
+
+  false;
+}
+
+// =========================================================================================================
+// Models
+// =========================================================================================================
+
+###Pure
+import meta::legend::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::flatdata::executionPlan::test::types::*;
+
+function meta::external::format::flatdata::executionPlan::test::types::getAllTypesBinding():Binding[1]
+{
+  let schema =
+      '###ExternalFormat\n' +
+      'Binding meta::external::format::flatdata::executionPlan::test::types::AllTypesBinding\n' +
+      '{\n' +
+      '  schemaSet: meta::external::format::flatdata::executionPlan::test::types::AllTypesSchemaSet;\n' +
+      '  contentType: \'application/x.flatdata\';\n' +
+      '  modelIncludes: [\n' +
+      '    meta::external::format::flatdata::executionPlan::test::types::AllTypes\n' +
+      '  ];\n' +
+      '}\n' +
+      '\n' +
+      'SchemaSet meta::external::format::flatdata::executionPlan::test::types::AllTypesSchemaSet\n' +
+      '{\n' +
+      '  format: FlatData;\n' +
+      '  schemas: [\n' +
+      '    {\n' +
+      '      content: \'section AllTypes: DelimitedWithHeadings\\\n{\\\n  scope.untilEof;\\\n  nullString: \\\'null\\\';  delimiter: \\\'~\\\';\\\n\\\n  Record\\\n  {\\\n    string: STRING;\\\n    optionalString: STRING(optional);\\\n    integer: INTEGER;\\\n    optionalInteger: INTEGER(optional);\\\n    customInteger: INTEGER(format=\\\'#,##0\\\');\\\n    float: DECIMAL;\\\n    optionalFloat: DECIMAL(optional);\\\n    customFloat: DECIMAL(format=\\\'#,##0.0#\\\');\\\n    decimal: DECIMAL;\\\n    optionalDecimal: DECIMAL(optional);\\\n    customDecimal: DECIMAL(format=\\\'#,##0.0#\\\');\\\n    boolean: BOOLEAN;\\\n    optionalBoolean: BOOLEAN(optional);\\\n    customBoolean: BOOLEAN(trueString=\\\'Y\\\', falseString=\\\'N\\\');\\\n    date: DATE;\\\n    optionalDate: DATE(optional);\\\n    customDate: DATE(format=[\\\'MM/dd/yyyy\\\', \\\'MM dd yyyy\\\']);\\\n    dateTime: DATETIME;\\\n    optionalDateTime: DATETIME(optional);\\\n    customDateTime: DATETIME(format=[\\\'dd/MM/yyyy HH:mm:ss\\\', \\\'dd MM yyyy HH:mm:ss\\\']);\\\n  }\\\n}\';\n' +
+      '    }\n' +
+      '  ];\n' +
+      '}';
+
+  compileLegendGrammar($schema)->filter(ele | $ele->instanceOf(Binding))->cast(@Binding)->toOne();
+}
+
+function meta::external::format::flatdata::executionPlan::test::types::getEnumClassBinding():Binding[1]
+{
+  let schema =
+      '###ExternalFormat\n' +
+      'Binding meta::external::format::flatdata::executionPlan::test::types::EnumClassBinding\n' +
+      '{\n' +
+      '  schemaSet: meta::external::format::flatdata::executionPlan::test::types::EnumClassSchemaSet;\n' +
+      '  contentType: \'application/x.flatdata\';\n' +
+      '  modelIncludes: [\n' +
+      '    meta::external::format::flatdata::executionPlan::test::types::Person\n' +
+      '  ];\n' +
+      '}\n' +
+      '\n' +
+      'SchemaSet meta::external::format::flatdata::executionPlan::test::types::EnumClassSchemaSet\n' +
+      '{\n' +
+      '  format: FlatData;\n' +
+      '  schemas: [\n' +
+      '    {\n' +
+      '      content: \'section Person: DelimitedWithHeadings\\\n{\\\n  scope.untilEof;\\\n  delimiter: \\\',\\\';\\\n\\\n  Record\\\n  {\\\n    name: STRING;\\\n    gender: STRING;\\\n  }\\\n}\';\n' +
+      '    }\n' +
+      '  ];\n' +
+      '}';
+
+  compileLegendGrammar($schema)->filter(ele | $ele->instanceOf(Binding))->cast(@Binding)->toOne();
+}
+
+Class meta::external::format::flatdata::executionPlan::test::types::AllTypes
+{
+  string          : String[1];
+  optionalString  : String[0..1];
+
+  integer         : Integer[1];
+  optionalInteger : Integer[0..1];
+  customInteger   : Integer[1];
+
+  float           : Float[1];
+  optionalFloat   : Float[0..1];
+  customFloat     : Float[1];
+
+  decimal         : Decimal[1];
+  optionalDecimal : Decimal[0..1];
+  customDecimal   : Decimal[1];
+
+  boolean         : Boolean[1];
+  optionalBoolean : Boolean[0..1];
+  customBoolean   : Boolean[1];
+
+  date            : StrictDate[1];
+  optionalDate    : StrictDate[0..1];
+  customDate      : StrictDate[1];
+
+  dateTime        : DateTime[1];
+  optionalDateTime: DateTime[0..1];
+  customDateTime  : DateTime[1];
+}
+
+Enum meta::external::format::flatdata::executionPlan::test::types::Gender
+{
+  MALE, FEMALE, OTHER
+}
+
+Class meta::external::format::flatdata::executionPlan::test::types::Person
+{
+  name   : String[1];
+  gender : Gender[1];
+}

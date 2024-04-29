@@ -1,0 +1,317 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::pure::functions::hash::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::external::store::elasticsearch::executionTest::testCase::tds::*;
+import meta::pure::mapping::*;
+import meta::pure::extension::*;
+import meta::pure::functions::io::http::*;
+import meta::pure::test::*;
+import meta::pure::store::*;
+import meta::core::runtime::*;
+import meta::external::store::elasticsearch::executionTest::testCase::*;
+import meta::external::store::elasticsearch::executionTest::test::*;
+import meta::external::store::elasticsearch::executionTest::utils::*;
+
+Class meta::external::store::elasticsearch::executionTest::test::TestConfig
+{
+  tag: String[1];
+  extension: Extension[1];
+  model: String[1];
+  indexRecordRequest: Function<{String[1], Any[*]->Any[*]}>[1];
+}
+
+function meta::external::store::elasticsearch::executionTest::test::collectTest(
+    tag: String[1],
+    extension: Extension[1],
+    modelFile: String[1],
+    indexRecordRequest: Function<{String[1], Any[*]->Any[*]}>[1],
+    testFilter: Function<{FunctionDefinition<Any>[1] -> Boolean[1]}>[0..1]
+  ): PureTestCollection[1]
+{
+  meta::pure::test::collectParameterizedTests(
+    meta::external::store::elasticsearch::executionTest::testCase,
+    $tag,
+    ^TestConfig(
+        tag = $tag,
+        model = $modelFile->readFile()->toOne('file not found? ' + $modelFile),
+        extension = $extension,
+        indexRecordRequest = $indexRecordRequest
+      ),
+    [],
+    $testFilter
+  );
+}
+
+Class meta::external::store::elasticsearch::executionTest::testCase::OmdbRecord
+{
+  _id: String[1];
+  Title: String[1];
+  Director: String[1];
+  MPAA: String[0..1];
+  ReleaseDate: String[1];
+  ReleaseDateRaw: Date[1];
+  Budget: Integer[1];
+  Revenue: Float[1];
+  Description: String[0..1];
+  MainActor: Actor[1];
+}
+
+Class meta::external::store::elasticsearch::executionTest::testCase::Actor
+{
+  Name: String[1];
+}
+
+
+function meta::external::store::elasticsearch::executionTest::testCase::omdbCommonIndexRecord(
+  title: String[1],
+  director: String[1],
+  MPAA:     String[0..1],
+  releaseDate: Date[1],
+  budget: Integer[1],
+  revenue: Float[1],
+  description: String[0..1],
+  mainActor: String[1]
+): OmdbRecord[1]
+{
+  ^OmdbRecord(
+    _id = $title->hash(HashType.MD5),
+    Title = $title,
+    Director = $director,
+    MPAA = $MPAA,
+    ReleaseDate = format('%t{yyyy-MM-dd hh:mm:ss.SSSa}', $releaseDate),
+    ReleaseDateRaw = $releaseDate,
+    Budget = $budget,
+    Revenue = $revenue,
+    Description = $description,
+    MainActor = ^Actor(Name = $mainActor)
+  );
+}
+
+function meta::external::store::elasticsearch::executionTest::testCase::omdbCommonIndexRecords(): OmdbRecord[*]
+{
+  // at the moment,dates are hard to distinguish between StrictDate or DateTime, hence we are testing using DateTime for now
+  let records = [
+    omdbCommonIndexRecord('Iron Man',                              'Jon Favreau',    'PG-13', %2008-05-02T00:00:00.100, 140, 585.8,
+          'Tells the story of Tony Stark, a billionaire industrialist and genius inventor who is kidnapped and forced to build a devastating weapon',
+          'Robert Downey Jr.'
+          ),
+    omdbCommonIndexRecord('Iron Man 2',                            'Jon Favreau',    'PG-13', %2010-04-26T00:00:00.200, 170, 623.9,
+          'With the world now aware of his identity as Iron Man, Tony Stark must contend with both his declining health and a vengeful mad man with ties to his father\'s legacy.',
+          'Robert Downey Jr.'
+          ),
+    omdbCommonIndexRecord('The Imitation Game',                    'Morten Tyldum',  'PG-13', %2014-08-29T00:00:00.300,  14, 233.5,
+          'In 1951, two policemen, Nock and Staehl, investigate the mathematician Alan Turing after an apparent break-in at his home',
+          'Benedict Cumberbatch'
+          ),
+    omdbCommonIndexRecord('The Bourne Identity',                   'Doug Liman',     'PG-13', %2002-06-06T00:00:00.400,  60, 214.0,
+          'Jason Bourne, a man suffering from psychogenic amnesia attempting to discover his identity amidst a clandestine conspiracy within the CIA',
+          'Matt Damon'
+          ),
+    omdbCommonIndexRecord('American Gangster',                     'Ridley Scott',       'R', %2007-10-19T00:00:00.500, 100, 266.5,
+          [],
+          'Denzel Washington'
+          ),
+    omdbCommonIndexRecord('Sherlock Holmes: A Game of Shadows',    'Guy Ritchie',         [], %2011-12-16T00:00:00.600, 125, 543.8,
+          'Sherlock Holmes is investigating a seemingly unrelated series of crimes around Europe, believing them all connected to Professor Moriarty',
+          'Robert Downey Jr.'
+          ),
+    omdbCommonIndexRecord('Ghostbusters',                          'Ivan Reitman',      'PG', %1984-06-08T00:00:00.700,  25, 295.2,
+          'Three parapsychologists forced out of their university funding set up shop as a unique ghost removal service in New York City, attracting frightened yet skeptical customers.',
+          'Bill Murray'
+          ),
+    omdbCommonIndexRecord('The Hitchhiker\'s Guide to the Galaxy', 'Garth Jennings',      [], %2005-04-28T00:00:00.800,  45, 104.5,
+          'Mere seconds before the Earth is to be demolished by an alien construction crew, journeyman Arthur Dent is swept off the planet by his friend Ford Prefect, a researcher penning a new edition of "The Hitchhiker\'s Guide to the Galaxy."',
+          'Martin Freeman'
+          ),
+    omdbCommonIndexRecord('Inspector Gadget',                      'David Kellogg',       [], %1999-07-23T00:00:00.900,  75, 134.4,
+          'A security guard\'s dreams come true when he is selected to be transformed into a cybernetic police officer.',
+          'Don Adams'
+          ),
+    omdbCommonIndexRecord('The Great Gatsby',                      'Baz Luhrmann',        [], %2013-05-01T00:00:00.000, 105, 353.6,
+          'The film follows the life and times of millionaire Jay Gatsby and his neighbor Nick Carraway, who recounts his encounter with Gatsby at the height of the Roaring Twenties on Long Island in New York.',
+          'Leonardo DiCaprio'
+          ),
+    omdbCommonIndexRecord('Garfield 2',                            'Tim Hill',            [], %2006-06-16T00:00:01.000,  60, 143.3,
+          'Garfield follows Jon to England and receives the royal treatment after he is mistaken for the heir to a grand castle.',
+          'Bill Murray'
+          )
+  ];
+}
+
+function meta::external::store::elasticsearch::executionTest::testCase::omdbCommonIndexRecordsTds(): TabularDataSet[1]
+{
+  omdbCommonIndexRecords()->project(
+    [x | $x.Title, x | $x.Director, x | $x.MPAA, x | $x.ReleaseDateRaw, x | $x.Budget, x | $x.Revenue, x | $x.Description, x | $x.Description,      x | $x.MainActor.Name,  x | $x._id],
+    ['Title',      'Director',      'MPAA',      'ReleaseDate',         'Budget',      'Revenue',     'Description',       'Description.asKeyword', 'MainActor.Name',       '_id']
+  );
+}
+
+function <<paramTest.BeforePackage>> meta::external::store::elasticsearch::executionTest::testCase::startESCluster(config:TestConfig[1]):Boolean[1]
+{
+  let omdbSerializer = {x: OmdbRecord[1], state: JSONState[1] |
+    $x->toJSONElement([], 1000, $state.config)->cast(@JSONObject).keyValuePairs
+      ->filter(kv | $kv.key.value->in(['_id', 'ReleaseDateRaw'])->not())
+      ->newJSONObject()
+  };
+  $config.tag->startElasticsearchTestServer();
+  let commands = $config.indexRecordRequest->eval('omdb-common', omdbCommonIndexRecords())
+      ->map(c | $c->meta::json::toJSON($omdbSerializer, 1000, meta::json::config(false, false, true, true)));
+  // $commands->forAll({c | '------------'->println(); $c->println(); println(''); $config.tag->requestElasticsearchTestServer($c)->println(); '------------'->println(); true;});
+  $commands->forAll({c | $config.tag->requestElasticsearchTestServer($c); true;});
+}
+
+function <<paramTest.AfterPackage>> meta::external::store::elasticsearch::executionTest::testCase::stopESCluster(config:TestConfig[1]):Boolean[1]
+{
+  $config.tag->stopElasticsearchTestServer();
+  true;
+}
+
+function meta::external::store::elasticsearch::executionTest::testCase::tds::testTdsExpression(config:TestConfig[1], toTest: LambdaFunction<{TabularDataSet[1]->TabularDataSet[1]}>[1]): Boolean[1]
+{
+  let testCaseLambda = $toTest->printFunctionDefinitionExpressions('')->toOne();
+  let testCase = $testCaseLambda->substring($testCaseLambda->indexOf('->', 0) + 2);
+  testTdsExpression($config, $toTest, $testCase);
+}
+
+function meta::external::store::elasticsearch::executionTest::testCase::tds::testTdsExpression(config:TestConfig[1], toTest: LambdaFunction<{TabularDataSet[1]->TabularDataSet[1]}>[1], testCase: String[1]): Boolean[1]
+{
+  let variables = $toTest->extractVariables();
+  let tds = runTdsExpression($config, $testCase, $variables);
+  let expected = $toTest->eval([omdbCommonIndexRecordsTds()]);
+  assert($tds.rows->size() != 0, |$testCase + ' should return at least a row, got zero');
+  assertTdsEquivalent($testCase, $expected, $tds);
+}
+
+function meta::external::store::elasticsearch::executionTest::testCase::tds::testTdsExpressionReturnsEmpty(config:TestConfig[1], toTest: LambdaFunction<{TabularDataSet[1]->TabularDataSet[1]}>[1]): Boolean[1]
+{
+  let testCaseLambda = $toTest->printFunctionDefinitionExpressions('')->toOne();
+  let testCase = $testCaseLambda->substring($testCaseLambda->indexOf('->', 0) + 2);
+  testTdsExpressionReturnsEmpty($config, $toTest, $testCase);
+}
+
+function meta::external::store::elasticsearch::executionTest::testCase::tds::testTdsExpressionReturnsEmpty(config:TestConfig[1], toTest: LambdaFunction<{TabularDataSet[1]->TabularDataSet[1]}>[1], testCase: String[1]): Boolean[1]
+{
+  let variables = $toTest->extractVariables();
+  let tds = runTdsExpression($config, $testCase, $variables);
+  let expected = $toTest->eval([omdbCommonIndexRecordsTds()]);
+  assert($tds.rows->size() == 0, |$testCase + ' should not return any row, got ' + $tds.rows->size()->toString());
+  assertTdsEquivalent($testCase, $expected, $tds);
+}
+
+function <<access.private>> meta::external::store::elasticsearch::executionTest::testCase::tds::extractVariables(toTest: LambdaFunction<{TabularDataSet[1]->TabularDataSet[1]}>[1]): Pair<String, Pair<VariableExpression, List<Any>>>[*]
+{
+  let toTestExpression = $toTest->evaluateAndDeactivate().expressionSequence->toOne();
+  let varExpressions = $toTestExpression->findVariableExpressionsInValueSpecification()->map(x | pair($x.name, $x))->newMap();
+  let variableValues = $toTest->openVariableValues()->keyValues();
+  $variableValues->map(x | pair($x.first, pair($varExpressions->get($x.first)->toOne('no VariableExpression for ' + $x.first), $x.second)));
+}
+
+function meta::external::store::elasticsearch::executionTest::testCase::tds::runTdsExpression(config:TestConfig[1], toTest: String[1], variables: Pair<String, Pair<VariableExpression, List<Any>>>[*]): TabularDataSet[1]
+{
+  let varDefinitions = $variables->map(x | $x.first + ': ' + $x.second.first.genericType->printGenericType() + '[' + $x.second.first.multiplicity->printMultiplicity() + ']')->joinStrings(', ');
+  let vars = $variables->filter(x | $x.second.second.values->isNotEmpty())->map(x | pair($x.first, $x.second.second->map(l | if($l.values->size() == 1, |$l.values, |$l)->toOne())));
+
+  let url = $config.tag->meta::external::store::elasticsearch::executionTest::utils::startElasticsearchTestServer();
+
+  let toCompile = $config.model->replace('%_url_%', 'http://%s:%d'->format([$url.host, $url.port])) + '\n\n' +
+    '###Pure \n\n ' +
+    'function test::test(' +  $varDefinitions + '): TabularDataSet[1] {\n' +
+    '  indexToTDS(test::Store, \'omdb-common\')->from(test::Runtime)->' + $toTest + ';' +
+    '}';
+
+  // $toCompile->println();
+
+  let testCase = meta::legend::compile($toCompile)->filter(x | $x->elementToPath()->startsWith('test::test_'))->toOne()->cast(@FunctionDefinition<Any>);
+  let tds = execute($config, $testCase, $vars);
+}
+
+function meta::external::store::elasticsearch::executionTest::testCase::execute(config: TestConfig[1], f: FunctionDefinition<Any>[1], vars: Pair<String, Any>[*]): TabularDataSet[1]
+{
+  let resultJson = meta::legend::execute(
+      $f,
+      $vars,
+      ^meta::pure::runtime::ExecutionContext(),
+      $config.extension
+  );
+
+  // println($resultJson);
+
+  let result = $resultJson->meta::json::parseJSON()->cast(@meta::json::JSONObject);
+  let builderJson = $result->meta::json::getValue('builder')->toOne();
+  let builder = $builderJson->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder)
+                              ->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder);
+
+  let tdsColumns = $builder.columns->toIndexed()->map(c | ^TDSColumn(offset = $c.first, name=$c.second.name, type = $c.second.type->map(t | $t->stringToDataType())));
+
+  let rowsJson = $result->meta::json::getValue('result')
+                  ->cast(@meta::json::JSONObject)->toOne()->meta::json::getValue('rows')
+                  ->cast(@meta::json::JSONArray).values
+                  ->cast(@meta::json::JSONObject)->map(o | $o->meta::json::getValue('values'))
+                  ->cast(@meta::json::JSONArray);
+
+
+  let tds = ^TabularDataSet(columns = $tdsColumns);
+  let rows = $rowsJson->map(r | ^TDSRow(parent = $tds, values = $r.values->toIndexed()->map(v | if($v.second->instanceOf(meta::json::JSONNull), |^TDSNull(), |$v.second->meta::json::fromJSON($tdsColumns->at($v.first).type->toOne())))));
+  ^$tds(rows = $rows);
+}
+
+function meta::external::store::elasticsearch::executionTest::testCase::assertTdsEquivalent(description: String[1], expected: TabularDataSet[1], actual: TabularDataSet[1]): Boolean[1]
+{
+  assertEquals($expected.columns.name,  $actual.columns.name,
+      'Columns are different.  Expected  %s, got %s',
+      [ $expected.columns.name->joinStrings('[', ', ', ']'), $actual.columns.name->joinStrings('[', ', ', ']') ]
+  );
+
+  // println($expected.rows.values);
+  // println($actual.rows.values);
+
+  assertEquals($expected.rows->size(), $actual.rows->size(),
+      'Number of rows are different.  Expected  %d, got %d',
+      [ $expected.rows->size(), $actual.rows->size() ]
+  );
+
+  let zipped = if ($description->contains('sort('),
+    | $expected.rows->map(r | $expected.columns->map(c | $r.get($c)))
+        ->zip($actual.rows->map(r | $actual.columns->map(c | $r.get($c)))),
+    | $expected->sort($expected.columns.name).rows->map(r | $expected.columns->map(c | $r.get($c)))
+        ->zip($actual->sort($actual.columns.name).rows->map(r | $actual.columns->map(c | $r.get($c))))
+  );
+
+  // println($description);
+  // println($zipped.first);
+  // println($zipped.second);
+
+  $zipped->forAll(x | assert(comparePrimitives($x.first, $x.second)));
+}
+
+function <<access.private>> meta::external::store::elasticsearch::executionTest::testCase::comparePrimitives(firstInstance: Any[1], secondInstance: Any[1]): Boolean[1]
+{
+   $firstInstance->match([ n: Number[1] | assertEqWithinTolerance($n, $secondInstance->cast(@Number), 0.0001),
+                           e: Enum[1]   | assertEquals($e, extractEnumValue($e->type()->cast(@Enumeration<Any>), $secondInstance->cast(@String))),
+                           a: Any[1]    | assertEquals($a, $secondInstance)
+                        ]);
+}
+
+function meta::external::store::elasticsearch::executionTest::testCase::asZeroOne<T>(var: T[0..1]): T[0..1]
+{
+   $var;
+}
+
+function meta::external::store::elasticsearch::executionTest::testCase::asZeroMany<T>(var: T[*]): T[*]
+{
+   $var;
+}

@@ -1,0 +1,61 @@
+{
+  "values":   {
+    "firstName": "Coralie",
+    "lastName": "Batie",
+    "legallyCompetent": false,
+    "firm":     {
+      "legalName": "Devpoint",
+      "address":       {
+        "lastUpdated": "2022-01-01T21:10:00.000",
+        "city": "Saint Paul",
+        "buildingNumber": 974,
+        "isActive": true
+      },
+      "public": false,
+      "dateFounded": "2018-01-14T00:36:08.000",
+      "department": [
+        {
+          "dateCreated": "2017-09-11T21:10:22.000",
+          "name": "Communication",
+          "isActive": true,
+          "numberOfEmployees": 5
+        },
+        {
+          "dateCreated": "2013-12-13T21:10:22.000",
+          "name": "Engineering",
+          "isActive": true,
+          "numberOfEmployees": 40
+        },
+        {
+          "dateCreated": "2014-12-14T21:10:22.000",
+          "name": "Sales",
+          "isActive": true,
+          "numberOfEmployees": 6
+        }
+      ],
+      "numberOfEmployees": 50
+    },
+    "address":     {
+      "lastUpdated": "2022-06-06T21:10:00.000",
+      "city": "Little Rock",
+      "buildingNumber": 99,
+      "isActive": true
+    },
+    "otherPhoneNumbers": [
+"+1 571 689 6039",
+"+1 303 278 3547",
+"+1 414 760 1884"
+    ],
+    "department":     {
+      "dateCreated": "2017-09-11T21:10:22.000",
+      "name": "Communication",
+      "isActive": true,
+      "numberOfEmployees": 5
+    },
+    "birthDate": "1980-04-04T07:12:12.000",
+    "age": 23
+  },
+  "builder":   {
+    "_type": "json"
+  }
+}

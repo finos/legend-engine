@@ -1,0 +1,48 @@
+Class meta::external::query::sql::schema::metamodel::SchemaColumn
+{
+  <<equality.Key>> name: String[1];
+}
+
+Class meta::external::query::sql::schema::metamodel::PrimitiveSchemaColumn extends meta::external::query::sql::schema::metamodel::SchemaColumn
+{
+  <<equality.Key>> type: meta::external::query::sql::schema::metamodel::PrimitiveType[1];
+}
+
+Class meta::external::query::sql::schema::metamodel::EnumSchemaColumn extends meta::external::query::sql::schema::metamodel::SchemaColumn
+{
+  <<equality.Key>> type: String[1];
+}
+
+
+Class meta::external::query::sql::schema::metamodel::Schema
+{
+  <<equality.Key>> columns: meta::external::query::sql::schema::metamodel::SchemaColumn[*];
+  <<equality.Key>> enums: meta::external::query::sql::schema::metamodel::Enum[*];
+  <<equality.Key>> parameters: meta::external::query::sql::schema::metamodel::Parameter[*];
+}
+
+Enum meta::external::query::sql::schema::metamodel::PrimitiveType
+{
+  Boolean,
+  StrictDate,
+  Number,
+  String,
+  LatestDate,
+  Float,
+  DateTime,
+  Date,
+  Integer,
+  Decimal
+}
+
+Class meta::external::query::sql::schema::metamodel::Enum
+{
+  <<equality.Key>> type: String[1];
+  <<equality.Key>> values: String[*];
+}
+
+Class meta::external::query::sql::schema::metamodel::Parameter
+{
+  <<equality.Key>> name: String[1];
+  <<equality.Key>> type: meta::external::query::sql::schema::metamodel::PrimitiveType[1];
+}

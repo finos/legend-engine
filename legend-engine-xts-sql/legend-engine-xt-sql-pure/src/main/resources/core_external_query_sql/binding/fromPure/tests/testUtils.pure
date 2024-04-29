@@ -1,0 +1,64 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::extension::*;
+import meta::external::query::sql::metamodel::*;
+import meta::external::query::sql::transformation::queryToPure::*;
+import meta::external::query::sql::transformation::queryToPure::tests::*;
+
+function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:FunctionDefinition<Any>[1]):Boolean[1]
+{
+  test($sqls, $expected, true);
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:FunctionDefinition<Any>[1], assertJSON:Boolean[1]):Boolean[1]
+{
+  test($sqls, $expected, testSources(), false, true, $assertJSON);
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:FunctionDefinition<Any>[1], sources:SQLSource[*], scopeWithFrom:Boolean[1], assertLambda:Boolean[1], assertJSON:Boolean[1]):Boolean[1]
+{
+  $sqls->forAll(sql |
+    let sqlTransformContext = $sql->processQuery($sources, $scopeWithFrom);
+    let actual = $sqlTransformContext.lambda();
+
+    if ($assertLambda, | assertLambdaEquals($expected, $actual), | true);
+    if ($assertJSON, | assertLambdaJSONEquals($expected, $actual), | true);
+  )
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1]): SqlTransformContext[1]
+{
+  processQuery($sql, false);
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], scopeWithFrom:Boolean[1]): SqlTransformContext[1]
+{
+  processQuery($sql, [
+    serviceToSource(Service1()),
+    serviceToSource(Service2()),
+    serviceToSource(Service3()),
+    serviceToSource(Service4())
+  ], $scopeWithFrom);
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], sources:SQLSource[*], scopeWithFrom:Boolean[1]): SqlTransformContext[1]
+{
+  let query = meta::legend::compileVS('#SQL{' + $sql + '}#')->cast(@Query);
+
+  let extensions = relationalExtensions();
+  let context = rootContext($sources, $extensions);
+
+  $query->processRootQuery(^$context(scopeWithFrom = $scopeWithFrom));
+}

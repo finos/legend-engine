@@ -1,0 +1,114 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::protocols::pure::v1_32_0::transformation::fromPureGraph::executionPlan::*;
+import meta::external::store::mongodb::metamodel::aggregation::*;
+import meta::json::*;
+import meta::external::store::mongodb::metamodel::*;
+import  meta::external::store::mongodb::mapping::*;
+import meta::protocols::pure::v1_32_0::transformation::fromPureGraph::connection::store::mongodb::*;
+import meta::external::store::mongodb::runtime::*;
+import meta::pure::mapping::*;
+
+import meta::external::store::mongodb::metamodel::*;
+import meta::external::store::mongodb::metamodel::runtime::*;
+import meta::external::store::mongodb::graphFetch::executionPlan::*;
+import meta::protocols::pure::v1_32_0::extension::store::mongodb::*;
+import meta::protocols::pure::v1_32_0::metamodel::executionPlan::*;
+import meta::external::store::mongodb::runtime::connections::*;
+
+function meta::protocols::pure::v1_32_0::extension::store::mongodb::getMongoDBStoreExtension(type:String[1]):meta::pure::extension::SerializerExtension[1]
+{
+   let res = [
+      pair('mongoDB', | meta::protocols::pure::v1_32_0::extension::store::mongodb::getMongoDBStoreExtension())
+   ]->filter(f|$f.first == $type);
+   assert($res->isNotEmpty(), |'Can\'t find the type '+$type);
+   $res->at(0).second->eval();
+}
+
+function meta::protocols::pure::v1_32_0::extension::store::mongodb::getMongoDBStoreExtension():meta::protocols::pure::v1_32_0::extension::SerializerExtension_v1_32_0[1]
+{
+   ^meta::protocols::pure::v1_32_0::extension::SerializerExtension_v1_32_0
+   (
+
+   moduleSerializerExtensions = meta::protocols::pure::v1_32_0::extension::store::mongodb::mongoDBModuleSerializerExtension(),
+   transfers_executionPlan_transformNode = {mapping:Mapping[1], extensions:meta::pure::extension::Extension[*] |
+          [
+              men:meta::external::store::mongodb::metamodel::pure::MongoDBExecutionNode[1] |
+
+                  ^meta::protocols::pure::v1_32_0::metamodel::executionPlan::store::mongodb::MongoDBExecutionNode(
+                    _type           = 'MongoDBExecutionNode',
+                    resultType      = $men.resultType->meta::protocols::pure::v1_32_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                    databaseCommand = $men.databaseCommand->getDatabaseCommandJSON(),
+                    connection      = $men.connection->meta::protocols::pure::v1_32_0::transformation::fromPureGraph::connection::store::mongodb::transformDatabaseConnection($extensions)
+                ),
+              mdIntern: meta::external::store::mongodb::metamodel::pure::MongoDBDocumentInternalizeExecutionNode[1] |
+                ^meta::protocols::pure::v1_32_0::metamodel::executionPlan::store::mongodb::MongoDBDocumentInternalizeExecutionNode(
+                    _type             = 'MongoDBDocumentInternalizeExecutionNode',
+                    checked           = $mdIntern.checked,
+                    enableConstraints = $mdIntern.enableConstraints,
+                    binding           = $mdIntern.binding->elementToPath(),
+                    contentType       = $mdIntern.binding.contentType,
+                    tree              = $mdIntern.tree->map(t| $t->meta::protocols::pure::v1_32_0::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], ^Map<String,List<Any>>(), $extensions))->cast(@meta::protocols::pure::v1_32_0::metamodel::valueSpecification::raw::RootGraphFetchTree),
+                    resultType        = $mdIntern.resultType->meta::protocols::pure::v1_32_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                    resultSizeRange   = $mdIntern.resultSizeRange->map(s| $s->meta::protocols::pure::v1_32_0::transformation::fromPureGraph::domain::transformMultiplicity())
+                ),
+              exfin: meta::external::format::shared::executionPlan::ExternalFormatInternalizeExecutionNode[1] |
+                ^meta::protocols::pure::v1_32_0::metamodel::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode(
+                  _type             = 'externalFormatInternalize',
+                  resultType        = $exfin.resultType->meta::protocols::pure::v1_32_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                  resultSizeRange   = $exfin.resultSizeRange->map(s| $s->meta::protocols::pure::v1_32_0::transformation::fromPureGraph::domain::transformMultiplicity()),
+                  tree              = $exfin.tree->map(t| $t->meta::protocols::pure::v1_32_0::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], ^Map<String,List<Any>>(), $extensions))->cast(@meta::protocols::pure::v1_32_0::metamodel::valueSpecification::raw::RootGraphFetchTree),
+                  binding           = $exfin.binding->elementToPath(),
+                  enableConstraints = $exfin.enableConstraints,
+                  checked           = $exfin.checked,
+                  contentType       = $exfin.binding.contentType
+                )
+          ];
+       }
+   )
+}
+
+function meta::protocols::pure::v1_32_0::extension::store::mongodb::getDatabaseCommandJSON(databaseCommand: meta::external::store::mongodb::metamodel::aggregation::DatabaseCommand[1]): String[1]
+{
+    // MongoDBOperationElement
+    let config = meta::json::config(true, true, true, true, '_type', false);
+    let customSerializers = [
+    {
+        m: MongoDBOperationElement[1], s: meta::json::JSONState[1] |
+          let elem = meta::json::anyToJSON($m, $s, 1000, $config)->cast(@meta::json::JSONObject);
+          ^$elem(keyValuePairs = $elem.keyValuePairs->filter(x | $x.key.value != '_type')->concatenate(meta::json::newJSONKeyValue('_type', ^meta::json::JSONString(value = $m->class().name->toLowerFirstCharacter()->toOne()))));
+    },
+    {
+        m: BaseTypeValue[1], s: meta::json::JSONState[1] |
+          let elem = meta::json::anyToJSON($m, $s, 1000, $config)->cast(@meta::json::JSONObject);
+          ^$elem(keyValuePairs = $elem.keyValuePairs->filter(x | $x.key.value != '_type')->concatenate(meta::json::newJSONKeyValue('_type', ^meta::json::JSONString(value = $m->class().name->toLowerFirstCharacter()->toOne()))));
+    }
+    ];
+    meta::json::toJSON($databaseCommand, $customSerializers, 1000, $config);
+}
+
+function meta::protocols::pure::v1_32_0::extension::store::mongodb::mongoDBModuleSerializerExtension(): meta::protocols::pure::v1_32_0::extension::store::mongodb::MongoDBModuleSerializerExtension[1]
+{
+  let dbSpecificExtensions = meta::protocols::pure::v1_32_0::extension::store::mongodb::MongoDBModule->stereotype('SerializerExtension').modelElements->cast(@meta::pure::metamodel::function::Function<{->meta::protocols::pure::v1_32_0::extension::store::mongodb::MongoDBModuleSerializerExtension[1]}>)
+    ->map(f| $f->eval())->sortBy(e| $e.module);
+
+  let transformDatabaseConnection = $dbSpecificExtensions.transfers_connection_transformDatabaseConnection;
+
+  ^meta::protocols::pure::v1_32_0::extension::store::mongodb::MongoDBModuleSerializerExtension(
+    module = 'mongoDB',
+    transfers_connection_transformDatabaseConnection = if($transformDatabaseConnection->isNotEmpty(), |$transformDatabaseConnection->toOne(), |[])
+  );
+
+}

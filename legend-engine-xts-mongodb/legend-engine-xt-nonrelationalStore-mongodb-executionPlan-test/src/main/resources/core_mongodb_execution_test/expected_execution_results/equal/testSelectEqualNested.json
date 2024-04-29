@@ -1,0 +1,60 @@
+{
+  "values":   {
+    "firstName": "Jefferey",
+    "lastName": "Raye",
+    "legallyCompetent": true,
+    "firm":     {
+      "legalName": "Yodoo",
+      "address":       {
+        "lastUpdated": "2013-01-01T21:10:00.000",
+        "city": "Pueblo",
+        "buildingNumber": 382,
+        "isActive": true
+      },
+      "public": false,
+      "dateFounded": "2015-01-11T00:36:08.000",
+      "department": [
+        {
+          "dateCreated": "2015-05-05T21:10:22.000",
+          "name": "Engineering",
+          "isActive": true,
+          "numberOfEmployees": 40
+        },
+        {
+          "dateCreated": "2015-05-05T21:10:22.000",
+          "name": "Business",
+          "isActive": true,
+          "numberOfEmployees": 60
+        },
+        {
+          "dateCreated": "2011-05-05T21:10:22.000",
+          "name": "Sales",
+          "isActive": false,
+          "numberOfEmployees": 10
+        }
+      ],
+      "numberOfEmployees": 100
+    },
+    "address":     {
+      "lastUpdated": "2023-01-01T21:10:00.000",
+      "city": "Hyattsville",
+      "buildingNumber": 33,
+      "isActive": false
+    },
+    "otherPhoneNumbers": [
+"+44 774 643 2334",
+"+1 515 165 0534"
+    ],
+    "department":     {
+      "dateCreated": "2015-05-05T21:10:22.000",
+      "name": "Engineering",
+      "isActive": true,
+      "numberOfEmployees": 40
+    },
+    "birthDate": "2023-05-15T12:48:19.000",
+    "age": 45
+  },
+  "builder":   {
+    "_type": "json"
+  }
+}

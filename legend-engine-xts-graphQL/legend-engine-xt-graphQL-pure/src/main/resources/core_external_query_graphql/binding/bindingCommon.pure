@@ -1,0 +1,126 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::graphQL::binding::*;
+import meta::external::query::graphQL::metamodel::sdl::typeSystem::*;
+
+// These two functions must roundtrip
+function meta::external::query::graphQL::binding::toInputTypeName(pureClassName: String[1]) : String[1]
+{
+  $pureClassName + 'Input'
+}
+
+function meta::external::query::graphQL::binding::fromInputTypeName(inputTypeName: String[1]) : String[1]
+{
+  if($inputTypeName->endsWith('Input'), | $inputTypeName->substring(0, $inputTypeName->length() - 5), | '')
+}
+
+// These two functions must roundtrip
+function meta::external::query::graphQL::binding::toInterfaceTypeName(pureClassName: String[1]) : String[1]
+{
+  $pureClassName + 'Interface'
+}
+
+function meta::external::query::graphQL::binding::fromInterfaceTypeName(interfaceTypeName: String[1]) : String[1]
+{
+  if($interfaceTypeName->endsWith('Interface'), | $interfaceTypeName->substring(0, $interfaceTypeName->length() - 9), | '')
+}
+
+Class meta::external::query::graphQL::binding::PureTypeToGraphQLScalarOverride
+{
+  integerScalarType: String[0..1];
+}
+
+function meta::external::query::graphQL::binding::purePrimitivesToAllGraphQLScalarTypes(pureTypeToGraphQLScalarOverride: PureTypeToGraphQLScalarOverride[0..1]): Pair<PrimitiveType,String>[*]
+{
+  [
+    pair(Integer, if($pureTypeToGraphQLScalarOverride->isEmpty() || $pureTypeToGraphQLScalarOverride->toOne().integerScalarType->isEmpty(), | 'Int', | $pureTypeToGraphQLScalarOverride->toOne().integerScalarType->toOne())),
+    pair(String, 'String'),
+    pair(Float, 'Float'),
+    pair(Boolean, 'Boolean'),
+    pair(Date, 'Date'),
+    pair(StrictDate, 'StrictDate'),
+    pair(DateTime, 'DateTime'),
+    pair(Decimal, 'BigDecimal')
+  ]
+}
+
+function meta::external::query::graphQL::binding::customGraphQLScalarsToPrimitiveMappingForInput(): Map<String, String>[1]
+{
+  newMap([
+    pair('Int', 'Int'),
+    pair('String', 'String'),
+    pair('Float', 'Float'),
+    pair('Boolean', 'Boolean'),
+    pair('Date', 'String'),
+    pair('StrictDate', 'String'),
+    pair('DateTime', 'String'),
+    pair('BigDecimal', 'Float'),
+    pair('Number', 'Float')
+  ])
+}
+
+function meta::external::query::graphQL::binding::builtInGraphQLScalars(): String[*]
+{
+  ['Int', 'Float', 'String', 'Boolean', 'ID'];
+}
+
+function meta::external::query::graphQL::binding::purePrimitivesToCustomGraphQLScalarTypes(pureTypeToGraphQLScalarOverride: PureTypeToGraphQLScalarOverride[0..1]): Pair<PrimitiveType,String>[*]
+{
+  purePrimitivesToAllGraphQLScalarTypes($pureTypeToGraphQLScalarOverride)
+    // remove built in GraphQL Scalars
+    ->filter(p | !$p.second->in(builtInGraphQLScalars()))
+}
+
+// Inversion of the pure primitives to graphQL with some extras
+function meta::external::query::graphQL::binding::graphQLScalarTypesToPurePrimitives(pureTypeToGraphQLScalarOverride: PureTypeToGraphQLScalarOverride[0..1]): Pair<String,PrimitiveType>[*]
+{
+  if($pureTypeToGraphQLScalarOverride->isEmpty() || $pureTypeToGraphQLScalarOverride->toOne().integerScalarType->isEmpty(), | [], | [pair($pureTypeToGraphQLScalarOverride->toOne().integerScalarType->toOne(), Integer)])
+    ->concatenate(
+      [
+        // Keep all default mappings as well
+        pair('String', String),
+        pair('Int', Integer),
+        pair('Float', Float),
+        pair('Boolean', Boolean),
+        pair('Date', Date),
+        pair('StrictDate', StrictDate),
+        pair('DateTime', DateTime),
+        pair('BigDecimal', Decimal),
+        pair('ID', String)
+      ]
+    )
+}
+
+function meta::external::query::graphQL::binding::temporalityToDirectives(): Map<String,DirectiveDefinition>[1]
+{
+  [
+    pair('bitemporal', ^DirectiveDefinition(name = 'bitemporal', typeSystemLocation = [TypeSystemDirectiveLocation.OBJECT, TypeSystemDirectiveLocation.INPUT_OBJECT])),
+    pair('businesstemporal', ^DirectiveDefinition(name = 'businesstemporal', typeSystemLocation = [TypeSystemDirectiveLocation.OBJECT, TypeSystemDirectiveLocation.INPUT_OBJECT])),
+    pair('processingtemporal', ^DirectiveDefinition(name = 'processingtemporal', typeSystemLocation = [TypeSystemDirectiveLocation.OBJECT, TypeSystemDirectiveLocation.INPUT_OBJECT]))
+  ]->newMap();
+}
+
+function meta::external::query::graphQL::binding::hierarchyDirective(): DirectiveDefinition[1]
+{
+  ^DirectiveDefinition(name = 'extends', argumentDefinitions = [^InputValueDefinition(name = 'class', type = ^NamedTypeReference(nullable = false, name = 'String'))], typeSystemLocation = [TypeSystemDirectiveLocation.OBJECT, TypeSystemDirectiveLocation.INPUT_OBJECT]);
+}
+
+function meta::external::query::graphQL::binding::hasGraphQLStereotype(t: Any[1], s: String[1]): Boolean[1]
+{
+  if ($t->instanceOf(ElementWithStereotypes),
+      | $t->cast(@ElementWithStereotypes)->hasStereotype($s, GraphQL),
+      | false
+  )
+}

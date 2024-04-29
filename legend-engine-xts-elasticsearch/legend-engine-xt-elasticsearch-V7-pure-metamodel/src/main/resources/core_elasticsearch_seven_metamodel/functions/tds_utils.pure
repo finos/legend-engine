@@ -1,0 +1,98 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::elasticsearch::v7::metamodel::specification::types::querydsl::*;
+import meta::pure::mapping::*;
+
+import meta::external::store::elasticsearch::v7::pureToEs::mappping::*;
+import meta::external::store::elasticsearch::v7::metamodel::mappping::*;
+import meta::external::store::elasticsearch::v7::specification::utils::*;
+import meta::external::store::elasticsearch::v7::specification::utils::property::*;
+import meta::external::store::elasticsearch::v7::metamodel::store::*;
+import meta::external::store::elasticsearch::v7::tds::*;
+
+import meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::*;
+
+Class meta::external::store::elasticsearch::v7::tds::IndexTDS extends TabularDataSetImplementation
+{  
+  index: Elasticsearch7StoreIndex[1];
+}
+
+function <<functionType.SideEffectFunction>> meta::external::store::elasticsearch::v7::tds::indexToTDS(store: Elasticsearch7Store[1], indexName: String[1]): TabularDataSet[1]
+{
+  let index = $store.index($indexName)->toOne('No index found on store: ' + $indexName);  
+  let columns = $index.properties->collectAllSelectablesAndFilterableProperties()
+                     ->toIndexed()
+                     ->map(ip | indexPropertyToTdsColumn($ip.first, $ip.second.first.values->toOneMany()->joinStrings('.'), $ip.second.second));
+  
+  let idProp = ^TDSColumn(
+      name = '_id',
+      offset = $columns->last().offset->toOne() + 1,
+      type = String
+    );
+
+  ^IndexTDS(
+     store = $store,
+     index = $index,
+     columns = $columns->concatenate($idProp)
+  );
+}
+
+function <<access.private>>  meta::external::store::elasticsearch::v7::tds::indexPropertyToTdsColumn(offset: Integer[1], name: String[1], property: PropertyBase[1]):TDSColumn[1]
+{
+  ^TDSColumn(
+     name = $name,
+     offset = $offset,
+     type = $property->propertySupport().pureType->cast(@DataType)
+  );
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath
+{
+  fieldPath: String[1..*];
+  property: PropertyBase[1];
+  path(){
+    $this.fieldPath->joinStrings('.')
+  }:String[1];
+}
+
+Class meta::external::store::elasticsearch::v7::metamodel::tds::_IDResultPath extends meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath
+{
+  
+}
+
+Class meta::external::store::elasticsearch::v7::metamodel::tds::SourceFieldResultPath extends meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath
+{
+
+}
+
+Class meta::external::store::elasticsearch::v7::metamodel::tds::DocValueResultPath extends meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath
+{
+  
+}
+
+Class meta::external::store::elasticsearch::v7::metamodel::tds::FieldResultPath extends meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath
+{
+  readFrom: meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath[1];
+}
+
+Class meta::external::store::elasticsearch::v7::metamodel::tds::AggregateResultPath extends meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath
+{
+  fieldToAggregate: meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath[1];
+}
+
+Class meta::external::store::elasticsearch::v7::metamodel::tds::DocCountAggregateResultPath extends meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath
+{
+  
+}

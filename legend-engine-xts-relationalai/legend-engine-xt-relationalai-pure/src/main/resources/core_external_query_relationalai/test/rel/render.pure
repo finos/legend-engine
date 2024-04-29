@@ -1,0 +1,147 @@
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::metamodel::render::expr::*;
+import meta::external::store::rel::metamodel::render::program::*;
+
+
+function <<test.Test>> meta::external::store::rel::test::metamodel::render::testSimpleRendering(): Any[*] {
+  assertEquals(
+    '1',
+    const(1)->renderExpr()
+  );
+
+  assertEquals(
+    '"test"',
+    const('test')->renderExpr()
+  );
+
+  assertEquals(
+    ':label',
+    label('label')->renderExpr()
+  );
+
+  assertEquals(
+    'x',
+    var('x')->renderExpr()
+  );
+
+  assertEquals(
+    '// Test',
+    lineComment('Test')->render()
+  );
+
+  assertEquals(
+    'true',
+    reltrue()->renderExpr()
+  );
+
+  assertEquals(
+    '(x)',
+    var('x')->parenthesise()->renderExpr()
+  );
+}
+
+function <<test.Test>> meta::external::store::rel::test::metamodel::render::testExprRendering(): Any[*] {
+  assertEquals(
+    'edge',
+    rel('edge')->renderExpr()
+  );
+
+  assertEquals(
+    'edge(x, y)',
+    atom('edge', ['x', 'y'])->renderExpr()
+  );
+
+  assertEquals(
+    'edge(x, y) from x, y',
+    atom('edge', ['x', 'y'])
+      ->from(['x', 'y'])
+      ->renderExpr()
+  );
+
+  assertEquals(
+    'edge.path',
+    rel('edge')
+      ->compose(rel('path'))
+      ->renderExpr()
+  );
+
+  assertEquals(
+    'exists(z: edge(x, z) and path(z, y))',
+    var('z')
+      ->exists(
+        atom('edge', ['x', 'z'])->and(
+            atom('path', ['z', 'y'])
+          )
+      )
+      ->renderExpr()
+  );
+
+  assertEquals(
+    'a[:label1][:label2]',
+    rel('a')
+      ->appl([label('label1')])
+      ->appl([label('label2')])
+      ->renderExpr()
+  );
+
+  assertEquals(
+    'x = y',
+    var('x')
+      ->equals(var('y'))
+      ->renderExpr()
+  );
+}
+
+
+function <<test.Test>> meta::external::store::rel::test::metamodel::render::testDefRendering(): Any[*] {
+  assertEquals(
+    'def edge = {(1, 2); (2, 3)}',
+    def(rel('edge'), relation([
+      tuple([const(1), const(2)]),
+      tuple([const(2), const(3)])
+    ]))
+    ->render(true)
+  );
+
+  assertEquals(
+    'def path(x, y) = edge(x, y)',
+    def(atom('path', ['x', 'y']), [
+      atom('edge', ['x', 'y'])
+    ])
+    ->render(true)
+  );
+
+  assertEquals(
+    'def path(x, y) = edge(x, z) and path(z, y) from z',
+    def(atom('path', ['x', 'y']), [
+      atom('edge', ['x', 'z'])->and(
+        atom('path', ['z', 'y'])
+      )->from('z')
+    ])
+    ->render(true)
+  );
+
+  assertEquals(
+    'entity Employee employees_by_name = {("John"); ("Jane")}',
+    defEntity('Employee', 'employees_by_name', [
+      relation([
+        tuple([const('John')]),
+        tuple([const('Jane')])
+      ])
+    ])
+    ->render(true)
+  );
+}
+
+function <<test.Test>> meta::external::store::rel::test::metamodel::render::testICRendering(): Any[*] {
+  assertEquals(
+    'ic test_ic {\n' +
+      'employee(_, name) implies String(name)\n' +
+    '}',
+    ic('test_ic', [
+      atom('employee', [dontCare(), var('name')])
+      ->implies(atom('String', ['name']))
+    ])
+    ->render(true)
+  );
+}

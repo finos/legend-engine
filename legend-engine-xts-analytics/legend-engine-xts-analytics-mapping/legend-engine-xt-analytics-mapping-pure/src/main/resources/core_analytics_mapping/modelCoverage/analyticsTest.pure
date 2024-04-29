@@ -1,0 +1,447 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::analytics::mapping::modelCoverage::*;
+import meta::pure::mapping::*;
+
+function meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(mapping: Mapping[1]): MappingModelCoverageAnalysisResult[1]
+{
+  meta::analytics::mapping::modelCoverage::analyze($mapping, false, false, false);
+}
+
+function meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalyticsWithMappedEntityInfo(mapping: Mapping[1]): MappingModelCoverageAnalysisResult[1]
+{
+  meta::analytics::mapping::modelCoverage::analyze($mapping, true, false, false);
+}
+
+// Relational
+function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testSimpleRelationalMappingCoverage():Boolean[1]
+{
+  let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleRelationalMapping);
+  let mappedEntityForFirm = $result.mappedEntities->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::Firm');
+  assert($mappedEntityForFirm.properties->size() == 4);
+  assertContains($mappedEntityForFirm.properties.name, 'id');
+  // qualified property
+  assertContains($mappedEntityForFirm.properties.name, 'employeeSize');
+  // embedded relational mapping
+  assertContains($mappedEntityForFirm.properties.name, 'employees');
+  assertContains($result.mappedEntities.path, $mappedEntityForFirm.properties->filter(p|$p.name == 'employees')->toOne()->cast(@EntityMappedProperty).entityPath);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testSimpleRelationalInheritanceMappingCoverage():Boolean[1]
+{
+  let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleRelationalMapping);
+  let mappedEntityForLegalEntity = $result.mappedEntities->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::LegalEntity');
+  assert($mappedEntityForLegalEntity.properties->size() == 4);
+  assertContains($mappedEntityForLegalEntity.properties->filter(p|$p->instanceOf(EntityMappedProperty))->cast(@EntityMappedProperty).entityPath, '@meta::analytics::mapping::modelCoverage::test::Firm');
+  assertContains($mappedEntityForLegalEntity.properties->filter(p|$p->instanceOf(EntityMappedProperty))->cast(@EntityMappedProperty).entityPath, 'meta_analytics_mapping_modelCoverage_test_Firm_employees');
+}
+
+function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testSimpleRelationalUnionMappingCoverage():Boolean[1]
+{
+  let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleRelationalMapping);
+  let mappedEntityForStreet = $result.mappedEntities->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::Street');
+  assert($mappedEntityForStreet.properties->size() == 1);
+  assertContains($mappedEntityForStreet.properties.name, 'zipcode');
+}
+
+// M2M
+function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testSimpleM2MMappingCoverage():Boolean[1]
+{
+  let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleModelToModelMapping);
+  let mappedEntityForTargetFirm = $result.mappedEntities->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::_Firm');
+  assert($mappedEntityForTargetFirm.properties->size() == 2);
+  assertContains($mappedEntityForTargetFirm.properties.name, 'employees');
+}
+
+function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testSimpleUnionM2MMappingCoverage():Boolean[1]
+{
+  let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleModelToModelMapping);
+  let mappedEntityForTargetStreet = $result.mappedEntities->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::_Street');
+  assert($mappedEntityForTargetStreet.properties->size() == 1);
+  assertContains($mappedEntityForTargetStreet.properties.name, 'streetName');
+}
+
+//-----------------------Test Auto Mapped Properties -----------------------
+function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testAutoMappedPrimitivePropertiesMappingCoverage():Boolean[1]
+{
+  let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleModelToModelMapping);
+  let mappedEntityForTargetLegalEntity = $result.mappedEntities->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::_LegalEntity');
+  assert($mappedEntityForTargetLegalEntity.properties->size() == 1); 
+  // auto-mapped property
+  assertContains($mappedEntityForTargetLegalEntity.properties.name, 'legalName');
+}
+
+function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testAutoMappedComplexPropertiesMappingCoverage():Boolean[1]
+{
+  let grammar = 'Class meta::analytics::mapping::modelCoverage::test::Target\n'+
+  '{\n'+
+  '  tgtId: String[1];\n'+
+  '  shared: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '}\n'+
+  'Class meta::analytics::mapping::modelCoverage::test::Shared\n'+
+  '{\n'+
+  '  sharedId: String[1];\n'+
+  '}\n'+
+  'Class meta::analytics::mapping::modelCoverage::test::Source\n'+
+  '{\n'+
+  '  srcId: String[1];\n'+
+  '  shared: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '}\n'+
+  '###Mapping\n'+
+  'Mapping meta::analytics::mapping::modelCoverage::test::simpleAutoMappedMapping\n'+
+  '(\n'+
+  '  *meta::analytics::mapping::modelCoverage::test::Target:Pure\n'+
+  '  {\n'+
+  '    ~src meta::analytics::mapping::modelCoverage::test::Source\n'+
+  '    tgtId: $src.srcId,\n'+
+  '    shared: $src.shared\n'+
+  '  }\n'+
+  ')\n';
+  let elements = meta::legend::compileLegendGrammar($grammar);
+  let autoMappedMapping = $elements->filter(e|$e->instanceOf(Mapping))->at(0)->cast(@Mapping);
+  let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics($autoMappedMapping);
+  assert($result.mappedEntities->size() == 2); 
+  assertContains($result.mappedEntities.path, 'meta::analytics::mapping::modelCoverage::test::Target_meta::analytics::mapping::modelCoverage::test::Source_autoMapped_shared');
+}
+
+
+function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testAutoMappedComplexPropertiesMappingCoverageWithMappedEntityInfo():Boolean[1]
+{
+  let grammar = 'Class meta::analytics::mapping::modelCoverage::test::Target\n'+
+  '{\n'+
+  '  tgtId: String[1];\n'+
+  '  shared: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '}\n'+
+  'Class meta::analytics::mapping::modelCoverage::test::Shared\n'+
+  '{\n'+
+  '  sharedId: String[1];\n'+
+  '}\n'+
+  'Class meta::analytics::mapping::modelCoverage::test::Source\n'+
+  '{\n'+
+  '  srcId: String[1];\n'+
+  '  shared: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '}\n'+
+  '###Mapping\n'+
+  'Mapping meta::analytics::mapping::modelCoverage::test::simpleAutoMappedMapping\n'+
+  '(\n'+
+  '  *meta::analytics::mapping::modelCoverage::test::Target:Pure\n'+
+  '  {\n'+
+  '    ~src meta::analytics::mapping::modelCoverage::test::Source\n'+
+  '    tgtId: $src.srcId,\n'+
+  '    shared: $src.shared\n'+
+  '  }\n'+
+  ')\n';
+  let elements = meta::legend::compileLegendGrammar($grammar);
+  let autoMappedMapping = $elements->filter(e|$e->instanceOf(Mapping))->at(0)->cast(@Mapping);
+  let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalyticsWithMappedEntityInfo($autoMappedMapping);
+  assert($result.mappedEntities->size() == 2); 
+  assertContains($result.mappedEntities.path, 'meta::analytics::mapping::modelCoverage::test::Target_meta::analytics::mapping::modelCoverage::test::Source_autoMapped_shared');
+  assert($result.mappedEntities->filter(m |$m.info->isNotEmpty())->size() == 2);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testCyclicalAutoMappedComplexPropertiesMappingCoverage():Boolean[1]
+{
+  let grammar = 'Class meta::analytics::mapping::modelCoverage::test::Target\n'+
+  '{\n'+
+  '  tgtId: String[1];\n'+
+  '  shared: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '}\n'+
+  'Class meta::analytics::mapping::modelCoverage::test::Shared\n'+
+  '{\n'+
+  '  sharedId: String[1];\n'+
+  '  sharedToAddress: meta::analytics::mapping::modelCoverage::test::Address[1];\n' + 
+  '}\n'+
+  'Class meta::analytics::mapping::modelCoverage::test::Address\n'+
+  '{\n'+
+  '  Id: String[1];\n'+
+  '  addressToShared:meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '}\n'+
+  'Class meta::analytics::mapping::modelCoverage::test::Source\n'+
+  '{\n'+
+  '  srcId: String[1];\n'+
+  '  shared: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '}\n'+
+  '###Mapping\n'+
+  'Mapping meta::analytics::mapping::modelCoverage::test::simpleAutoMappedMapping\n'+
+  '(\n'+
+  '  *meta::analytics::mapping::modelCoverage::test::Target:Pure\n'+
+  '  {\n'+
+  '    ~src meta::analytics::mapping::modelCoverage::test::Source\n'+
+  '    tgtId: $src.srcId,\n'+
+  '    shared: $src.shared\n'+
+  '  }\n'+
+  ')\n';
+  let elements = meta::legend::compileLegendGrammar($grammar);
+  let autoMappedMapping = $elements->filter(e|$e->instanceOf(Mapping))->at(0)->cast(@Mapping);
+  let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics($autoMappedMapping);
+  assert($result.mappedEntities->size() == 3); 
+  assertContains($result.mappedEntities.path, 'meta::analytics::mapping::modelCoverage::test::Target');
+  assertContains($result.mappedEntities.path, 'meta::analytics::mapping::modelCoverage::test::Target_meta::analytics::mapping::modelCoverage::test::Source_autoMapped_shared');
+  assertContains($result.mappedEntities.path, 'meta::analytics::mapping::modelCoverage::test::Target_meta::analytics::mapping::modelCoverage::test::Source_autoMapped_shared_sharedToAddress');
+}
+
+function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testAutoMappedSemiStructuredMappingCoverage():Boolean[1]
+{
+  let semiGrammar = 
+  '###Mapping\n'+
+  'Mapping inheritance::mapping::MemSQLMapping\n'+
+  '(\n'+
+  '  inheritance::model::Person: Relational\n'+
+  '  {\n'+
+  '    ~primaryKey\n'+
+  '    (\n'+
+  '      [inheritance::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.ID\n'+
+  '    )\n'+
+  '    ~mainTable [inheritance::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE\n'+
+  '    firstName: [inheritance::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,\n'+
+  '    lastName: [inheritance::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,\n'+
+  '    firm: Binding inheritance::store::FirmBinding : [inheritance::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS\n'+
+  '  }\n'+
+  ')\n'+
+  '###Relational\n'+
+  'Database inheritance::store::MemSQLDB\n'+
+  '(\n'+
+  '  Schema PERSON_SCHEMA\n'+
+  '  (\n'+
+  '    Table PERSON_TABLE\n'+
+  '    (\n'+
+  '      ID INTEGER PRIMARY KEY,\n'+
+  '      FIRSTNAME VARCHAR(100),\n'+
+  '     LASTNAME VARCHAR(100),\n'+
+  '      FIRM_DETAILS JSON,\n'+
+  '      MANAGERID INTEGER\n'+
+  '    )\n'+
+  '  )\n'+
+  ')\n'+
+  '###Pure\n'+
+  'Class inheritance::model::Street\n'+
+  '{\n'+
+  '  name: String[1];\n'+
+  '}\n'+
+  'Class inheritance::model::Address\n'+
+  '{\n'+
+  '  name: String[1];\n'+
+  '  street: inheritance::model::Street[1];\n'+
+  '}\n'+
+  'Class inheritance::model::Person\n'+
+  '{\n'+
+  '  firstName: String[1];\n'+
+  '  lastName: String[1];\n'+
+  '  firm: inheritance::model::Firm[1];\n'+
+  '}\n'+
+  'Class inheritance::model::Firm\n'+
+  '{\n'+
+  '  legalName: String[1];\n'+
+  '  address: inheritance::model::Address[1];\n'+
+  '}\n'+
+  '###ExternalFormat\n'+
+  'Binding inheritance::store::FirmBinding\n'+
+  '{\n'+
+  '  contentType: \'application/json\';\n'+
+  '  modelIncludes: [\n'+
+  '    inheritance::model::Firm,\n'+
+  '    inheritance::model::Address\n'+
+  '  ];\n'+
+  '}';
+  let elements = meta::legend::compileLegendGrammar($semiGrammar);
+  let autoMappedMapping = $elements->filter(e|$e->instanceOf(Mapping))->at(0)->cast(@Mapping);
+  let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics($autoMappedMapping);
+  assert($result.mappedEntities->size() == 4); 
+  assertContains($result.mappedEntities.path, 'semi_structured_generated_embedded_inheritance_model_Person_firm_autoMapped_firm');
+  assertContains($result.mappedEntities.path, 'semi_structured_generated_embedded_inheritance_model_Person_firm_autoMapped_firm_address');
+  assertContains($result.mappedEntities.path, 'semi_structured_generated_embedded_inheritance_model_Person_firm_autoMapped_firm_address_street');
+}
+
+###Relational
+Database meta::analytics::mapping::modelCoverage::test::sampleDB
+(
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY,
+    legalName VARCHAR(200)
+  )
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firmID INTEGER,
+    firstName VARCHAR(200),
+    lastName VARCHAR(200)
+  )
+  Table AddressTable
+  (
+    id INTEGER PRIMARY KEY,
+    firmID INTEGER,
+    name VARCHAR(200)
+  )
+
+  Join firm_person(PersonTable.firmID = FirmTable.id)
+  Join firm_address(AddressTable.firmID = FirmTable.id)
+)
+
+
+###Pure
+Enum meta::analytics::mapping::modelCoverage::test::IncType
+{
+  Corp,
+  LLC
+}
+
+Class meta::analytics::mapping::modelCoverage::test::LegalEntity
+{
+  legalName: String[1];
+  address: meta::analytics::mapping::modelCoverage::test::Address[1];
+}
+
+Class meta::analytics::mapping::modelCoverage::test::Firm extends meta::analytics::mapping::modelCoverage::test::LegalEntity
+{
+  id: Decimal[1];
+  employees: meta::analytics::mapping::modelCoverage::test::Person[1..*];
+  incType: meta::analytics::mapping::modelCoverage::test::IncType[1];
+  employeeSize() {$this.employees->count()}: Number[1];
+}
+
+Class meta::analytics::mapping::modelCoverage::test::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+Class meta::analytics::mapping::modelCoverage::test::Address
+{
+  zipcode: Integer[1];
+}
+
+Class meta::analytics::mapping::modelCoverage::test::Street extends meta::analytics::mapping::modelCoverage::test::Address
+{
+  streetName: String[1];
+}
+
+Class meta::analytics::mapping::modelCoverage::test::_LegalEntity
+{
+  legalName: String[1];
+  address: meta::analytics::mapping::modelCoverage::test::Address[1];
+}
+
+Class meta::analytics::mapping::modelCoverage::test::_Firm
+{
+  id: Decimal[1];
+  employees: meta::analytics::mapping::modelCoverage::test::_Person[1..*];
+  type: meta::analytics::mapping::modelCoverage::test::IncType[1];
+}
+
+Class meta::analytics::mapping::modelCoverage::test::_Person
+{
+  fullName: String[1];
+}
+
+Class meta::analytics::mapping::modelCoverage::test::_Street
+{
+  streetName: String[1];
+}
+
+
+
+###Mapping
+Mapping meta::analytics::mapping::modelCoverage::test::sampleRelationalMapping
+(
+  *meta::analytics::mapping::modelCoverage::test::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [meta::analytics::mapping::modelCoverage::test::sampleDB]FirmTable.id
+    )
+    ~mainTable [meta::analytics::mapping::modelCoverage::test::sampleDB]FirmTable
+    id: [meta::analytics::mapping::modelCoverage::test::sampleDB]FirmTable.id,
+    employees
+    (
+      firstName: [meta::analytics::mapping::modelCoverage::test::sampleDB]PersonTable.firstName
+    ),
+    address: [meta::analytics::mapping::modelCoverage::test::sampleDB]@firm_address
+  }
+  *meta::analytics::mapping::modelCoverage::test::Person: Relational
+  {
+    ~primaryKey
+    (
+      [meta::analytics::mapping::modelCoverage::test::sampleDB]PersonTable.id
+    )
+    ~mainTable [meta::analytics::mapping::modelCoverage::test::sampleDB]PersonTable
+    firstName: [meta::analytics::mapping::modelCoverage::test::sampleDB]PersonTable.firstName,
+    lastName: [meta::analytics::mapping::modelCoverage::test::sampleDB]PersonTable.lastName
+  }
+  *meta::analytics::mapping::modelCoverage::test::LegalEntity: Operation
+  {
+    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
+  }
+  *meta::analytics::mapping::modelCoverage::test::Address: Operation
+  {
+    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
+  }
+  *meta::analytics::mapping::modelCoverage::test::Street: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(s1,s2)
+  }
+  meta::analytics::mapping::modelCoverage::test::Street[s2]: Relational
+  {
+    ~primaryKey
+    (
+      [meta::analytics::mapping::modelCoverage::test::sampleDB]AddressTable.id
+    )
+    ~mainTable [meta::analytics::mapping::modelCoverage::test::sampleDB]AddressTable
+    zipcode: [meta::analytics::mapping::modelCoverage::test::sampleDB]AddressTable.id
+  }
+  meta::analytics::mapping::modelCoverage::test::Street[s1]: Relational
+  {
+    ~primaryKey
+    (
+      [meta::analytics::mapping::modelCoverage::test::sampleDB]AddressTable.id
+    )
+    ~mainTable [meta::analytics::mapping::modelCoverage::test::sampleDB]AddressTable
+    zipcode: [meta::analytics::mapping::modelCoverage::test::sampleDB]AddressTable.id
+  }
+)
+
+###Mapping
+Mapping meta::analytics::mapping::modelCoverage::test::sampleModelToModelMapping
+(
+  meta::analytics::mapping::modelCoverage::test::_Person: Pure
+  {
+    ~src meta::analytics::mapping::modelCoverage::test::Person
+    fullName: 'Full Name'
+  }
+  meta::analytics::mapping::modelCoverage::test::_LegalEntity: Pure
+  {
+    ~src meta::analytics::mapping::modelCoverage::test::LegalEntity
+    legalName: $src.legalName
+  }
+  meta::analytics::mapping::modelCoverage::test::_Firm: Pure
+  {
+    ~src meta::analytics::mapping::modelCoverage::test::Firm
+    employees: $src.employees
+  }
+  *meta::analytics::mapping::modelCoverage::test::_Street: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(s1,s2)
+  }
+  meta::analytics::mapping::modelCoverage::test::_Street[s2]: Pure
+  {
+    ~src meta::analytics::mapping::modelCoverage::test::Street
+    streetName: $src.streetName + '2'
+  }
+  meta::analytics::mapping::modelCoverage::test::_Street[s1]: Pure
+  {
+    ~src meta::analytics::mapping::modelCoverage::test::Street
+    streetName: $src.streetName + '1'
+  }
+)

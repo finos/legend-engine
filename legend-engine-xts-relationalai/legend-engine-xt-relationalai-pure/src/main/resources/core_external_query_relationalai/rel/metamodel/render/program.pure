@@ -1,0 +1,53 @@
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::metamodel::render::buffer::*;
+import meta::external::store::rel::metamodel::render::expr::*;
+import meta::external::store::rel::metamodel::render::program::*;
+import meta::external::store::rel::utils::*;
+import meta::pure::functions::collection::*;
+
+
+function meta::external::store::rel::metamodel::render::program::render(element: RelProgramElement[1], configNoIndent: Boolean[1]): String[1] {
+  $element->match([
+    r: RelRule[1]    | $r->render($configNoIndent),
+    c: RelComment[1] | $c->render()
+  ])
+}
+
+function meta::external::store::rel::metamodel::render::program::render(elements: RelProgramElement[*], configNoIndent: Boolean[1]): String[1] {
+  $elements->map(e: RelProgramElement[1] | $e->render($configNoIndent))->makeString('', '\n', '\n')
+}
+
+function meta::external::store::rel::metamodel::render::program::render(program: RelProgram[1], configNoIndent: Boolean[1]): String[1] {
+  $program.elements->render($configNoIndent)
+}
+
+function meta::external::store::rel::metamodel::render::program::render(rule: RelRule[1], configNoIndent: Boolean[1]): String[1] {
+  $rule->match([
+    r: RelEntityDef[1] | $r->render(),
+    r: RelIC[1]        | $r->render(),
+    r: RelRule[1]      |
+      let annotation = if ($r.inline, | '@inline\n', | '');
+      let buffer =
+        emptyBuffer($configNoIndent)->append('def ')->render($r.head)->append(' =')->newlineOrSpace()->indent()->render($r.body);
+      $annotation + $buffer->toString();
+  ])
+}
+
+function meta::external::store::rel::metamodel::render::program::render(entityDef: RelEntityDef[1]): String[1] {
+  let annotation = if ($entityDef.inline, | '@inline\n', | '');
+  $annotation + format('entity %s %s = %s', [$entityDef.name->renderExpr(), $entityDef.head->renderExpr(), $entityDef.body->renderExprs()]);
+}
+
+function meta::external::store::rel::metamodel::render::program::render(ic: RelIC[1]): String[1] {
+  format('ic %s {\n%s\n}', [$ic.head->renderExpr(), $ic.body->renderExprs()])
+}
+
+function meta::external::store::rel::metamodel::render::program::render(comment: RelComment[1]): String[1] {
+  $comment->match([
+    lc: RelLineComment[1] | $lc->render()
+  ])
+}
+
+function meta::external::store::rel::metamodel::render::program::render(comment: RelLineComment[1]): String[1] {
+  format('// %s', $comment.text)
+}

@@ -1,0 +1,204 @@
+[
+  {
+    "string": "String",
+    "optionalString": "OptionalString",
+    "repeatedString": [
+      "RepeatedString1",
+      "RepeatedString2"
+    ],
+    "integer": 1,
+    "optionalInteger": 2,
+    "repeatedInteger": [
+      1,
+      2
+    ],
+    "float": 1.0,
+    "optionalFloat": 2.5,
+    "repeatedFloat": [
+      1.1,
+      2.2
+    ],
+    "decimal": 1.23456789,
+    "optionalDecimal": 2.3596784236,
+    "repeatedDecimal": [
+      1.2359361818,
+      12.15456123618
+    ],
+    "boolean": true,
+    "optionalBoolean": false,
+    "repeatedBoolean": [
+      true,
+      false
+    ],
+    "date": "2022-12-12",
+    "optionalDate": "2022-12-12T01:00:05",
+    "repeatedDate": [
+      "2022-12-12",
+      "2023-12-12T12:00:00"
+    ],
+    "strictDate": "2022-12-12",
+    "optionalStrictDate": "2019-12-12",
+    "repeatedStrictDate": [
+      "2022-12-12",
+      "2020-12-12"
+    ],
+    "dateTime": "2023-12-12T12:00:00",
+    "optionalDateTime": "2020-12-12T12:00:00",
+    "repeatedDateTime": [
+      "2020-12-12T12:00:00",
+      "2023-12-12T12:00:00"
+    ],
+    "enum": "MALE",
+    "optionalEnum": "FEMALE",
+    "repeatedEnum": [
+      "MALE",
+      "OTHER"
+    ],
+    "measure": {
+      "unit": [
+        {
+          "unitId": "meta::pure::unit::Mass~Kilogram",
+          "exponentValue": 1
+        }
+      ],
+      "value": 5.5
+    },
+    "optionalMeasure": {
+      "unit": [
+        {
+          "unitId": "meta::pure::unit::Mass~Kilogram",
+          "exponentValue": 1
+        }
+      ],
+      "value": 15.5
+    },
+    "repeatedMeasure": [
+      {
+        "unit": [
+          {
+            "unitId": "meta::pure::unit::Mass~Kilogram",
+            "exponentValue": 1
+          }
+        ],
+        "value": 5.5
+      },
+      {
+        "unit": [
+          {
+            "unitId": "meta::pure::unit::Mass~Kilogram",
+            "exponentValue": 1
+          }
+        ],
+        "value": 15.5
+      }
+    ]
+  },
+  {
+    "string": "String",
+    "optionalString": null,
+    "repeatedString": [],
+    "integer": 1,
+    "optionalInteger": null,
+    "repeatedInteger": [],
+    "float": 1.0,
+    "optionalFloat": null,
+    "repeatedFloat": [],
+    "decimal": 1.23456789,
+    "optionalDecimal": null,
+    "repeatedDecimal": [],
+    "boolean": true,
+    "optionalBoolean": null,
+    "repeatedBoolean": [],
+    "date": "2022-12-12",
+    "optionalDate": null,
+    "repeatedDate": [],
+    "strictDate": "2022-12-12",
+    "optionalStrictDate": null,
+    "repeatedStrictDate": [],
+    "dateTime": "2023-12-12T12:00:00",
+    "optionalDateTime": null,
+    "repeatedDateTime": [],
+    "enum": "MALE",
+    "optionalEnum": null,
+    "repeatedEnum": [],
+    "measure": {
+      "unit": [
+        {
+          "unitId": "meta::pure::unit::Mass~Kilogram",
+          "exponentValue": 1
+        }
+      ],
+      "value": 5.5
+    },
+    "optionalMeasure": null,
+    "repeatedMeasure": []
+  },
+  {
+    "string": "String",
+    "optionalString": null,
+    "repeatedString": [
+      "RepeatedString1"
+    ],
+    "integer": 1,
+    "optionalInteger": null,
+    "repeatedInteger": [
+      2
+    ],
+    "float": 1.0,
+    "optionalFloat": null,
+    "repeatedFloat": [
+      2.2
+    ],
+    "decimal": 1.23456789,
+    "optionalDecimal": null,
+    "repeatedDecimal": [
+      1.2359361818
+    ],
+    "boolean": true,
+    "optionalBoolean": null,
+    "repeatedBoolean": [
+      false
+    ],
+    "date": "2022-12-12",
+    "optionalDate": null,
+    "repeatedDate": [
+      "2022-12-12"
+    ],
+    "strictDate": "2022-12-12",
+    "optionalStrictDate": null,
+    "repeatedStrictDate": [
+      "2022-12-12"
+    ],
+    "dateTime": "2023-12-12T12:00:00",
+    "optionalDateTime": null,
+    "repeatedDateTime": [
+      "2023-12-12T12:00:00"
+    ],
+    "enum": "MALE",
+    "optionalEnum": null,
+    "repeatedEnum": [
+      "MALE"
+    ],
+    "measure": {
+      "unit": [
+        {
+          "unitId": "meta::pure::unit::Mass~Kilogram",
+          "exponentValue": 1
+        }
+      ],
+      "value": 5.5
+    },
+    "optionalMeasure": null,
+    "repeatedMeasure": [
+      {
+        "unit": [
+          {
+            "unitId": "meta::pure::unit::Mass~Kilogram",
+            "exponentValue": 1
+          }
+        ],
+        "value": 5.5
+      }
+    ]
+  }
+]

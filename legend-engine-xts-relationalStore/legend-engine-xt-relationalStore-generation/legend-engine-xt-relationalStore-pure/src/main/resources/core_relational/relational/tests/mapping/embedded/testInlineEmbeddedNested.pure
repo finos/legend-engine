@@ -1,0 +1,177 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::sqlQueryToString::h2::*;
+import meta::pure::graphFetch::execution::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::csv::*;
+import meta::relational::tests::mapping::embedded::advanced::mapping::*;
+import meta::relational::tests::mapping::embedded::advanced::model::*;
+import meta::relational::tests::mapping::embedded::advanced::*;
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inline::nested::testProjection():Boolean[1]
+{
+
+
+  let result = execute(|BondDetail.all()->project([p| $p.type, p | $p.issuer.name ,p | $p.issuer.address.name], ['type', 'i','a'])
+                        , testMappingEmbeddedTargetIds, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(),debug());
+
+ assertEquals('type,i,a\n' + '5 years,issuer1,addressi1\n' + '5 years,issuer2,addressi2\n' + '7 weeks,issuer3,addressi3\n', $result.values->toOne()->toCSV());
+ assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER as "i", "root".ISSUER_ADDRESS_NAME as "a" from PRODUCT_DENORM as "root"', $result);
+
+  true;
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inline::nested::testFilter():Boolean[1]
+{
+   
+    let result1 = execute(|BondDetail.all()->filter(b | $b.issuer.address.name == 'addressi1' )
+                                    ->project( [p | $p.type, p | $p.issuer.address.name], ['type','i'])
+                                    , testMappingEmbeddedTargetIds, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+  assertEquals('type,i\n' + '5 years,addressi1\n', $result1.values->toOne()->toCSV());
+  assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER_ADDRESS_NAME as "i" from PRODUCT_DENORM as "root" where "root".ISSUER_ADDRESS_NAME = \'addressi1\'', $result1);
+
+   let result = execute(|BondDetail.all()->filter(b | $b.holder.address.name == 'addressh1' )
+                                    ->project( [p | $p.type, p | $p.issuer.address.name,p | $p.holder.address.name], ['type','i','h'])
+                                    , testMappingEmbeddedTargetIds, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+  assertEquals('type,i,h\n' + '5 years,addressi1,addressh1\n'+ '5 years,addressi2,addressh1\n', $result.values->toOne()->toCSV());
+  assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER_ADDRESS_NAME as "i", "root".HOLDER_ADDRESS_NAME as "h" from PRODUCT_DENORM as "root" where "root".HOLDER_ADDRESS_NAME = \'addressh1\'', $result);
+
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inline::nested::testDenormWithComplexFilter():Boolean[1]
+{
+  //filter with two embedded properties in the filter
+  let result = execute(|BondDetail.all()->filter(p | $p.issuer.address.name->endsWith('i1') && $p.description->startsWith('Bond'))
+                                    ->project( [p | $p.description, p | $p.issuer.address.name], ['name', 'c1'])
+                                    , testMappingEmbeddedTargetIds, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+
+  assertEquals('name,c1\n' + 'Bond 1,addressi1\n', $result.values->toOne()->toCSV());
+  assertSameSQL('select "root".BOND_DETAILS as "name", "root".ISSUER_ADDRESS_NAME as "c1" from PRODUCT_DENORM as "root" where ("root".ISSUER_ADDRESS_NAME like \'%i1\' and "root".BOND_DETAILS like \'Bond%\')', $result);
+ }
+
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inline::nested::testGroupBy():Boolean[1]
+{
+  let result = execute(|BondDetail.all()->groupBy( [p | $p.holder.address.name] ,
+                                 [agg(x|if ( $x.type == '5 years' ,|5.0,|1.0),
+                                      y|$y->sum()
+                                      )],
+                                 ['c1', 'c2']
+                                 ), testMappingEmbeddedTargetIds,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+  assertEquals('c1,c2\n' + 'addressh1,10.0\n' + 'addressh3,1.0\n', $result.values->toOne()->toCSV());
+  assertEqualsH2Compatible(
+    'select "root".HOLDER_ADDRESS_NAME as "c1", sum(case when "root".BOND_TYPE = \'5 years\' then 5.0 else 1.0 end) as "c2" from PRODUCT_DENORM as "root" group by "c1"', 
+    'select "root".HOLDER_ADDRESS_NAME as "c1", sum(case when "root".BOND_TYPE = \'5 years\' then CAST(5.0 AS FLOAT) else CAST(1.0 AS FLOAT) end) as "c2" from PRODUCT_DENORM as "root" group by "c1"', 
+    $result->sqlRemoveFormatting()
+  );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inline::nested::testGroupByComplexAgg():Boolean[1]
+{
+  let result = execute(|BondDetail.all()->groupBy( [p | $p.holder.address.name] ,
+                                 [agg(x|if($x.holder.address.name->startsWith('addressh1'),|5.0,|1.0),
+                                      y|$y->sum()
+                                      )],
+                                 ['c1', 'sum']
+                                 ), testMappingEmbeddedTargetIds, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+  assertEquals('c1,sum\n' + 'addressh1,10.0\n' + 'addressh3,1.0\n', $result.values->toOne()->toCSV());
+  assertEqualsH2Compatible(
+    'select "root".HOLDER_ADDRESS_NAME as "c1", sum(case when "root".HOLDER_ADDRESS_NAME like \'addressh1%\' then 5.0 else 1.0 end) as "sum" from PRODUCT_DENORM as "root" group by "c1"', 
+    'select "root".HOLDER_ADDRESS_NAME as "c1", sum(case when "root".HOLDER_ADDRESS_NAME like \'addressh1%\' then CAST(5.0 AS FLOAT) else CAST(1.0 AS FLOAT) end) as "sum" from PRODUCT_DENORM as "root" group by "c1"', 
+    $result->sqlRemoveFormatting()
+  );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inline::nested::testQualifierProperty():Boolean[1]
+{
+
+  let result = execute(|BondDetail.all()->filter(p | $p.issuer.address.description->startsWith('D:addressi1') )
+                                      ->project( [p | $p.description, p | $p.issuer.address.description,p | $p.holder.address.description], ['name', 'c2','c3'])
+                                    , testMappingEmbeddedTargetIds, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+  assertEquals('name,c2,c3\n' + 'Bond 1,D:addressi1,D:addressh1\n' , $result.values->toOne()->toCSV());
+  assertSameSQL( 'select "root".BOND_DETAILS as "name", concat(\'D:\', "root".ISSUER_ADDRESS_NAME) as "c2", concat(\'D:\', "root".HOLDER_ADDRESS_NAME) as "c3" from PRODUCT_DENORM as "root" where concat(\'D:\', "root".ISSUER_ADDRESS_NAME) like \'D:addressi1%\'', $result);
+
+}
+
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inline::nested::testInlineInEmbedded():Boolean[1]
+{
+   let result = execute(|BondDetail.all()->filter(b | $b.holder.address.name == 'addressh1' )
+                                    ->project( [p | $p.type, p | $p.issuer.address.name,p | $p.holder.address.name], ['type','i','h'])
+                                    , testInlineInEmbeddedPropertyMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+  assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER_ADDRESS_NAME as "i", "root".HOLDER_ADDRESS_NAME as "h" from PRODUCT_DENORM as "root" where "root".HOLDER_ADDRESS_NAME = \'addressh1\'', $result);
+
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::relational::tests::mapping::embedded::advanced::inline::nested::testInlineInEmbeddedGraphFetch():Boolean[1]
+{
+  let tree = #{
+                BondDetail {
+                              type,
+                              issuer { address { name } },
+                              holder { address { name } }
+                           }
+              }#;
+
+  let result = execute(|BondDetail.all()->filter(b | $b.holder.address.name == 'addressh1')->graphFetch($tree)->serialize($tree), testInlineInEmbeddedPropertyMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+  assertJsonStringsEqual('[{"holder":{"address":{"name":"addressh1"}},"type":"5 years","issuer":{"address":{"name":"addressi1"}}},{"holder":{"address":{"name":"addressh1"}},"type":"5 years","issuer":{"address":{"name":"addressi2"}}}]' , $result.values);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::relational::tests::mapping::embedded::advanced::inline::nested::testMilestonedEmbeddedGraphFetch():Boolean[1]
+{
+   let tree = #{
+                  Person {
+                            address(%2022-10-20T23:59:59) { state },
+                            'division'  : division(%2022-10-20T23:59:59) { indId },
+                            'department': department(%2022-10-20T23:59:59) { departmentCode }
+                         }
+              }#;
+   let result = execute(|Person.all(%2022-10-20T23:59:59)->graphFetch($tree)->serialize($tree), testMilestonedEmbeddedInlineMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertJsonStringsEqual('[{"division":{"indId":10334},"address(2022-10-20T23:59:59+0000)":{"state":"TX"},"department":{"departmentCode":"IIRA"}},{"division":{"indId":10334},"address(2022-10-20T23:59:59+0000)":{"state":"NY"},"department":{"departmentCode":"IIRA"}}]' , $result.values);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::relational::tests::mapping::embedded::advanced::inline::nested::testMilestonedEmbeddedInlineGraphFetch():Boolean[1]
+{
+   let tree = #{
+                  Person {
+                            id,
+                            'product': address(%2022-10-20T23:59:59) {
+                                                                        state,
+                                                                        unit (%2022-10-20T23:59:59) { number }
+                                                                      }
+                         }
+              }#;
+   let result = execute(|Person.all(%2022-10-20T23:59:59)->graphFetch($tree)->serialize($tree), testMilestonedEmbeddedInlineMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertJsonStringsEqual('[{"product":{"state":"TX","unit(2022-10-20T23:59:59+0000)":{"number":8}},"id":2},{"product":{"state":"NY","unit(2022-10-20T23:59:59+0000)":{"number":9}},"id":3}]' , $result.values);
+}
+
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::relational::tests::mapping::embedded::advanced::inline::nested::testMilestonedExtendsEmbeddedGraphFetch():Boolean[1]
+{
+   let tree = #{
+                  Person {
+                            firm(%2022-10-20T23:59:59) { firmName }
+                         }
+              }#;
+   let result = execute(|Person.all(%2022-10-20T23:59:59)->graphFetch($tree)->serialize($tree), testMilestonedEmbeddedInlineMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertJsonStringsEqual('[{"firm(2022-10-20T23:59:59+0000)":{"firmName":"NNIP"}},{"firm(2022-10-20T23:59:59+0000)":{"firmName":"NNIP"}}]' , $result.values);
+}

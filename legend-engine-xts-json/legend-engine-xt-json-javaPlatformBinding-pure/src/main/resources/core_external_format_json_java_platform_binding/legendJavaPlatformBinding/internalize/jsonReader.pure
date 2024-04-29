@@ -1,0 +1,401 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::json::binding::validation::*;
+import meta::external::format::json::executionPlan::model::*;
+import meta::external::format::json::metamodel::internalize::*;
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+
+import meta::pure::dataQuality::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::metamodel::serialization::grammar::*;
+
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::library::jackson::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::units::*;
+
+import meta::external::format::json::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::*;
+
+function meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::jsonReaderClass(conventions:Conventions[1], path:String[1], srcClass:meta::pure::metamodel::type::Class<Any>[1]): meta::external::language::java::metamodel::Class[1]
+{
+  $conventions->planNodeClass('public', $path, 'JsonDataReader_' + $conventions->identifier($srcClass->elementToPath('_')));
+}
+
+function meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::createJsonReading(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], config:JsonSchemaInternalizeConfig[1], bindingDetail:JsonSchemaBindingDetail[1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], readableEnums:meta::pure::metamodel::type::Enumeration<Any>[*], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+{
+  newProject()
+    ->addClasses(createJsonReadingClass($pureClass, $javaInterface, $path, $config, $bindingDetail, $readableClasses, $readableEnums, $context, $debug));
+}
+
+function meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::createJsonReadingClass(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], config:JsonSchemaInternalizeConfig[1], bindingDetail:JsonSchemaBindingDetail[1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], readableEnums:meta::pure::metamodel::type::Enumeration<Any>[*], context:GenerationContext[1], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+  let proto = $context.conventions->jsonReaderClass($path, $pureClass)
+    ->jextends(javaParameterizedType($context.conventions->className(JsonDataReader), $javaInterface))
+    ->usingKnownPackages($context.conventions->knownPackages())
+    ->imports($context.conventions->constrainedImports())
+    ->imports($context.conventions->standardImports())
+    ->imports($context.conventions->defectClass())
+    ->imports($readableClasses->map(c| $context.conventions->className($c)))
+    ->imports($readableEnums->map(c| $context.conventions->className($c)))
+    ->imports($context.conventions->className(Checked))
+    ->imports($context->unitImplementationClasses())
+    ->imports(jsonNode())
+    ->imports(jsonNodeType())
+    ->imports(jsonToken())
+    ->imports(javaInvocationTargetException());
+
+  let conventions = $context.conventions;
+  let unitTypes   = $context.typeInfos->allUnitInfos()->map(uti | $uti.unit());
+
+  $proto
+    ->addField(javaField(['private', 'final'], javaStack(javaObject()), 'stack', javaStack(javaObject())->j_new([])))
+    ->addConstructor($context.typeInfos->hasDecimal(), $config.pathReference.path)
+    ->addMethods($readableClasses->map(c|$c->createClassReadMethod($proto, $path, $context, $readableClasses, $bindingDetail, $config)))
+    ->addMethods($unitTypes->map(t|$t->createUnitAcceptMethod($proto, $conventions)))
+    ->addMethods($readableEnums->map(c|$c->createEnumReadMethod($proto, $context)))
+    ->addReadCheckedObjects($pureClass, $javaInterface, $path, $context);
+}
+
+function <<access.private>> meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::hasDecimal(typeInfos:TypeInfoSet[1]):Boolean[1]
+{
+  $typeInfos.typeInfos->filter(ti | $ti->instanceOf(ClassTypeInfo))->cast(@ClassTypeInfo)->exists(cti| $cti.properties->exists(p | $p.genericType.rawType == Decimal));
+}
+
+function <<access.private>> meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::addConstructor(class:meta::external::language::java::metamodel::Class[1], useBigDecimalForFloats:Boolean[1], pathOffset:String[0..1]): meta::external::language::java::metamodel::Class[1]
+{
+  let in = j_parameter(javaInputStream(),'in');
+
+  $class->addConstructor(
+    javaConstructor(['public'], [$in]->cast(@meta::external::language::java::metamodel::Parameter),
+        [
+          j_superInvoke($class, [$in, j_boolean($useBigDecimalForFloats), if($pathOffset->isEmpty(), | j_null(), | j_string($pathOffset->toOne()))])
+        ]
+    )
+  );
+}
+
+function <<access.private>> meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::createClassReadMethod(class:meta::pure::metamodel::type::Class<Any>[1], proto:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], bindingDetail:JsonSchemaBindingDetail[1], config:JsonSchemaInternalizeConfig[1]): meta::external::language::java::metamodel::Method[1]
+{
+  let conventions          = $context.conventions;
+  let javaClass            = $conventions->className($class);
+  let checked              = $conventions->className(Checked);
+  let checkedResult        = javaParameterizedType($checked, $javaClass);
+
+  let specializations      = $class->meta::pure::functions::meta::findAllSpecializations()->filter(x|$x->in($readableClasses));
+  let nodeParam            = j_parameter(jsonNode(), 'node');
+  let nodeValueVariable    = j_variable(javaString(), 'nodeValue');
+  let defectsVariable      = j_variable(javaList($conventions->defectClass()), 'defects');
+  let methodNameVar        = j_variable(javaString(), 'methodName');
+
+  let boundClassProps      = $bindingDetail.mappedPropertiesForClass($class);
+  let boundProperties      = $context.typeInfos->allProperties($class)->filter(p | $p->in($boundClassProps));
+
+  let specializationByName = $specializations->groupBy(x| $x.name->toOne());
+  let specializationsCode  = if($specializations->isEmpty(), 
+                                | [],
+                                | $specializationByName->keys()
+                                                      ->map(className| pair($className->j_string()->j_invoke('equals', $nodeValueVariable, javaBoolean()),
+                                                                            $specializationByName->get($className).values->match([
+                                                                                { specializationClass: meta::pure::metamodel::type::Class<Any>[1]   | $nodeValueVariable->j_assign(j_string($specializationClass->elementToPath('::'))) },
+                                                                                { specializationClasses: meta::pure::metamodel::type::Class<Any>[*] |
+                                                                                    let defectMsg = j_string('multiple class matches [' + $specializationClasses->map(c|$c->elementToPath('::'))->sort()->joinStrings(', ') + '] for ' + $className);
+                                                                                    $defectsVariable->j_invoke('add', j_invoke($conventions->className(DataQualityBasicDefectClass), 'newInvalidInputCriticalDefect', [$defectMsg, j_string($class->elementToPath())]), javaVoid());
+                                                                                }
+                                                                            ])))
+                                                      ->list()->j_if()
+                            );
+
+  javaMethod(['public'], $checkedResult, $class->readMethodName($conventions), [$nodeParam->cast(@Parameter)],
+    $defectsVariable->j_declare(j_new(javaArrayList($conventions->defectClass()), []))
+    ->concatenate(j_if($nodeParam->j_invoke('path', j_string($config.typeKeyName), jsonNode())->j_invoke('getNodeType', [], jsonNodeType())->j_invoke('equals', jsonNodeType()->j_field('MISSING', jsonNodeType()), javaBoolean())->j_not(),
+                      [
+                        $nodeValueVariable->j_declare($nodeParam->j_invoke('path', j_string($config.typeKeyName), jsonNode())->j_invoke('textValue', [], javaString()))
+                        ->concatenate($specializationsCode)
+                        ->concatenate(
+                          j_if($nodeValueVariable->j_invoke('equals', j_string($class->elementToPath()), javaBoolean())->j_not(),
+                              [
+                                $methodNameVar->j_declare(j_string('read_')->j_plus($nodeValueVariable->j_invoke('replace', [j_string('::'), j_string('_')], javaString()))),
+                                j_if(j_this($proto)->j_invoke('readMethodExists', $methodNameVar, javaBoolean()),
+                                    [
+                                      j_this($proto)->j_invoke('readMethodInvoke', [$methodNameVar, $nodeParam], javaObject())->j_cast($checkedResult)->j_return()
+                                    ])
+                              ]
+                          ))
+                        ->toOneMany()
+                      ]))
+    ->concatenate(defineClassPreParseVariables($boundProperties, $proto, $context))
+    ->concatenate(createObject($class, $proto, $path, $context))
+    ->concatenate(acceptProperties($class, $boundProperties, $bindingDetail, $proto, $context))
+    ->concatenate(validateMultiplicities($class, $boundProperties, $context))
+    ->concatenate(returnCheckedObject($class, $boundProperties, $proto, $path, $context))
+  );
+}
+
+function <<access.private>> meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::defineClassPreParseVariables(boundProperties:AbstractProperty<Any>[*], proto:meta::external::language::java::metamodel::Class[1], context:GenerationContext[1]): Code[*]
+{
+  let conventions = $context.conventions;
+  let stackField  = j_this($proto)->j_field('stack', javaStack(javaObject()));
+
+  $boundProperties
+    ->map({p| let javaType    = $conventions->pureTypeToJavaType($p);
+              let listType    = if(isJavaList($javaType), |$javaType, |javaList($javaType));
+              let elementType = $listType->cast(@meta::external::language::java::metamodel::ParameterizedType).typeArguments->at(0);
+              let variable    = j_variable($listType, '_' + $conventions->fieldName($p));
+
+              let declare     = $variable->j_declare(j_new(javaArrayList($elementType), []));
+              if($p.owner->instanceOf(Association),
+                |
+                  [
+                    $declare,
+                    j_if(j_and($stackField->j_invoke('empty', [], javaBoolean())->j_not(), $stackField->j_invoke('peek', [], javaObject())->j_instanceof($elementType)),
+                          $variable->j_invoke('add', $stackField->j_invoke('peek', [], javaObject())->j_cast($elementType), javaVoid())
+                        )
+                  ];,
+                | $declare
+              );
+            });
+}
+
+function <<access.private>> meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::createObject(class:meta::pure::metamodel::type::Class<Any>[1], proto:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1]): Code[1]
+{
+  j_this($proto)->j_field('stack', javaStack(javaObject()))->j_invoke('push', j_new($context.conventions->dataClass($class, $path), []), javaVoid())
+}
+
+function <<access.private>> meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::acceptProperties(class:meta::pure::metamodel::type::Class<Any>[1], boundProperties:AbstractProperty<Any>[*], bindingDetail:JsonSchemaBindingDetail[1], proto:meta::external::language::java::metamodel::Class[1], context:GenerationContext[1]): Code[*]
+{
+  let conventions                  = $context.conventions;
+  let jThis                        = j_this($proto);
+  let checked                      = $conventions->className(Checked); 
+  let defectsVariable              = j_variable(javaList($conventions->defectClass()), 'defects');
+  let nodeParam                    = j_parameter(jsonNode(), 'node');
+
+  $boundProperties
+    ->map({p| let javaType       = $conventions->pureTypeToJavaType($p);
+              let listType       = if(isJavaList($javaType), |$javaType, |javaList($javaType));
+              let elementType    = if(isJavaList($javaType), |elementTypeOfJavaList($javaType), |$javaType);
+              let variable       = j_variable($listType, '_' + $conventions->fieldName($p));
+              let fieldName      = $bindingDetail.fieldNameForProperty($p);
+
+              let propertyType   = $p.genericType.rawType->toOne();
+              let lParam         = j_parameter(javaString(), 'm');
+              let defectRecorder = j_lambda($lParam, $defectsVariable->j_invoke('add', $conventions->className(DataQualityBasicDefectClass)->j_invoke('newInvalidInputErrorDefect', [j_string($fieldName)->j_plus(j_string(': '))->j_plus($lParam), j_string($class->elementToPath())], $conventions->defectClass()), javaVoid()));     
+
+              j_if($nodeParam->j_invoke('path', j_string($fieldName), jsonNode())->j_invoke('getNodeType', [], jsonNodeType())->j_ne(jsonNodeType()->j_field('MISSING', jsonNodeType())),
+                    $propertyType->match([
+                        {c: meta::pure::metamodel::type::Class<Any>[1] |
+                          
+                          let checkedListVar  = j_variable(javaList(javaParameterizedType($checked, $elementType)), 'checked');
+                          let pathNodeVar     = j_variable($conventions->relativePathNodeClass(), 'pathNode');
+                          let propertyDefects = j_variable(javaList($conventions->defectClass()), 'propertyDefects');
+                          let i               = j_variable(javaInt(), 'i');
+                          let d               = j_parameter($conventions->defectClass(), 'd');
+                          let ch              = j_parameter(javaParameterizedType($checked, $elementType), 'c');
+                          let v               = j_parameter($elementType, 'd');
+
+                          [
+                            $checkedListVar->j_declare($jThis->j_invoke('acceptMany', [$nodeParam->j_invoke('path', j_string($fieldName), jsonNode()), j_methodReference($jThis, $c->readMethodName($conventions), javaFunctionType(jsonNode(), javaParameterizedType($checked, $elementType))), $defectRecorder], javaList(javaParameterizedType($checked, $elementType)))),
+                            j_for($i->j_declare(j_int(0)), $i->j_lt($checkedListVar->j_invoke('size', [], javaInt())), $i->j_inc(),
+                              [
+                                $propertyDefects->j_declare($conventions->checkedGetDefects($checkedListVar->j_invoke('get', $i, javaParameterizedType($checked, $elementType)))),
+                                if($p.multiplicity->isToOne() || $p.multiplicity->isZeroOne(),
+                                  | $pathNodeVar->j_declare(j_conditional($i->j_eq(j_int(0)), newRelativePathNode($conventions, j_string($fieldName)), newRelativePathNode($conventions, j_string($fieldName), $i))),
+                                  | $pathNodeVar->j_declare(newRelativePathNode($conventions, j_string($fieldName), $i))
+                                ),
+                                $defectsVariable->j_invoke('addAll', $propertyDefects->j_streamOf()->js_map(j_lambda($d, prefixDefectPath($conventions, $d, $pathNodeVar)))->js_resolve(javaList($conventions->defectClass())), javaVoid())
+                              ]
+                            ),
+                            $variable->j_assign($checkedListVar->j_streamOf()->js_map(j_lambda($ch, checkedGetValue($conventions, $ch)))->js_filter(j_lambda($v, $v->j_ne(j_null())))->js_resolve($listType))
+                          ];
+                        },
+                        {e: meta::pure::metamodel::type::Enumeration<Any>[1] |
+                          $variable->j_assign($jThis->j_invoke('acceptMany', [$nodeParam->j_invoke('path', j_string($fieldName), jsonNode()), j_methodReference($jThis, $e->readMethodName($conventions), javaFunctionType(jsonNode(), $elementType)), $defectRecorder], $listType));
+                        },
+                        {u: Unit[1] |
+                          $variable->j_assign($jThis->j_invoke('acceptMany', [$nodeParam->j_invoke('path', j_string($fieldName), jsonNode()), j_methodReference($jThis, 'accept' + $conventions->identifier($propertyType.name->toOne()), javaFunctionType(jsonNode(), $elementType)), $defectRecorder], $listType));
+                        },
+                        {a: Any[1] |
+                          $variable->j_assign($jThis->j_invoke('acceptMany', [$nodeParam->j_invoke('path', j_string($fieldName), jsonNode()), j_methodReference($jThis, 'accept' + $propertyType.name->toOne(), javaFunctionType(jsonNode(), $elementType)), $defectRecorder], $listType));
+                        }
+                    ])
+              );
+      });
+}
+
+function <<access.private>> meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::validateMultiplicities(class:meta::pure::metamodel::type::Class<Any>[1], boundProperties:AbstractProperty<Any>[*], context:GenerationContext[1]): Code[*]
+{
+  $boundProperties
+    ->map({p|
+      let javaType = $context.conventions->pureTypeToJavaType($p);
+      let listType = if(isJavaList($javaType), |$javaType, |javaList($javaType));
+      let variable = j_variable($listType, '_' + $context.conventions->fieldName($p));
+
+      let multiplicity     = $p.multiplicity;
+      let occurs           = meta::external::format::shared::executionPlan::platformBinding::legendJava::occursFromMultiplicity($multiplicity);
+      let size             = $variable->j_invoke('size', [], javaInt());
+      let lowerBoundClause = $size->j_lt($occurs.first);
+      let upperBoundClause = $size->j_gt($occurs.second);
+      let defectsVariable  = j_variable(javaList($context.conventions->defectClass()), 'defects');
+      let defectUpdater    = $defectsVariable->j_invoke('add', $context.conventions->newClassStructureDefect(j_string('Invalid multiplicity for '+$p.name->toOne()+': expected ['+$multiplicity->printMultiplicity()+'] found [')->j_plus($size)->j_plus(j_string(']')), j_string($class->elementToPath())), javaVoid());
+
+      if($multiplicity->hasLowerBound() && $multiplicity->hasUpperBound(),
+          | j_if($lowerBoundClause->j_or($upperBoundClause), $defectUpdater),
+          |
+      if($multiplicity->hasLowerBound(),
+          | j_if($lowerBoundClause, $defectUpdater),
+          |
+      if($multiplicity->hasUpperBound(),
+          | j_if($upperBoundClause, $defectUpdater),
+          | []
+      )));
+  });
+}
+
+function <<access.private>> meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::returnCheckedObject(class:meta::pure::metamodel::type::Class<Any>[1], boundProperties:AbstractProperty<Any>[*], proto:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1]): Code[*]
+{
+  let conventions     = $context.conventions;
+  let dataClass       = $conventions->dataClass($class, $path);
+  let javaClass       = $conventions->className($class);
+
+  let jThis           = j_this($proto);
+  let checked         = $conventions->className(Checked); 
+  let defectsVariable = j_variable(javaList($conventions->defectClass()), 'defects');
+  let valueVariable   = j_variable($dataClass, 'value');
+  let d               = j_parameter($conventions->defectClass(), 'd');
+
+   let setters = $boundProperties->map({p|
+      let javaType    = $context.conventions->pureTypeToJavaType($p);
+      let listType    = if(isJavaList($javaType), |$javaType, |javaList($javaType));
+      let elementType = if(isJavaList($javaType), |elementTypeOfJavaList($javaType), |$javaType);
+      let variable    = j_variable($listType, '_' + $conventions->fieldName($p));
+      
+      let value       = if($p.multiplicity->isToOne(),
+                            | $variable->j_invoke('get', j_int(0), $elementType),
+                            |
+                        if($p.multiplicity->isZeroOne(),
+                            | j_conditional($variable->j_invoke('isEmpty', [], javaBoolean()), j_null(), $variable->j_invoke('get', j_int(0), $elementType)),
+                            | javaCollections()->j_invoke('unmodifiableList', $variable, $listType)
+                        ));
+
+      $valueVariable->j_invoke($conventions->setterName($p), $value, javaVoid());
+   });
+
+  j_if($defectsVariable->j_streamOf()->js_anyMatch(j_lambda($d, defectGetEnforcemetLevel($conventions, $d)->j_eq(elCritical($conventions)))),
+        $conventions->dynamicChecked($defectsVariable, j_null(), j_null()->j_cast($javaClass))->j_return(),
+        $valueVariable->j_declare($jThis->j_field('stack', javaStack(javaObject()))->j_invoke('pop', [], javaObject())->j_cast($dataClass))
+          ->concatenate($setters)
+          ->concatenate($conventions->dynamicChecked($defectsVariable, j_null(), $valueVariable->j_cast($javaClass))->j_return())
+      );
+}
+
+function <<access.private>> meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::createEnumReadMethod(enum:meta::pure::metamodel::type::Enumeration<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Method[1]
+{
+  let conventions    = $context.conventions;
+  let javaClass      = $conventions->className($enum);
+  let qualifier      = $enum->elementToPath()+'.';
+  let nodeParameter  = j_parameter(jsonNode(), 'node');
+
+  let textVar        = j_variable(javaString(), 'text');
+  let valueVar       = j_variable(javaString(), 'value');
+  let ex             = j_parameter(javaIllegalArgumentException(),'e');
+
+  javaMethod(['public'], $javaClass, $enum->readMethodName($conventions), $nodeParameter,
+    j_try(
+      [
+        $textVar->j_declare(j_this($javaInterface)->j_invoke('acceptString', $nodeParameter, javaString())),
+        $valueVar->j_declare(j_conditional($textVar->j_invoke('startsWith', j_string($qualifier), javaBoolean()), $textVar->j_invoke('substring', j_int($qualifier->length()), javaString()), $textVar)),
+        $javaClass->j_invoke('getEnumFromPureName', $valueVar, $javaClass)->j_return()
+      ],
+      j_catch($ex, j_throw(j_new($conventions->className(DataParsingException), $ex->j_invoke('getMessage', [], javaString()))))
+    )
+  );
+}
+
+function <<access.private>> meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::createUnitAcceptMethod(type:meta::pure::metamodel::type::Type[1], javaInterface:meta::external::language::java::metamodel::Class[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Method[1]
+{
+  let javaType             = $conventions->pureTypeToJavaType($type, PureOne);
+  let simpleJavaName       = $conventions->identifier($type.name->toOne());
+  let typeName             = j_string($type.name->toOne());
+  let nodeParameter        = j_parameter(jsonNode(), 'node');
+  let nodeTypeInvoke       = {param:Code[1] | $param->j_invoke('getNodeType', [], jsonNodeType())};
+  let checkMethodInvokeGen = {params:Code[3] | j_this($javaInterface)->j_invoke('check', $params, javaVoid())};
+  let unitValueVar         = j_variable(javaDouble(), 'unitValue');
+  let valueVar             = j_variable($javaType, 'value');
+  let ex                   = j_parameter(javaIllegalArgumentException(),'e');
+
+  javaMethod('private', $javaType, 'accept' + $simpleJavaName, $nodeParameter,
+            j_try(
+              [
+                $checkMethodInvokeGen->eval([jsonNodeType()->j_field('OBJECT', jsonNodeType()), 
+                                            $nodeTypeInvoke->eval($nodeParameter), 
+                                            j_string('Unexpected ')->j_plus($nodeTypeInvoke->eval($nodeParameter))->j_plus(j_string(' for PURE '))->j_plus($typeName)]),
+                $checkMethodInvokeGen->eval([jsonNodeType()->j_field('ARRAY', jsonNodeType()), 
+                                            $nodeTypeInvoke->eval($nodeParameter->j_invoke('path', j_string('unit'), jsonNode())), 
+                                            j_string('Unexpected unit ')->j_plus($nodeParameter->j_invoke('path', j_string('unit'), jsonNode()))->j_plus(j_string(' for PURE '))->j_plus($typeName)]),
+                $checkMethodInvokeGen->eval([jsonNodeType()->j_field('STRING', jsonNodeType()), 
+                                            $nodeTypeInvoke->eval($nodeParameter->j_invoke('path', j_string('unit'), jsonNode())->j_invoke('path', j_int(0), jsonNode())->j_invoke('path', j_string('unitId'), jsonNode())), 
+                                            j_string('Unexpected unitId ')->j_plus($nodeParameter->j_invoke('path', j_string('unit'), jsonNode())->j_invoke('path', j_int(0), jsonNode())->j_invoke('path', j_string('unitId'), jsonNode()))->j_plus(j_string(' for PURE '))->j_plus($typeName)]),
+                $checkMethodInvokeGen->eval([jsonNodeType()->j_field('NUMBER', jsonNodeType()), 
+                                            $nodeTypeInvoke->eval($nodeParameter->j_invoke('path', j_string('unit'), jsonNode())->j_invoke('path', j_int(0), jsonNode())->j_invoke('path', j_string('exponentValue'), jsonNode())), 
+                                            j_string('Unexpected exponentValue ')->j_plus($nodeParameter->j_invoke('path', j_string('unit'), jsonNode())->j_invoke('path', j_int(0), jsonNode())->j_invoke('path', j_string('exponentValue'), jsonNode()))->j_plus(j_string(' for PURE '))->j_plus($typeName)]),
+                $checkMethodInvokeGen->eval([jsonNodeType()->j_field('NUMBER', jsonNodeType()), 
+                                            $nodeTypeInvoke->eval($nodeParameter->j_invoke('path', j_string('value'), jsonNode())), 
+                                            j_string('Unexpected value ')->j_plus($nodeParameter->j_invoke('path', j_string('value'), jsonNode()))->j_plus(j_string(' for PURE '))->j_plus($typeName)]),
+                $unitValueVar->j_declare($nodeParameter->j_invoke('path', j_string('value'), jsonNode())->j_invoke('doubleValue', [], javaDouble())),
+                $valueVar->j_declare(j_new($conventions->implClassName($type), $unitValueVar)),
+                $valueVar->j_return()
+              ],
+              j_catch($ex, j_throw(j_new($conventions->className(DataParsingException), $ex->j_invoke('getMessage', [], javaString()))))
+            )
+  );
+}
+
+function <<access.private>> meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::addReadCheckedObjects(proto:meta::external::language::java::metamodel::Class[1], pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+  let conventions     = $context.conventions;
+  let checkedClass    = $context.baseProject->toOne()->resolve($conventions->className(Checked));
+  let checkedSource   = javaParameterizedType($checkedClass, $javaInterface);
+  
+  let node            = j_parameter(jsonNode(), 'node');
+
+  let checked         = j_variable($checkedSource, 'object');
+  let sourceRead      = $pureClass->readMethodName($conventions);
+  let jThis           = j_this($proto);
+  let recordType      = $conventions->className(JsonDataRecord);
+  let source          = j_parameter($recordType, 'source');
+
+  $proto->addMethod(
+    javaMethod('public', $checkedSource, 'readCheckedObject', [$node, $source],
+        [
+          $checked->j_declare($jThis->j_invoke($sourceRead, [$node], $checkedSource)),
+          $conventions->dynamicChecked($conventions->checkedGetDefects($checked), $source, $conventions->checkedGetValue($checked))->j_return()
+        ]
+    )
+  );
+}
+
+function <<access.private>> meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::readMethodName(type:meta::pure::metamodel::type::Type[1], conventions:Conventions[1]): String[1]
+{
+  'read_'+ $conventions->identifier($type->elementToPath('_'));
+}

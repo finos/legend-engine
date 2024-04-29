@@ -1,0 +1,158 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::functions::sqlstring::*;
+import meta::pure::mapping::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+import meta::pure::profiles::*;
+import meta::relational::functions::sqlstring::*;
+import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::sybase::testProcessLiteralForASE():Boolean[1]
+{
+   let result = toSQLString(|Person.all()->project([
+                                                      a | 'String',
+                                                      b | %2016-03-01,
+                                                      c | %2016-03-01T12:18:18.976+0200,
+                                                      d | 1,
+                                                      e | 1.1
+                                                   ],
+                                                   ['a','b','c','d', 'e'])->take(0),
+                              simpleRelationalMapping, DatabaseType.Sybase, meta::relational::extension::relationalExtensions());
+   print($result);
+   assertEquals('select top 0 \'String\' as "a", convert(DATE, \'2016-03-01\', 101) as "b", convert(DATETIME, \'2016-03-01 10:18:18.976\', 101) as "c", 1 as "d", 1.1 as "e" from personTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::sybase::testToSQLStringWithLength():Boolean[1]
+{
+   [DatabaseType.Sybase]->map(db|
+      let s = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, $db, meta::relational::extension::relationalExtensions());
+      assertEquals('select char_length("root".FIRSTNAME) as "nameLength" from personTable as "root"', $s);
+   );
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::sybase::testToSQLStringWithPosition():Boolean[1]
+{
+   [DatabaseType.Sybase]->map(db|
+      let s = toSQLString(
+              |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
+               meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, $db, meta::relational::extension::relationalExtensions());
+
+      assertEquals('select substring("root".FULLNAME, 0, charindex(\',\', "root".FULLNAME)-1) as "firstName" from personTable as "root"', $s);
+   );
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::sybase::testCbrt():Boolean[1]
+{
+  let common = 'select cbrt("root".quantity) as "cbrt" from tradeTable as "root"';
+
+   let expected = [
+    pair(DatabaseType.Sybase, $common)
+   ];
+
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+
+      let result = toSQLString(
+        |Trade.all()->project([
+          a | $a.quantity->cbrt()
+         ],
+         ['cbrt']),
+         simpleRelationalMapping,
+         $driver, meta::relational::extension::relationalExtensions());
+
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::sybase::testSqlGenerationForDatePartForSybaseASE():Boolean[1]
+{
+   let result = toSQLString(|Location.all()->project([
+                                                      a | $a.censusdate->toOne()->datePart()
+                                                   ],
+                                                   ['a']),
+                              simpleRelationalMappingInc, DatabaseType.Sybase, meta::relational::extension::relationalExtensions());
+   assertEquals('select cast("root"."DATE" as date) as "a" from locationTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::sybase::testToSqlGenerationFirstDayOfMonth():Boolean[1]
+{
+   let expected = [
+      pair(DatabaseType.Sybase, 'select dateadd(DAY, -(day("root".tradeDate) - 1), "root".tradeDate) as "date" from tradeTable as "root"')
+   ];
+
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+
+      let result = toSQLString(
+         |Trade.all()
+            ->project(col(t|$t.date->firstDayOfMonth(), 'date')),
+         simpleRelationalMapping,
+         $driver, meta::relational::extension::relationalExtensions());
+
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::sybase::testToSqlGenerationFirstDayOfYear():Boolean[1]
+{
+   let expected = [
+      pair(DatabaseType.Sybase, 'select dateadd(DAY, -(datepart(dayofyear, "root".tradeDate) - 1), "root".tradeDate) as "date" from tradeTable as "root"')
+   ];
+
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+
+      let result = toSQLString(
+         |Trade.all()
+            ->project(col(t|$t.date->firstDayOfYear(), 'date')),
+         simpleRelationalMapping,
+         $driver, meta::relational::extension::relationalExtensions());
+
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::sybase::testToSqlGenerationFirstDayOfThisYear():Boolean[1]
+{
+   let expected = [
+      pair(DatabaseType.Sybase, 'select dateadd(DAY, -(datepart(dayofyear, today()) - 1), today()) as "date" from tradeTable as "root"')
+   ];
+
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+
+      let result = toSQLString(
+         |Trade.all()
+            ->project(col(t|firstDayOfThisYear(), 'date')),
+         simpleRelationalMapping,
+         $driver, meta::relational::extension::relationalExtensions());
+
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::sybase::testToSqlGenerationFirstDayOfQuarter_Sybase():Boolean[1]
+{
+   testToSqlGenerationFirstDayOfQuarter(DatabaseType.Sybase, 'select dateadd(QUARTER, quarter("root".tradeDate) - 1, dateadd(DAY, -(datepart(dayofyear, "root".tradeDate) - 1), "root".tradeDate)) as "date" from tradeTable as "root"');
+}

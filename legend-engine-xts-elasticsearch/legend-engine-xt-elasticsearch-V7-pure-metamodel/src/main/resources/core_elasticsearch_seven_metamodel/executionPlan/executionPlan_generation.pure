@@ -1,0 +1,48 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::elasticsearch::v7::specification::utils::*;
+import meta::external::store::elasticsearch::v7::metamodel::executionPlan::context::*;
+import meta::external::store::elasticsearch::v7::metamodel::specification::global::search::*;
+import meta::external::store::elasticsearch::v7::metamodel::runtime::*;
+import meta::external::store::elasticsearch::v7::metamodel::executionPlan::*;
+import meta::external::store::elasticsearch::v7::metamodel::executionPlan::tds::*;
+import meta::pure::extension::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+import meta::pure::executionPlan::*;
+
+function meta::external::store::elasticsearch::v7::executionPlan::generation::planExecution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+{
+  let esCtx = if ($exeCtx->instanceOf(Elasticsearch7ExecutionContext), |$exeCtx->cast(@Elasticsearch7ExecutionContext), |^Elasticsearch7ExecutionContext());
+
+  let processOutput = meta::external::store::elasticsearch::v7::pureToEs::process($sq, $ext, $m, $runtime, $esCtx, $extensions, $debug);
+
+  let request = ^SearchRequest(body = $processOutput.search, index = $processOutput.index().indexName->literal());
+
+  let tdsDetailsIndexed = $processOutput.tdsESDetails->toIndexed()->toOneMany('TDS operations should have at least one output column');
+
+  let esNode = ^Elasticsearch7RequestExecutionNode(
+    resultSizeRange = ZeroMany,
+    request = $request,
+    connection = $runtime->toOne('missing required runtime for ES plan execution').connectionByElement($sq.store)->cast(@Elasticsearch7StoreConnection),
+    resultType = ^meta::pure::executionPlan::TDSResultType(type = TabularDataSet, tdsColumns = $tdsDetailsIndexed->map(p | ^TDSColumn(name = $p.second.name, offset = $p.first, type = $p.second.type))),
+    metadata = ^TDSMetadata(columnResultPaths = $tdsDetailsIndexed->map(ci | ^TDSColumnResultPath(index = $ci.first, resultPath = $ci.second.resultPath)))
+  );
+
+  if ($processOutput.extraNodes->isEmpty(),
+    |$esNode,
+    |^SequenceExecutionNode(resultType = $esNode.resultType, executionNodes = $processOutput.extraNodes->removeDuplicatesBy(x | $x.varName)->concatenate($esNode))
+  );
+}

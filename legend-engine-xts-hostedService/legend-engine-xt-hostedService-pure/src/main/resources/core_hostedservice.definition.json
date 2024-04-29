@@ -1,0 +1,19 @@
+{
+  "name": "core_hostedservice",
+  "pattern": "(meta::external::function::activator::hostedService|meta::protocols)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_dsl_graph",
+    "platform_dsl_mapping",
+    "platform_dsl_store",
+    "platform_store_relational",
+    "platform_functions",
+    "platform_functions_json",
+    "core_relational",
+    "core_function_activator",
+    "core_functions",
+    "core_service",
+    "core",
+    "core_data_space_metamodel"
+  ]
+}

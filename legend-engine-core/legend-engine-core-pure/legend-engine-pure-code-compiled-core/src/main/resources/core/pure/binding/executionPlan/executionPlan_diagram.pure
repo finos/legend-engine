@@ -1,0 +1,71 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram meta::external::format::shared::executionPlan::diagram::ExternalSharedExecutionNodeDiagram(width=0.0, height=0.0)
+{
+    TypeView cview_1(
+        type=meta::pure::executionPlan::ExecutionNode,
+        position=(621.00000, 461.00000),
+        width=264.52238,
+        height=170.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_11(
+        type=meta::external::format::shared::executionPlan::ExternalFormatExternalizeExecutionNode,
+        position=(324.86328, 791.75000),
+        width=258.73438,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_12(
+        type=meta::external::format::shared::executionPlan::ExternalFormatInternalizeExecutionNode,
+        position=(963.86328, 779.75000),
+        width=257.14453,
+        height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_11,
+        target=cview_1,
+        points=[(454.23047,827.75000),(753.26119,546.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_12,
+        target=cview_1,
+        points=[(1092.43555,829.75000),(753.26119,546.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+}

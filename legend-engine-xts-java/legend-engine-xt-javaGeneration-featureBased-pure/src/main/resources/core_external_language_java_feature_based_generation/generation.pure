@@ -1,0 +1,1040 @@
+import meta::pure::metamodel::type::*;
+import meta::pure::metamodel::serialization::grammar::*;
+
+import meta::pure::generation::metamodel::*;
+import meta::external::language::java::generation::featureBased::metamodel::*;
+import meta::external::language::java::generation::featureBased::*;
+import meta::external::language::java::generation::featureBased::definition::*;
+import meta::external::language::java::generation::featureBased::versions::*;
+import meta::external::language::java::generation::featureBased::pojo::*;
+import meta::external::language::java::generation::featureBased::utils::*;
+
+import meta::external::format::shared::transformation::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::metamodel::annotations::generated::*;
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::transform::*;
+import meta::external::language::java::serialization::*;
+import meta::external::format::shared::utils::*;
+
+
+Class meta::external::language::java::generation::featureBased::metamodel::Feature
+{
+  key: String[1];
+  name: String[1];
+  incompatibleWith: String[*];
+  dependsOn: String[*];
+  applyFunction: Function<Any>[1]; 
+}
+
+Class meta::external::language::java::generation::featureBased::metamodel::FeatureConfiguration
+{
+  featureKey:String[1];
+}
+
+
+Class meta::external::language::java::generation::featureBased::metamodel::JavaCodeGenerationConfig extends meta::pure::generation::metamodel::GenerationConfiguration
+{
+
+  {doc.doc = 'use java primitives : ie int instead of Integer, default is false'}
+  javaPrimitives:Boolean[0..1];
+  
+  {doc.doc = 'use java optionals for non required properties : default is false, NOT YET IMPLEMENTED'}
+  optionals:Boolean[0..1];
+
+  featureConfig:FeatureConfiguration[*];
+
+  getFeatureConfiguration(key:String[1]) {
+     $this.featureConfig->filter( c | $c.featureKey == $key)->toOne();
+  }:FeatureConfiguration[0..1];
+}
+
+Class meta::external::language::java::generation::featureBased::metamodel::JavaCodeGenerationResult extends GenerationOutput
+{
+}
+
+Class meta::external::language::java::generation::featureBased::metamodel::JavaCodeGenerationContext
+{
+  conventions: Conventions[1];
+  featuresToApply: Feature[*];
+  config: JavaCodeGenerationConfig[1];
+  currentFeature:  Feature[0..1];
+  debug: DebugContext[1];
+}
+
+function {doc.doc = 'Generates java code\n . 1- Creates an java model instance of the given pure elements.\n 2-. Serialises the java instance '}
+ meta::external::language::java::generation::featureBased::generateJava(config:JavaCodeGenerationConfig[1],featuresToApply: Feature[*]): JavaCodeGenerationResult[*]
+{
+  //assemble java generator, define following:
+  //-conventions
+  //-features to apply: Features could be assembled statically by code, dynamically from config or a combination
+  // (for now only static is supported)
+  //-config for those features
+  let conventions = defaultConventions($config);
+  let context = ^JavaCodeGenerationContext(conventions=$conventions,featuresToApply=$featuresToApply,config=$config,debug=noDebug());
+  $context->generateJava();
+}
+
+function meta::external::language::java::generation::featureBased::generateJava(context : JavaCodeGenerationContext[1]): JavaCodeGenerationResult[*]
+{
+  let javaModel = $context->validate()->generateJavaModel();
+  $javaModel->serializeJavaModel($context.debug);
+}
+
+function <<access.private>> meta::external::language::java::generation::featureBased::validate(context : JavaCodeGenerationContext[1]):JavaCodeGenerationContext[1]
+{
+  //TODO : validate features are compatible
+  //TODO : validate all dependent features have been included in features to apply
+  //TODO : calculate application order for provided features, now assuming the list provided has right sequence(ie dependencies are run first)
+  $context;
+}
+
+function meta::external::language::java::generation::featureBased::generateJavaModel(context : JavaCodeGenerationContext[1]): Project[1]
+{
+  let javaClasses =  $context.config.scopeElements->map(cls | $cls->generateJavaClasses($context))->map(c| $c->inferImports());
+  let project = newProject()->addClasses($javaClasses); 
+}
+
+function meta::external::language::java::generation::featureBased::serializeJavaModel(project:Project[1],debug:DebugContext[1]):JavaCodeGenerationResult[*]
+{
+  print(if($debug.debug,|$debug.space+'Serializing Java Model \n', |''));
+  let alldirectories = $project->meta::external::language::java::metamodel::project::allDirectories();
+  let result = $alldirectories->map( dir | $dir.classes->map( c | ^JavaCodeGenerationResult(content = $c->classToString(),fileName = $dir.fullPath+'/'+$c.simpleName+'.java' );););
+  $result->map(f| print(if($debug.debug,|$debug.space+' File: [ \n'+$f.content+'\n]\n', |'')));
+  $result;
+}
+
+function {doc.doc = 'Set up default conventions for java generation'}
+ meta::external::language::java::generation::featureBased::defaultConventions(config:JavaCodeGenerationConfig[1]) : Conventions[1]
+{
+  let conventions = newConventions([], [])
+      ->setTypeAndPackageNameStrategy(
+      {type, conventions |
+        let packageAsString = $type->cast(@PackageableElement).package->toOne()->elementToPath('.');
+        pair(
+          $packageAsString->sanitizeIdentifier(),
+          $type.name->toOne()->sanitizeIdentifier()->toUpperFirstCharacter()->toOne()
+        );});
+
+  let conventionsLibrary = newConventionsLibrary()
+      ->usesStrictDate(javaClass('java.time.LocalDate'), {d:StrictDate[1] | j_string($d->toString())})
+      ->usesDateTime(javaClass('java.time.ZonedDateTime'), {d:DateTime[1] | j_string($d->toString())})
+      ->usesDate(javaClass('java.time.ZonedDateTime'), {d:Date[1] | j_string($d->toString())})
+      ->usesDecimal(javaBigDecimal(), javaBigDecimal(), {d:Decimal[1]  | javaBigDecimal()->j_new(j_string($d->toString()))}); 
+
+
+  let library = $conventionsLibrary
+      ->usesBoolean(javaBooleanBoxed(), javaBooleanBoxed(), {b:Boolean[1] | j_boolean($b)})
+      ->usesInteger(javaIntBoxed(), javaIntBoxed(), {i:Integer[1] | j_int($i)})
+      ->usesFloat(javaFloatBoxed(), javaFloatBoxed(), {f:Float[1] | j_float($f)})
+      ->usesNumber(javaDoubleBoxed(), javaDoubleBoxed(), {n:Number[1]  | j_double($n->toString())});
+     
+   
+  let primitivesLibrary = $conventionsLibrary
+      ->usesBoolean(javaBoolean(), javaBoolean(), {b:Boolean[1] | j_boolean($b)})
+      ->usesInteger(javaInt(), javaInt(),   {i:Integer[1] | j_int($i)})
+      ->usesFloat(javaFloat(), javaFloat(), {f:Float[1] | j_float($f)}) 
+      ->usesNumber(javaDouble(), javaDouble(), {n:Number[1]  | j_double($n->toString())});
+   
+  if (!$config.javaPrimitives->isEmpty() && $config.javaPrimitives->toOne()
+   ,|$conventions->registerLibrary($primitivesLibrary);
+   ,|$conventions->registerLibrary($library);
+   );
+}
+
+function <<access.private>> meta::external::language::java::generation::featureBased::generateJavaClasses(element:PackageableElement[1],context : JavaCodeGenerationContext[1]):meta::external::language::java::metamodel::Class[*]
+{
+  let debug = $context.debug->indent();
+  print(if($debug.debug,|$debug.space+'( Generating Java Class ['+$element->elementName()+'])  \n', |''));
+
+  let result = $element->match(
+    [
+      p: Package[1]                                       | $p.children->map(c|generateJavaClasses($c, $context)),
+      c: meta::pure::metamodel::type::Class<Any>[1]       | meta::external::language::java::generation::featureBased::generateClass($c, $context),
+      e: meta::pure::metamodel::type::Enumeration<Any>[1] | meta::external::language::java::generation::featureBased::generateEnumeration($e, $context),
+      s: Any[1]                                           | []
+    ]
+  );
+
+  print(if($debug.debug,|$debug.space+'( END Generating Java Class ['+$element->elementName()+'])  \n', |''));
+  
+  $result;
+}
+
+
+function  meta::external::language::java::generation::featureBased::definition::defaultConstructor():Feature[1]
+{
+  ^Feature(
+        key='defaultConstructor',
+        name = 'defaultConstructor',
+        applyFunction = applyDefaultConstructor_AnnotatedElement_1__Class_1__JavaCodeGenerationContext_1__Class_1_
+  );
+}
+
+function  meta::external::language::java::generation::featureBased::definition::privateFields():Feature[1]
+{
+  ^Feature(
+        key='privateFields',
+        name = 'privateFields',
+        applyFunction = applyPrivateFields_AnnotatedElement_1__Class_1__JavaCodeGenerationContext_1__Class_1_
+
+  );
+}
+
+function  meta::external::language::java::generation::featureBased::definition::gettersSetters():Feature[1]
+{
+  ^Feature(
+        key='getterssetters',
+        name = 'getterssetters',
+        applyFunction = applyGetterSetters_AnnotatedElement_1__Class_1__JavaCodeGenerationContext_1__Class_1_,
+        dependsOn = ['privateFields']
+  );
+}
+
+function  meta::external::language::java::generation::featureBased::definition::gettersOnly():Feature[1]
+{
+  ^Feature(
+        key='gettersOnly',
+        name = 'gettersOnly',
+        applyFunction = applyOnlyGetters_AnnotatedElement_1__Class_1__JavaCodeGenerationContext_1__Class_1_,
+        dependsOn = ['privateFields']
+  );
+}
+
+function  meta::external::language::java::generation::featureBased::definition::equalsHashMethods():Feature[1]
+{
+  ^Feature(
+        key='equalshashcode',
+        name = 'equalshashcode',
+        applyFunction = applyEqualsHashCode_AnnotatedElement_1__Class_1__JavaCodeGenerationContext_1__Class_1_,
+        dependsOn = ['privateFields','getterssetters']
+  );
+}
+
+function  meta::external::language::java::generation::featureBased::definition::toStringMethod():Feature[1]
+{
+  ^Feature(
+        key='toString',
+        name = 'toString',
+        applyFunction = applyToStringMethod_AnnotatedElement_1__Class_1__JavaCodeGenerationContext_1__Class_1_,
+        dependsOn = ['privateFields','getterssetters']
+  );
+}
+
+function  meta::external::language::java::generation::featureBased::definition::allPropertyConstructor():Feature[1]
+{
+  ^Feature(
+        key='allPropertyConstructor',
+        name = 'allPropertyConstructor',
+        applyFunction = applyAllPropertyConstructor_AnnotatedElement_1__Class_1__JavaCodeGenerationContext_1__Class_1_
+  );
+}
+
+function  meta::external::language::java::generation::featureBased::definition::constructorInjectedEqualsHashMethods():Feature[1]
+{
+  ^Feature(
+        key='equalshashcode',
+        name = 'equalshashcode',
+        applyFunction = applyEqualsHashCode_AnnotatedElement_1__Class_1__JavaCodeGenerationContext_1__Class_1_,
+        dependsOn = ['privateFields','gettersOnly']
+  );
+}
+
+function  meta::external::language::java::generation::featureBased::definition::constructorInjectedToStringMethod():Feature[1]
+{
+  ^Feature(
+        key='toString',
+        name = 'toString',
+        applyFunction = applyToStringMethod_AnnotatedElement_1__Class_1__JavaCodeGenerationContext_1__Class_1_,
+        dependsOn = ['privateFields','gettersOnly']
+  );
+}
+
+
+
+function  meta::external::language::java::generation::featureBased::pojo::pojoGenerationFeatures():Feature[*]
+{
+  [
+    meta::external::language::java::generation::featureBased::definition::privateFields(),
+    meta::external::language::java::generation::featureBased::definition::defaultConstructor(),
+    meta::external::language::java::generation::featureBased::definition::gettersSetters(),
+    meta::external::language::java::generation::featureBased::definition::equalsHashMethods(),
+    meta::external::language::java::generation::featureBased::definition::toStringMethod()
+    ];
+}  
+
+
+function  meta::external::language::java::generation::featureBased::pojo::constructorInjectedPojoGenerationFeatures():Feature[*]
+{
+  [
+    meta::external::language::java::generation::featureBased::definition::privateFields(),
+    meta::external::language::java::generation::featureBased::definition::allPropertyConstructor(),
+    meta::external::language::java::generation::featureBased::definition::gettersOnly(),
+    meta::external::language::java::generation::featureBased::definition::constructorInjectedEqualsHashMethods(),
+    meta::external::language::java::generation::featureBased::definition::constructorInjectedToStringMethod()
+    ];
+}
+
+
+function <<access.private>> meta::external::language::java::generation::featureBased::generateEnumeration(enum:meta::pure::metamodel::type::Enumeration<Any>[1],context:JavaCodeGenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+{    
+  
+  let typeAndPackages = $context.conventions.typeAndPackageNameStrategy->toOne()->eval($enum, $context.conventions);
+  javaEnum('public', $typeAndPackages.first->javaPackage(), $typeAndPackages.second)
+    ->addEntries($enum->cast(@meta::pure::metamodel::type::Enumeration<Any>)->enumValues()->map(e| javaEnumEntry($context.conventions->identifier($e->cast(@Enum).name))))
+    ->annotate(^ meta::external::language::java::generation::featureBased::annotations::Generated(value=$enum->elementName()));
+
+}
+
+function <<access.private>> meta::external::language::java::generation::featureBased::generateClass(pureClass:meta::pure::metamodel::type::Class<Any>[1],context:JavaCodeGenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+{     
+  let debug = $context.debug->indent();
+  let conventions = $context.conventions;
+
+  let javaClass = $conventions->className($pureClass)->addModifiers(['public'])->annotate(^ meta::external::language::java::generation::featureBased::annotations::Generated(value=$pureClass->elementName()));
+  
+  let generalizations = $pureClass->getGeneralizations();
+  assert($generalizations->size() < 2, 'Java does not support multiple inheritence, but class ' + $pureClass->elementToPath() + ' extends ' + $generalizations->map(g | $g.name)->joinStrings(', '));
+ 
+  let javaClassWithGeneralizations = if($generalizations->isEmpty(),
+                                        | $javaClass,
+                                        | $javaClass->jextends($conventions->className($generalizations->toOne())));
+
+
+  $javaClassWithGeneralizations->applyFeatures($pureClass,^$context(debug=$debug));
+}
+
+
+
+function <<access.private>>  meta::external::language::java::generation::featureBased::applyFeatures(javaElement:meta::external::language::java::metamodel::Class[1],pureElement:meta::pure::metamodel::extension::AnnotatedElement[1],context:JavaCodeGenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+{
+
+  let debug = $context.debug->indent();
+  print(if($debug.debug,|$debug.space+'( Applying features to element ['+$pureElement->elementName()+'])  \n', |'')); 
+  let features = $context.featuresToApply ;
+ 
+  $features->fold({ft:Feature[1],base| 
+                              let featureGenerationContext = ^$context(currentFeature=$ft,debug=$debug);
+                              let featureFunction = $ft.applyFunction->cast(@Function<{meta::pure::metamodel::extension::AnnotatedElement[1],meta::external::language::java::metamodel::Class[1],JavaCodeGenerationContext[1]->meta::external::language::java::metamodel::Class[1]}>);
+                              print(if($debug.debug,|$debug.space+'( Applying feature '+ $ft.name +' to ['+$pureElement->elementName()+'])  \n', |''));
+                              $featureFunction->eval($pureElement,$base->cast(@meta::external::language::java::metamodel::Class),$featureGenerationContext)->cast(@meta::external::language::java::metamodel::Class)->toOne();
+                        }
+                        ,$javaElement               
+                   )->toOne();                                              
+}
+
+
+function {doc.doc = 'Handles special characters and java keywords'}
+ meta::external::language::java::generation::featureBased::sanitizeFieldName(conventions: Conventions[1], prop: AbstractProperty<Any>[1]) : String[1]
+{
+   $conventions->fieldName($prop)
+      ->purifyName(true)
+      ->sanitizeIdentifier();
+}
+
+function meta::external::language::java::generation::featureBased::elementName(element:Any[1]):String[1]
+{   
+  
+  $element->match(
+    [
+      pe: PackageableElement[1]   | $pe->cast(@PackageableElement)->fullPackageName('::'); ,
+      p: AbstractProperty<Any>[1] | elementName($p.owner->toOne()) + '.'+$p.name->toOne();,
+      a: Any[1]                   | ''
+    ]
+  );
+   
+} 
+
+function meta::external::language::java::generation::featureBased::utils::findField(javaClass: meta::external::language::java::metamodel::Class[1],property: AbstractProperty<Any>[1], conventions: Conventions[1]) : meta::external::language::java::metamodel::Field[1]
+{
+  let fieldName = $conventions->sanitizeFieldName($property);
+  let field = $javaClass.fields->filter(f | $f.name == $fieldName)->toOne();
+}
+
+function meta::external::language::java::generation::featureBased::utils::replaceField(javaClass: meta::external::language::java::metamodel::Class[1],old:meta::external::language::java::metamodel::Field[1],new:meta::external::language::java::metamodel::Field[1] ) : meta::external::language::java::metamodel::Class[1]
+{
+  let newFields = $javaClass.fields->remove($old)->add($new);
+  ^$javaClass(fields=$newFields);  
+}
+
+Class <<access.private>> 
+{
+  meta::external::language::java::metamodel::annotations::AnnotationJavaInfo.javaClass = 'javax.annotation.Generated'
+} 
+ meta::external::language::java::generation::featureBased::annotations::Generated extends meta::external::language::java::metamodel::Annotation
+{
+  value: String[1];
+}
+
+function <<access.protected>> meta::external::language::java::generation::featureBased::getGeneralizations(pureClass:meta::pure::metamodel::type::Class<Any>[1]):meta::pure::metamodel::type::Class<Any>[*]
+{
+   $pureClass.generalizations.general.rawType->map(rw |
+      $rw->match([
+        c:meta::pure::metamodel::type::Class<Any>[1] | if($c != Any, | $c, | []), 
+        a:Any[1] | []
+        ])
+      );
+}
+
+
+function meta::external::language::java::generation::featureBased::pojo::applyPrivateFields(element:meta::pure::metamodel::extension::AnnotatedElement[1],javaClass:meta::external::language::java::metamodel::Class[1],context:JavaCodeGenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+{
+  if ($element->instanceOf(meta::pure::metamodel::type::Class)
+  ,| 
+      let pureClass = $element->cast(@meta::pure::metamodel::type::Class<Any>);
+      $pureClass->findPropertiesEligibleForJavaGeneration()->fold({property, temporaryClass |
+          let privateField = $temporaryClass->buildPrivateField($property,$context.conventions);
+          $temporaryClass->addField($privateField);
+      }, $javaClass);  
+  
+  ,| $javaClass
+  );
+}
+
+function {doc.doc = 'Creates a private java field given a pure property. Sanitizes its name'}
+ meta::external::language::java::generation::featureBased::pojo::buildPrivateField(javaClass: meta::external::language::java::metamodel::Class[1],property: AbstractProperty<Any>[1],conventions: Conventions[1]) : meta::external::language::java::metamodel::Field[1]
+{         
+   let fieldName = $conventions->sanitizeFieldName($property);
+   
+   let optionalProperty = if(meta::pure::functions::multiplicity::isMultiplicityConcrete($property.multiplicity)
+                          ,| if( 0 < meta::pure::functions::meta::getLowerBound($property.multiplicity), | false,| true)
+                          ,| true );
+
+   let fieldType = $conventions->pureTypeToJavaType($property);
+
+   let javaField = javaField(['private'], $fieldType, $fieldName);
+}
+
+
+function meta::external::language::java::generation::featureBased::pojo::applyGetterSetters(element:meta::pure::metamodel::extension::AnnotatedElement[1],javaClass:meta::external::language::java::metamodel::Class[1],context:JavaCodeGenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+{
+  if ($element->instanceOf(meta::pure::metamodel::type::Class)
+  ,|  let pureClass = $element->cast(@meta::pure::metamodel::type::Class<Any>);
+      $pureClass->findPropertiesEligibleForJavaGeneration()->fold({property, temporaryClass |
+
+        let settersAndGetter = $temporaryClass->generateSetterGetters($property,$context.conventions);
+        $temporaryClass->addMethods($settersAndGetter);
+    
+      }, $javaClass);  
+  
+  ,| $javaClass
+  );
+}
+
+
+function <<access.private>>  {doc.doc = 'Creates getter and setter methods for a given field . Sanitizes its name'}
+ meta::external::language::java::generation::featureBased::pojo::generateSetterGetters(javaClass: meta::external::language::java::metamodel::Class[1],property: AbstractProperty<Any>[1], conventions: Conventions[1]) : meta::external::language::java::metamodel::Method[2]
+{
+   let fieldType = $conventions->pureTypeToJavaType($property);
+  
+   let fieldName = $conventions->sanitizeFieldName($property);
+  
+   let field = $javaClass.fields->filter(f | $f.name == $fieldName)->toOne();
+
+   let jfield = j_this($javaClass)->j_field($field);
+   
+   let getter = javaMethod(['public'], $fieldType, $conventions->getterName($field.name), [],j_return($jfield));
+
+   let param  = j_parameter($fieldType, $field.name);
+   let setter = javaMethod(['public'], javaVoid(), $conventions->setterName($field.name), j_parameter($fieldType, $field.name), 
+      $jfield->j_assign($param)
+   );
+   [$getter,$setter];
+}
+
+
+function meta::external::language::java::generation::featureBased::pojo::applyEqualsHashCode(element:meta::pure::metamodel::extension::AnnotatedElement[1],javaClass:meta::external::language::java::metamodel::Class[1],context:JavaCodeGenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+{
+  if ($element->instanceOf(meta::pure::metamodel::type::Class)
+    ,|
+      let javaClasswithProperties = $javaClass;
+      let conventions = $context.conventions;
+      let equals = $javaClasswithProperties->generateEqualsMethod($conventions);
+      let hashCode = $javaClasswithProperties->generateHashCodeMethod($conventions);                     
+      let finalBasicClass = $javaClasswithProperties->addMethods($equals->concatenate($hashCode));
+    ,| $javaClass
+  );
+}
+
+
+function <<access.private>> {doc.doc = 'Generates an equals method given a class and conventions'}
+ meta::external::language::java::generation::featureBased::pojo::generateEqualsMethod(javaClass : meta::external::language::java::metamodel::Class[1], conventions: Conventions[1]) : meta::external::language::java::metamodel::Method[0..1]
+{
+   if($javaClass->findNonStaticFields()->isEmpty(),
+      | [],
+      | 
+         let param = javaParam(javaObject(), 'o');
+         let o = j_variable($param);
+         let jThis = j_this($javaClass);
+         let instanceCheck = j_if($jThis->j_eq($o), j_return(j_true()));
+         
+         let nullOrClassEquality = j_if($o->j_eq(j_null())->j_or($jThis->j_invoke('getClass', [])->j_ne($o->j_invoke('getClass', []))), j_return(j_false()));
+        
+         let hasSuperClass = ! $javaClass.superType->isEmpty();
+         let superCheck = if($hasSuperClass
+                            ,| j_if(j_not(j_variable(javaObject(), 'super')->j_invoke('equals', $o)), j_return(j_false()))
+                            ,| []
+                          );
+
+         let that = j_variable($javaClass, 'that');
+         let cast = j_declare($that, $o->j_cast($javaClass));
+
+         let fieldEquality = $javaClass->findNonStaticFields()
+            ->map(f | $f->generateEqualityCheck($that, $conventions, $javaClass));
+         
+         let finalCode = $instanceCheck->concatenate($nullOrClassEquality)
+            ->concatenate($superCheck)
+            ->concatenate($cast)
+            ->concatenate($fieldEquality)
+            ->add(j_return(j_true()));
+
+         javaMethod(['public'], javaBoolean(), 'equals', $param, $finalCode)
+           ->addAnnotation(^meta::external::language::java::metamodel::annotations::override::Override());
+   );
+}
+
+function <<access.private>> {doc.doc = 'Generates a comparison statement for a provided field. Intended to be used as part of an equals method'}
+ meta::external::language::java::generation::featureBased::pojo::generateEqualityCheck(field : meta::external::language::java::metamodel::Field[1], that: Code[1], conventions : Conventions[1], javaClass : meta::external::language::java::metamodel::Class[1]) : meta::external::language::java::metamodel::Code[1]
+{
+   if($field.type == javaBoolean(),
+      | j_if(j_this($javaClass)->j_invoke($conventions->getterName($field.name), [])->j_ne($that->j_invoke($conventions->getterName($field.name), [])), 
+           j_return(j_false())),
+      | j_if(   
+           j_conditional(j_this($javaClass)->j_invoke($conventions->getterName($field.name), [])->j_ne(j_null()),
+              j_not(j_this($javaClass)->j_invoke($conventions->getterName($field.name), [])->j_invoke('equals', [($that->j_invoke($conventions->getterName($field.name), []))])),
+              $that->j_invoke($conventions->getterName($field.name), [])->j_ne(j_null())),
+           j_return(j_false()))
+   );
+}
+
+function <<access.private>> {doc.doc = 'Generates a hashCode function given a java class and conventions.'}
+ meta::external::language::java::generation::featureBased::pojo::generateHashCodeMethod(javaClass : meta::external::language::java::metamodel::Class[1], conventions: Conventions[1]) : meta::external::language::java::metamodel::Method[0..1]
+{
+   if($javaClass->findNonStaticFields()->isEmpty(),
+      | [],
+      | let resultVariable = j_variable(javaInt(), 'result');
+        let hasSuperClass = ! $javaClass.superType->isEmpty();
+        let resultDeclaration = if($hasSuperClass,
+          | j_declare($resultVariable, j_variable(javaObject(), 'super')->j_invoke('hashCode', [])),
+          | let firstField = $javaClass->findNonStaticFields()
+              ->at(0);
+            j_declare($resultVariable, $firstField->getHashCodeForField($conventions, $javaClass));
+          );
+      
+        let remainingFields = if($hasSuperClass
+                              ,| $javaClass->findNonStaticFields()
+                              ,| $javaClass->findNonStaticFields()
+                                  ->tail();
+                            );
+
+        let fieldHashCodesComputation = $remainingFields
+            ->map(f | $f->getHashCodeForField($conventions, $javaClass))
+            ->map(c | $resultVariable->j_assign(j_multiply(j_int(31), $resultVariable)->j_plus($c)));
+   
+        let finalCode = $resultDeclaration->concatenate($fieldHashCodesComputation)
+            ->add(j_return($resultVariable));
+   
+        javaMethod(['public'], javaInt(), 'hashCode', [], $finalCode)
+            ->addAnnotation(^meta::external::language::java::metamodel::annotations::override::Override());
+   ); 
+}
+
+function <<access.private>> {doc.doc = 'Creates a conditional statement to get a hashcode for a given field. Out of all primitive types, only boolean is supported, as the java generation mainly leverages boxed types.'}
+ meta::external::language::java::generation::featureBased::pojo::getHashCodeForField(field : meta::external::language::java::metamodel::Field[1], conventions : Conventions[1], javaClass : meta::external::language::java::metamodel::Class[1]) : meta::external::language::java::metamodel::Code[1]
+{
+   if($field.type == javaBoolean(),
+      | j_conditional(j_this($javaClass)->j_invoke($conventions->getterName($field.name), []), j_int(1), j_int(0)),
+      | j_conditional(j_this($javaClass)->j_invoke($conventions->getterName($field.name), [])->j_ne(j_null()), j_this($javaClass)->j_invoke($conventions->getterName($field.name), [])->j_invoke('hashCode', []), j_int(0))
+   );
+}
+
+function meta::external::language::java::generation::featureBased::pojo::applyToStringMethod(element:meta::pure::metamodel::extension::AnnotatedElement[1],javaElement:meta::external::language::java::metamodel::Class[1],context:JavaCodeGenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+{
+   $element->match([
+    cls:meta::pure::metamodel::type::Class<Any>[1]| let toString = $javaElement->generateToStringMethod($context.conventions);
+                                                    $javaElement->addMethods([]->concatenate($toString));,
+    a:Any[1]                                     | $javaElement
+  ]); 
+}
+
+
+function <<access.private>> {doc.doc = 'Generates a toString function given a java class and conventions.'}
+ meta::external::language::java::generation::featureBased::pojo::generateToStringMethod(javaClass : meta::external::language::java::metamodel::Class[1], conventions: Conventions[1]) : meta::external::language::java::metamodel::Method[0..1]
+{
+   let finalCode = if($javaClass->findNonStaticFields()->isEmpty(),
+      | j_return(j_string($javaClass.simpleName + '{}'));,
+        // Check generalizations
+      | let firstField = $javaClass->findNonStaticFields()
+            ->slice(0, 1)
+            ->map(field | $field->generateToStringFieldNameAndValue($javaClass, $conventions))
+            ->toOne();
+   
+        // Remaining fields need to be split by a colon
+        let remainingFields = if($javaClass->findNonStaticFields()->size() > 1,
+            | $javaClass->findNonStaticFields()
+                                 ->slice(1, $javaClass->findNonStaticFields()->size())
+                                 ->map(field | j_string(', ')->j_plus($field->generateToStringFieldNameAndValue($javaClass, $conventions))),
+            | []);
+                    
+        let allFields = $remainingFields->fold({field, temporaryCode | $temporaryCode->j_plus($field)}, $firstField);
+        let hasSuperClass = ! $javaClass.superType->isEmpty();
+        let allFieldsAndSuper = if($hasSuperClass
+                                ,| j_string('super=')
+                                    ->j_plus(j_variable(javaObject(), 'super')->j_invoke('toString', []))
+                                    ->j_plus(j_string(', '))
+                                    ->j_plus($allFields)
+                                ,| $allFields;
+                              );
+
+        j_return(j_string($javaClass.simpleName)
+              ->j_plus(j_string('{'))
+              ->j_plus($allFieldsAndSuper)
+              ->j_plus(j_string('}')));
+    );
+
+    javaMethod(['public'], javaString(), 'toString', [], $finalCode)
+      ->addAnnotation(^meta::external::language::java::metamodel::annotations::override::Override());
+}
+
+function <<access.private>> {doc.doc = 'Generates code that represents field name and field value i.e name=this.getName()'}
+ meta::external::language::java::generation::featureBased::pojo::generateToStringFieldNameAndValue(field : meta::external::language::java::metamodel::Field[1], javaClass : meta::external::language::java::metamodel::Class[1], conventions: Conventions[1]) : meta::external::language::java::metamodel::Code[1]
+{
+   j_string($field.name + '=')->j_plus(j_this($javaClass)->j_invoke($conventions->getterName($field.name), []))
+}
+
+function {doc.doc = 'Finds all fields that dont have the static modifier'}
+ meta::external::language::java::generation::featureBased::utils::findNonStaticFields(javaClass: meta::external::language::java::metamodel::Class[1]) : meta::external::language::java::metamodel::Field[*]
+{
+   $javaClass.fields->filter(field | !$field.modifiers->contains(Modifier.Static));
+}
+
+function {doc.doc = 'Finds all properties that are not qualified and retrieves original multiplicities for milestoned properties'}
+ meta::external::language::java::generation::featureBased::findPropertiesEligibleForJavaGeneration(pureClass: meta::pure::metamodel::type::Class<Any>[1]) : AbstractProperty<Any>[*]
+{
+   // Properties that do not have processingtemporal annotation
+   let propertiesWithoutTemporalAnnotation = $pureClass.properties
+      ->filter(property | !$property->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype());
+
+   // Properties that have processingtemporal annotation
+   let propertiesWithTemporalAnnotation = $pureClass.originalMilestonedProperties;
+    
+   $propertiesWithoutTemporalAnnotation->concatenate($propertiesWithTemporalAnnotation);
+}
+
+function meta::external::language::java::generation::featureBased::pojo::applyDefaultConstructor(element:meta::pure::metamodel::extension::AnnotatedElement[1],javaElement:meta::external::language::java::metamodel::Class[1],context:JavaCodeGenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+{
+  if($element->instanceOf(meta::pure::metamodel::type::Class)
+  ,|$javaElement->addConstructor(javaConstructor(['public'], []));
+  ,|$javaElement);
+}
+
+function meta::external::language::java::generation::featureBased::pojo::applyAllPropertyConstructor(element:meta::pure::metamodel::extension::AnnotatedElement[1],javaClass:meta::external::language::java::metamodel::Class[1],context:JavaCodeGenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+{
+  if($element->instanceOf(meta::pure::metamodel::type::Class)
+  ,|
+        let pureClass = $element->cast(@meta::pure::metamodel::type::Class<Any>);
+        let properties = $pureClass->findPropertiesEligibleForJavaGeneration();
+
+        let selfParamsForConstructor = $properties->map(property|
+           let fieldType = $context.conventions->pureTypeToJavaType($property);
+           let fieldName = $context.conventions->sanitizeFieldName($property);
+           j_parameter($fieldType, $fieldName);
+        );
+
+        let bodyForConstructor = $properties->map(property|
+           let fieldType = $context.conventions->pureTypeToJavaType($property);
+           let fieldName = $context.conventions->sanitizeFieldName($property);
+           let field = $javaClass.fields->filter(f | $f.name == $fieldName)->toOne();
+
+           let jfield = j_this($javaClass)->j_field($field);
+           let param = j_parameter($fieldType, $field.name);
+           $jfield->j_assign($param);
+        );
+
+    let superParamsForConstructor = $pureClass->getAllSuperTypePropertiesAsParams($context);
+
+    let superConstructorCallBody = if($superParamsForConstructor->size() > 0
+    ,|
+       let superPureType = $pureClass->getSuperPureType();
+       j_superInvoke($context.conventions->className($superPureType), $superParamsForConstructor);
+    ,|[]);
+
+// super params go to the end
+    let paramsForConstructor = $selfParamsForConstructor->concatenate( $superParamsForConstructor);
+    $javaClass->annotate(^meta::external::language::java::metamodel::annotations::json::JsonIgnoreProperties(ignoreUnknown=true))
+        ->addConstructor(javaConstructor(['public'], $paramsForConstructor,
+        if($superParamsForConstructor->size() > 0
+        ,|$superConstructorCallBody ->concatenate($bodyForConstructor)
+        ,|$bodyForConstructor)));
+    ,|$javaClass);
+}
+
+function meta::external::language::java::generation::featureBased::pojo::getSuperPureType(pureClass:meta::pure::metamodel::type::Class<Any>[1]):
+  meta::pure::metamodel::type::Class<Any>[1]
+{
+  let superPureType = $pureClass->getGeneralizations()->toOne(format('Class %s extends multiple classes, and not supported on java generation',
+    [$pureClass.name->toOne()]));
+  let superPureClass = $superPureType->cast(@meta::pure::metamodel::type::Class<Any>);
+  $superPureClass;
+}
+
+function <<access.private>> meta::external::language::java::generation::featureBased::pojo::getAllSuperTypePropertiesAsParams(pureClass:meta::pure::metamodel::type::Class<Any>[1],context:JavaCodeGenerationContext[1]): meta::external::language::java::metamodel::Code[*]
+{
+  let generalizations = $pureClass->getGeneralizations();
+  let hasSuperClass = ! $generalizations->isEmpty();
+  if( $hasSuperClass
+  ,|
+    let superPureClass = $pureClass->getSuperPureType();
+    let properties = $superPureClass->findPropertiesEligibleForJavaGeneration();
+
+    let propertiesForConstructor = $properties->map(property|
+        let fieldType = $context.conventions->pureTypeToJavaType($property);
+        let fieldName = $context.conventions->sanitizeFieldName($property);
+        j_parameter($fieldType, $fieldName);
+    );
+    let superTypeParamsForConstructor = $superPureClass->getAllSuperTypePropertiesAsParams($context);
+    $propertiesForConstructor -> concatenate ( $superTypeParamsForConstructor);
+  ,|[]);
+
+}
+
+function meta::external::language::java::generation::featureBased::versions::getPropertyTypes(class: meta::pure::metamodel::type::Class<Any>[1]):meta::pure::metamodel::type::Type[*]
+{
+   meta::external::language::java::generation::featureBased::versions::getPropertyTypes($class, []);
+}
+
+function {doc.doc = 'Get type of all properties in given Pure Class'}
+ meta::external::language::java::generation::featureBased::versions::getPropertyTypes(class: meta::pure::metamodel::type::Class<Any>[1], coveredTypes: meta::pure::metamodel::type::Type[*]):meta::pure::metamodel::type::Type[*]
+{
+   let propertyClasses = $class.properties->map(prop | $prop.genericType.rawType)
+                                          ->filter(type | $type->instanceOf(meta::pure::metamodel::type::Class) || $type->instanceOf(meta::pure::metamodel::type::Enumeration))
+                                          ->filter(type | !$type == Any && !$coveredTypes->contains($type))->distinct();
+
+   $propertyClasses->concatenate($propertyClasses
+                      ->filter(type | $type->instanceOf(meta::pure::metamodel::type::Class))
+                      ->cast(@meta::pure::metamodel::type::Class<Any>)
+                      ->map(pc | $pc->getPropertyTypes($coveredTypes->concatenate($propertyClasses))))
+                   ->filter(t | !$class.properties->filter(prop | $prop->hasStereotype('Map', meta::external::language::java::metamodel::profiles::collectionType))
+                                                  ->map(p | $p.genericType.rawType)->contains($t));
+}
+
+
+Class meta::external::language::java::generation::featureBased::versions::VersionInfoConfig extends FeatureConfiguration
+{  
+  {doc.doc = 'Include version hash constant, default is false'}
+  includeVersionHash   :Boolean[0..1];
+  
+  {doc.doc = 'Include model constant, default is false'}
+  modelVersion         :String[0..1];
+}
+
+
+function  meta::external::language::java::generation::featureBased::definition::versionInformation():Feature[1]
+{
+  ^Feature(
+        key='versions',
+        name = 'versions',
+        applyFunction = applyVersionInformation_AnnotatedElement_1__Class_1__JavaCodeGenerationContext_1__Class_1_
+  );
+}
+
+function meta::external::language::java::generation::featureBased::versions::buildVersionsConfig(versionHash:Boolean[0..1],modelVersion:String[0..1]):VersionInfoConfig[1]
+{
+  ^VersionInfoConfig(featureKey = meta::external::language::java::generation::featureBased::definition::versionInformation().key,
+                    includeVersionHash = $versionHash,
+                    modelVersion = $modelVersion);
+}
+
+
+function meta::external::language::java::generation::featureBased::versions::applyVersionInformation(element:meta::pure::metamodel::extension::AnnotatedElement[1],javaElement:meta::external::language::java::metamodel::Class[1],context:JavaCodeGenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+{
+  if($element->instanceOf(meta::pure::metamodel::type::Class)
+  ,| $element->cast(@meta::pure::metamodel::type::Class<Any>)->addVersionFields($javaElement,$context)
+  ,| $javaElement);
+}
+
+function <<access.private>>  meta::external::language::java::generation::featureBased::versions::addVersionFields(pureClass:meta::pure::metamodel::type::Class<Any>[1],javaClass:meta::external::language::java::metamodel::Class[1],context:JavaCodeGenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+{
+  let currentFeature = $context.currentFeature;
+  assert(!$currentFeature->isEmpty(),'feature to run not provided in context');
+  let featureConfig = $context.config.getFeatureConfiguration($currentFeature->toOne().key)->toOne()->cast(@VersionInfoConfig);
+  let modelVersion = $featureConfig.modelVersion;
+  let javaClassWithVersion = if($modelVersion->isNotEmpty(),
+      | $javaClass->addField(javaField(['public', 'static', 'final'], javaString(), 'MODEL_VERSION', j_string($modelVersion->toOne()))),
+      | $javaClass);
+
+  let versionHash = $featureConfig.includeVersionHash;
+  let javaClassWithVersionHash = if($versionHash->isNotEmpty() && $versionHash->toOne(),
+      | $javaClassWithVersion->addField(javaField(['private', 'static', 'final'], javaString(), '_VERSION_', j_string($pureClass->hashForClass()))),
+      | $javaClassWithVersion);
+}
+
+function <<access.private>> {doc.doc = 'Get class hash for compatibility calculations'}
+ meta::external::language::java::generation::featureBased::versions::hashForClass(c:meta::pure::metamodel::type::Class<Any>[1]):String[1]
+{
+   let classToHash = if($c->instanceOf(ClassProjection), 
+                     | $c->cast(@ClassProjection<Any>).projectionSpecification.type.rawType->cast(@meta::pure::metamodel::type::Class<Any>)->toOne(),
+                     | $c);
+   $classToHash->concatenate($c->getPropertyTypes()->filter(e | $e->instanceOf(meta::pure::metamodel::type::Class))->cast(@meta::pure::metamodel::type::Class<Any>))->map(mc 
+      | $mc.name->toOne()->toString()->hashCode() + '#' + $mc.properties->concatenate($c->getGeneralizations()->map(s 
+         | $s.properties))->map(e | $e->hashForProperty())->joinStrings('-'))
+            ->concatenate(
+   $classToHash->getPropertyTypes()->filter(e | $e->instanceOf(meta::pure::metamodel::type::Enumeration))->cast(@meta::pure::metamodel::type::Enumeration<Any>)->map(e 
+      | '%' + $e->enumName()->hashCode() + '#' + $e->enumValues()->map(v 
+         | $v->id()->hashCode() + ':' + $v->id()->hashCode())->joinStrings('-'))
+                        )->joinStrings('$');
+}
+
+function {doc.doc = 'Return hashcode for string'}
+ meta::external::language::java::generation::featureBased::versions::hashCode(s:String[1]):String[1]
+{
+   $s->chunk(1)->map(e | $e->asciiCodeForChar())->hashCodeBuilder(7)->toBase64()
+}
+
+function  {doc.doc = 'Get hash for property'}
+ meta::external::language::java::generation::featureBased::versions::hashForProperty(prop:AbstractProperty<Any>[1]):String[1]
+{
+   $prop.name->toOne()->hashCode() + ':' + $prop.genericType.rawType->toOne()->toString()->hashCode() + ':' + $prop.multiplicity->multiplicityToIntegerString();
+}
+
+function <<access.private>> {doc.doc = 'Incremental builder for hashcode. Multiplying by ${base}^n-i-1 rather than a fixed 31^n-i-1 to cut the computational load else Pure struggles badly and the hashcodes get huge'}
+ meta::external::language::java::generation::featureBased::versions::hashCodeBuilder(i:Integer[*], base:Integer[1]):Integer[1]
+{
+   $i->fold({x, y | ($x + $y)*$base}, 0)
+}
+
+function <<access.private>> {doc.doc = 'Multiplicity to single integer'}
+ meta::external::language::java::generation::featureBased::versions::multiplicityToIntegerString(m:Multiplicity[1]):String[1]
+{
+   if($m->printMultiplicity() == '0..1', | '0', |
+   if($m->printMultiplicity() == '0..*', | '1', |
+   if($m->printMultiplicity() == '*', | '2', |
+   if($m->printMultiplicity() == '1', | '3', |
+   if($m->printMultiplicity() == '1..*', | '4', |
+   '-1')))));
+   
+}
+
+function <<access.private>> {doc.doc = 'Integer to base64'}
+ meta::external::language::java::generation::featureBased::versions::toBase64(i:Integer[1]):String[1]
+{
+   let x = $i/64;
+   let rem64 = $x - $x->floor();
+   let rem = ceiling(64*$rem64);
+   let char = if($rem == 0, | 'A', |
+              if($rem == 1, | 'B', |
+              if($rem == 2, | 'C', |
+              if($rem == 3, | 'D', |
+              if($rem == 4, | 'E', |
+              if($rem == 5, | 'F', |
+              if($rem == 6, | 'G', |
+              if($rem == 7, | 'H', |
+              if($rem == 8, | 'I', |
+              if($rem == 9, | 'J', |
+              if($rem == 10, | 'K', |
+              if($rem == 11, | 'L', |
+              if($rem == 12, | 'M', |
+              if($rem == 13, | 'N', |
+              if($rem == 14, | 'O', |
+              if($rem == 15, | 'P', |
+              if($rem == 16, | 'Q', |
+              if($rem == 17, | 'R', |
+              if($rem == 18, | 'S', |
+              if($rem == 19, | 'T', |
+              if($rem == 20, | 'U', |
+              if($rem == 21, | 'V', |
+              if($rem == 22, | 'W', |
+              if($rem == 23, | 'X', |
+              if($rem == 24, | 'Y', |
+              if($rem == 25, | 'Z', |
+              if($rem == 26, | 'a', |
+              if($rem == 27, | 'b', |
+              if($rem == 28, | 'c', |
+              if($rem == 29, | 'd', |
+              if($rem == 30, | 'e', |
+              if($rem == 31, | 'f', |
+              if($rem == 32, | 'g', |
+              if($rem == 33, | 'h', |
+              if($rem == 34, | 'i', |
+              if($rem == 35, | 'j', |
+              if($rem == 36, | 'k', |
+              if($rem == 37, | 'l', |
+              if($rem == 38, | 'm', |
+              if($rem == 39, | 'n', |
+              if($rem == 40, | 'o', |
+              if($rem == 41, | 'p', |
+              if($rem == 42, | 'q', |
+              if($rem == 43, | 'r', |
+              if($rem == 44, | 's', |
+              if($rem == 45, | 't', |
+              if($rem == 46, | 'u', |
+              if($rem == 47, | 'v', |
+              if($rem == 48, | 'w', |
+              if($rem == 49, | 'x', |
+              if($rem == 50, | 'y', |
+              if($rem == 51, | 'z', |
+              if($rem == 52, | '0', |
+              if($rem == 53, | '1', |
+              if($rem == 54, | '2', |
+              if($rem == 55, | '3', |
+              if($rem == 56, | '4', |
+              if($rem == 57, | '5', |
+              if($rem == 58, | '6', |
+              if($rem == 59, | '7', |
+              if($rem == 60, | '8', |
+              if($rem == 61, | '9', |
+              if($rem == 62, | '+', |
+              if($rem == 63, | '/', |
+              $rem->toString()))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
+          
+   if($i > 0, | $x->floor()->toBase64() + $char, | if($char->toString()->chunk(1) == '0', | $char->substring(1), | $char));
+}
+
+function <<access.private>> {doc.doc = 'Get ASCII decimal representation'}
+ meta::external::language::java::generation::featureBased::versions::asciiCodeForChar(s:String[1]):Integer[1]
+{
+   if($s == ' ', | 32, | 
+   if($s == '!', | 33, |
+   if($s == '"', | 34, |
+   if($s == '#', | 35, |
+   if($s == '$', | 36, |
+   if($s == '%', | 37, |
+   if($s == '&', | 38, |
+   if($s == '(', | 40, |
+   if($s == ')', | 41, |
+   if($s == '*', | 42, |
+   if($s == '+', | 43, |
+   if($s == ',', | 44, |
+   if($s == '-', | 45, |
+   if($s == '.', | 46, |
+   if($s == '/', | 47, |
+   if($s == '0', | 48, |
+   if($s == '1', | 49, |
+   if($s == '2', | 50, |
+   if($s == '3', | 51, |
+   if($s == '4', | 52, |
+   if($s == '5', | 53, |
+   if($s == '6', | 54, |
+   if($s == '7', | 55, |
+   if($s == '8', | 56, |
+   if($s == '9', | 57, |
+   if($s == ':', | 58, |
+   if($s == ';', | 59, |
+   if($s == '<', | 60, |
+   if($s == '=', | 61, |
+   if($s == '>', | 62, |
+   if($s == '?', | 63, |
+   if($s == '@', | 64, |
+   if($s == 'A', | 65, |
+   if($s == 'B', | 66, |
+   if($s == 'C', | 67, |
+   if($s == 'D', | 68, |
+   if($s == 'E', | 69, |
+   if($s == 'F', | 70, |
+   if($s == 'G', | 71, |
+   if($s == 'H', | 72, |
+   if($s == 'I', | 73, |
+   if($s == 'J', | 74, |
+   if($s == 'K', | 75, |
+   if($s == 'L', | 76, |
+   if($s == 'M', | 77, |
+   if($s == 'N', | 78, |
+   if($s == 'O', | 79, |
+   if($s == 'P', | 80, |
+   if($s == 'Q', | 81, |
+   if($s == 'R', | 82, |
+   if($s == 'S', | 83, |
+   if($s == 'T', | 84, |
+   if($s == 'U', | 85, |
+   if($s == 'V', | 86, |
+   if($s == 'W', | 87, |
+   if($s == 'X', | 88, |
+   if($s == 'Y', | 89, |
+   if($s == 'Z', | 90, |
+   if($s == '[', | 91, |
+   if($s == '\\', | 92, |
+   if($s == ']', | 93, |
+   if($s == '^', | 94, |
+   if($s == '_', | 95, |
+   if($s == '`', | 96, |
+   if($s == 'a', | 97, |
+   if($s == 'b', | 98, |
+   if($s == 'c', | 99, |
+   if($s == 'd', | 100, |
+   if($s == 'e', | 101, |
+   if($s == 'f', | 102, |
+   if($s == 'g', | 103, |
+   if($s == 'h', | 104, |
+   if($s == 'i', | 105, |
+   if($s == 'j', | 106, |
+   if($s == 'k', | 107, |
+   if($s == 'l', | 108, |
+   if($s == 'm', | 109, |
+   if($s == 'n', | 110, |
+   if($s == 'o', | 111, |
+   if($s == 'p', | 112, |
+   if($s == 'q', | 113, |
+   if($s == 'r', | 114, |
+   if($s == 's', | 115, |
+   if($s == 't', | 116, |
+   if($s == 'u', | 117, |
+   if($s == 'v', | 118, |
+   if($s == 'w', | 119, |
+   if($s == 'x', | 120, |
+   if($s == 'y', | 121, |
+   if($s == 'z', | 122, |
+   if($s == '{', | 123, |
+   if($s == '|', | 124, |
+   if($s == '}', | 125, |
+   if($s == '~', | 126, | 
+   0 )))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))) // lol, sue me
+}
+
+function meta::external::language::java::generation::featureBased::applyOnlyGetters(element:meta::pure::metamodel::extension::AnnotatedElement[1],javaClass:meta::external::language::java::metamodel::Class[1],context:JavaCodeGenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+{
+  if ($element->instanceOf(meta::pure::metamodel::type::Class)
+  ,|  let pureClass = $element->cast(@meta::pure::metamodel::type::Class<Any>);
+      $pureClass->findPropertiesEligibleForJavaGeneration()->fold({property, temporaryClass |
+
+        let getter = $temporaryClass->generateOnlyGetters($property,$context.conventions);
+        $temporaryClass->addMethods($getter);
+
+      }, $javaClass);
+
+  ,| $javaClass
+  );
+}
+
+function {doc.doc = 'Creates getter and setter methods for a given field . Sanitizes its name'}
+meta::external::language::java::generation::featureBased::generateOnlyGetters(javaClass: meta::external::language::java::metamodel::Class[1],property: AbstractProperty<Any>[1], conventions: Conventions[1]) : meta::external::language::java::metamodel::Method[1]
+{
+   let fieldType = $conventions->pureTypeToJavaType($property);
+
+   let fieldName = $conventions->sanitizeFieldName($property);
+
+   let field = $javaClass.fields->filter(f | $f.name == $fieldName)->toOne();
+
+   let jfield = j_this($javaClass)->j_field($field);
+
+// global code gen at this point does not support correct boolean getter naming
+// and the strategy does not take in the type as input. So if we use this way it breaks the equals and to string generation
+// hence commented
+// TODO this should eventually go into the core code gen
+/*
+    let getterName = if( $fieldType->isPrimitive()
+            && $fieldType->cast(@meta::external::language::java::metamodel::PrimitiveType).simpleName == 'boolean'
+            ,|
+                if($field.name->startsWith('is')
+                    ,| $field.name
+                    ,| 'is' + $field.name->toUpperFirstCharacter()->toOne()
+                )
+            ,| $conventions->getterName($field.name)
+            );
+*/
+   let getterName = $conventions->getterName($field.name);
+   let getter = javaMethod(['public'], $fieldType, $getterName, [],j_return($jfield));
+
+   [$getter];
+}

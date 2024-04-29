@@ -1,0 +1,171 @@
+import meta::external::store::rel::compile::*;
+import meta::external::store::rel::compile::ir::*;
+import meta::external::store::rel::compile::ir::tds::*;
+import meta::external::store::rel::compile::substitution::*;
+import meta::external::store::rel::compile::utils::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::metamodel::utils::*;
+import meta::external::store::rel::trace::*;
+import meta::external::store::rel::utils::*;
+
+function meta::external::store::rel::compile::tds::compile(
+  join: PExprTDSJoin[1],
+  substitution: VariableSubstitution[1],
+  mapping: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace = $trace->stage('compile(Join[1],VariableSubstitution[1],CompilationState[1])');
+  $join.left
+    ->compile($substitution, $mapping, $state, $newTrace)
+    ->andThen({leftState: CompilationState[1] |
+      let left = $leftState.current->toOne();
+
+      $join.right
+        ->compile($substitution, $mapping, $leftState, $newTrace)
+        ->andThen({rightState: CompilationState[1] |
+          let right = $rightState.current->toOne();
+
+          let leftVar = $join.condition->variables()->at(0);
+          let rightVar = $join.condition->variables()->at(1);
+
+          let target = $leftState.relFactory->next('tbl');
+          let vi = var('i');
+          let vj = var('j');
+
+          $join.condition
+            ->compile(
+              $substitution,
+              newColumnAccessRewrite({access: PExprColumnAccess[1], trace: Trace[1] |
+                  let var = $access
+                    ->root()
+                    ->cast(@VariablePlaceholder);
+
+                  if ($var.identifier == $leftVar, {|
+                    $left->appl([label($access.column), $vi])
+                  }, {|
+                    $right->appl([label($access.column), $vj])
+                  })->ok();
+              }),
+              $rightState,
+              $newTrace)
+            ->then({joinedState: CompilationState[1] |
+              let joined = $joinedState.current->toOne();
+
+              let joinRule = def(
+                rel($target)
+                  ->appl(label('base')),
+                rel('sort')->appl(
+                  $joined->for(vars([$vi, $vj]))
+                )
+              );
+
+              /*
+               * Filter the columns originating from the left and right expression.
+               */
+              let filteredLeftColumns =
+                $leftState.cols.names
+                  ->filter(name: String[1] |
+                     $join.columnNames->isEmpty() || $join.columnNames->contains($name)
+                  );
+              let filteredRightColumns =
+                $rightState.cols.names
+                  ->filter(name: String[1] |
+                     $join.columnNames->isEmpty() || $join.columnNames->contains($name)
+                  );
+
+              let projections =
+                $filteredLeftColumns
+                  ->map(col: String[1] |
+                    def(
+                      $target
+                        ->appl(label($col)),
+                      [
+                        var('k'),
+                        $left->appl([label($col), var('i')]),
+                        $target->appl([label('base'), var('k'), var('i'), dontCare()])
+                      ]
+                      ->product()
+                      ->from(vars(['i', 'k']))
+                    )
+                  )
+                  ->concatenate(
+                    $filteredRightColumns
+                      ->map(col: String[1] |
+                        def(
+                          $target
+                            ->appl(label($col)),
+                          [
+                            var('k'),
+                            $right->appl([label($col), var('i')]),
+                            $target->appl([label('base'), var('k'), dontCare(), var('i')])
+                          ]
+                          ->product()
+                          ->from(vars(['i', 'k']))
+                        )
+                      )
+                  );
+
+              ^$joinedState(
+                program=$joinedState.program->with($joinRule->concatenate($projections)),
+                cols=columns($filteredLeftColumns->concatenate($filteredRightColumns)),
+                current=rel($target)
+              );
+            });
+        });
+    });
+}
+
+function meta::external::store::rel::compile::tds::compile(
+  filter: PExprTDSFilter[1],
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
+): Result<CompilationState|0..1>[1] {
+  let newTrace = $trace->stage('compile(TDSFilter[1],VariableSubstitution[1],CompilationState[1])');
+  $filter.parent
+    ->compile($substitution, $rewrite, $state, $newTrace)
+    ->andThen({parentState: CompilationState[1] |
+      let parent = $parentState.current->toOne();
+      let vx = var('x');
+
+      $filter.predicate
+        ->compile(
+          $substitution,
+          newColumnAccessRewrite({access: PExprColumnAccess[1], trace: Trace[1] |
+              let var = $access
+                ->root()
+                ->cast(@VariablePlaceholder)
+                .identifier;
+
+              if ($var == $filter.predicate->variables(), {|
+                $parent
+                  ->appl([label($access.column), $vx])
+                  ->ok();
+              }, | $rewrite->apply($access, $trace));
+          }),
+          $parentState,
+          $newTrace)
+        ->then({next: CompilationState[1] |
+          let table = $next.relFactory->next('tbl');
+          let predicate = $next.current->toOne();
+
+          let vc = var('c');
+
+          let head = rel($table);
+          let rule =
+            $head
+              ->appl([$vc, $vx])
+              ->def([
+                $parent->appl([$vc, $vx]),
+                $predicate
+              ]);
+
+          ^$next(
+            current=$head,
+            program=$next.program->with($rule)
+          );
+        });
+    });
+}

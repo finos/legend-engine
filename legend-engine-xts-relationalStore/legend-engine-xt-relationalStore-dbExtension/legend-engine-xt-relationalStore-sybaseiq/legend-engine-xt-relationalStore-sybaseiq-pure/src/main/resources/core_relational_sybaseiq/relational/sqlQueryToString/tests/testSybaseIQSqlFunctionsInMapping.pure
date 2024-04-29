@@ -1,0 +1,136 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::sqlstring::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::relational::tests::mapping::sqlFunction::model::domain::*;
+import meta::relational::tests::mapping::sqlFunction::model::store::*;
+import meta::relational::tests::mapping::sqlFunction::model::mapping::*;
+
+import meta::pure::profiles::*;
+import meta::pure::tds::*;
+
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::functions::toDDL::*;
+import meta::relational::mapping::*;
+
+import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+
+import meta::core::runtime::*;
+import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::authentication::*;
+
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sybaseIQ::testToSQLStringWithParseDateInQueryForSybaseIQ():Boolean[1]
+{
+  let sybaseIqSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2TimestampStr->parseDate()], ['timestamp']), testMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+  assertEquals('select cast("root".string2date as timestamp) as "timestamp" from dataTable as "root"',$sybaseIqSql->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sybaseIQ::testToSQLStringParseDateForSybaseIQ():Boolean[1]
+{
+  let sybaseSQL = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2TimestampFormat], ['timestamp']), testMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+  assertEquals('select cast("root".stringDateTimeFormat as timestamp) as "timestamp" from dataTable as "root"',$sybaseSQL->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sybaseIQ::testTriminNotSybaseASE():Boolean[1]{
+   let sIQ = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
+                                                testMapping,
+                                                meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+
+   assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sIQ);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sybaseIQ::testToSQLStringParseDateinIQ():Boolean[1]
+{
+   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Date], ['string2Date']),
+                                                testMapping,
+                                                meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+   assertEquals('select cast("root".string2date as timestamp) as "string2Date" from dataTable as "root"',$s);
+
+}
+
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sybaseIQ::testToSQLStringParseDecimalinIQ():Boolean[1]
+{
+
+   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Decimal], ['parseDecimal']),
+                                                testMapping,
+                                                meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+   assertEquals('select cast("root".string2Decimal as decimal) as "parseDecimal" from dataTable as "root"',$s);
+
+}
+
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sybaseIQ::testToSQLStringParseIntegerinIQ():Boolean[1]
+{
+   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
+                                                testMapping,
+                                                meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+   assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$s);
+
+}
+
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sybaseIQ::testToSQLStringconvertToDateinIQ():Boolean[1]
+{
+   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDate], ['convertToDate']),
+                                                testMapping,
+                                                meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+   assertEquals('select convert ( date,"root".stringDateFormat,120) as "convertToDate" from dataTable as "root"',$s);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sybaseIQ::testToSQLStringconvertToDateTimeinIQ():Boolean[1]
+{
+   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateTime], ['convertToDateTime']),
+                                                testMapping,
+                                                meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+   assertEquals('select convert( timestamp,"root".stringDateTimeFormat,121) as "convertToDateTime" from dataTable as "root"',$s);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sybaseIQ::testDayOfWeekNumberWithFirstDay():Boolean[1]
+{
+    let mon = toSQLString(|SqlFunctionDemo.all()->project([p | $p.dayOfWeekNumber],['Day Of Week Number']),
+    testMapping,
+    meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+    assertEquals('select mod (datepart(weekday,"root".dateTime)+5,7)+1 as "Day Of Week Number" from dataTable as "root"',$mon);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sybaseIQ::testDayOfWeekName():Boolean[1]
+{
+    let fn = toSQLString(|SqlFunctionDemo.all()->project([p | $p.dayOfWeek],['WeekDay Name']),
+    testMapping,
+    meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+    assertEquals('select datename(WEEKDAY,"root".dateTime) as "WeekDay Name" from dataTable as "root"',$fn);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sybaseIQ::testAdjustDateTranslationInMappingAndQuery():Boolean[1]
+{
+   let toAssertDbTypes = [DatabaseType.SybaseIQ];
+
+   $toAssertDbTypes->map({db |
+      let s1 = toSQLString(|SqlFunctionDemo.all()->project([p | $p.adjustDate], ['Dt']), testMapping, $db, meta::relational::extension::relationalExtensions());
+      let s2 = toSQLString(|SqlFunctionDemo.all()->project([p | $p.dateTime->adjust(-7, DurationUnit.DAYS)], ['Dt']), testMapping, $db, meta::relational::extension::relationalExtensions());
+      assert($s1 == $s2);
+   });
+
+   let result = execute(
+      |SqlFunctionDemo.all()->project([s | $s.adjustDate], ['Dt']),
+      testMapping,
+      testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
+
+   assertEquals([%2003-07-12T00:00:00.000000000+0000, %2003-07-13T00:00:00.000000000+0000], $result.values->at(0).rows.values);
+   meta::relational::functions::asserts::assertSameSQL('select dateadd(DAY, -7, "root".dateTime) as "Dt" from dataTable as "root"', $result);
+}

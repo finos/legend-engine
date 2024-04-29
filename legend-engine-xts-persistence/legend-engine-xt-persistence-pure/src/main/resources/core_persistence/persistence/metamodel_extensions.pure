@@ -1,0 +1,255 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::path::*;
+
+import meta::pure::persistence::metamodel::dataset::*;
+import meta::pure::persistence::metamodel::dataset::actionindicator::*;
+import meta::pure::persistence::metamodel::dataset::deduplication::*;
+import meta::pure::persistence::metamodel::dataset::emptyhandling::*;
+import meta::pure::persistence::metamodel::dataset::partitioning::*;
+import meta::pure::persistence::metamodel::service::*;
+import meta::pure::persistence::metamodel::service::output::*;
+import meta::pure::persistence::metamodel::target::*;
+
+/**********
+ * service output target
+ **********/
+
+Class
+{doc.doc = 'The mapping of the service output (or part of the service output in the case of a deep graph fetch) to a persistence target.'}
+meta::pure::persistence::metamodel::service::ServiceOutputTarget
+{
+  serviceOutput: ServiceOutput[1];
+  target: PersistenceTarget[1];
+}
+
+/**********
+ * dataset
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'Semantic interpretation of the dataset within the service output.'}
+meta::pure::persistence::metamodel::dataset::DatasetType
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::Snapshot extends DatasetType
+{
+  partitioning: Partitioning[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::Delta extends DatasetType
+{
+  actionIndicator: ActionIndicatorFields[1];
+}
+
+/**********
+ * deduplication
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::deduplication::Deduplication
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::deduplication::NoDeduplication extends Deduplication
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::deduplication::AnyVersion extends Deduplication
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::deduplication::MaxVersion extends Deduplication
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::deduplication::MaxVersionForGraphFetch extends MaxVersion
+{
+  versionFieldPath: Path<Nil, Any|*>[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::deduplication::MaxVersionForTds extends MaxVersion
+{
+  versionField: String[1];
+}
+
+/**********
+ * partitioning
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::partitioning::Partitioning
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::partitioning::NoPartitioning extends Partitioning
+{
+  emptyDatasetHandling: EmptyDatasetHandling[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::partitioning::FieldBased extends Partitioning
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::partitioning::FieldBasedForGraphFetch extends FieldBased
+{
+  partitionFieldPaths: Path<Nil, Any|*>[1..*];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::partitioning::FieldBasedForTds extends FieldBased
+{
+  partitionFields: String[1..*];
+}
+
+/**********
+ * empty dataset handling
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::emptyhandling::EmptyDatasetHandling
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::emptyhandling::NoOp extends EmptyDatasetHandling
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::emptyhandling::DeleteTargetData extends EmptyDatasetHandling
+{
+}
+
+/**********
+ * action fields
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::actionindicator::ActionIndicatorFields
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::actionindicator::NoActionIndicator extends ActionIndicatorFields
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::actionindicator::DeleteIndicator extends ActionIndicatorFields
+{
+  deleteValues: String[1..*];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::actionindicator::DeleteIndicatorForGraphFetch extends DeleteIndicator
+{
+  deleteFieldPath: Path<Nil, Any|*>[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::actionindicator::DeleteIndicatorForTds extends DeleteIndicator
+{
+  deleteField: String[1];
+}
+
+/**********
+ * service output
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'The output (or part of the output in the case of a deep graph fetch) of the service to be mapped.'}
+meta::pure::persistence::metamodel::service::ServiceOutput
+{
+  keyNames()
+  {
+    $this->match([
+      tds: TdsServiceOutput[1] | $tds.keys,
+      graphFetch: GraphFetchServiceOutput[1] | $graphFetch.keys->map(k | $k->leafPropertyName())->toOneMany()
+    ])
+  }: String[1..*];
+
+  datasetType: DatasetType[1];
+  deduplication: Deduplication[1];
+}
+
+Class
+{doc.doc = 'Service output dataset that is the entire result of a TDS service.'}
+meta::pure::persistence::metamodel::service::TdsServiceOutput extends ServiceOutput
+{
+  keys: String[1..*];
+}
+
+Class
+{doc.doc = 'Service output dataset that starts at a path within a graph fetch tree.'}
+meta::pure::persistence::metamodel::service::GraphFetchServiceOutput extends ServiceOutput
+{
+  path: Path<Nil, Any|*>[0..1];
+  keys: Path<Nil, Any|*>[1..*];
+}
+
+function <<access.private>> meta::pure::persistence::metamodel::service::leafPropertyName(path: Path<Nil, Any|*>[1]): String[1]
+{
+  $path.path->filter(pe | $pe->instanceOf(PropertyPathElement))->last()->cast(@PropertyPathElement).property.name->toOne();
+}
+
+/**********
+ * persistence target
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'The persistence target to which service output is being mapped'}
+meta::pure::persistence::metamodel::target::PersistenceTarget
+{
+}

@@ -1,0 +1,5 @@
+{
+  "name" : "core_relational_sparksql",
+  "pattern" : "(meta::relational::functions::sqlQueryToString::sparkSQL|meta::relational::tests::sqlQueryToString::sparkSQL|meta::relational::tests::sqlToString::sparkSQL|meta::pure::executionPlan::tests::sparkSQL|meta::relational::tests::mapping::sqlFunction::sparkSQL|meta::relational::tests::postProcessor::sparkSQL|meta::relational::tests::query::function::sparkSQL|meta::relational::tests::functions::sqlstring::sparkSQL|meta::relational::tests::tds::sparkSQL|meta::relational::tests::projection::sparkSQL|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
+  "dependencies" : ["platform", "platform_functions", "platform_store_relational", "platform_dsl_mapping", "core_functions", "core", "core_relational"]
+}

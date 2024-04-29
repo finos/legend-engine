@@ -1,0 +1,213 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::*;
+import meta::external::store::elasticsearch::executionTest::testCase::*;
+import meta::external::store::elasticsearch::executionTest::testCase::tds::*;
+import meta::external::store::elasticsearch::executionTest::test::*;
+import meta::external::store::elasticsearch::executionTest::utils::*;
+
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Keyword property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testEqualValueFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget') == 170));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Keyword property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testNotEqualValueFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget') != 170));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than filter on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testGreaterThanInteger(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget') > 55));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than filter on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testGreaterThanReversedInteger(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | 55 > $x.getInteger('Budget')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than equal filter on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testGreaterThanEqualInteger(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget') >= 55));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than equal filter on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testGreaterThanEqualReversedInteger(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | 55 >= $x.getInteger('Budget')));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than filter on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testLessThanInteger(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget') < 55));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than filter on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testLessThanReversedInteger(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | 55 < $x.getInteger('Budget')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than equal filter on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testLessThanEqualInteger(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget') <= 55));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than equal filter on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testLessThanEqualReversedInteger(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | 55 <= $x.getInteger('Budget')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test in filter on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testInFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget')->in([170, 100])));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Keyword property mapping with variable'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testEqualValueFilter_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 170;
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget') == $var));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Keyword property mapping with variable'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testNotEqualValueFilter_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 170;
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget') != $var));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than filter on Elasticsearch Integer property mapping with variable'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testGreaterThanInteger_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 55;
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget') > $var));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than filter on Elasticsearch Integer property mapping'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testGreaterThanReversedInteger_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 55;
+  $config->testTdsExpression(x | $x->filter(x | $var > $x.getInteger('Budget')));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than equal filter on Elasticsearch Integer property mapping with variable'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testGreaterThanEqualInteger_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 55;
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget') >= $var));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test greater than equal filter on Elasticsearch Integer property mapping'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testGreaterThanEqualReversedInteger_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let var = 55;
+  $config->testTdsExpression(x | $x->filter(x | $var >= $x.getInteger('Budget')));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than filter on Elasticsearch Integer property mapping'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testLessThanInteger_PurOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let val = 55;
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget') < $val));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than filter on Elasticsearch Integer property mapping with variable'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testLessThanReversedInteger_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let val = 55;
+  $config->testTdsExpression(x | $x->filter(x | $val < $x.getInteger('Budget')));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than equal filter on Elasticsearch Integer property mapping with variable'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testLessThanEqualInteger_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let val = 55;
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget') <= $val));
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than equal filter on Elasticsearch Integer property mapping with variable'}
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testLessThanEqualReversedInteger_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let val = 55;
+  $config->testTdsExpression(x | $x->filter(x | $val <= $x.getInteger('Budget')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test in filter on Elasticsearch Integer property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testInFilter_PureManyVariable(config:TestConfig[1]):Boolean[1]
+{
+  let oneVal = asZeroMany(170);
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget')->in($oneVal)));
+
+  let manyVal = asZeroMany([170, 100]);
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget')->in($manyVal)));
+
+  let noVal = asZeroMany([]->cast(@Integer));
+  $config->testTdsExpressionReturnsEmpty(x | $x->filter(x | $x.getInteger('Budget')->in($noVal)));    
+}

@@ -1,0 +1,1109 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::relation::*;
+import meta::pure::router::preeval::*;
+import meta::pure::extension::*;
+import meta::pure::metamodel::path::*;
+import meta::pure::router::extension::*;
+import meta::pure::router::utils::*;
+
+Class meta::pure::router::preeval::State
+{
+  inScopeVars        : Map<String, List<Any>>[1];
+  rollingInScopeVars : Map<String, List<Any>>[1];
+  inScopeTypeParams  : Map<String, GenericType>[1];
+
+  debug              : DebugContext[1];
+  depth              : Integer[0..1];
+  path               : FunctionDefinition<Any>[*];
+
+  shouldInlineFxn    : FunctionDefinition<{Function<Any>[1] -> Boolean[1]}>[1];
+  stopPreeval        : Function<{Any[1] -> Boolean[1]}>[1];
+
+  toString() { $this->simpleToString() }:String[1];
+}
+
+Class meta::pure::router::preeval::PrevalWrapper<T>
+{
+   canPreval : Boolean[1];
+   value : T[1];
+   openVars : String[*];
+   modified : Boolean[1];
+
+   toString() { $this->simpleToString() }:String[1];
+}
+
+
+// ====================================================================================================================================================================
+// Public Apis
+// ====================================================================================================================================================================
+
+function <<access.public>> meta::pure::router::preeval::preval<T>(f:FunctionDefinition<T>[1], extensions:Extension[*]):FunctionDefinition<T>[1]
+{
+  preval($f, $extensions, noDebug());
+}
+
+function <<access.public>> meta::pure::router::preeval::preval<T>(f:FunctionDefinition<T>[1], extensions:Extension[*], debug:DebugContext[1]):FunctionDefinition<T>[1]
+{
+  preval($f, newMap([]->cast(@Pair<VariableExpression, ValueSpecification>)), $f->openVariableValues(), $extensions, $debug).value->toOne()->cast($f);
+}
+
+function <<access.public>> meta::pure::router::preeval::preval(f : FunctionDefinition<Any>[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:Extension[*]):PrevalWrapper<FunctionDefinition<Any>>[1]
+{
+  preval($f, $vars, $inScopeVars, $extensions, noDebug());
+}
+
+function <<access.public>> meta::pure::router::preeval::preval(f : FunctionDefinition<Any>[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:Extension[*], debug:DebugContext[1]):PrevalWrapper<FunctionDefinition<Any>>[1]
+{
+  let state = ^meta::pure::router::preeval::State(inScopeVars        = $inScopeVars,
+                                                  shouldInlineFxn    = defaultFunctionInlineStrategy($extensions),
+                                                  stopPreeval        = defaultPreevalStopStrategy($extensions),
+                                                  rollingInScopeVars = $inScopeVars,
+                                                  debug              = $debug,
+                                                  inScopeTypeParams  = ^Map<String, GenericType>());
+  preval($f, $state, $extensions);
+}
+
+function <<access.public>> meta::pure::router::preeval::preval(f : FunctionDefinition<Any>[1], state:State[1], extensions:Extension[*]):PrevalWrapper<FunctionDefinition<Any>>[1]
+{
+  meta::pure::functions::tracing::traceSpan({|
+    let r = prevalInternal($f->evaluateAndDeactivate(), $state, $extensions)->toOne()->cast(@PrevalWrapper<FunctionDefinition<Any>>);
+
+    if(!$r->anyModified(),
+       |
+         $state->printDebug(|'No changes made for: ');
+         $state->printDebug(|$f->meta::pure::metamodel::serialization::grammar::printFunctionDefinition(''));,
+       |
+         let res = $r.value->toOne();
+         $state->printDebug('Transformed To:');
+         $state->printDebug(|$res->meta::pure::metamodel::serialization::grammar::printFunctionDefinition(''));
+         $state->printDebug($res);
+    );
+    $r;  
+  }, 'preval');
+}
+
+function <<access.public>> meta::pure::router::preeval::preval(f : FunctionExpression[1], inScopeVars:Map<String, List<Any>>[1], extensions:Extension[*], debug:DebugContext[1]):ValueSpecification[1]
+{
+  meta::pure::functions::tracing::traceSpan({|
+    let state = ^meta::pure::router::preeval::State(inScopeVars        = $inScopeVars,
+                                                    shouldInlineFxn    = defaultFunctionInlineStrategy($extensions),
+                                                    stopPreeval        = defaultPreevalStopStrategy($extensions),
+                                                    rollingInScopeVars = $inScopeVars,
+                                                    debug              = $debug,
+                                                    inScopeTypeParams  = ^Map<String, GenericType>());
+    prevalInternal($f, $state, $extensions).value->cast(@ValueSpecification);  
+  }, 'preval')
+}
+
+// ====================================================================================================================================================================
+// Processor Functions
+// ====================================================================================================================================================================
+
+function <<access.private>> meta::pure::router::preeval::prevalInternal(item : Any[1], origState : meta::pure::router::preeval::State[1], extensions:Extension[*]):PrevalWrapper<Any>[1]
+{
+  let state = ^$origState(depth = if($origState.depth->isEmpty(), | 0, | $origState.depth->toOne() + 1),
+                          path = if(!$item->instanceOf(FunctionDefinition), | $origState.path, | $origState.path->concatenate($item->cast(@FunctionDefinition<Any>))));
+
+
+  $state->printDebugWithDepth(|'Processing ' + $item->type()->makeString() + ' '
+                              + $item->evaluateAndDeactivate()
+                                    ->match([
+                                        iv:InstanceValue[1]             | $iv.values->map(x|$x->type())->makeString(),
+                                        sfe:SimpleFunctionExpression[1] | '(' + $sfe.func->elementToPath() + ')',
+                                        ve:VariableExpression[1]        | '(' + $ve.name + ')',
+                                        a:Any[*]|'']
+                                      )
+                              + ', inScopeVars: ' +  $state.inScopeVars->keys()->joinStrings('[', ',', ']'));
+
+  let newItem = $item->evaluateAndDeactivate()
+                     ->match([
+                        {lambda : LambdaFunction<Any>[1]|
+                            let fnArgNames      = $lambda->functionType().parameters.name;
+                            let fnOpenVariables = $lambda->openVariableValues()->putAll($state.inScopeVars->keyValues()->filter(kv | !$kv.first->in($fnArgNames))->newMap());
+
+                            $lambda->prevalFunctionDefinition(^$state(inScopeVars = $fnOpenVariables), $extensions);
+                        },
+                        {fd : FunctionDefinition<Any>[1]|
+                            $fd->prevalFunctionDefinition(^$state(inScopeVars = newMap([])), $extensions);    // Assigning empty map to inScopeVars as function definition can't have openVars
+                        },
+                        {sfe : SimpleFunctionExpression[1]|
+                            let handlers = [
+                              //  Avoid handling known 'false' case (which may not be evalulatable / have runtime issues, e.g. a toOne() after an isNotEmpty condition)
+                              ^Pair<Function<Any>, LambdaFunction<{->PrevalWrapper<Any>[1]}>>(first = if_Boolean_1__Function_1__Function_1__T_m_, second = {|
+                                  let conditionPreVal = $sfe.parametersValues->at(0)->prevalInternal($state, $extensions);
+                                  if($conditionPreVal.value->toOne()->cast(@ValueSpecification)->isInstanceValue($state.inScopeVars),
+                                      | let valueValueSpecification = if($conditionPreVal.value->cast(@InstanceValue).values == true,
+                                              | $sfe.parametersValues->at(1),
+                                              | $sfe.parametersValues->at(2)
+                                              );
+                                        let newSfe = ^$sfe(func = eval_Function_1__V_m_, parametersValues = $valueValueSpecification);
+
+                                        $newSfe->prevalInternal($state, $extensions)->markModified();,
+                                      | prevalGenericSimpleFunctionExpression($sfe, $state, $extensions);
+                                      );
+                                  }),
+
+                              //  Avoid handling conditions after the first false (which may not be evalulatable / have runtime issues, e.g. a toOne() after an isNotEmpty condition)
+                              ^Pair<Function<Any>, LambdaFunction<{->PrevalWrapper<Any>[1]}>>(first = meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_, second = {|
+                                  prevalBooleanSimpleFunctionExpression($sfe, $state, $extensions);
+                                  }),
+
+                              //  Avoid handling conditions after the first true (which may not be evalulatable / have runtime issues, e.g. a toOne() after an isEmpty condition)
+                              ^Pair<Function<Any>, LambdaFunction<{->PrevalWrapper<Any>[1]}>>(first = meta::pure::functions::boolean::or_Boolean_1__Boolean_1__Boolean_1_, second = {|
+                                  prevalBooleanSimpleFunctionExpression($sfe, $state, $extensions);
+                                  })
+
+                              // TODO:
+                              // 1. Optimise and_Boolean_MANY__Boolean_1_ and or_Boolean_$1_MANY$__Boolean_1_
+                              // 1. Optimise plus(many), minus(many) and times(many) (plus_String_MANY__String_1_, plus_Float_MANY__Float_1_, times_Number_MANY__Number_1_, minus_Float_MANY__Float_1_)
+                              ];
+
+                            let handler = $handlers->filter(p|$p.first == $sfe.func).second;
+
+                            if($handler->isNotEmpty(),
+                               | $handler->toOne()->eval(),
+                               | prevalGenericSimpleFunctionExpression($sfe, $state, $extensions));
+                        },
+                        {ve : VariableExpression[1]|
+                            let varValue = $state.inScopeVars->get($ve.name).values;
+                            let iv       = if($state.inScopeVars->get($ve.name)->isEmpty(),
+                                             | ^PrevalWrapper<Any>(value = $ve, canPreval = true, modified = false, openVars = [$ve.name]),
+                                             | $varValue->match([
+                                                            n : Nil[0]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate(),
+                                                            iv : InstanceValue[1]| $iv,
+                                                            ve : VariableExpression[1]| $ve->evaluateAndDeactivate(),
+                                                            sfe : SimpleFunctionExpression[1]| $sfe,
+                                                            a : meta::pure::tds::AggregateValue<Any,Any>[*]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate(),
+                                                            a : meta::pure::functions::collection::AggregateValue<Any,Any,Any>[*]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate(),
+                                                            a : meta::pure::tds::BasicColumnSpecification<Any>[*]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate(),
+                                                            r : meta::pure::graphFetch::RootGraphFetchTree<Any>[1]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate();,
+                                                            b : meta::external::format::shared::binding::Binding[1]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate();,
+                                                            sc : meta::pure::tds::schema::SchemaState[1]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $sc)->evaluateAndDeactivate(),
+                                                            s : meta::pure::store::Store[1]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate();,
+                                                            a : Any[*]| assert($state.stopPreeval->eval($a), | 'Unsupported type: ' + $a->type()->match([pe:PackageableElement[1]|$pe->elementToPath(), t:Type[1]|$t->makeString()]));
+                                                                        ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate();
+                                                        ])
+                                                        ->map(x|
+                                                            let newState = ^$state(inScopeVars = $state.inScopeVars->keyValues()->filter(p|$p.first != $ve.name)->newMap());
+                                                            $x->prevalInternal($newState, $extensions);
+                                                        )
+                                                        ->markModified()
+                                              );
+                        },
+                        {iv : InstanceValue[1]|
+                            let subVals = $iv.values->map(x|$x->prevalInternal($state, $extensions));
+                            let r       = if(!$subVals->anyModified(),
+                                            | pair(false, $iv),
+                                            | let cleanIv  =  ^$iv(values = $subVals.value->map(x|$x->match([subIv:InstanceValue[1]|if($subIv.values->size() == 1, |$subIv.values, |$subIv), a:Any[*]|$a])));
+                                              let cleanIv2 = ^$cleanIv(genericType  = $cleanIv.genericType->resolveGenericType($state).value,
+                                                                       multiplicity = if($cleanIv.multiplicity == PureOne && $cleanIv.values->isEmpty(),
+                                                                                        | $cleanIv.multiplicity, //This seems to be a quirk of Cast(@ABC)
+                                                                                        | $cleanIv.values->size()->toMultiplicity())
+                                                                      );
+                                              pair(true, $cleanIv2);
+                                          );
+                            ^PrevalWrapper<Any>(value = $r.second, canPreval = $subVals->canPreval(), openVars = $subVals->openVars($state.inScopeVars), modified = $r.first);
+                        },
+                        {k : KeyExpression[1]|
+                            let e = $k.expression->prevalInternal($state, $extensions)->toOne();
+                            let ke = if(!$e->anyModified(),
+                                        | pair(false, $k),
+                                        | pair(true, ^$k(expression = $e.value->cast(@ValueSpecification)->toOne())));
+
+                            ^PrevalWrapper<Any>(value = $ke.second, canPreval = $e.canPreval, openVars = $e->openVars($state.inScopeVars), modified = $ke.first);
+                        },
+                        {p : ColumnSpecification<Any>[1]|
+                            $p->match([
+                                  bcs : BasicColumnSpecification<Any>[1]|
+                                          let f              = $bcs.func->evaluateAndDeactivate();
+                                          let newFuncWrapper = prevalInternal($f, ^$state(inScopeTypeParams = ^Map<String, GenericType>(), inScopeVars = $state.inScopeVars->putAll($f->openVariableValues())), $extensions);
+
+                                          if(!$newFuncWrapper->anyModified(),
+                                             | ^PrevalWrapper<Any>(value = $bcs, canPreval = true, modified = false),
+                                             | ^PrevalWrapper<Any>(value = ^$bcs(func = $newFuncWrapper.value->cast($f)), canPreval = true, modified = true);
+                                          );,
+                                  o:ColumnSpecification<Any>[1] | ^PrevalWrapper<Any>(value = $o, canPreval = true, modified = false);
+                                ]);
+
+                        },
+                        {av : meta::pure::tds::AggregateValue<Any,Any>[1]|
+                              let mapFn = $av.mapFn->evaluateAndDeactivate();
+                              let aggFn = $av.aggregateFn->evaluateAndDeactivate();
+
+                              let newFuncWrapper_map = prevalInternal($mapFn, $state, $extensions);
+                              let newFuncWrapper_agg = prevalInternal($aggFn, $state, $extensions);
+
+                            if(![$newFuncWrapper_map, $newFuncWrapper_agg]->anyModified(),
+                              | ^PrevalWrapper<Any>(value = $av, canPreval = true, modified = false),
+                              | ^PrevalWrapper<Any>(value = ^$av(mapFn = $newFuncWrapper_map.value->cast($mapFn), aggregateFn = $newFuncWrapper_agg.value->cast($aggFn)), canPreval = true, modified = true);
+                              );
+                        },
+                        {av : meta::pure::functions::collection::AggregateValue<Any,Any,Any>[1]|
+                              let mapFn = $av.mapFn->evaluateAndDeactivate();
+                              let aggFn = $av.aggregateFn->evaluateAndDeactivate();
+
+                              let newFuncWrapper_map = prevalInternal($mapFn, $state, $extensions);
+                              let newFuncWrapper_agg = prevalInternal($aggFn, $state, $extensions);
+
+                              if(![$newFuncWrapper_map, $newFuncWrapper_agg]->anyModified(),
+                                  | ^PrevalWrapper<Any>(value = $av, canPreval = true, modified = false),
+                                  | ^PrevalWrapper<Any>(value = ^$av(mapFn = $newFuncWrapper_map.value->cast($mapFn), aggregateFn = $newFuncWrapper_agg.value->cast($aggFn)), canPreval = true, modified = true);
+                                  );
+                        },
+                        {s: meta::pure::tds::schema::SchemaState[1] | ^PrevalWrapper<Any>(value = $s, canPreval = true, modified = false);},
+                        {r: meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | ^PrevalWrapper<Any>(value = $r, canPreval = true, modified = false);},
+                        {b: meta::external::format::shared::binding::Binding[1] | ^PrevalWrapper<Any>(value = $b, canPreval = true, modified = false);},
+                        {s: meta::pure::store::Store[1] | ^PrevalWrapper<Any>(value = $s, canPreval = true, modified = false);},
+                        {s: meta::pure::store::RelationStoreAccessor<Any>[1] | ^PrevalWrapper<Any>(value = $s, canPreval = false, modified = false);},
+                        {s:meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1]|^PrevalWrapper<Any>(value = $s, canPreval = true, modified = false);},
+                        {s:meta::pure::metamodel::relation::FuncColSpec<Any,Any>[1]|^PrevalWrapper<Any>(value = $s, canPreval = true, modified = false);},
+                        {a : Any[1]|
+                            assert($state.stopPreeval->eval($a), | 'Unsupported type: ' + $a->type()->match([pe:PackageableElement[1]|$pe->elementToPath(), t:Type[1]|$t->makeString()]));
+                            ^PrevalWrapper<Any>(value = $a, canPreval = true, modified = false);
+                        }
+                      ]);
+
+  $state->printDebugWithDepth(|'Returning ' + $newItem.value->type()->makeString() + ' ' + $newItem.value->match([iv:InstanceValue[1]|$iv.values->map(x|$x->type())->makeString(), sfe:SimpleFunctionExpression[1]|'(' + $sfe.func->elementToPath() + ')', ve : VariableExpression[1]|'(' + $ve.name + ')', a:Any[*]|'']) + ' ' + $newItem.toString());
+  $newItem;
+}
+
+function <<access.private>> meta::pure::router::preeval::prevalFunctionDefinition(fd : FunctionDefinition<Any>[1], origState : meta::pure::router::preeval::State[1], extensions:Extension[*]):PrevalWrapper<Any>[1]
+{
+  let items = $fd.expressionSequence;
+
+  let r     = range($items->size())
+                ->fold({index, p|
+                          let item  = $items->at($index);
+                          let state = $p.first;
+
+                          let isLastExpression = ($index == ($items->size()-1));
+
+                          if(!$isLastExpression && !$item->isLetFunction(),
+                            |
+                              $state->printDebugWithDepth(|'Dropping non-variable assignement non-return statement: ' + $item->type()->makeString() + ' '
+                                                          + $item->match([
+                                                                    iv:InstanceValue[1]|$iv.values->map(x|$x->type())->makeString(),
+                                                                    sfe:SimpleFunctionExpression[1]|'(' + $sfe.func->elementToPath() + ')',
+                                                                    ve : VariableExpression[1]|'(' + $ve.name + ')',
+                                                                    a:Any[*]|''
+                                                                  ])
+                                                          + ', inScopeVars: ' +  $state.inScopeVars->keys()->joinStrings('[', ',', ']'));
+
+                              pair($state, $p.second);,
+                            |
+                              let r = $item->prevalInternal($state, $extensions);
+
+                              let isLetFunctionValueSpecification = $r.value->instanceOf(ValueSpecification) && $r.value->cast(@ValueSpecification)->isLetFunction();
+
+                              if(!$isLetFunctionValueSpecification,
+                                | pair($state, list(if($p.second.values->isEmpty(), | $r, | $p.second.values->concatenate($r)))),
+                                |
+                                  let fe       = $r.value->cast(@FunctionExpression);
+                                  let varName  = $fe.parametersValues->at(0)->reactivate($state.inScopeVars)->cast(@String)->toOne();
+                                  let varValue = $fe.parametersValues->at(1)
+                                                                     ->match([
+                                                                        iv:InstanceValue[1]|$iv.values,
+                                                                        fe:ValueSpecification[1]|$fe
+                                                                     ]);
+
+                                  $state->printDebugWithDepth(|'adding variable ' + $varName + ' to rolling scope, with value ' + $varValue->makeString());
+
+                                  let shouldInlineVariableExpression = ($varValue->match([v:VariableExpression[1]|true, a: Any[*]|false]))
+                                                                        || ($r->canPreval() && $r->areAllInScope($state.inScopeVars) && !$varValue->match([v:LambdaFunction<Any>[1]|true, a: Any[*]|false]));
+
+                                  let newRollingInScopeVars          = $state.rollingInScopeVars->put($varName, list($varValue));
+                                  let newInScopeVars                 = if(!$shouldInlineVariableExpression,
+                                                                          | $state.inScopeVars,
+                                                                          | $state.inScopeVars->put($varName, list($varValue))
+                                                                       );
+                                  let newState                       = ^$state(inScopeVars = $newInScopeVars, rollingInScopeVars = $newRollingInScopeVars);
+
+                                  let expValue = if($isLastExpression,
+                                                    | ^PrevalWrapper<Any>(canPreval = $r.canPreval, modified = true, openVars =$r.openVars, value = $varValue->match([vs:ValueSpecification[1]|$vs, a:Any[*]|^InstanceValue(genericType = $fe.genericType, multiplicity = $a->size()->toMultiplicity(), values = $a)])),
+                                                    | if($shouldInlineVariableExpression,
+                                                        | [],
+                                                        | $r
+                                                      )
+                                                 );
+                                  if($expValue->isEmpty(),
+                                    | pair($newState, $p.second),
+                                    | pair($newState, list(if($p.second.values->isEmpty(), | $expValue, | $p.second.values->concatenate($expValue))))
+                                  );
+                              );
+                          );
+                       }, [pair($origState, list([]->cast(@PrevalWrapper<Any>)))]
+                      ).second.values;
+
+
+  /*
+    This should not be necessary, but seems to be required otherwise fold can end up wrapping InstanceValues in InstanceValues,
+    which map doesn't seem to
+  */
+  let newExpressionSequncePrevalWrappers = $r->evaluateAndDeactivate()
+                                             ->match([
+                                                iv:InstanceValue[1]|$iv.values->cast(@PrevalWrapper<Any>),
+                                                a:PrevalWrapper<Any>[*]|$a
+                                              ]);
+
+  let value = if(($newExpressionSequncePrevalWrappers->size() == $items->size()) && !$newExpressionSequncePrevalWrappers->anyModified(),
+                | pair(false, $fd),
+                | let newFd = ^$fd(expressionSequence = $newExpressionSequncePrevalWrappers.value->cast(@ValueSpecification)->toOneMany())
+                                ->match([
+                                    lf : LambdaFunction<Any>[1]| ^$lf(openVariables = $lf.openVariables->map(v|$v->resolveVariable($origState))
+                                                                                                       ->distinct()
+                                                                                                       ->intersection($newExpressionSequncePrevalWrappers.openVars->map(v|$v->resolveVariable($origState)))),
+                                    fd2:FunctionDefinition<Any>[1]| $fd2
+                                ]);
+                  pair(true, $newFd);
+              );
+
+  ^PrevalWrapper<FunctionDefinition<Any>>(
+    value     = $value.second,
+    canPreval = $newExpressionSequncePrevalWrappers->canPreval(),
+    openVars  = $fd->match([lf : LambdaFunction<Any>[1]|$value.second->cast(@LambdaFunction<Any>).openVariables, fd:FunctionDefinition<Any>[1]|[]]),
+    modified  = $value.first
+  );
+}
+
+function <<access.private>> meta::pure::router::preeval::prevalBooleanSimpleFunctionExpression(sfe : SimpleFunctionExpression[1], state : meta::pure::router::preeval::State[1], extensions:Extension[*]):PrevalWrapper<Any>[1]
+{
+  assert($sfe.func->in([and_Boolean_1__Boolean_1__Boolean_1_, or_Boolean_1__Boolean_1__Boolean_1_]));
+  assertEquals(2, $sfe.parametersValues->size());
+
+  let shortcutVal      = !($sfe.func == and_Boolean_1__Boolean_1__Boolean_1_);
+
+  let newParam1Wrapper = $sfe.parametersValues->at(0)->prevalInternal($state, $extensions);
+
+  if($newParam1Wrapper.value->toOne()->isInstanceValue($state.inScopeVars),
+    | if(($newParam1Wrapper.value->cast(@InstanceValue).values == $shortcutVal),
+         | $newParam1Wrapper->markModified(),
+         | let newParam2Wrapper = $sfe.parametersValues->at(1)->prevalInternal($state, $extensions);
+           $newParam2Wrapper->markModified();),
+    | let newParam2Wrapper = $sfe.parametersValues->at(1)->prevalInternal($state, $extensions);
+
+      if($newParam2Wrapper.value->toOne()->isInstanceValue($state.inScopeVars),
+        | if($newParam2Wrapper.value->cast(@InstanceValue).values != $shortcutVal,
+             | $newParam1Wrapper->markModified(),
+             | $newParam2Wrapper->markModified()),
+        | let newParamWrappers = [$newParam1Wrapper, $newParam2Wrapper];
+          ^PrevalWrapper<SimpleFunctionExpression>(
+              value = ^$sfe(parametersValues = $newParamWrappers.value->cast(@ValueSpecification)),
+              canPreval = $newParamWrappers->canPreval(),
+              openVars = $newParamWrappers->openVars($state.inScopeVars),
+              modified = $newParamWrappers->size() != $sfe.parametersValues->size() || $newParamWrappers->anyModified()
+          );
+      );
+  );
+}
+
+function <<access.private>> meta::pure::router::preeval::prevalGenericSimpleFunctionExpression(sfe : SimpleFunctionExpression[1], state : meta::pure::router::preeval::State[1], extensions:Extension[*]):PrevalWrapper<Any>[1]
+{
+  let newParamWrappers = if($sfe.parametersValues->isEmpty(),
+                            | [],
+                            | $sfe.func->match([
+                                                p:Property<Nil,Any|*>[1]|'this',
+                                                c:Column<Nil,Any|*>[1]|'this',
+                                                f:Function<Any>[1]|$f->functionType().parameters.name
+                                               ])
+                                       ->zip($sfe.parametersValues)
+                                       ->evaluateAndDeactivate()
+                                       ->map(p| $state->printDebugWithDepth(|'Processing parameter: ' + $p.first);
+                                                let r = $p.second->prevalInternal($state, $extensions);
+                                                $state->printDebugWithDepth(|'Completed processing parameter: ' + $p.first);
+                                                $r;)
+                         );
+  let newSfeModified   = $newParamWrappers->anyModified();
+
+  let newSfe           = if($newSfeModified,
+                            | ^$sfe(parametersValues = $newParamWrappers.value->cast(@ValueSpecification)
+                                                                              ->map(pv|^$pv(genericType = $pv.genericType->resolveGenericType($state).value)),
+                                    genericType = $sfe.genericType->resolveGenericType($state).value),
+                            | $sfe);
+
+  let canPrevalFunc    = !($newSfe.func->hasStereotype('SideEffectFunction', functionType) || $newSfe.func->hasStereotype('NotImplementedFunction', functionType) || $state.stopPreeval->eval($newSfe));
+
+  if(!$canPrevalFunc,
+    | $state->printDebugWithDepth(|'Unable to perform preval: ' + $newSfe.func->elementToPath() + ' (' + $newSfe.func->instanceOf(NativeFunction)->makeString() + ')');
+
+      ^PrevalWrapper<SimpleFunctionExpression>(
+        value = $newSfe,
+        canPreval = ($canPrevalFunc || ($newSfe.func == letFunction_String_1__T_m__T_m_)) && $newParamWrappers->canPreval(),
+        openVars = $newParamWrappers->openVars($state.inScopeVars),
+        modified = $newSfeModified
+      );,
+    | if(shouldInline($newSfe.func, $state),
+        |
+          $state->printDebugWithDepth(|'Inlining: ' + $newSfe.func->elementToPath());
+          assert($newSfe.func->instanceOf(FunctionDefinition) && $newSfe.func->cast(@FunctionDefinition<Any>).expressionSequence->size() == 1);
+
+          let newState = $newSfe->addToScope($state)->map(s|^$s(path = $state.path->concatenate($newSfe.func->cast(@FunctionDefinition<Any>))));
+
+          let subSfe1 = $newSfe.func->cast(@FunctionDefinition<Any>).expressionSequence->toOne()->evaluateAndDeactivate();
+          let subSfe = ^$subSfe1(genericType = $subSfe1.genericType->resolveGenericType($newState).value);
+
+          let sPreValWrapper = $subSfe->prevalInternal($newState, $extensions);
+
+          $sPreValWrapper->markModified();,
+        | if($newSfe->canInlineEvalFunctionExpression(),
+            |
+              $state->printDebugWithDepth(|'Expanding eval: ' + $newSfe.func->elementToPath());
+
+              let func = $newSfe.parametersValues->at(0)->match([
+                  iv:InstanceValue[1]|$iv.values->toOne(),
+                  vs:ValueSpecification[*]|$vs
+                  ])->cast(@FunctionDefinition<Any>)->toOne();
+
+              let newState = $newSfe->addToScope($state)->addToScope($func, $sfe.resolvedTypeParameters, $sfe.parametersValues->drop(1));
+
+              let subSfe1 = $func.expressionSequence->toOne()->evaluateAndDeactivate();
+              let subSfe = ^$subSfe1(genericType = $subSfe1.genericType->resolveGenericType($newState).value);
+
+              let sPreValWrapper = $subSfe->prevalInternal($newState, $extensions);
+              $sPreValWrapper->markModified();,
+            |
+              let notPrevalReason = if($newSfe.parametersValues->exists(pv|!$pv->isInstanceValue($state.inScopeVars)),
+                                      | 'params are not instance values';,
+                                      | if (!$newParamWrappers->canPreval(),
+                                            | 'params can not preval';,
+                                            | if(!$newParamWrappers->areAllInScope($state.inScopeVars),
+                                                | 'open variables not in scope',
+                                                | if($newSfe.func == meta::pure::functions::lang::cast_Any_m__T_1__T_m_ && $newParamWrappers.value->at(0)->map(x|$x->instanceOf(InstanceValue) && $x->cast(@InstanceValue).values->isEmpty()),
+                                                    | 'cast of empty collection',
+                                                    | []
+                                                    )
+                                                );
+                                            )
+                                      );
+              if($notPrevalReason->isNotEmpty(),
+                |
+                    let handlers = []
+                      ->cast(@Pair<Function<{SimpleFunctionExpression[1]->Boolean[1]}>, Function<{SimpleFunctionExpression[1]->PrevalWrapper<Any>[1]}>>)
+                      ->concatenate([
+                          pair(
+                            {theSfe:SimpleFunctionExpression[1]|
+                                $newSfe.func.name == 'columns'
+                                && $newSfe.func->instanceOf(AbstractProperty)
+                                && $newSfe.func->cast(@AbstractProperty<Any>).owner == TabularDataSet
+                                && $newParamWrappers->areAllInScope($state.rollingInScopeVars)
+                            },
+                            {theSfe:SimpleFunctionExpression[1]|
+                                /*
+                                Simplistically we could just re-activate the expression here as well, however there are some
+                                TDS functions that are not implemented in the "Pure" implementation and only work in relational
+                                queries.  Therefore we have to specifically redirect to a helper function to resolve the schema
+                                instead
+                                */
+                                let val = meta::pure::tds::schema::resolveSchema($newSfe.parametersValues->toOne(), $state.rollingInScopeVars, $extensions);
+
+                                let iv = ^InstanceValue(genericType = $newSfe.genericType,multiplicity = $val->size()->toMultiplicity(), values = $val)->evaluateAndDeactivate();
+                                ^PrevalWrapper<Any>(value = $iv, canPreval = true, modified = true);
+                            }),
+                          pair(
+                            {theSfe:SimpleFunctionExpression[1]|$newSfe.func->in([map_T_m__Function_1__V_m_, map_T_$0_1$__Function_1__V_$0_1$_, map_T_MANY__Function_1__V_MANY_]) &&  $newSfe.parametersValues->forAll(pv|$pv->isInstanceValue($state.inScopeVars))},
+                            {theSfe:SimpleFunctionExpression[1]|
+                              // This special handling is required to cover cases where 'fixed'/ InstanceValue inputs are being mapped
+                              // using a function that can't be pre-evalled (because it has external input), so wouldn't normally be modified.
+                              // However we can actually just expand the lambda applied to each of the inputs, to elimniate the Map.
+
+                              $state->printDebugWithDepth(|'Expanding: ' + $newSfe.func->elementToPath());
+
+                              let inputVals = $newSfe.parametersValues->at(0)->reactivate($state.inScopeVars)
+                                                                            ->map(v|$v->match([
+                                                                                          vs:ValueSpecification[1]|$vs,
+                                                                                          a:Any[*]| ^InstanceValue(
+                                                                                                      genericType = $newSfe.parametersValues->at(0).genericType,
+                                                                                                      multiplicity = PureOne,
+                                                                                                      values = $v->toOne()
+                                                                                                    )->evaluateAndDeactivate()
+                                                                                  ]));
+
+                              let lambda = $newSfe.parametersValues->at(1)->cast(@InstanceValue).values->toOne()->cast(@FunctionDefinition<Any>);
+                              //TODO: This should really be pre-checked as part of the If condition to get here (so that the assertion never fails)
+                              assert($lambda->instanceOf(FunctionDefinition) && $lambda->cast(@FunctionDefinition<Any>).expressionSequence->size() == 1);
+
+                              let paramName = $lambda->functionType().parameters->toOne().name;
+
+                              let resultValWrappers = $inputVals->map(v|
+                                                                        let newState = $state->addToScope($lambda, [], $v);
+
+                                                                        let subSfe1 = $lambda.expressionSequence->toOne()->evaluateAndDeactivate();
+                                                                        let subSfe = ^$subSfe1(genericType = $sfe.genericType->resolveGenericType($newState).value);
+
+                                                                        $subSfe->prevalInternal($newState, $extensions);
+                                                                  );
+
+                              let resultVals = $resultValWrappers.value->map(v|$v->match([iv:InstanceValue[0..1]|$iv->evaluateAndDeactivate().values, a:Any[*]|$a]));
+
+                              let r = ^InstanceValue(
+                                        genericType = $newSfe.genericType,
+                                        multiplicity = $resultVals->size()->toMultiplicity(),
+                                        values = $resultVals
+                                      )->evaluateAndDeactivate();
+
+                              ^PrevalWrapper<InstanceValue>(
+                                  value = $r,
+                                  canPreval = $resultValWrappers->canPreval(),
+                                  openVars = $resultValWrappers->openVars($state.inScopeVars),
+                                  modified = true
+                              );
+                            }),
+                          pair(
+                            {theSfe:SimpleFunctionExpression[1]|$newSfe.func == fold_T_MANY__Function_1__V_m__V_m_  &&  $newSfe.parametersValues->forAll(pv|$pv->isInstanceValue($state.inScopeVars))},
+                            {theSfe:SimpleFunctionExpression[1]|
+                                // This special handling is required to cover cases where 'fixed'/ InstanceValue inputs are being folded
+                                // using a function that can't be pre-evalled (because it has external input), so wouldn't normally be modified.
+                                // However we can actually just repeat apply the lambda applied to each of the inputs, to elimniate the Fold.
+                                $state->printDebugWithDepth(|'Expanding: ' + $newSfe.func->elementToPath());
+
+                                let inputVals = $newSfe.parametersValues->at(0)->reactivate($state.inScopeVars)
+                                                                              ->map(v| $v->match([
+                                                                                          vs:ValueSpecification[1]|$vs,
+                                                                                          a:Any[1]|
+                                                                                              ^InstanceValue(
+                                                                                                genericType = $newSfe.parametersValues->at(0).genericType,
+                                                                                                multiplicity = PureOne,
+                                                                                                values = $v->toOne()
+                                                                                              )
+                                                                                    ]));
+
+                                let lambda = $newSfe.parametersValues->at(1)->cast(@InstanceValue).values->toOne()->cast(@FunctionDefinition<Any>);//->evaluateAndDeactivate();
+                                //TODO: This should really be pre-checked as part of the If condition to get here (so that the assertion never fails)
+                                assert($lambda->instanceOf(FunctionDefinition) && $lambda->cast(@FunctionDefinition<Any>).expressionSequence->size() == 1);
+
+                                let intialAccumlatorVal = $newSfe.parametersValues->at(2);
+
+                                let resultVal = $inputVals->fold({v,a|
+                                                                    let newState = $state->addToScope($lambda, [], $v->concatenate($a.value->cast(@ValueSpecification))->evaluateAndDeactivate());
+
+                                                                    let subSfe1 = $lambda.expressionSequence->toOne();
+                                                                    let subSfe = ^$subSfe1(genericType = $sfe.genericType->resolveGenericType($newState).value);
+
+                                                                    $subSfe->prevalInternal($newState, $extensions);
+                                                                }, $intialAccumlatorVal->prevalInternal($state, $extensions));
+
+                                $resultVal->markModified();
+                            }),
+                          pair(
+                            {theSfe:SimpleFunctionExpression[1]|
+                                ($newSfe.func == concatenate_T_MANY__T_MANY__T_MANY_)
+                                && ($newSfe.parametersValues.multiplicity->forAll(m|$m->in([PureOne, PureZero]) || $m->isMultiplicityConcrete() && $m->hasUpperBound() && $m->hasLowerBound() && ($m.lowerBound.value == $m.upperBound.value)))
+                                /*
+                                  This last condition should not be needed, but there are circumstances where the inferred type of some lambdas is incorrect.
+                                  So this is guard to avoid trying to pre-optimise in those situations (where in the example below, we'd optimised to the lambda
+                                  simply return $index because accumulator is detected as a PureZero)
+
+                                      let input = {|
+                                        [1,2]->fold({index, accumulator|
+                                            $accumulator->concatenate($index);
+                                          }, [])
+                                        };
+
+                                        let foldLambda = $input->evaluateAndDeactivate().expressionSequence->cast(@SimpleFunctionExpression).parametersValues->at(1)->cast(@InstanceValue).values->cast(@FunctionDefinition<Any>)->toOne();
+                                        let foldLambdaAccumulatorParam = $foldLambda->functionType().parameters->at(1);
+
+                                        assertEquals(ZeroMany, $input->functionReturnMultiplicity(), 'Original lambda return multiplicty expected (zero many)');
+                                        assertEquals($foldLambda->functionReturnMultiplicity(), $input->functionReturnMultiplicity(), | 'Fold lambda return multiplicity matches the original function multiplicity');
+                                        //fails
+                                        assertEquals($foldLambda->functionReturnMultiplicity(), $foldLambdaAccumulatorParam.multiplicity, 'Accumulator parameter multiplicity matches the return multiplicty of the fold lambda: %r vs %r', [$foldLambda->functionReturnMultiplicity(), $foldLambdaAccumulatorParam.multiplicity]);
+
+                                        assertEquals(Integer, $input->functionReturnType().rawType, | 'Original lambda return type expected (integer)');
+                                        assertEquals($foldLambda->functionReturnType().rawType, $input->functionReturnType().rawType, | 'Fold lambda matchs original lambda return type');
+                                        //fails
+                                        assertEquals($foldLambda->functionReturnType().rawType, $foldLambdaAccumulatorParam.genericType.rawType, 'Accumulator parameter matches lambda return type: %r vs %r', [$foldLambda->functionReturnType().rawType->toOne(), $foldLambdaAccumulatorParam.genericType.rawType->toOne()]);
+
+                                  */
+                                && $newParamWrappers->filter(pw|$pw.value->match([v:VariableExpression[1]|$v.multiplicity == PureZero, a:Any[*]|false]))->areAllInScope($state.inScopeVars)
+                            },
+                            {theSfe:SimpleFunctionExpression[1]|
+                                $state->printDebugWithDepth(|'Handling expand: ' + $newSfe.func->elementToPath());
+                                $state->printDebugWithDepth(|'Parameter multiplicities: ' + $newSfe.parametersValues.multiplicity->map(x|$x->makeString())->joinStrings('[',',',']'));
+
+                                let r = if($newSfe.parametersValues->at(0).multiplicity == PureZero,
+                                          | $newSfe.parametersValues->at(1);,
+                                          | if($newSfe.parametersValues->at(1).multiplicity == PureZero,
+                                              | $newSfe.parametersValues->at(0);,
+                                              | let parametersValues = $newSfe.parametersValues
+                                                                              ->map(x|$x->match([iv:InstanceValue[*]| $iv.values;, a:Any[*]| $a]));
+
+                                                ^InstanceValue(
+                                                    genericType = $newSfe.genericType->resolveGenericType($state).value,
+                                                    multiplicity = $parametersValues->size()->toMultiplicity(),
+                                                    values = $parametersValues
+                                                )->evaluateAndDeactivate()
+                                                ->map(x|^$x(values = $parametersValues));
+                                            )
+                                        );
+
+                                ^PrevalWrapper<ValueSpecification>(
+                                  value = $r,
+                                  canPreval = $newParamWrappers->canPreval(),
+                                  openVars = $newParamWrappers->openVars($state.inScopeVars),
+                                  modified = true
+                                );
+                            }),
+                          pair(
+                            {theSfe:SimpleFunctionExpression[1]|$newSfe.func == meta::pure::functions::lang::cast_Any_m__T_1__T_m_ && $newParamWrappers.value->at(0)->map(x|$x->instanceOf(InstanceValue) && $x->cast(@InstanceValue).values->isEmpty())},
+                            {theSfe:SimpleFunctionExpression[1]|
+                                //This special handling should not be required but []->cast(@MyType) seems to fail in compiled mode
+
+                                $state->printDebugWithDepth(|'Handling cast of empty collection: ' + $newSfe.func->elementToPath());
+
+
+                                let r = ^InstanceValue(
+                                          genericType = $newSfe.genericType->resolveGenericType($state).value,
+                                          multiplicity = $newSfe.multiplicity,
+                                          values = []
+                                        )->evaluateAndDeactivate();
+
+                                ^PrevalWrapper<InstanceValue>(
+                                  value = $r,
+                                  canPreval = true,
+                                  openVars = [],
+                                  modified = true
+                                );
+                            }),
+                            pair(
+                              {theSfe:SimpleFunctionExpression[1] |
+                                //TODO getAll check is only needed as router does not route FunctionDefinition wth constant result.
+                                isFilterFunctionReturningConstant($theSfe, false) && !isGetAll($theSfe.parametersValues->at(0))},
+                              {theSfe:SimpleFunctionExpression[1] |
+                                $state->printDebugWithDepth(|'Handling filter which returns false: ' + $newSfe.func->elementToPath());
+
+                                let r = ^InstanceValue(
+                                          genericType = ^GenericType(rawType = Nil),
+                                          multiplicity = PureZero
+                                        )->evaluateAndDeactivate();
+
+                                ^PrevalWrapper<InstanceValue>(
+                                  value = $r,
+                                  canPreval = true,
+                                  openVars = [],
+                                  modified = true
+                                );
+                              }
+                            ),
+                            pair(
+                              {theSfe:SimpleFunctionExpression[1] | isFilterFunctionReturningConstant($theSfe, true)},
+                              {theSfe:SimpleFunctionExpression[1] |
+                                $state->printDebugWithDepth(|'Handling filter which returns true: ' + $newSfe.func->elementToPath());
+
+                                ^PrevalWrapper<ValueSpecification>(
+                                  value = $theSfe.parametersValues->at(0),
+                                  canPreval = true,
+                                  openVars = [],
+                                  modified = true
+                                );
+                              }
+                            ),
+                            pair(
+                              {theSfe:SimpleFunctionExpression[1] | ($theSfe.func == toOneMany_T_MANY__T_$1_MANY$_) &&
+                                  $theSfe.parametersValues->match([
+                                    vs:ValueSpecification[1]|$vs.multiplicity->isMultiplicityConcrete() && $vs.multiplicity->hasLowerBound()
+                                          && ($vs.multiplicity->getLowerBound() > 0),
+                                    a:Any[*]|false
+                                  ])},
+                              {theSfe:SimpleFunctionExpression[1] |
+                                $state->printDebugWithDepth(|'Handling toOneMany');
+
+                                $newParamWrappers->toOne()->map(pw|^$pw(modified=true));
+                              }
+                            ),
+                            pair(
+                              {theSfe:SimpleFunctionExpression[1] | ($theSfe.func == toOne_T_MANY__T_1_) &&
+                                  $theSfe.parametersValues->match([
+                                    vs:VariableExpression[1]|$vs.multiplicity->isMultiplicityConcrete()
+                                          && $vs.multiplicity == PureOne,
+                                    a:Any[*]|false
+                                  ])},
+                              {theSfe:SimpleFunctionExpression[1] |
+                                $state->printDebugWithDepth(|'Handling toOne');
+
+                                $newParamWrappers->toOne()->map(pw|^$pw(modified=true));
+                              }
+                            )
+                        ]);
+
+                    let handler = $handlers->filter(p|$p.first->eval($newSfe))->first();
+
+                    if($handler->isNotEmpty(),
+                      | $handler->toOne().second->eval($newSfe),
+                      | $state->printDebugWithDepth(|'Not prevalling: ' + $newSfe.func->elementToPath() + ' (' + $notPrevalReason->toOne() + ')');
+
+                        ^PrevalWrapper<SimpleFunctionExpression>(
+                            value = $newSfe,
+                            canPreval = $newParamWrappers->canPreval(),
+                            openVars = $newParamWrappers->openVars($state.inScopeVars),
+                            modified = $newSfeModified
+                        );
+                    );,
+                |
+                  $state->printDebugWithDepth(|'Performing preval: ' + $newSfe.func->elementToPath() + ' (can recativate dynamically: '+ $newSfe->canReactivateDynamically()->makeString() + ')');
+
+                  let valX = $newSfe->reactivate($state.inScopeVars)->cast(@Any);
+
+                  let val = $valX->map(x|$x->match([
+                                              {bcs : BasicColumnSpecification<Any>[1]|  prevalInternal($bcs, ^$state(inScopeTypeParams = ^Map<String, GenericType>(), inScopeVars = ^Map<String, List<Any>>()), $extensions).value},
+                                              {av : meta::pure::functions::collection::AggregateValue<Any,Any,Any>[1]|  prevalInternal($av, ^$state(inScopeTypeParams = ^Map<String, GenericType>(), inScopeVars = ^Map<String, List<Any>>()), $extensions).value},
+                                              {av : meta::pure::tds::AggregateValue<Any,Any>[1]|  prevalInternal($av, ^$state(inScopeTypeParams = ^Map<String, GenericType>(), inScopeVars = ^Map<String, List<Any>>()), $extensions).value},
+                                              {a:Any[1]|$a}
+                                            ]));
+
+                  let iv = $val->match([
+                                  x : InstanceValue[1]| $x,
+                                  a : Any[*]| ^InstanceValue(genericType = $newSfe.genericType,multiplicity = $val->size()->toMultiplicity(), values = $val);
+                                ])->evaluateAndDeactivate();
+                  ^PrevalWrapper<Any>(value = $iv, canPreval = true, modified = true);
+                );
+          );
+      );
+  );
+}
+
+function meta::pure::router::preeval::isGetAll(v:ValueSpecification[0..1]):Boolean[1]
+{
+  $v->match([
+    s:SimpleFunctionExpression[1] | meta::pure::router::routing::isGetAllFunction($s.func) || $s.parametersValues->first()->isGetAll(),
+    a:Any[*] | false;
+  ]);
+}
+
+function <<access.public>> meta::pure::router::preeval::isFilterFunctionReturningConstant(sfe:SimpleFunctionExpression[1], value:Boolean[1]) : Boolean[1]
+{
+  let isFilter = $sfe.func == filter_T_MANY__Function_1__T_MANY_;
+
+  if ($isFilter,
+    |
+      let es = $sfe.parametersValues->last()->cast(@InstanceValue).values->cast(@LambdaFunction<Any>).expressionSequence->evaluateAndDeactivate();
+      $es->last()->toOne()->instanceOf(InstanceValue) && $es->last()->toOne()->cast(@InstanceValue).values == $value;,
+    | false);
+}
+
+// ====================================================================================================================================================================
+// State Building Functions
+// ====================================================================================================================================================================
+
+function <<access.public>> meta::pure::router::preeval::defaultFunctionInlineStrategy(extensions:Extension[*]) : FunctionDefinition<{Function<Any>[1]->Boolean[1]}>[1]
+{
+  {f:Function<Any>[1] | $f->in([col_Function_1__String_1__BasicColumnSpecification_1_,
+                                col_Function_1__String_1__String_1__BasicColumnSpecification_1_,
+                                // TODO: We should confirm presence of below 2 functions
+                                meta::pure::functions::date::mostRecentDayOfWeek_DayOfWeek_1__Date_1_,
+                                meta::pure::functions::date::previousDayOfWeek_DayOfWeek_1__Date_1_])
+                        || (!meta::pure::router::routing::shouldStop($f, $extensions) && !($f->instanceOf(NativeFunction)))}
+}
+
+function <<access.public>> meta::pure::router::preeval::defaultPreevalStopStrategy(extensions:Extension[*]) : FunctionDefinition<{Any[1]->Boolean[1]}>[1]
+{
+  {a:Any[1] | stopPreeval($a, $extensions)};
+}
+
+function meta::pure::router::preeval::getPreevalStateWithAdditionalStopInlineFunc(inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], stopInlineFunctions:Function<Any>[*]):meta::pure::router::preeval::State[1]
+{
+  ^meta::pure::router::preeval::State(inScopeVars = $inScopeVars,
+                               shouldInlineFxn    = {f:Function<Any>[1] | meta::pure::router::preeval::defaultFunctionInlineStrategy($extensions)->eval($f)
+                                                                          && !$f->in($stopInlineFunctions)},
+                               stopPreeval        = meta::pure::router::preeval::defaultPreevalStopStrategy($extensions),
+                               rollingInScopeVars = $inScopeVars,
+                               debug              = noDebug(),
+                               inScopeTypeParams  = ^Map<String, GenericType>());
+}
+
+function <<access.private>> meta::pure::router::preeval::stopPreeval(value : Any[*], extensions:Extension[*]) : Boolean[1]
+{
+  $extensions.routerExtensions().shouldStopPreeval->exists(p | $p->eval($value)) ||
+  $value->match([
+            p : String[*]| true,
+            p : Float[*]| true,
+            p : Decimal[*] | true,
+            p : Enum[*]| true,
+            p : StrictDate[*]| true,
+            p : LatestDate[*]| true,
+            p : Integer[*]| true,
+            p : Boolean[*]| true,
+            p : DateTime[*]| true,
+            p : SortInformation[*]| true,
+            p : Enumeration<Any>[*]| true,
+            p : Class<Any>[*]| true,
+            p : Pair<Any,Any>[*]| true,
+            p : Property<Any,Any|*>[*]| true,
+            p : Type[*]| true,
+            p : Path<Any,Any|*>[*]|true,
+            p : meta::pure::mapping::Mapping[1]| true,
+            p : meta::pure::runtime::PackageableRuntime[1]| true,
+            p : meta::core::runtime::Runtime[1]| true,
+            p : meta::core::runtime::Connection[1] | true,
+            p : meta::core::runtime::ConnectionStore[1] | true,
+            p : meta::pure::runtime::ExecutionContext[1]| true,
+            p : meta::pure::tds::TDSColumn[*]| true,
+            p : TdsOlapRank<Any>[*]| true,
+            p : TdsOlapAggregation<Any>[*]| true,
+            p : meta::pure::graphFetch::execution::AlloySerializationConfig[1]| true,
+            f : SimpleFunctionExpression[1]| $f.func->in([letFunction_String_1__T_m__T_m_]),
+            a : Any[*]| $a->type()
+                          ->match([
+                              c:Class<Any>[1]|$c->isSimpleType(),
+                              o:Any[1]|false
+                          ])
+          ]);
+}
+
+function <<access.public>> meta::pure::router::preeval::isSimpleType(c : Class<Any>[1]) : Boolean[1]
+{
+   $c->isSimpleType([]);
+}
+
+function <<access.private>> meta::pure::router::preeval::isSimpleType(c : Class<Any>[1], visitedClasses : Class<Any>[*]) : Boolean[1]
+{
+   let types = $c.properties->map(p|$p->functionReturnType().rawType)
+                            ->distinct()
+                            ->removeAll([String, Integer, Date, DateTime, StrictDate, LatestDate,Float])
+                            ->removeAll($visitedClasses)
+                            ->filter(x|!$x->instanceOf(Enumeration));
+
+   let newClassTypes        = $types->filter(x|$x->instanceOf(Class))->cast(@Class<Any>);
+   let unsupporedBasicTypes = $types->removeAll($newClassTypes);
+
+   $unsupporedBasicTypes->isEmpty() && $newClassTypes->forAll(newC|$newC->isSimpleType($visitedClasses->concatenate($newClassTypes)));
+}
+
+
+// ====================================================================================================================================================================
+// Utility Functions
+// ====================================================================================================================================================================
+
+function <<access.private>> meta::pure::router::preeval::resolveGenericType(in : GenericType[1], state : meta::pure::router::preeval::State[1]):PrevalWrapper<GenericType>[1]
+{
+  if($in.typeParameter->isEmpty(),
+    |
+      if($in.rawType->isNotEmpty() && $in.rawType->toOne()->instanceOf(FunctionType),
+          |^PrevalWrapper<GenericType>(value = ^$in(rawType=$in.rawType->cast(@FunctionType)->toOne()->resolveFunctionType($state)), canPreval=false, modified = true);,
+          |let newTypeArgsWrappers = $in.typeArguments->map(ta|$ta->resolveGenericType($state));
+           if(!$newTypeArgsWrappers->anyModified(),
+            | ^PrevalWrapper<GenericType>(value = $in, canPreval=true, modified = false),
+            | let value = ^$in(typeArguments = $newTypeArgsWrappers.value);
+              ^PrevalWrapper<GenericType>(value = $value, canPreval=$newTypeArgsWrappers->canPreval(), modified = $newTypeArgsWrappers->anyModified());
+           );  
+      );
+      ,
+    |
+      let value = $state.inScopeTypeParams->get($in.typeParameter->toOne().name);
+      if($value->isEmpty(),
+        | ^PrevalWrapper<GenericType>(value = $in, canPreval=true, modified = false),
+        | ^PrevalWrapper<GenericType>(value = $value->toOne(), canPreval=true, modified = true)
+      );
+  );
+}
+
+function <<access.private>> meta::pure::router::preeval::resolveFunctionType(in : FunctionType[1], state : meta::pure::router::preeval::State[1]):FunctionType[1]
+{
+  ^$in
+  (
+    parameters = $in.parameters->map(x|^$x(genericType = $x.genericType->resolveGenericType($state).value)),
+    returnType = $in.returnType->resolveGenericType($state).value
+  );
+}
+
+function <<access.private>> meta::pure::router::preeval::shouldInline(f:Function<Any>[1], state : meta::pure::router::preeval::State[1]):Boolean[1]
+{
+  ($f->instanceOf(FunctionDefinition) && ($f->cast(@FunctionDefinition<Any>).expressionSequence->size() == 1 ))
+  && !($f->instanceOf(QualifiedProperty) && $f->cast(@QualifiedProperty<Any>).owner == TDSRow)
+  && !($f->instanceOf(AbstractProperty) && $f->cast(@AbstractProperty<Any>)->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype())
+  && ($state.shouldInlineFxn->eval($f))
+  && ($state.path->filter(x|$x == $f)->isEmpty())
+}
+
+function <<access.private>> meta::pure::router::preeval::canInlineEvalFunctionExpression(fe:SimpleFunctionExpression[1]):Boolean[1]
+{
+  $fe.func->in([eval_Function_1__V_m_,
+                    eval_Function_1__T_n__V_m_,
+                    eval_Function_1__T_n__U_p__V_m_,
+                    eval_Function_1__T_n__U_p__W_q__V_m_,
+                    eval_Function_1__T_n__U_p__W_q__X_r__V_m_,
+                    eval_Function_1__T_n__U_p__W_q__X_r__Y_s__V_m_,
+                    eval_Function_1__T_n__U_p__W_q__X_r__Y_s__Z_t__V_m_,
+                    eval_Function_1__S_n__T_o__U_p__W_q__X_r__Y_s__Z_t__V_m_])
+  && $fe.parametersValues->at(0)->match([
+                                        iv:InstanceValue[1]|$iv.values->toOne(),
+                                        vs:ValueSpecification[1]|$vs
+                                      ])->instanceOf(FunctionDefinition)
+  && $fe.parametersValues->at(0)->match([
+                                        iv:InstanceValue[1]|$iv.values->toOne(),
+                                        vs:ValueSpecification[1]|$vs
+                                      ])->cast(@FunctionDefinition<Any>).expressionSequence->size() == 1
+}
+
+function <<access.private>> meta::pure::router::preeval::toMultiplicity(size : Integer[1]) : Multiplicity[1]
+{
+  if($size == 0,
+    | PureZero,
+    | if($size == 1,
+        | PureOne,
+        | ^Multiplicity(lowerBound = ^MultiplicityValue(value=$size), upperBound = ^MultiplicityValue(value=$size))
+      );
+  );
+}
+
+function <<access.private>> meta::pure::router::preeval::addToScope(sfe : SimpleFunctionExpression[1], state : meta::pure::router::preeval::State[1]):meta::pure::router::preeval::State[1]
+{
+  addToScope($state, $sfe.func, $sfe.resolvedTypeParameters, $sfe.parametersValues, true);
+}
+
+function <<access.private>> meta::pure::router::preeval::addToScope(state : meta::pure::router::preeval::State[1], func : Function<Any>[1],resolvedTypeParameters : GenericType[*], parametersValues : ValueSpecification[*]):meta::pure::router::preeval::State[1]
+{
+  addToScope($state, $func, $resolvedTypeParameters, $parametersValues, false)
+}
+
+function <<access.private>> meta::pure::router::preeval::addToScope(state : meta::pure::router::preeval::State[1], func : Function<Any>[1],resolvedTypeParameters : GenericType[*], parametersValues : ValueSpecification[*], cleanupInScopeVarsAndTypeParams:Boolean[1]):meta::pure::router::preeval::State[1]
+{
+  let typeParams = $func->functionType().typeParameters.name->zip($resolvedTypeParameters->map(x|$x->resolveGenericType($state).value));
+
+  let newParams  = $parametersValues;
+
+  let funcParamNames        = $func->functionType().parameters.name;
+  let additionalInScopeVars = $funcParamNames
+                                ->zip($newParams->map(pv|list($pv)))
+                                ->map({p| let paramName = $p.first;
+                                          let paramValue = $p.second;
+
+                                          $paramValue.values->match([
+                                                                ve:VariableExpression[1]|
+                                                                    if($ve.name == $paramName,
+                                                                      | [], //We drop easy "circular" / self-reference parameter variables
+                                                                      | $p
+                                                                      ),
+                                                                vs:ValueSpecification[*]|
+                                                                      $p;
+                                                              ]);
+                                });
+
+  if($cleanupInScopeVarsAndTypeParams, |^$state(inScopeVars=newMap([]), inScopeTypeParams=newMap([])), |$state)->addToScope($additionalInScopeVars, $typeParams);
+}
+
+function <<access.private>> meta::pure::router::preeval::addToScope(state : meta::pure::router::preeval::State[1], additionalInScopeVars : Pair<String, List<ValueSpecification>>[*], typeParams : Pair<String, GenericType>[*]):meta::pure::router::preeval::State[1]
+{
+   $state->printDebugWithDepth(|'Adding variables to scope: ' + $additionalInScopeVars.first->joinStrings('[', ',', ']'));
+   $state->printDebugWithDepth(|'Adding type params to scope: ' + $typeParams.first->joinStrings('[', ',', ']'));
+
+   let newInScopeVars       = $state.inScopeVars->putAll($additionalInScopeVars);
+   let newInScopeTypeParams = $state.inScopeTypeParams->putAll($typeParams);
+
+   ^$state(inScopeVars = $newInScopeVars, inScopeTypeParams = $newInScopeTypeParams);
+}
+
+function <<access.private>> meta::pure::router::preeval::resolveVariable(name : String[1], state : meta::pure::router::preeval::State[1]):String[1]
+{
+  $state.inScopeVars->get($name).values->match([
+    ve:VariableExpression[1]|assert($name != $ve.name, 'Circular variable reference: ' + $name); $ve.name->resolveVariable($state);,
+    a:Any[*]|$name
+  ]);
+}
+
+function <<access.private>> meta::pure::router::preeval::canPreval(items : PrevalWrapper<Any>[*]):Boolean[1]
+{
+   $items->forAll(p | $p.canPreval);
+}
+
+function <<access.private>> meta::pure::router::preeval::markModified(item : PrevalWrapper<Any>[1]):PrevalWrapper<Any>[1]
+{
+  if($item.modified,
+    | $item,
+    | ^$item(modified = true)
+  );
+}
+
+function <<access.private>> meta::pure::router::preeval::anyModified(items : PrevalWrapper<Any>[*]):Boolean[1]
+{
+  $items.modified->contains(true);
+}
+
+function <<access.private>> meta::pure::router::preeval::openVars(items : PrevalWrapper<Any>[*], inScopeVars:Map<String, List<Any>>[1]):String[*]
+{
+   $items.openVars->openVars($inScopeVars);
+}
+
+function <<access.private>> meta::pure::router::preeval::openVars(vars : String[*], inScopeVars:Map<String, List<Any>>[1]):String[*]
+{
+  $vars->distinct()->filter(v|!$v->areAllInScope($inScopeVars))
+}
+
+function <<access.private>> meta::pure::router::preeval::areAllInScope(items : PrevalWrapper<Any>[*], inScopeVars:Map<String, List<Any>>[1]):Boolean[1]
+{
+  $items.openVars->distinct()->areAllInScope($inScopeVars);
+}
+
+function <<access.private>> meta::pure::router::preeval::areAllInScope(vars : String[*], inScopeVars:Map<String, List<Any>>[1]):Boolean[1]
+{
+  if($vars->isEmpty(),
+    | true,
+    | let unresolvedVars = $vars->map(v|let varVal = $inScopeVars->get($v);
+
+                                        if($varVal->isEmpty(),
+                                          | $v,
+                                          | $varVal.values->match([
+                                                              varExp : VariableExpression[1]|$varExp.name,
+                                                              a : Any[*]|[]
+                                                            ])
+                                        );
+                                  )->distinct();
+
+      let newVars        = $unresolvedVars->removeAll($vars);
+      !$unresolvedVars->containsAny($vars) && $newVars->areAllInScope($inScopeVars);
+  );
+}
+
+function <<access.private>>  meta::pure::router::preeval::isInstanceValue(v: Any[1], inScopeVars:Map<String, List<Any>>[1]):Boolean[1]
+{
+   $v->match([
+      iv : InstanceValue[1]|
+            $iv.values->forAll(subV|$subV->match([
+                                            subVS : ValueSpecification[1]|$subVS->isInstanceValue($inScopeVars),
+                                            a : Any[1]| true;
+                                          ]));,
+      ve : VariableExpression[1]|$inScopeVars->get($ve.name)->isNotEmpty(),
+      sfe : SimpleFunctionExpression[1]|false;
+   ])
+}
+
+function <<access.private>> meta::pure::router::preeval::printDebugWithDepth(state: meta::pure::router::preeval::State[1], func:Function<{->String[1]}>[1]):Nil[0]
+{
+  printDebug($state, | ('[' + toString($state.depth->orElse(''))->map(s|'0000'->substring(0, max(0, 3-$s->length())) + $s) + ']' + range($state.depth->orElse(0) + 1)->map(d|'')->joinStrings('', '-', ' ') + $func->eval()));
+}
+
+function <<access.private>> meta::pure::router::preeval::printDebug(state: meta::pure::router::preeval::State[1], func:Function<{->Any[*]}>[1]):Nil[0]
+{
+  printDebug($state.debug, $func);
+}
+
+function <<access.private>> meta::pure::router::preeval::printDebug(debugContext : DebugContext[1], func:Function<{->Any[*]}>[1]):Nil[0]
+{
+  if(!$debugContext.debug,
+    | print(''),
+    | printDebug($debugContext, $func->eval());
+  );
+}
+
+function <<access.private>> meta::pure::router::preeval::printDebug(state: meta::pure::router::preeval::State[1], param:Any[*]):Nil[0]
+{
+  printDebug($state.debug, $param);
+}
+
+function <<access.private>> meta::pure::router::preeval::printDebug(debugContext : DebugContext[1], param:Any[*]):Nil[0]
+{
+  if(!$debugContext.debug,
+    | print(''),
+    | println($param);
+  );
+}

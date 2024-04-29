@@ -1,0 +1,10 @@
+{
+  "_type" : "databaseCommand",
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$match": {}
+    }
+  ],
+  "cursor": {}
+}

@@ -1,0 +1,175 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::mapping::*;
+import meta::pure::milestoning::*;
+import meta::pure::graphFetch::tests::m2m2r::milestoning::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::alloy::connections::alloy::specification::*;
+import meta::pure::alloy::connections::alloy::authentication::*;
+import meta::relational::runtime::*;
+import meta::core::runtime::*;
+
+function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToMilestonedTargetProperty::testWithHardcodedDate():Boolean[1]
+{
+  let mapping = meta::relational::tests::m2m2r::milestoning::milestonedSourceToMilestonedTargetProperty::TargetToModelMappingViaAllVersions;
+  let runtime = getModelChainRuntime($mapping);
+
+   let query={|meta::relational::tests::milestoning::TargetProductMilestoned.all(%2023-10-15T00:00:00)->graphFetch(
+      #{
+        meta::relational::tests::milestoning::TargetProductMilestoned{
+          id,
+          name,
+          synonymsMilestoned(%2020-10-15T00:00:00)
+          {synonym}
+        }
+      }#
+    )->serialize(
+      #{
+        meta::relational::tests::milestoning::TargetProductMilestoned{
+          id,
+          name,
+          synonymsMilestoned(%2020-10-15T00:00:00)
+          {synonym}
+        }
+      }#
+    )
+    ->meta::pure::mapping::from($mapping,$runtime)
+    };
+   let result = meta::legend::executeLegendQuery($query, [], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+   assertJsonStringsEqual('{"builder":{"_type":"json"},"values":['+
+                                            '{"id":2,"name":"ProductName2","synonymsMilestoned(2020-10-15T00:00:00+0000)":[{"synonym":"GS-Mod-S1"},{"synonym":"GS-Mod-S3"}]},'+
+                                            '{"id":3,"name":"ProductName3","synonymsMilestoned(2020-10-15T00:00:00+0000)":[{"synonym":"GS-Mod-S3"}]'+
+                                          '}]}', $result);
+}
+
+//to fix - date variable fix in relationalgraphFetch
+function <<test.Test, test.AlloyOnly, test.ToFix>>  meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToMilestonedTargetProperty::testWithVariableDate():Boolean[1]
+{
+  let mapping = meta::relational::tests::m2m2r::milestoning::milestonedSourceToMilestonedTargetProperty::TargetToModelMappingViaAllVersions;
+  let runtime = getModelChainRuntime($mapping);
+
+   let query={bdate:DateTime[1]|meta::relational::tests::milestoning::TargetProductMilestoned.all($bdate)->graphFetch(
+      #{
+        meta::relational::tests::milestoning::TargetProductMilestoned{
+          id,
+          name,
+          synonymsMilestoned($bdate)
+          {synonym}
+        }
+      }#
+    )->serialize(
+      #{
+        meta::relational::tests::milestoning::TargetProductMilestoned{
+          id,
+          name,
+          synonymsMilestoned($bdate)
+          {synonym}
+        }
+      }#
+    )
+    ->meta::pure::mapping::from($mapping,$runtime)
+    };
+   let result = meta::legend::executeLegendQuery($query,  [pair('bdate', '2023-10-15T00:00:00')], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+   assertJsonStringsEqual('{"builder":{"_type":"json"},"values":['+
+                                              '{"id":2,"name":"ProductName2","synonymsMilestoned($bdate)":[{"synonym":"GS-Mod-S1"},{"synonym":"GS-Mod-S3"}]},'+
+                                              '{"id":3,"name":"ProductName3","synonymsMilestoned($bdate)":[{"synonym":"GS-Mod-S3"}]}'+
+                                          ']}', $result);
+}
+
+//TODO- source tree calculation change milestoned target proeprty
+function <<test.Test, test.AlloyOnly, test.ToFix>> meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToMilestonedTargetProperty::testWithHardcodedDate_ViaNoArgMapping():Boolean[1]
+{
+  let mapping = meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToMilestonedTargetProperty::getNoArgMapping();
+  let runtime = getModelChainRuntime($mapping);
+
+   let query = {|meta::relational::tests::milestoning::TargetProductMilestoned.all(%2023-10-15T00:00:00)->graphFetch(
+      #{
+        meta::relational::tests::milestoning::TargetProductMilestoned{
+          id,
+          name,
+          synonymsMilestoned(%2020-10-15T00:00:00)
+          {synonym}
+        }
+      }#
+    )->serialize(
+      #{
+        meta::relational::tests::milestoning::TargetProductMilestoned{
+          id,
+          name,
+          synonymsMilestoned(%2020-10-15T00:00:00)
+          {synonym}
+        }
+      }#
+    )
+    ->meta::pure::mapping::from($mapping,$runtime)
+    };
+   let result = meta::legend::executeLegendQuery($query, [], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+   assertJsonStringsEqual('{"builder":{"_type":"json"},"values":['+
+                                          '{"id":2,"name":"ProductName2","synonymsMilestoned(2020-10-15T00:00:00+0000)":[{"synonym":"GS-Mod-S1"},{"synonym":"GS-Mod-S3"}]},'+
+                                          '{"id":3,"name":"ProductName3","synonymsMilestoned(2020-10-15T00:00:00+0000)":[{"synonym":"GS-Mod-S3"}]}'+
+                                       ']}', $result);
+}
+
+
+//milestoned property without args is not supported by pure ide compiler but works with engine
+function meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToMilestonedTargetProperty::getNoArgMapping():meta::pure::mapping::Mapping[1]
+{
+  let mappingStr =  '###Mapping\n' +
+                    'Mapping meta::relational::tests::m2m2r::milestoning::milestonedSourceToMilestonedTargetProperty::TargetToModelMappingViaAllVersions_NoArg\n'+
+                    '(\n'+
+                    '  *meta::relational::tests::milestoning::TargetProductMilestoned: Pure\n'+
+                    '  {\n'+
+                    '    ~src meta::relational::tests::milestoning::Product\n'+
+                    '    id: $src.id,\n'+
+                    '    name: $src.name,\n'+
+                    '    synonyms:$src.synonyms'+                                                                                    //syntactic sugar for better UX
+                    '  }\n' +
+                    '  *meta::relational::tests::milestoning::TargetProductSynonym: Pure\n'+
+                    '  {\n'+
+                    '     ~src meta::relational::tests::milestoning::ProductSynonym\n'+
+                    '    synonym: $src.synonym\n'+
+                    '  }\n' +
+                    ')';
+
+let mapping = meta::legend::compileLegendGrammar($mappingStr)->at(0)->cast(@Mapping);
+
+let newMapping = ^$mapping(includes = ^MappingInclude(included=meta::relational::tests::milestoning::milestoningMapSmall,                    // fix legend compile to allow mapping reference in include
+                                                      owner = $mapping)
+                          );
+}
+
+
+###Mapping
+Mapping meta::relational::tests::m2m2r::milestoning::milestonedSourceToMilestonedTargetProperty::TargetToModelMappingViaAllVersions
+(
+  include meta::relational::tests::milestoning::milestoningMapSmall
+
+  *meta::relational::tests::milestoning::TargetProductMilestoned: Pure
+  {
+    ~src meta::relational::tests::milestoning::ProductMilestoned
+    id: $src.id,
+    name: $src.name,
+    synonymsMilestonedAllVersions: $src.synonymsMilestonedAllVersions
+  }
+
+  *meta::relational::tests::milestoning::TargetProductSynonymMilestoned: Pure
+  {
+    ~src meta::relational::tests::milestoning::ProductSynonymMilestoned
+    synonym: $src.synonym
+  }
+)
+
+

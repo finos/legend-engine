@@ -1,0 +1,13 @@
+{
+  "_type" : "databaseCommand",
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$project": {
+        "name": 1,
+        "_id": 0
+      }
+    }
+  ],
+  "cursor": {}
+}

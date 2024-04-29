@@ -1,0 +1,2 @@
+string~optionalString~integer~optionalInteger~customInteger~float~optionalFloat~customFloat~decimal~optionalDecimal~customDecimal~boolean~optionalBoolean~customBoolean~date~optionalDate~customDate~dateTime~optionalDateTime~customDateTime
+test~null~XX~1.0~1,000~1.0~YY~1,000.23~1.0~ZZ~1,000.23~true~null~Y~2022-20-20~null~12/20/2022~2022-12-12T01:14:12.123Z~null~13/08/2022 02:14:12

@@ -1,0 +1,109 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package org.finos.legend.engine.plan.execution.result.transformer;
+
+import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.block.factory.Functions;
+import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFunctions;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.StrictDate;
+
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.List;
+
+public class SetImplTransformers
+{
+    public static final Function<Object, Object> TEMPORARY_DATATYPE_TRANSFORMER = (Function<Object, Object>) o ->
+    {
+        if (o instanceof Timestamp)
+        {
+            return DateFunctions.fromSQLTimestamp((Timestamp) o);
+        }
+        if (o instanceof java.sql.Date)
+        {
+            return StrictDate.fromSQLDate((java.sql.Date) o);
+        }
+        if (o instanceof Date)
+        {
+            PureDate pureDate = PureDate.fromDate((Date) o);
+            return pureDate.toString();
+        }
+        return o;
+    };
+
+    public MutableList<Function<Object, Object>> transformers;
+
+    public <T> SetImplTransformers(List<TransformerInput<T>> transformerInputs)
+    {
+        transformers = ListIterate.collect(transformerInputs, this::buildTransformer);
+    }
+
+    public SetImplTransformers()
+    {
+        transformers = Lists.mutable.empty();
+    }
+
+    private Boolean toBoolean(Object o)
+    {
+        if (o == null)
+        {
+            return null;
+        }
+        else if (o instanceof Boolean)
+        {
+            return (Boolean) o;
+        }
+        else if (o instanceof String)
+        {
+            return Boolean.parseBoolean((String) o);
+        }
+        else if (o instanceof Number)
+        {
+            return ((Number) o).intValue() != 0;
+        }
+        else
+        {
+            throw new IllegalArgumentException("Transformer Error: Could not convert to Boolean");
+        }
+    }
+
+    private <T> Function<Object, Object> buildTransformer(TransformerInput<T> transformerInput)
+    {
+        if (transformerInput.type != null)
+        {
+            if (transformerInput.test.valueOf(transformerInput.identifier))
+            {
+                return transformerInput.transformer.valueOf(transformerInput.identifier);
+            }
+
+            switch (transformerInput.type)
+            {
+                case "Boolean":
+                    return this::toBoolean;
+                case "StrictDate":
+                case "DateTime":
+                case "Date":
+                    return o -> o instanceof Date ? DateFunctions.fromDate((Date) o) : o;
+            }
+        }
+
+        return Functions.identity();
+    }
+
+}

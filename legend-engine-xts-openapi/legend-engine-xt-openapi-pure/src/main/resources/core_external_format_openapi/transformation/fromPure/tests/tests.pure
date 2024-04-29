@@ -1,0 +1,222 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::legend::service::metamodel::*;
+
+import meta::external::function::description::openapi::metamodel::*;
+import meta::external::function::description::openapi::transformation::fromPure::*;
+import meta::external::function::description::openapi::transformation::fromPure::tests::*;
+
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::*;
+
+import meta::pure::mapping::*;
+import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::csv::*;
+
+Class meta::external::function::description::openapi::transformation::fromPure::tests::Person
+{
+  firstName : String[1];
+  lastName  : String[1];
+  age: Integer[1];
+}
+
+function <<meta::external::function::description::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test simple service'} meta::external::function::description::openapi::transformation::fromPure::tests::simpleServiceWithGraphFetch():Service[1]
+{
+  let tree = #{Person{firstName,lastName}}#;
+  let func = {|Person.all()->graphFetchChecked($tree)->serialize($tree)};
+  ^Service
+  (
+    pattern = '/service/testOpenApi',
+    owners = ['dummy'],
+    documentation = 'dummy description',
+    autoActivateUpdates = true,
+    execution = ^PureSingleExecution
+                (
+                  func = $func,
+                  mapping = personMapping,
+                  runtime = []
+                ),
+    test = ^SingleExecutionTest
+            (
+            data = 'default\n'+
+                    'personTable\n'+
+                    'id,firstName,lastName,age\n'+
+                    '1,A,Z,23\n'+
+                    '\n\n\n',
+            asserts = [
+                        ^meta::legend::service::metamodel::TestContainer(
+                            parametersValues = [],
+                            assert = {res:Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->map(r|$r.getString('firstName'))->sort() == ['A', 'B', 'C', 'D', 'E']}
+                        )
+                      ]
+            )
+  );
+}
+
+function <<meta::external::function::description::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test simple service'} meta::external::function::description::openapi::transformation::fromPure::tests::simpleService():Service[1]
+{
+  ^Service
+  (
+    pattern = '/service/testOpenApi',
+    owners = ['dummy'],
+    documentation = 'dummy description',
+    autoActivateUpdates = true,
+    execution = ^PureSingleExecution
+                (
+                  func = {|Person.all()->project(col(p|$p.firstName, 'firstName'))},
+                  mapping = personMapping,
+                  runtime = []
+                ),
+    test = ^SingleExecutionTest
+            (
+            data = 'default\n'+
+                    'personTable\n'+
+                    'id,firstName,lastName,age\n'+
+                    '1,A,Z,23\n'+
+                    '\n\n\n',
+            asserts = [
+                        ^meta::legend::service::metamodel::TestContainer(
+                            parametersValues = [],
+                            assert = {res:Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->map(r|$r.getString('firstName'))->sort() == ['A', 'B', 'C', 'D', 'E']}
+                        )
+                      ]
+            )
+  );
+}
+
+function <<meta::external::function::description::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test simple service with params'} meta::external::function::description::openapi::transformation::fromPure::tests::simpleServiceWithParams():Service[1]
+{
+   ^Service
+      (
+         pattern = '/service/testOpenApi/{firstName}',
+         owners = ['dummy'],
+         documentation = 'dummy description',
+         autoActivateUpdates = true,
+         execution = ^PureSingleExecution
+                     (
+                        func = {firstName:String[1], age:Integer[1]|Person.all()->filter(p | and($p.age > $age, $p.firstName == $firstName))->project([col(p|$p.firstName, 'First Name'), col(p|$p.age, 'Age')])},
+                        mapping = personMapping,
+                        runtime = []
+                     ),
+         test = ^SingleExecutionTest
+                 (
+                  data = 'default\n'+
+                         'personTable\n'+
+                         'id,firstName,lastName,age\n'+
+                         '1,A,Z,24\n'+
+                         '2,C,Z,23\n'+
+                         '3,D,Z,23\n'+
+                         '4,B,Z,20\n'+
+                         '5,A,Y,28\n'+
+                         '\n\n\n',
+                  asserts = [
+                              ^meta::legend::service::metamodel::TestContainer(
+                                 parametersValues = ['A', 20],
+                                 assert = {res:Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->map(r|$r.getString('firstName'))->sort() == ['A']}
+                              )
+                            ]
+                 )
+      );
+}
+
+function <<meta::external::function::description::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test simple service without column specification'} meta::external::function::description::openapi::transformation::fromPure::tests::testServiceWithoutColumnSpecification():Service[1]
+{
+  ^Service
+  (
+    pattern = '/service/test',
+    owners = [ 'anonymous','testuser'],
+    documentation =  '',
+    autoActivateUpdates= true,
+    execution = ^PureSingleExecution
+                (
+                  func = firstName:String[1]|meta::external::function::description::openapi::transformation::fromPure::tests::Person.all()->filter(p |$p.firstName == $firstName)->project([x|$x.firstName, x|$x.age ],['First Name', 'Age']),
+                  mapping =  personMapping,
+                  runtime = []
+                )
+  )
+}
+
+function <<meta::external::function::description::openapi::profiles::ServiceSpecGeneration.OpenAPI>> meta::external::function::description::openapi::transformation::fromPure::tests::serviceWithExtendAndManyParam():Service[1]
+{
+   ^Service(
+      pattern = '/test/service/with/extend',
+      owners = ['dummy', 'dummy2'],
+      documentation = '',
+      autoActivateUpdates = true,
+      execution = ^PureSingleExecution(
+         func = planningAreas: String[*]| Person.all()->filter(item |  $planningAreas->isEmpty() || $planningAreas->contains($item.firstName))->project(  [ col(x | $x.lastName, 'kerberos'), col(x | $x.age, 'planningArea') ])->extend(^BasicColumnSpecification<meta::pure::tds::TDSRow>(name = 'ageString', func = {row:TDSRow[1]|$row.getInteger('age')	->toString()}));,
+         mapping = personMapping,
+         runtime = []
+      )
+   );
+}
+
+function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testServiceWithoutColumnSpecificationOpenapiString():Boolean[1]
+{
+  let openapi = meta::external::function::description::openapi::transformation::fromPure::tests::testServiceWithoutColumnSpecification()->serviceToOpenApi(packageableElem(), ^Server(url='test'));
+  let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testOpenApiSpecWithoutColumnSpec.txt')->toOne();
+  assertJsonStringsEqual($expected, $openapi);
+}
+
+function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testServiceShouldReturnCorrectOpenapiString():Boolean[1]
+{
+  let openapi = simpleService()->serviceToOpenApi(packageableElem(), ^Server(url='test'));
+  let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testOpenApiSpec.txt')->toOne();
+  assertJsonStringsEqual($expected, $openapi);
+}
+
+function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testServiceWithExtendAndManyParam():Boolean[1]
+{
+  let openapi = meta::external::function::description::openapi::transformation::fromPure::tests::serviceWithExtendAndManyParam()->serviceToOpenApi(packageableElem(), ^Server(url='test'));
+  let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testOpenApiSpecWithExtendAndManyParam.txt')->toOne();
+  assertJsonStringsEqual($expected, $openapi);
+}
+
+function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testGraphFetchServiceShouldReturnCorrectOpenapiString():Boolean[1]
+{
+  let openapi = simpleServiceWithGraphFetch()->serviceToOpenApi(packageableElem(), ^Server(url='test'));
+  let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testGraphFetchOpenApiSpec.txt')->toOne();
+  assertJsonStringsEqual($expected, $openapi);
+}
+
+function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testServiceWithParamShouldReturnCorrectOpenapiString():Boolean[1]
+{
+  let openapi = simpleServiceWithParams()->serviceToOpenApi(packageableElem(), ^Server(url='test'));
+  let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testOpenApiSpecWithServiceParams.txt')->toOne();
+  assertJsonStringsEqual($expected, $openapi);
+}
+
+function meta::external::function::description::openapi::transformation::fromPure::tests::packageableElem():PackageableElement[*]
+{
+  [
+    pathToElement('meta::external::function::description::openapi::transformation::fromPure::tests::Person')
+  ]
+}
+
+###Mapping
+import meta::external::function::description::openapi::transformation::fromPure::tests::*;
+
+Mapping meta::external::function::description::openapi::transformation::fromPure::tests::personMapping
+(
+  Person : Pure
+  {
+    ~src Person
+    firstName : $src.firstName;
+    lastName: $src.lastName;
+  }
+)
+

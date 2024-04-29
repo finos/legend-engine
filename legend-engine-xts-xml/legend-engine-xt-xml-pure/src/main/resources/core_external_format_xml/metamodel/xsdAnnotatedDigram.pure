@@ -1,0 +1,162 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram meta::external::format::xml::metamodel::diagram::XsdAnnotatedDiagram(width=0.0, height=0.0)
+{
+    TypeView cview_1(
+        type=meta::external::format::xml::metamodel::xsd::XsdObject,
+        position=(228.04744, 356.93176),
+        width=97.38477,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::external::format::xml::metamodel::xsd::XsdAnnotationItem,
+        position=(354.35795, 661.73578),
+        width=129.99805,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::external::format::xml::metamodel::xsd::XsdAppInfo,
+        position=(281.35795, 744.72443),
+        width=135.74023,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::external::format::xml::metamodel::xsd::XsdDocumentation,
+        position=(443.35795, 744.69031),
+        width=135.74023,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::external::format::xml::metamodel::xsd::XsdAnnotation,
+        position=(406.35795, 565.74713),
+        width=169.73535,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::external::format::xml::metamodel::xsd::XsdAnnotated,
+        position=(683.35795, 503.76990),
+        width=188.66309,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_2,
+        target=cview_1,
+        points=[(372.68949,666.23010),(371.03424,587.81104),(242.68949,587.23010),(241.68949,405.23010)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_3,
+        target=cview_2,
+        points=[(400.68949,752.23010),(400.68949,697.23010)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_4,
+        target=cview_2,
+        points=[(457.68949,753.23010),(457.68949,695.23010)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_5,
+        target=cview_1,
+        points=[(491.22562,587.74713),(489.03424,511.81104),(277.68949,510.23010),(276.73982,385.93176)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_6,
+        target=cview_1,
+        points=[(777.68949,532.76990),(777.03424,465.81104),(311.68949,468.23010),(312.68949,405.23010)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::external::format::xml::metamodel::xsd::XsdAnnotation.items,
+        source=cview_5,
+        target=cview_2,
+        points=[(554.68949,605.23010),(553.68949,684.23010),(419.35697,683.73578)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::external::format::xml::metamodel::xsd::XsdAnnotated.annotation,
+        source=cview_6,
+        target=cview_5,
+        points=[(700.68949,557.23010),(700.68949,588.23010),(491.22562,587.74713)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

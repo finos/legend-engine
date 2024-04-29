@@ -1,0 +1,93 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::function::description::openapi::tostring::*;
+import meta::external::function::description::openapi::metamodel::*;
+import meta::json::*;
+import meta::pure::mapping::*;
+
+Class meta::external::function::description::openapi::tostring::JSONResult<T|m> extends ServiceResult<T|m>
+{
+    extraSerializers: Function<{Nil[1], JSONState[1]->JSONElement[1]}>[*];
+    max: Integer[0..1];
+    convertTDSToObject: Boolean[0..1];
+    config: Config[0..1];
+}
+
+function meta::external::function::description::openapi::tostring::asString(o:OpenApi[1]):String[*]
+{
+  $o->openApiJSONResult()->serviceResultToString();
+}
+
+function {service.contentType='application/json'} meta::external::function::description::openapi::tostring::serviceResultToString(v: ServiceResult<Any|*>[1]):String[*]
+{
+  $v->match(
+      j: JSONResult<Any|*>[1]| let conf = if($j.config->isEmpty(),|defaultConfig(), |$j.config->toOne());
+                                let max = if($j.max->isEmpty(), |5, |$j.max->toOne());
+                                $j.value->match(
+                                          [
+                                              t:TabularDataSet[1]|
+                                                  if($j.convertTDSToObject == true,
+                                                  | $t->optimizedTdsToJSONKeyValueObjectStringStream(),
+                                                  | $t->optimizedTdsJSONStringStream($conf)),
+                                              r: Result<TabularDataSet|1>[1]| $r->optimizedResultJSONStringStream($max, $conf),
+                                              a: Any[*]|let res = $a->toJSONElement($j.extraSerializers, $max, $conf);
+                                                          if(!$j.classifierGenericType.multiplicityArguments->at(0)->isToOneNonStrict(),
+                                                              |if ($a->size() == 0, |^JSONArray(), |if($a->size() == 1, |^JSONArray(values=$res),|$res)),
+                                                              |if ($a->isEmpty(), |^JSONNull(), |$res)
+                                                            )->toCompactJSONString();
+                                          ]
+                                );
+    )
+}
+
+function meta::external::function::description::openapi::tostring::isToOneNonStrict(multiplicity:Multiplicity[1]):Boolean[1]
+{
+    $multiplicity->hasUpperBound() && eq($multiplicity->getUpperBound(),1);
+}
+
+function meta::external::function::description::openapi::tostring::openApiJSONResult(o:OpenApi[1]):JSONResult<OpenApi|1>[1]
+{
+  ^JSONResult<OpenApi|1>
+  (
+    value=$o,
+    max=1000,
+    config = config(false,false,true,true),
+    extraSerializers = [
+      {p:Reference[1],s:JSONState[1]| 
+                                      let refJsonSerializer = newJSONKeyValue('$ref',^JSONString(value='#/components/schemas/'+$p.ref));
+                                      if($p.specificationExtensions->isNotEmpty(),
+                                          | newJSONObject([$refJsonSerializer, newJSONKeyValue('specificationExtensions', $p.specificationExtensions->toJSONElement())]),
+                                          | newJSONObject([$refJsonSerializer]) 
+                                        );
+      },
+      {p:Schema[1],s:JSONState[1]|$p->processOpenApiSchema(false,$s)}
+    ]
+  );
+}
+
+function <<access.private>> meta::external::function::description::openapi::tostring::processOpenApiSchema(p:Schema[1], full:Boolean[1], s:JSONState[1]):JSONElement[1]
+{
+  $p->anyToJSON($s,100000,defaultConfig());
+}
+
+function <<test.Test>> meta::external::function::description::openapi::tostring::serializationTest():Boolean[1]
+{
+  assertEquals('[]', ^JSONResult<Any|*>()->serviceResultToString());
+  assertEquals('[1]', ^JSONResult<Any|*>(value=1)->serviceResultToString());
+  assertEquals('[1,2,3]',^JSONResult<Any|*>(value=[1,2,3])->serviceResultToString());
+  assertEquals('null',^JSONResult<Any|0..1>()->serviceResultToString());
+  assertEquals('1',^JSONResult<Any|0..1>(value=1)->serviceResultToString());
+  assertEquals('1',^JSONResult<Any|1>(value=1)->serviceResultToString());
+}

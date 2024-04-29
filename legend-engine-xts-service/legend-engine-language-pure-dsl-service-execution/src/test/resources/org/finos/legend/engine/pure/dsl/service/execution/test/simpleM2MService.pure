@@ -1,0 +1,252 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class test::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+Class test::S_Person
+{
+  fullName: String[1];
+}
+
+Class test::Vehicle
+{
+  wheels: Integer[1];
+}
+
+Class test::Traffic
+{
+  vehicleCount: Integer[1];
+}
+
+Class test::sourcePerson
+{
+  legalName: String[0..1];
+  age: Integer[1];
+  birthDate: DateTime[0..1];
+}
+
+Class test::targetPerson
+{
+  name: String[1];
+  age: Integer[1];
+  birthDate: DateTime[0..1];
+}
+
+Class test::SettlementDatesResult
+{
+  settlementDates: StrictDate[*];
+}
+
+Class test::ContractualTerms
+{
+  financialTerms: test::FinancialTerms[1];
+}
+
+Class test::FinancialTerms
+{
+}
+
+Class test::CommodityForward extends test::FinancialTerms
+{
+  financialLeg: test::CommodityLeg[1];
+}
+
+Class test::CommoditySwap extends test::FinancialTerms
+{
+  commoditySwapLegs: test::CommodityLeg[*];
+}
+
+Class test::CommodityLeg
+{
+  paymentDates: test::AbstractCommodityPaymentDates[1];
+}
+
+Class test::AbstractCommodityPaymentDates
+{
+  paymentDates: StrictDate[*];
+}
+
+function test::serializeDateTimeWithoutFormat(): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#)
+}
+
+function test::serializeDateTime(): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='yyyy-MM-dd"T"HH:mm:ss.SSSZ'))
+}
+
+function test::serializeDateTimeTimeZone(): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='[EAT]yyyy-MM-dd HH:mm:ss.SSSX'))
+}
+
+function test::serializeDateTimeStrictDatePattern(): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='yyyy-MM-dd'))
+}
+
+function test::serializeDateTimeMilliseconds(): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='yyyy-MM-dd"T"HH:mm:ss."000000"X'))
+}
+
+function test::serializeDateTimeCustomPattern(): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='MM/dd/yyyy "at" hh:mma z'))
+}
+
+function test::serializeInvalidDateTimeFormat(): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{age,birthDate}}#)->serialize(#{test::targetPerson{age,birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='yyyy-MM-dd"T"HH:mmm:ss.SSSZ'))
+}
+
+function test::M2MErrorMessage(input: String[1]): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{name,age}}#)->serialize(#{test::targetPerson{name,age}}#)
+}
+
+function test::function(input: String[1]): String[1]
+{
+   test::Person.all()->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#)
+}
+
+function test::functionWithBatchSize(input: String[1]): String[1]
+{
+   test::Person.all()->graphFetch(#{test::Person{firstName,lastName}}#, 10)->serialize(#{test::Person{firstName,lastName}}#)
+}
+
+function test::recursiveTestingForM2M(input:Integer[1]): String[1]
+{
+   test::Vehicle.all()->graphFetch(#{test::Vehicle{wheels}}#)->serialize(#{test::Vehicle{wheels}}#)
+}
+
+function test::wheelsSum(arg: Integer[1]): Integer[1]
+{
+  test::wheelsSum2($arg - 2) +  test::wheelsSum2($arg-3);
+}
+
+function test::wheelsSum2(arg: Integer[1]): Integer[1]
+{
+  if($arg <= 1, |3, |4 + test::wheelsSum($arg));
+}
+
+function test::settlementDateFinancialTerms(t: test::FinancialTerms[1]): StrictDate[*]
+{
+  $t->match(
+    [
+      commoditySwap: test::CommoditySwap[1]|$commoditySwap->test::getPaymentDates(),
+      commodityForward: test::CommodityForward[1]|$commodityForward.financialLeg.paymentDates->test::getPaymentDatesFromAbstractPaymentDates(),
+      default: Any[1]|[]
+    ]
+  )
+}
+
+function test::getPaymentDates(s: test::CommoditySwap[1]): StrictDate[*]
+{
+  let paymentDates = $s.commoditySwapLegs->map( a|$a.paymentDates->toOne()->test::getPaymentDatesFromAbstractPaymentDates());
+}
+
+function test::getPaymentDatesFromAbstractPaymentDates(a: test::AbstractCommodityPaymentDates[1]): StrictDate[*]
+{
+  $a.paymentDates
+}
+
+
+function test::VarConflict(): String[1]
+{
+  test::SettlementDatesResult.all()->graphFetch(#{test::SettlementDatesResult{settlementDates}}#)->serialize(#{test::SettlementDatesResult{settlementDates}}#)
+}
+
+###Mapping
+Mapping test::Map
+(
+  *test::Person: Pure
+  {
+    ~src test::S_Person
+    firstName: $src.fullName->split(' ')->at(0),
+    lastName: $src.fullName->split(' ')->at(1)
+  }
+
+  *test::Vehicle: Pure
+   {
+     ~src test::Traffic
+      wheels: $src.vehicleCount->test::wheelsSum()
+   }
+
+  *test::targetPerson: Pure
+   {
+     ~src test::sourcePerson
+      name: $src.legalName->toOne(),
+      age: $src.age,
+      birthDate: $src.birthDate
+   }
+
+  *test::SettlementDatesResult: Pure
+  {
+    ~src test::ContractualTerms
+    settlementDates: $src.financialTerms->test::settlementDateFinancialTerms()
+  }
+)
+
+###Runtime
+Runtime test::Runtime
+{
+  mappings:
+  [
+    test::Map
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection_1:
+      #{
+        JsonModelConnection
+        {
+          class: test::S_Person;
+          url: 'data:application/json,${input}';
+        }
+      }#,
+      connection_2:
+       #{
+         JsonModelConnection
+         {
+           class: test::Traffic;
+           url: 'data:application/json,{"vehicleCount" : 8}';
+         }
+       }#,
+      connection_3:
+       #{
+         JsonModelConnection
+         {
+           class: test::sourcePerson;
+           url: 'data:application/json,{"age":25, "birthDate":"2014-12-27T10:01:35.231-0500"}';
+         }
+       }#,
+      connection_4:
+       #{
+         JsonModelConnection
+         {
+           class: test::ContractualTerms;
+           url: 'data:application/json,{"financialTerms":[{"@type":"CommoditySwap","commoditySwapLegs":[{"@type":"CommodityLeg","paymentDates":{"@type":"CommodityPaymentDates","paymentDates":["2022-05-05"]}}]}]}';
+         }
+       }#
+    ]
+  ];
+}

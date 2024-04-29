@@ -1,0 +1,156 @@
+//  Copyright 2023 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
+import meta::relational::metamodel::relation::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::metamodel::operation::*;
+import meta::analytics::store::entitlements::*;
+import meta::pure::router::extension::*;
+import meta::relational::mapping::*;
+import meta::pure::router::routing::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+
+Class meta::analytics::store::entitlements::TableWithType
+{
+   table: Table[1];
+   type: String[1];
+}
+
+function meta::analytics::store::entitlements::getTablesFromQuery(query:FunctionDefinition<{->TabularDataSet[1]}>[1], mapping:Mapping[1], runtime: Runtime[1], extensions: meta::pure::extension::Extension[*], executionContext:meta::pure::runtime::ExecutionContext[0..1]):Table[*]
+{
+   let sql = meta::relational::functions::sqlstring::toSQL($query, $mapping, $runtime, $extensions).sqlQueries;
+   let ec = if ($executionContext->isEmpty(), | ^meta::pure::runtime::ExecutionContext(), | $executionContext->toOne());
+   let processedSql = $sql->map(s | meta::relational::mapping::postProcessSQLQuery($s, ^meta::relational::metamodel::Database(), [], [], $runtime, $ec, $extensions).query);
+   $processedSql->map(q | $q->meta::relational::validation::functions::getTables())
+      ->removeDuplicates()
+      ->removeDuplicatesBy(t | $t.schema.name + '.' + $t.name);
+}
+
+function meta::analytics::store::entitlements::getTablesFromDatabase(database: Database[1]): Table[*]
+{
+   meta::analytics::store::entitlements::getAllDatabases($database, [])->map(db|$db.schemas->map(s|$s.tables));
+}
+
+function meta::analytics::store::entitlements::getAllDatabases(database : Database[1], visited: Database[*]): Database[*]
+{
+   if($database->in($visited), | [], | $database->concatenate($database.includes->map(db|$db->cast(@Database)->meta::analytics::store::entitlements::getAllDatabases($visited->concatenate($database)))));
+}
+
+function meta::analytics::store::entitlements::getRelationalDatabaseConnection(runtime: Runtime[1]): ConnectionStore[*]
+{
+   $runtime.connectionStores->filter(c|$c.connection->instanceOf(RelationalDatabaseConnection) && $c.connection->cast(@RelationalDatabaseConnection).postProcessors->filter(p| !($p->instanceOf(meta::pure::alloy::connections::MapperPostProcessor)))->isEmpty());
+}
+
+function meta::analytics::store::entitlements::runMappersOnTables(tables:Table[*], runtime: Runtime[1]):Table[*]
+{
+   let mappers =  $runtime.connectionStores.connection->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection)->map(dc|$dc.queryPostProcessorsWithParameter).parameters;
+   let tableMappers = $mappers->filter(p | $p->instanceOf(meta::relational::postProcessor::TableNameMapper))->cast(@meta::relational::postProcessor::TableNameMapper);
+   let schemaMappers = $mappers->filter(p | $p->instanceOf(meta::relational::postProcessor::SchemaNameMapper))->cast(@meta::relational::postProcessor::SchemaNameMapper);
+   let pureAlloyTableMappers = $mappers->filter(p | $p->instanceOf(meta::pure::alloy::connections::TableNameMapper))->cast(@meta::pure::alloy::connections::TableNameMapper);
+   let pureAlloySchemaMappers = $mappers->filter(p | $p->instanceOf(meta::pure::alloy::connections::SchemaNameMapper))->cast(@meta::pure::alloy::connections::SchemaNameMapper);
+   $tables->map(t|if(!$t->isTemporaryTable(),
+                     | let nt = meta::analytics::store::entitlements::processTableMappers($t, $tableMappers, $pureAlloyTableMappers);
+                     if(!$nt->isEmpty(),
+                        | $nt->toOne();,
+                        | let ns = meta::analytics::store::entitlements::processSchemaMappers($t.schema, $schemaMappers, $pureAlloySchemaMappers);
+                        if(!$ns->isEmpty(),|^$t(schema=$ns->toOne());,|$t);
+                       );,
+                     |$t
+                    )
+               );
+}
+
+function meta::analytics::store::entitlements::getTablesFromMapping(mapping:Mapping[1]):Table[*]
+{
+   let classMappings = $mapping->map(m|$m->meta::pure::mapping::classMappings());
+   let rootMappings = $classMappings->filter(cm |$cm.root)
+                                    ->map(rm |
+                                          $rm->match([
+                                             o:OperationSetImplementation[1] | $o->resolveOperation($mapping),
+                                             r:RootRelationalInstanceSetImplementation[1] | $r,
+                                             i:SetImplementation[1] | [] ])
+                                         )->filter(r | $r->instanceOf(RootRelationalInstanceSetImplementation))->cast(@RootRelationalInstanceSetImplementation);
+   let tables = $rootMappings->map(rm | $rm.propertyMappings)->filter(pm | $pm->instanceOf(RelationalPropertyMapping))
+                            ->map(rpm | $rpm->cast(@RelationalPropertyMapping).relationalOperationElement)
+                            ->map(roe | $roe->getTables())->removeDuplicatesBy(t|$t.schema.name + $t.name);
+   let sql = ^SelectSQLQuery(
+                   data = ^RootJoinTreeNode(
+                      alias = ^TableAlias(
+                         name = 'root',
+                         relationalElement = ^UnionAll(
+                            setImplementations = $rootMappings,
+                            queries = $rootMappings->map(rm | ^SelectSQLQuery(data = ^RootJoinTreeNode(alias= ^TableAlias(name = 'root', relationalElement = $rm->mainTable()))))
+                         )
+                      )
+                   )
+               );
+   let queries = $sql.data.alias.relationalElement->cast(@UnionAll).queries;
+   let tablesFromUnionQuery = $queries->map(q|$q.data.alias.relationalElement->cast(@Table)->toOne())->removeDuplicatesBy(t|$t.schema.name + $t.name);
+   let allTables = $tables->concatenate($tablesFromUnionQuery)->removeDuplicatesBy(t|$t.schema.name + $t.name);
+}
+
+function <<access.private>> meta::analytics::store::entitlements::processTableMappers(t:meta::relational::metamodel::relation::Table[1], tableNameMappers:meta::relational::postProcessor::TableNameMapper[*], pureAlloyTableMappers: meta::pure::alloy::connections::TableNameMapper[*]):meta::relational::metamodel::relation::Table[0..1]
+{
+    $pureAlloyTableMappers->map(m| if($t.name==$m.from && ($m.schema.from->toLower() == $t.schema.name->toLower()),| let processedSchema = meta::analytics::store::entitlements::processSchemaMappers($t.schema,[],$m.schema);
+                                                                         if(!$processedSchema->isEmpty(),|^$t(name=$m.to, schema=$processedSchema->toOne()),|^$t(name=$m.to));
+                                                                         ,|[]))->concatenate(
+     $tableNameMappers->map(m| if($t.name==$m.in && ($m.schemaNameMapper.in->toLower() == $t.schema.name->toLower()),| let processedSchema = meta::analytics::store::entitlements::processSchemaMappers($t.schema, $m.schemaNameMapper, []);
+                                                                              if(!$processedSchema->isEmpty(),|^$t(name=$m.out, schema=$processedSchema->toOne()),|^$t(name=$m.out));
+                                                                              ,|[])))->last();
+}
+
+function <<access.private>> meta::analytics::store::entitlements::processSchemaMappers(schema:Schema[1], schemaNameMappers : meta::relational::postProcessor::SchemaNameMapper[*], pureAlloySchemaMappers: meta::pure::alloy::connections::SchemaNameMapper[*]):Schema[0..1]
+{
+    $schemaNameMappers->map(m|if($schema.name == $m.in,| ^$schema(name=$m.out),|[]))->concatenate($pureAlloySchemaMappers->map(m|if($schema.name == $m.from,| ^$schema(name=$m.to),|[])))->last();
+}
+
+function <<access.private>> meta::analytics::store::entitlements::getTables(r:RelationalOperationElement[1]):Table[*]
+{
+   $r->match([
+                s:SelectSQLQuery[1] | if($s.data->isEmpty(), |[], |$s.data->toOne()->getTables())
+                                       ->concatenate($s.columns->map(c| $c->getTables()))->concatenate($s.filteringOperation->map(fo | $fo->getTables())),
+                v:ViewSelectSQLQuery[1] | $v.selectSQLQuery->getTables(),
+                u:Union[1] | $u.queries->map(q|$q->getTables()),
+                tac:TableAliasColumn[1] | $tac.alias->getTables(),
+                a:Alias[1] | $a.relationalElement->getTables(),
+                t:Table[1] | if($t->isTemporaryTable(), | [], | [$t]),
+                u:UnaryOperation[1] | $u.nested->getTables(),
+                b:BinaryOperation[1] | $b.left->getTables()->concatenate($b.right->getTables()),
+                va:VariableArityOperation[1] | $va.args->map(e | $e->getTables()),
+                d:DynaFunction[1] | $d.parameters->map(p | $p->getTables()),
+                j:JoinStrings[1] | $j.strings->map(v | $v->getTables())
+                                             ->concatenate(if($j.prefix->isEmpty(), | [], | $j.prefix->toOne()->getTables()))
+                                             ->concatenate(if($j.separator->isEmpty(), | [], | $j.separator->toOne()->getTables()))
+                                             ->concatenate(if($j.suffix->isEmpty(), | [], | $j.suffix->toOne()->getTables())),
+                r:RelationalOperationElementWithJoin[1]|$r.joinTreeNode->toOne()->getTables()->concatenate(if($r.relationalOperationElement->isEmpty(),|[],|$r.relationalOperationElement->toOne()->getTables())),
+                rel: RelationalOperationElement[1] | [],
+                an: Any[1] | []
+   ])->removeDuplicates();
+}
+
+function <<access.private>> meta::analytics::store::entitlements::getTables(r:RelationalTreeNode[1]):Table[*]
+{
+     $r->match([
+                 j:JoinTreeNode[1] | $j.join.aliases->map(a | $a.first->getTables()->concatenate($a.second->getTables()))
+                                                    ->concatenate(if(!$j.join.target->isEmpty(), | $j.join.target->toOne()->getTables(), | []))
+                                                    ->concatenate($j.childrenData->map(c | $c->cast(@JoinTreeNode)->getTables())),
+                 r:RelationalTreeNode[1] | $r.alias->getTables()->concatenate($r.childrenData->map(c | $c->cast(@JoinTreeNode)->getTables()))
+     ])->removeDuplicates();
+}

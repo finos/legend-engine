@@ -1,0 +1,64 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
+
+import meta::pure::graphFetch::*;
+
+import meta::external::language::java::factory::project::*;
+
+import meta::external::format::shared::executionPlan::*;
+import meta::external::format::shared::executionPlan::platformBinding::legendJava::*;
+
+import meta::external::format::json::metamodel::externalize::*;
+import meta::external::format::json::executionPlan::platformBinding::legendJava::externalize::*;
+import meta::external::format::json::executionPlan::platformBinding::legendJava::externalize::helperFunctions::*;
+
+// ========================================================================================================================================================
+// Descriptor
+// ========================================================================================================================================================
+
+function meta::external::format::json::executionPlan::platformBinding::legendJava::externalize::getExternalFormatExternalizeJavaBindingDescriptor(): ExternalFormatExternalizeBindingDescriptor[1]
+{
+  ^ExternalFormatExternalizeBindingDescriptor
+  (
+    externalizeGenerator  = {node:ExternalFormatExternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]| generateForExternalize($node, $path, $context, $debug)}
+  );
+}
+
+// ========================================================================================================================================================
+// generate
+// ========================================================================================================================================================
+
+function meta::external::format::json::executionPlan::platformBinding::legendJava::externalize::generateForExternalize(node:ExternalFormatExternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
+{
+  print(if($debug.debug,|$debug.space+'('+$path+') generate ExternalFormatExternalizeExecutionNode for JsonSchema \n', |''));
+  
+  let config             = $node.config->orElse(defaultExternalizeConfig())->cast(@JsonSchemaExternalizeConfig);
+  validateDateTimeFormat($config);
+
+  let externalizeClasses = createExternalizeClasses($path, $context, $node.tree, $config, $debug);
+  generatedCode(newProject()->addClasses($externalizeClasses), $externalizeClasses->at(0));
+}
+
+// ========================================================================================================================================================
+// helper functions
+// ========================================================================================================================================================
+
+function meta::external::format::json::executionPlan::platformBinding::legendJava::externalize::helperFunctions::validateDateTimeFormat(config: JsonSchemaExternalizeConfig[1]):Boolean[1]
+{
+  assert(($config.dateTimeFormat->isEmpty() || $config.dateTimeFormat->toOne()->validateDateTimeFormat()), | $config.dateTimeFormat->toOne() + ' is not a valid dateTime format in ExternalizeConfig')
+}

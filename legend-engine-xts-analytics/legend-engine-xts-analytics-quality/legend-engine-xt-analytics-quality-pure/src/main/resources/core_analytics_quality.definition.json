@@ -1,0 +1,16 @@
+{
+  "name": "core_analytics_quality",
+  "pattern": "(meta::analytics::quality|meta::pure::quality)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_dsl_store",
+    "platform_dsl_mapping",
+    "platform_store_relational",
+    "platform_functions_json",
+    "core_functions",
+    "core",
+    "core_external_compiler",
+    "core_data_space_metamodel"
+  ]
+}

@@ -1,0 +1,326 @@
+[
+  {
+    "defects": [
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for string: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for integer: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for float: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for decimal: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for boolean: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for date: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for strictDate: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for dateTime: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for enum: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for measure: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      }
+    ],
+    "source": {
+      "number": 1,
+      "record": "{}"
+    },
+    "value": null
+  },
+  {
+    "defects": [
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for string: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for integer: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for float: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for decimal: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for boolean: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for date: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for strictDate: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for dateTime: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for enum: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for measure: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      }
+    ],
+    "source": {
+      "number": 2,
+      "record": "{\"optionalString\":\"OptionalString\",\"repeatedString\":[\"RepeatedString1\",\"RepeatedString2\"]}"
+    },
+    "value": null
+  },
+  {
+    "defects": [
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for string: expected [1] found [2]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for optionalString: expected [0..1] found [2]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      }
+    ],
+    "source": {
+      "number": 3,
+      "record": "{\"string\":[\"RepeatedString1\",\"RepeatedString2\"],\"optionalString\":[\"RepeatedString1\",\"RepeatedString2\"],\"repeatedString\":[\"RepeatedString1\",\"RepeatedString2\"],\"integer\":1,\"float\":1,\"decimal\":1.23456789,\"boolean\":true,\"date\":\"2022-12-12\",\"strictDate\":\"2022-12-12\",\"dateTime\":\"2023-12-12T12:00:00\",\"enum\":\"MALE\",\"measure\":{\"unit\":[{\"unitId\":\"meta::pure::unit::Mass~Kilogram\",\"exponentValue\":1}],\"value\":5.5}}"
+    },
+    "value": null
+  },
+  {
+    "defects": [
+      {
+        "id": null,
+        "externalId": null,
+        "message": "string: Unexpected node type:BOOLEAN for PURE String",
+        "enforcementLevel": "Error",
+        "ruleType": "InvalidInput",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "float: Unexpected node type:STRING for PURE Float",
+        "enforcementLevel": "Error",
+        "ruleType": "InvalidInput",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "boolean: Unexpected node type:STRING for PURE Boolean",
+        "enforcementLevel": "Error",
+        "ruleType": "InvalidInput",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "enum: No enum constant _pure.app.meta.external.format.json.executionPlan.test.types.Gender.UNKNOWN",
+        "enforcementLevel": "Error",
+        "ruleType": "InvalidInput",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "optionalEnum: No enum constant _pure.app.meta.external.format.json.executionPlan.test.types.Gender.meta::external::format::unknow::executionPlan::test::types::Gender.FEMALE",
+        "enforcementLevel": "Error",
+        "ruleType": "InvalidInput",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "optionalMeasure: Unexpected NUMBER for PURE Mass~Kilogram",
+        "enforcementLevel": "Error",
+        "ruleType": "InvalidInput",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for string: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for float: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for boolean: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Invalid multiplicity for enum: expected [1] found [0]",
+        "enforcementLevel": "Critical",
+        "ruleType": "ClassStructure",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",
+        "path": []
+      }
+    ],
+    "source": {
+      "number": 4,
+      "record": "{\"string\":true,\"integer\":1.1,\"float\":\"1.1\",\"decimal\":1.23456789,\"boolean\":\"xyz\",\"date\":\"12-12-12\",\"strictDate\":\"12-12-12\",\"dateTime\":\"12-12-12T12:00:00\",\"enum\":\"UNKNOWN\",\"optionalEnum\":\"meta::external::format::unknow::executionPlan::test::types::Gender.FEMALE\",\"measure\":{\"unit\":[{\"unitId\":\"meta::pure::unit::Mass~Pound\",\"exponentValue\":1}],\"value\":5.5},\"optionalMeasure\":5.5}"
+    },
+    "value": null
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "_type": "RelationalDatabaseConnection",
+    "datasourceSpecification": {
+    },
+    "authenticationStrategy": {
+    },
+    "databaseType": "${DbType}",
+    "type": "${DbType}",
+    "element": "firstConn"
+  }
+]

@@ -1,0 +1,246 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::*;
+import meta::external::store::elasticsearch::executionTest::testCase::*;
+import meta::external::store::elasticsearch::executionTest::testCase::tds::*;
+import meta::external::store::elasticsearch::executionTest::test::*;
+import meta::external::store::elasticsearch::executionTest::utils::*;
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test restrict on Elasticsearch Date property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::restrict::date::testRestrictDate(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->restrict('ReleaseDate'));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch Date property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testProjectDate(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->project([col(x: TDSRow[1] | $x.getDate('ReleaseDate'), 'RD')]));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure == expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testEqualValue(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate') == %1984-06-08T00:00:00.700+0000, 'expression')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure != expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testNotEqualValue(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate') != %1984-06-08T00:00:00.700+0000, 'expression')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure > expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testGreaterThanDate(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate') > %1985-01-01T00:00:00+0000, 'expression')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure > expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testGreaterThanReversedDate(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1]  | %2000-01-01T00:00:00+0000 > $x.getDate('ReleaseDate'), 'expression')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure >= expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testGreaterThanEqualDate(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate') >= %1984-06-08T00:00:00+0000, 'expression')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure >= expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testGreaterThanEqualReversedDate(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1]  | %2010-04-26T00:00:00.200+0000 >= $x.getDate('ReleaseDate'), 'expression')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure < expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testLessThanDate(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate') < %2010-04-26T00:00:00.200+0000, 'expression')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure < expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testLessThanReversedDate(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1]  | %2010-04-26T00:00:00.200+0000 < $x.getDate('ReleaseDate'), 'expression')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure <= expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testLessThanEqualDate(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate') <= %2010-04-26T00:00:00.200+0000, 'expression')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure <= expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testLessThanEqualReversedDate(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->extend(col(x: TDSRow[1]  | %2010-04-26T00:00:00.200+0000 <= $x.getDate('ReleaseDate'), 'expression')));
+}
+
+function 
+  <<paramTest.Test>>
+ {doc.doc = 'Test projection on Elasticsearch with pure datePart expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testProjectDatePart(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate')->datePart(), 'datePart')));
+}
+
+function 
+  <<paramTest.Test>>
+ {doc.doc = 'Test projection on Elasticsearch with pure firstMillisecondOfSecond expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testProjectFirstMillisecondOfSecond(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate')->firstMillisecondOfSecond(), 'firstMillisecondOfSecond')));
+}
+
+function 
+  <<paramTest.Test>>
+ {doc.doc = 'Test projection on Elasticsearch with pure firstSecondOfMinute expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testProjectFirstSecondOfMinute(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate')->firstSecondOfMinute(), 'firstSecondOfMinute')));
+}
+
+function 
+  <<paramTest.Test>>
+ {doc.doc = 'Test projection on Elasticsearch with pure firstMinuteOfHour expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testProjectFirstMinuteOfHour(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate')->firstMinuteOfHour(), 'firstMinuteOfHour')));
+}
+
+function 
+  <<paramTest.Test>>
+ {doc.doc = 'Test projection on Elasticsearch with pure firstHourOfDay expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testProjectFirstHourOfDay(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate')->firstHourOfDay(), 'firstHourOfDay')));
+}
+
+function 
+  <<paramTest.Test>>
+ {doc.doc = 'Test projection on Elasticsearch with pure firstDayOfMonth expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testProjectFirstDayOfMonth(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate')->firstDayOfMonth(), 'firstDayOfMonth')));
+}
+
+function 
+  <<paramTest.Test>>
+ {doc.doc = 'Test projection on Elasticsearch with pure firstDayOfWeek expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testProjectFirstDayOfWeek(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate')->firstDayOfWeek(), 'firstDayOfWeek')));
+}
+
+function 
+  <<paramTest.Test>>
+ {doc.doc = 'Test projection on Elasticsearch with pure firstDayOfQuarter expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testProjectFirstDayOfQuarter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate')->firstDayOfQuarter(), 'firstDayOfQuarter')));
+}
+
+function 
+  <<paramTest.Test>>
+ {doc.doc = 'Test projection on Elasticsearch with pure year expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testProject_year(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate')->year(), 'year')));
+}
+
+function 
+  <<paramTest.Test>>
+ {doc.doc = 'Test projection on Elasticsearch with pure weekOfYear expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testProject_weekOfYear(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate')->weekOfYear(), 'weekOfYear'))
+      // todo some dates provide discrepancies, cause by Java calendar poor implementation of week of year, so narrow to values that work
+      ->filter(x | $x.getDate('ReleaseDate') == %2008-05-02T00:00:00.100)
+    );
+}
+
+function 
+  <<paramTest.Test>>
+ {doc.doc = 'Test projection on Elasticsearch with pure monthNumber expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testProject_monthNumber(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate')->monthNumber(), 'monthNumber')));
+}
+
+function 
+  <<paramTest.Test>>
+ {doc.doc = 'Test projection on Elasticsearch with pure month expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testProject_month(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate')->month(), 'month')));
+}
+
+function 
+  <<paramTest.Test>>
+ {doc.doc = 'Test projection on Elasticsearch with pure quarterNumber expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testProject_quarterNumber(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate')->quarterNumber(), 'quarterNumber')));
+}
+
+function 
+  <<paramTest.Test>>
+ {doc.doc = 'Test projection on Elasticsearch with pure quarter expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testProject_quarter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate')->quarter(), 'quarter')));
+}
+
+function 
+  <<paramTest.Test>>
+ {doc.doc = 'Test projection on Elasticsearch with pure dayOfWeekNumber expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testProject_dayOfWeekNumber(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate')->dayOfWeekNumber(), 'dayOfWeekNumber')));
+}
+
+function 
+  <<paramTest.Test>>
+ {doc.doc = 'Test projection on Elasticsearch with pure dayOfWeek expression on date'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::date::testProject_dayOfWeek(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend(col(x: TDSRow[1] | $x.getDate('ReleaseDate')->dayOfWeek(), 'dayOfWeek')));
+}

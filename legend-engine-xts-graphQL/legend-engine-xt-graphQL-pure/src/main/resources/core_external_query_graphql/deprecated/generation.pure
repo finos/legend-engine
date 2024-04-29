@@ -1,0 +1,134 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::graphQL::binding::*;
+import meta::external::query::graphQL::generation::*;
+import meta::pure::generation::metamodel::*;
+import meta::pure::generation::*;
+import meta::pure::metamodel::type::*;
+import meta::pure::functions::collection::*;
+
+Class <<doc.deprecated>> meta::external::query::graphQL::generation::GraphQLConfig extends GenerationConfiguration
+{
+}
+
+function <<access.private, Generation.Configuration, doc.deprecated>>  meta::external::query::graphQL::generation::describeConfiguration():GenerationParameter[*]
+{
+  meta::pure::generation::describeConfiguration(GraphQLConfig, meta::external::query::graphQL::generation::defaultConfig__GraphQLConfig_1_, []);
+}
+
+function <<doc.deprecated>> meta::external::query::graphQL::generation::defaultConfig():GraphQLConfig[1]
+{
+    ^GraphQLConfig();
+}
+
+Class <<doc.deprecated>> meta::external::query::graphQL::generation::GraphQLOutput extends GenerationOutput
+{
+}
+
+function <<access.private, doc.deprecated>> meta::external::query::graphQL::generation::generateGraphQLScalars(scopeElements: PackageableElement[*]): GraphQLOutput[0..1] {
+  let scalarElements = $scopeElements->meta::external::query::graphQL::binding::fromPure::sdl::findTypes()->map(t|$t->match([
+                            c:Class<Any>[1] | $c->meta::pure::functions::meta::allProperties()->map(p|$p->functionReturnType().rawType)->filter(
+                                                t| $t->in(meta::external::query::graphQL::binding::purePrimitivesToCustomGraphQLScalarTypes([]).first)
+                                              ),
+                            e:Enumeration<Any>[1] | []
+                        ]))->fold({t,v | $v->concatenate($t)},[])->removeDuplicates();
+  if($scalarElements->isEmpty(),
+    | [],
+    | let scalarStringMap =  meta::external::query::graphQL::binding::purePrimitivesToCustomGraphQLScalarTypes([])->newMap();
+      ^GraphQLOutput(
+        content=$scalarElements->map(x|'scalar '+ $scalarStringMap->meta::pure::functions::collection::get($x->toOne())->toOne())->sort()->joinStrings('\n'),
+        fileName='scalars.graphql',
+        format='text'
+      );
+  );
+}
+
+
+function <<access.private>> meta::external::query::graphQL::generation::generatePrimitiveComparisonExpressions(scopeElements: PackageableElement[*]): GraphQLOutput[0..1]
+{
+  let scalarElements = $scopeElements->meta::external::query::graphQL::binding::fromPure::sdl::findTypes()->map(t|$t->match([
+                            c:Class<Any>[1] | $c->meta::pure::functions::meta::allProperties()->map(p|$p->functionReturnType().rawType)->filter(
+                                                t| $t->in(meta::external::query::graphQL::binding::purePrimitivesToAllGraphQLScalarTypes([]).first)
+                                              ),
+                            e:Enumeration<Any>[1] | []
+                        ]))->fold({t,v | $v->concatenate($t)},[])->removeDuplicates();
+  if($scalarElements->isEmpty(),
+    | [],
+    | let m = customGraphQLScalarsToPrimitiveMappingForInput();
+      let primitiveTypes = purePrimitivesToAllGraphQLScalarTypes([])->filter(x|$x.first->in($scalarElements))->map(p|$p.second)->sort();
+      let primitiveTypesZipped = $primitiveTypes->zip($primitiveTypes->map(p|$m->get($p)));
+      let content = $primitiveTypesZipped->fold(
+        { a,b |
+          $b->concatenate(^meta::external::query::graphQL::metamodel::sdl::typeSystem::InputObjectTypeDefinition(
+                name=$a.first + '_comparison_exp',
+                  fields = [
+                    ^meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition(name='_eq',type=^meta::external::query::graphQL::metamodel::sdl::typeSystem::NamedTypeReference(nullable=true, name=$a.second)),
+                    ^meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition(name='_in',type=^meta::external::query::graphQL::metamodel::sdl::typeSystem::ListTypeReference(itemType = ^meta::external::query::graphQL::metamodel::sdl::typeSystem::NamedTypeReference(nullable=false, name=$a.second), nullable = true))
+                  ]->concatenate(
+                    if($a.first->in(['Int', 'Float', 'Number', 'Date', 'StrictDate', 'DateTime', 'BigDecimal']), 
+                    |[
+                      ^meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition(name='_lt',type=^meta::external::query::graphQL::metamodel::sdl::typeSystem::NamedTypeReference(nullable=true, name=$a.second)),
+                      ^meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition(name='_gt',type=^meta::external::query::graphQL::metamodel::sdl::typeSystem::NamedTypeReference(nullable=true, name=$a.second)),
+                      ^meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition(name='_lte',type=^meta::external::query::graphQL::metamodel::sdl::typeSystem::NamedTypeReference(nullable=true, name=$a.second)),
+                      ^meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition(name='_gte',type=^meta::external::query::graphQL::metamodel::sdl::typeSystem::NamedTypeReference(nullable=true, name=$a.second))
+                    ], 
+                    |[])
+                  )->concatenate(
+                    if($a.first->in(['String']), 
+                      |[
+                        ^meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition(name='_contains',type=^meta::external::query::graphQL::metamodel::sdl::typeSystem::NamedTypeReference(nullable=true, name=$a.second)),
+                        ^meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition(name='_eqIgnoreCase',type=^meta::external::query::graphQL::metamodel::sdl::typeSystem::NamedTypeReference(nullable=true, name=$a.second))
+                      ], 
+                      |[]
+                    )
+                  )
+                  
+              )
+          )
+        }, []
+      )->map(x|$x->meta::external::query::graphQL::serialization::graphQLtoString())->joinStrings('\n');
+      ^GraphQLOutput(
+        fileName='primitive_comparisons.graphql',
+        content=$content,
+        format='text'
+      );
+  );
+}
+
+function <<doc.deprecated>> meta::external::query::graphQL::generation::generateGraphQL(config: GraphQLConfig[1]): GraphQLOutput[*]
+{
+   $config.scopeElements->filter(e| !$e->instanceOf(Package))->map(e|assert($e->instanceOf(Type),' GraphQL generation of ' + $e->type().name->toOne()+ ' is not currently supported. Tried to generate GraphQL for '+ $e->elementToPath()) ;);
+   let scopeElements = $config.allPackageScopeElements()->filter(p|$p->instanceOf(Class) || $p->instanceOf(Enumeration));
+   $scopeElements->map(c| $config->meta::external::query::graphQL::generation::generateGraphQLFromPure($c))->concatenate(
+      meta::external::query::graphQL::generation::generateGraphQLScalars($scopeElements)
+   )->concatenate(
+    meta::external::query::graphQL::generation::generatePrimitiveComparisonExpressions($scopeElements)
+   );
+}
+
+function <<doc.deprecated>> meta::external::query::graphQL::generation::generateGraphQLFromPure(config: GraphQLConfig[1], pe: PackageableElement[1]): GraphQLOutput[*]
+{
+   let content = meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL([$pe], meta::external::query::graphQL::binding::fromPure::sdl::defaultConfig())
+                  // filter out scalars as this is handled all together above
+                  ->filter(x | ! ($x->instanceOf(meta::external::query::graphQL::metamodel::sdl::typeSystem::ScalarTypeDefinition)))
+                  ->map(x|$x->meta::external::query::graphQL::serialization::graphQLtoString())
+                  ->joinStrings('\n');
+   ^GraphQLOutput
+   (
+        content=$content,
+        fileName=$pe->elementToPath()->pathToFileName('graphql'),
+        format='text'
+   );
+}

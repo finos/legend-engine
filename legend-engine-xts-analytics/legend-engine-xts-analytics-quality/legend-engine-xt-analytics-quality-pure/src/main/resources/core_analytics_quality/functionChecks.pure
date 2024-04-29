@@ -1,0 +1,636 @@
+import meta::analytics::quality::*;
+import meta::analytics::quality::model::*;
+import meta::pure::functions::collection::*;
+import meta::pure::functions::meta::applications::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::analytics::quality::model::domain::*;
+
+function meta::analytics::quality::model::domain::functionRules():Rule<List<FunctionDefinition<Any>>>[*]
+{
+
+   [
+     meta::analytics::quality::model::domain::validEqualityComparisons_List_1__Pair_MANY_,
+     meta::analytics::quality::model::domain::invalidContainsComparisons_List_1__Pair_MANY_,
+     meta::analytics::quality::model::domain::badInstanceOfChecks_List_1__Pair_MANY_,
+     meta::analytics::quality::model::domain::invalidMatchUsages_List_1__Pair_MANY_,
+     meta::analytics::quality::model::domain::findUnnecessaryComparisonsToTrue_List_1__Pair_MANY_,
+     meta::analytics::quality::model::domain::findInvalidCastBugs_List_1__Pair_MANY_,
+     meta::analytics::quality::model::domain::findUnusedPrivateProtectedFunctionBugs_List_1__Pair_MANY_,
+     meta::analytics::quality::model::domain::findUnnecessaryIfBugs_List_1__Pair_MANY_,
+     meta::analytics::quality::model::domain::findUnnecessaryIfBugs2_List_1__Pair_MANY_,
+     // apps::pure::quality::findUnnecessaryToOneBugs_List_1__Pair_MANY_, enable when compile mode is fixed
+     meta::analytics::quality::model::domain::findUnnecessaryCasts_List_1__Pair_MANY_,
+     meta::analytics::quality::model::domain::findUnnecessaryLetFunctionsCheck_List_1__Pair_MANY_,
+     meta::analytics::quality::model::domain::findPotentiallyExpensiveAssertions_List_1__Pair_MANY_
+    ]->map(rule|createRule($rule)->cast(@Rule<List<FunctionDefinition<Any>>>));
+
+
+}
+
+function meta::analytics::quality::model::domain::getUsages(srcFns:List<FunctionDefinition<Any>>[1],fns:Function<Any>[*]):FunctionExpression[*]
+{
+   $srcFns.values->map(f|
+     $f->evaluateAndDeactivate()->meta::analytics::quality::model::domain::applicationsMatchLocal({vs : FunctionExpression[1] | $vs.func->in($fns)});
+   );
+}
+
+function meta::analytics::quality::model::domain::applicationsMatchLocal(expr : FunctionDefinition<Any>[1], matchFunc:Function<{FunctionExpression[1]->Boolean[1]}>[1]):FunctionExpression[*]
+{
+   let fes = $expr->evaluateAndDeactivate().expressionSequence->meta::analytics::quality::model::domain::getLocalFunctionExpressions();
+   $fes->filter(fe|$matchFunc->eval($fe));
+}
+
+function <<access.public>> meta::analytics::quality::model::domain::getLocalFunctionExpressions(vs : ValueSpecification[*]) : FunctionExpression[*]
+{
+   $vs->map(x|
+         $x->match([
+            sfe:SimpleFunctionExpression[1]|
+               $sfe->concatenate($sfe.parametersValues->meta::analytics::quality::model::domain::getLocalFunctionExpressions()),
+            v : VariableExpression[1]|[],
+            iv : InstanceValue[1]|$iv.values->map(v|
+                  $v->match([
+                     subVS:ValueSpecification[1]|$subVS->meta::analytics::quality::model::domain::getLocalFunctionExpressions(),
+                     lambda:LambdaFunction<Any>[1]|$lambda.expressionSequence->meta::analytics::quality::model::domain::getLocalFunctionExpressions(),
+                     a:Any[*]| []
+                  ])
+                  )
+         ]));
+}
+
+function  {rule.rule = 'Invalid Contains',
+           rule.description ='Check for contains / containsAll / containsAny checks that will always result in false due to type mismatches (e.g. [\'abc\']->contains(123))',
+           rule.severity = 'High',
+           rule.category = 'Correctness'}
+meta::analytics::quality::model::domain::invalidContainsComparisons(fns:List<FunctionDefinition<Any>>[1]) : Pair<FunctionExpression,CheckResult>[*]
+{
+
+
+   meta::analytics::quality::model::domain::findInvalidContainsComparisons($fns)
+      ->map(ie|
+         let t1 = $ie->meta::analytics::quality::model::domain::resolveParameterType(0);
+         let t2 = $ie->meta::analytics::quality::model::domain::resolveParameterType(1);
+         let message = ('Possible invalid ' + $ie.functionName->makeString() + ' check (type mismatch, ' + $t1->elementToPath() + ' vs ' + $t2->elementToPath() + ')');
+         let result = ^CheckResult(isValid=false,message=$message);
+         pair($ie,$result);
+         );
+}
+
+
+function  {rule.rule = 'Invalid Equality',
+           rule.description ='Check for equality checks that will always result in false due to type mismatches (e.g. \'abc\' == 123)',
+           rule.severity = 'High',
+           rule.category = 'Correctness'}
+meta::analytics::quality::model::domain::validEqualityComparisons(fns:List<FunctionDefinition<Any>>[1]) : Pair<FunctionExpression,CheckResult>[*]
+{
+
+   let applications = [equal_Any_MANY__Any_MANY__Boolean_1_,
+                       is_Any_1__Any_1__Boolean_1_,
+                       eq_Any_1__Any_1__Boolean_1_];
+
+   let usages = $fns->meta::analytics::quality::model::domain::getUsages($applications);
+
+   $usages->evaluateAndDeactivate()
+        ->map(ie|
+            let t1 = $ie->meta::analytics::quality::model::domain::resolveParameterType(0);
+            let t2 = $ie->meta::analytics::quality::model::domain::resolveParameterType(1);
+
+            let valid = meta::analytics::quality::model::domain::equalityCompatibleTypes($t1, $t2);
+
+            let message = if($valid,
+                             |'Valid ' + $ie.functionName->toOne() + ' check (' + $t1->elementToPath() + ' vs ' + $t2->elementToPath() + ')',
+                             | 'Function (' + $ie.functionName->toOne() + ') does not match required standards: Possible invalid ' + $ie.functionName->toOne() + ' check (type mismatch, ' + $t1->elementToPath() + ' vs ' + $t2->elementToPath() + ')');
+            let result = ^CheckResult(isValid=$valid, message=$message);
+            pair($ie, $result);
+         );
+
+}
+
+
+function <<access.public>> meta::analytics::quality::model::domain::equalityCompatibleTypes(t1 : Type[1], t2 : Type[1]) : Boolean[1]
+{
+   castCompatibleTypes($t1, $t2) || ($t1->subTypeOf(Number) && $t2->subTypeOf(Number));
+}
+
+
+
+// Nested filters
+function meta::analytics::quality::model::domain::findAllNestedFilterExpressions():FunctionExpression[*]
+{
+	   meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_.applications
+	       ->evaluateAndDeactivate()
+	       ->filter(fe | let arg1 = $fe.parametersValues->evaluateAndDeactivate()->at(0);
+	                     $arg1->instanceOf(FunctionExpression) &&
+	                       is($arg1->cast(@FunctionExpression).func,
+	                          meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_);)
+}
+
+
+function  {rule.rule = 'Invalid Instance Of',
+           rule.description ='Check for Match functions that will always fail (e.g. \'abc\'->match([ i: Integer[1]|$i))',
+           rule.severity = 'High',
+           rule.category = 'Correctness'}
+meta::analytics::quality::model::domain::badInstanceOfChecks(fns:List<FunctionDefinition<Any>>[1]) : Pair<FunctionExpression,CheckResult>[*]
+{
+   meta::analytics::quality::model::domain::findBadInstanceOfChecks($fns)
+      ->map(ie|
+         let t1 = $ie->meta::analytics::quality::model::domain::resolveParameterType(0);
+         let t2 = $ie.parametersValues->at(1)->meta::analytics::quality::model::domain::resolveValueType();
+         let message = ('Invalid instanceOf check, always ' + meta::analytics::quality::model::domain::castNotNecessary($t1, $t2)->makeString() + ' (' + $t1->elementToPath() + ' vs ' + $t2->elementToPath() + ')');
+         let result = ^CheckResult(isValid=false,message=$message);
+         pair($ie,$result);
+         );
+}
+
+function  {rule.rule = 'Invalid Match',
+           rule.description ='Check for invalid instanceOf checks (e.g. \'hello\'->instanceOf(Float) or \'hello\'->instanceOf(String))',
+           rule.severity = 'High',
+           rule.category = 'Correctness'}
+meta::analytics::quality::model::domain::invalidMatchUsages(fns:List<FunctionDefinition<Any>>[1]) : Pair<FunctionExpression,CheckResult>[*]
+{
+   meta::analytics::quality::model::domain::findInvalidMatchUsage($fns)
+      ->map(ie|
+         let t1 = $ie->meta::analytics::quality::model::domain::resolveParameterType(0);
+         let message = ('Possible invalid Match usage, no type matches for ' + $t1->elementToPath() + ')');
+         let result = ^CheckResult(isValid=false,message=$message);
+         pair($ie,$result);
+         );
+}
+
+function  {rule.rule = 'Bad Size',
+           rule.description ='Check that code uses $collection->isEmpty() / isNotEmpty() instead of $collection->size() == 0 / size() > 0 / size != 0',
+           rule.severity = 'Low',
+           rule.category = 'Quality'}
+meta::analytics::quality::model::domain::badSizeComparisons(fns:List<FunctionDefinition<Any>>[1]) : Pair<FunctionExpression,CheckResult>[*]
+{
+   meta::analytics::quality::model::domain::findBadSizeComparisons($fns)
+      ->map(ie|
+            let message = ('Use isEmpty() / isNotEmpty() check, rather than size() ' + $ie.functionName->makeString() + ' 0');
+            let result = ^CheckResult(isValid=false,message=$message);
+            pair($ie,$result);
+         );
+}
+
+
+function  {rule.rule = 'Unnecessary Comparison To True',
+           rule.description = 'Check for unnecessary comparison to true (e.g. if(myBooleanFunc() == true, .., ...))',
+           rule.severity = 'Medium',
+           rule.category = 'Quality'}
+meta::analytics::quality::model::domain::findUnnecessaryComparisonsToTrue(fns:List<FunctionDefinition<Any>>[1]) : Pair<FunctionExpression,CheckResult>[*]
+{
+   meta::analytics::quality::model::domain::unnecessaryTrueComparisons($fns)
+      ->map(ie|
+         let  message = ('Avoid unnecessary comparison to true for boolean values');
+         let result = ^CheckResult(isValid=false,message=$message);
+         pair($ie,$result);
+         );
+}
+
+function  {rule.rule = 'Invalid Cast',
+           rule.description = 'Check for invalid cast operations (e.g. \'hello\'->cast(@Float))',
+           rule.severity = 'High',
+           rule.category = 'Correctness'}
+meta::analytics::quality::model::domain::findInvalidCastBugs(fns:List<FunctionDefinition<Any>>[1]) : Pair<FunctionExpression,CheckResult>[*]
+{
+   meta::analytics::quality::model::domain::findInvalidCasts($fns)
+      ->map(ie|
+         let t1 = $ie->meta::analytics::quality::model::domain::resolveParameterType(0);
+         let t2 = $ie.parametersValues->at(1)->meta::analytics::quality::model::domain::resolveValueType();
+         let message = ('Possible invalid cast (from ' + $t1->elementToPath() + ' to ' + $t2->elementToPath() + ')');
+         let result = ^CheckResult(isValid=false,message=$message);
+         pair($ie,$result);
+         );
+}
+
+function  {rule.rule = 'Unused Private Protected',
+           rule.description =  'Check for unused private or protected functions (they could be removed)',
+           rule.severity = 'Low',
+           rule.category = 'Quality'}
+meta::analytics::quality::model::domain::findUnusedPrivateProtectedFunctionBugs(fns:List<FunctionDefinition<Any>>[1]) : Pair<FunctionDefinition<Any>,CheckResult>[*]
+{
+   $fns.values->map(f|
+      if(meta::analytics::quality::model::domain::isPrivateProtectedFunctionUnused($f)
+      ,| let message = ('Unused private/protected function ' + $f.functionName->toOne());
+         let result = ^CheckResult(isValid=false,message=$message);
+         [pair($f,$result)];
+      ,|[])
+    );
+}
+
+function meta::analytics::quality::model::domain::isPrivateProtectedFunctionUnused(f:Function<Any>[1]) :Boolean[1]
+{
+     $f->isFunctionUncalled() &&
+     ($f->instanceOf(AnnotatedElement) && ($f->cast(@AnnotatedElement)->hasStereotype('private', meta::pure::profiles::access)  || $f->cast(@AnnotatedElement)->hasStereotype('protected', meta::pure::profiles::access)));
+
+}
+
+function {doc.doc = 'Find if defined functions is not called anywhere.'}
+meta::analytics::quality::model::domain::isFunctionUncalled(f:Function<Any>[1]):Boolean[1]
+{
+    !$f->isTestElement() && !$f->isFunctionReferenced()
+}
+
+function <<access.private>> meta::analytics::quality::model::domain::isFunctionReferenced(func:Function<Any>[1]):Boolean[1]
+{
+    !$func.applications->evaluateAndDeactivate()->isEmpty() || !$func.referenceUsages->isEmpty()
+}
+
+function  {rule.rule = 'Unnecessary If Condition',
+           rule.description =  'Check for unnecessary if statements, with constant condition (e.g. if(true, |abc, |def)))',
+           rule.severity = 'Medium',
+           rule.category = 'Quality'}
+meta::analytics::quality::model::domain::findUnnecessaryIfBugs(fns:List<FunctionDefinition<Any>>[1]) : Pair<FunctionExpression,CheckResult>[*]
+{
+   meta::analytics::quality::model::domain::findUnnecessaryIfs($fns)
+      ->map(f| let message = ('If statement with constant expression');
+         let result = ^CheckResult(isValid=false,message=$message);
+         pair($f,$result);
+         )
+
+}
+
+function  {rule.rule = 'Unnecessary If Return',
+           rule.description = 'Check for unnecessary if statements, with boolean result (e.g. if(2 > 1, |true, |false)))',
+           rule.severity = 'Medium',
+           rule.category = 'Quality'}
+meta::analytics::quality::model::domain::findUnnecessaryIfBugs2(fns:List<FunctionDefinition<Any>>[1]) : Pair<FunctionExpression,CheckResult>[*]
+{
+   meta::analytics::quality::model::domain::findUnnecessaryIfs2($fns)
+      ->map(f|let message = ('If statement with true/false returns');
+         let result = ^CheckResult(isValid=false,message=$message);
+         pair($f,$result);
+         )
+
+}
+
+function  {rule.rule = 'Unnecessary To One',
+           rule.description =  'Check for unnecessary toOne() operations (e.g. \'hello\'->toOne())',
+           rule.severity = 'Medium',
+           rule.category = 'Quality'}
+meta::analytics::quality::model::domain::findUnnecessaryToOneBugs(fns:List<FunctionDefinition<Any>>[1]) : Pair<FunctionExpression,CheckResult>[*]
+{
+   meta::analytics::quality::model::domain::findUnnecessaryToOneFEs($fns)
+      ->map(ie|
+            let message = ('Avoid unnecessary toOne() on item that is already [1..1]');
+            let result = ^CheckResult(isValid=false,message=$message);
+            pair($ie,$result);
+         );
+}
+
+function  {rule.rule = 'Unnecessary Map Property',
+           rule.description = 'Check for unnecessary map to property usage (e.g. [pair(1,2), pair(3,4)]->map(p|$p.first))',
+           rule.severity = 'Medium',
+           rule.category = 'Quality'}
+meta::analytics::quality::model::domain::findUnnecessaryMapToPropertyBugs(fns:List<FunctionDefinition<Any>>[1]) : Pair<FunctionExpression,CheckResult>[*]
+{
+   meta::analytics::quality::model::domain::findUnnecessaryMapToProperty($fns)
+      ->map(ie|let message = ('Use .property syntax directly against the collection rather than mapping to extract single property');
+         let result = ^CheckResult(isValid=false,message=$message);
+         pair($ie,$result);
+           );
+}
+
+
+
+
+function meta::analytics::quality::model::domain::findBadSizeComparisons(fns:List<FunctionDefinition<Any>>[1]) : FunctionExpression[*]
+{
+   let applications = [equal_Any_MANY__Any_MANY__Boolean_1_,greaterThan_Number_1__Number_1__Boolean_1_];
+
+
+   let usages = $fns->getUsages($applications);
+
+
+   let invalidApplications =  $usages->evaluateAndDeactivate()->filter({i|
+      let p1 = $i.parametersValues->at(0);
+      let p2 = $i.parametersValues->at(1);
+
+      $p1->instanceOf(SimpleFunctionExpression) && $p1->cast(@SimpleFunctionExpression).func == size_Any_MANY__Integer_1_
+         && $p2->instanceOf(InstanceValue) && $p2->cast(@InstanceValue).values == [0];
+      });
+}
+
+function meta::analytics::quality::model::domain::findInvalidContainsComparisons(fns:List<FunctionDefinition<Any>>[1]) : FunctionExpression[*]
+{
+   let applications = [contains_Any_MANY__Any_1__Boolean_1_,
+                       containsAny_Any_MANY__Any_MANY__Boolean_1_,
+                       containsAll_Any_MANY__Any_MANY__Boolean_1_];
+
+   let usages = $fns->getUsages($applications);
+
+   $usages->evaluateAndDeactivate()
+          ->filter({i|
+                   let t1 = $i->resolveParameterType(0);
+                   let t2 = $i.parametersValues->at(1)->resolveValueType();
+
+                   let valid = equalityCompatibleTypes($t1, $t2);
+
+                   !$valid;
+            });
+}
+
+function meta::analytics::quality::model::domain::findInvalidMatchUsage(fns:List<FunctionDefinition<Any>>[1]) : FunctionExpression[*]
+{
+
+   let applications = [match_Any_MANY__Function_$1_MANY$__T_m_];
+
+   let usages = $fns->getUsages($applications);
+
+   let invalidApplications = $usages->evaluateAndDeactivate()->filter({i|
+
+      let t1 = $i->resolveParameterType(0);
+      let lambdasSpec = $i.parametersValues->at(1);
+
+      //TODO: Handle the case where the match handler values are passed in by a variable
+      //TODO: Handle the case where the match handlers are functions (not lambdas)
+
+      if($lambdasSpec->instanceOf(InstanceValue) == false
+         || !$lambdasSpec->cast(@InstanceValue).values->forAll(v|$v->instanceOf(LambdaFunction)),
+         | true,
+         |
+            let lambdas = $lambdasSpec->cast(@InstanceValue).values->cast(@LambdaFunction<Any>);
+
+            let matchLambdaParamTypes = $lambdas->map(l|$l->functionType().parameters->toOne());
+
+            let valid = $matchLambdaParamTypes->fold({pt,r|if ($r, |$r, {|
+               $t1->castCompatibleTypes($pt.genericType.rawType->toOne());
+            })}, false);
+
+            !$valid;
+         );
+      });
+
+      $invalidApplications;
+}
+
+function meta::analytics::quality::model::domain::findInvalidCasts(fns:List<FunctionDefinition<Any>>[1]) : FunctionExpression[*]
+{
+  let applications = [cast_Any_m__T_1__T_m_];
+
+  let usages = $fns->getUsages($applications);
+
+  let invalidApplications = $usages->evaluateAndDeactivate()->filter({i|
+      let p1 = $i->resolveParameterType(0);
+      let p2 = $i.parametersValues->at(1)->resolveValueType();
+
+      !$p1->castCompatibleTypes($p2);
+      });
+}
+
+function meta::analytics::quality::model::domain::findBadInstanceOfChecks(fns:List<FunctionDefinition<Any>>[1]) : FunctionExpression[*]
+{
+
+   let applications = [instanceOf_Any_1__Type_1__Boolean_1_];
+
+   let usages = $fns->getUsages($applications);
+
+   let invalidApplications = $usages->evaluateAndDeactivate()->filter({i|
+      let p1 = $i.parametersValues->at(0);
+      let p2 = $i.parametersValues->at(1);
+
+      let p1t= $i->resolveParameterType(0);
+
+      if(!$p2->instanceOf(InstanceValue),
+         | false,
+         {|
+            let targetType = $p2->cast(@InstanceValue).values->toOne()->cast(@Type);
+
+            (!$p1t->castCompatibleTypes($targetType));
+         });
+      });
+}
+
+function meta::analytics::quality::model::domain::resolveParameterType(fe : FunctionExpression[1], index : Integer[1]) : Type[1]
+{
+   let fParams = $fe.func->functionType().parameters;
+   assert($fParams->size() > $index);
+
+   let pGT = $fParams->at($index).genericType;
+
+   let gt = if($pGT.rawType->isNotEmpty() && $pGT.rawType != Any,
+                  | $pGT,
+                  | ^GenericType(rawType = $fe.parametersValues->at($index)->resolveValueType())
+                  );
+
+   if($gt->isEmpty() || $gt.rawType->isEmpty(),
+      | Any,
+      | $gt.rawType->toOne()
+      );
+}
+
+function meta::analytics::quality::model::domain::resolveValueType(vs : ValueSpecification[1]) : Type[1]
+{
+   let t = $vs->match([
+         v : ValueSpecification[1]| $v.genericType.rawType
+         ]);
+
+   if($t->isEmpty(),
+      | Any,
+      | $t->toOne()
+      );
+}
+
+
+function meta::analytics::quality::model::domain::findUnnecessaryToOneFEs(fns:List<FunctionDefinition<Any>>[1]) : FunctionExpression[*]
+{
+   let applications = [toOne_T_MANY__T_1_];
+
+   let usages = $fns->getUsages($applications);
+
+
+   $usages->evaluateAndDeactivate()
+      ->filter({i|
+      $i.parametersValues->toOne().multiplicity == PureOne;
+      });
+}
+
+function <<access.public>> meta::analytics::quality::model::domain::castCompatibleTypes(from: Type[1], to: Type[1]) : Boolean[1]
+{
+   if($from->in([$to, Any]) || $from == Nil || $to == Any,
+    | true,
+    |
+      if ($from.generalizations->size() == 0 && $to.specializations->size() == 0,
+          | false,
+          | $to->_subTypeOf($from) || $from->_subTypeOf($to) || $from->getLeafTypes()->remove($from)->exists(x|$x->_subTypeOf($to))
+          )
+    )
+}
+
+function meta::analytics::quality::model::domain::castNotNecessary(from: Type[1], to: Type[1]) : Boolean[1]
+{
+   if($to->in([$from, Any]),
+    | true,
+    |
+      $from->_subTypeOf($to)
+    );
+}
+
+
+function meta::analytics::quality::model::domain::findUnnecessaryIfs(fns:List<FunctionDefinition<Any>>[1]):FunctionExpression[*]
+{
+
+   let applications = [if_Boolean_1__Function_1__Function_1__T_m_];
+
+   let usages = $fns->getUsages($applications);
+
+   $usages->evaluateAndDeactivate()->filter(a |
+      let condition = $a.parametersValues->at(0);
+      $condition->match([
+         i:InstanceValue[1] | $i.values->at(0)->instanceOf(Boolean),
+         a:Any[1] | false
+      ]);
+   );
+}
+
+function meta::analytics::quality::model::domain::findUnnecessaryIfs2(fns:List<FunctionDefinition<Any>>[1]):FunctionExpression[*]
+{
+   let applications = [if_Boolean_1__Function_1__Function_1__T_m_];
+
+   let usages = $fns->getUsages($applications);
+
+   $usages->evaluateAndDeactivate()->filter(a |
+      let statements = $a.parametersValues->tail()->cast(@InstanceValue).values->cast(@LambdaFunction<Any>).expressionSequence;
+      let truth = $statements->at(0);
+      let falsy = $statements->at(1);
+
+      // If the return values of the if conditions are constant booleans and
+      // 1) They are the same, then the If is unnecessary
+      // 2) They are different to each other, we should just return the condition or the !condition
+
+      $truth->match([
+         i:InstanceValue[1] | $i.values == true || $i.values == false,
+         a:Any[*] | false
+      ])
+      &&
+      $falsy->match([
+         i:InstanceValue[1] | $i.values == true || $i.values == false,
+         a:Any[*] | false
+      ]);
+   );
+}
+
+
+function meta::analytics::quality::model::domain::unnecessaryTrueComparisons(fns:List<FunctionDefinition<Any>>[1]):FunctionExpression[*]
+{
+   let applications = [equal_Any_MANY__Any_MANY__Boolean_1_];
+
+   let usages = $fns->getUsages($applications);
+
+   $usages->evaluateAndDeactivate()->filter(a |
+      let p1 = $a.parametersValues->at(0);
+      let p2 = $a.parametersValues->at(1);
+
+      let isBooleanFunction = $p1->match([
+         f:SimpleFunctionExpression[1] | $f.genericType.rawType == Boolean,//.typeArguments.rawType->cast(@FunctionType).returnType.rawType == Boolean,
+         a:Any[1] | false
+      ]);
+
+      let isTrueValue =  $p2->match([
+         i:InstanceValue[1] | $i.values->size() == 1 && $i.values->at(0) == true,
+         a:Any[1] | false
+      ]);
+
+      $isBooleanFunction && $isTrueValue;
+   );
+}
+
+
+function meta::analytics::quality::model::domain::findUnnecessaryMapToProperty(fns:List<FunctionDefinition<Any>>[1]):FunctionExpression[*]
+{
+   let applications = [map_T_m__Function_1__V_m_];
+
+   let usages = $fns->getUsages($applications);
+
+   $usages->evaluateAndDeactivate()->filter(m|
+          let param0 = $m.parametersValues->at(0);
+          let param1 = $m.parametersValues->at(1);
+          if (!$param0.genericType.typeArguments->isEmpty() || $param1->instanceOf(InstanceValue) == false,
+             | false,
+             |
+                let param1Value = $param1->cast(@InstanceValue).values->toOne();
+                if ($param1Value->instanceOf(LambdaFunction) == false,
+                   | false,
+                   | let lambda = $param1Value->cast(@LambdaFunction<Any>);
+                      let firstExpr = $lambda.expressionSequence->first();
+                      if ($lambda.expressionSequence->size() != 1 || !$firstExpr->toOne()->instanceOf(SimpleFunctionExpression),
+                         | false,
+                         | let f = $firstExpr->cast(@SimpleFunctionExpression).func->toOne();
+                            $f->instanceOf(Property) && !$f->instanceOf(QualifiedProperty); //Do qualified properties with no args work?
+                         );
+                   );
+              );
+          );
+}
+
+
+
+function  {rule.rule = 'Unnecessary Cast',
+           rule.description = 'Check for unnecessary casts (e.g. \'hello\'->cast(@String))',
+           rule.severity = 'Low',
+           rule.category = 'Quality'}
+meta::analytics::quality::model::domain::findUnnecessaryCasts(fns:List<FunctionDefinition<Any>>[1]) : Pair<FunctionExpression,CheckResult>[*]
+{
+
+
+   let applications = [cast_Any_m__T_1__T_m_];
+
+   let usages = $fns->meta::analytics::quality::model::domain::getUsages($applications);
+
+   $usages->evaluateAndDeactivate()->map({i|
+      let p1t = $i->meta::analytics::quality::model::domain::resolveParameterType(0);
+      let p2t = $i.parametersValues->at(1)->meta::analytics::quality::model::domain::resolveValueType();
+
+      if(!$p1t->meta::analytics::quality::model::domain::castNotNecessary($p2t),
+         | [],
+         |
+             let message = ('Possible unnecesary cast (from ' + $p1t->makeString() + ' to ' + $p2t->makeString() + ')');
+             let result = ^CheckResult(isValid=false,message=$message);
+             pair($i,$result);
+         );
+      });
+}
+
+
+function  {rule.rule = 'Unnecessary let',
+           rule.description ='Check for functions where last statement is a let',
+           rule.severity = 'Medium',
+           rule.category = 'Quality'}
+meta::analytics::quality::model::domain::findUnnecessaryLetFunctionsCheck(fns:List<FunctionDefinition<Any>>[1]) : Pair<FunctionDefinition<Any>,CheckResult>[*]
+{
+ $fns.values->map(f|
+   let last = $f->evaluateAndDeactivate().expressionSequence->evaluateAndDeactivate()->last()->toOne();
+   let doesEndInLet = $last->instanceOf(FunctionExpression) && $last->cast(@FunctionExpression).func == letFunction_String_1__T_m__T_m_;
+   let message =  'function ' + $f.functionName->makeString() + ' ends with an unnecessary let statement';
+   let result = ^CheckResult(isValid = !$doesEndInLet, message = $message);
+   pair($f,$result);
+  );
+}
+
+
+function {doc.doc = 'Find all concretely defined functions which are not called anywhere.'}
+meta::analytics::quality::model::domain::findAllUncalledFunctions():ConcreteFunctionDefinition<Any>[*]
+{
+    ConcreteFunctionDefinition.all()->filter(f | !$f->isTestElement() && !$f->isFunctionReferenced())
+}
+
+function  <<rule.skipTests>>
+          {rule.rule = 'Assert with dynamic message',
+           rule.description ='Avoid using dynamic messages as they can be "expensive", even if the assertion passes',
+           rule.severity = 'Medium',
+           rule.category = 'Quality'}
+meta::analytics::quality::model::domain::findPotentiallyExpensiveAssertions(fns:List<FunctionDefinition<Any>>[1]) : Pair<FunctionExpression,CheckResult>[*]
+{
+   let applications = [assert_Boolean_1__String_1__Boolean_1_];
+
+   let usages = $fns->meta::analytics::quality::model::domain::getUsages($applications);
+
+   let expensiveUsages = $usages->evaluateAndDeactivate()->filter(m|
+          let param1 = $m.parametersValues->at(1);
+          !$param1->instanceOf(InstanceValue);
+          );
+
+    $expensiveUsages->map(f|
+      let message =  'Assertion message is dynamically built';
+      let result = ^CheckResult(isValid = false, message = $message);
+      pair($f,$result);
+     );
+}

@@ -1,0 +1,475 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::meta::external::query::sql::metamodel::*;
+
+Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::Node
+{
+}
+
+Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::Statement extends meta::external::query::sql::metamodel::Node
+{
+}
+
+Class meta::external::query::sql::metamodel::Query extends meta::external::query::sql::metamodel::Statement
+{
+  <<equality.Key>> queryBody: meta::external::query::sql::metamodel::QueryBody[1];
+  <<equality.Key>> limit: meta::external::query::sql::metamodel::Expression[0..1];
+  <<equality.Key>> orderBy: meta::external::query::sql::metamodel::SortItem[*];
+  <<equality.Key>> offset: meta::external::query::sql::metamodel::Expression[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::Relation extends meta::external::query::sql::metamodel::Node
+{
+}
+
+Class <<typemodifiers.abstract>>meta::external::query::sql::metamodel::QueryBody extends meta::external::query::sql::metamodel::Relation
+{
+}
+
+Class meta::external::query::sql::metamodel::TableSubquery extends meta::external::query::sql::metamodel::QueryBody
+{
+  <<equality.Key>> query: meta::external::query::sql::metamodel::Query[1];
+}
+
+Class meta::external::query::sql::metamodel::SubqueryExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> query: meta::external::query::sql::metamodel::Query[1];
+}
+
+Class meta::external::query::sql::metamodel::QuerySpecification extends meta::external::query::sql::metamodel::QueryBody
+{
+  <<equality.Key>> select: meta::external::query::sql::metamodel::Select[1];
+  <<equality.Key>> from: meta::external::query::sql::metamodel::Relation[*];
+  <<equality.Key>> where: meta::external::query::sql::metamodel::Expression[0..1];
+  <<equality.Key>> groupBy: meta::external::query::sql::metamodel::Expression[*];
+  <<equality.Key>> having: meta::external::query::sql::metamodel::Expression[0..1];
+  <<equality.Key>> orderBy: meta::external::query::sql::metamodel::SortItem[*];
+  <<equality.Key>> limit: meta::external::query::sql::metamodel::Expression[0..1];
+  <<equality.Key>> offset: meta::external::query::sql::metamodel::Expression[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::SetOperation extends meta::external::query::sql::metamodel::QueryBody
+{
+}
+
+Class meta::external::query::sql::metamodel::AliasedRelation extends meta::external::query::sql::metamodel::Relation
+{
+  <<equality.Key>> relation:meta::external::query::sql::metamodel::Relation[1];
+  <<equality.Key>> alias: String[1];
+  <<equality.Key>>  columnNames: String[*];
+}
+
+Class meta::external::query::sql::metamodel::Union extends meta::external::query::sql::metamodel::SetOperation
+{
+  <<equality.Key>> left: meta::external::query::sql::metamodel::Relation[1];
+  <<equality.Key>> right: meta::external::query::sql::metamodel::Relation[1];
+  <<equality.Key>> distinct: Boolean[1];
+}
+
+Class meta::external::query::sql::metamodel::Select extends meta::external::query::sql::metamodel::Node
+{
+  <<equality.Key>> distinct: Boolean[1];
+  <<equality.Key>> selectItems: meta::external::query::sql::metamodel::SelectItem[*];
+}
+
+Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::SelectItem extends meta::external::query::sql::metamodel::Node
+{
+}
+
+Class meta::external::query::sql::metamodel::AllColumns extends meta::external::query::sql::metamodel::SelectItem
+{
+  <<equality.Key>> prefix: String[0..1];
+}
+
+Class meta::external::query::sql::metamodel::SingleColumn extends meta::external::query::sql::metamodel::SelectItem
+{
+  <<equality.Key>> alias: String[0..1];
+  <<equality.Key>> expression: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::Table extends meta::external::query::sql::metamodel::QueryBody
+{
+  <<equality.Key>> name: meta::external::query::sql::metamodel::QualifiedName[1];
+}
+
+Class meta::external::query::sql::metamodel::TableFunction extends meta::external::query::sql::metamodel::QueryBody
+{
+  <<equality.Key>> functionCall: meta::external::query::sql::metamodel::FunctionCall[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::Expression extends meta::external::query::sql::metamodel::Node
+{
+}
+
+Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::Literal extends meta::external::query::sql::metamodel::Expression
+{
+}
+
+Class meta::external::query::sql::metamodel::LongLiteral extends meta::external::query::sql::metamodel::Literal
+{
+  <<equality.Key>> value: Integer[1];
+}
+
+Class meta::external::query::sql::metamodel::BooleanLiteral extends meta::external::query::sql::metamodel::Literal
+{
+  <<equality.Key>> value: Boolean[1];
+}
+
+Class meta::external::query::sql::metamodel::DoubleLiteral extends meta::external::query::sql::metamodel::Literal
+{
+  <<equality.Key>> value: Float[1];
+}
+
+Class meta::external::query::sql::metamodel::IntegerLiteral extends meta::external::query::sql::metamodel::Literal
+{
+  <<equality.Key>> value: Integer[1];
+}
+
+Class meta::external::query::sql::metamodel::StringLiteral extends meta::external::query::sql::metamodel::Literal
+{
+  <<equality.Key>> value: String[1];
+  <<equality.Key>> quoted: Boolean[0..1];
+}
+
+Class meta::external::query::sql::metamodel::ArrayLiteral extends meta::external::query::sql::metamodel::Literal
+{
+  <<equality.Key>> values: meta::external::query::sql::metamodel::Expression[*];
+}
+
+Class meta::external::query::sql::metamodel::NullLiteral extends meta::external::query::sql::metamodel::Literal
+{
+}
+
+Class meta::external::query::sql::metamodel::IntervalLiteral extends meta::external::query::sql::metamodel::Literal
+{
+  <<equality.Key>> ago: Boolean[0..1];
+  <<equality.Key>> years: Integer[0..1];
+  <<equality.Key>> months: Integer[0..1];
+  <<equality.Key>> weeks: Integer[0..1];
+  <<equality.Key>> days: Integer[0..1];
+  <<equality.Key>> hours: Integer[0..1];
+  <<equality.Key>> minutes: Integer[0..1];
+  <<equality.Key>> seconds: Integer[0..1];
+}
+
+Class meta::external::query::sql::metamodel::NamedArgumentExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> name: String[1];
+  <<equality.Key>> expression: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::PositionalParameterExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> index: Integer[1];
+}
+
+Class meta::external::query::sql::metamodel::ParameterPlaceholderExpression extends meta::external::query::sql::metamodel::PositionalParameterExpression
+{
+}
+
+Class meta::external::query::sql::metamodel::LikePredicate extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> value: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> pattern: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> escape: meta::external::query::sql::metamodel::Expression[0..1];
+  <<equality.Key>> ignoreCase: Boolean[1];
+}
+
+Class meta::external::query::sql::metamodel::SortItem extends meta::external::query::sql::metamodel::Node
+{
+  <<equality.Key>> sortKey: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> ordering: meta::external::query::sql::metamodel::SortItemOrdering[1];
+  <<equality.Key>> nullOrdering: meta::external::query::sql::metamodel::SortItemNullOrdering[1];
+}
+
+Class meta::external::query::sql::metamodel::ComparisonExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> left: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> right: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> operator: meta::external::query::sql::metamodel::ComparisonOperator[1];
+}
+
+Class meta::external::query::sql::metamodel::LogicalBinaryExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> type: meta::external::query::sql::metamodel::LogicalBinaryType[1];
+  <<equality.Key>> left: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> right: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::NotExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> value: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::ArithmeticExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> type: meta::external::query::sql::metamodel::ArithmeticType[1];
+  <<equality.Key>> left: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> right: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::NegativeExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> value: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::IsNullPredicate extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> value: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::IsNotNullPredicate extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> value: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::CurrentTime extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> type: meta::external::query::sql::metamodel::CurrentTimeType[1];
+  <<equality.Key>> precision: Integer[0..1];
+}
+
+Class meta::external::query::sql::metamodel::FunctionCall extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> name: meta::external::query::sql::metamodel::QualifiedName[1];
+  <<equality.Key>> distinct: Boolean[1];
+  <<equality.Key>> arguments: meta::external::query::sql::metamodel::Expression[*];
+  <<equality.Key>> filter: meta::external::query::sql::metamodel::Expression[0..1];
+  <<equality.Key>> window: meta::external::query::sql::metamodel::Window[0..1];
+  <<equality.Key>> group: meta::external::query::sql::metamodel::Group[0..1];
+  <<equality.Key>> orderBy: meta::external::query::sql::metamodel::SortItem[*];
+}
+
+Class meta::external::query::sql::metamodel::SimpleCaseExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> operand: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> whenClauses: meta::external::query::sql::metamodel::WhenClause[*];
+  <<equality.Key>> defaultValue: meta::external::query::sql::metamodel::Expression[0..1];
+}
+
+Class meta::external::query::sql::metamodel::SearchedCaseExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> whenClauses: meta::external::query::sql::metamodel::WhenClause[*];
+  <<equality.Key>> defaultValue: meta::external::query::sql::metamodel::Expression[0..1];
+}
+
+Class meta::external::query::sql::metamodel::WhenClause extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> operand: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> result: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::Extract extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> expression: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> field: meta::external::query::sql::metamodel::ExtractField[1];
+}
+
+Class meta::external::query::sql::metamodel::Trim extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> value: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> characters: meta::external::query::sql::metamodel::Expression[0..1 ];
+  <<equality.Key>> mode: meta::external::query::sql::metamodel::TrimMode[1];
+}
+
+Class meta::external::query::sql::metamodel::Join extends meta::external::query::sql::metamodel::Relation
+{
+  <<equality.Key>> type: meta::external::query::sql::metamodel::JoinType[1];
+  <<equality.Key>> left: meta::external::query::sql::metamodel::Relation[1];
+  <<equality.Key>> right: meta::external::query::sql::metamodel::Relation[1];
+  <<equality.Key>> criteria: meta::external::query::sql::metamodel::JoinCriteria[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::JoinCriteria
+{
+}
+
+Class meta::external::query::sql::metamodel::NaturalJoin extends meta::external::query::sql::metamodel::JoinCriteria
+{
+}
+
+Class meta::external::query::sql::metamodel::JoinOn extends meta::external::query::sql::metamodel::JoinCriteria
+{
+  <<equality.Key>> expression: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::JoinUsing extends meta::external::query::sql::metamodel::JoinCriteria
+{
+  <<equality.Key>> columns: String[*];
+}
+
+Class meta::external::query::sql::metamodel::Cast extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> expression: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> type: meta::external::query::sql::metamodel::ColumnType[1];
+}
+
+Class meta::external::query::sql::metamodel::ColumnType extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> name: String[1];
+  <<equality.Key>> parameters: Integer[*];
+}
+
+Class meta::external::query::sql::metamodel::QualifiedName
+{
+  <<equality.Key>> parts: String[*];
+}
+
+Class meta::external::query::sql::metamodel::QualifiedNameReference extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> name: meta::external::query::sql::metamodel::QualifiedName[1];
+}
+
+Class meta::external::query::sql::metamodel::InListExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> values: meta::external::query::sql::metamodel::Expression[*];
+}
+
+Class meta::external::query::sql::metamodel::InPredicate extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> value: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> valueList: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::BetweenPredicate extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> min: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> max: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> value: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::Group extends meta::external::query::sql::metamodel::Statement
+{
+  <<equality.Key>> orderBy: meta::external::query::sql::metamodel::SortItem[1];
+}
+
+Class meta::external::query::sql::metamodel::Window extends meta::external::query::sql::metamodel::Statement
+{
+  <<equality.Key>> windowRef: String[0..1];
+  <<equality.Key>> partitions: meta::external::query::sql::metamodel::Expression[*];
+  <<equality.Key>> orderBy: meta::external::query::sql::metamodel::SortItem[*];
+  <<equality.Key>> windowFrame: meta::external::query::sql::metamodel::WindowFrame[0..1];
+}
+
+Class meta::external::query::sql::metamodel::WindowFrame extends meta::external::query::sql::metamodel::Node
+{
+  <<equality.Key>> mode: meta::external::query::sql::metamodel::WindowFrameMode[1];
+  <<equality.Key>> start: meta::external::query::sql::metamodel::FrameBound[1];
+  <<equality.Key>> end: meta::external::query::sql::metamodel::FrameBound[0..1];
+}
+
+Enum meta::external::query::sql::metamodel::WindowFrameMode {
+  RANGE, ROWS
+}
+Enum meta::external::query::sql::metamodel::FrameBoundType {
+  UNBOUNDED_PRECEDING, PRECEDING, CURRENT_ROW, FOLLOWING, UNBOUNDED_FOLLOWING
+}
+
+Class meta::external::query::sql::metamodel::FrameBound extends meta::external::query::sql::metamodel::Node
+{
+  <<equality.Key>> type: meta::external::query::sql::metamodel::FrameBoundType[1];
+  <<equality.Key>> value: meta::external::query::sql::metamodel::Expression[0..1];
+}
+
+Enum meta::external::query::sql::metamodel::TrimMode
+{
+  LEADING, TRAILING, BOTH
+}
+
+Enum meta::external::query::sql::metamodel::JoinType
+{
+  CROSS,
+  INNER, 
+  LEFT, 
+  RIGHT, 
+  FULL
+}
+
+Enum meta::external::query::sql::metamodel::LogicalBinaryType
+{
+  AND,
+  OR
+}
+
+Enum meta::external::query::sql::metamodel::ArithmeticType
+{
+  ADD,
+  SUBTRACT,
+  MULTIPLY,
+  DIVIDE,
+  MODULUS,
+  POWER
+}
+
+Enum meta::external::query::sql::metamodel::SortItemOrdering
+{
+  ASCENDING,
+  DESCENDING
+}
+
+Enum meta::external::query::sql::metamodel::SortItemNullOrdering
+{
+  FIRST,
+  LAST,
+  UNDEFINED
+}
+
+Enum meta::external::query::sql::metamodel::ComparisonOperator
+{
+  EQUAL,
+  NOT_EQUAL,
+  LESS_THAN,
+  LESS_THAN_OR_EQUAL,
+  GREATER_THAN,
+  GREATER_THAN_OR_EQUAL,
+  IS_DISTINCT_FROM,
+  IS_NOT_DISTINCT_FROM,
+  REGEX_MATCH,
+  REGEX_MATCH_CI,
+  REGEX_NO_MATCH,
+  REGEX_NO_MATCH_CI,
+  LIKE,
+  ILIKE,
+  NOT_LIKE,
+  NOT_ILIKE
+}
+
+Enum meta::external::query::sql::metamodel::CurrentTimeType
+{
+  DATE,
+  TIME,
+  TIMESTAMP
+}
+
+Enum meta::external::query::sql::metamodel::ExtractField
+{
+  CENTURY,
+  YEAR,
+  QUARTER,
+  MONTH,
+  WEEK,
+  DAY,
+  DAY_OF_MONTH,
+  DAY_OF_WEEK,
+  DOW,
+  DAY_OF_YEAR,
+  DOY,
+  HOUR,
+  MINUTE,
+  SECOND,
+  TIMEZONE_HOUR,
+  TIMEZONE_MINUTE,
+  EPOCH
+}

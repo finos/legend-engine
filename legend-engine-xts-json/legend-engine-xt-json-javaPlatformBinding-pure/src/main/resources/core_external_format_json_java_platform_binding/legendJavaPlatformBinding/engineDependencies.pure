@@ -1,0 +1,102 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/*
+ * Generated extension externalFormatJson class definitions: see org.finos.legend.engine.external.shared.ExternalFormatJavaCompilerExtension
+ */
+
+import meta::external::format::json::executionPlan::platformBinding::legendJava::*;
+import meta::external::language::java::factory::*;
+import meta::external::language::java::transform::*;
+
+Class meta::external::format::json::executionPlan::platformBinding::legendJava::_IJsonInternalizeExecutionNodeSpecifics {}
+Class meta::external::format::json::executionPlan::platformBinding::legendJava::JsonDataReader {}
+Class meta::external::format::json::executionPlan::platformBinding::legendJava::_IJsonExternalizeExecutionNodeSpecifics {}
+Class meta::external::format::json::executionPlan::platformBinding::legendJava::IJsonSerializer {}
+Class meta::external::format::json::executionPlan::platformBinding::legendJava::IJsonWriter {}
+
+/*
+ * This function should be assigned to the router extension:
+ *
+ *     plan_javaRuntime_enginePlatformDependencies_conventions = meta::external::format::json::executionPlan::platformBinding::legendJava::extendJavaEngineDependencies_Conventions_1__Conventions_1_
+ */
+function meta::external::format::json::executionPlan::platformBinding::legendJava::extendJavaEngineDependencies(conventions:Conventions[1]):Conventions[1]
+{
+
+   let jIChecked = $conventions->className(meta::pure::dataQuality::Checked);
+   let jIExecutionNodeContext = $conventions->className(meta::pure::executionPlan::platformBinding::legendJava::IExecutionNodeContext);
+   let jPureDate = $conventions->className(meta::pure::executionPlan::platformBinding::legendJava::PureDate);
+
+   let jJsonDataRecord = javaClass('public', 'org.finos.legend.engine.external.format.json.read.JsonDataRecord')
+      ->addMethod(javaMethod('public', javaLong(), 'getNumber', []))
+      ->addMethod(javaMethod('public', javaString(), 'getRecord', []))
+      ->addMethod(javaMethod('public', javaString(), 'typeName$', []))
+      ->addMethod(javaMethod('public', javaString(), 'typePath$', []));
+
+   let jJsonDataReader = javaClass('public', 'org.finos.legend.engine.external.format.json.read.JsonDataReader')
+      ->addMethod(javaMethod('public', javaStream(javaParameterizedType($jIChecked, [javaTypeVar('T')])), 'startStream', []));
+
+   let jIJsonInternalizeExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.external.format.json.read.IJsonInternalizeExecutionNodeSpecifics')
+      ->addMethod(javaMethod('public', javaParameterizedType($jJsonDataReader, [javaWildcard()]), 'createReader', [javaParam(javaClass('java.io.InputStream'), 'p0')]));
+
+   let jIJsonSerializer = javaClass('public', 'org.finos.legend.engine.external.format.json.write.IJsonSerializer')
+      ->addMethod(javaMethod('public', javaVoid(), 'serialize', [javaParam(javaTypeVar('T'), 'p0')]));
+
+   let jIJsonWriter = javaClass('public', 'org.finos.legend.engine.external.format.json.write.IJsonWriter')
+      ->addMethod(javaMethod('public', javaVoid(), 'endObject', []))
+      ->addMethod(javaMethod('public', javaVoid(), 'setDateTimeFormat', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'setIncludeEnumType', [javaParam(javaBoolean(), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'setRemovePropertiesWithEmptySets', [javaParam(javaBoolean(), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'setRemovePropertiesWithNullValues', [javaParam(javaBoolean(), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'setTypeWriter', [javaParam(javaBoolean(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaBoolean(), 'p2')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'startObject', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeBooleanProperty', [javaParam(javaString(), 'p0'), javaParam(javaBoolean(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeBooleanProperty', [javaParam(javaString(), 'p0'), javaParam(javaBooleanBoxed(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeBooleanProperty', [javaParam(javaString(), 'p0'), javaParam(javaList(javaBooleanBoxed()), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeComplexProperty', [javaParam(javaString(), 'p0'), javaParam(javaList(javaTypeVar('T')), 'p1'), javaParam(javaConsumer(javaTypeVar('T')), 'p2')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeComplexProperty', [javaParam(javaString(), 'p0'), javaParam(javaTypeVar('T'), 'p1'), javaParam(javaConsumer(javaTypeVar('T')), 'p2')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeDateProperty', [javaParam(javaString(), 'p0'), javaParam($jPureDate, 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeDateProperty', [javaParam(javaString(), 'p0'), javaParam(javaList($jPureDate), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeDateTimeProperty', [javaParam(javaString(), 'p0'), javaParam($jPureDate, 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeDateTimeProperty', [javaParam(javaString(), 'p0'), javaParam(javaList($jPureDate), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeDecimalProperty', [javaParam(javaString(), 'p0'), javaParam(javaBigDecimal(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeDecimalProperty', [javaParam(javaString(), 'p0'), javaParam(javaList(javaBigDecimal()), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeEnumProperty', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaList(javaString()), 'p2')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeEnumProperty', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaString(), 'p2')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeFloatProperty', [javaParam(javaString(), 'p0'), javaParam(javaDouble(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeFloatProperty', [javaParam(javaString(), 'p0'), javaParam(javaDoubleBoxed(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeFloatProperty', [javaParam(javaString(), 'p0'), javaParam(javaList(javaDoubleBoxed()), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeIntegerProperty', [javaParam(javaString(), 'p0'), javaParam(javaList(javaLongBoxed()), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeIntegerProperty', [javaParam(javaString(), 'p0'), javaParam(javaLong(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeIntegerProperty', [javaParam(javaString(), 'p0'), javaParam(javaLongBoxed(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeNumberProperty', [javaParam(javaString(), 'p0'), javaParam(javaList(javaNumber()), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeNumberProperty', [javaParam(javaString(), 'p0'), javaParam(javaNumber(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeStrictDateProperty', [javaParam(javaString(), 'p0'), javaParam($jPureDate, 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeStrictDateProperty', [javaParam(javaString(), 'p0'), javaParam(javaList($jPureDate), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeStringProperty', [javaParam(javaString(), 'p0'), javaParam(javaList(javaString()), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeStringProperty', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeUnitProperty', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaList(javaNumber()), 'p2')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'writeUnitProperty', [javaParam(javaString(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaNumber(), 'p2')]));
+
+   let jIJsonExternalizeExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.external.format.json.write.IJsonExternalizeExecutionNodeSpecifics')
+      ->addMethod(javaMethod('public', javaParameterizedType($jIJsonSerializer, [javaTypeVar('T')]), 'createSerializer', [javaParam($jIJsonWriter, 'p0'), javaParam($jIExecutionNodeContext, 'p1')]));
+
+   $conventions
+      ->addProvidedType(meta::external::format::json::executionPlan::model::JsonDataRecord, $jJsonDataRecord)
+      ->addProvidedType(meta::external::format::json::executionPlan::platformBinding::legendJava::_IJsonInternalizeExecutionNodeSpecifics, $jIJsonInternalizeExecutionNodeSpecifics)
+      ->addProvidedType(meta::external::format::json::executionPlan::platformBinding::legendJava::JsonDataReader, $jJsonDataReader)
+      ->addProvidedType(meta::external::format::json::executionPlan::platformBinding::legendJava::_IJsonExternalizeExecutionNodeSpecifics, $jIJsonExternalizeExecutionNodeSpecifics)
+      ->addProvidedType(meta::external::format::json::executionPlan::platformBinding::legendJava::IJsonSerializer, $jIJsonSerializer)
+      ->addProvidedType(meta::external::format::json::executionPlan::platformBinding::legendJava::IJsonWriter, $jIJsonWriter);
+}

@@ -1,0 +1,110 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::json::executionPlan::test::*;
+import meta::external::format::json::executionPlan::test::types::*;
+import meta::external::format::json::functions::*;
+
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::functions::*;
+
+import meta::legend::*;
+
+import meta::pure::dataQuality::*;
+import meta::pure::model::unit::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::types::testAllTypes(): Boolean[1]
+{
+  let query  = {data:Byte[*] | AllTypes->fromJson($data)->toJson(#{AllTypes{string,optionalString,repeatedString,integer,optionalInteger,repeatedInteger,float,optionalFloat,repeatedFloat,decimal,optionalDecimal,repeatedDecimal,boolean,optionalBoolean,repeatedBoolean,date,optionalDate,repeatedDate,strictDate,optionalStrictDate,repeatedStrictDate,dateTime,optionalDateTime,repeatedDateTime,enum,optionalEnum,repeatedEnum,measure,optionalMeasure,repeatedMeasure}}#)};
+
+  let input  = readFile('/core_external_format_json/executionPlan/tests/resources/allTypes.json')->toOne();
+  let result = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+  
+  assertJsonStringsEqual(readFile('/core_external_format_json/executionPlan/tests/resources/allTypesResult.json')->toOne(), $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::types::testAllTypesWithBadData(): Boolean[1]
+{
+  let query  = {data:Byte[*] | AllTypes->fromJson($data)->checked()->toJson(checked(#{AllTypes{string,optionalString,repeatedString,integer,optionalInteger,repeatedInteger,float,optionalFloat,repeatedFloat,decimal,optionalDecimal,repeatedDecimal,boolean,optionalBoolean,repeatedBoolean,date,optionalDate,repeatedDate,strictDate,optionalStrictDate,repeatedStrictDate,dateTime,optionalDateTime,repeatedDateTime,enum,optionalEnum,repeatedEnum,measure,optionalMeasure,repeatedMeasure}}#, 'application/json'))};
+
+  let input  = readFile('/core_external_format_json/executionPlan/tests/resources/allTypesBadData.json')->toOne();
+  let result = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+  
+  assertJsonStringsEqual(readFile('/core_external_format_json/executionPlan/tests/resources/allTypesBadDataResult.json')->toOne(), $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::types::testAllTypesWithBinding(): Boolean[1]
+{
+  // Note: JsonSchema does not support measure/unit
+  
+  let binding = compileLegendGrammar(readFile('/core_external_format_json/executionPlan/tests/resources/allTypesSchema.txt')->toOne())->filter(e | $e->instanceOf(Binding))->cast(@Binding)->toOne();
+  let query  = {data:Byte[*] | AllTypes->internalize($binding, $data)->externalize($binding, #{AllTypes{string,optionalString,repeatedString,integer,optionalInteger,repeatedInteger,float,optionalFloat,repeatedFloat,decimal,optionalDecimal,repeatedDecimal,boolean,optionalBoolean,repeatedBoolean,date,optionalDate,repeatedDate,strictDate,optionalStrictDate,repeatedStrictDate,dateTime,optionalDateTime,repeatedDateTime,enum,optionalEnum,repeatedEnum}}#)};
+
+  let input  = readFile('/core_external_format_json/executionPlan/tests/resources/allTypes.json')->toOne();
+  let result = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+  
+  assertJsonStringsEqual(readFile('/core_external_format_json/executionPlan/tests/resources/allTypesWithSchema.json')->toOne(), $result);
+}
+
+###Pure
+import meta::pure::unit::*;
+import meta::external::format::json::executionPlan::test::types::*;
+
+Class meta::external::format::json::executionPlan::test::types::AllTypes
+{
+  string          : String[1];
+  optionalString  : String[0..1];
+  repeatedString  : String[*];
+
+  integer         : Integer[1];
+  optionalInteger : Integer[0..1];
+  repeatedInteger : Integer[*];
+
+  float           : Float[1];
+  optionalFloat   : Float[0..1];
+  repeatedFloat   : Float[*];
+
+  decimal         : Decimal[1];
+  optionalDecimal : Decimal[0..1];
+  repeatedDecimal : Decimal[*];
+
+  boolean         : Boolean[1];
+  optionalBoolean : Boolean[0..1];
+  repeatedBoolean : Boolean[*];
+
+  date            : Date[1];
+  optionalDate    : Date[0..1];
+  repeatedDate    : Date[*];
+
+  strictDate         : StrictDate[1];
+  optionalStrictDate : StrictDate[0..1];
+  repeatedStrictDate : StrictDate[*];
+
+  dateTime           : DateTime[1];
+  optionalDateTime   : DateTime[0..1];
+  repeatedDateTime   : DateTime[*];
+
+  enum               : Gender[1];
+  optionalEnum       : Gender[0..1];
+  repeatedEnum       : Gender[*];
+
+  measure            : Mass~Kilogram[1];
+  optionalMeasure    : Mass~Kilogram[0..1];
+  repeatedMeasure    : Mass~Kilogram[*];
+}
+
+Enum meta::external::format::json::executionPlan::test::types::Gender
+{
+  MALE, FEMALE, OTHER
+}

@@ -1,0 +1,6 @@
+{
+  "purePackage": "meta::external::query::sql::schema::metamodel",
+  "javaPackage": "org.finos.legend.engine.protocol.sql.schema.metamodel",
+  "elementsToBeExcluded": [
+  ]
+}

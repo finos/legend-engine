@@ -1,0 +1,22 @@
+{
+  "name": "core_analytics_search",
+  "pattern": "(meta::analytics::search|meta::pure::search)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_dsl_store",
+    "platform_dsl_mapping",
+    "platform_functions_json",
+    "platform_store_relational",
+    "core_functions",
+    "core",
+    "core_relational",
+    "core_service",
+    "core_diagram",
+    "core_diagram_metamodel",
+    "core_data_space_metamodel",
+    "core_analytics_lineage",
+    "core_external_compiler",
+    "core_analytics_mapping"
+  ]
+}
