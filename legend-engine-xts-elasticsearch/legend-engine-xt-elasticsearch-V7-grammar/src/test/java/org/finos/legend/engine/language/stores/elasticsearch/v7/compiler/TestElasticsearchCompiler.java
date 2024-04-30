@@ -25,9 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_elasticsearch_seven_metamodel_extensions_store_contract;
-import org.finos.legend.pure.generated.core_elasticsearch_seven_metamodel_store_store;
 import org.finos.legend.pure.generated.core_pure_protocol_vX_X_X_scan_buildBasePureModel;
-import org.finos.legend.pure.generated.core_pure_protocol_vX_X_X_transfers_store;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.junit.Assert;
 import org.junit.Test;

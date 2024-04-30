@@ -189,7 +189,7 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
         }
         catch (Exception e)
         {
-            LOGGER.warn(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.GRAPH_EXPRESSION_ERROR, "Can't build function '" + packageString + "' - stack: " + ctx.getStack()).toString());
+            LOGGER.warn(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.GRAPH_EXPRESSION_ERROR, "Can't build function '" + packageString + "' - stack: " + ctx.getStack()).toString());
             throw e;
         }
         FunctionType fType = ((FunctionType) targetFunc._classifierGenericType()._typeArguments().getFirst()._rawType());

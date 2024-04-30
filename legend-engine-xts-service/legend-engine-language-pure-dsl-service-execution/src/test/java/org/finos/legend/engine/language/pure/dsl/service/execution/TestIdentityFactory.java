@@ -41,7 +41,7 @@ public final class TestIdentityFactory implements IdentityFactory
     {
         if (subject == null)
         {
-            return this.getAnonymousIdentity();
+            return Identity.getAnonymousIdentity();
         }
         Principal principal = getKerberosPrincipalFromSubject(subject);
         if (principal == null)
@@ -62,31 +62,19 @@ public final class TestIdentityFactory implements IdentityFactory
     {
         if (profiles == null || profiles.isEmpty())
         {
-            return this.getAnonymousIdentity();
+            return Identity.getAnonymousIdentity();
         }
         Optional<KerberosProfile> kerberosProfileHolder = this.getKerberosProfile(profiles);
         if (kerberosProfileHolder.isPresent())
         {
             return INSTANCE.makeIdentity(kerberosProfileHolder.get().getSubject());
         }
-        return INSTANCE.makeIdentityForTesting(profiles.get(0).getId());
+        return new Identity(profiles.get(0).getId());
     }
 
     private Optional<KerberosProfile> getKerberosProfile(MutableList<CommonProfile> profiles)
     {
         return Optional.ofNullable(LazyIterate.selectInstancesOf(profiles, KerberosProfile.class).getFirst());
-    }
-
-    @Override
-    public Identity makeIdentityForTesting(String name)
-    {
-        return new Identity(name);
-    }
-
-    @Override
-    public Identity getAnonymousIdentity()
-    {
-        return new Identity("Anonymous");
     }
 
     @Override

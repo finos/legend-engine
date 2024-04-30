@@ -16,9 +16,6 @@ package org.finos.legend.engine.language.pure.grammar.to.extension;
 
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
-import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
-import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensionLoader;
-import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.ServiceLoader;

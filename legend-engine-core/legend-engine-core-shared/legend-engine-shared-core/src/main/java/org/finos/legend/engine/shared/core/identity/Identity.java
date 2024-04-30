@@ -31,6 +31,7 @@ public class Identity
 {
     private String name;
     private final List<Credential> credentials = new ArrayList<>();
+    private static final Identity ANONYMOUS_IDENTITY = new Identity("Anonymous");
 
     public Identity(String name, Credential... credentials)
     {
@@ -59,6 +60,11 @@ public class Identity
     public void setName(String name)
     {
         this.name = name;
+    }
+
+    public static Identity getAnonymousIdentity()
+    {
+        return ANONYMOUS_IDENTITY;
     }
 
     public <T extends Credential> Optional<T> getCredential(Class<T> credentialType)

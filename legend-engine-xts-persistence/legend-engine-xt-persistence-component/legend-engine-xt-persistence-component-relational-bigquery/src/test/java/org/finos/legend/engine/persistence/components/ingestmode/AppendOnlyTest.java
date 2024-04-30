@@ -55,7 +55,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
                 "FROM `mydb`.`staging` as stage)";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableCreateQueryWithNoPKs, preActionsSqlList.get(0));
-        Assertions.assertEquals(BigQueryTestArtifacts.expectedStagingTableCreateQueryWithNoPKs, preActionsSqlList.get(1));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, preActionsSqlList.get(1));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
 
         // Stats

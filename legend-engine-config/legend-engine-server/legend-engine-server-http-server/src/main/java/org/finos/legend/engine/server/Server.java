@@ -64,6 +64,7 @@ import org.finos.legend.engine.external.shared.format.model.api.ExternalFormats;
 import org.finos.legend.engine.functionActivator.api.FunctionActivatorAPI;
 import org.finos.legend.engine.generation.artifact.api.ArtifactGenerationExtensionApi;
 import org.finos.legend.engine.language.hostedService.api.HostedServiceService;
+import org.finos.legend.engine.language.memsql.api.MemSqlFunctionService;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
@@ -78,6 +79,7 @@ import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.relational.api.relationalElement.RelationalElementAPI;
 import org.finos.legend.engine.language.snowflakeApp.api.SnowflakeAppService;
+import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionDeploymentConfiguration;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanLegacy;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanStrategic;
@@ -173,7 +175,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
     public static void main(String[] args) throws Exception
     {
         EngineUrlStreamHandlerFactory.initialize();
-        new Server().run(args.length == 0 ? new String[]{"server", "legend-engine-config/legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/userTestConfig.json"} : args);
+        new Server().run(args.length == 0 ? new String[]{"server", "legend-engine-config/legend-engine-server/legend-engine-server-http-server/src/test/resources/org/finos/legend/engine/server/test/userTestConfig.json"} : args);
     }
 
     @Override
@@ -206,7 +208,8 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         bootstrap.getObjectMapper().registerSubtypes(new NamedType(LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.class, "legendDefault"));
         bootstrap.getObjectMapper().registerSubtypes(new NamedType(HostedServiceDeploymentConfiguration.class, "hostedServiceConfig"));
         bootstrap.getObjectMapper().registerSubtypes(new NamedType(SnowflakeAppDeploymentConfiguration.class, "snowflakeAppConfig"));
-        bootstrap.getObjectMapper().registerSubtypes(new NamedType(BigQueryFunctionDeploymentConfiguration.class, "snowflakeAppConfig"));
+        bootstrap.getObjectMapper().registerSubtypes(new NamedType(BigQueryFunctionDeploymentConfiguration.class, "bigQueryFunctionConfig"));
+        bootstrap.getObjectMapper().registerSubtypes(new NamedType(MemSqlFunctionDeploymentConfiguration.class, "memsqlFunctionConfig"));
     }
 
     public CredentialProviderProvider configureCredentialProviders(List<VaultConfiguration> vaultConfigurations)
@@ -372,7 +375,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new ExecutePlanLegacy(planExecutor));
 
         // Function Activator
-        environment.jersey().register(new FunctionActivatorAPI(modelManager, Lists.mutable.empty(), Lists.mutable.with(new SnowflakeAppService(planExecutor), new HostedServiceService()), routerExtensions));
+        environment.jersey().register(new FunctionActivatorAPI(modelManager, Lists.mutable.empty(), Lists.mutable.with(new SnowflakeAppService(planExecutor), new HostedServiceService(),new MemSqlFunctionService(planExecutor)), routerExtensions));
 
         // GraphQL
         environment.jersey().register(new GraphQLGrammar());

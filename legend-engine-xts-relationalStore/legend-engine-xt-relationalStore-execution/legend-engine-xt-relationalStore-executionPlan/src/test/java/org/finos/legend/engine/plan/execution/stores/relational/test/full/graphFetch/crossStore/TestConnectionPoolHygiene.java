@@ -271,7 +271,7 @@ public class TestConnectionPoolHygiene extends AlloyTestServer
     private SingleExecutionPlan buildPlanForFetchFunction(String fetchFunction)
     {
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(LOGICAL_MODEL + STORE_MODEL + MAPPING + RUNTIME + fetchFunction);
-        PureModel pureModel = Compiler.compile(contextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
+        PureModel pureModel = Compiler.compile(contextData, null, Identity.getAnonymousIdentity().getName());
 
         List<ValueSpecification> fetchFunctionExpressions = contextData.getElementsOfType(Function.class).get(0).body;
 

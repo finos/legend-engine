@@ -15,7 +15,6 @@
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.AbstractAppliedFunction;
 

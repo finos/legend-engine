@@ -81,7 +81,7 @@ public class TestElasticsearchExecutionPlanFromGrammarIntegration
     {
         String grammar = IOUtils.toString(ClassLoader.getSystemResource("grammarForPlanIntegrationTesting.pure"), StandardCharsets.UTF_8);
         PureModelContextData pmcd = PureGrammarParser.newInstance().parseModel(grammar.replace("_%_ELASTIC_HOST_%_", hostPort));
-        PURE_MODEL = Compiler.compile(pmcd, DeploymentMode.TEST_IGNORE_FUNCTION_MATCH, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
+        PURE_MODEL = Compiler.compile(pmcd, DeploymentMode.TEST_IGNORE_FUNCTION_MATCH, Identity.getAnonymousIdentity().getName());
     }
 
     @AfterClass

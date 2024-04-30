@@ -25,6 +25,7 @@ import org.finos.legend.engine.persistence.components.importer.Importers;
 import org.finos.legend.engine.persistence.components.ingestmode.*;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetDeduplicationHandler;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DeriveDataErrorRowsLogicalPlan;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DeriveDuplicatePkRowsLogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
@@ -66,6 +67,7 @@ import static org.finos.legend.engine.persistence.components.relational.api.ApiU
 import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.retrieveValueAsLong;
 import static org.finos.legend.engine.persistence.components.relational.api.DataErrorAbstract.NUM_DATA_VERSION_ERRORS;
 import static org.finos.legend.engine.persistence.components.relational.api.DataErrorAbstract.NUM_DUPLICATES;
+import static org.finos.legend.engine.persistence.components.relational.api.DataErrorAbstract.NUM_PK_DUPLICATES;
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalGeneratorAbstract.BULK_LOAD_BATCH_STATUS_PATTERN;
 import static org.finos.legend.engine.persistence.components.transformer.Transformer.TransformOptionsAbstract.DATE_TIME_FORMATTER;
 
@@ -107,7 +109,7 @@ public abstract class RelationalIngestorAbstract
     }
 
     @Default
-    public boolean createStagingDataset()
+    public boolean skipMainAndMetadataDatasetCreation()
     {
         return false;
     }
@@ -424,7 +426,7 @@ public abstract class RelationalIngestorAbstract
                 Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
                 schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ADD_COLUMN);
                 SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), this.ingestMode(), schemaEvolutionCapabilitySet);
-                org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(existingMetadataDataset, desiredMetadataDataset);
+                org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(existingMetadataDataset, desiredMetadataDataset.schema());
                 LogicalPlan schemaEvolutionLogicalPlan = schemaEvolutionResult.logicalPlan();
                 Optional<SqlPlan> schemaEvolutionSqlPlan = Optional.of(transformer.generatePhysicalPlan(schemaEvolutionLogicalPlan));
                 if (schemaEvolutionSqlPlan.isPresent() && !schemaEvolutionSqlPlan.get().getSqlList().isEmpty())
@@ -466,6 +468,24 @@ public abstract class RelationalIngestorAbstract
                     LOGGER.error(errorMessage);
                     List<DataError> dataErrors = ApiUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), duplicateRows.getData(),
                             ErrorCategory.DUPLICATES, caseConversion(), DatasetDeduplicationHandler.COUNT, NUM_DUPLICATES);
+                    throw new DataQualityException(errorMessage, dataErrors);
+                }
+            }
+
+            // Error Check for PK Duplicates: if versioning = No Versioning (fail on pk dups), Fail the job if count > 1
+            if (dedupAndVersionErrorSqlTypeSqlPlanMap.containsKey(MAX_PK_DUPLICATES))
+            {
+                List<TabularData> result = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(MAX_PK_DUPLICATES));
+                Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(result));
+                Optional<Long> maxPkDuplicatesValue = retrieveValueAsLong(obj.orElse(null));
+                if (maxPkDuplicatesValue.isPresent() && maxPkDuplicatesValue.get() > 1)
+                {
+                    // Find the pk-duplicate rows
+                    TabularData duplicatePkRows = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(PK_DUPLICATE_ROWS)).get(0);
+                    String errorMessage = "Encountered multiple rows with duplicate primary keys, Failing the batch as Fail on Duplicate Primary Keys is selected";
+                    LOGGER.error(errorMessage);
+                    List<DataError> dataErrors = ApiUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), duplicatePkRows.getData(),
+                        ErrorCategory.DUPLICATE_PRIMARY_KEYS, caseConversion(), DeriveDuplicatePkRowsLogicalPlan.DUPLICATE_PK_COUNT, NUM_PK_DUPLICATES);
                     throw new DataQualityException(errorMessage, dataErrors);
                 }
             }
@@ -668,7 +688,7 @@ public abstract class RelationalIngestorAbstract
                 .relationalSink(relationalSink())
                 .cleanupStagingData(cleanupStagingData())
                 .collectStatistics(collectStatistics())
-                .createStagingDataset(createStagingDataset())
+                .skipMainAndMetadataDatasetCreation(skipMainAndMetadataDatasetCreation())
                 .enableSchemaEvolution(enableSchemaEvolution())
                 .addAllSchemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet())
                 .enableConcurrentSafety(enableConcurrentSafety())

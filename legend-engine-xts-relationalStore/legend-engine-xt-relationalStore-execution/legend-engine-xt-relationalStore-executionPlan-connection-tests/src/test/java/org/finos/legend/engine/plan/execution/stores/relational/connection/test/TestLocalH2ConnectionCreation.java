@@ -26,7 +26,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,7 +61,7 @@ public class TestLocalH2ConnectionCreation extends DbSpecificTests
     @Test
     public void userAcquiresSingleConnection() throws Exception
     {
-        Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+        Identity identity1 = new Identity("identity1");
         RelationalDatabaseConnection db1Conn1 = this.buildLocalH2DatasourceSpec();
 
         // User gets a connection
@@ -78,7 +77,7 @@ public class TestLocalH2ConnectionCreation extends DbSpecificTests
     @Test
     public void testNorthwindLoader_WithLoading() throws Exception
     {
-        Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+        Identity identity1 = new Identity("identity1");
         RelationalDatabaseConnection db1Conn1 = this.buildLocalH2DatasourceSpec(Lists.mutable.with(
                 "call loadNorthwindData()"));
 
@@ -106,7 +105,7 @@ public class TestLocalH2ConnectionCreation extends DbSpecificTests
     @Test
     public void testNorthwindLoader_WithRepeatedLoading() throws Exception
     {
-        Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity2");
+        Identity identity1 = new Identity("identity2");
         RelationalDatabaseConnection db1Conn1 = this.buildLocalH2DatasourceSpec(Lists.mutable.with(
                 "call loadNorthwindData();", "call loadNorthwindData();"));
 
@@ -134,7 +133,7 @@ public class TestLocalH2ConnectionCreation extends DbSpecificTests
     @Test
     public void testNorthwindLoader_WithoutLoading() throws Exception
     {
-        Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+        Identity identity1 = new Identity("identity1");
         RelationalDatabaseConnection db1Conn1 = this.buildLocalH2DatasourceSpec();
 
         // User gets a connection
@@ -153,7 +152,7 @@ public class TestLocalH2ConnectionCreation extends DbSpecificTests
     @Test
     public void userAcquiresConcurrentConnectionsForSameDataSourceSpecification() throws Exception
     {
-        Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+        Identity identity1 = new Identity("identity1");
         RelationalDatabaseConnection db1 = this.buildLocalH2DatasourceSpec();
 
         // User gets connection 1
@@ -182,7 +181,7 @@ public class TestLocalH2ConnectionCreation extends DbSpecificTests
     @Test
     public void userAcquiresConcurrentConnectionsToSameDb() throws Exception
     {
-        Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+        Identity identity1 = new Identity("identity1");
         RelationalDatabaseConnection db1 = this.buildLocalH2DatasourceSpec();
 
         Connection db1Conn1 = this.connectionManagerSelector.getDatabaseConnection(identity1, db1);
@@ -208,7 +207,7 @@ public class TestLocalH2ConnectionCreation extends DbSpecificTests
     @Test
     public void userAcquiresConcurrentConnectionsToDifferentDbs() throws Exception
     {
-        Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+        Identity identity1 = new Identity("identity1");
         RelationalDatabaseConnection db1 = this.buildLocalH2DatasourceSpec();
 
         Connection db1Conn1 = this.connectionManagerSelector.getDatabaseConnection(identity1, db1);
@@ -234,14 +233,14 @@ public class TestLocalH2ConnectionCreation extends DbSpecificTests
     @Test
     public void multipleUsersAcquireConnectionsToDifferentDatabases() throws Exception
     {
-        Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+        Identity identity1 = new Identity("identity1");
         RelationalDatabaseConnection db1 = this.buildLocalH2DatasourceSpec();
 
         Connection db1Conn1 = this.connectionManagerSelector.getDatabaseConnection(identity1, db1);
         String db1Conn1Name = h2Name(db1Conn1);
         String poolName1 = this.connectionStateManager.poolNameFor(identity1, this.connectionManagerSelector.generateKeyFromDatabaseConnection(db1));
 
-        Identity identity2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity2");
+        Identity identity2 = new Identity("identity2");
         RelationalDatabaseConnection db2 = this.buildLocalH2DatasourceSpec(Lists.mutable.with("drop table if exists Test2;"));
 
         Connection db2Conn1 = this.connectionManagerSelector.getDatabaseConnection(identity2, db2);
@@ -269,14 +268,14 @@ public class TestLocalH2ConnectionCreation extends DbSpecificTests
     @Test
     public void multipleUsersAcquireConnectionsToSameDatabase() throws Exception
     {
-        Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+        Identity identity1 = new Identity("identity1");
         RelationalDatabaseConnection db1 = this.buildLocalH2DatasourceSpec();
 
         Connection db1Conn1 = this.connectionManagerSelector.getDatabaseConnection(identity1, db1);
         String db1Conn1Name = h2Name(db1Conn1);
         String poolName1 = this.connectionStateManager.poolNameFor(identity1, this.connectionManagerSelector.generateKeyFromDatabaseConnection(db1));
 
-        Identity identity2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity2");
+        Identity identity2 = new Identity("identity2");
         RelationalDatabaseConnection db2 = this.buildLocalH2DatasourceSpec();
 
         Connection db2Conn1 = this.connectionManagerSelector.getDatabaseConnection(identity2, db2);

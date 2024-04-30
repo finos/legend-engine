@@ -178,7 +178,8 @@ function meta::external::function::activator::hostedService::generation::getExec
                                         |$s->evaluateAndDeactivate().parametersValues->filter(x| $x.genericType.rawType->toOne()==ExecutionEnvironmentInstance)->map(pv|
                                           $pv->match([
                                             s:SimpleFunctionExpression[1]| $s->reactivate()->toOne();,
-                                             e: ExecutionEnvironmentInstance[1]| $e
+                                            i:InstanceValue[1]| $i.values->toOne();,
+                                            e: ExecutionEnvironmentInstance[1]| $e
                                           ]));,
                                         |$s->reactivate()->toOne()
                                     );,

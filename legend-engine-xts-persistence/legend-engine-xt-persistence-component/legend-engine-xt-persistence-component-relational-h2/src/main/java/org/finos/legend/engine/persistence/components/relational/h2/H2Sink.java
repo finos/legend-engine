@@ -192,7 +192,7 @@ public class H2Sink extends AnsiSqlSink
             LOGICAL_PLAN_VISITOR_BY_CLASS,
             (executor, sink, dataset) -> sink.doesTableExist(dataset),
             (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new H2DataTypeMapping()),
-            (executor, sink, dataset) -> sink.constructDatasetFromDatabase(dataset, new H2JdbcPropertiesToLogicalDataTypeMapping()));
+            (executor, sink, dataset) -> sink.constructDatasetFromDatabase(dataset, new H2JdbcPropertiesToLogicalDataTypeMapping(), false));
     }
 
     @Override

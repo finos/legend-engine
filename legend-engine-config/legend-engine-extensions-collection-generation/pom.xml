@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-config</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.43.5-SNAPSHOT</version>
+        <version>4.44.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -213,17 +213,6 @@
             <artifactId>legend-engine-external-format-jsonSchema</artifactId>
         </dependency>
         <!-- JSON -->
-
-        <!-- Mastery -->
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-mastery-grammar</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-mastery-protocol</artifactId>
-        </dependency>
-        <!-- Mastery -->
 
         <!-- Diagram -->
         <dependency>
@@ -500,6 +489,21 @@
             <artifactId>legend-engine-xt-bigqueryFunction-protocol</artifactId>
         </dependency>
         <!-- BigQuery Function -->
+
+        <!-- MemSql Function -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-memsqlFunction-compiler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-memsqlFunction-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-memsqlFunction-protocol</artifactId>
+        </dependency>
+        <!-- MemSql Function -->
 
         <!-- Text -->
         <dependency>

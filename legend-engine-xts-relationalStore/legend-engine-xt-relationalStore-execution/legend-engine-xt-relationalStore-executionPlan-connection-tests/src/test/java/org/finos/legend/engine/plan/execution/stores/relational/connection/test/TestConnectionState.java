@@ -26,7 +26,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.h2.tools.Server;
 import org.junit.After;
@@ -75,7 +74,7 @@ public class TestConnectionState
     @Test
     public void connectionStateCreation() throws Exception
     {
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting("testuser1");
+        Identity identity = new Identity("testuser1");
 
         // User gets connection to db1
         RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db1");
@@ -91,7 +90,7 @@ public class TestConnectionState
     @Test
     public void connectionStateUpdate() throws Exception
     {
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting("testuser1");
+        Identity identity = new Identity("testuser1");
 
         // User gets connection to db1
         RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db1");
@@ -118,7 +117,7 @@ public class TestConnectionState
     @Test
     public void connectionStateReset() throws Exception
     {
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting("testuser1");
+        Identity identity = new Identity("testuser1");
 
         // User gets connection to db1
         RelationalDatabaseConnection database1 = buildStaticDatabaseSpec("127.0.0.1", server.getPort(), "db1");

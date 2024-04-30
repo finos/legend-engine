@@ -39,4 +39,9 @@ public interface DatasetReference extends Dataset
     {
         return this;
     }
+
+    default Optional<DatasetAdditionalProperties> datasetAdditionalProperties()
+    {
+        return Optional.empty();
+    }
 }

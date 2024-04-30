@@ -131,7 +131,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     public void testBigQueryGCPADCConnection_identity() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPADCSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection(IdentityFactoryProvider.getInstance().getAnonymousIdentity(), systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection(Identity.getAnonymousIdentity(), systemUnderTest);
         testConnection(connection, 1, "select * from `legend-integration-testing.integration_dataset1.table1`");
     }
 
@@ -139,7 +139,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     public void testBigQueryGCPWIFConnection_identity() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPWIFSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection(IdentityFactoryProvider.getInstance().getAnonymousIdentity(), systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection(Identity.getAnonymousIdentity(), systemUnderTest);
         testConnection(connection, 1, "select * from `legend-integration-testing.integration_dataset1.table1`");
     }
 

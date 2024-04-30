@@ -356,7 +356,7 @@ class NontemporalSnapshotTest extends BaseTest
         // Generate the milestoning object
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder()
                 .auditing(NoAuditing.builder().build())
-                .versioningStrategy(NoVersioningStrategy.builder().build())
+                .versioningStrategy(NoVersioningStrategy.builder().failOnDuplicatePrimaryKeys(true).build())
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .build();
 

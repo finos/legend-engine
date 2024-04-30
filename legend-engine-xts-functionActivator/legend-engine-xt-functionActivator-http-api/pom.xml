@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-functionActivator</artifactId>
-        <version>4.43.5-SNAPSHOT</version>
+        <version>4.44.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

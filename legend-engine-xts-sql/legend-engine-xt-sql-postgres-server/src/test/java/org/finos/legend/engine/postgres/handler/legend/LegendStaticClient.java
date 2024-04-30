@@ -17,8 +17,6 @@ package org.finos.legend.engine.postgres.handler.legend;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.SQLOutput;
-import org.finos.legend.engine.postgres.PostgresWireProtocol;
 import org.slf4j.Logger;
 
 public class LegendStaticClient implements LegendClient

@@ -608,6 +608,12 @@ public class AnsiTestArtifacts
     public static String dupRowsSql = "SELECT \"id\",\"name\",\"legend_persistence_count\" FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" as stage " +
             "WHERE stage.\"legend_persistence_count\" > 1 LIMIT 20";
 
+    public static String maxPkDupsErrorCheckSql = "SELECT MAX(\"legend_persistence_pk_count\") as \"MAX_PK_DUPLICATES\" FROM " +
+        "(SELECT COUNT(*) as \"legend_persistence_pk_count\" FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" as stage GROUP BY \"id\", \"name\") as stage";
+
+    public static String dupPkRowsSql = "SELECT \"id\",\"name\",COUNT(*) as \"legend_persistence_pk_count\" FROM " +
+        "\"mydb\".\"staging_temp_staging_lp_yosulf\" as stage GROUP BY \"id\", \"name\" HAVING \"legend_persistence_pk_count\" > 1 LIMIT 20";
+
     public static String dataErrorCheckSqlWithBizDateVersion = "SELECT MAX(\"legend_persistence_distinct_rows\") as \"MAX_DATA_ERRORS\" FROM " +
         "(SELECT COUNT(DISTINCT(\"digest\")) as \"legend_persistence_distinct_rows\" FROM " +
         "\"mydb\".\"staging_temp_staging_lp_yosulf\" as stage GROUP BY \"id\", \"name\", \"biz_date\") as stage";

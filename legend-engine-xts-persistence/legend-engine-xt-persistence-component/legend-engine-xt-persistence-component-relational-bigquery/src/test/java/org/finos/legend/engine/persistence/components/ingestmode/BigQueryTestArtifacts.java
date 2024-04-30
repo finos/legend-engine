@@ -525,6 +525,12 @@ public class BigQueryTestArtifacts
         "FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,COUNT(*) as `legend_persistence_count` FROM `mydb`.`staging` as stage " +
         "GROUP BY stage.`id`, stage.`name`, stage.`amount`, stage.`biz_date`) as stage)";
 
+    public static String maxPkDupsErrorCheckSql = "SELECT MAX(`legend_persistence_pk_count`) as `MAX_PK_DUPLICATES` FROM " +
+        "(SELECT COUNT(*) as `legend_persistence_pk_count` FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage GROUP BY `id`, `name`) as stage";
+
+    public static String dupPkRowsSql = "SELECT `id`,`name`,COUNT(*) as `legend_persistence_pk_count` FROM " +
+        "`mydb`.`staging_temp_staging_lp_yosulf` as stage GROUP BY `id`, `name` HAVING `legend_persistence_pk_count` > 1 LIMIT 20";
+
     public static String maxDupsErrorCheckSql = "SELECT MAX(stage.`legend_persistence_count`) as `MAX_DUPLICATES` FROM " +
             "`mydb`.`staging_temp_staging_lp_yosulf` as stage";
 

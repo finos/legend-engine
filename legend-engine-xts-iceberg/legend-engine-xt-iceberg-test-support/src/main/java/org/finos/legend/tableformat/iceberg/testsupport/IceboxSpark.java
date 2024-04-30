@@ -31,7 +31,6 @@ import org.testcontainers.containers.FailureDetectingExternalResource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.MountableFile;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 
 public class IceboxSpark extends FailureDetectingExternalResource implements AutoCloseable
 {

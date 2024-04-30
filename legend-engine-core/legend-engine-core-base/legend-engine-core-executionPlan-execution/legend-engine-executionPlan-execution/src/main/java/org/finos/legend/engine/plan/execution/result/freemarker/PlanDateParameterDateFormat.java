@@ -132,7 +132,7 @@ public class PlanDateParameterDateFormat extends TemplateDateFormat
     private static void throwIllegalArgumentException(String dateExpression) throws IllegalArgumentException
     {
         String exceptionMessage = "Plan parsing error; unable to process Date: " + dateExpression + ", expecting: " + dateRegex + " e.g.: '[EST] + $date', where $date is of format: " + planDateFormatters.collect(pdf -> pdf.datePattern).makeString("[", ", ", "]") + " , e.g. : [EST] 2018-10-15T20:00:00.123";
-        LOGGER.error(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.JSON_PARSING_ERROR, exceptionMessage).toString());
+        LOGGER.error(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.JSON_PARSING_ERROR, exceptionMessage).toString());
         throw new IllegalArgumentException(exceptionMessage);
     }
 

@@ -17,7 +17,7 @@ package org.finos.legend.engine.repl.autocomplete;
 public class CompletionItem
 {
     private final String display;
-    private final String completion;
+    private String completion;
 
     public CompletionItem(String completion)
     {
@@ -27,6 +27,11 @@ public class CompletionItem
     public CompletionItem(String display, String completion)
     {
         this.display = display;
+        this.completion = completion;
+    }
+
+    public void setCompletion(String completion)
+    {
         this.completion = completion;
     }
 

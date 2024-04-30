@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.grammar.test;
 
-import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
 import org.junit.Test;
 
 public class TestTextGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite

@@ -22,7 +22,6 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDBOperatio
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.language.pure.grammar.to.ComposerUtility.appendTabString;
 
 public class MongoDBSchemaJsonComposer
 {

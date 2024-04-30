@@ -14,10 +14,8 @@
 
 package org.finos.legend.engine.language.pure.dsl.authentication.grammar.to.demo;
 
-import org.finos.legend.engine.language.pure.dsl.authentication.grammar.to.AuthenticationSpecificationComposer;
 import org.finos.legend.engine.language.pure.dsl.authentication.grammar.to.IAuthenticationGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.demo.AuthenticationDemo;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertPath;

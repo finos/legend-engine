@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-dbExtension</artifactId>
-        <version>4.43.5-SNAPSHOT</version>
+        <version>4.44.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -30,6 +30,8 @@
         <module>legend-engine-xt-relationalStore-memsql-pure</module>
         <module>legend-engine-xt-relationalStore-memsql-connection</module>
         <module>legend-engine-xt-relationalStore-memsql-execution</module>
+        <module>legend-engine-xt-relationalStore-memsql-grammar</module>
+        <module>legend-engine-xt-relationalStore-memsql-protocol</module>
         <module>legend-engine-xt-relationalStore-memsql-execution-tests</module>
     </modules>
 </project>
