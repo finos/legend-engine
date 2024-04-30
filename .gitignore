@@ -7,6 +7,7 @@
 **/*.tokens
 **/*.patch
 **/*.DS_Store
+# for temporary files, user local data, configs, etc.
 /temp
 
 # VS Code ignores
