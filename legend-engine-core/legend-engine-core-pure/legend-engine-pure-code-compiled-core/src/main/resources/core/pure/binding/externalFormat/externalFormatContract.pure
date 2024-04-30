@@ -54,7 +54,7 @@ Class meta::external::format::shared::ExternalFormatContract<T>
 
   externalizeConfig                : Class<ExternalFormatExternalizeConfig>[0..1];
   internalizeConfig                : Class<ExternalFormatInternalizeConfig>[0..1];
-  polymorphicTypesConfigDescriptor : PolymorphicTypesConfigDescriptor[0..1];
+  schemaConfig                     : ExternalFormatSchemaConfig[0..1];
 
   internalizeReturnsChecked        : Boolean[1] = false;              // By default we assume external format would NOT wrap internalize response into checked structure
   sourceRecordSerializeTree        : RootGraphFetchTree<Any>[0..1];   // If external Format choses to return checked wrapped response for internalize, it needs to provide serialized representation of its source record metamodel
@@ -113,6 +113,13 @@ Class <<typemodifiers.abstract>> meta::external::format::shared::ExternalFormatI
 {
 
 }
+
+Class meta::external::format::shared::ExternalFormatSchemaConfig
+{
+  polymorphicTypesConfigDescriptor : PolymorphicTypesConfigDescriptor[0..1];
+}
+
+
 
 Class meta::external::format::shared::PolymorphicTypesConfigDescriptor
 {

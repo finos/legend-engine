@@ -18,7 +18,7 @@ Class meta::external::format::json::metamodel::JsonSchema
    content : String[1];  
 }
 
-Class meta::external::format::json::metamodel::PolymorphicTypesConfig extends meta::external::format::shared::metamodel::PolymorphicTypesConfig
+Class meta::external::format::json::metamodel::JsonPolymorphicTypesConfig extends meta::external::format::shared::metamodel::PolymorphicTypesConfig
 {
     typeKeyName : String[1] = '@type';
     fullyQualifiedTypePath : Boolean[1] = false;

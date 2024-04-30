@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::format::json::SchemaConfig::*;
 import meta::external::format::json::PolymorphicTypesConfig::*;
 import meta::external::format::json::binding::validation::*;
 import meta::external::format::json::contract::*;
@@ -42,7 +43,7 @@ function meta::external::format::json::contract::jsonSchemaFormatContract(): Ext
       externalFormatBindingValidator   = bindDetails_Binding_1__BindingDetail_1_,
 
       internalizeConfig                = JsonSchemaInternalizeConfig,
-      polymorphicTypesConfigDescriptor = jsonTypeConfigDescriptor(),
+      schemaConfig                     = jsonSchemaConfig(),
 
       internalizeReturnsChecked        = true,
       sourceRecordSerializeTree        = #{JsonDataRecord {number, record}}#
