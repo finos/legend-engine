@@ -17,6 +17,12 @@ Execution engine for Legend. It provides:
 - In order to start the server, please use the `Main` class `org.finos.legend.engine.server.Server` with the parameters: `server legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/userTestConfig.json`.
 - You can test by trying http://127.0.0.1:6300 in a web browser. The swagger page can be accessed at http://127.0.0.1:6300/api/swagger
 
+> Given the size of the project, developers should consider using paralellism to speed up build times, given enough RAM is provided.
+> In IntelliJ IDEA, this can be done by setting `Thread Count` (in `Preferences > Build, Execution, Deployment > Build Tools > Maven`) and `Shared build process heap size (Mbytes)` (in `Preferences > Build, Execution, Deployment > Compiler > Java Compiler`).
+> For example, setting `Thread Count` to `4` and `Shared build process heap size (Mbytes)` to `30000` can significantly reduce build times, you need to fine-tune this to match your machine's specs.
+> 
+> ⚠️ It's also important to disable `Clear output directory on rebuild` in `Preferences > Build, Execution, Deployment > Complier` as this blows away generated resources needed for running the servers from the IDE.
+
 ### Starting Pure IDE
 
 If you're making changes to the `Pure` codebase, it's highly recommended that you also spin up our `Pure IDE` application:
