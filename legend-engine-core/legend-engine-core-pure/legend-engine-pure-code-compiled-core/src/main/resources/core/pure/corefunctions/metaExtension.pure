@@ -474,6 +474,25 @@ function meta::pure::functions::meta::findVariableExpressionsInValueSpecificatio
    findVariableExpressionsInValueSpecification($vs, true);
 }
 
+function meta::pure::functions::meta::findPlanVarPlaceHoldersInValueSpecification(vs: ValueSpecification[1]): meta::pure::executionPlan::PlanVarPlaceHolder[*]
+{
+   $vs->match([
+      f : FunctionExpression[1] | $f.parametersValues->evaluateAndDeactivate()->map(v | $v->findPlanVarPlaceHoldersInValueSpecification()),
+      i : InstanceValue[1] | $i.values->evaluateAndDeactivate()->map({x |
+         $x->match([
+            v : ValueSpecification[1] | $v->findPlanVarPlaceHoldersInValueSpecification(),
+            k : KeyExpression[1] | $k.expression->findPlanVarPlaceHoldersInValueSpecification(),
+            l : LambdaFunction<Any>[1] | $l.expressionSequence->map(e | $e->findPlanVarPlaceHoldersInValueSpecification()),
+            v : meta::pure::executionPlan::PlanVarPlaceHolder[1] | $v,
+            a : Any[1] | []
+         ])
+      }),
+      c : ClusteredValueSpecification[1] | $c.val->evaluateAndDeactivate()->findPlanVarPlaceHoldersInValueSpecification(),
+      r : RoutedValueSpecification[1] | $r.value->evaluateAndDeactivate()->findPlanVarPlaceHoldersInValueSpecification(),
+      a : Any[1] | []
+   ])
+}
+
 function meta::pure::functions::meta::findPropertyPathsInFunctionDefinition(func:FunctionDefinition<Any>[1]):Path<Nil,Any|*>[*]
 {
    $func.expressionSequence->evaluateAndDeactivate()->map(vs | $vs->collectPropertyPathsInValueSpecification([]));
@@ -652,17 +671,24 @@ function meta::pure::functions::meta::resolve(v:VariableExpression[1], vars:Map<
            if ($open->isEmpty(),
                  |[];,
                  |let res = $open.values;
-                  if($res->isEmpty(),
-                    |let multVal = ^MultiplicityValue(value=0);
-                     ^InstanceValue(multiplicity=PureZero, genericType=^GenericType(rawType=Nil), values=[])->evaluateAndDeactivate();,
-                    |let size = $res->size();
-                     let mult = if($size == 1,
-                                  |PureOne,
-                                  |let multVal = ^MultiplicityValue(value=$size);
-                                   ^Multiplicity(lowerBound=$multVal, upperBound=$multVal);
-                                );
-                     ^InstanceValue(multiplicity=$mult, genericType=$res->genericType(), values=$res)->evaluateAndDeactivate();
-                  );
+                  $res->match([
+                    {pv: meta::pure::executionPlan::PlanVarPlaceHolder[1] |
+                      ^InstanceValue(values=$pv, genericType=^GenericType(rawType=$pv.type), multiplicity=$pv.multiplicity->defaultIfEmpty(ZeroMany)->toOne())->evaluateAndDeactivate();
+                    },
+                    {a: Any[*] | 
+                      if($res->isEmpty(),
+                        |let multVal = ^MultiplicityValue(value=0);
+                         ^InstanceValue(multiplicity=PureZero, genericType=^GenericType(rawType=Nil), values=[])->evaluateAndDeactivate();,
+                        |let size = $res->size();
+                         let mult = if($size == 1,
+                                      |PureOne,
+                                      |let multVal = ^MultiplicityValue(value=$size);
+                                       ^Multiplicity(lowerBound=$multVal, upperBound=$multVal);
+                                    );
+                         ^InstanceValue(multiplicity=$mult, genericType=$res->genericType(), values=$res)->evaluateAndDeactivate();
+                      );
+                    }
+                  ]);
            );,
          | $val->toOne()
    );
