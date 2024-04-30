@@ -22,6 +22,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteInd
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
 
 import java.util.Arrays;
 
@@ -82,6 +83,8 @@ public class UnitemporalDeltaBatchIdDateTimeBasedScenarios extends BaseTest
                         .deleteField(deleteIndicatorField)
                         .addAllDeleteValues(Arrays.asList(deleteIndicatorValues))
                         .build())
+                .versioningStrategy(NoVersioningStrategy.builder().failOnDuplicatePrimaryKeys(true).build())
+                .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .build();
 
         return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithDeleteIndicator, ingestMode);
