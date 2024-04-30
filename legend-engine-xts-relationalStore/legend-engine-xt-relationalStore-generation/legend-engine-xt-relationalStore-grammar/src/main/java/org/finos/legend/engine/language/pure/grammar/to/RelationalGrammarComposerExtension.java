@@ -27,9 +27,11 @@ import org.finos.legend.engine.language.pure.grammar.from.RelationalGrammarParse
 import org.finos.legend.engine.language.pure.grammar.to.data.RelationalEmbeddedDataComposer;
 import org.finos.legend.engine.language.pure.grammar.to.extension.ContentWithType;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
@@ -37,6 +39,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.RelationalMapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RelationalAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RootRelationalClassMapping;
@@ -71,26 +74,48 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
         return null;
     });
 
+    private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> postprocessorRenderers = Lists.mutable.with((element, context) ->
+    {
+        if (element instanceof RelationalMapper)
+        {
+            return renderRelationalMapper((RelationalMapper) element, context);
+        }
+        return null;
+    });
+
+    private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderer = Lists.mutable.withAll(renderers).withAll(postprocessorRenderers);
+
     @Override
     public MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> getExtraPackageableElementComposers()
     {
-        return renderers;
+        return renderer;
     }
 
     @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
     {
-        return Lists.mutable.with(buildSectionComposer(RelationalGrammarParserExtension.NAME, renderers));
+        return Lists.mutable.with(
+                buildSectionComposer(RelationalGrammarParserExtension.NAME, renderers),
+                buildSectionComposer(RelationalGrammarParserExtension.POSTPROCESSOR_NAME, postprocessorRenderers)
+        );
     }
 
     @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
     {
-        return Lists.mutable.with((elements, context, composedSections) ->
-        {
-            List<Database> composableElements = ListIterate.selectInstancesOf(elements, Database.class);
-            return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, x -> RelationalGrammarComposerExtension.renderDatabase(x, context)).makeString("###" + RelationalGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
-        });
+
+        return Lists.mutable.with(
+                (elements, context, composedSections) ->
+                {
+                    List<Database> composableElements = ListIterate.selectInstancesOf(elements, Database.class);
+                    return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, x -> RelationalGrammarComposerExtension.renderDatabase(x, context)).makeString("###" + RelationalGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+                },
+                (elements, context, composedSections) ->
+                {
+                    List<RelationalMapper> composableElements = ListIterate.selectInstancesOf(elements, RelationalMapper.class);
+                    return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, e -> renderRelationalMapper(e, context)).makeString("###" + RelationalGrammarParserExtension.POSTPROCESSOR_NAME + "\n", "\n\n", ""), composableElements);
+                }
+        );
     }
 
     @Override
@@ -331,11 +356,31 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
             {
                 return HelperRelationalGrammarComposer.visitMapperPostProcessor((MapperPostProcessor) postProcessor, context);
             }
+            if (postProcessor instanceof RelationalMapperPostProcessor)
+            {
+                return visitRelationalMapperPostProcessor((RelationalMapperPostProcessor) postProcessor, context);
+            }
             else
             {
                 return null;
             }
         });
+    }
+
+    public static String visitRelationalMapperPostProcessor(RelationalMapperPostProcessor relationalMapperPostProcessor, PureGrammarComposerContext context)
+    {
+        return writeRelationalMappersPostProcessor("relationalMapper", relationalMapperPostProcessor.relationalMappers, context);
+    }
+
+    public static String writeRelationalMappersPostProcessor(String mapperName, List<PackageableElementPointer> relationalMappers, PureGrammarComposerContext context)
+    {
+        List<String> relationalMapperStrings = ListIterate.collect(relationalMappers, relationalMapper -> relationalMapper.path);
+
+        int baseIndent = 2;
+        return getTabString(baseIndent) + mapperName + "\n" +
+                getTabString(baseIndent) + "{\n" + getTabString(3) +
+                String.join(", " + context.getIndentationString(), relationalMapperStrings) +
+                "\n" + getTabString(baseIndent) + "}";
     }
 
     @Override
@@ -353,6 +398,63 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
     public List<Function2<EmbeddedData, PureGrammarComposerContext, ContentWithType>> getExtraEmbeddedDataComposers()
     {
         return Collections.singletonList(RelationalEmbeddedDataComposer::composeRelationalDataEmbeddedData);
+    }
+
+    public static String renderRelationalMapper(RelationalMapper relationalMapper, PureGrammarComposerContext context)
+    {
+        return "RelationalMapper" + " " + PureGrammarComposerUtility.convertPath(relationalMapper.getPath()) + "\n" +
+                "(\n" +
+                (relationalMapper.databaseMappers.isEmpty() ? "" : renderDatabaseMapperSection(relationalMapper)) +
+                (relationalMapper.schemaMappers.isEmpty() ? "" : renderSchemaMapperSection(relationalMapper)) +
+                (relationalMapper.tableMappers.isEmpty() ? "" : renderTableMapperSection(relationalMapper)) +
+                ")";
+    }
+
+    public static String renderDatabaseMapperSection(RelationalMapper relationalMapper)
+    {
+        return  "   DatabaseMappers:" + "\n" +
+                "   [\n" +
+                LazyIterate.collect(relationalMapper.databaseMappers, d -> renderDatabaseMapper(d)).makeString(",\n") + (relationalMapper.databaseMappers.isEmpty() ? "" : "\n") +
+                "   ];\n";
+    }
+
+    public static String renderSchemaMapperSection(RelationalMapper relationalMapper)
+    {
+        return  "   SchemaMappers:" + "\n" +
+                "   [\n" +
+                LazyIterate.collect(relationalMapper.schemaMappers, s -> renderSchemaMapper(s)).makeString(",\n") + (relationalMapper.schemaMappers.isEmpty() ? "" : "\n") +
+                "   ];\n";
+    }
+
+    public static String renderTableMapperSection(RelationalMapper relationalMapper)
+    {
+        return  "   TableMappers:" + "\n" +
+                "   [\n" +
+                LazyIterate.collect(relationalMapper.tableMappers, t -> renderTableMapper(t)).makeString(",\n") + (relationalMapper.tableMappers.isEmpty() ? "" : "\n") +
+                "   ];\n";
+    }
+
+    public static String renderDatabaseMapper(DatabaseMapper databaseMapper)
+    {
+        return getTabString(3) +
+                "[" +
+                String.join(", ", LazyIterate.collect(databaseMapper.schemas, s -> renderSchemaRef(s))) +
+                "]" + " -> " + "'" + databaseMapper.databaseName + "'";
+    }
+
+    public static String renderSchemaMapper(SchemaMapper schemaMapper)
+    {
+        return getTabString(3) + renderSchemaRef(schemaMapper.from) + " -> "  + "'" + schemaMapper.to + "'";
+    }
+
+    public static String renderSchemaRef(SchemaPtr schemaRef)
+    {
+        return schemaRef.database + "." + schemaRef.schema;
+    }
+
+    public static String renderTableMapper(TableMapper tableMapper)
+    {
+        return getTabString(3) + tableMapper.from.database + "." + tableMapper.from.schema + "." + tableMapper.from.table + " -> "  + "'" + tableMapper.to + "'";
     }
 
 }

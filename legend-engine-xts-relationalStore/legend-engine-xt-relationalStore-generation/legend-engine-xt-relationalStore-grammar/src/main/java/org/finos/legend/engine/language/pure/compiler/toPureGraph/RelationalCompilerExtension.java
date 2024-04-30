@@ -27,6 +27,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.multimap.Multimap;
 import org.eclipse.collections.api.set.MutableSet;
+import org.eclipse.collections.api.set.SetIterable;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
@@ -41,15 +42,21 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handl
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validation.RelationalValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidatorContext;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.DatabaseMapper;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.RelationalMapper;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.SchemaMapper;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.TableMapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSetImplementationContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
@@ -60,6 +67,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.flows.DatabaseAuthenticationFlowKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.RelationalMapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
@@ -94,6 +102,15 @@ import org.finos.legend.pure.generated.Root_meta_relational_metamodel_Database_I
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_TableAlias_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_runtime_PostProcessorWithParameter;
 import org.finos.legend.pure.generated.Root_meta_relational_runtime_RelationalExecutionContext_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_RelationalMapperPostProcessor;
+import org.finos.legend.pure.generated.Root_meta_relational_metamodel_RelationalMapper;
+import org.finos.legend.pure.generated.Root_meta_relational_metamodel_DatabaseMapper;
+import org.finos.legend.pure.generated.Root_meta_relational_metamodel_SchemaMapper;
+import org.finos.legend.pure.generated.Root_meta_relational_metamodel_TableMapper;
+import org.finos.legend.pure.generated.Root_meta_relational_metamodel_RelationalMapper_Impl;
+import org.finos.legend.pure.generated.Root_meta_relational_metamodel_DatabaseMapper_Impl;
+import org.finos.legend.pure.generated.Root_meta_relational_metamodel_SchemaMapper_Impl;
+import org.finos.legend.pure.generated.Root_meta_relational_metamodel_TableMapper_Impl;
 import org.finos.legend.pure.generated.core_relational_relational_runtime_connection_postprocessor;
 import org.finos.legend.pure.m2.dsl.store.M2StorePaths;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
@@ -129,10 +146,12 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.support
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
 
@@ -144,6 +163,8 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "-Core");
     }
 
+    static final MutableMap<String, Root_meta_relational_metamodel_RelationalMapper> relationalMappersIndex = Maps.mutable.empty();
+
     @Override
     public CompilerExtension build()
     {
@@ -153,7 +174,8 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
-        return Lists.immutable.with(Processor.newProcessor(
+        return Lists.immutable.with(
+                Processor.newProcessor(
                 Database.class,
                 (Database srcDatabase, CompileContext context) ->
                 {
@@ -189,7 +211,46 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = HelperRelationalBuilder.getDatabase(context.pureModel.buildPackageString(srcDatabase._package, srcDatabase.name), srcDatabase.sourceInformation, context);
                     ListIterate.forEach(srcDatabase.schemas, _schema -> HelperRelationalBuilder.processDatabaseSchemaViewsSecondPass(_schema, context, database));
                 }
-        ));
+                ),
+                Processor.newProcessor(
+                        RelationalMapper.class,
+                        Lists.fixedSize.with(PackageableRuntime.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store.class),
+                        (relationalMapper, context) ->
+                        {
+                            Root_meta_relational_metamodel_RelationalMapper metamodel =  new Root_meta_relational_metamodel_RelationalMapper_Impl(relationalMapper.name, null, context.pureModel.getClass("meta::relational::metamodel::RelationalMapper"))._name(relationalMapper.name);
+                            relationalMappersIndex.put(context.pureModel.buildPackageString(relationalMapper._package, relationalMapper.name), metamodel);
+                            return metamodel;
+                        },
+                        (relationalMapper, context) ->
+                        {
+                            Root_meta_relational_metamodel_RelationalMapper metamodel = relationalMappersIndex.get(context.pureModel.buildPackageString(relationalMapper._package, relationalMapper.name));
+                            metamodel._databaseMappers(ListIterate.collect(relationalMapper.databaseMappers, dbMap ->
+                            {
+                                return new Root_meta_relational_metamodel_DatabaseMapper_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::DatabaseMapper"))
+                                        ._database(dbMap.databaseName);
+                            }));
+                            metamodel._schemaMappers(ListIterate.collect(relationalMapper.schemaMappers, schMap ->
+                            {
+                                return new Root_meta_relational_metamodel_SchemaMapper_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::SchemaMapper"))
+                                        ._to(schMap.to);
+                            }));
+                            metamodel._tableMappers(ListIterate.collect(relationalMapper.tableMappers, tblMap ->
+                            {
+                                return new Root_meta_relational_metamodel_TableMapper_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::TableMapper"))
+                                        ._to(tblMap.to);
+                            }));
+                        },
+                        (relationalMapper, context) ->
+                        {
+                            Root_meta_relational_metamodel_RelationalMapper metamodel = relationalMappersIndex.get(context.pureModel.buildPackageString(relationalMapper._package, relationalMapper.name));
+                            checkForDuplicates(relationalMapper.databaseMappers);
+                            checkForDuplicates(relationalMapper.schemaMappers);
+                            checkForDuplicates(relationalMapper.tableMappers);
+                            metamodel._databaseMappers(ListIterate.collect(relationalMapper.databaseMappers, dbMap -> processDatabaseMapper(dbMap, context)));
+                            metamodel._schemaMappers(ListIterate.collect(relationalMapper.schemaMappers, schMap -> processSchemaMapper(schMap, context)));
+                            metamodel._tableMappers(ListIterate.collect(relationalMapper.tableMappers, tblMap -> processTableMapper(tblMap, context)));
+                        }
+                ));
     }
 
     @Override
@@ -607,7 +668,21 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
 
                 return Tuples.pair(p, f);
             }
+            else if (processor instanceof RelationalMapperPostProcessor)
+            {
+                RelationalMapperPostProcessor relationalMapper = (RelationalMapperPostProcessor) processor;
+                List<String> duplicates = ((RelationalMapperPostProcessor) processor).relationalMappers.stream().map(rm -> rm.path).collect(Collectors.groupingBy(path -> path, Collectors.counting())).entrySet().stream().filter(e -> e.getValue() > 1).map(Map.Entry::getKey).collect(Collectors.toList());
+                if (!duplicates.isEmpty())
+                {
+                    throw new EngineException("Found duplicated relational mapper(s) " + duplicates, SourceInformation.getUnknownSourceInformation(), EngineErrorType.COMPILATION);
+                }
+                Root_meta_pure_alloy_connections_RelationalMapperPostProcessor p = HelperRelationalDatabaseConnectionBuilder.createRelationalMapperPostProcessor(relationalMapper, context);
 
+                Root_meta_relational_runtime_PostProcessorWithParameter f =
+                        core_relational_relational_runtime_connection_postprocessor.Root_meta_pure_alloy_connections_relationalMapperPostProcessor_RelationalMapperPostProcessor_1__PostProcessorWithParameter_1_(p, context.pureModel.getExecutionSupport());
+
+                return Tuples.pair(p, f);
+            }
             return null;
         });
     }
@@ -779,5 +854,74 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                 scannedSources.add(HelperModelBuilder.getElementFullPath(((RootRelationalInstanceSetImplementation) setImplementation)._mainTableAlias()._database(), context.pureModel.getExecutionSupport()));
             }
         });
+    }
+
+    private static <T> void checkForDuplicates(List<T> list)
+    {
+        List<String> duplicates = list.stream()
+                .flatMap(item ->
+                {
+                    if (item instanceof DatabaseMapper)
+                    {
+                        DatabaseMapper mapper = (DatabaseMapper) item;
+                        return mapper.schemas.stream().map(sp -> sp.database + "." + sp.schema);
+                    }
+                    else if (item instanceof SchemaMapper)
+                    {
+                        SchemaMapper mapper = (SchemaMapper) item;
+                        return Stream.of(mapper.from.database + "." + mapper.from.schema);
+                    }
+                    else if (item instanceof TableMapper)
+                    {
+                        TableMapper mapper = (TableMapper) item;
+                        return Stream.of(mapper.from.database + "." + mapper.from.schema + "." + mapper.from.table);
+                    }
+                    else
+                    {
+                        throw new EngineException("Unsupported type");
+                    }
+                })
+                .collect(Collectors.groupingBy(s -> s, Collectors.counting()))
+                .entrySet().stream().filter(entry -> entry.getValue() > 1).map(Map.Entry::getKey).collect(Collectors.toList());
+        if (!duplicates.isEmpty())
+        {
+            throw new EngineException("Found duplicated mappers for " + duplicates, SourceInformation.getUnknownSourceInformation(), EngineErrorType.COMPILATION);
+        }
+    }
+
+    public static Root_meta_relational_metamodel_DatabaseMapper processDatabaseMapper(DatabaseMapper dbMap, CompileContext context)
+    {
+        org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = dbMap.databaseName != null ? new Root_meta_relational_metamodel_Database_Impl("")._name(dbMap.databaseName) : null;
+        Root_meta_relational_metamodel_DatabaseMapper dbMapper = new Root_meta_relational_metamodel_DatabaseMapper_Impl("")
+                ._database(database._name())
+                ._schemas(ListIterate.collect(dbMap.schemas, sch ->
+                {
+                    return HelperRelationalBuilder.getSchema(HelperRelationalBuilder.resolveDatabase(sch.database, sch.sourceInformation, context), sch.schema);
+                }));
+        return dbMapper;
+    }
+
+    public static Root_meta_relational_metamodel_SchemaMapper processSchemaMapper(SchemaMapper schMap, CompileContext context)
+    {
+        Root_meta_relational_metamodel_SchemaMapper schMapper = new Root_meta_relational_metamodel_SchemaMapper_Impl("")
+                ._to(schMap.to)
+                ._from(HelperRelationalBuilder.getSchema(HelperRelationalBuilder.resolveDatabase(schMap.from.database, schMap.from.sourceInformation, context), schMap.from.schema));
+        return schMapper;
+    }
+
+    public static Root_meta_relational_metamodel_TableMapper processTableMapper(TableMapper tblMap, CompileContext context)
+    {
+        SetIterable<Table> tables = HelperRelationalBuilder.getAllTablesInSchema(HelperRelationalBuilder.resolveDatabase(tblMap.from.database, tblMap.from.sourceInformation, context), tblMap.from.schema, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation.getUnknownSourceInformation());
+        Table tbl = tables.toList().stream().filter(t -> t._name().equals(tblMap.from.table)).findFirst().orElseThrow(() -> new RuntimeException("Can't find " + tblMap.from.table + " table in " + tblMap.from.schema + " schema."));
+
+        Root_meta_relational_metamodel_TableMapper tblMapper = new Root_meta_relational_metamodel_TableMapper_Impl("")
+                ._to(tblMap.to)
+                ._from(tbl);
+        return tblMapper;
+    }
+
+    public static Root_meta_relational_metamodel_RelationalMapper getRelationalMapper(String fullPath)
+    {
+        return relationalMappersIndex.get(fullPath);
     }
 }

@@ -70,13 +70,11 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connectio
 
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformPostProcessors(processors:meta::pure::alloy::connections::PostProcessor[*], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::PostProcessor[*]
 {
-   $processors->map(processor |
-      $processor->match([
-         m:meta::pure::alloy::connections::MapperPostProcessor[1] | ^meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::MapperPostProcessor(
-            _type = 'mapper',
-            mappers = transformPostProcessorMappers($m.mappers))
-      ]->concatenate($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).moduleSerializerExtension('relational')->cast(@meta::protocols::pure::vX_X_X::extension::RelationalModuleSerializerExtension).transfers_connection_transformPostProcessors)->toOneMany())
-   );
+   $processors->map(processor | $processor->match([
+                                                    m:meta::pure::alloy::connections::MapperPostProcessor[1] | ^meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::MapperPostProcessor(_type = 'mapper', mappers = transformPostProcessorMappers($m.mappers)),
+                                                    rm:meta::pure::alloy::connections::RelationalMapperPostProcessor[1] | ^meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::RelationalMapperPostProcessor(_type = 'relationalMapper', relationalMappers = $rm.relationalMappers->map(relationalMapper | $relationalMapper->elementToPath()))
+                                                  ]->concatenate($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).moduleSerializerExtension('relational')->cast(@meta::protocols::pure::vX_X_X::extension::RelationalModuleSerializerExtension).transfers_connection_transformPostProcessors)->toOneMany())
+                                              );
 }
 
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformPostProcessorMappers(mappers:meta::pure::alloy::connections::Mapper[*]):meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::Mapper[*]
