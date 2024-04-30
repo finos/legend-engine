@@ -100,10 +100,9 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "(SELECT temp.\"id\",temp.\"name\",temp.\"amount\",temp.\"digest\",temp.\"batch_id_in\",temp.\"batch_id_out\",temp.\"validity_from_target\",temp.\"validity_through_target\" FROM \"mydb\".\"temp\" as temp)";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyMainTableCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyStagingTableCreateQuery, preActionsSql.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(2));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyTempTableCreateQuery, preActionsSql.get(3));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedLockInfoTableCreateQuery, preActionsSql.get(4));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyTempTableCreateQuery, preActionsSql.get(2));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedLockInfoTableCreateQuery, preActionsSql.get(3));
 
         Assertions.assertEquals(expectedStageToTemp, milestoningSql.get(0));
         Assertions.assertEquals(expectedMainToTemp, milestoningSql.get(1));

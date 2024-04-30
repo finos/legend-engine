@@ -100,7 +100,7 @@ public abstract class RelationalGeneratorAbstract
     }
 
     @Default
-    public boolean createStagingDataset()
+    public boolean skipMainAndMetadataDatasetCreation()
     {
         return false;
     }
@@ -162,7 +162,7 @@ public abstract class RelationalGeneratorAbstract
             .cleanupStagingData(cleanupStagingData())
             .collectStatistics(collectStatistics())
             .enableSchemaEvolution(enableSchemaEvolution())
-            .createStagingDataset(createStagingDataset())
+            .skipMainAndMetadataDatasetCreation(skipMainAndMetadataDatasetCreation())
             .enableConcurrentSafety(enableConcurrentSafety())
             .putAllAdditionalMetadata(additionalMetadata())
             .bulkLoadEventIdValue(bulkLoadEventIdValue())
