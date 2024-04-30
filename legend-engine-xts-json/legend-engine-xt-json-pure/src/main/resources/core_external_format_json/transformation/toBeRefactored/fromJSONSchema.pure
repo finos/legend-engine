@@ -163,9 +163,12 @@ function <<access.private>>  meta::external::format::json::schema::fromSchema::i
 
 function <<access.private>> meta::external::format::json::schema::fromSchema::getTypeConfigFromLegendJsonSpecification(parsedSchema: JSONObject[1]): meta::external::format::json::metamodel::JsonPolymorphicTypesConfig[1]
 {
-  let jsonConfig = $parsedSchema.keyValuePairs->getValueForKey('typeConfig')->cast(@JSONObject)->head()->toOne('missing required property: typeConfig for LegendJson specification');
-  let typeConfig = meta::json::fromJSON($jsonConfig, meta::external::format::json::metamodel::JsonPolymorphicTypesConfig)->cast(@meta::external::format::json::metamodel::JsonPolymorphicTypesConfig)->toOne();
-  $typeConfig;
+  let schemaConfig = $parsedSchema.keyValuePairs->getValueForKey('schemaConfig')->cast(@JSONObject)->head()->toOne('missing required property: schemaConfig for LegendJson specification');
+  let typeConfigJson = $schemaConfig.keyValuePairs->getValueForKey('typeConfig')->cast(@JSONObject)->head();
+  if($typeConfigJson->isEmpty(), 
+    | ^meta::external::format::json::metamodel::JsonPolymorphicTypesConfig(), 
+    | meta::json::fromJSON($typeConfigJson->toOne(), meta::external::format::json::metamodel::JsonPolymorphicTypesConfig)->cast(@meta::external::format::json::metamodel::JsonPolymorphicTypesConfig)->toOne()
+  );
 }
 
 function meta::external::format::json::schema::fromSchema::getTypeConfigFromSchema(schema: JsonSchema[1]): meta::external::format::json::metamodel::JsonPolymorphicTypesConfig[1]
