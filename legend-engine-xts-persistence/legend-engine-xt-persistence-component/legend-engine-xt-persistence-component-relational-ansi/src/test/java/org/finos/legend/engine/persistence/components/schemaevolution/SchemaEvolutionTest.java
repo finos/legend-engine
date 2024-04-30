@@ -100,7 +100,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ADD_COLUMN);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
 
-        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
         SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
         // Use the planner utils to return the sql
@@ -130,7 +130,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ADD_COLUMN);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
 
-        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
         SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
         // Use the planner utils to return the sql
@@ -159,7 +159,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, Collections.emptySet());
         try
         {
-            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
             SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
             // Use the planner utils to return the sql
@@ -191,7 +191,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
 
-        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
         RelationalTransformer transformer = new RelationalTransformer(relationalSink);
         SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
@@ -221,7 +221,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
 
-        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
         SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
         List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
@@ -250,7 +250,7 @@ public class SchemaEvolutionTest extends IngestModeTest
 
         try
         {
-            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
             RelationalTransformer transformer = new RelationalTransformer(relationalSink);
             SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
@@ -283,7 +283,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
 
-        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
         RelationalTransformer transformer = new RelationalTransformer(relationalSink);
         SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
@@ -313,7 +313,7 @@ public class SchemaEvolutionTest extends IngestModeTest
 
         try
         {
-            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
             RelationalTransformer transformer = new RelationalTransformer(relationalSink);
             SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
             Assertions.fail("Exception was not thrown");
@@ -341,7 +341,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, Collections.emptySet());
 
-        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
         RelationalTransformer transformer = new RelationalTransformer(relationalSink);
         SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
@@ -369,7 +369,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
 
-        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
         RelationalTransformer transformer = new RelationalTransformer(relationalSink);
         SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
@@ -399,7 +399,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
         try
         {
-            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
             RelationalTransformer transformer = new RelationalTransformer(relationalSink);
             SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
             List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
@@ -429,7 +429,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
-        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
         RelationalTransformer transformer = new RelationalTransformer(relationalSink);
         SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
@@ -460,7 +460,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_CONVERSION);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
 
-        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
         RelationalTransformer transformer = new RelationalTransformer(relationalSink);
         SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
@@ -490,7 +490,7 @@ public class SchemaEvolutionTest extends IngestModeTest
 
         try
         {
-            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
             RelationalTransformer transformer = new RelationalTransformer(relationalSink);
             SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
@@ -525,7 +525,7 @@ public class SchemaEvolutionTest extends IngestModeTest
 
         try
         {
-            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
             RelationalTransformer transformer = new RelationalTransformer(relationalSink);
             SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
@@ -562,7 +562,7 @@ public class SchemaEvolutionTest extends IngestModeTest
 
         try
         {
-            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
             RelationalTransformer transformer = new RelationalTransformer(relationalSink);
             SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
@@ -595,7 +595,7 @@ public class SchemaEvolutionTest extends IngestModeTest
 
         try
         {
-            schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+            schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
             Assertions.fail("Exception was not thrown");
         }
         catch (IncompatibleSchemaChangeException e)
@@ -622,7 +622,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
-        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
         RelationalTransformer transformer = new RelationalTransformer(relationalSink);
         SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
@@ -652,7 +652,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
         try
         {
-            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
             RelationalTransformer transformer = new RelationalTransformer(relationalSink);
             SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
             List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
@@ -680,7 +680,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
-        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
         RelationalTransformer transformer = new RelationalTransformer(relationalSink);
         SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
         List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
@@ -704,7 +704,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ADD_COLUMN);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
 
-        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
         SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
         // Use the planner utils to return the sql
@@ -728,7 +728,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ADD_COLUMN);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
 
-        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
         SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
         // Use the planner utils to return the sql
