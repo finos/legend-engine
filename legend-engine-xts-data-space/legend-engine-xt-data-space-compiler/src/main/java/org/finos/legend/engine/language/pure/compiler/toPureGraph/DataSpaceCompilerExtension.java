@@ -112,18 +112,26 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                     {
                         throw new EngineException("Data space must have at least one execution context", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                     }
+                    HashSet<String> executionContextSet = new HashSet<>();
                     metamodel._executionContexts(ListIterate.collect(dataSpace.executionContexts, executionContext ->
                     {
-                        Root_meta_pure_runtime_PackageableRuntime runtime = context.resolvePackageableRuntime(executionContext.defaultRuntime.path, executionContext.defaultRuntime.sourceInformation);
-                        Mapping mapping = context.resolveMapping(executionContext.mapping.path, executionContext.mapping.sourceInformation);
-                        Root_meta_pure_data_EmbeddedData data = Objects.isNull(executionContext.testData) ? null : executionContext.testData.accept(new EmbeddedDataFirstPassBuilder(context, new ProcessingContext("Dataspace '" + metamodel._name() + "' First Pass")));
-                        return new Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceExecutionContext"))
-                                ._name(executionContext.name)
-                                ._title(executionContext.title)
-                                ._description(executionContext.description)
-                                ._mapping(mapping)
-                                ._testData(data)
-                                ._defaultRuntime(runtime);
+                        if (executionContextSet.add(executionContext.name))
+                        {
+                            Root_meta_pure_runtime_PackageableRuntime runtime = context.resolvePackageableRuntime(executionContext.defaultRuntime.path, executionContext.defaultRuntime.sourceInformation);
+                            Mapping mapping = context.resolveMapping(executionContext.mapping.path, executionContext.mapping.sourceInformation);
+                            Root_meta_pure_data_EmbeddedData data = Objects.isNull(executionContext.testData) ? null : executionContext.testData.accept(new EmbeddedDataFirstPassBuilder(context, new ProcessingContext("Dataspace '" + metamodel._name() + "' First Pass")));
+                            return new Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceExecutionContext"))
+                                    ._name(executionContext.name)
+                                    ._title(executionContext.title)
+                                    ._description(executionContext.description)
+                                    ._mapping(mapping)
+                                    ._testData(data)
+                                    ._defaultRuntime(runtime);
+                        }
+                        else
+                        {
+                            throw new EngineException("Data space execution context, " + executionContext.name + ", is not unique", executionContext.sourceInformation, EngineErrorType.COMPILATION);
+                        }
                     }));
                     Assert.assertTrue(dataSpace.defaultExecutionContext != null, () -> "Default execution context is missing", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                     Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext defaultExecutionContext = metamodel._executionContexts().toList().select(c -> dataSpace.defaultExecutionContext.equals(c._name())).getFirst();
