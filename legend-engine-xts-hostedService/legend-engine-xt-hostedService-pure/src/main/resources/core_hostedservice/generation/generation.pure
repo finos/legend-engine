@@ -170,12 +170,12 @@ function meta::external::function::activator::hostedService::generation::getEnvi
 function meta::external::function::activator::hostedService::generation::getExecutionParam(func: PackageableFunction<Any>[1]):PackageableElement[*]
 {
   let valueSpecification = $func->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().parametersValues
-                            ->filter(x| $x.genericType.rawType->toOne()->in([ExecutionEnvironmentInstance, SingleExecutionParameters, DataSpace]));
+                            ->filter(x| $x.genericType.rawType->toOne()->in([ExecutionEnvironmentInstance, SingleExecutionParameters, DataSpace, DataSpaceExecutionContext]));
                             //today we'll get a function cos we're in the pure IDE. from syudio we should be getting a packageable element so the need for the inner match will be eliminated
   if($valueSpecification->isNotEmpty(),
     |$valueSpecification->match([
-    s:SimpleFunctionExpression[1]|if($s.func == get_ExecutionEnvironmentInstance_1__String_1__SingleExecutionParameters_1_ ,
-                                        |$s->evaluateAndDeactivate().parametersValues->filter(x| $x.genericType.rawType->toOne()==ExecutionEnvironmentInstance)->map(pv|
+    s:SimpleFunctionExpression[1]|if($s.func->in([get_ExecutionEnvironmentInstance_1__String_1__SingleExecutionParameters_1_,  get_DataSpace_1__String_1__DataSpaceExecutionContext_1_ ]),
+                                        |$s->evaluateAndDeactivate().parametersValues->filter(x| $x.genericType.rawType->toOne()->in([ExecutionEnvironmentInstance, DataSpace]))->map(pv|
                                           $pv->match([
                                             s:SimpleFunctionExpression[1]| $s->reactivate()->toOne();,
                                             i:InstanceValue[1]| $i.values->toOne();,
@@ -190,7 +190,7 @@ function meta::external::function::activator::hostedService::generation::getExec
     |[])->cast(@PackageableElement);
 }
 
-function meta::external::function::activator::hostedService::generation::rebuildServiceUsingSingleExecutionParams(h:HostedService[1] ):Pair<String,HostedService>[*]
+function meta::external::function::activator::hostedService::generation::rebuildServiceUsingFlattenedParams(h:HostedService[1] ):Pair<String,HostedService>[*]
 {
     let execParam = getExecutionParam($h.function);
     $execParam->match([
