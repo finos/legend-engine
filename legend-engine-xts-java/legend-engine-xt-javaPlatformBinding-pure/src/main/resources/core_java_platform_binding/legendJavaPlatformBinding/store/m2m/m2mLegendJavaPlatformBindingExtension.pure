@@ -160,7 +160,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
                   },
                   {
                      model: ModelConnection[1] |
-                        let varName = $model.instances->values()->at(0)->get(0)->match([p:PlanVarPlaceHolder[1]| $p.name, r:RoutedVariablePlaceHolder[1]| $r.name]);
+                        let varName = $model.instances->values()->at(0)->get(0)->match([p:PlanVarPlaceHolder[1]| $p.name]);
                         let typeArg = $storeStreamReadingContext->j_invoke('streamType', $conventions->className($pureClass)->j_field('class', javaClassType()), javaReflectType());
                         $conventions->meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::objectStream::streamReaderClass($path)
                            ->j_new($storeStreamReadingContext->j_invoke('getResult', [j_string($varName), $typeArg], javaStream($conventions->className($pureClass))))->j_return();
