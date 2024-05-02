@@ -201,6 +201,10 @@ public class BigQueryTestArtifacts
             "`id` INT64 NOT NULL,`name` STRING NOT NULL,`amount` FLOAT64,`biz_date` DATE,`digest` STRING," +
             "`batch_id_in` INT64 NOT NULL,`batch_id_out` INT64,PRIMARY KEY (`id`, `name`, `batch_id_in`) NOT ENFORCED)";
 
+    public static String expectedMainTableWithMultiPartitionCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
+            "`id` INT64 NOT NULL,`name` STRING NOT NULL,`amount` FLOAT64,`account_type` STRING,`biz_date` DATE,`digest` STRING," +
+            "`batch_id_in` INT64 NOT NULL,`batch_id_out` INT64,PRIMARY KEY (`id`, `name`, `batch_id_in`) NOT ENFORCED)";
+
     public static String expectedMetadataTableCreateQuery = "CREATE TABLE IF NOT EXISTS batch_metadata" +
             "(`table_name` STRING(255)," +
             "`batch_start_ts_utc` DATETIME," +
