@@ -20,7 +20,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseV
 ): Result<PExprScope|0..1>[*] {
   let newTrace =
     $trace
-      ->stage('handleCaseValueSpecToScopes(ValueSpecification[1],Boolean[1],PExpr[1],Trace[1])')
+      ->stage('handleCaseValueSpecToScopes(ValueSpecification[1],TranspileTypeInfo[1],Boolean[1],PExpr[1],Trace[1])')
       ->detail('requireType', $requireType)
       ->detailLazy('parent', $parent->describeLazy());
   $spec->match([
@@ -45,7 +45,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseV
 ): Result<PExprScope|0..1>[1] {
   let newTrace =
     $trace
-      ->stage('handleCaseValueSpecToScoped(ValueSpecification[1],Boolean[1],PExpr[0..1],Trace[1])')
+      ->stage('handleCaseValueSpecToScoped(ValueSpecification[1],TranspileTypeInfo[1],Boolean[1],PExpr[0..1],Trace[1])')
       ->detail('requireType', $requireType)
       ->detailLazy('parent', $parent->describeLazy());
   $spec->match([
@@ -53,11 +53,19 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseV
       spec: InstanceValue[1] |
         $spec.values
           ->first()
-          ->okOr(| errorTrace('Expected one value in `InstanceValue`.', $newTrace))
-          ->tryCast(@FunctionRoutedValueSpecification, $newTrace)
-          ->andThen(func: FunctionRoutedValueSpecification[1] |
-            $func->handleCaseValueSpecToScoped($typeInfo, $requireType, $parent, $newTrace)
-          )
+          ->okOrError(| errorTrace('Expected exactly one value in `InstanceValue`.', $newTrace))
+          ->andThen(value: Any[1] |
+            $value->match([
+              func: FunctionRoutedValueSpecification[1] | 
+                $func->handleCaseValueSpecToScoped($typeInfo, $requireType, $parent, $newTrace),
+              func: FunctionDefinition<Any>[1] |
+                $func->handleCaseFunctionDefToScoped($typeInfo, $requireType, $parent, $newTrace)
+            ])
+          );
+    },
+    {
+      func: FunctionDefinition<Any>[1] |
+        $func->handleCaseFunctionDefToScoped($typeInfo, $requireType, $parent, $newTrace)
     },
     {
       spec: FunctionRoutedValueSpecification[1] |
@@ -67,7 +75,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseV
           ->andThen(value: InstanceValue[1] |
             $value.values
               ->first()
-              ->okOr(| errorTrace('Expected one value in `InstanceValue`.', $newTrace))
+              ->okOrError(| errorTrace('Expected one value in `InstanceValue`.', $newTrace))
               ->tryCast(@FunctionDefinition<Any>, $newTrace)
               ->andThen(func: FunctionDefinition<Any>[1] |
                 $func->handleCaseFunctionDefToScoped($typeInfo, $requireType, $parent, $newTrace);
@@ -97,14 +105,14 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseF
 ): Result<PExprScope|0..1>[1] {
   let newTrace =
     $trace
-      ->stage('handleCaseFunctionDefToScoped(FunctionDefinition<Any>[1],Boolean[1],PExpr[0..1],Trace[1])')
+      ->stage('handleCaseFunctionDefToScoped(FunctionDefinition<Any>[1],TranspileTypeInfo[1],Boolean[1],PExpr[0..1],Trace[1])')
       ->detail('requireType', $requireType)
       ->detailLazy('parent', $parent->describeLazy());
   let functionParams = $func->functionType().parameters;
 
   $func.expressionSequence
     ->evaluateAndDeactivate()
-    ->okOr(| errorTrace('Encountered empty function body while evaluating expression.', $newTrace))
+    ->okOrError(| errorTrace('Encountered empty function body while evaluating expression.', $newTrace))
     ->andThem(exprs: ValueSpecification[*] |
       if ($exprs->size() != 1,
         | error('More than one expression in function body not supported yet.', $newTrace),
@@ -136,7 +144,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseF
                     {
                       spec: StoreMappingRoutedValueSpecification[1] |
                         $spec
-                          ->storeMappingRoutedValueSpecToRelSet($newTrace)
+                          ->routedValueSpecToRelSet($typeInfo, $newTrace)
                           ->andThen(set: RelSetImplementation[0..1] |
                             if ($set->isEmpty() || $vars->size() != 1,
                               | error('Expected exactly one set.', $newTrace),
@@ -155,7 +163,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseF
                             let type = $var.genericType.rawType->toOne();
                             $typeInfo
                               ->exprType($type)
-                              ->okOr(| errorTrace(format('Could not determine type for `%s`.', $type->toString()), $newTrace) )
+                              ->okOrError(| errorTrace(format('Could not determine type for `%s`.', $type->toString()), $newTrace) )
                               ->then(exprType: PExprType[1] |
                                 $inner->scopeTyped($var.name, $exprType, $parent);
                               );
@@ -185,7 +193,7 @@ function meta::external::store::rel::compile::ir::valueSpecToUntypedScopes(
 ): Result<PExprScope|0..1>[*] {
   let newTrace =
     $trace
-      ->stage('valueSpecToUntypedScopes(ValueSpecification[1],Trace[1])')
+      ->stage('valueSpecToUntypedScopes(ValueSpecification[1],TranspileTypeInfo[1],parent:PExpr[0..1],Trace[1])')
       ->detailLazy('parent', $parent->describeLazy());
   handleCaseValueSpecToScopes($spec, $typeInfo, false, $parent, $trace);
 }
@@ -196,7 +204,7 @@ function meta::external::store::rel::compile::ir::valueSpecToUntypedScoped(
   trace: Trace[1]
 ): Result<PExprScope|0..1>[1] {
   let newTrace =
-    $trace->stage('valueSpecToUntypedScoped(ValueSpecification[1],Trace[1])');
+    $trace->stage('valueSpecToUntypedScoped(ValueSpecification[1],TranspileTypeInfo[1],Trace[1])');
   handleCaseValueSpecToScoped($spec, $typeInfo, false, [], $trace);
 }
 
@@ -208,9 +216,9 @@ function meta::external::store::rel::compile::ir::valueSpecToUntypedScoped(
 ): Result<PExprScope|0..1>[1] {
   let newTrace =
     $trace
-      ->stage('valueSpecToUntypedScoped(ValueSpecification[1],Trace[1])')
+      ->stage('valueSpecToUntypedScoped(ValueSpecification[1],TranspileTypeInfo[1],PExpr[0..1],Trace[1])')
       ->detailLazy('parent', $parent->describeLazy());
-  handleCaseValueSpecToScoped($spec, $typeInfo, false, $parent, $trace);
+  handleCaseValueSpecToScoped($spec, $typeInfo, false, $parent, $newTrace);
 }
 
 function meta::external::store::rel::compile::ir::functionDefToUntypedScoped(
@@ -221,9 +229,9 @@ function meta::external::store::rel::compile::ir::functionDefToUntypedScoped(
 ): Result<PExprScope|0..1>[1] {
   let newTrace =
     $trace
-      ->stage('functionDefToUntypedScoped(ValueSpecification[1],Trace[1])')
+      ->stage('functionDefToUntypedScoped(ValueSpecification[1],TranspileTypeInfo[1],PExpr[1],Trace[1])')
       ->detailLazy('parent', $parent->describeLazy());
-  handleCaseFunctionDefToScoped($func, $typeInfo, false, $parent, $trace);
+  handleCaseFunctionDefToScoped($func, $typeInfo, false, $parent, $newTrace);
 }
 
 ////////////////////////////////////////////////
@@ -236,7 +244,7 @@ function meta::external::store::rel::compile::ir::valueSpecToTypedScopes(
   trace: Trace[1]
 ): Result<PExprScopeTyped|0..1>[*] {
   let newTrace =
-    $trace->stage('valueSpecToTypedScopes(ValueSpecification[1],Trace[1])');
+    $trace->stage('valueSpecToTypedScopes(ValueSpecification[1],TranspileTypeInfo[1],Trace[1])');
   $spec->valueSpecToTypedScopes($typeInfo, [], $newTrace);
 }
 
@@ -254,7 +262,7 @@ function meta::external::store::rel::compile::ir::valueSpecToTypedScopes(
    */
   let newTrace =
     $trace
-      ->stage('valueSpecToTypedScopes(ValueSpecification[1],PExpr[1],Trace[1])')
+      ->stage('valueSpecToTypedScopes(ValueSpecification[1],TranspileTypeInfo[1],PExpr[0..1],Trace[1])')
       ->detailLazy('parent', $parent->describeLazy());
   handleCaseValueSpecToScopes($spec, $typeInfo, true, $parent, $newTrace)
     ->map(result: Result<PExprScope|0..1>[1] |

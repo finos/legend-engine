@@ -1,0 +1,81 @@
+import meta::external::store::rel::test::query::models::relation::*;
+
+Enum meta::external::store::rel::test::query::models::relation::ColourEnum {
+  Red, Green, Blue
+}
+
+Enum meta::external::store::rel::test::query::models::relation::FruitEnum {
+  Apple, Orange, Pear
+}
+
+Class meta::external::store::rel::test::query::models::relation::RootClass1 {
+  Marionberry: String[1];
+  Pear: Thimbleberry[1];
+}
+
+Class meta::external::store::rel::test::query::models::relation::RootClass2 {
+  Mulberry: String[1];
+  GojiBerry: String[1];
+  Lemon: Integer[1];
+  Gac: String[1];
+  Sloe: Integer[1];
+  Pomelo: Papaya[1];
+}
+
+Class meta::external::store::rel::test::query::models::relation::Soursop {
+  Passionfruit: StrictDate[1];
+  Aratiles: ColourEnum[1];
+}
+
+Class meta::external::store::rel::test::query::models::relation::Papaya extends Soursop {
+  BellPepper: Cucumber[1];
+  Lulo: JuniperBerry[1];
+  StarApple: JuniperBerry[1];
+}
+
+Class meta::external::store::rel::test::query::models::relation::Thimbleberry {
+  Sapodilla: Pineberry[1];
+}
+
+Class meta::external::store::rel::test::query::models::relation::Pineberry {
+  KaffirLime: Kiwano[1];
+}
+
+Class meta::external::store::rel::test::query::models::relation::CrabApple {
+  Rambutan: Float[0..1];
+}
+
+Class meta::external::store::rel::test::query::models::relation::Kiwano {
+  Lanzones: CrabApple[1..*];
+}
+
+Class meta::external::store::rel::test::query::models::relation::CactusPear {
+  Satsuma: Apple[1..*];
+}
+
+Class meta::external::store::rel::test::query::models::relation::JuniperBerry {
+  Tomato: String[0..1];
+  JapanesePlum: Cucumber[1];
+}
+
+Class meta::external::store::rel::test::query::models::relation::Boysenberry {
+  Tamarind: Prune[0..1];
+}
+
+Class meta::external::store::rel::test::query::models::relation::Grape {
+  Araza: JuniperBerry[1];
+}
+
+Class meta::external::store::rel::test::query::models::relation::Cucumber {
+  Pawpaw: String[1];
+  Dragonfruit: Integer[0..1];
+  CornKernel: FruitEnum[1];
+}
+
+Class meta::external::store::rel::test::query::models::relation::Prune {
+  Akebi: StrictDate[0..1];
+}
+
+Class meta::external::store::rel::test::query::models::relation::Apple {
+  Ximenia: StrictDate[0..1];
+}

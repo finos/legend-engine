@@ -1,5 +1,5 @@
 import meta::external::store::rel::compile::ir::*;
-import meta::external::store::rel::compile::ir::tds::*;
+import meta::external::store::rel::compile::ir::tabular::*;
 import meta::external::store::rel::compile::ir::utils::*;
 import meta::external::store::rel::mapping::*;
 import meta::external::store::rel::utils::*;
@@ -143,11 +143,11 @@ function meta::external::store::rel::compile::ir::utils::describeGroupByScopes(a
   format('GroupByScopes(%s, %s)', ['group', 'names'])
 }
 
-function meta::external::store::rel::compile::ir::utils::describeJoin(join: PExprTDSJoin[1]): String[1] {
+function meta::external::store::rel::compile::ir::utils::describeJoin(join: PExprTabularJoin[1]): String[1] {
   format('Join(%s, %s, %s, %s)', [$join.type->toString(), $join.condition->describe(), $join.left->describe(), $join.right->describe()])
 }
 
-function meta::external::store::rel::compile::ir::utils::describeTDSFilter(filter: PExprTDSFilter[1]): String[1] {
+function meta::external::store::rel::compile::ir::utils::describeTDSFilter(filter: PExprTabularFilter[1]): String[1] {
   format('TDSFilter(%s, %s)', [$filter.parent->describe(), $filter.predicate->describe()])
 }
 
@@ -179,8 +179,8 @@ function meta::external::store::rel::compile::ir::utils::describe(expr: PExpr[1]
     expr: PExprSet[1]             | $expr->describeSet(),
     expr: PExprSetAccess[1]       | $expr->describeSetAccess(),
     expr: VariablePlaceholder[1]  | $expr->describeVariablePlaceholder(),
-    expr: PExprTDSFilter[1]       | $expr->describeTDSFilter(),
-    expr: PExprTDSJoin[1]         | $expr->describeJoin()
+    expr: PExprTabularFilter[1]       | $expr->describeTDSFilter(),
+    expr: PExprTabularJoin[1]         | $expr->describeJoin()
   ]);
 }
 
