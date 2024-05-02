@@ -66,7 +66,7 @@ public class HostedServiceArtifactGenerator
         {
             Map<String, SingleExecutionPlan> plans = Maps.mutable.empty();
             String execKey = core_hostedservice_generation_generation.Root_meta_external_function_activator_hostedService_generation_getEnvironmentkey_HostedService_1__String_1_(activator, pureModel.getExecutionSupport());
-            core_hostedservice_generation_generation.Root_meta_external_function_activator_hostedService_generation_rebuildServiceUsingSingleExecutionParams_HostedService_1__Pair_MANY_(activator, pureModel.getExecutionSupport()).forEach(p ->
+            core_hostedservice_generation_generation.Root_meta_external_function_activator_hostedService_generation_rebuildServiceUsingFlattenedParams_HostedService_1__Pair_MANY_(activator, pureModel.getExecutionSupport()).forEach(p ->
                     {
                         ExecutionPlan plan = PlanGenerator.generateExecutionPlan((ConcreteFunctionDefinition) p._second()._function(), null, null, null, pureModel,
                                 clientVersion, PlanPlatform.JAVA, null, routerExtensions.apply(pureModel), transformers);
