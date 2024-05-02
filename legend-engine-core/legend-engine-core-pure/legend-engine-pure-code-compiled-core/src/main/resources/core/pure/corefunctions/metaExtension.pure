@@ -481,8 +481,8 @@ function meta::pure::functions::meta::findPlanVarPlaceHoldersInValueSpecificatio
       i : InstanceValue[1] | $i.values->evaluateAndDeactivate()->map({x |
          $x->match([
             v : ValueSpecification[1] | $v->findPlanVarPlaceHoldersInValueSpecification(),
-            k : KeyExpression[1] | $k.expression->findPlanVarPlaceHoldersInValueSpecification(),
-            l : LambdaFunction<Any>[1] | $l.expressionSequence->map(e | $e->findPlanVarPlaceHoldersInValueSpecification()),
+            k : KeyExpression[1] | $k.expression->evaluateAndDeactivate()->findPlanVarPlaceHoldersInValueSpecification(),
+            l : LambdaFunction<Any>[1] | $l.expressionSequence->evaluateAndDeactivate()->map(e | $e->findPlanVarPlaceHoldersInValueSpecification()),
             v : meta::pure::executionPlan::PlanVarPlaceHolder[1] | $v,
             a : Any[1] | []
          ])
