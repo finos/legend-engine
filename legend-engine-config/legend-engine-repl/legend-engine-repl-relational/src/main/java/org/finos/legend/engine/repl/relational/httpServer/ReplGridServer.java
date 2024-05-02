@@ -56,6 +56,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -75,9 +76,19 @@ public class ReplGridServer
         this.client = client;
     }
 
+    private String getReplUrl()
+    {
+        String proxyUrl = System.getenv("VSCODE_PROXY_URI");
+        if (proxyUrl != null)
+        {
+            return proxyUrl.replace("{{port}}", this.port + "") + "repl/";
+        }
+        return "http://localhost:" + this.port + "/repl/";
+    }
+
     public String getGridUrl()
     {
-        return "http://localhost:" + this.port + "/repl/grid";
+        return getReplUrl() + "grid";
     }
 
     public static class GridServerResult
@@ -149,14 +160,34 @@ public class ReplGridServer
                     {
                         String[] path = exchange.getRequestURI().getPath().split("/repl/");
                         String resourcePath = "/web-content/package/dist/repl/" + (path[1].equals("grid") ? "index.html" : path[1]);
-                        InputStreamReader inputStreamReader = new InputStreamReader(ReplGridServer.class.getResourceAsStream(resourcePath), StandardCharsets.UTF_8);
-                        BufferedReader bufferReader = new BufferedReader(inputStreamReader);
-                        String responseString = bufferReader.lines().collect(Collectors.joining());
-                        byte[] response = responseString.getBytes(StandardCharsets.UTF_8);
-                        exchange.sendResponseHeaders(200, response.length);
                         OutputStream os = exchange.getResponseBody();
-                        os.write(response);
-                        os.close();
+                        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(ReplGridServer.class.getResourceAsStream(resourcePath))))
+                        {
+                            String content = bufferedReader.lines().collect(Collectors.joining("\n"));
+                            if (resourcePath.endsWith(".html") && resourcePath.startsWith("index"))
+                            {
+                                content = content.replace("/repl/", new URI(getReplUrl()).getPath());
+                            }
+                            else if (resourcePath.endsWith(".js"))
+                            {
+                                exchange.getResponseHeaders().add("Content-Type", "text/javascript; charset=utf-8");
+                            }
+                            else if (resourcePath.endsWith(".css"))
+                            {
+                                exchange.getResponseHeaders().add("Content-Type", "text/css; charset=utf-8");
+                            }
+                            byte[] response = content.getBytes(StandardCharsets.UTF_8);
+                            exchange.sendResponseHeaders(200, response.length);
+                            os.write(response);
+                        }
+                        catch (Exception e)
+                        {
+                            handleResponse(exchange, 500, e.getMessage());
+                        }
+                        finally
+                        {
+                            os.close();
+                        }
                     }
                     catch (Exception e)
                     {
