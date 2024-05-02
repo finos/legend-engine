@@ -36,7 +36,7 @@ public class TestSemiStructuredMatching extends AbstractTestSemiStructured
         String memSQLExpected =
                 "Relational\n" +
                         "(\n" +
-                        "  type = TDS[(Customer Address, String, VARCHAR(65536), \"\")]\n" +
+                        "  type = TDS[(Customer Address, String, VARCHAR(8192), \"\")]\n" +
                         "  resultColumns = [(\"Customer Address\", \"\")]\n" +
                         "  sql = select case when `root`.CUSTOMER::customerAddress::$@type in ('BillingAddress') then `root`.CUSTOMER::customerAddress::$billAddress when `root`.CUSTOMER::customerAddress::$@type in ('ShippingAddress') then `root`.CUSTOMER::customerAddress::$shipAddress else 'Default Address' end as `Customer Address` from ORDER_SCHEMA.ORDER_TABLE as `root`\n" +
                         "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
@@ -64,7 +64,7 @@ public class TestSemiStructuredMatching extends AbstractTestSemiStructured
         String memSQLExpected =
                 "Relational\n" +
                 "(\n" +
-                "  type = TDS[(Customer Address, String, VARCHAR(65536), \"\")]\n" +
+                "  type = TDS[(Customer Address, String, VARCHAR(8192), \"\")]\n" +
                 "  resultColumns = [(\"Customer Address\", \"\")]\n" +
                 "  sql = select case when `root`.CUSTOMER::customerAddress::$_type in ('BillingAddress') then `root`.CUSTOMER::customerAddress::$billAddress when `root`.CUSTOMER::customerAddress::$_type in ('ShippingAddress') then `root`.CUSTOMER::customerAddress::$shipAddress else 'Default Address' end as `Customer Address` from ORDER_SCHEMA.ORDER_TABLE as `root`\n" +
                 "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
@@ -92,7 +92,7 @@ public class TestSemiStructuredMatching extends AbstractTestSemiStructured
         String memSQLExpected =
                 "Relational\n" +
                         "(\n" +
-                        "  type = TDS[(Customer Address, String, VARCHAR(65536), \"\"), (Order Price, Integer, BIGINT, \"\")]\n" +
+                        "  type = TDS[(Customer Address, String, VARCHAR(8192), \"\"), (Order Price, Integer, BIGINT, \"\")]\n" +
                         "  resultColumns = [(\"Customer Address\", \"\"), (\"Order Price\", \"\")]\n" +
                         "  sql = select case when `root`.CUSTOMER::customerAddress::$@type in ('BillingAddress') then `root`.CUSTOMER::customerAddress::$billAddress when `root`.CUSTOMER::customerAddress::$@type in ('ShippingAddress') then `root`.CUSTOMER::customerAddress::$shipAddress else null end as `Customer Address`, case when `root`.CUSTOMER::transactionDetails::payment::$@type in ('CashOnDeliveryPayment') then `root`.CUSTOMER::transactionDetails::payment::amountToBePaid !:> bigint when `root`.CUSTOMER::transactionDetails::payment::$@type in ('PrepaidPayment', 'WalletPrepaidPayment', 'CardPrepaidPayment') then `root`.CUSTOMER::transactionDetails::payment::amountPaid !:> bigint else null end as `Order Price` from ORDER_SCHEMA.ORDER_TABLE as `root`\n" +
                         "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
@@ -120,7 +120,7 @@ public class TestSemiStructuredMatching extends AbstractTestSemiStructured
         String memSQLExpected =
                 "Relational\n" +
                         "(\n" +
-                        "  type = TDS[(Customer Address, String, VARCHAR(65536), \"\")]\n" +
+                        "  type = TDS[(Customer Address, String, VARCHAR(8192), \"\")]\n" +
                         "  resultColumns = [(\"Customer Address\", \"\")]\n" +
                         "  sql = select case when `root`.CUSTOMER::customerAddress::$@type in ('BillingAddress') then `root`.CUSTOMER::customerAddress::$billAddress when `root`.CUSTOMER::customerAddress::$@type in ('ShippingAddress') then `root`.CUSTOMER::customerAddress::$shipAddress else null end as `Customer Address` from ORDER_SCHEMA.ORDER_TABLE as `root` where case when `root`.CUSTOMER::transactionDetails::payment::$@type in ('CashOnDeliveryPayment') then `root`.CUSTOMER::transactionDetails::payment::amountToBePaid !:> bigint when `root`.CUSTOMER::transactionDetails::payment::$@type in ('PrepaidPayment', 'WalletPrepaidPayment', 'CardPrepaidPayment') then `root`.CUSTOMER::transactionDetails::payment::amountPaid !:> bigint else null end < 200\n" +
                         "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
@@ -146,7 +146,7 @@ public class TestSemiStructuredMatching extends AbstractTestSemiStructured
         String memSQLExpected =
                 "Relational\n" +
                 "(\n" +
-                "  type = TDS[(Customer Address, String, VARCHAR(65536), \"\")]\n" +
+                "  type = TDS[(Customer Address, String, VARCHAR(8192), \"\")]\n" +
                 "  resultColumns = [(\"Customer Address\", \"\")]\n" +
                 "  sql = select case when `root`.CUSTOMER::customerAddress::$_type in ('BillingAddress') then `root`.CUSTOMER::customerAddress::$billAddress when `root`.CUSTOMER::customerAddress::$_type in ('ShippingAddress') then `root`.CUSTOMER::customerAddress::$shipAddress else null end as `Customer Address` from ORDER_SCHEMA.ORDER_TABLE as `root` where case when `root`.CUSTOMER::transactionDetails::payment::$_type in ('CashOnDeliveryPayment') then `root`.CUSTOMER::transactionDetails::payment::amountToBePaid !:> bigint when `root`.CUSTOMER::transactionDetails::payment::$_type in ('PrepaidPayment', 'WalletPrepaidPayment', 'CardPrepaidPayment') then `root`.CUSTOMER::transactionDetails::payment::amountPaid !:> bigint else null end < 200\n" +
                 "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
@@ -278,7 +278,7 @@ public class TestSemiStructuredMatching extends AbstractTestSemiStructured
         String memSQLExpected =
                 "Relational\n" +
                         "(\n" +
-                        "  type = TDS[(Customer Address, String, VARCHAR(65536), \"\"), (Order Price, Integer, BIGINT, \"\")]\n" +
+                        "  type = TDS[(Customer Address, String, VARCHAR(8192), \"\"), (Order Price, Integer, BIGINT, \"\")]\n" +
                         "  resultColumns = [(\"Customer Address\", \"\"), (\"Order Price\", \"\")]\n" +
                         "  sql = select case when `root`.CUSTOMER::customerAddress::$@type in ('BillingAddress') then `root`.CUSTOMER::customerAddress::$billAddress when `root`.CUSTOMER::customerAddress::$@type in ('ShippingAddress') then `root`.CUSTOMER::customerAddress::$shipAddress else null end as `Customer Address`, case when `root`.CUSTOMER::transactionDetails::payment::$@type in ('CashOnDeliveryPayment') then `root`.CUSTOMER::transactionDetails::payment::amountToBePaid !:> bigint when `root`.CUSTOMER::transactionDetails::payment::$@type in ('PrepaidPayment', 'WalletPrepaidPayment', 'CardPrepaidPayment') then `root`.CUSTOMER::transactionDetails::payment::amountPaid !:> bigint else null end as `Order Price` from ORDER_SCHEMA.ORDER_TABLE as `root`\n" +
                         "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
