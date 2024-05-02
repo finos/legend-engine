@@ -52,6 +52,9 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
 
     List<String> partitionFields();
 
+    List<Map<String, String>> partitionSpecList(); // [ [date: D1, Id: ID1, Name: N1], [date: D2, Id: ID2, Name: N2], ....]
+
+    // for Backward compatibility -- to be deprecated
     Map<String, Set<String>> partitionValuesByField();
 
     @Derived
@@ -75,6 +78,12 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
     @Value.Check
     default void validate()
     {
+
+        if (!partitionValuesByField().isEmpty() && !partitionSpecList().isEmpty())
+        {
+            throw new IllegalStateException("Can not build UnitemporalSnapshot, Provide either partitionValuesByField or partitionSpecList, both not supported together");
+        }
+
         // All the keys in partitionValuesByField must exactly match the fields in partitionFields
         if (!partitionValuesByField().isEmpty())
         {
@@ -87,6 +96,29 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
                 if (!partitionFields().contains(partitionKey))
                 {
                     throw new IllegalStateException(String.format("Can not build UnitemporalSnapshot, partitionKey: [%s] not specified in partitionFields", partitionKey));
+                }
+            }
+            int partitionKeysWithMoreThanOneValues = 0;
+            for (Set<String> partitionValues: partitionValuesByField().values())
+            {
+                if (partitionValues.size() > 1)
+                {
+                    partitionKeysWithMoreThanOneValues++;
+                }
+            }
+            if (partitionKeysWithMoreThanOneValues > 1)
+            {
+                throw new IllegalStateException(String.format("Can not build UnitemporalSnapshot, partitionValuesByField does not support more than 1 value for more than one partition key"));
+            }
+        }
+
+        if (!partitionSpecList().isEmpty())
+        {
+            for (Map<String, String> partitionSpec : partitionSpecList())
+            {
+                if (partitionFields().size() != partitionSpec.size())
+                {
+                    throw new IllegalStateException("Can not build UnitemporalSnapshot, size of each partitionSpec must be same as size of partitionFields");
                 }
             }
         }
