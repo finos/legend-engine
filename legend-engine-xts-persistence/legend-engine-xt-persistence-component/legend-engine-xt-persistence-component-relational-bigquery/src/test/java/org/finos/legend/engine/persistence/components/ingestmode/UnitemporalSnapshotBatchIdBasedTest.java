@@ -218,6 +218,38 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
     }
 
     @Override
+    public void verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionInUpperCase(GeneratorResult operations)
+    {
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> milestoningSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
+
+        String expectedMilestoneQuery = "UPDATE `MYDB`.`MAIN` as sink SET " +
+                "sink.`BATCH_ID_OUT` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN')-1 " +
+                "WHERE (sink.`BATCH_ID_OUT` = 999999999) AND (NOT (EXISTS (SELECT * FROM `MYDB`.`STAGING` as stage " +
+                "WHERE ((sink.`ID` = stage.`ID`) AND (sink.`NAME` = stage.`NAME`)) AND (sink.`DIGEST` = stage.`DIGEST`)))) " +
+                "AND (((sink.`ACCOUNT_TYPE` = 'TYPE_1') AND (sink.`BIZ_DATE` = '2024-01-01')) " +
+                "OR ((sink.`ACCOUNT_TYPE` = 'TYPE_1') AND (sink.`BIZ_DATE` = '2024-01-02')) " +
+                "OR ((sink.`ACCOUNT_TYPE` = 'TYPE_2') AND (sink.`BIZ_DATE` = '2024-01-02')))";
+
+        String expectedUpsertQuery = "INSERT INTO `MYDB`.`MAIN` " +
+                "(`ID`, `NAME`, `AMOUNT`, `ACCOUNT_TYPE`, `BIZ_DATE`, `DIGEST`, `BATCH_ID_IN`, `BATCH_ID_OUT`) " +
+                "(SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`ACCOUNT_TYPE`,stage.`BIZ_DATE`,stage.`DIGEST`," +
+                "(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN')," +
+                "999999999 FROM `MYDB`.`STAGING` as stage WHERE " +
+                "NOT (stage.`DIGEST` IN (SELECT sink.`DIGEST` FROM `MYDB`.`MAIN` as sink WHERE (sink.`BATCH_ID_OUT` = 999999999) AND " +
+                "(((sink.`ACCOUNT_TYPE` = 'TYPE_1') AND (sink.`BIZ_DATE` = '2024-01-01')) " +
+                "OR ((sink.`ACCOUNT_TYPE` = 'TYPE_1') AND (sink.`BIZ_DATE` = '2024-01-02')) " +
+                "OR ((sink.`ACCOUNT_TYPE` = 'TYPE_2') AND (sink.`BIZ_DATE` = '2024-01-02'))))))";
+
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedMainTableWithMultiPartitionCreateQueryUpperCase, preActionsSql.get(0));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase, preActionsSql.get(1));
+        Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
+        Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithUpperCase(), metadataIngestSql.get(0));
+    }
+
+    @Override
     public void verifyUnitemporalSnapshotWithPartitionSpecListWithEmptyBatchHandling(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();

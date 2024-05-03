@@ -123,18 +123,18 @@ public class BaseTest
         put("account_type", new HashSet<>(Arrays.asList("TYPE_1")));
     }};
 
-    protected List<Map<String, String>> partitionSpecList()
+    protected List<Map<String, Object>> partitionSpecList()
     {
-        List<Map<String, String>> partitionSpecList = new ArrayList<>();
+        List<Map<String, Object>> partitionSpecList = new ArrayList<>();
         addPartitionSpec(partitionSpecList, "2024-01-01", "TYPE_1");
         addPartitionSpec(partitionSpecList, "2024-01-02", "TYPE_1");
         addPartitionSpec(partitionSpecList, "2024-01-02", "TYPE_2");
         return partitionSpecList;
     }
 
-    private static void addPartitionSpec(List<Map<String, String>> partitionSpecList, String date, String accountType)
+    private static void addPartitionSpec(List<Map<String, Object>> partitionSpecList, String date, String accountType)
     {
-        partitionSpecList.add(new HashMap<String,String>()
+        partitionSpecList.add(new HashMap<String,Object>()
         {
             {
                 put("biz_date", date);

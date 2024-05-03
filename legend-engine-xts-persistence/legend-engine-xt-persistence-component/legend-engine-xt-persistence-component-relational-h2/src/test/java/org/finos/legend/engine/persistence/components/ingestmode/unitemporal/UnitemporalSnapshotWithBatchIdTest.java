@@ -259,7 +259,7 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
         createStagingTable(stagingTable);
 
 
-        List<Map<String, String>> partitionSpecList = new ArrayList<>();
+        List<Map<String, Object>> partitionSpecList = new ArrayList<>();
         addPartitionSpec(partitionSpecList, "2024-01-01", "ACCOUNT_1");
         addPartitionSpec(partitionSpecList, "2024-01-01", "ACCOUNT_2");
         addPartitionSpec(partitionSpecList, "2024-01-02", "ACCOUNT_1");
@@ -333,9 +333,9 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
         executePlansAndVerifyResults(ingestModeWithDeleteTargetData, options, datasets, schema, expectedDataPass3, expectedStats);
     }
 
-    private static void addPartitionSpec(List<Map<String, String>> partitionSpecList, String date, String accountNum)
+    private static void addPartitionSpec(List<Map<String, Object>> partitionSpecList, String date, String accountNum)
     {
-        partitionSpecList.add(new HashMap<String,String>()
+        partitionSpecList.add(new HashMap<String,Object>()
         {
             {
             put(dateName, date);

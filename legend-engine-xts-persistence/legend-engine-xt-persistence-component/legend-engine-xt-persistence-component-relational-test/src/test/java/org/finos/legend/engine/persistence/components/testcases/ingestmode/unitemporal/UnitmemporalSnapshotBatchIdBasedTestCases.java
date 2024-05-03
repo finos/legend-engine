@@ -157,6 +157,23 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
     public abstract void verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersion(GeneratorResult operations);
 
     @Test
+    void testUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionInUpperCase()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITION_SPEC_LIST__NO_DEDUP__NO_VERSION();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .collectStatistics(true)
+                .caseConversion(CaseConversion.TO_UPPER)
+                .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionInUpperCase(operations);
+    }
+
+    public abstract void verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionInUpperCase(GeneratorResult operations);
+
+    @Test
     void testUnitemporalSnapshotWithPartitionSpecListWithEmptyBatchHandling()
     {
         TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITION_SPEC_LIST__NO_DEDUP__NO_VERSION();
@@ -292,7 +309,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
         }
         catch (Exception e)
         {
-            Assertions.assertEquals("Can not build UnitemporalSnapshot, partitionValuesByField does not support more than 1 value for more than one partition key", e.getMessage());
+            Assertions.assertEquals("Can not build UnitemporalSnapshot, in partitionValuesByField at most one of the partition keys can have more than one value, all other partition keys must have exactly one value", e.getMessage());
         }
     }
 

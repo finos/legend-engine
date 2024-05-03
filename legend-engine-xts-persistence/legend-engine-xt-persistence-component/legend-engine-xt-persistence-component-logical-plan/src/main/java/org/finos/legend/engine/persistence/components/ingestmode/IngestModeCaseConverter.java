@@ -54,11 +54,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.validitymilesto
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 
-import java.util.Optional;
-import java.util.List;
-import java.util.Set;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -118,6 +114,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .transactionMilestoning(unitemporalSnapshot.transactionMilestoning().accept(new TransactionMilestoningCaseConverter()))
                 .addAllPartitionFields(applyCase(unitemporalSnapshot.partitionFields()))
                 .putAllPartitionValuesByField(applyCase(unitemporalSnapshot.partitionValuesByField()))
+                .addAllPartitionSpecList(applyCaseForListOfMap(unitemporalSnapshot.partitionSpecList()))
                 .emptyDatasetHandling(unitemporalSnapshot.emptyDatasetHandling())
                 .deduplicationStrategy(unitemporalSnapshot.deduplicationStrategy())
                 .versioningStrategy(unitemporalSnapshot.versioningStrategy().accept(new VersionStrategyCaseConverter()))
@@ -208,6 +205,21 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
             caseAppliedMap.put(applyCase(entry.getKey()), entry.getValue());
         }
         return caseAppliedMap;
+    }
+
+    private List<Map<String, Object>> applyCaseForListOfMap(List<Map<String, Object>> listOfMap)
+    {
+        List<Map<String, Object>> caseAppliedListOfMap = new ArrayList<>();
+        for (Map<String, Object> map : listOfMap)
+        {
+            Map<String, Object> caseAppliedMap = new HashMap<>();
+            for (Map.Entry<String, Object> entry : map.entrySet())
+            {
+                caseAppliedMap.put(applyCase(entry.getKey()), entry.getValue());
+            }
+            caseAppliedListOfMap.add(caseAppliedMap);
+        }
+        return caseAppliedListOfMap;
     }
 
     private class MergeStrategyCaseConverter implements MergeStrategyVisitor<MergeStrategy>

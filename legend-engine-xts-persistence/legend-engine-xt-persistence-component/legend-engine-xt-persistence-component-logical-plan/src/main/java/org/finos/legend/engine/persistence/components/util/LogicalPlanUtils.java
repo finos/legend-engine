@@ -136,7 +136,7 @@ public class LogicalPlanUtils
     }
 
     // (key1 = val11 AND key2 = val21) OR (key1 = val12 AND key2 = val22) OR ...
-    public static Condition getPartitionSpecMatchCondition(Dataset dataSet, List<Map<String, String>> partitionSpecList)
+    public static Condition getPartitionSpecMatchCondition(Dataset dataSet, List<Map<String, Object>> partitionSpecList)
     {
         return Or.of(partitionSpecList.stream()
                  .map(partitionSpec -> And.of(
@@ -144,7 +144,7 @@ public class LogicalPlanUtils
                                  .map(columnValuePair ->
                                          Equals.of(
                                                  FieldValue.builder().datasetRef(dataSet.datasetReference()).fieldName(columnValuePair.getKey()).build(),
-                                                 StringValue.of(columnValuePair.getValue()))
+                                                 StringValue.of((String) columnValuePair.getValue()))
                                  )
                         .collect(Collectors.toList()))
         ).collect(Collectors.toList()));
