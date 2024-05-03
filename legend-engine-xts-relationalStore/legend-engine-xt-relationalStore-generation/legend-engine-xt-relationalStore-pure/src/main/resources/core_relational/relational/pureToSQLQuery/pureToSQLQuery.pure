@@ -577,12 +577,13 @@ function meta::relational::functions::pureToSqlQuery::processColumnFunctionExpre
   let tableAlias = $leftSelect.data->toOne().alias;  
   let foundColumn = $tableAlias.relation()->findColumn($colFuncName);
   if ($foundColumn->isEmpty(),
-    | let nestedSelect = meta::relational::functions::pureToSqlQuery::isolateTdsSelect($leftSelect, $extensions);
+    | let nestedQuery = isolateTdsSelect($leftSelect, $operation, $extensions);
+      let nestedSelect = $nestedQuery.select;
       let tAlias = $nestedSelect.data.alias->toOne();
       let fColumn = $tAlias.relation()->findColumn($colFuncName);
-      let colAlias = ^meta::relational::metamodel::TableAliasColumnName(columnName = $fColumn->cast(@Alias).name->toOne(), alias=$tAlias);
+      let colAlias = ^TableAliasColumnName(columnName = $fColumn->cast(@Alias).name->toOne(), alias=$tAlias);
       let newSelect = $state.inFilter->if(|^$nestedSelect(filteringOperation=$colAlias),|^$nestedSelect(columns=$colAlias));
-      ^$leftSide(element = ^$operation(select=$newSelect));,
+      ^$leftSide(element = ^$nestedQuery(select=$newSelect));,
     | let colAlias = ^TableAliasColumn(alias = $tableAlias, column = $foundColumn->toOne()->cast(@Column));
       let newSelect = $state.inFilter->if(|^$leftSelect(filteringOperation=$colAlias),|^$leftSelect(columns=$colAlias));
       ^$leftSide(element = ^$operation(select=$newSelect));
@@ -766,18 +767,23 @@ function  meta::relational::functions::pureToSqlQuery::processObjectGroupBy(f:Fu
                   extraFilteringOperation = $merge.extraFilteringOperation,
                   groupBy = $merge.groupBy,
                   paths = $ids->zip($paths)
-               )
-               ->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($state, $extensions)
-   );
+               ),
+      currentTreeNode = if($operation.currentTreeNode->isEmpty(), | $operation.currentTreeNode, | $operation.currentTreeNode->toOne()->findOneNode($operation.select.data->toOne(), $merge.data->toOne()))
+   )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($state, $extensions);
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::isolateNonTerminalGroupByQueryWithEmptyGroupingColumns(select: TdsSelectSqlQuery[1], state: State[1], extensions: Extension[*]): TdsSelectSqlQuery[1]
+function <<access.private>> meta::relational::functions::pureToSqlQuery::isolateNonTerminalGroupByQueryWithEmptyGroupingColumns(query: SelectWithCursor[1], state: State[1], extensions: Extension[*]): SelectWithCursor[1]
+{
+  isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($query.select->cast(@TdsSelectSqlQuery), $query, $state, $extensions);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::isolateNonTerminalGroupByQueryWithEmptyGroupingColumns(select: TdsSelectSqlQuery[1], query: SelectWithCursor[1], state: State[1], extensions: Extension[*]): SelectWithCursor[1]
 {
    // Non terminal group by operation with empty group by cols needs to be wrapped in a subselect
    // Else, it can cause problems like 'where' clause getting generated for aggregated columns (which is invalid)
    if ($select.groupBy->isEmpty() && ($state.functionExpressionStack->size() > 1),
-       | $select->isolateTdsSelect($extensions),
-       | $select
+       | isolateTdsSelect($select, $query, $extensions),
+       | ^$query(select=$select)
    )
 }
 
@@ -2697,35 +2703,38 @@ function meta::relational::functions::pureToSqlQuery::processSlice(f:FunctionExp
    let param2 = processValueSpecification($f.parametersValues->at(2), $currentPropertyMapping, $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor).select.columns->at(0);
    assert($param2->instanceOf(Literal),'Invalid type for second parameter inside the slice function. Expected a value, found operation/function');
    let toRow = $param2->cast(@Literal);
-   let processedSelect = ^$mainSelect (
-                  fromRow = if ($fromRow.value->instanceOf(Integer) && $fromRow.value->cast(@Integer) == 0, |[], |$fromRow),
-                  toRow = $toRow
-            )->isolateSubSelectIfNotLastOperation($f, $state.functionExpressionStack, $extensions);
-
-   ^$mainQuery(
-      select = $processedSelect,
-      currentTreeNode = if($mainQuery.currentTreeNode->isEmpty(),  | $mainQuery.currentTreeNode, | $mainQuery.currentTreeNode->toOne()->findOneNode($mainQuery.select.data->toOne(), $processedSelect.data->toOne()))
-      );
+   ^$mainSelect(fromRow = if($fromRow.value->instanceOf(Integer) && $fromRow.value->cast(@Integer) == 0, |[], |$fromRow),
+                toRow = $toRow
+   )->isolateSubSelectIfNotLastOperation($mainQuery, $f, $state.functionExpressionStack, $extensions);
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::isolateTdsSelect(select:TdsSelectSqlQuery[1], extensions:Extension[*]):TdsSelectSqlQuery[1]
+function <<access.private>> meta::relational::functions::pureToSqlQuery::isolateTdsSelect(query:SelectWithCursor[1], extensions:Extension[*]):SelectWithCursor[1]
 {
-   ^TdsSelectSqlQuery( data =^RootJoinTreeNode(alias = ^TableAlias(name = 'subselect', relationalElement=$select->pushExtraFilteringOperation($extensions))),
-                       columns = $select.columns->map(c|^Alias(name = $c->cast(@Alias).name, relationalElement = ^ColumnName(name=$c->cast(@Alias).name))),
-                       paths = $select.paths)
+  isolateTdsSelect($query.select->cast(@TdsSelectSqlQuery), $query, $extensions);
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::isolateSubSelectIfNotLastOperation(select:SelectSQLQuery[1], f:FunctionExpression[1], parents:FunctionExpression[*], extensions:Extension[*]):SelectSQLQuery[1]
+function <<access.private>> meta::relational::functions::pureToSqlQuery::isolateTdsSelect(select:TdsSelectSqlQuery[1], query:SelectWithCursor[1], extensions:Extension[*]):SelectWithCursor[1]
+{
+  let newNode = ^RootJoinTreeNode(alias=^TableAlias(name = 'subselect', relationalElement=$select->pushExtraFilteringOperation($extensions)));
+  ^$query(select = ^TdsSelectSqlQuery(data = $newNode,
+                                      columns = $select.columns->map(c|^Alias(name=$c->cast(@Alias).name, relationalElement=^ColumnName(name=$c->cast(@Alias).name))),
+                                      paths = $select.paths
+                  ),
+          currentTreeNode = if($query.currentTreeNode->isEmpty(),| $query.currentTreeNode,| $query.currentTreeNode->toOne()->findOneNode($select.data->toOne(), $newNode))
+   );
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::isolateSubSelectIfNotLastOperation(select:SelectSQLQuery[1], query:SelectWithCursor[1], f:FunctionExpression[1], parents:FunctionExpression[*], extensions:Extension[*]):SelectWithCursor[1]
 {
    let p = $parents->evaluateAndDeactivate();
    if ($p->size() > 1,
     | let fe = $p->at($p->size()-2);
       let ft = $fe.func->functionType();
       if([$ft.parameters->at(0).genericType->toOne(), $ft.returnType]->forAll(x|$x.rawType->toOne()->_subTypeOf(TabularDataSet)),
-                  | isolateTdsSelect($select->cast(@TdsSelectSqlQuery), $extensions);,
-                  | $select
+                  | isolateTdsSelect($select->cast(@TdsSelectSqlQuery), $query, $extensions);,
+                  | ^$query(select=$select)
       );,
-    | $select
+    | ^$query(select=$select)
    );
 }
 
@@ -2770,12 +2779,7 @@ function meta::relational::functions::pureToSqlQuery::processTake(f:FunctionExpr
                       | $limitValue//->cast(@Integer)
                       );
 
-   let processedSelect = ^$mainSelect(toRow = $limitSize)->isolateSubSelectIfNotLastOperation($f, $state.functionExpressionStack, $extensions);
-
-   ^$mainQuery(
-      select = $processedSelect,
-      currentTreeNode = if($mainQuery.currentTreeNode->isEmpty(),  | $mainQuery.currentTreeNode, | $mainQuery.currentTreeNode->toOne()->findOneNode($mainQuery.select.data->toOne(), $processedSelect.data->toOne()))
-      );
+   isolateSubSelectIfNotLastOperation(^$mainSelect(toRow = $limitSize), $mainQuery, $f, $state.functionExpressionStack, $extensions);
 }
 
 
@@ -2825,7 +2829,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsWindowColumn(f:F
    let windowColumn = ^Alias(name='"'+$columnName+'"' , relationalElement = ^meta::relational::metamodel::WindowColumn(columnName = $columnName,func=$func, window = ^meta::relational::metamodel::Window(partition=$windowElement,sortBy=$sortElement, sortDirection=$sortDirection)));
    let pureType = $olapOperation->match([t:TdsOlapAggregation<Any>[1]|$t.func->functionReturnType().rawType->toOne(), r:TdsOlapRank<Any>[1]|Integer]);
    let newPath = pair($columnName, ^PathInformation(type=$pureType, relationalType= meta::relational::transform::fromPure::pureTypeToDataType($pureType)));
-   ^$operation(select=^$mainSelect(columns = $mainSelect.columns->concatenate($windowColumn),paths +=$newPath)->isolateSubSelectIfNotLastOperation($f, $state.functionExpressionStack, $extensions));
+   ^$mainSelect(columns = $mainSelect.columns->concatenate($windowColumn),paths +=$newPath)->isolateSubSelectIfNotLastOperation($operation, $f, $state.functionExpressionStack, $extensions);
 }
 
 function meta::relational::functions::pureToSqlQuery::processTdsOlapOperation(o:OlapOperation<Any>[1], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1],currentPropertyMapping: PropertyMapping[*],state:State[1],context: DebugContext[1]):RelationalOperationElement[1]
@@ -3066,12 +3070,7 @@ function meta::relational::functions::pureToSqlQuery::processDrop(f:FunctionExpr
    let param1 = processValueSpecification($f.parametersValues->at(1), $currentPropertyMapping, $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor).select.columns->at(0);//.value->cast(@Integer);
    assert($param1->instanceOf(Literal),'Invalid type for parameter inside the drop function. Expected a value, found operation/function');
    let fromValue = $param1->cast(@Literal);
-   let processedSelect = ^$mainSelect(fromRow = $fromValue)->isolateSubSelectIfNotLastOperation($f, $state.functionExpressionStack, $extensions);
-
-   ^$mainQuery(
-      select = $processedSelect,
-      currentTreeNode = if($mainQuery.currentTreeNode->isEmpty(),  | $mainQuery.currentTreeNode, | $mainQuery.currentTreeNode->toOne()->findOneNode($mainQuery.select.data->toOne(), $processedSelect.data->toOne()))
-      );
+   isolateSubSelectIfNotLastOperation(^$mainSelect(fromRow = $fromValue), $mainQuery, $f, $state.functionExpressionStack, $extensions);
 }
 
 function meta::relational::functions::pureToSqlQuery::processAggregation(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
@@ -4596,12 +4595,10 @@ function meta::relational::functions::pureToSqlQuery::processGroupBy(expression:
                                                  pair($a.name, ^PathInformation(type=$pureType, relationalType= meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureType)));));
 
    if($noSubSelect
-      ,|^$nestedQuery(
-           select = ^$select(columns = $groupByColumns->concatenate($newColumns),
-                             groupBy = $groupByColumns->cast(@Alias),
-                             paths = $pathInfos
-                    )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($state, $extensions)
-        )
+      ,|^$select(columns = $groupByColumns->concatenate($newColumns),
+                 groupBy = $groupByColumns->cast(@Alias),
+                 paths = $pathInfos
+        )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($nestedQuery, $state, $extensions);
       ,|
         let alias = ^TableAlias(name = 'aggreg', relationalElement=$select);
         let newData = ^RootJoinTreeNode(alias = $alias);
@@ -4619,13 +4616,13 @@ function meta::relational::functions::pureToSqlQuery::processGroupBy(expression:
                                                                      );
                                                                );
         ^$nestedQuery(select = ^TdsSelectSqlQuery(
-                                    data =$newData,
+                                    data = $newData,
                                     columns = $groupByAliases->concatenate($newColumns),
                                     groupBy = $groupByAliases,
                                     paths = $pathInfos
-                               )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($state, $extensions),
-                  currentTreeNode = if($nestedQuery.currentTreeNode->isEmpty(), | $nestedQuery.currentTreeNode, | $nestedQuery.currentTreeNode->toOne()->findOneNode($nestedQuery.select.data->toOne(), $newData))
-        );
+                               ),
+                      currentTreeNode = if($nestedQuery.currentTreeNode->isEmpty(), | $nestedQuery.currentTreeNode, | $nestedQuery.currentTreeNode->toOne()->findOneNode($nestedQuery.select.data->toOne(), $newData))
+        )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($state, $extensions);
    );
 }
 
@@ -6684,16 +6681,10 @@ function meta::relational::functions::pureToSqlQuery::processDistinct(expression
 function meta::relational::functions::pureToSqlQuery::processRowCount(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
    let nested = processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne();
-   let selectWithCursor = $nested->extractSelectWithCursor($operation);
-
-   let query = $selectWithCursor.select->cast(@TdsSelectSqlQuery);
-
-   let mergedSQL = if($query.groupBy->isNotEmpty(), |$query->isolateTdsSelect($extensions), |$query);
-
-   ^$selectWithCursor(select = ^$mergedSQL(
-                                      columns = ^Alias(name = 'count', relationalElement = newDynaFunction('count', $mergedSQL.columns->at(0)->cast(@Alias).relationalElement))
-                                )
-                     );
+   let query = $nested->extractSelectWithCursor($operation);
+   let mergedQuery = if($query.select.groupBy->isNotEmpty(), |$query->isolateTdsSelect($extensions), |$query);
+   let mergedSelect = $mergedQuery.select;
+   ^$mergedQuery(select=^$mergedSelect(columns = ^Alias(name = 'count', relationalElement = newDynaFunction('count', $mergedSelect.columns->at(0)->cast(@Alias).relationalElement))));
 }
 
 function meta::relational::functions::pureToSqlQuery::processUnary(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], f:meta::pure::metamodel::function::Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
