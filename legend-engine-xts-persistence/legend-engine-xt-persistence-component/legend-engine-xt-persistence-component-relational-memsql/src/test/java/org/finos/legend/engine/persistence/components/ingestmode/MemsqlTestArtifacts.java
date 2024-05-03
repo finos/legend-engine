@@ -193,7 +193,7 @@ public class MemsqlTestArtifacts
             "`batch_id_in` INTEGER NOT NULL,`batch_id_out` INTEGER,PRIMARY KEY (`id`, `name`, `batch_id_in`))";
 
     public static String expectedMainTableMultiPartitionKeysCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
-            "`id` INTEGER NOT NULL,`name` VARCHAR(256) NOT NULL,`amount` DOUBLE,`account_type` VARCHAR(256),`biz_date` DATE,`digest` VARCHAR(256)," +
+            "`id` INTEGER NOT NULL,`name` VARCHAR(256) NOT NULL,`amount` DOUBLE,`account_type` INTEGER,`biz_date` DATE,`digest` VARCHAR(256)," +
             "`batch_id_in` INTEGER NOT NULL,`batch_id_out` INTEGER,PRIMARY KEY (`id`, `name`, `batch_id_in`))";
 
     public static String expectedMetadataTableCreateQuery = "CREATE TABLE IF NOT EXISTS batch_metadata" +
@@ -219,7 +219,7 @@ public class MemsqlTestArtifacts
             "`BATCH_ID_IN` INTEGER NOT NULL,`BATCH_ID_OUT` INTEGER,PRIMARY KEY (`ID`, `NAME`, `BATCH_ID_IN`))";
 
     public static String expectedMainTableMultiPartitionsCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`" +
-            "(`ID` INTEGER NOT NULL,`NAME` VARCHAR(256) NOT NULL,`AMOUNT` DOUBLE,`ACCOUNT_TYPE` VARCHAR(256),`BIZ_DATE` DATE,`DIGEST` VARCHAR(256)," +
+            "(`ID` INTEGER NOT NULL,`NAME` VARCHAR(256) NOT NULL,`AMOUNT` DOUBLE,`ACCOUNT_TYPE` INTEGER,`BIZ_DATE` DATE,`DIGEST` VARCHAR(256)," +
             "`BATCH_ID_IN` INTEGER NOT NULL,`BATCH_ID_OUT` INTEGER,PRIMARY KEY (`ID`, `NAME`, `BATCH_ID_IN`))";
 
     public static String expectedMetadataTableIngestQuery = "INSERT INTO batch_metadata (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`)" +

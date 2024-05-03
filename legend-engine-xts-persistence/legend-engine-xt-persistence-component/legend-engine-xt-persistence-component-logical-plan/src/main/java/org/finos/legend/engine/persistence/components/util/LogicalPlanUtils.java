@@ -144,7 +144,7 @@ public class LogicalPlanUtils
                                  .map(columnValuePair ->
                                          Equals.of(
                                                  FieldValue.builder().datasetRef(dataSet.datasetReference()).fieldName(columnValuePair.getKey()).build(),
-                                                 StringValue.of((String) columnValuePair.getValue()))
+                                                 columnValuePair.getValue() instanceof Number ? ObjectValue.of(columnValuePair.getValue()) : StringValue.of((String) columnValuePair.getValue()))
                                  )
                         .collect(Collectors.toList()))
         ).collect(Collectors.toList()));

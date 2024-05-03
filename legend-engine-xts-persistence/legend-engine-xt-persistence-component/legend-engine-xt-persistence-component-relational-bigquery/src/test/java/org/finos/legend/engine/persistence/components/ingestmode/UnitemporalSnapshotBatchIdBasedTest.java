@@ -194,9 +194,9 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
                 "WHERE (sink.`batch_id_out` = 999999999) AND " +
                 "(NOT (EXISTS (SELECT * FROM `mydb`.`staging` as stage WHERE " +
                 "((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` = stage.`digest`)))) AND " +
-                "(((sink.`biz_date` = '2024-01-01') AND (sink.`account_type` = 'TYPE_1')) " +
-                "OR ((sink.`biz_date` = '2024-01-02') AND (sink.`account_type` = 'TYPE_1')) " +
-                "OR ((sink.`biz_date` = '2024-01-02') AND (sink.`account_type` = 'TYPE_2')))";
+                "(((sink.`biz_date` = '2024-01-01') AND (sink.`account_type` = 1)) " +
+                "OR ((sink.`biz_date` = '2024-01-02') AND (sink.`account_type` = 1)) " +
+                "OR ((sink.`biz_date` = '2024-01-02') AND (sink.`account_type` = 2)))";
 
         String expectedUpsertQuery = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `account_type`, `biz_date`, `digest`, `batch_id_in`, `batch_id_out`) " +
@@ -205,9 +205,9 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
                 "WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 " +
                 "FROM `mydb`.`staging` as stage WHERE " +
                 "NOT (stage.`digest` IN (SELECT sink.`digest` FROM `mydb`.`main` as sink WHERE (sink.`batch_id_out` = 999999999) AND " +
-                "(((sink.`biz_date` = '2024-01-01') AND (sink.`account_type` = 'TYPE_1')) " +
-                "OR ((sink.`biz_date` = '2024-01-02') AND (sink.`account_type` = 'TYPE_1')) " +
-                "OR ((sink.`biz_date` = '2024-01-02') AND (sink.`account_type` = 'TYPE_2'))))))";
+                "(((sink.`biz_date` = '2024-01-01') AND (sink.`account_type` = 1)) " +
+                "OR ((sink.`biz_date` = '2024-01-02') AND (sink.`account_type` = 1)) " +
+                "OR ((sink.`biz_date` = '2024-01-02') AND (sink.`account_type` = 2))))))";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMainTableWithMultiPartitionCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
@@ -228,9 +228,9 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
                 "sink.`BATCH_ID_OUT` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN')-1 " +
                 "WHERE (sink.`BATCH_ID_OUT` = 999999999) AND (NOT (EXISTS (SELECT * FROM `MYDB`.`STAGING` as stage " +
                 "WHERE ((sink.`ID` = stage.`ID`) AND (sink.`NAME` = stage.`NAME`)) AND (sink.`DIGEST` = stage.`DIGEST`)))) " +
-                "AND (((sink.`ACCOUNT_TYPE` = 'TYPE_1') AND (sink.`BIZ_DATE` = '2024-01-01')) " +
-                "OR ((sink.`ACCOUNT_TYPE` = 'TYPE_1') AND (sink.`BIZ_DATE` = '2024-01-02')) " +
-                "OR ((sink.`ACCOUNT_TYPE` = 'TYPE_2') AND (sink.`BIZ_DATE` = '2024-01-02')))";
+                "AND (((sink.`ACCOUNT_TYPE` = 1) AND (sink.`BIZ_DATE` = '2024-01-01')) " +
+                "OR ((sink.`ACCOUNT_TYPE` = 1) AND (sink.`BIZ_DATE` = '2024-01-02')) " +
+                "OR ((sink.`ACCOUNT_TYPE` = 2) AND (sink.`BIZ_DATE` = '2024-01-02')))";
 
         String expectedUpsertQuery = "INSERT INTO `MYDB`.`MAIN` " +
                 "(`ID`, `NAME`, `AMOUNT`, `ACCOUNT_TYPE`, `BIZ_DATE`, `DIGEST`, `BATCH_ID_IN`, `BATCH_ID_OUT`) " +
@@ -238,9 +238,9 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
                 "(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN')," +
                 "999999999 FROM `MYDB`.`STAGING` as stage WHERE " +
                 "NOT (stage.`DIGEST` IN (SELECT sink.`DIGEST` FROM `MYDB`.`MAIN` as sink WHERE (sink.`BATCH_ID_OUT` = 999999999) AND " +
-                "(((sink.`ACCOUNT_TYPE` = 'TYPE_1') AND (sink.`BIZ_DATE` = '2024-01-01')) " +
-                "OR ((sink.`ACCOUNT_TYPE` = 'TYPE_1') AND (sink.`BIZ_DATE` = '2024-01-02')) " +
-                "OR ((sink.`ACCOUNT_TYPE` = 'TYPE_2') AND (sink.`BIZ_DATE` = '2024-01-02'))))))";
+                "(((sink.`ACCOUNT_TYPE` = 1) AND (sink.`BIZ_DATE` = '2024-01-01')) " +
+                "OR ((sink.`ACCOUNT_TYPE` = 1) AND (sink.`BIZ_DATE` = '2024-01-02')) " +
+                "OR ((sink.`ACCOUNT_TYPE` = 2) AND (sink.`BIZ_DATE` = '2024-01-02'))))))";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMainTableWithMultiPartitionCreateQueryUpperCase, preActionsSql.get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase, preActionsSql.get(1));
@@ -256,7 +256,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
-        String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1 WHERE (sink.`batch_id_out` = 999999999) AND (((sink.`biz_date` = '2024-01-01') AND (sink.`account_type` = 'TYPE_1')) OR ((sink.`biz_date` = '2024-01-02') AND (sink.`account_type` = 'TYPE_1')) OR ((sink.`biz_date` = '2024-01-02') AND (sink.`account_type` = 'TYPE_2')))";
+        String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1 WHERE (sink.`batch_id_out` = 999999999) AND (((sink.`biz_date` = '2024-01-01') AND (sink.`account_type` = 1)) OR ((sink.`biz_date` = '2024-01-02') AND (sink.`account_type` = 1)) OR ((sink.`biz_date` = '2024-01-02') AND (sink.`account_type` = 2)))";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMainTableWithMultiPartitionCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
