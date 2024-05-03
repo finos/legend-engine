@@ -689,12 +689,16 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     throw new EngineException("Error in the accessor definition. Please provide a table.", accessor.sourceInformation, EngineErrorType.COMPILATION);
                 }
                 org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database ds = (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database) store;
-                org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Schema schema = ds._schemas().getFirst();
+
+                String schemaName = (accessor.path.size() == 3) ? accessor.path.get(1) : null;
+                String tableName = (accessor.path.size() == 3) ? accessor.path.get(2) : accessor.path.get(1);
+
+                org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Schema schema = schemaName == null ? ds._schemas().getFirst() : ds._schemas().select(c -> c.getName().equals(schemaName)).getFirst();
                 if (schema == null)
                 {
-                    throw new EngineException("The database " + store._name() + " has no schemas", accessor.sourceInformation, EngineErrorType.COMPILATION);
+                    throw new EngineException(schemaName == null ?  "The database " + store._name() + " has no schemas" : "The schema " + schemaName + " can't be found in the store " + store._name(), accessor.sourceInformation, EngineErrorType.COMPILATION);
                 }
-                Table table = schema._tables().select(c -> c.getName().equals(accessor.path.get(1))).getFirst();
+                Table table = schema._tables().select(c -> c.getName().equals(tableName)).getFirst();
                 if (table == null)
                 {
                     throw new EngineException("The table " + accessor.path.get(1) + " can't be found in the store " + store._name(), accessor.sourceInformation, EngineErrorType.COMPILATION);
