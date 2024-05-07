@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-function meta::external::format::json::SchemaConfig::jsonSchemaConfig(): meta::external::format::shared::ExternalFormatSchemaConfig[0..1]
+function meta::external::format::json::schemaConfig::jsonSchemaConfig(): meta::external::format::shared::ExternalFormatSchemaConfig[0..1]
 {
   ^meta::external::format::shared::ExternalFormatSchemaConfig
   (
-    polymorphicTypesConfigDescriptor = meta::external::format::json::PolymorphicTypesConfig::jsonTypeConfigDescriptor()
+    polymorphicTypesConfigDescriptor = meta::external::format::json::polymorphicTypesConfig::jsonTypeConfigDescriptor()
   );
 }
 

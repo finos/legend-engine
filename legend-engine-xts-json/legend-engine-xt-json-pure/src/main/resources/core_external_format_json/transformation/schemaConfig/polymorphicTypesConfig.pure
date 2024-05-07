@@ -15,10 +15,10 @@
 import meta::external::format::json::schema::fromSchema::*;
 import meta::external::format::shared::binding::*;
 import meta::external::format::json::metamodel::*;
-import meta::external::format::json::PolymorphicTypesConfig::*;
+import meta::external::format::json::polymorphicTypesConfig::*;
 
 
-function meta::external::format::json::PolymorphicTypesConfig::jsonTypeConfigDescriptor(): meta::external::format::shared::PolymorphicTypesConfigDescriptor[1]
+function meta::external::format::json::polymorphicTypesConfig::jsonTypeConfigDescriptor(): meta::external::format::shared::PolymorphicTypesConfigDescriptor[1]
 {
   ^meta::external::format::shared::PolymorphicTypesConfigDescriptor
   (
@@ -28,7 +28,7 @@ function meta::external::format::json::PolymorphicTypesConfig::jsonTypeConfigDes
   );
 }
 
-function meta::external::format::json::PolymorphicTypesConfig::extractTypeConfigFromBinding(binding:Binding[1]): JsonPolymorphicTypesConfig[1]
+function meta::external::format::json::polymorphicTypesConfig::extractTypeConfigFromBinding(binding:Binding[1]): JsonPolymorphicTypesConfig[1]
 {
   if($binding.schemaSet->isEmpty(),
     | ^meta::external::format::json::metamodel::JsonPolymorphicTypesConfig(),
@@ -39,12 +39,12 @@ function meta::external::format::json::PolymorphicTypesConfig::extractTypeConfig
   );
 }
 
-function meta::external::format::json::PolymorphicTypesConfig::getTypeKeyName(config: meta::external::format::shared::metamodel::PolymorphicTypesConfig[1]): String[1]
+function meta::external::format::json::polymorphicTypesConfig::getTypeKeyName(config: meta::external::format::shared::metamodel::PolymorphicTypesConfig[1]): String[1]
 {
   $config->cast(@JsonPolymorphicTypesConfig).typeKeyName;
 }
 
-function meta::external::format::json::PolymorphicTypesConfig::getTypeNameForClass(config: meta::external::format::shared::metamodel::PolymorphicTypesConfig[1], clazz: Class<Any>[1]): String[1]
+function meta::external::format::json::polymorphicTypesConfig::getTypeNameForClass(config: meta::external::format::shared::metamodel::PolymorphicTypesConfig[1], clazz: Class<Any>[1]): String[1]
 {
   let jsonConfig = $config->cast(@JsonPolymorphicTypesConfig);
   let fullName = $clazz->elementToPath();

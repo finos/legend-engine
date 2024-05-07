@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::format::json::SchemaConfig::*;
-import meta::external::format::json::PolymorphicTypesConfig::*;
+import meta::external::format::json::schemaConfig::*;
+import meta::external::format::json::polymorphicTypesConfig::*;
 import meta::external::format::json::binding::validation::*;
 import meta::external::format::json::contract::*;
 import meta::external::format::json::executionPlan::*;
