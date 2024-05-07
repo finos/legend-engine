@@ -3716,6 +3716,11 @@
             </dependency>
             <dependency>
                 <groupId>org.jline</groupId>
+                <artifactId>jline-terminal</artifactId>
+                <version>3.25.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jline</groupId>
                 <artifactId>jline-terminal-jansi</artifactId>
                 <version>3.25.0</version>
             </dependency>

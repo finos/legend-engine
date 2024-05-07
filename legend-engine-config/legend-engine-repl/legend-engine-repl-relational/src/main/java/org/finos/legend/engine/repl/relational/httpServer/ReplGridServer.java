@@ -15,12 +15,24 @@
 package org.finos.legend.engine.repl.relational.httpServer;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.collections.api.RichIterable;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.apache.commons.io.IOUtils;
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
@@ -34,6 +46,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.result.Relationa
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
@@ -48,27 +61,13 @@ import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionError;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class ReplGridServer
 {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final PlanExecutor planExecutor = PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build();
     private PureModelContextData currentPMCD;
-    private Client client;
+    private final Client client;
     private int port;
 
     public ReplGridServer(Client client)
@@ -76,19 +75,9 @@ public class ReplGridServer
         this.client = client;
     }
 
-    private String getReplUrl()
-    {
-        String proxyUrl = System.getenv("VSCODE_PROXY_URI");
-        if (proxyUrl != null)
-        {
-            return proxyUrl.replace("{{port}}", this.port + "") + "repl/";
-        }
-        return "http://localhost:" + this.port + "/repl/";
-    }
-
     public String getGridUrl()
     {
-        return getReplUrl() + "grid";
+        return "http://localhost:" + this.port + "/api/repl/grid";
     }
 
     public static class GridServerResult
@@ -120,11 +109,12 @@ public class ReplGridServer
 
     public void initializeServer() throws Exception
     {
-        InetSocketAddress serverPortAddress = new InetSocketAddress(0);
+        String basePath = "/api";
 
+        InetSocketAddress serverPortAddress = new InetSocketAddress(0);
         HttpServer server = HttpServer.create(serverPortAddress, 0);
 
-        server.createContext("/licenseKey", new HttpHandler()
+        server.createContext(basePath + "/licenseKey", new HttpHandler()
         {
             @Override
             public void handle(HttpExchange exchange) throws IOException
@@ -149,56 +139,59 @@ public class ReplGridServer
             }
         });
 
-        server.createContext("/repl/", new HttpHandler()
+        server.createContext(basePath + "/repl/", new HttpHandler()
         {
             @Override
             public void handle(HttpExchange exchange) throws IOException
             {
                 if ("GET".equals(exchange.getRequestMethod()))
                 {
-                    try
+                    String[] path = exchange.getRequestURI().getPath().split("/repl/");
+                    String resourcePath = "/web-content/package/dist/repl/" + (path[1].equals("grid") ? "index.html" : path[1]);
+                    try (OutputStream os = exchange.getResponseBody();
+                         InputStream is = ReplGridServer.class.getResourceAsStream(resourcePath)
+                    )
                     {
-                        String[] path = exchange.getRequestURI().getPath().split("/repl/");
-                        String resourcePath = "/web-content/package/dist/repl/" + (path[1].equals("grid") ? "index.html" : path[1]);
-                        OutputStream os = exchange.getResponseBody();
-                        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(ReplGridServer.class.getResourceAsStream(resourcePath))))
+                        if (is == null)
                         {
-                            String content = bufferedReader.lines().collect(Collectors.joining("\n"));
-                            if (resourcePath.endsWith(".html") && resourcePath.startsWith("index"))
-                            {
-                                content = content.replace("/repl/", new URI(getReplUrl()).getPath());
-                            }
-                            else if (resourcePath.endsWith(".js"))
-                            {
-                                exchange.getResponseHeaders().add("Content-Type", "text/javascript; charset=utf-8");
-                            }
-                            else if (resourcePath.endsWith(".css"))
-                            {
-                                exchange.getResponseHeaders().add("Content-Type", "text/css; charset=utf-8");
-                            }
-                            byte[] response = content.getBytes(StandardCharsets.UTF_8);
-                            exchange.sendResponseHeaders(200, response.length);
-                            os.write(response);
+                            exchange.sendResponseHeaders(404, -1);
                         }
-                        catch (Exception e)
+                        else
                         {
-                            handleResponse(exchange, 500, e.getMessage());
-                        }
-                        finally
-                        {
-                            os.close();
+                            if (path[1].equals("grid"))
+                            {
+                                String content = IOUtils.toString(is, StandardCharsets.UTF_8);
+                                content = content.replace("/repl/", "./");
+                                byte[] response = content.getBytes(StandardCharsets.UTF_8);
+                                exchange.getResponseHeaders().add("Content-Type", "text/html; charset=utf-8");
+                                exchange.sendResponseHeaders(200, response.length);
+                                os.write(response);
+                            }
+                            else
+                            {
+                                if (resourcePath.endsWith(".js"))
+                                {
+                                    exchange.getResponseHeaders().add("Content-Type", "text/javascript; charset=utf-8");
+                                }
+                                else if (resourcePath.endsWith(".css"))
+                                {
+                                    exchange.getResponseHeaders().add("Content-Type", "text/css; charset=utf-8");
+                                }
+
+                                exchange.sendResponseHeaders(200, 0);
+                                IOUtils.copy(is, os);
+                            }
                         }
                     }
                     catch (Exception e)
                     {
                         handleResponse(exchange, 500, e.getMessage());
                     }
-
                 }
             }
         });
 
-        server.createContext("/initialLambda", new HttpHandler()
+        server.createContext(basePath + "/initialLambda", new HttpHandler()
         {
             @Override
             public void handle(HttpExchange exchange) throws IOException
@@ -221,7 +214,7 @@ public class ReplGridServer
             }
         });
 
-        server.createContext("/executeLambda", new HttpHandler()
+        server.createContext(basePath + "/executeLambda", new HttpHandler()
         {
             @Override
             public void handle(HttpExchange exchange) throws IOException
@@ -252,7 +245,7 @@ public class ReplGridServer
             }
         });
 
-        server.createContext("/typeahead", new HttpHandler()
+        server.createContext(basePath + "/typeahead", new HttpHandler()
         {
             @Override
             public void handle(HttpExchange exchange) throws IOException
@@ -265,7 +258,7 @@ public class ReplGridServer
                         BufferedReader bufferReader = new BufferedReader(inputStreamReader);
                         String requestBody = bufferReader.lines().collect(Collectors.joining());
                         String buildCodeContext = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build()).renderPureModelContextData(currentPMCD);
-                        CompletionResult result  = new Completer(buildCodeContext, Lists.mutable.with(new RelationalCompleterExtension())).complete(requestBody);
+                        CompletionResult result = new Completer(buildCodeContext, Lists.mutable.with(new RelationalCompleterExtension())).complete(requestBody);
                         if (result.getEngineException() != null)
                         {
                             handleResponse(exchange, 500, result.getEngineException().toPretty());
@@ -283,7 +276,7 @@ public class ReplGridServer
             }
         });
 
-        server.createContext("/parseQuery", new HttpHandler()
+        server.createContext(basePath + "/parseQuery", new HttpHandler()
         {
             @Override
             public void handle(HttpExchange exchange) throws IOException
@@ -306,7 +299,7 @@ public class ReplGridServer
             }
         });
 
-        server.createContext("/gridResult", new HttpHandler()
+        server.createContext(basePath + "/gridResult", new HttpHandler()
         {
             @Override
             public void handle(HttpExchange exchange) throws IOException
@@ -372,9 +365,8 @@ public class ReplGridServer
 
         server.setExecutor(null);
         server.start();
-        serverPortAddress = server.getAddress();
-        this.port = serverPortAddress.getPort();
-        System.out.println("REPL Grid Server has started at port " + serverPortAddress.getPort());
+        this.port = server.getAddress().getPort();
+        System.out.println("REPL Grid Server has started at port " + this.port);
     }
 
     public static String executeLambda(LegendInterface legendInterface, PureModelContextData currentRequestPMCD, Function func, ValueSpecification funcBody) throws IOException
@@ -390,7 +382,7 @@ public class ReplGridServer
         String planStr = PlanGenerator.serializeToJSON(plan, "vX_X_X", pureModel, extensions, LegendPlanTransformers.transformers);
 
         // Execute
-        Result res =  planExecutor.execute(planStr);
+        Result res = planExecutor.execute(planStr);
         func.body = Lists.mutable.of(funcBody);
         if (res instanceof RelationalResult)
         {
@@ -428,7 +420,7 @@ public class ReplGridServer
             if (((AppliedFunction) currentExpression).function.equals("from"))
             {
                 ValueSpecification childExpression = ((AppliedFunction) currentExpression).parameters.get(0);
-                if (childExpression instanceof  AppliedFunction && ((AppliedFunction) childExpression).function.equals("slice"))
+                if (childExpression instanceof AppliedFunction && ((AppliedFunction) childExpression).function.equals("slice"))
                 {
                     ((AppliedFunction) childExpression).parameters = Lists.mutable.of(((AppliedFunction) childExpression).parameters.get(0), startValue, endValue);
                     break;
@@ -458,6 +450,6 @@ public class ReplGridServer
                 queryParams.put(entry[0], "");
             }
         }
-        return queryParams.get("isPaginationEnabled").equals("true") ? true : false;
+        return queryParams.get("isPaginationEnabled").equals("true");
     }
 }
