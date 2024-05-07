@@ -2485,27 +2485,32 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   let typeConfigDescriptor = $extensions.availableExternalFormats->meta::external::format::shared::utils::getExternalFormatContractForContentType($binding.contentType).schemaConfig.polymorphicTypesConfigDescriptor->toOne();  
   let typeConfig = $typeConfigDescriptor.typeConfigFromBindingGenerator->eval($binding); 
 
-  let checkCol = if($state.inFilter,|$leftSideSelect.filteringOperation, |$leftSideSelect.columns)->toOne();
-  let typeIdentifierKey = $typeConfigDescriptor.typeKeyNameFromTypeConfig->eval($typeConfig);  
-  let checkColType = ^SemiStructuredPropertyAccess(operand = $checkCol, property = ^Literal(value = $typeIdentifierKey), returnType = String); 
-
   let paramType = $f.parametersValues->at(0).genericType.rawType->toOne();
-
-  // typePath for PrimitiveType/enums is constant and pointless.
+  // typeName/typePath for PrimitiveType/enums is constant and irrelevant.
   assert($paramType->instanceOf(Class), 'sql generation for typePath of primitive/enums is not supported');
   let allSubTypes = $paramType->cast(@Class<Any>)->meta::pure::functions::meta::allSpecializations();
-  let typeNamesToMatch = $allSubTypes->map(cls | $typeConfigDescriptor.typeNameForClassFromTypeConfig->eval($typeConfig, $cls));
+  let typeNamesFromConfig = $allSubTypes->map(cls | $typeConfigDescriptor.typeNameForClassFromTypeConfig->eval($typeConfig, $cls));
 
-  let pairs = zip($allSubTypes, $typeNamesToMatch);
+  let typePathExpectedTypeValueMismatch = zip($allSubTypes, $typeNamesFromConfig)->filter(p|$p.first->elementToPath() != $p.second);
+  
+  let assertionMessage = 'type paths for subtypes do not match expected type values\n' + $typePathExpectedTypeValueMismatch->map(p|'expected: ' + $p.first->elementToPath() + ', found: ' + $p.second)->joinStrings('\n');
+  assertEmpty($typePathExpectedTypeValueMismatch, $assertionMessage);
 
-  let conditionsWithConclusions = $pairs->map(p | ^DynaFunction(name='equal', parameters = [$checkColType, ^Literal(value = $p.second)])->concatenate(^meta::relational::metamodel::Literal(value=$p.first->elementToPath())))->concatenate(^meta::relational::metamodel::Literal(value=^SQLNull()));
+  let typeIdentifierKey = $typeConfigDescriptor.typeKeyNameFromTypeConfig->eval($typeConfig);  
+  let typeNameBuilder = {r:RelationalOperationElement[*] |
+    assert($r->size() == 1, | 'Expected one relational operation element when processing \'typeName\'. Found: ' + $r->size()->toString());
+    ^SemiStructuredPropertyAccess(operand = $r->toOne(), property = ^Literal(value = $typeIdentifierKey), returnType = String);
+  };
 
   let newSelect = if ($state.inFilter,
-                      | ^$leftSideSelect(filteringOperation = ^DynaFunction(name = 'case', parameters = $conditionsWithConclusions)),
-                      | ^$leftSideSelect(columns = ^DynaFunction(name = 'case', parameters = $conditionsWithConclusions))
-                  ); 
-
-  ^$leftSideSWC(select = $newSelect);  
+                      | ^$leftSideSelect(filteringOperation = $typeNameBuilder->eval($leftSideSelect.filteringOperation)),
+                      | ^$leftSideSelect(columns = $typeNameBuilder->eval($leftSideSelect.columns))
+                  );
+  $newSelect->validate($extensions);
+  ^$leftSideSWC
+  (
+    select = $newSelect
+  ); 
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::canProcessTypeName(f:FunctionExpression[1]):Boolean[1]
@@ -2528,22 +2533,58 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   let binding = $propertyMappings->at(0)->cast(@SemiStructuredRelationalPropertyMapping).transformer->cast(@BindingTransformer<Any>).binding->toOne();
   let typeConfigDescriptor = $extensions.availableExternalFormats->meta::external::format::shared::utils::getExternalFormatContractForContentType($binding.contentType).schemaConfig.polymorphicTypesConfigDescriptor->toOne();  
   let typeConfig = $typeConfigDescriptor.typeConfigFromBindingGenerator->eval($binding);  
-  let typeIdentifierKey = $typeConfigDescriptor.typeKeyNameFromTypeConfig->eval($typeConfig);        
 
-   let typeNameBuilder = {r:RelationalOperationElement[*] |
-      assert($r->size() == 1, | 'Expected one relational operation element when processing \'typeName\'. Found: ' + $r->size()->toString());
-      ^SemiStructuredPropertyAccess(operand = $r->toOne(), property = ^Literal(value = $typeIdentifierKey), returnType = String);
-   };
 
-   let newSelect = if ($state.inFilter,
-                       | ^$leftSideSelect(filteringOperation = $typeNameBuilder->eval($leftSideSelect.filteringOperation)),
-                       | ^$leftSideSelect(columns = $typeNameBuilder->eval($leftSideSelect.columns))
-                   );
-   $newSelect->validate($extensions);
-   ^$leftSideSWC
-   (
-      select = $newSelect
-   );
+  let paramType = $f.parametersValues->at(0).genericType.rawType->toOne();
+  // typeName/typePath for PrimitiveType/enums is constant and irrelevant.
+  assert($paramType->instanceOf(Class), 'sql generation for typePath of primitive/enums is not supported');
+  let allSubTypes = $paramType->cast(@Class<Any>)->meta::pure::functions::meta::allSpecializations();
+  let typeNamesFromConfig = $allSubTypes->map(cls | $typeConfigDescriptor.typeNameForClassFromTypeConfig->eval($typeConfig, $cls));  
+
+  let typeNameExpectedTypeValueMismatch = zip($allSubTypes, $typeNamesFromConfig)->filter(p|$p.first.name != $p.second);
+
+  if($typeNameExpectedTypeValueMismatch->isEmpty(), 
+    | 
+      let typeIdentifierKey = $typeConfigDescriptor.typeKeyNameFromTypeConfig->eval($typeConfig);
+      let typeNameBuilder = {r:RelationalOperationElement[*] |
+          assert($r->size() == 1, | 'Expected one relational operation element when processing \'typeName\'. Found: ' + $r->size()->toString());
+          ^SemiStructuredPropertyAccess(operand = $r->toOne(), property = ^Literal(value = $typeIdentifierKey), returnType = String);
+      };
+
+      let newSelect = if ($state.inFilter,
+                          | ^$leftSideSelect(filteringOperation = $typeNameBuilder->eval($leftSideSelect.filteringOperation)),
+                          | ^$leftSideSelect(columns = $typeNameBuilder->eval($leftSideSelect.columns))
+                      );
+      $newSelect->validate($extensions);
+      ^$leftSideSWC
+      (
+          select = $newSelect
+      );, 
+    |
+      let typeIdentifierKey = $typeConfigDescriptor.typeKeyNameFromTypeConfig->eval($typeConfig);
+      let typePathExpectedTypeValueMismatch = zip($allSubTypes, $typeNamesFromConfig)->filter(p|$p.first->elementToPath() != $p.second);
+
+      assertEmpty($typePathExpectedTypeValueMismatch, 'expected type identifier values must match with either the subtype names or fully qualified paths');
+
+      let typeNameBuilder = {r:RelationalOperationElement[*] |
+          assert($r->size() == 1, | 'Expected one relational operation element when processing \'typeName\'. Found: ' + $r->size()->toString());
+          let sspa = ^SemiStructuredPropertyAccess(operand = $r->toOne(), property = ^Literal(value = $typeIdentifierKey), returnType = String);
+          let reversed = ^DynaFunction(name = 'reverseString', parameters = $sspa);
+          let index = ^DynaFunction(name = 'indexOf', parameters = [$reversed, ^Literal(value='::')]);
+          let startPos = ^DynaFunction(name = 'minus', parameters = [^DynaFunction(name = 'plus', parameters = [^DynaFunction(name='length', parameters = $sspa), ^Literal(value=2)]), $index]);
+          let substr = ^DynaFunction(name = 'substring', parameters = [$sspa, $startPos]);
+      };
+
+      let newSelect = if ($state.inFilter,
+                          | ^$leftSideSelect(filteringOperation = $typeNameBuilder->eval($leftSideSelect.filteringOperation)),
+                          | ^$leftSideSelect(columns = $typeNameBuilder->eval($leftSideSelect.columns))
+                      );
+      $newSelect->validate($extensions);
+      ^$leftSideSWC
+      (
+          select = $newSelect
+      );      
+  );
 }
 
 
