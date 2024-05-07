@@ -35,7 +35,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::getLiteralProcessorsForDuckDB():Map<Type,LiteralProcessor>[1]
 {
    newMap([
-   ]->cast(@Pair<Type,LiteralProcessor>))
+      pair(Boolean,    ^LiteralProcessor(format = '%s', transform = toString_Any_1__String_1_->literalTransform()))
+   ])
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::getDynaFunctionToSqlForDuckDB(): DynaFunctionToSql[*]
