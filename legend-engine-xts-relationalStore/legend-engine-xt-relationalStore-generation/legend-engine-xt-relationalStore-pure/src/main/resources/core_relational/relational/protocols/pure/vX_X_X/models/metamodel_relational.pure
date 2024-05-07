@@ -323,6 +323,13 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::element::Tabl
 
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::store::relational::element::SchemaPtr extends meta::protocols::pure::vX_X_X::metamodel::store::relational::element::RelationalElement
+{
+   database : String[1];
+   schema : String[1];
+   mainTableDb: String[1];
+}
+
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::Mapper
 {
    _type: String[1];
@@ -330,9 +337,39 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor
    to: String[1];
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::RelationalMapper
+{
+  databaseMappers : meta::protocols::pure::vX_X_X::metamodel::store::relational::DatabaseMapper[*];
+  schemaMappers   : meta::protocols::pure::vX_X_X::metamodel::store::relational::SchemaMapper[*];
+  tableMappers    : meta::protocols::pure::vX_X_X::metamodel::store::relational::TableMapper[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::store::relational::DatabaseMapper
+{
+  database : String[1];
+  schemas: meta::protocols::pure::vX_X_X::metamodel::store::relational::Schema[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::store::relational::SchemaMapper
+{
+  from : meta::protocols::pure::vX_X_X::metamodel::store::relational::Schema[1];
+  to   : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::store::relational::TableMapper
+{
+  from : meta::protocols::pure::vX_X_X::metamodel::store::relational::Table[1];
+  to   : String[1];
+}
+
 Class <<typemodifiers.abstract>> meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::MapperPostProcessor extends meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::PostProcessor
 {
    mappers: meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::Mapper[*];
+}
+
+Class <<typemodifiers.abstract>> meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::RelationalMapperPostProcessor extends meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::PostProcessor
+{
+   relationalMappers: String[*];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::TableNameMapper extends meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::Mapper {

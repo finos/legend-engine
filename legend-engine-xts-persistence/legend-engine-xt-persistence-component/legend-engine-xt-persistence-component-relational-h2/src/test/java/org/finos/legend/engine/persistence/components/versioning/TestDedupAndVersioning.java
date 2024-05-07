@@ -32,7 +32,9 @@ import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProv
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.relational.api.DataError;
 import org.finos.legend.engine.persistence.components.relational.api.ErrorCategory;
@@ -72,6 +74,8 @@ public class TestDedupAndVersioning extends BaseTest
     13.Fail on Dups, MaxVersion with perform versioning -> tempStagingTable with count column and only max version [Throw error on dups, throw Error on Data errors]
     14.Fail on Dups, AllVersion do not perform versioning -> tempStagingTable with count column [Throw error on dups]
     15.Fail on Dups, AllVersion with perform versioning -> tempStagingTable with count column and Data splits [Throw error on dups, throw Error on Data errors]
+
+    16.Fail on Dups, NoVersion with fail on duplicate PKs -> tempStagingTable with count column and pk_count column [Throw error on pk dups]
     */
 
     private static Field name = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).nullable(false).primaryKey(true).fieldAlias(nameName).build();
@@ -624,6 +628,80 @@ public class TestDedupAndVersioning extends BaseTest
             DataError dataError = buildDataError(ErrorCategory.DUPLICATES, row, buildErrorDetailsMap("num_duplicates", 2));
             Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
             Assertions.assertEquals(Arrays.asList(dataError), e.getDataErrors());
+        }
+    }
+
+    // Scenario 16
+    @Test
+    void testFailOnDupsNoVersionFailOnDupPks() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingTable = getStagingTableWithoutVersion();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+        IngestMode ingestMode = AppendOnly.builder()
+            .auditing(DateTimeAuditing.builder().dateTimeField("append_time").build())
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField("digest").build())
+            .deduplicationStrategy(FailOnDuplicates.builder().build())
+            .versioningStrategy(NoVersioningStrategy.builder().failOnDuplicatePrimaryKeys(true).build())
+            .build();
+
+        // Happy scenario
+        createStagingTableWithoutPks(stagingTable);
+        String srcDataPath1 = "src/test/resources/data/dedup-and-versioning/input/data5_without_dups.csv";
+        loadDataIntoStagingTableWithoutVersion(srcDataPath1);
+
+        String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data5_fail_on_dups_no_versioning_fail_on_dups_pk.csv";
+        String ingestRunId = performDedupAndVersioining(datasets, ingestMode);
+        // Validate tempTableExists
+        verifyResults(expectedDataPath, schemaWithCount, ingestRunId);
+
+
+        // Duplicate PK scenario, should throw error
+        String srcDataPath2 = "src/test/resources/data/dedup-and-versioning/input/data6_with_dups_pk.csv";
+        loadDataIntoStagingTableWithoutVersion(srcDataPath2);
+        try
+        {
+            ingestRunId = performDedupAndVersioining(datasets, ingestMode);
+            Assertions.fail("Should not succeed");
+        }
+        catch (DataQualityException e)
+        {
+            Map<String, Object> row1  = new HashMap<>();
+            row1.put("name", "Andy");
+            row1.put("id", 1);
+
+            Map<String, Object> row2  = new HashMap<>();
+            row2.put("name", "Cathy");
+            row2.put("id", 3);
+
+            DataError dataError1 = buildDataError(ErrorCategory.DUPLICATE_PRIMARY_KEYS, row1, buildErrorDetailsMap("num_pk_duplicates", 3L));
+            DataError dataError2 = buildDataError(ErrorCategory.DUPLICATE_PRIMARY_KEYS, row2, buildErrorDetailsMap("num_pk_duplicates", 2L));
+            Assertions.assertEquals("Encountered multiple rows with duplicate primary keys, Failing the batch as Fail on Duplicate Primary Keys is selected", e.getMessage());
+            Assertions.assertEquals(Arrays.asList(dataError1, dataError2), e.getDataErrors());
+        }
+    }
+
+    @Test
+    void testInvalidCombination()
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingTable = getStagingTableWithoutVersion();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+        IngestMode ingestMode = AppendOnly.builder()
+            .auditing(DateTimeAuditing.builder().dateTimeField("append_time").build())
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField("digest").build())
+            .deduplicationStrategy(AllowDuplicates.builder().build())
+            .versioningStrategy(NoVersioningStrategy.builder().failOnDuplicatePrimaryKeys(true).build())
+            .build();
+
+        try
+        {
+            performDedupAndVersioining(datasets, ingestMode);
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("For failOnDuplicatePrimaryKeys, FailOnDuplicates must be selected as the DeduplicationStrategy", e.getMessage());
         }
     }
 

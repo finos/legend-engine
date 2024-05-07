@@ -15,7 +15,6 @@
 package org.finos.legend.engine.language.pure.grammar.integration.mapping;
 
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MongoDBMappingParserGrammar;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.Collection;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.RootMongoDBClassMapping;
 
 public class MongoDBMappingParseTreeWalker

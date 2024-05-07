@@ -23,6 +23,7 @@ public enum ErrorCategory
     FILE_NOT_FOUND("File not found in specified location"),
     UNKNOWN("Unknown error"),
     DUPLICATES("Duplicate rows found"),
+    DUPLICATE_PRIMARY_KEYS("Multiple rows with duplicate primary keys found"),
     DATA_VERSION_ERROR("Data errors (same PK, same version but different data)");
 
     private final String defaultErrorMessage;

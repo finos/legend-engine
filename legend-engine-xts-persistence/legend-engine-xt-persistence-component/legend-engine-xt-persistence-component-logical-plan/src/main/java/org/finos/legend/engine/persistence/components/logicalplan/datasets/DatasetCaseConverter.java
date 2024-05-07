@@ -30,58 +30,7 @@ public class DatasetCaseConverter
         Optional<String> newSchemaName = dataset.datasetReference().group().map(strategy);
         Optional<String> newDatabaseName = dataset.datasetReference().database().map(strategy);
 
-        List<Field> newDatasetFields = new ArrayList<>();
-        for (Field field : dataset.schema().fields())
-        {
-            Field newField = field.withName(strategy.apply(field.name()));
-            newDatasetFields.add(newField);
-        }
-
-        List<Index> newDatasetIndices = new ArrayList<>();
-        for (Index index : dataset.schema().indexes())
-        {
-            List<String> indexColumnNames = new ArrayList<>();
-            for (String columnName : index.columns())
-            {
-                String newColumnName = strategy.apply(columnName);
-                indexColumnNames.add(newColumnName);
-            }
-            Index newIndex = index.withIndexName(strategy.apply(index.indexName())).withColumns(indexColumnNames);
-            newDatasetIndices.add(newIndex);
-        }
-
-        ColumnStoreSpecification newColumnStoreSpecification = null;
-        if (dataset.schema().columnStoreSpecification().isPresent())
-        {
-            ColumnStoreSpecification columnStoreSpecification = dataset.schema().columnStoreSpecification().get();
-            List<Field> newColumnStoreKeys = new ArrayList<>();
-            for (Field field : columnStoreSpecification.columnStoreKeys())
-            {
-                Field newField = field.withName(strategy.apply(field.name()));
-                newColumnStoreKeys.add(newField);
-            }
-            newColumnStoreSpecification = columnStoreSpecification.withColumnStoreKeys(newColumnStoreKeys);
-        }
-
-        ShardSpecification newShardSpecification = null;
-        if (dataset.schema().shardSpecification().isPresent())
-        {
-           ShardSpecification shardSpecification = dataset.schema().shardSpecification().get();
-            List<Field> newShardKeys = new ArrayList<>();
-            for (Field field : shardSpecification.shardKeys())
-            {
-                Field newField = field.withName(strategy.apply(field.name()));
-                newShardKeys.add(newField);
-            }
-            newShardSpecification = shardSpecification.withShardKeys(newShardKeys);
-        }
-
-        SchemaDefinition schemaDefinition = SchemaDefinition.builder()
-            .addAllFields(newDatasetFields)
-            .addAllIndexes(newDatasetIndices)
-            .columnStoreSpecification(newColumnStoreSpecification)
-            .shardSpecification(newShardSpecification)
-            .build();
+        SchemaDefinition schemaDefinition = applyCaseOnSchemaDefinition(dataset.schema(), strategy);
 
         if (dataset instanceof DatasetDefinition)
         {
@@ -180,5 +129,61 @@ public class DatasetCaseConverter
                 .lastUsedTimeField(strategy.apply(lockInfoDataset.lastUsedTimeField()))
                 .tableNameField(strategy.apply(lockInfoDataset.tableNameField()))
                 .build();
+    }
+
+    public SchemaDefinition applyCaseOnSchemaDefinition(SchemaDefinition schema, Function<String, String> strategy)
+    {
+        List<Field> newDatasetFields = new ArrayList<>();
+        for (Field field : schema.fields())
+        {
+            Field newField = field.withName(strategy.apply(field.name()));
+            newDatasetFields.add(newField);
+        }
+
+        List<Index> newDatasetIndices = new ArrayList<>();
+        for (Index index : schema.indexes())
+        {
+            List<String> indexColumnNames = new ArrayList<>();
+            for (String columnName : index.columns())
+            {
+                String newColumnName = strategy.apply(columnName);
+                indexColumnNames.add(newColumnName);
+            }
+            Index newIndex = index.withIndexName(strategy.apply(index.indexName())).withColumns(indexColumnNames);
+            newDatasetIndices.add(newIndex);
+        }
+
+        ColumnStoreSpecification newColumnStoreSpecification = null;
+        if (schema.columnStoreSpecification().isPresent())
+        {
+            ColumnStoreSpecification columnStoreSpecification = schema.columnStoreSpecification().get();
+            List<Field> newColumnStoreKeys = new ArrayList<>();
+            for (Field field : columnStoreSpecification.columnStoreKeys())
+            {
+                Field newField = field.withName(strategy.apply(field.name()));
+                newColumnStoreKeys.add(newField);
+            }
+            newColumnStoreSpecification = columnStoreSpecification.withColumnStoreKeys(newColumnStoreKeys);
+        }
+
+        ShardSpecification newShardSpecification = null;
+        if (schema.shardSpecification().isPresent())
+        {
+            ShardSpecification shardSpecification = schema.shardSpecification().get();
+            List<Field> newShardKeys = new ArrayList<>();
+            for (Field field : shardSpecification.shardKeys())
+            {
+                Field newField = field.withName(strategy.apply(field.name()));
+                newShardKeys.add(newField);
+            }
+            newShardSpecification = shardSpecification.withShardKeys(newShardKeys);
+        }
+
+        return SchemaDefinition.builder()
+            .addAllFields(newDatasetFields)
+            .addAllIndexes(newDatasetIndices)
+            .columnStoreSpecification(newColumnStoreSpecification)
+            .shardSpecification(newShardSpecification)
+            .build();
     }
 }

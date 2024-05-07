@@ -20,14 +20,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.GCPApplicationDefaultCredential;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
 public class TestBigQueryWithGCPApplicationDefaultCredentialsFlow
 {
-    private Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+    private Identity identity1 = new Identity("identity1");
 
     @Test
     public void testFlow() throws Exception

@@ -23,7 +23,6 @@ import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataProce
 import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataReadDriver;
 import org.finos.legend.engine.external.format.flatdata.driver.spi.ParsedFlatDataToObject;
 import org.finos.legend.engine.external.format.flatdata.driver.spi.RawFlatData;
-import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataRecordType;
 import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataSection;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicChecked;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;

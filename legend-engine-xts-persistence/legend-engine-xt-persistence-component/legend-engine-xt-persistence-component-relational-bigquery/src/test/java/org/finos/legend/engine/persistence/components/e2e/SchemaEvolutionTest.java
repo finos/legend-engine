@@ -588,7 +588,7 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
 
     private static void schemaEvolve(Executor<SqlGen, TabularData, SqlPlan> relationalExecutor, RelationalTransformer transformer, SchemaEvolution schemaEvolution, Dataset datasetMain, Dataset datasetStage, Dataset datasetToAssert, List<String> alterSqlsToAssert)
     {
-        SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(datasetMain, datasetStage);
+        SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(datasetMain, datasetStage.schema());
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(schemaEvolutionResult.logicalPlan());
         Assertions.assertEquals(alterSqlsToAssert, physicalPlan.getSqlList());
         relationalExecutor.executePhysicalPlan(physicalPlan);

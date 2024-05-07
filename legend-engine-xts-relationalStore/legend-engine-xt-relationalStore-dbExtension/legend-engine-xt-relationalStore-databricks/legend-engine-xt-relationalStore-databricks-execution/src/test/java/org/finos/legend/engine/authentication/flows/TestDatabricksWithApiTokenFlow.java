@@ -19,7 +19,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.ApiTokenCredential;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +28,7 @@ import static org.junit.Assert.assertEquals;
 public class TestDatabricksWithApiTokenFlow
 {
     private InMemoryVaultForTesting inMemoryVault = new InMemoryVaultForTesting();
-    private Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+    private Identity identity = new Identity("identity1");
 
     @Before
     public void setup()

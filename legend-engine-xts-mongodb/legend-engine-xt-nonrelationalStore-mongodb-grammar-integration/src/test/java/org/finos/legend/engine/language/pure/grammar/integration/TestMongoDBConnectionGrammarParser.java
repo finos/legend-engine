@@ -17,7 +17,6 @@ package org.finos.legend.engine.language.pure.grammar.integration;
 import org.antlr.v4.runtime.Vocabulary;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.MongoDBConnectionParserGrammar;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.schema.MongoDBSchemaParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
 
 import java.util.List;

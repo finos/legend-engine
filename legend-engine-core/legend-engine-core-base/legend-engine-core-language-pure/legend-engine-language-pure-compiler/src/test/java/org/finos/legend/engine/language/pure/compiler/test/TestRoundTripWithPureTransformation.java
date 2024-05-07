@@ -16,7 +16,6 @@ package org.finos.legend.engine.language.pure.compiler.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
@@ -84,7 +83,7 @@ public class TestRoundTripWithPureTransformation
     private PureModel compileIntoPureModel(String pureCode)
     {
         PureModelContextData pmcd = PureGrammarParser.newInstance().parseModel(pureCode);
-        return new PureModel(pmcd, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), DeploymentMode.TEST);
+        return new PureModel(pmcd, Identity.getAnonymousIdentity().getName(), DeploymentMode.TEST);
     }
 
 }

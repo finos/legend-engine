@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.ingestmode.unitemporal;
 
 import org.finos.legend.engine.persistence.components.AnsiTestArtifacts;
+import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
@@ -24,6 +25,7 @@ import org.junit.jupiter.api.Assertions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.*;
 import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.*;
@@ -131,13 +133,15 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
+        List<String> dedupAndVersioningSql = operations.deduplicationAndVersioningSql();
+        Map<DedupAndVersionErrorSqlType, String> dedupAndVersionErrorSqlTypeStringMap = operations.deduplicationAndVersioningErrorChecksSql();
 
         String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink SET sink.\"batch_id_out\" = " +
                 "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1," +
                 "sink.\"batch_time_out\" = '2000-01-01 00:00:00.000000' " +
                 "WHERE " +
                 "(sink.\"batch_id_out\" = 999999999) AND " +
-                "(EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage " +
+                "(EXISTS (SELECT * FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" as stage " +
                 "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) " +
                 "AND ((sink.\"digest\" <> stage.\"digest\") OR (stage.\"delete_indicator\" IN ('yes','1','true')))))";
 
@@ -146,11 +150,17 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
                 "\"batch_time_in\", \"batch_time_out\") " +
                 "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\"," +
                 "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')," +
-                "999999999,'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' FROM \"mydb\".\"staging\" as stage " +
+                "999999999,'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" as stage " +
                 "WHERE (NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink " +
                 "WHERE (sink.\"batch_id_out\" = 999999999) AND (sink.\"digest\" = stage.\"digest\") " +
                 "AND ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\"))))) AND " +
                 "(stage.\"delete_indicator\" NOT IN ('yes','1','true')))";
+
+        String expectedInsertIntoBaseTempStagingWithFilterDuplicates = "INSERT INTO \"mydb\".\"staging_temp_staging_lp_yosulf\" " +
+            "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"delete_indicator\", \"legend_persistence_count\") " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"delete_indicator\"," +
+            "COUNT(*) as \"legend_persistence_count\" FROM \"mydb\".\"staging\" as stage " +
+            "GROUP BY stage.\"id\", stage.\"name\", stage.\"amount\", stage.\"biz_date\", stage.\"digest\", stage.\"delete_indicator\")";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
@@ -158,6 +168,12 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, dedupAndVersioningSql.get(0));
+        Assertions.assertEquals(expectedInsertIntoBaseTempStagingWithFilterDuplicates, dedupAndVersioningSql.get(1));
+        Assertions.assertEquals(AnsiTestArtifacts.maxDupsErrorCheckSql, dedupAndVersionErrorSqlTypeStringMap.get(MAX_DUPLICATES));
+        Assertions.assertEquals(AnsiTestArtifacts.dupRowsSql, dedupAndVersionErrorSqlTypeStringMap.get(DUPLICATE_ROWS));
+        Assertions.assertEquals(AnsiTestArtifacts.maxPkDupsErrorCheckSql, dedupAndVersionErrorSqlTypeStringMap.get(MAX_PK_DUPLICATES));
+        Assertions.assertEquals(AnsiTestArtifacts.dupPkRowsSql, dedupAndVersionErrorSqlTypeStringMap.get(PK_DUPLICATE_ROWS));
 
         // Stats
         String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage";

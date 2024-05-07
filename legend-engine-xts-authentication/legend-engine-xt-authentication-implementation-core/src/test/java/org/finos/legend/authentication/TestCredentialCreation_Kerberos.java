@@ -15,18 +15,9 @@
 package org.finos.legend.authentication;
 
 import org.eclipse.collections.api.factory.Sets;
-import org.eclipse.collections.impl.list.mutable.FastList;
-import org.finos.legend.authentication.credentialprovider.impl.ApikeyCredentialProvider;
 import org.finos.legend.authentication.credentialprovider.impl.KerberosCredentialProvider;
-import org.finos.legend.authentication.intermediationrule.impl.ApiKeyFromVaultRule;
-import org.finos.legend.authentication.vault.CredentialVaultProvider;
-import org.finos.legend.authentication.vault.impl.CredentialVaultProviderForTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.KerberosAuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
-import org.finos.legend.engine.shared.core.identity.credential.ApiTokenCredential;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 import org.junit.Before;
 import org.junit.Test;

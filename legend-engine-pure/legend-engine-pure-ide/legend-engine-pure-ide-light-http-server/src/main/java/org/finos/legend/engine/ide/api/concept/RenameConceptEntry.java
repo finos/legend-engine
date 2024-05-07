@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.ide.api.concept;
 
-import org.finos.legend.engine.ide.api.concept.AbstractRenameConceptEntry;
 
 public class RenameConceptEntry extends AbstractRenameConceptEntry
 {

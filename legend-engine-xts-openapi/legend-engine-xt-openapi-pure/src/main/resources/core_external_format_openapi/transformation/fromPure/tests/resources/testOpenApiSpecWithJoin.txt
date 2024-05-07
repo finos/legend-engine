@@ -1,0 +1,148 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Legend API",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "test"
+    }
+  ],
+  "paths": {
+    "/service/testOpenApi": {
+      "get": {
+        "tags": [
+          "definition"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TabularDataSet",
+                  "specificationExtensions": {
+                    "x-tdsResultColumns": [
+                      {
+                        "column": "firstName",
+                        "type": "string"
+                      },
+                      {
+                        "column": "Employeer ID",
+                        "type": "integer"
+                      },
+                      {
+                        "column": "Legal Name",
+                        "type": "string"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "definition"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TabularDataSet",
+                  "specificationExtensions": {
+                    "x-tdsResultColumns": [
+                      {
+                        "column": "firstName",
+                        "type": "string"
+                      },
+                      {
+                        "column": "Employeer ID",
+                        "type": "integer"
+                      },
+                      {
+                        "column": "Legal Name",
+                        "type": "string"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TDSRow": {
+        "type": "object",
+        "properties": {
+          "parent": {
+            "$ref": "#/components/schemas/TabularDataSet"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Any"
+            }
+          }
+        }
+      },
+      "TDSColumn": {
+        "type": "object",
+        "properties": {
+          "offset": {
+            "type": "integer"
+          },
+          "type": {
+            "$ref": "#/components/schemas/DataType"
+          },
+          "documentation": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "enumMappingId": {
+            "type": "string"
+          },
+          "sourceDataType": {
+            "$ref": "#/components/schemas/Any"
+          }
+        }
+      },
+      "TabularDataSet": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TDSRow"
+            }
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TDSColumn"
+            }
+          }
+        }
+      },
+      "DataType": {
+        "type": "object",
+        "properties": {}
+      },
+      "Any": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  }
+}

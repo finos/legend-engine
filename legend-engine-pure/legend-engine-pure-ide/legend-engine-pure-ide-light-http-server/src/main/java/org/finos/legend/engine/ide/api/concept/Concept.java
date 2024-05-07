@@ -15,7 +15,6 @@
 package org.finos.legend.engine.ide.api.concept;
 
 import io.swagger.annotations.Api;
-import org.finos.legend.engine.ide.api.concept.GetConcept;
 import org.finos.legend.engine.ide.session.PureSession;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedPropertyInstance;

@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification;
 
-import javax.security.auth.Subject;
 
 public class KerberosAuthenticationSpecification extends AuthenticationSpecification
 {

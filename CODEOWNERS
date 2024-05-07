@@ -23,7 +23,6 @@
 /legend-engine-xts-iceberg/**            @finos/legend-engine-maintainers
 /legend-engine-xts-java/**               @finos/legend-engine-maintainers
 /legend-engine-xts-json/**               @finos/legend-engine-maintainers
-/legend-engine-xts-mastery/**            @finos/legend-engine-maintainers @hausea
 /legend-engine-xts-mongodb/**            @finos/legend-engine-maintainers
 /legend-engine-xts-morphir/**            @finos/legend-engine-maintainers
 /legend-engine-xts-openapi/**            @finos/legend-engine-maintainers

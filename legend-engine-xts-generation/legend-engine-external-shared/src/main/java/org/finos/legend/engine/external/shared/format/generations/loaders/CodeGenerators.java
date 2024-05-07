@@ -58,9 +58,9 @@ public class CodeGenerators
     {
         try
         {
-            PureModel pureModel = this.modelManager.loadModelAndData(PureModelContextData.newPureModelContextData(), null, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), null).getTwo();
+            PureModel pureModel = this.modelManager.loadModelAndData(PureModelContextData.newPureModelContextData(), null, Identity.getAnonymousIdentity(), null).getTwo();
             List<FileGenerationDescription> descriptions = codeConfigurationDescriptions.stream().map(e -> FileGenerationDescription.newDescription(e, pureModel)).collect(Collectors.toList());
-            return ManageConstantResult.manageResult(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), descriptions);
+            return ManageConstantResult.manageResult(Identity.getAnonymousIdentity().getName(), descriptions);
         }
         catch (Exception ex)
         {

@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.protocol.functionActivator.metamodel;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = DeploymentOwner.class)

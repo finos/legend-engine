@@ -50,7 +50,7 @@ public abstract class NontemporalSnapshotTestCases extends BaseTest
             .ingestMode(testScenario.getIngestMode())
             .relationalSink(getRelationalSink())
             .collectStatistics(true)
-            .createStagingDataset(true)
+            .skipMainAndMetadataDatasetCreation(true)
             .enableConcurrentSafety(true)
             .executionTimestampClock(fixedClock_2000_01_01)
             .build();

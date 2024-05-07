@@ -399,6 +399,16 @@ public class BaseTest
         h2Sink.executeStatement(loadSql);
     }
 
+    protected void loadStagingDataForWithMultiPartition(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+                "INSERT INTO \"TEST\".\"staging\"(date, accountNum, dimension, balance, digest) " +
+                "SELECT CONVERT( \"date\",DATE ), \"accountNum\", \"dimension\", CONVERT( \"balance\", BIGINT), \"digest\"" +
+                " FROM CSVREAD( '" + path + "', 'date, accountNum, dimension, balance, digest', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
     protected void loadStagingDataForWithPartitionWithVersion(String path) throws Exception
     {
         validateFileExists(path);

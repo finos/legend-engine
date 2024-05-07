@@ -63,16 +63,19 @@ public class PostgresServerTest
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);
 
-        testPostgresServer = new TestPostgresServer(serverConfig, legendSessionFactory, (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()));
+        testPostgresServer = new TestPostgresServer(serverConfig, legendSessionFactory,
+                (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()),
+                new Messages((exception) -> exception.getMessage()));
         testPostgresServer.startUp();
     }
 
     @Test
     public void testMetadata() throws SQLException
     {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"");
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"");
         )
         {
             ResultSetMetaData resultSetMetaData = statement.getMetaData();
@@ -93,9 +96,10 @@ public class PostgresServerTest
     @Test
     public void testParameterMetadata() throws SQLException
     {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"")
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"")
         )
         {
             ParameterMetaData parameterMetaData = statement.getParameterMetaData();
@@ -130,10 +134,11 @@ public class PostgresServerTest
     @Test
     public void testNumberOfRows() throws SQLException
     {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"");
-             ResultSet resultSet = statement.executeQuery()
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"");
+                ResultSet resultSet = statement.executeQuery()
         )
         {
             int rows = 0;
@@ -148,10 +153,11 @@ public class PostgresServerTest
     @Test
     public void testTableFunctionSyntax() throws SQLException
     {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("SELECT * FROM service('/personService')");
-             ResultSet resultSet = statement.executeQuery()
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                PreparedStatement statement = connection.prepareStatement("SELECT * FROM service('/personService')");
+                ResultSet resultSet = statement.executeQuery()
         )
         {
             int rows = 0;
@@ -166,10 +172,11 @@ public class PostgresServerTest
     @Test
     public void testSelectWithoutTable() throws SQLException
     {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("SELECT 1");
-             ResultSet resultSet = statement.executeQuery()
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                PreparedStatement statement = connection.prepareStatement("SELECT 1");
+                ResultSet resultSet = statement.executeQuery()
         )
         {
             int rows = 0;
@@ -184,10 +191,11 @@ public class PostgresServerTest
     @Test
     public void testShowTxn() throws SQLException
     {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("SHOW TRANSACTION ISOLATION LEVEL");
-             ResultSet resultSet = statement.executeQuery()
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                PreparedStatement statement = connection.prepareStatement("SHOW TRANSACTION ISOLATION LEVEL");
+                ResultSet resultSet = statement.executeQuery()
         )
         {
             int rows = 0;
@@ -205,10 +213,11 @@ public class PostgresServerTest
         HikariConfig jdbcConfig = new HikariConfig();
         jdbcConfig.setJdbcUrl("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres");
         jdbcConfig.setUsername("dummy");
-        try (HikariDataSource dataSource = new HikariDataSource(jdbcConfig);
-             Connection connection = dataSource.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement("SELECT 1");
-             ResultSet resultSet = preparedStatement.executeQuery()
+        try (
+                HikariDataSource dataSource = new HikariDataSource(jdbcConfig);
+                Connection connection = dataSource.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement("SELECT 1");
+                ResultSet resultSet = preparedStatement.executeQuery()
         )
         {
             int rows = 0;
@@ -223,10 +232,11 @@ public class PostgresServerTest
     @Test
     public void testInformationSchema() throws SQLException
     {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("SELECT * FROM information_schema.schemata");
-             ResultSet resultSet = statement.executeQuery()
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                PreparedStatement statement = connection.prepareStatement("SELECT * FROM information_schema.schemata");
+                ResultSet resultSet = statement.executeQuery()
         )
         {
             int rows = 0;
@@ -241,10 +251,11 @@ public class PostgresServerTest
     @Test
     public void testPgCatalog() throws SQLException
     {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("SELECT * FROM pg_catalog.pg_tablespace");
-             ResultSet resultSet = statement.executeQuery()
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                PreparedStatement statement = connection.prepareStatement("SELECT * FROM pg_catalog.pg_tablespace");
+                ResultSet resultSet = statement.executeQuery()
         )
         {
             int rows = 0;
@@ -259,8 +270,9 @@ public class PostgresServerTest
     @Test
     public void testConnectionIsValid() throws SQLException
     {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy")
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy")
         )
         {
             // This triggers an empty query and expects an empty response
@@ -272,9 +284,10 @@ public class PostgresServerTest
     @Test
     public void testEmptyQuery() throws SQLException
     {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("")
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                PreparedStatement statement = connection.prepareStatement("")
         )
         {
             int rowCount = statement.executeUpdate();
@@ -285,9 +298,10 @@ public class PostgresServerTest
     @Test
     public void testUnknownServiceInExecution() throws SQLException
     {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("SELECT blah FROM service('/blah')");
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                PreparedStatement statement = connection.prepareStatement("SELECT blah FROM service('/blah')");
         )
         {
             PSQLException exception = Assert.assertThrows(PSQLException.class, statement::executeQuery);
@@ -300,9 +314,10 @@ public class PostgresServerTest
     @Test
     public void testUnknownColumnInExecution() throws SQLException
     {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("SELECT \"some_random_column_name\" FROM service('/personService')");
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                PreparedStatement statement = connection.prepareStatement("SELECT \"some_random_column_name\" FROM service('/personService')");
         )
         {
             PSQLException exception = Assert.assertThrows(PSQLException.class, statement::executeQuery);
@@ -316,9 +331,10 @@ public class PostgresServerTest
     @Test
     public void testUnknownServiceInSchema() throws SQLException
     {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("SELECT blah FROM service('/blah')");
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                PreparedStatement statement = connection.prepareStatement("SELECT blah FROM service('/blah')");
         )
         {
             PSQLException exception = Assert.assertThrows(PSQLException.class, statement::getMetaData);
@@ -331,9 +347,10 @@ public class PostgresServerTest
     @Test
     public void testUnknownColumnInSchema() throws SQLException
     {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("SELECT \"some_random_column_name\" FROM service('/personService')");
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                PreparedStatement statement = connection.prepareStatement("SELECT \"some_random_column_name\" FROM service('/personService')");
         )
         {
             PSQLException exception = Assert.assertThrows(PSQLException.class, statement::getMetaData);

@@ -66,7 +66,7 @@ public class Show implements Command
                    }
                    else
                    {
-                       this.client.getTerminal().writer().println("Unable to show repl grid, default web browser is not configured");
+                       this.client.getTerminal().writer().println(replGridServer.getGridUrl());
                    }
                 }
                 catch (Exception e)

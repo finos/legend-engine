@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::metamodel::relation::*;
+import meta::relational::postProcessor::*;
 import meta::pure::alloy::connections::*;
 import meta::external::store::relational::runtime::*;
 import meta::core::runtime::*;
@@ -35,12 +37,75 @@ Class meta::pure::alloy::connections::MapperPostProcessor extends PostProcessor
    mappers: Mapper[*];
 }
 
+Class meta::pure::alloy::connections::RelationalMapperPostProcessor extends PostProcessor
+{
+  relationalMappers: RelationalMapper[*];
+}
 
 Class <<typemodifiers.abstract>> meta::pure::alloy::connections::SchemaNameMapper extends Mapper {}
 Class <<typemodifiers.abstract>> meta::pure::alloy::connections::TableNameMapper extends Mapper {
    schema: meta::pure::alloy::connections::SchemaNameMapper[1];
 }
 
+function meta::pure::alloy::connections::relationalMapperPostProcessor(mapper:RelationalMapperPostProcessor[1]):meta::relational::runtime::PostProcessorWithParameter[1]
+{
+   ^meta::relational::runtime::PostProcessorWithParameter(parameters = $mapper.relationalMappers, postProcessor = meta::pure::alloy::connections::postProcessor::relationalMapperPostProcessor__PostProcessor_1_);
+}
+
+function meta::pure::alloy::connections::postProcessor::relationalMapperPostProcessor():meta::relational::runtime::PostProcessor[1]
+{
+   ^meta::relational::runtime::PostProcessor(sqlQueryPostProcessorForExecution = {|''} , sqlQueryPostProcessorForPlan = meta::pure::alloy::connections::relationalMapperPostProcessor_SQLQuery_1__Mapping_$0_1$__Runtime_1__Database_$0_1$__ExecutionContext_1__PostProcessorParameter_MANY__PostProcessorResult_1_ )
+}
+
+function meta::pure::alloy::connections::relationalMapperPostProcessor(sql:SQLQuery[1], m:Mapping[0..1], runtime:Runtime[1], store:Database[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], params:	meta::relational::runtime::PostProcessorParameter[*]):PostProcessorResult[1]
+{
+  let databaseMappers = $params->cast(@meta::relational::metamodel::RelationalMapper).databaseMappers;
+  let schemaMappers = $params->cast(@meta::relational::metamodel::RelationalMapper).schemaMappers;
+  let tableMappers = $params->cast(@meta::relational::metamodel::RelationalMapper).tableMappers;
+  let processedMappers = meta::pure::alloy::connections::relationalMapperPostProcessor($databaseMappers, $schemaMappers, $tableMappers); 
+  let result = meta::relational::postProcessor::transform($sql, $processedMappers);
+  ^meta::relational::mapping::PostProcessorResult(query = $result->cast(@SQLQuery));
+}
+
+function meta::pure::alloy::connections::relationalMapperPostProcessor(dbMappers:meta::relational::metamodel::DatabaseMapper[*], schemaMappers:meta::relational::metamodel::SchemaMapper[*], tableMappers:meta::relational::metamodel::TableMapper[*]):meta::pure::metamodel::function::Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>[1] 
+{
+     {r:RelationalOperationElement[1]| $r->match([ t:meta::relational::metamodel::relation::Table[1] | if(!$t->isTemporaryTable(),
+                                                                                                            | let processedTable = processRelationalMappers($t, $dbMappers, $schemaMappers, $tableMappers);
+                                                                                                              if(!$processedTable->isEmpty(),
+                                                                                                                  | $processedTable->toOne(),
+                                                                                                                  | $t
+                                                                                                                );,
+                                                                                                            |$t
+                                                                                                          );,
+                                                    r:RelationalOperationElement[1] | $r]
+                                                );
+      }
+}
+
+function <<access.private>> meta::pure::alloy::connections::processRelationalMappers(t:Table[1], dbMappers : meta::relational::metamodel::DatabaseMapper[*], schemaMappers:meta::relational::metamodel::SchemaMapper[*], tableMappers:meta::relational::metamodel::TableMapper[*]):Table[0..1]
+{
+  let tableUpdated  =  $tableMappers->map(tm|if($t.name == $tm.from.name,| ^$t(name=$tm.to),| []))->last();
+
+  let tableSchemaUpdated =  $schemaMappers->map(sm|if( ($t.schema.name == $sm.from.name) && ($t.schema.database.name == $sm.from.database.name),
+                                                      | let tableSchema = $t.schema;
+                                                        let newSchema = ^$tableSchema(name=$sm.to) ;
+                                                        ^$t(schema = $newSchema->toOne(), name = if($tableUpdated->isNotEmpty(), | $tableUpdated.name->toOne(), |$t.name));,
+                                                      | []))->last();
+
+  let databaseUpdated = $dbMappers->map(dm | $dm.schemas->map(s | if($t.schema.name == $s.name,
+                                                                      | let newSchema = if($tableSchemaUpdated->isNotEmpty(),
+                                                                                            | $tableSchemaUpdated.schema->toOne(),
+                                                                                            | $t.schema);
+                                                                        let newDatabaseSchema = ^$newSchema(name = $dm.database + '.' + $newSchema.name);
+                                                                        ^$t(schema = $newDatabaseSchema, name = if($tableUpdated->isNotEmpty(), | $tableUpdated.name->toOne(), |$t.name));,
+                                                                      | []))->last()) ->last();
+
+  if($databaseUpdated->isNotEmpty(),
+      | $databaseUpdated,
+      | if($tableSchemaUpdated->isNotEmpty(),
+          | $tableSchemaUpdated,
+          | $tableUpdated));
+}
 
 function meta::pure::alloy::connections::tableMapperPostProcessor(mapper:MapperPostProcessor[1]):meta::relational::runtime::PostProcessorWithParameter[1]
 {

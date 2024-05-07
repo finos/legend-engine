@@ -32,6 +32,56 @@ Class meta::external::function::description::openapi::transformation::fromPure::
   firstName : String[1];
   lastName  : String[1];
   age: Integer[1];
+  employerID: Integer[1];
+}
+
+Class meta::external::function::description::openapi::transformation::fromPure::tests::Firm
+{
+  firmID: Integer[1];
+  name: String[1];
+}
+
+function <<meta::external::function::description::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test simple service join'} meta::external::function::description::openapi::transformation::fromPure::tests::simpleServiceJoin():Service[1]
+{
+ ^Service
+ (
+   pattern = '/service/testOpenApi',
+   owners = ['dummy'],
+   documentation = 'dummy description',
+   autoActivateUpdates = true, 
+   execution = ^PureSingleExecution
+               (
+                 func = {|Person.all()->project(col(p|$p.firstName, 'firstName'))
+                                      ->join(Firm.all()->project(
+                                        [
+                                           x|$x.name,
+                                           x|$x.firmID
+                                         ],
+                                         [
+                                           'Legal Name',
+                                           'Employeer ID'
+                                         ])->distinct(),
+                                         meta::relational::metamodel::join::JoinType.LEFT_OUTER,
+                                         {left,right|($left.getString('employerID') == $right.getString('firmID'))})
+                                       ->restrict(['firstName', 'Employeer ID', 'Legal Name'])},
+                 mapping = personMapping,
+                 runtime = []
+               ),
+   test = ^SingleExecutionTest
+           (
+           data = 'default\n'+
+                   'personTable\n'+
+                   'id,firstName,lastName,age\n'+
+                   '1,A,Z,23\n'+
+                   '\n\n\n',
+           asserts = [
+                       ^meta::legend::service::metamodel::TestContainer(
+                           parametersValues = [],
+                           assert = {res:Result<Any|*>[1]|true}
+                       )
+                     ]
+           )
+ );
 }
 
 function <<meta::external::function::description::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test simple service'} meta::external::function::description::openapi::transformation::fromPure::tests::simpleServiceWithGraphFetch():Service[1]
@@ -167,43 +217,51 @@ function <<meta::external::function::description::openapi::profiles::ServiceSpec
 
 function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testServiceWithoutColumnSpecificationOpenapiString():Boolean[1]
 {
-  let openapi = meta::external::function::description::openapi::transformation::fromPure::tests::testServiceWithoutColumnSpecification()->serviceToOpenApi(packageableElem(), ^Server(url='test'));
+  let openapi = meta::external::function::description::openapi::transformation::fromPure::tests::testServiceWithoutColumnSpecification()->serviceToOpenApi(packageableElem(), ^Server(url='test'), meta::relational::extension::relationalExtensions());
   let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testOpenApiSpecWithoutColumnSpec.txt')->toOne();
   assertJsonStringsEqual($expected, $openapi);
 }
 
 function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testServiceShouldReturnCorrectOpenapiString():Boolean[1]
 {
-  let openapi = simpleService()->serviceToOpenApi(packageableElem(), ^Server(url='test'));
+  let openapi = simpleService()->serviceToOpenApi(packageableElem(), ^Server(url='test'), meta::relational::extension::relationalExtensions());
   let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testOpenApiSpec.txt')->toOne();
   assertJsonStringsEqual($expected, $openapi);
 }
 
 function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testServiceWithExtendAndManyParam():Boolean[1]
 {
-  let openapi = meta::external::function::description::openapi::transformation::fromPure::tests::serviceWithExtendAndManyParam()->serviceToOpenApi(packageableElem(), ^Server(url='test'));
+  let openapi = meta::external::function::description::openapi::transformation::fromPure::tests::serviceWithExtendAndManyParam()->serviceToOpenApi(packageableElem(), ^Server(url='test'), meta::relational::extension::relationalExtensions());
   let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testOpenApiSpecWithExtendAndManyParam.txt')->toOne();
   assertJsonStringsEqual($expected, $openapi);
 }
 
 function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testGraphFetchServiceShouldReturnCorrectOpenapiString():Boolean[1]
 {
-  let openapi = simpleServiceWithGraphFetch()->serviceToOpenApi(packageableElem(), ^Server(url='test'));
+  let openapi = simpleServiceWithGraphFetch()->serviceToOpenApi(packageableElem(), ^Server(url='test'), meta::relational::extension::relationalExtensions());
   let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testGraphFetchOpenApiSpec.txt')->toOne();
   assertJsonStringsEqual($expected, $openapi);
 }
 
 function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testServiceWithParamShouldReturnCorrectOpenapiString():Boolean[1]
 {
-  let openapi = simpleServiceWithParams()->serviceToOpenApi(packageableElem(), ^Server(url='test'));
+  let openapi = simpleServiceWithParams()->serviceToOpenApi(packageableElem(), ^Server(url='test'), meta::relational::extension::relationalExtensions());
   let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testOpenApiSpecWithServiceParams.txt')->toOne();
+  assertJsonStringsEqual($expected, $openapi);
+}
+
+function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testSimpleServiceJoin():Boolean[1]
+{
+  let openapi = meta::external::function::description::openapi::transformation::fromPure::tests::simpleServiceJoin()->serviceToOpenApi(packageableElem(), ^Server(url='test'), meta::relational::extension::relationalExtensions());
+  let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testOpenApiSpecWithJoin.txt')->toOne();
   assertJsonStringsEqual($expected, $openapi);
 }
 
 function meta::external::function::description::openapi::transformation::fromPure::tests::packageableElem():PackageableElement[*]
 {
   [
-    pathToElement('meta::external::function::description::openapi::transformation::fromPure::tests::Person')
+    pathToElement('meta::external::function::description::openapi::transformation::fromPure::tests::Person'),
+    pathToElement('meta::external::function::description::openapi::transformation::fromPure::tests::Firm')
   ]
 }
 

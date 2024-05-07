@@ -18,7 +18,6 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.immutables.value.Value;
 
 import java.util.List;
-import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(

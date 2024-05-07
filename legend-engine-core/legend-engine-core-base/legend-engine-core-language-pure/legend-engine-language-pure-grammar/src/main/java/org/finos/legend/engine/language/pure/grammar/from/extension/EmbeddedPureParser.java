@@ -14,10 +14,8 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.extension;
 
-import org.eclipse.collections.api.list.ListIterable;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 
 public interface EmbeddedPureParser
 {

@@ -21,7 +21,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.Da
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 
 import java.util.List;
 import java.util.Objects;
@@ -66,7 +65,7 @@ public class ConnectionPoolTestUtils
     private static List<DataSourceWithStatistics> getAllConnectionPoolsForUser(String identityName, Set<ConnectionKey> connectionKeys)
     {
         ConnectionStateManager connectionStateManager = ConnectionStateManager.getInstance();
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting(identityName);
+        Identity identity = new Identity(identityName);
         Stream<String> poolNames = connectionKeys.stream().map(key -> connectionStateManager.poolNameFor(identity, key));
         List<DataSourceWithStatistics> connectionPoolsForUser = poolNames
                 .map(poolName -> connectionStateManager.get(poolName))

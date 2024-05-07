@@ -22,7 +22,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authent
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
 
 import java.util.List;
-import java.util.Map;
 
 public class ServiceStoreAuthenticationSpecification extends AuthenticationSpecification
 {

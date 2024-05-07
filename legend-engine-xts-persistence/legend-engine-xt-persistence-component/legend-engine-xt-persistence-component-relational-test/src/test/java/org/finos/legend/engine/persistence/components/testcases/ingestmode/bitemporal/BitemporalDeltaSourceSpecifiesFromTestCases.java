@@ -38,7 +38,6 @@ public abstract class BitemporalDeltaSourceSpecifiesFromTestCases extends BaseTe
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
-                .createStagingDataset(true)
                 .enableConcurrentSafety(true)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());

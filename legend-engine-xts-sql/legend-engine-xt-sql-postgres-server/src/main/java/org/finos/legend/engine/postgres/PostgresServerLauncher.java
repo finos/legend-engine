@@ -15,10 +15,6 @@
 package org.finos.legend.engine.postgres;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.File;
-import java.io.IOException;
-
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
@@ -30,10 +26,21 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.semconv.ResourceAttributes;
+import java.io.File;
+import java.io.IOException;
 import org.apache.commons.lang3.StringUtils;
+import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
+import org.finos.legend.engine.postgres.auth.GSSAuthenticationMethod;
+import org.finos.legend.engine.postgres.auth.IdentityProvider;
+import org.finos.legend.engine.postgres.auth.IdentityType;
+import org.finos.legend.engine.postgres.auth.KerberosIdentityProvider;
+import org.finos.legend.engine.postgres.auth.NoPasswordAuthenticationMethod;
+import org.finos.legend.engine.postgres.auth.UsernamePasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.config.OpenTelemetryConfig;
 import org.finos.legend.engine.postgres.config.ServerConfig;
+import org.finos.legend.engine.postgres.utils.ErrorMessageFormatter;
+import org.finos.legend.engine.postgres.utils.ErrorMessageFormatterImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -74,12 +81,18 @@ public class PostgresServerLauncher
         // install jul to slf4j bridge
         SLF4JBridgeHandler.install();
 
-        SessionsFactory sessionFactory = serverConfig.buildSessionFactory();
-        AuthenticationMethod authenticationMethod = serverConfig.buildAuthenticationMethod();
-
+        SessionsFactory sessionFactory = serverConfig.getHandler().buildSessionsFactory();
+        AuthenticationMethod authenticationMethod = buildAuthenticationMethod(serverConfig);
+        ErrorMessageFormatter errorMessageFormatter = buildErrorMessageFormatter(serverConfig);
         logger.info("Starting server in port: {}", serverConfig.getPort());
 
-        new PostgresServer(serverConfig, sessionFactory, (user, connectionProperties) -> authenticationMethod).run();
+        new PostgresServer(serverConfig, sessionFactory, (user, connectionProperties) -> authenticationMethod, new Messages(errorMessageFormatter)).run();
+    }
+
+
+    private ErrorMessageFormatter buildErrorMessageFormatter(ServerConfig serverConfig)
+    {
+        return new ErrorMessageFormatterImpl(serverConfig);
     }
 
     private void setupOpenTelemetry(OpenTelemetryConfig otelConfig)
@@ -111,6 +124,36 @@ public class PostgresServerLauncher
                 .buildAndRegisterGlobal();
 
         Runtime.getRuntime().addShutdownHook(new Thread(openTelemetrySdk::close));
+    }
+
+
+    public AuthenticationMethod buildAuthenticationMethod(ServerConfig serverConfig)
+    {
+        IdentityProvider identityProvider;
+        if (serverConfig.getIdentityType() == IdentityType.KERBEROS)
+        {
+            identityProvider = new KerberosIdentityProvider();
+        }
+        else if (serverConfig.getIdentityType() == IdentityType.ANONYMOUS)
+        {
+            identityProvider = new AnonymousIdentityProvider();
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Identity type not supported :" + serverConfig.getIdentityType());
+        }
+
+        switch (serverConfig.getAuthenticationMethod())
+        {
+            case PASSWORD:
+                return new UsernamePasswordAuthenticationMethod(identityProvider);
+            case NO_PASSWORD:
+                return new NoPasswordAuthenticationMethod(identityProvider);
+            case GSS:
+                return new GSSAuthenticationMethod(identityProvider);
+            default:
+                throw new UnsupportedOperationException("Authentication Method not supported :" + serverConfig.getAuthenticationMethod());
+        }
     }
 
     public static void main(String[] args) throws IOException

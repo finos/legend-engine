@@ -172,6 +172,17 @@ function <<access.private>> meta::external::language::java::transform::processIn
          {v:ValueSpecification[1] |
             generateJava($v, $conventions, $debug);
          },
+         {v:meta::pure::executionPlan::PlanVarPlaceHolder[1] |
+            generateJava(
+               ^VariableExpression(
+                  name = $v.name,
+                  genericType = ^GenericType(rawType = $v.type),
+                  multiplicity = $v.multiplicity->toOne('Multiplicity not available for PlanVarPlaceHolder \'' + $v.name + '\'')
+               )->evaluateAndDeactivate(),
+               $conventions,
+               $debug
+            )
+         },
          {t:meta::pure::metamodel::type::Type[1] |
             j_null($conventions->pureTypeToJavaType($t, PureOne));
          },

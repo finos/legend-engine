@@ -34,7 +34,6 @@ import java.awt.*;
 import java.sql.SQLException;
 
 import static org.finos.legend.engine.repl.relational.grid.Grid.prettyGridPrint;
-import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
 
 public class RelationalReplExtension implements ReplExtension
 {
@@ -77,11 +76,8 @@ public class RelationalReplExtension implements ReplExtension
 
         try
         {
-            if (canShowGrid())
-            {
-                this.replGridServer = new ReplGridServer(this.client);
-                this.replGridServer.initializeServer();
-            }
+            this.replGridServer = new ReplGridServer(this.client);
+            this.replGridServer.initializeServer();
         }
         catch (Exception e)
         {
@@ -99,10 +95,7 @@ public class RelationalReplExtension implements ReplExtension
     public MutableList<Command> getExtraCommands()
     {
         MutableList<Command> extraCommands = Lists.mutable.with(new DB(this.client, this), new Load(this.client, this));
-        if (canShowGrid())
-        {
-            extraCommands.add(new Show(this.client, this.replGridServer));
-        }
+        extraCommands.add(new Show(this.client, this.replGridServer));
         return extraCommands;
     }
 

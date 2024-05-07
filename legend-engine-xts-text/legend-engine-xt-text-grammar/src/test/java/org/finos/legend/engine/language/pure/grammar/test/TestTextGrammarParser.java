@@ -17,7 +17,6 @@ package org.finos.legend.engine.language.pure.grammar.test;
 import org.antlr.v4.runtime.Vocabulary;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.TextParserGrammar;
-import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
 import org.junit.Test;
 
 import java.util.List;
