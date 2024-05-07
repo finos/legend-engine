@@ -37,10 +37,10 @@ Class meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X exten
 
    transfers_valueSpecification_transformAny : Function<{String[*],Map<String,List<Any>>[1], Multiplicity[1], FunctionExpression[0..1], Boolean[1], meta::pure::extension::Extension[*]->Function<{Nil[1]->meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1]}>[*]}>[0..1];
 
-   transfers_executionPlan_transformNode : Function<{Mapping[1], meta::pure::extension::Extension[*] -> Function<{Nil[1]->meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode[1]}>[*]}>[0..1];
+   transfers_executionPlan_transformNode : Function<{meta::pure::extension::Extension[*] -> Function<{Nil[1]->meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode[1]}>[*]}>[0..1];
    transfers_executionPlan_transformNode_GraphFetchM2MExecutionNode : Function<{Nil[1]->meta::protocols::pure::vX_X_X::metamodel::store::Store[1]}>[*];
    transfers_executionPlan_transformNode_StoreStreamReadingExecutionNode : Function<{Nil[1]->meta::protocols::pure::vX_X_X::metamodel::store::Store[1]}>[*];
-   transfers_executionPlan_transformResultType : Function<{Mapping[1], meta::pure::extension::Extension[*] -> Function<{Nil[1]->meta::protocols::pure::vX_X_X::metamodel::executionPlan::ResultType[1]}>[*]}>[0..1];
+   transfers_executionPlan_transformResultType : Function<{meta::pure::extension::Extension[*] -> Function<{Nil[1]->meta::protocols::pure::vX_X_X::metamodel::executionPlan::ResultType[1]}>[*]}>[0..1];
    transfers_executionPlan_transformSetImplementation : Pair<Function<{PropertyMapping[1]->Boolean[1]}>, Function<{PropertyMapping[1]->Map<String,List<String>>[1]}>>[0..1];
 
    transfers_store_transformStore : Function<{Nil[1]->meta::protocols::pure::vX_X_X::metamodel::store::Store[1]}>[*];

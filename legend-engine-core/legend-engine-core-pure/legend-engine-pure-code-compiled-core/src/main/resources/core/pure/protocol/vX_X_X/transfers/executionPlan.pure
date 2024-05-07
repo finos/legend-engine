@@ -13,6 +13,7 @@
 // limitations under the License.
 
 ###Pure
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::xStore::*;
 import meta::pure::executionPlan::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::runtime::*;
 import meta::protocols::*;
@@ -27,20 +28,20 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
       serializer = ^Protocol(name='pure', version='vX_X_X'),
       templateFunctions = $sourcePlan.processingTemplateFunctions,
       kerberos = $sourcePlan.kerberos,
-      rootExecutionNode = $sourcePlan.rootExecutionNode->transformNode($sourcePlan.mapping, $extensions),
+      rootExecutionNode = $sourcePlan.rootExecutionNode->transformNode($extensions),
       globalImplementationSupport = $sourcePlan.globalImplementationSupport->map(impl | $impl->transformPlatformGlobalImplementation())
    )
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode(node:meta::pure::executionPlan::ExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode(node:meta::pure::executionPlan::ExecutionNode[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode[1]
 {
-   let n = $node->match($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).transfers_executionPlan_transformNode->map(f|$f->eval($mapping, $extensions))->concatenate(
+   let n = $node->match($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).transfers_executionPlan_transformNode->map(f|$f->eval($extensions))->concatenate(
       [
 
          rel:meta::external::store::model::ModelToModelExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::ModelToModelExecutionNode(
                _type = 'm2m',
-               resultType = $rel.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+               resultType = $rel.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($extensions),
                resultSizeRange = $rel.resultSizeRange->isEmpty()->if(|[],|$rel.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
                func = $rel.fd->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($extensions),
                jsonPropertyPaths = $rel.jsonPropertyPaths->map(j|$j->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($extensions)),
@@ -52,48 +53,48 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
          platform:meta::pure::executionPlan::PureExpressionPlatformExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::PureExpressionPlatformExecutionNode(
                _type='pureExp',
-               resultType=$platform.resultType->transformResultType($mapping, $extensions),
+               resultType=$platform.resultType->transformResultType($extensions),
                pure = $platform.expression->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], newMap([]->cast(@Pair<String, List<Any>>)), $extensions)
             ),
          platform:meta::pure::executionPlan::PlatformUnionExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::PlatformUnionExecutionNode(
               _type='platformUnion',
               isChildrenExecutionParallelizable = $platform.isChildrenExecutionParallelizable,
-              resultType=$platform.resultType->transformResultType($mapping, $extensions)
+              resultType=$platform.resultType->transformResultType($extensions)
             ),
          platform:meta::pure::executionPlan::PlatformMergeExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::PlatformMergeExecutionNode(
               _type='platformMerge',
-              resultType=$platform.resultType->transformResultType($mapping, $extensions)
+              resultType=$platform.resultType->transformResultType($extensions)
             ),
          cons:meta::pure::executionPlan::ConstantExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::ConstantExecutionNode(
                _type='constant',
-               resultType=$cons.resultType->transformResultType($mapping, $extensions),
+               resultType=$cons.resultType->transformResultType($extensions),
                values=$cons.values->map(v | $v->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny([], newMap([]->cast(@Pair<String,List<Any>>)), PureOne, $extensions))
             ),
          seq:meta::pure::executionPlan::SequenceExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::SequenceExecutionNode(
                _type = 'sequence',
-               resultType = $seq.resultType->transformResultType($mapping, $extensions),
+               resultType = $seq.resultType->transformResultType($extensions),
                resultSizeRange = $seq.resultSizeRange->isEmpty()->if(|[],|$seq.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity())
             ),
          seq:meta::pure::executionPlan::MultiResultSequenceExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::MultiResultSequenceExecutionNode(
                _type = 'multiResultSequence',
-               resultType = $seq.resultType->transformResultType($mapping, $extensions),
+               resultType = $seq.resultType->transformResultType($extensions),
                resultSizeRange = $seq.resultSizeRange->isEmpty()->if(|[],|$seq.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity())
             ),
          agg:meta::pure::mapping::aggregationAware::AggregationAwareExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::AggregationAwareExecutionNode(
                _type = 'aggregationAware',
-               resultType = $agg.resultType->transformResultType($mapping, $extensions),
+               resultType = $agg.resultType->transformResultType($extensions),
                aggregationAwareActivity = $agg.aggregationAwareActivity
             ),
          alloc:meta::pure::executionPlan::AllocationExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::AllocationExecutionNode(
                _type = 'allocation',
-               resultType = $alloc.resultType->transformResultType($mapping, $extensions),
+               resultType = $alloc.resultType->transformResultType($extensions),
                resultSizeRange = $alloc.resultSizeRange->isEmpty()->if(|[],|$alloc.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
                varName = $alloc.varName,
                realizeInMemory = $alloc.realizeInMemory
@@ -101,7 +102,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
          exp:meta::pure::executionPlan::FunctionParametersValidationNode[1]|
            ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::FunctionParametersValidationNode(
               _type = 'function-parameters-validation',
-              resultType = $exp.resultType->transformResultType($mapping, $extensions),
+              resultType = $exp.resultType->transformResultType($extensions),
               functionParameters = $exp.functionParameters->map(p | ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable(_type='var', name=$p.name, supportsStream=$p.supportsStream, class=$p.type->elementToPath(), multiplicity=$p.multiplicity->isEmpty()->if(| [],| $p.multiplicity->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()))),
               parameterValidationContext = $exp.parameterValidationContext->map(p | $p->match([
                                                                               e:meta::pure::executionPlan::EnumValidationContext[1] | ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::EnumValidationContext(varName = $e.varName, validEnumValues = $e.validEnumValues, _type = 'enumValidationContext')
@@ -112,14 +113,14 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::StoreMappingGlobalGraphFetchExecutionNode
             (
                _type = 'storeMappingGlobalGraphFetchExecutionNode',
-               resultType = $g.resultType->transformResultType($mapping, $extensions),
+               resultType = $g.resultType->transformResultType($extensions),
                resultSizeRange = $g.resultSizeRange->isEmpty()->if(|[],|$g.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
                graphFetchTree = $g.graphFetchTree->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions),
                store = $g.store->elementToPath(),
-               children = $g.children->map(s | $s->transformNode($mapping, $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode),
-               localGraphFetchExecutionNode = $g.localGraphFetchExecutionNode->transformNode($mapping, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::LocalGraphFetchExecutionNode),
+               children = $g.children->map(s | $s->transformNode($extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode),
+               localGraphFetchExecutionNode = $g.localGraphFetchExecutionNode->transformNode($extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::LocalGraphFetchExecutionNode),
                parentIndex = $g.parentIndex,
-               xStorePropertyMapping = $g.xStorePropertyMapping->map(x | $x->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::xStore::transformXStorePropertyMapping($mapping, $extensions)),
+               xStorePropertyMapping = $g.xStorePropertyMapping->map(x | $x->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::xStore::transformXStorePropertyMapping($extensions)),
                enableConstraints = $g.enableConstraints,
                checked = $g.checked,
                xStorePropertyFetchDetails = $g.xStorePropertyFetchDetails->map(x |
@@ -142,11 +143,11 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::PlatformGlobalGraphFetchExecutionNode
             (
                _type = 'platformGlobalGraphFetchExecutionNode',
-               resultType = $g.resultType->transformResultType($mapping, $extensions),
+               resultType = $g.resultType->transformResultType($extensions),
                resultSizeRange = $g.resultSizeRange->isEmpty()->if(|[],|$g.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
                graphFetchTree = $g.graphFetchTree->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions),
-               children = $g.children->map(s | $s->transformNode($mapping, $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode),
-               localGraphFetchExecutionNode = $g.localGraphFetchExecutionNode->transformNode($mapping, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::LocalGraphFetchExecutionNode),
+               children = $g.children->map(s | $s->transformNode($extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode),
+               localGraphFetchExecutionNode = $g.localGraphFetchExecutionNode->transformNode($extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::LocalGraphFetchExecutionNode),
                parentIndex = $g.parentIndex,
                enableConstraints = $g.enableConstraints,
                checked = $g.checked,
@@ -157,7 +158,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::PlatformPrimitiveQualifierLocalGraphFetchExecutionNode
             (
                _type = 'platformPrimitiveQualifierLocalGraphFetchExecutionNode',
-               resultType = $l.resultType->transformResultType($mapping, $extensions),
+               resultType = $l.resultType->transformResultType($extensions),
                resultSizeRange = $l.resultSizeRange->isEmpty()->if(|[],|$l.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
                nodeIndex = $l.nodeIndex,
                parentIndex = $l.parentIndex,
@@ -168,28 +169,28 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
             (
                _type = 'error',
                message = $e.message,
-               resultType = $e.resultType->transformResultType($mapping, $extensions),
+               resultType = $e.resultType->transformResultType($extensions),
                resultSizeRange = $e.resultSizeRange->isEmpty()->if(|[],|$e.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity())
             ),
          f:meta::pure::executionPlan::FreeMarkerConditionalExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::FreeMarkerConditionalExecutionNode(
                freeMarkerBooleanExpression = $f.freeMarkerBooleanExpression,
-               trueBlock = $f.trueBlock->transformNode($mapping, $extensions),
-               falseBlock = if($f.falseBlock->isEmpty(),|[],|$f.falseBlock->toOne()->transformNode($mapping, $extensions)),
+               trueBlock = $f.trueBlock->transformNode($extensions),
+               falseBlock = if($f.falseBlock->isEmpty(),|[],|$f.falseBlock->toOne()->transformNode($extensions)),
                _type = 'freeMarkerConditionalExecutionNode',
-               resultType = $f.resultType->transformResultType($mapping, $extensions),
+               resultType = $f.resultType->transformResultType($extensions),
                resultSizeRange = $f.resultSizeRange->isEmpty()->if(|[],|$f.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity())
             ),
          v:meta::pure::executionPlan::VariableResolutionExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::VariableResolutionExecutionNode(
                 _type      = 'varResolution',
-                resultType = $v.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                resultType = $v.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($extensions),
                 varName    = $v.varName
             ),
          f:meta::pure::mapping::modelToModel::graphFetch::executionPlan::StoreStreamReadingExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::StoreStreamReadingExecutionNode(
                _type = 'storeStreamReading',
-               resultType = $f.resultType->transformResultType($mapping, $extensions),
+               resultType = $f.resultType->transformResultType($extensions),
                resultSizeRange = $f.resultSizeRange->isEmpty()->if(|[],|$f.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
                graphFetchTree = $f.graphFetchTree->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RootGraphFetchTree),
                store = $f.store->match($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).transfers_executionPlan_transformNode_StoreStreamReadingExecutionNode->concatenate([
@@ -202,46 +203,46 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
          f:meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryCrossStoreGraphFetchExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryCrossStoreGraphFetchExecutionNode(
                _type = 'inMemoryCrossStoreGraphFetch',
-               resultType = $f.resultType->transformResultType($mapping, $extensions),
+               resultType = $f.resultType->transformResultType($extensions),
                resultSizeRange = $f.resultSizeRange->isEmpty()->if(|[],|$f.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
                nodeIndex = $f.nodeIndex,
                parentIndex = $f.parentIndex,
                graphFetchTree = $f.graphFetchTree->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions),
                batchSize = $f.batchSize,
                checked = $f.checked,
-               xStorePropertyMapping = $f.xStorePropertyMapping->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::xStore::transformXStorePropertyMapping($mapping, $extensions),
+               xStorePropertyMapping = $f.xStorePropertyMapping->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::xStore::transformXStorePropertyMapping($extensions),
                supportsBatching = $f.supportsBatching,
-               children = $f.children->map(x | $x->transformNode($mapping, $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryGraphFetchExecutionNode)
+               children = $f.children->map(x | $x->transformNode($extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryGraphFetchExecutionNode)
             ),
          f:meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryRootGraphFetchExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryRootGraphFetchExecutionNode(
                _type = 'inMemoryRootGraphFetch',
-               resultType = $f.resultType->transformResultType($mapping, $extensions),
+               resultType = $f.resultType->transformResultType($extensions),
                resultSizeRange = $f.resultSizeRange->isEmpty()->if(|[],|$f.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
                nodeIndex = $f.nodeIndex,
                parentIndex = $f.parentIndex,
                graphFetchTree = $f.graphFetchTree->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions),
                batchSize = $f.batchSize,
                checked = $f.checked,
-               children = $f.children->map(x | $x->transformNode($mapping, $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryGraphFetchExecutionNode),
+               children = $f.children->map(x | $x->transformNode($extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryGraphFetchExecutionNode),
                filter = $f.filter->isNotEmpty()
             ),
          f:meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryPropertyGraphFetchExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryPropertyGraphFetchExecutionNode(
                _type = 'inMemoryPropertyGraphFetch',
-               resultType = $f.resultType->transformResultType($mapping, $extensions),
+               resultType = $f.resultType->transformResultType($extensions),
                resultSizeRange = $f.resultSizeRange->isEmpty()->if(|[],|$f.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
                nodeIndex = $f.nodeIndex,
                parentIndex = $f.parentIndex,
                graphFetchTree = $f.graphFetchTree->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions),
-               children = $f.children->map(x | $x->transformNode($mapping, $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryGraphFetchExecutionNode)
+               children = $f.children->map(x | $x->transformNode($extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryGraphFetchExecutionNode)
             )
       ])->toOneMany()
    );
 
    ^$n(
       requiredVariableInputs = $node.requiredVariableInputs->map(s | $s->transformSource()),
-      executionNodes  = $node.executionNodes->map(s|$s->transformNode($mapping, $extensions)),
+      executionNodes  = $node.executionNodes->map(s|$s->transformNode($extensions)),
       implementation  = $node.implementation->map(impl | $impl->transformPlatformNodeImplementation()),
       authDependent = $node.authDependent
    );
@@ -310,10 +311,10 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
 
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType(rType:meta::pure::executionPlan::ResultType[1], mapping:meta::pure::mapping::Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::executionPlan::ResultType[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType(rType:meta::pure::executionPlan::ResultType[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::executionPlan::ResultType[1]
 {
    $rType->match(
-      $extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).transfers_executionPlan_transformResultType->map(f|$f->eval($mapping, $extensions))->concatenate([
+      $extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).transfers_executionPlan_transformResultType->map(f|$f->eval($extensions))->concatenate([
          partialClass:meta::pure::executionPlan::PartialClassResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::PartialClassResultType
                                                                             (
                                                                               _type = 'partialClass',
@@ -344,7 +345,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
                                                                                                   name = $c.name,
                                                                                                   doc = $c.documentation,
                                                                                                   type = $c.type->toOne()->elementToPath(),
-                                                                                                  enumMapping = if($c.enumMappingId->isEmpty(),|[],|meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformEnumMapping($mapping->enumerationMappingByName($c.enumMappingId->toOne())->toOne()))
+                                                                                                  enumMapping = if($c.enumMapping->isEmpty(),|[],|meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformEnumMapping($c.enumMapping->toOne()))
                                                                                                 )
                                                                                           )
                                                           ),

@@ -43,13 +43,13 @@ function meta::protocols::pure::vX_X_X::extension::store::mongodb::getMongoDBSto
    (
 
    moduleSerializerExtensions = meta::protocols::pure::vX_X_X::extension::store::mongodb::mongoDBModuleSerializerExtension(),
-   transfers_executionPlan_transformNode = {mapping:Mapping[1], extensions:meta::pure::extension::Extension[*] |
+   transfers_executionPlan_transformNode = {extensions:meta::pure::extension::Extension[*] |
           [
               men:meta::external::store::mongodb::metamodel::pure::MongoDBExecutionNode[1] |
 
                   ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::mongodb::MongoDBExecutionNode(
                     _type           = 'MongoDBExecutionNode',
-                    resultType      = $men.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                    resultType      = $men.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($extensions),
                     databaseCommand = $men.databaseCommand->getDatabaseCommandJSON(),
                     connection      = $men.connection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::mongodb::transformDatabaseConnection($extensions)
                 ),
@@ -61,13 +61,13 @@ function meta::protocols::pure::vX_X_X::extension::store::mongodb::getMongoDBSto
                     binding           = $mdIntern.binding->elementToPath(),
                     contentType       = $mdIntern.binding.contentType,
                     tree              = $mdIntern.tree->map(t| $t->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], ^Map<String,List<Any>>(), $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RootGraphFetchTree),
-                    resultType        = $mdIntern.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                    resultType        = $mdIntern.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($extensions),
                     resultSizeRange   = $mdIntern.resultSizeRange->map(s| $s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity())
                 ),
               exfin: meta::external::format::shared::executionPlan::ExternalFormatInternalizeExecutionNode[1] |
                 ^meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode(
                   _type             = 'externalFormatInternalize',
-                  resultType        = $exfin.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                  resultType        = $exfin.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($extensions),
                   resultSizeRange   = $exfin.resultSizeRange->map(s| $s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
                   tree              = $exfin.tree->map(t| $t->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], ^Map<String,List<Any>>(), $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RootGraphFetchTree),
                   binding           = $exfin.binding->elementToPath(),

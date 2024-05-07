@@ -59,6 +59,16 @@ function <<test.Test>> meta::relational::tests::fromMapping::testClassMappingsWi
   assertEquals('select "unionBase"."personTableFIRSTNAME_personTableFIRSTNAME" as "FirstName" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".FIRSTNAME as "personTableFIRSTNAME_personTableFIRSTNAME" from personTable as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", "root".FIRSTNAME as "personTableFIRSTNAME_personTableFIRSTNAME" from personTable as "root") as "unionBase"', $result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::fromMapping::testEnumProjection():Boolean[1]
+{
+
+  let runtime = meta::external::store::relational::tests::testRuntime();
+
+  let result =  execute({|Firm.all()->project([f|$f.legalName, f|$f.address.type],['legalName', 'address type'])->from(meta::relational::tests::fromMapping::MappingWithClasses, $runtime)}, ^Mapping(name = ''), ^meta::core::runtime::Runtime(), meta::relational::extension::relationalExtensions());
+
+  assertSameElements(['Firm A', 'Firm B', 'Firm C', 'Firm X', 'No Employees', GeographicEntityType.CITY, GeographicEntityType.CITY, GeographicEntityType.CITY, GeographicEntityType.CITY, GeographicEntityType.CITY], $result.values.rows.values);
+}
+
 
 ###Relational
 Database meta::relational::tests::fromMapping::mdb
@@ -85,7 +95,20 @@ Mapping meta::relational::tests::fromMapping::MappingWithClasses
 
    Firm : Relational
           {
-             legalName : [mdb]firmTable.LEGALNAME
+             legalName : [mdb]firmTable.LEGALNAME,
+             address: [mdb]@Address_Firm
+          }
+
+   Address : Relational
+          {
+            name : [mdb]addressTable.NAME,
+            street : [mdb]addressTable.STREET,
+            type : EnumerationMapping GE : [mdb]addressTable.TYPE
+          }
+
+   GeographicEntityType: EnumerationMapping GE
+          {
+              CITY:  1
           }
 )
 
