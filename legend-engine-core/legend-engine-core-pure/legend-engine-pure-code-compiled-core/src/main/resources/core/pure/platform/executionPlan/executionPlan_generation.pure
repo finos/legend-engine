@@ -46,14 +46,16 @@ function meta::pure::platform::executionPlan::generation::processValueSpecificat
 function <<access.private>> meta::pure::platform::executionPlan::generation::defaultFunctionProcessor(fe:FunctionExpression[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let children = $fe.parametersValues->evaluateAndDeactivate()->map(v|$v->recursivelyFetchClusteredValueSpecification(false))->map(v|$v->processValueSpecification($state, $extensions, $debug));
-   let funcParams = $fe->findVariableExpressionsInValueSpecification(false)->removeDuplicatesBy(v | $v.name);
-   let varInputs = $funcParams->map(v | ^VariableInput(name = $v.name->toOne(), type = $v.genericType->cast(@GenericType).rawType->toOne(), multiplicity = $v.multiplicity->toOne()));
+   let variableExpressions = $fe->findVariableExpressionsInValueSpecification(false)->removeDuplicatesBy(v | $v.name);
+   let variableExpressionInputs = $variableExpressions->map(v | ^VariableInput(name = $v.name->toOne(), type = $v.genericType->cast(@GenericType).rawType->toOne(), multiplicity = $v.multiplicity->toOne()));
+   let varPlaceHolders = $fe->findPlanVarPlaceHoldersInValueSpecification()->removeDuplicatesBy(v | $v.name);
+   let varPlaceHolderInputs = $varPlaceHolders->map(v | ^VariableInput(name = $v.name, type = $v.type, multiplicity = $v.multiplicity->toOne('Multiplicity not available for PlanVarPlaceHolder - \'' + $v.name + '\'')));
 
    ^PureExpressionPlatformExecutionNode
    (
       expression = $fe,
       resultType = ^ResultType(type=$fe.genericType.rawType->toOne()),
-      requiredVariableInputs = $varInputs,
+      requiredVariableInputs = $variableExpressionInputs->concatenate($varPlaceHolderInputs),
       resultSizeRange = $fe.multiplicity,
       executionNodes = $children,
       fromCluster = generatePlatformClusterForFunction($fe, $state.inScopeVars)

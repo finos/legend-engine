@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.query.graphQL.api.test.dynamic.filters.operators;
 
-import org.finos.legend.engine.query.graphQL.api.cache.GraphQLPlanCache;
 import org.finos.legend.engine.query.graphQL.api.test.dynamic.filters.TestGraphQLDynamicFilters;
 import org.junit.Test;
 

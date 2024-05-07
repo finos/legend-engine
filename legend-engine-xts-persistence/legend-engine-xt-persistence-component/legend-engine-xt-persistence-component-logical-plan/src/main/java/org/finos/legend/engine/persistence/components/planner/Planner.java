@@ -111,7 +111,7 @@ public abstract class Planner
         }
 
         @Default
-        default boolean createStagingDataset()
+        default boolean skipMainAndMetadataDatasetCreation()
         {
             return false;
         }
@@ -178,11 +178,13 @@ public abstract class Planner
         this.batchEndTimestamp = BatchEndTimestamp.INSTANCE;
 
         // Validation
-        // 1. MaxVersion & AllVersion strategies must have primary keys
+        // 1. Validate if the combination of deduplication and versioning is valid
+        ingestMode.versioningStrategy().accept(new VersioningVisitors.ValidateDedupAndVersioningCombination(ingestMode.deduplicationStrategy()));
+        // 2. MaxVersion & AllVersion strategies must have primary keys
         ingestMode.versioningStrategy().accept(new ValidatePrimaryKeysForVersioningStrategy(primaryKeys, this::validatePrimaryKeysNotEmpty));
-        // 2. Validate if the versioningField is comparable if a versioningStrategy is present
+        // 3. Validate if the versioningField is comparable if a versioningStrategy is present
         validateVersioningField(ingestMode().versioningStrategy(), stagingDataset());
-        // 3. cleanupStagingData must be turned off when using DerivedDataset or FilteredDataset
+        // 4. cleanupStagingData must be turned off when using DerivedDataset or FilteredDataset
         validateCleanUpStagingData(plannerOptions, originalStagingDataset());
     }
 
@@ -361,12 +363,11 @@ public abstract class Planner
     public LogicalPlan buildLogicalPlanForPreActions(Resources resources)
     {
         List<Operation> operations = new ArrayList<>();
-        operations.add(Create.of(true, mainDataset()));
-        if (options().createStagingDataset())
+        if (!options().skipMainAndMetadataDatasetCreation())
         {
-            operations.add(Create.of(true, originalStagingDataset()));
+            operations.add(Create.of(true, mainDataset()));
+            operations.add(Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()));
         }
-        operations.add(Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()));
         if (options().enableConcurrentSafety())
         {
             operations.add(Create.of(true, lockInfoDataset().orElseThrow(IllegalStateException::new).get()));
@@ -446,6 +447,7 @@ public abstract class Planner
     {
         Map<DedupAndVersionErrorSqlType, LogicalPlan> dedupAndVersioningErrorChecks = new HashMap<>();
         addMaxDuplicatesErrorCheck(dedupAndVersioningErrorChecks);
+        addMaxPkDuplicatesErrorCheck(dedupAndVersioningErrorChecks);
         addDataErrorCheck(dedupAndVersioningErrorChecks);
         return dedupAndVersioningErrorChecks;
     }
@@ -482,6 +484,24 @@ public abstract class Planner
                         .build();
                 LogicalPlan selectDuplicatesRowsPlan = LogicalPlan.builder().addOps(selectDuplicatesRows).build();
                 dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.DUPLICATE_ROWS, selectDuplicatesRowsPlan);
+            }
+        }
+    }
+
+    protected void addMaxPkDuplicatesErrorCheck(Map<DedupAndVersionErrorSqlType, LogicalPlan> dedupAndVersioningErrorChecks)
+    {
+        if (ingestMode.versioningStrategy().accept(VersioningVisitors.IS_DUPLICATE_PK_CHECK_NEEDED))
+        {
+            LogicalPlan logicalPlanForMaxDuplicatePkCount = ingestMode.versioningStrategy().accept(new DeriveMaxDuplicatePkCountLogicalPlan(primaryKeys, stagingDataset()));
+            if (logicalPlanForMaxDuplicatePkCount != null)
+            {
+                dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.MAX_PK_DUPLICATES, logicalPlanForMaxDuplicatePkCount);
+            }
+
+            LogicalPlan logicalPlanForDuplicatePkRows = ingestMode.versioningStrategy().accept(new DeriveDuplicatePkRowsLogicalPlan(primaryKeys, stagingDataset(), options().sampleRowCount()));
+            if (logicalPlanForDuplicatePkRows != null)
+            {
+                dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.PK_DUPLICATE_ROWS, logicalPlanForDuplicatePkRows);
             }
         }
     }
@@ -668,6 +688,10 @@ public abstract class Planner
         @Override
         public Void visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
         {
+            if (noVersioningStrategy.failOnDuplicatePrimaryKeys())
+            {
+                validatePrimaryKeysNotEmpty.accept(primaryKeys);
+            }
             return null;
         }
 

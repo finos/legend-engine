@@ -79,6 +79,7 @@ public abstract class UnitmemporalDeltaBatchIdDateTimeBasedTestCases extends Bas
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
+                .ingestRunId(ingestRunId)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         verifyUnitemporalDeltaWithDeleteIndMultiValuesNoDedupNoVersion(operations);

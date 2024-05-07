@@ -19,8 +19,6 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 

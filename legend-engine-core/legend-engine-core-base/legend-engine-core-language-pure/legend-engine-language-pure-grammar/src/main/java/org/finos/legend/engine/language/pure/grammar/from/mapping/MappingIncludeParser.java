@@ -17,12 +17,9 @@ package org.finos.legend.engine.language.pure.grammar.from.mapping;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.collections.api.block.function.Function2;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
-import org.finos.legend.engine.language.pure.grammar.from.extension.MappingElementParser;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
 
-import java.util.function.BiFunction;
 
 public interface MappingIncludeParser
 {

@@ -30,7 +30,7 @@ public class GenerateIntrospectionPureModel
 {
     public static void main(String[] args)
     {
-        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), DeploymentMode.TEST);
+        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), Identity.getAnonymousIdentity().getName(), DeploymentMode.TEST);
         String introspection = "type __Schema {\n" +
                 "  types: [__Type!]!\n" +
                 "  queryType: __Type!\n" +

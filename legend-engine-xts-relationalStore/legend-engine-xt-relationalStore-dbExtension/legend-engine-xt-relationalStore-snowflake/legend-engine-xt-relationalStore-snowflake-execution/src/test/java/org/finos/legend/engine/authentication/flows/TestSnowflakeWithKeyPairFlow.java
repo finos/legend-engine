@@ -32,11 +32,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredential;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -50,7 +48,7 @@ import static org.junit.Assert.assertNotNull;
 public class TestSnowflakeWithKeyPairFlow
 {
     private InMemoryVaultForTesting inMemoryVault = new InMemoryVaultForTesting();
-    private Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+    private Identity identity1 = new Identity("identity1");
 
     @Before
     public void setup()

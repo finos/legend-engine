@@ -40,7 +40,7 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testEnumPushDownWithFilter():Boolean[1]
 {
-  let expected = 'APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"GENDER" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", case when "root".FIRSTNAME = \'male\' then \'M\' when "root".FIRSTNAME = \'female\' then \'F\' else null end as "Gender" from personTable as "root" where "root".FIRSTNAME = \'male\' $$;';
+  let expected = 'APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"GENDER" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", case when "root".GENDER = \'male\' then \'M\' when "root".GENDER = \'female\' then \'F\' else null end as "Gender" from personTable as "root" where "root".GENDER = \'male\' $$;';
   assertSnowflakeArtifactForFunction( meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionEnumPushDown__TabularDataSet_1_, $expected);
 }
 
@@ -65,10 +65,9 @@ function <<test.Test, test.ToFix>> meta::external::function::activator::snowflak
   assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParams_Integer_MANY__TabularDataSet_1_, $expected);
 }
 
-// not supported yet
-function <<test.Test, test.ToFix>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithEnumParams():Boolean[1]
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithEnumParams():Boolean[1]
 {
-  let expected = '';
+  let expected = 'APP1("gender" VARCHAR) RETURNS TABLE ("FIRSTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName" from personTable as "root" where gender = case when "root".GENDER = \'male\' then \'M\' when "root".GENDER = \'female\' then \'F\' else null end $$;';
   assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionEnumParam_Gender_1__TabularDataSet_1_, $expected);
 }
 
@@ -110,7 +109,7 @@ function meta::external::function::activator::snowflakeApp::tests::simpleRelatio
 
 function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionEnumParam(gender: Gender[1]):TabularDataSet[1]
 {
-    PersonX.all()->filter(p|$p.gender == $gender)->project([col(p|$p.firstName, 'firstName'), col(p|$p.gender, 'Gender')])
+    PersonX.all()->filter(p|$p.gender == $gender)->project([col(p|$p.firstName, 'firstName')])
     ->from(simpleRelationalMapping, testRuntime(dbInc))
 }
 

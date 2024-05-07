@@ -15,7 +15,6 @@
 package org.finos.legend.engine.ide.api.execution.go;
 
 import io.swagger.annotations.Api;
-import org.finos.legend.engine.ide.api.execution.go.GoRun;
 import org.finos.legend.engine.ide.session.PureSession;
 
 import javax.servlet.http.HttpServletRequest;

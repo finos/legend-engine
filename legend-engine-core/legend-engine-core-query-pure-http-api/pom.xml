@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core</artifactId>
-        <version>4.43.5-SNAPSHOT</version>
+        <version>4.44.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-core-query-pure-http-api</artifactId>
@@ -245,6 +245,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-javaPlatformBinding-pure</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-core-extension</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

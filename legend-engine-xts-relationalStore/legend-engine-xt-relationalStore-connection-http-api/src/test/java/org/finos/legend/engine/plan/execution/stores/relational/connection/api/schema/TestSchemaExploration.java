@@ -202,7 +202,7 @@ public class TestSchemaExploration
     private void test(DatabaseBuilderInput input, Database expected) throws Exception
     {
         SchemaExportation builder = SchemaExportation.newBuilder(input);
-        Database store = builder.build(this.connectionManager, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
+        Database store = builder.build(this.connectionManager, Identity.getAnonymousIdentity());
 
         // Ignore the INFORMATION_SCHEMA that is added by new H2 for testing
         store.schemas.removeIf(s -> s.name.equals("INFORMATION_SCHEMA"));

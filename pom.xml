@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.43.5-SNAPSHOT</version>
+    <version>4.44.4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -100,13 +100,12 @@
         <module>legend-engine-xts-analytics</module>
 
         <!-- Application -->
-        <module>legend-engine-xts-mastery</module>
         <module>legend-engine-application-query</module>
     </modules>
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.4.2</legend.pure.version>
+        <legend.pure.version>5.5.0</legend.pure.version>
         <legend.shared.version>0.25.4</legend.shared.version>
 
         <!-- SONAR -->
@@ -1545,22 +1544,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-persistence-test-runner</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-mastery-protocol</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-mastery-grammar</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-mastery-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

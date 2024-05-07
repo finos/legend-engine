@@ -52,7 +52,6 @@ import org.finos.legend.engine.query.graphQL.api.GraphQL;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLCacheKey;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLDevCacheKey;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLPlanCache;
-import org.finos.legend.engine.query.graphQL.api.cache.GraphQLProdCacheKey;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLProdDataspaceCacheKey;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLProdMappingRuntimeCacheKey;
 import org.finos.legend.engine.query.graphQL.api.execute.directives.IGraphQLDirectiveExtension;

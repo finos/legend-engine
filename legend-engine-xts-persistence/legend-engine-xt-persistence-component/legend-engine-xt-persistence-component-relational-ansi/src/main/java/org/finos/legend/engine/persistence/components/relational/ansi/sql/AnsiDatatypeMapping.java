@@ -26,7 +26,6 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.schema.D
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.DateTime;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Decimal;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Double;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Int64;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Integer;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.LongText;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Numeric;

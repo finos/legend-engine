@@ -21,7 +21,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.Da
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.junit.Assert;
 import org.junit.Before;
 
@@ -61,7 +60,7 @@ public abstract class TestConnectionManagement
 
     Connection requestConnection(String user, DataSourceSpecification dataSourceSpecification)
     {
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting(user);
+        Identity identity = new Identity(user);
         return requestConnection(identity, dataSourceSpecification);
     }
 
@@ -78,7 +77,7 @@ public abstract class TestConnectionManagement
     {
         if (shouldExist)
         {
-            Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting(user);
+            Identity identity = new Identity(user);
             String poolName = connectionStateManager.poolNameFor(identity, key);
             DataSourceWithStatistics dataSourceSpecification = connectionStateManager.getDataSourceByPoolName(poolName);
             Assert.assertEquals("State mismatch for pool=" + poolName, shouldExist, dataSourceSpecification != null);

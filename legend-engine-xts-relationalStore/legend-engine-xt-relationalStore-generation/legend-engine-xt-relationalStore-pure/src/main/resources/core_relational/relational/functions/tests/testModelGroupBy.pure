@@ -954,6 +954,33 @@ function <<test.ToFix>> meta::relational::tests::groupBy::testAggToManyWithAvera
    assertSameSQL('select addressTable_d_d_d.TYPE as "Address Type", count(root.LEGALNAME) as "Count of Firms", avg(1.0 * personTable_d_d_d_d_m2.AGE) as "Average Age of Employees", avg(1.0 * agg_query_d_m3."Sum of Age of Employees Averaged") as "Sum of Age of Employees Averaged" from firmTable as root left outer join addressTable as addressTable_d_d_d on (addressTable_d_d_d.ID = root.ADDRESSID) left outer join personTable as personTable_d_d_d_d_m2 on (root.ID = personTable_d_d_d_d_m2.FIRMID) left outer join (select sum(personTable_d_d_d_d_d.AGE) as "Sum of Age of Employees Averaged", _sub_d.ID as ID from firmTable as _sub_d left outer join personTable as personTable_d_d_d_d_d on (_sub_d.ID = personTable_d_d_d_d_d.FIRMID) group by _sub_d.ID) as agg_query_d_m3 on (root.ID = agg_query_d_m3.ID) group by "Address Type"', $result);
 }
 
+function <<test.Test>> meta::relational::tests::groupBy::testGroupByWithUnion():Boolean[1]
+{
+   let result = execute({|Trade.all()
+                          ->project([
+                              col(x: Trade[1]|$x.quantity, 'Quantity')
+                            ]
+                          )->concatenate(
+                            Trade.all()->project([
+                                col(x: Trade[1]|$x.quantity, 'Quantity')
+                              ]
+                            )
+                          )->groupBy(
+                            [],
+                            [
+                              agg('sum', r|$r.getFloat('Quantity'), y|$y->sum()),
+                              agg('count', r|1, y|$y->count())
+                            ]
+                          )->filter(
+                            r|$r.getInteger('count') > 0
+                          )->restrict('sum')
+                        }, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   
+   assertSize($result.values, 1);
+   assertEquals([1184.0], $result.values.rows.values);
+   
+   assertSameSQL('select "sum" as "sum" from (select sum("unionalias_1"."Quantity") as "sum", count(1) as "count" from (select "root".quantity as "Quantity" from tradeTable as "root" UNION ALL select "root".quantity as "Quantity" from tradeTable as "root") as "unionalias_1") as "subselect" where "count" > 0', $result);
+}
 
 function <<test.Test>> meta::relational::tests::groupBy::testGroupByAndFilterIsolatedJoinMerge():Boolean[1]
 {

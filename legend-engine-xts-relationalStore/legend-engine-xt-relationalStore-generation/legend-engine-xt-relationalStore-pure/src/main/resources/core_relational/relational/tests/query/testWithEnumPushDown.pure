@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::json::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::mapping::*;
 import meta::pure::executionPlan::*;
@@ -37,28 +38,11 @@ let fn = {|Synonym.all()->project([s|$s.type,s|$s.name],['type','name'])->filter
    assertSize($result.values.rows, 3);
 }
 
-function <<test.Test>> meta::relational::tests::query::enumPushDown::testPushDownProjectWithParameter():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::query::enumPushDown::testPushDownProjectWithParameter():Boolean[1]
 {   
-   let fn = {syn:ProductSynonymType[1]|Synonym.all()->filter(t|$t.type==$syn)->project([s|$s.type,s|$s.name],['syntype','name'])->withFeatureFlags(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM)->from( simpleRelationalMapping, meta::external::store::relational::tests::testRuntime())};
+  let fn = {syn:ProductSynonymType[1]|Synonym.all()->filter(t|$t.type==$syn)->project([s|$s.type,s|$s.name],['syntype','name'])->withFeatureFlags(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM)->from( simpleRelationalMapping, meta::external::store::relational::tests::testRuntime())};
   let extensions = meta::relational::extension::relationalExtensions();
-  let plan =  executionPlan($fn,$extensions)->planToString($extensions);
- let expected  = 'Sequence\n'+
-'(\n'+
-'  type = TDS[(syntype, String, VARCHAR(200), ""), (name, String, VARCHAR(200), "")]\n'+
-'  (\n'+
-'    FunctionParametersValidationNode\n'+
-'    (\n'+
-'      functionParameters = [syn:meta::relational::tests::model::simple::ProductSynonymType[1]]\n'+
-'    )\n'+
-'    Relational\n'+
-'    (\n'+
-'      type = TDS[(syntype, String, VARCHAR(200), ""), (name, String, VARCHAR(200), "")]\n'+
-'      resultColumns = [("syntype", ""), ("name", VARCHAR(200))]\n'+
-'      sql = select case when "root".TYPE = \'CUSIP\' then \'CUSIP\' when "root".TYPE = \'ISIN\' then \'ISIN\' else null end as "syntype", "root".NAME as "name" from productSchema.synonymTable as "root" where (${optionalVarPlaceHolderOperationSelector(syn, equalEnumOperationSelector(enumMap_meta_relational_tests_simpleRelationalMapping_SynonymEnum(syn), \'"root".TYPE in (${enumMap_meta_relational_tests_simpleRelationalMapping_SynonymEnum(syn)})\', \'"root".TYPE = ${enumMap_meta_relational_tests_simpleRelationalMapping_SynonymEnum(syn)}\'), \'0 = 1\')})\n'+
-'      connection = TestDatabaseConnection(type = "H2")\n'+
-'    )\n'+
-'  )\n'+
-')\n' ;
-assertEquals($expected,$plan);
-
+  let resultJson = meta::legend::executeLegendQuery($fn, [pair('syn', 'CUSIP')], $extensions);
+  let result = $resultJson->meta::json::parseJSON()->cast(@JSONObject).keyValuePairs->filter(kv|$kv.key.value == 'result').value->toOne()->toCompactJSONString();
+  assertEquals('{"columns":["syntype","name"],"rows":[{"values":["CUSIP","CUSIP1"]},{"values":["CUSIP","CUSIP2"]},{"values":["CUSIP","CUSIP3"]}]}', $result);
 }

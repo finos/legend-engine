@@ -62,7 +62,7 @@ public class SchemaToModelGenerationTest
         try
         {
             modelData = PureGrammarParser.newInstance().parseModel(schemaCode);
-            pureModel = Compiler.compile(modelData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
+            pureModel = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
         }
         catch (Exception e)
         {
@@ -74,7 +74,7 @@ public class SchemaToModelGenerationTest
         PureModelContextData combined = modelData.combine(generated);
         try
         {
-            Compiler.compile(combined, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
+            Compiler.compile(combined, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
         }
         catch (Exception e)
         {

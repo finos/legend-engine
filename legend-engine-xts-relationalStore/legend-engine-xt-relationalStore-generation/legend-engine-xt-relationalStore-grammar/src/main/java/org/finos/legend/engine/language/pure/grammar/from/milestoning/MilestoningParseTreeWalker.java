@@ -28,7 +28,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDa
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictDate;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
-import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

@@ -23,7 +23,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProce
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
-import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
 

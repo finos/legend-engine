@@ -121,7 +121,7 @@ function meta::external::function::activator::hostedService::tests::simpleServic
   //validate
   $service->meta::external::function::activator::hostedService::validator::validateService();
   //printlnPlan
-   $service->rebuildServiceUsingSingleExecutionParams().second->map(s|$s->meta::external::function::activator::hostedService::generation::printPlan());
+   $service->rebuildServiceUsingFlattenedParams().second->map(s|$s->meta::external::function::activator::hostedService::generation::printPlan());
  
 }
 
@@ -136,7 +136,7 @@ function meta::external::function::activator::hostedService::tests::simpleServic
 {
   let service =  ^HostedService
    (
-      pattern = '/service',
+      pattern = '/service/{env}',
       ownership = ^UserList(users = ['debelp', 'harted']),
       documentation = 'bla bla',
       autoActivateUpdates = true,
@@ -148,7 +148,7 @@ function meta::external::function::activator::hostedService::tests::simpleServic
   //validate
   $service->meta::external::function::activator::hostedService::validator::validateService();
   //printlnPlan
-   $service->rebuildServiceUsingSingleExecutionParams().second->map(s|$s->meta::external::function::activator::hostedService::generation::printPlan());
+   $service->rebuildServiceUsingFlattenedParams().second->map(s|$s->meta::external::function::activator::hostedService::generation::printPlan());
  
 }
 
@@ -174,7 +174,7 @@ function meta::external::function::activator::hostedService::tests::simpleServic
   //validate
   $service->meta::external::function::activator::hostedService::validator::validateService();
   //printlnPlan
-   $service->rebuildServiceUsingSingleExecutionParams().second->map(s|$s->meta::external::function::activator::hostedService::generation::printPlan());
+   $service->rebuildServiceUsingFlattenedParams().second->map(s|$s->meta::external::function::activator::hostedService::generation::printPlan());
  
 }
 
@@ -195,7 +195,7 @@ $service-> meta::external::function::activator::hostedService::generation::isMul
   //validate
   $service->meta::external::function::activator::hostedService::validator::validateService();
   //printlnPlan
-   $service->rebuildServiceUsingSingleExecutionParams().second->map(s|$s->meta::external::function::activator::hostedService::generation::printPlan());
+   $service->rebuildServiceUsingFlattenedParams().second->map(s|$s->meta::external::function::activator::hostedService::generation::printPlan());
  
 }
 
@@ -230,12 +230,12 @@ function meta::external::function::activator::hostedService::tests::simpleServic
 {
   let service =  ^HostedService
    (
-      pattern = '/service',
+      pattern = '/service/{key}',
       ownership = ^UserList(users = ['debelp', 'harted']),
       contentType =  'application/json',
       documentation = 'bla bla',
       autoActivateUpdates = true,
-      function= meta::external::function::activator::hostedService::tests::simplegraphFetchfunctionWithDataSpace__PersonX_MANY_
+      function= meta::external::function::activator::hostedService::tests::simplegraphFetchfunctionWithDataSpace_String_1__PersonX_MANY_
    );
   //isMulti
   print('isMultiExecService:');
@@ -243,13 +243,14 @@ function meta::external::function::activator::hostedService::tests::simpleServic
   //validate
   $service->meta::external::function::activator::hostedService::validator::validateService();
   //printlnPlan
-  $service->rebuildServiceUsingSingleExecutionParams().second->map(s|$s->meta::external::function::activator::hostedService::generation::printPlan());
+  $service->rebuildServiceUsingFlattenedParams().second->map(s|$s->meta::external::function::activator::hostedService::generation::printPlan());
  
 }
 
-function meta::external::function::activator::hostedService::tests::simplegraphFetchfunctionWithDataSpace():PersonX[*]
+function meta::external::function::activator::hostedService::tests::simplegraphFetchfunctionWithDataSpace(key:String[1]):PersonX[*]
 {
-    PersonX.all()->graphFetch(#{ PersonX {firstName} } #)->from(meta::external::function::activator::hostedService::tests::TestDataSpaces());
+    PersonX.all()->graphFetch(#{ PersonX {firstName} } #)
+    ->from(meta::external::function::activator::hostedService::tests::TestDataSpaces()->meta::pure::metamodel::dataSpace::get($key));
 }
 
 function meta::external::function::activator::hostedService::tests::TestDataSpaces(): meta::pure::metamodel::dataSpace::DataSpace[1]

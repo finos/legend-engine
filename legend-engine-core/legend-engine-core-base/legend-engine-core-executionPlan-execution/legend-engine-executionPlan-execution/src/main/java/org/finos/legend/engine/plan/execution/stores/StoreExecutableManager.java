@@ -102,7 +102,7 @@ public enum StoreExecutableManager
             }
             catch (Exception e)
             {
-                LOGGER.info(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.EXECUTABLE_REMOVE_ERROR, "Unable to remove executable for id " + id).toString());
+                LOGGER.info(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.EXECUTABLE_REMOVE_ERROR, "Unable to remove executable for id " + id).toString());
             }
         }
     }
@@ -149,7 +149,7 @@ public enum StoreExecutableManager
                 }
                 catch (Exception e)
                 {
-                    LOGGER.error(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel executable for ID " + sessionID + ": " + e.getMessage()).toString());
+                    LOGGER.error(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel executable for ID " + sessionID + ": " + e.getMessage()).toString());
                 }
             });
         }

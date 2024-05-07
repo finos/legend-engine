@@ -29,8 +29,11 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllV
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetCaseConverter;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetsCaseConverter;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.planner.Planner;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
@@ -42,6 +45,7 @@ import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -82,6 +86,49 @@ public class ApiUtils
             return converter.applyCase(enrichedDatasets, String::toLowerCase);
         }
         return enrichedDatasets;
+    }
+
+    public static DatasetReference applyCase(DatasetReference datasetReference, CaseConversion caseConversion)
+    {
+        Function<String, String> strategy;
+        if (caseConversion == CaseConversion.TO_UPPER)
+        {
+            strategy = String::toUpperCase;
+        }
+        else if (caseConversion == CaseConversion.TO_LOWER)
+        {
+            strategy = String::toLowerCase;
+        }
+        else
+        {
+            return datasetReference;
+        }
+
+        datasetReference = datasetReference.withName(strategy.apply(datasetReference.name().orElseThrow(IllegalAccessError::new)));
+        if (datasetReference.database().isPresent())
+        {
+            datasetReference = datasetReference.withDatabase(strategy.apply(datasetReference.database().get()));
+        }
+        if (datasetReference.group().isPresent())
+        {
+            datasetReference = datasetReference.withGroup(strategy.apply(datasetReference.group().get()));
+        }
+
+        return datasetReference;
+    }
+
+    public static SchemaDefinition applyCase(SchemaDefinition schema, CaseConversion caseConversion)
+    {
+        DatasetCaseConverter converter = new DatasetCaseConverter();
+        if (caseConversion == CaseConversion.TO_UPPER)
+        {
+            return converter.applyCaseOnSchemaDefinition(schema, String::toUpperCase);
+        }
+        if (caseConversion == CaseConversion.TO_LOWER)
+        {
+            return converter.applyCaseOnSchemaDefinition(schema, String::toLowerCase);
+        }
+        return schema;
     }
 
     public static IngestMode applyCase(IngestMode ingestMode, CaseConversion caseConversion)

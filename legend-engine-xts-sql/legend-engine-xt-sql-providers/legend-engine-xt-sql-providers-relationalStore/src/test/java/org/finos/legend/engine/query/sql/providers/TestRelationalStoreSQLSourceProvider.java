@@ -203,7 +203,7 @@ public class TestRelationalStoreSQLSourceProvider extends AbstractTestLegendStor
                 .with(new SQLSourceArgument("schema", null, schemaName))
                 .with(new SQLSourceArgument("table", null, tableName));
 
-        SQLSourceResolvedContext result = provider.resolve(FastList.newListWith(tablesource), null, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
+        SQLSourceResolvedContext result = provider.resolve(FastList.newListWith(tablesource), null, Identity.getAnonymousIdentity());
 
         Lambda lambda = SQLProviderUtils.tableToTDS(databaseName, schemaName, tableName);
 

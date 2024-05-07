@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure;
 
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMappingVisitor;
 

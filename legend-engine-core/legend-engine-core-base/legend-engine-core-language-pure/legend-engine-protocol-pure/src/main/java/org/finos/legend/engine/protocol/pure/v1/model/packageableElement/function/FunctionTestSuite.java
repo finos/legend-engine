@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.test.TestSuite;
 
 import java.util.List;

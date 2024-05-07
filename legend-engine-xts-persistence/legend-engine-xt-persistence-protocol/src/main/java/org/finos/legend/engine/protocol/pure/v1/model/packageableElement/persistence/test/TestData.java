@@ -16,7 +16,6 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
-import java.util.List;
 
 public class TestData
 {

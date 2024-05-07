@@ -22,8 +22,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.ds.specifications.DuckDBDataSourceSpecification;
-import org.finos.legend.engine.shared.core.operational.Assert;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 public class DuckDBManager extends DatabaseManager
 {

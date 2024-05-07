@@ -21,7 +21,6 @@ import org.finos.legend.engine.persistence.components.relational.memsql.MemSqlSi
 import org.finos.legend.engine.persistence.components.testcases.ingestmode.unitemporal.UnitmemporalDeltaDateTimeBasedTestCases;
 import org.junit.jupiter.api.Assertions;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTimeBasedTestCases

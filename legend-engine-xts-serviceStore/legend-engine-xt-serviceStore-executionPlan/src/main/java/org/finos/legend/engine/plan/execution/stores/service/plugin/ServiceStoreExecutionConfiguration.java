@@ -17,7 +17,6 @@ package org.finos.legend.engine.plan.execution.stores.service.plugin;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
-import org.finos.legend.engine.plan.execution.stores.service.ServiceExecutor;
 
 public class ServiceStoreExecutionConfiguration implements StoreExecutorConfiguration
 {

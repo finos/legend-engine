@@ -175,7 +175,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
     public static void main(String[] args) throws Exception
     {
         EngineUrlStreamHandlerFactory.initialize();
-        new Server().run(args.length == 0 ? new String[]{"server", "legend-engine-config/legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/userTestConfig.json"} : args);
+        new Server().run(args.length == 0 ? new String[]{"server", "legend-engine-config/legend-engine-server/legend-engine-server-http-server/src/test/resources/org/finos/legend/engine/server/test/userTestConfig.json"} : args);
     }
 
     @Override

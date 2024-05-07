@@ -19,7 +19,6 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.external.format.xml.read.DeserializeContext;
 import org.finos.legend.engine.external.format.xml.read.ReadHandler;
 import org.finos.legend.engine.external.format.xml.shared.XmlReader;
-import org.finos.legend.engine.external.format.xml.shared.XmlUtils;
 import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataObjectAdder;
 import org.finos.legend.engine.external.shared.runtime.dependencies.IExternalDataFactory;
 

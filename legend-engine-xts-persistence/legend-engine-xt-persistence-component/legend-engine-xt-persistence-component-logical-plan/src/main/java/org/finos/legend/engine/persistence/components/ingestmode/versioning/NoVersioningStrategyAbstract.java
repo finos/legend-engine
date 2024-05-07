@@ -26,6 +26,12 @@ import org.immutables.value.Value;
 )
 public interface NoVersioningStrategyAbstract extends VersioningStrategy
 {
+    @Value.Default
+    default boolean failOnDuplicatePrimaryKeys()
+    {
+        return false;
+    }
+
     @Override
     default <T> T accept(VersioningStrategyVisitor<T> visitor)
     {

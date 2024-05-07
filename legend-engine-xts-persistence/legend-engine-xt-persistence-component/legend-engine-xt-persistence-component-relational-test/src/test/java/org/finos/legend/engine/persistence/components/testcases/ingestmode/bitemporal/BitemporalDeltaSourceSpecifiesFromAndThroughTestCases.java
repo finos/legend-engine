@@ -40,7 +40,7 @@ public abstract class BitemporalDeltaSourceSpecifiesFromAndThroughTestCases exte
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
-                .createStagingDataset(true)
+                .skipMainAndMetadataDatasetCreation(true)
                 .enableConcurrentSafety(true)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());

@@ -265,7 +265,7 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
     protected Result execute(Map<String, ?> parameters, ServiceRunnerInput serviceRunnerInput, StreamProvider streamProvider)
     {
         PlanExecutionContext planExecutionContext = null;
-        Identity identity = IdentityFactoryProvider.getInstance().getAnonymousIdentity();
+        Identity identity = Identity.getAnonymousIdentity();
 
         if (serviceRunnerInput != null)
         {

@@ -27,7 +27,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -72,7 +71,7 @@ public class TestLocalH2ConnectionState extends DbSpecificTests
         ConnectionStateManager stateManager = ConnectionStateManager.getInstance();
         assertEquals("mismatch in state count", 0, stateManager.size());
 
-        Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+        Identity identity1 = new Identity("identity1");
         RelationalDatabaseConnection db1 = this.buildLocalH2DatasourceSpec();
 
         List<Connection> connections = IntStream.range(0, 10)

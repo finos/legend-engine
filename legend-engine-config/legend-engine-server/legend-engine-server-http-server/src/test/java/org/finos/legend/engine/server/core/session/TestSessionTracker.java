@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.server.core.session;
 
-import org.finos.legend.engine.protocol.analytics.model.MappedProperty;
-import org.finos.legend.engine.shared.core.operational.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 

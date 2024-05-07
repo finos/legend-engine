@@ -31,6 +31,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteInd
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionColumnBasedResolver;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -241,6 +242,7 @@ class NontemporalDeltaTest extends BaseTest
                 .digestField(digestName)
                 .auditing(NoAuditing.builder().build())
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
+                .versioningStrategy(NoVersioningStrategy.builder().failOnDuplicatePrimaryKeys(true).build())
                 .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(true).collectStatistics(true).build();

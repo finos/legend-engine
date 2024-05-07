@@ -30,10 +30,14 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.auth
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.authentication.AuthenticationStrategyParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.datasource.DataSourceSpecificationLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.datasource.DataSourceSpecificationParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.data.DataParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapper.RelationalMapperLexerGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapper.RelationalMapperParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.authentication.AuthenticationStrategyParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.authentication.AuthenticationStrategySourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionValueSourceCode;
+import org.finos.legend.engine.language.pure.grammar.from.data.DataParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.data.RelationalEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.datasource.DataSourceSpecificationParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.datasource.DataSourceSpecificationSourceCode;
@@ -42,6 +46,7 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.MappingEleme
 import org.finos.legend.engine.language.pure.grammar.from.extension.MappingTestInputDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
+import org.finos.legend.engine.language.pure.grammar.from.mapper.RelationalMapperParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingElementSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.milestoning.MilestoningParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.milestoning.MilestoningSpecificationSourceCode;
@@ -49,8 +54,11 @@ import org.finos.legend.engine.language.pure.grammar.from.postProcessors.PostPro
 import org.finos.legend.engine.language.pure.grammar.from.postProcessors.PostProcessorSpecificationSourceCode;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
@@ -68,6 +76,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class RelationalGrammarParserExtension implements IRelationalGrammarParserExtension
@@ -75,6 +84,7 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
     public static final String NAME = "Relational";
     public static final String RELATIONAL_MAPPING_ELEMENT_TYPE = "Relational";
     public static final String RELATIONAL_DATABASE_CONNECTION_TYPE = "RelationalDatabaseConnection";
+    public static final String POSTPROCESSOR_NAME = "QueryPostProcessor";
 
     @Override
     public MutableList<String> group()
@@ -85,17 +95,46 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
     @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
-        return Collections.singletonList(SectionParser.newParser(NAME, (sectionSourceCode, elementConsumer, context) ->
-        {
-            SourceCodeParserInfo parserInfo = getRelationalParserInfo(sectionSourceCode);
-            DefaultCodeSection section = new DefaultCodeSection();
-            section.parserName = sectionSourceCode.sectionType;
-            section.sourceInformation = parserInfo.sourceInformation;
-            RelationalParseTreeWalker walker = new RelationalParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section);
-            walker.visit((RelationalParserGrammar.DefinitionContext) parserInfo.rootContext);
-            return section;
-        }));
+        return Lists.immutable.with(SectionParser.newParser(NAME, RelationalGrammarParserExtension::parseRelationalSection),
+                SectionParser.newParser(POSTPROCESSOR_NAME, RelationalGrammarParserExtension::parseQueryPostProcessorSection));
     }
+
+    private static Section parseRelationalSection(SectionSourceCode sectionSourceCode, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext pureGrammarParserContext)
+    {
+        SourceCodeParserInfo parserInfo = getRelationalParserInfo(sectionSourceCode);
+        DefaultCodeSection section = new DefaultCodeSection();
+        section.parserName = sectionSourceCode.sectionType;
+        section.sourceInformation = parserInfo.sourceInformation;
+        RelationalParseTreeWalker walker = new RelationalParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section);
+        walker.visit((RelationalParserGrammar.DefinitionContext) parserInfo.rootContext);
+        return section;
+    }
+
+
+    private static Section parseQueryPostProcessorSection(SectionSourceCode sectionSourceCode, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext pureGrammarParserContext)
+    {
+        SourceCodeParserInfo parserInfo = getRelationalMapperParserInfo(sectionSourceCode);
+        ImportAwareCodeSection section = new ImportAwareCodeSection();
+        section.parserName = sectionSourceCode.sectionType;
+        section.sourceInformation = parserInfo.sourceInformation;
+        RelationalMapperParseTreeWalker walker = new RelationalMapperParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section);
+        walker.visit((RelationalMapperParserGrammar.DefinitionContext) parserInfo.rootContext);
+        return section;
+    }
+
+    private static SourceCodeParserInfo getRelationalMapperParserInfo(SectionSourceCode sectionSourceCode)
+    {
+        CharStream input = CharStreams.fromString(sectionSourceCode.code);
+        ParserErrorListener errorListener = new ParserErrorListener(sectionSourceCode.walkerSourceInformation);
+        RelationalMapperLexerGrammar lexer = new RelationalMapperLexerGrammar(input);
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+        RelationalMapperParserGrammar parser = new RelationalMapperParserGrammar(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
+        return new SourceCodeParserInfo(sectionSourceCode.code, input, sectionSourceCode.sourceInformation, sectionSourceCode.walkerSourceInformation, lexer, parser, parser.definition());
+    }
+
 
     @Override
     public Iterable<? extends MappingElementParser> getExtraMappingElementParsers()
@@ -204,7 +243,18 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
     public List<Function<PostProcessorSpecificationSourceCode, PostProcessor>> getExtraPostProcessorParsers()
     {
         PostProcessorParseTreeWalker walker = new PostProcessorParseTreeWalker();
-        return Collections.singletonList(code -> "mapper".equals(code.getType()) ? PostProcessorParseTreeWalker.parsePostProcessor(code, p -> walker.visitMapperPostProcessor(code, p.mapperPostProcessor())) : null);
+        return Collections.singletonList(code ->
+        {
+            if ("mapper".equals(code.getType()))
+            {
+                return PostProcessorParseTreeWalker.parsePostProcessor(code, p -> walker.visitMapperPostProcessor(code, p.mapperPostProcessor()));
+            }
+            else if ("relationalMapper".equals(code.getType()))
+            {
+                return PostProcessorParseTreeWalker.parsePostProcessor(code, p -> walker.visitRelationalMapperPostProcessor(code, p.relationalMapperPostProcessor()));
+            }
+            return null;
+        });
     }
 
     @Override

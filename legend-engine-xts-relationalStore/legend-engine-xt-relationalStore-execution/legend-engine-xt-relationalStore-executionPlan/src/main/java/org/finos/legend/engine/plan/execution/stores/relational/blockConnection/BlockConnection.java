@@ -414,7 +414,7 @@ public class BlockConnection implements Connection
                 {
                     long executeSqlStart = System.currentTimeMillis();
                     statement.execute(sql);
-                    LOGGER.info(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), loggingEventType, sql, (double) System.currentTimeMillis() - executeSqlStart).toString());
+                    LOGGER.info(new LogInfo(Identity.getAnonymousIdentity().getName(), loggingEventType, sql, (double) System.currentTimeMillis() - executeSqlStart).toString());
                 }
             }
         }
