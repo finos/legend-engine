@@ -1943,7 +1943,9 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
        | $result,
        |
          // Property is 1->MANY. Need to flatten
-         let arrayFlattening = ^SemiStructuredArrayFlatten(navigation = if($state.inFilter, | $result->cast(@SelectWithCursor).select.filteringOperation, | $result->cast(@SelectWithCursor).select.columns)->toOne());
+         let navigation = if($state.inFilter, | $result->cast(@SelectWithCursor).select.filteringOperation, | $result->cast(@SelectWithCursor).select.columns)->toOne();
+         let updatedNavigation = $navigation->match([s:SemiStructuredObjectNavigation[1]|^$s(avoidCastIfPrimitive=true), a:Any[*]|$navigation]);
+         let arrayFlattening = ^SemiStructuredArrayFlatten(navigation = $updatedNavigation);
          let leftAlias = $result.currentTreeNode->toOne().alias;
          let rightAlias = ^TableAlias(relationalElement = $arrayFlattening, name = 'arrayFlatten_' + $nodeId);
          let joinName = 'join_arrayFlatten_' + $arrayFlattening->buildUniqueName(false, true, $extensions);

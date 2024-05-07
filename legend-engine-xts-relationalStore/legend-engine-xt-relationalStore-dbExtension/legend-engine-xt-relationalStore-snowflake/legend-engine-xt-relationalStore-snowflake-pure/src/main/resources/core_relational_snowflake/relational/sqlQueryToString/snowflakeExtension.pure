@@ -302,7 +302,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       a: SemiStructuredArrayElementAccess[1] | '[' + $a.index->cast(@Literal).value->toString() + ']'
    ]);
 
-   $elementAccess + castSuffixForSnowflakeSemiStructuredData($s.returnType);
+   if($s.avoidCastIfPrimitive == true, | $elementAccess, | $elementAccess + castSuffixForSnowflakeSemiStructuredData($s.returnType));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processSemiStructuredArrayFlattenForSnowflake(s:SemiStructuredArrayFlatten[1], sgc:SqlGenerationContext[1]): String[1]
