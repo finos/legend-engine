@@ -90,11 +90,6 @@
                         <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-data-space-pure-metamodel</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
                 </dependencies>
             </plugin>
             <plugin>
@@ -117,11 +112,6 @@
                     </execution>
                 </executions>
                 <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-data-space-pure-metamodel</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
                         <artifactId>legend-pure-m2-dsl-mapping-grammar</artifactId>
