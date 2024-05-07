@@ -3511,61 +3511,54 @@ function <<access.private>> meta::external::language::java::factory::project::me
       {| $base->addClass($srcDirPath, $class)},
       {|
          let existing = $base->getClass($srcDirPath, $classFullName)->toOne();
+         
          if ($existing->instanceOf(meta::external::language::java::metamodel::Enumeration) && $class->instanceOf(meta::external::language::java::metamodel::Class),
           | $base,
           | if ($existing->instanceOf(meta::external::language::java::metamodel::Class) && $class->instanceOf(meta::external::language::java::metamodel::Enumeration),
             | $base->replaceClass($class),
-            |  
-         let x = if($class.simpleName == 'TestEnum', | println('existing'); println($existing); println('class'); println($class); println('======'); '';, |'';);
+            | let imports = $existing.additionalImports->concatenate($class.additionalImports)->removeDuplicates();
 
-        // let blah = if($class.simpleName == 'Duration', | println('booyah'); println('class'); println($class,2); println('existing:'); println($existing,2); println('------');   '';, | '';);
+              let superType = if($existing.superType->isEmpty(),
+                                  {|$class.superType},
+                                  |
+                              if($class.superType->isEmpty(),
+                                  {|$existing.superType},
+                                  {|
+                                    assert($existing.superType == $class.superType, |'Cannot change superType from ' + $existing.superType->toOne()->typeToString() + ' to ' + $class.superType->toOne()->typeToString());
+                                    $existing.superType;
+                                  }
+                              ));
 
-         let imports = $existing.additionalImports->concatenate($class.additionalImports)->removeDuplicates();
+              let interfaces = $existing.interfaces->concatenate($class.interfaces)->removeDuplicates();
+              
+              let newlyDefinedFields = $class.fields->filter({newField |
+                  let existingField = $existing.fields->filter({m | $m.name == $newField.name});
+                  assert($existingField->isEmpty() || (($existingField.type == $newField.type) && ($existingField.value == $newField.value) && ($existingField.valueCode == $newField.valueCode)), | 'Cannot merge field ' + $newField.name + ' in ' + $classFullName);
+                  $existingField->isEmpty();
+              });
+              let fields = $existing.fields->concatenate($newlyDefinedFields);
+              
+              let newlyDefinedMethods = $class.methods->filter({newMethod|
+                  let existingMethod = $existing.methods->filter({m| $m.name == $newMethod.name && $m.parameters.type == $newMethod.parameters.type});
+                  assert($existingMethod->isEmpty() || ($existingMethod.body == $newMethod.body && $existingMethod.bodyCode == $newMethod.bodyCode), {| $existingMethod.bodyCode->match([
+                                                                                                                                                      c:Code[1] | println($c->codeToString()),
+                                                                                                                                                      x:Code[0] | println($existingMethod.body->toOne())
+                                                                                                                                                    ]);
+                                                                                                                                                    $newMethod.bodyCode->match([
+                                                                                                                                                      c:Code[1] | println($c->codeToString()),
+                                                                                                                                                      x:Code[0] | println($newMethod.body->toOne())
+                                                                                                                                                    ]);
+                                                                                                                                                    'Cannot merge implementations of ' + $newMethod->methodSignature() + ' in ' + $classFullName;});
+                  $existingMethod->isEmpty();
+              });
+              let methods = $existing.methods->concatenate($newlyDefinedMethods);
 
-         let superType = if($existing.superType->isEmpty(),
-                            {|$class.superType},
-                            |
-                         if($class.superType->isEmpty(),
-                            {|$existing.superType},
-                            {|
-                               assert($existing.superType == $class.superType, |'Cannot change superType from ' + $existing.superType->toOne()->typeToString() + ' to ' + $class.superType->toOne()->typeToString());
-                               $existing.superType;
-                            }
-                         ));
+              let modifiers = $existing.modifiers->concatenate($class.modifiers)->removeDuplicates();
+              let f = ^$existing(additionalImports=$imports, superType=$superType, interfaces=$interfaces, fields=$fields, methods=$methods, modifiers=$modifiers);
 
-         let interfaces = $existing.interfaces->concatenate($class.interfaces)->removeDuplicates();
-         
-         let newlyDefinedFields = $class.fields->filter({newField |
-            let existingField = $existing.fields->filter({m | $m.name == $newField.name});
-            assert($existingField->isEmpty() || (($existingField.type == $newField.type) && ($existingField.value == $newField.value) && ($existingField.valueCode == $newField.valueCode)), | 'Cannot merge field ' + $newField.name + ' in ' + $classFullName);
-            $existingField->isEmpty();
-         });
-         let fields = $existing.fields->concatenate($newlyDefinedFields);
-         
-         let newlyDefinedMethods = $class.methods->filter({newMethod|
-            let existingMethod = $existing.methods->filter({m| $m.name == $newMethod.name && $m.parameters.type == $newMethod.parameters.type});
-            assert($existingMethod->isEmpty() || ($existingMethod.body == $newMethod.body && $existingMethod.bodyCode == $newMethod.bodyCode), {| $existingMethod.bodyCode->match([
-                                                                                                                                                 c:Code[1] | println($c->codeToString()),
-                                                                                                                                                 x:Code[0] | println($existingMethod.body->toOne())
-                                                                                                                                               ]);
-                                                                                                                                               $newMethod.bodyCode->match([
-                                                                                                                                                 c:Code[1] | println($c->codeToString()),
-                                                                                                                                                 x:Code[0] | println($newMethod.body->toOne())
-                                                                                                                                               ]);
-                                                                                                                                              'Cannot merge implementations of ' + $newMethod->methodSignature() + ' in ' + $classFullName;});
-            $existingMethod->isEmpty();
-         });
-         let methods = $existing.methods->concatenate($newlyDefinedMethods);
-
-         let modifiers = $existing.modifiers->concatenate($class.modifiers)->removeDuplicates();
-         let f = ^$existing(additionalImports=$imports, superType=$superType, interfaces=$interfaces, fields=$fields, methods=$methods, modifiers=$modifiers);
-        let x1 = if($class.simpleName == 'TestEnum', | println('result'); println($f); println('======'); '';, |'';);
-
-         $base->replaceClass($f);
-         
-         ));
-
-        
+              $base->replaceClass($f);
+              
+            ));
       }
    );
 }
