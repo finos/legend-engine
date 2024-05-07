@@ -17,6 +17,7 @@ package org.finos.legend.engine.repl.relational.httpServer;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.net.httpserver.Headers;
 import org.eclipse.collections.api.RichIterable;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -118,6 +119,7 @@ public class ReplGridServer
             @Override
             public void handle(HttpExchange exchange) throws IOException
             {
+                handleCORS(exchange);
                 if ("GET".equals(exchange.getRequestMethod()))
                 {
                     try
@@ -143,6 +145,7 @@ public class ReplGridServer
             @Override
             public void handle(HttpExchange exchange) throws IOException
             {
+                handleCORS(exchange);
                 if ("GET".equals(exchange.getRequestMethod()))
                 {
                     try
@@ -172,6 +175,7 @@ public class ReplGridServer
             @Override
             public void handle(HttpExchange exchange) throws IOException
             {
+                handleCORS(exchange);
                 if ("GET".equals(exchange.getRequestMethod()))
                 {
                     try
@@ -195,6 +199,7 @@ public class ReplGridServer
             @Override
             public void handle(HttpExchange exchange) throws IOException
             {
+                handleCORS(exchange);
                 if ("POST".equals(exchange.getRequestMethod()))
                 {
                     try
@@ -226,6 +231,7 @@ public class ReplGridServer
             @Override
             public void handle(HttpExchange exchange) throws IOException
             {
+                handleCORS(exchange);
                 if ("POST".equals(exchange.getRequestMethod()))
                 {
                     try
@@ -257,6 +263,7 @@ public class ReplGridServer
             @Override
             public void handle(HttpExchange exchange) throws IOException
             {
+                handleCORS(exchange);
                 if ("POST".equals(exchange.getRequestMethod()))
                 {
                     try
@@ -280,6 +287,7 @@ public class ReplGridServer
             @Override
             public void handle(HttpExchange exchange) throws IOException
             {
+                handleCORS(exchange);
                 if ("GET".equals(exchange.getRequestMethod()))
                 {
                     ValueSpecification funcBody = null;
@@ -429,4 +437,20 @@ public class ReplGridServer
         }
         return queryParams.get("isPaginationEnabled").equals("true") ? true : false;
     }
-}
+    
+    private static void handleCORS(HttpExchange exchange) throws IOException
+    {
+        Headers headers = exchange.getResponseHeaders();
+        headers.add("Access-Control-Allow-Origin", "http://localhost:9005");
+        headers.add("allowedMethods", "GET, POST, OPTIONS");
+        headers.add("Access-Control-Allow-Credentials", "true");
+        headers.add("allowedTimingOrigins", "true");
+        headers.add("chainPreflight", "false");
+        headers.add("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
+
+        if ("OPTIONS".equals(exchange.getRequestMethod()))
+        {
+            exchange.sendResponseHeaders(204, -1);
+        }
+    }
+ }

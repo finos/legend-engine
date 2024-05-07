@@ -28,7 +28,7 @@
 
     <properties>
         <skip.yarn>false</skip.yarn>
-        <repl.web-application.version>11.37.0</repl.web-application.version>
+        <repl.web-application.version>11.42.0</repl.web-application.version>
         <repl.web-application.url>${npm.registry.url}/@finos/legend-application-repl-deployment/-/legend-application-repl-deployment-${repl.web-application.version}.tgz</repl.web-application.url>
     </properties>
 
