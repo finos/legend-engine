@@ -31,4 +31,5 @@ public class SourceLocationConfiguration
 
     public String welcomeFileDirectory;
     public List<String> directories;
+    public String pathPatternsToExclude;
 }
