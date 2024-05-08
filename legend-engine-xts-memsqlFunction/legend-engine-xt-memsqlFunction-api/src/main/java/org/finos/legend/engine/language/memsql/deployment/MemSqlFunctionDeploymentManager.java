@@ -14,10 +14,13 @@
 
 package org.finos.legend.engine.language.memsql.deployment;
 
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizerInput;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreState;
@@ -111,7 +114,12 @@ public class MemSqlFunctionDeploymentManager implements DeploymentManager<MemSql
     public Connection getDeploymentConnection(Identity identity, MemSqlFunctionArtifact artifact)
     {
         RelationalDatabaseConnection connection = extractConnectionFromArtifact(artifact);
-        return this.connectionManager.getDatabaseConnection(identity, connection);
+        StoreExecutionState.RuntimeContext runtimeContext = StoreExecutionState.newRuntimeContext(Maps.immutable.of(
+                PlanExecutionAuthorizerInput.USAGE_CONTEXT_PARAM, "SERVICE_EXECUTION",
+                PlanExecutionAuthorizerInput.RESOURCE_CONTEXT_PARAM, "reserved-for-future-use"
+        ));
+        return this.connectionManager.getDatabaseConnection(identity, connection, runtimeContext);
+        //return this.connectionManager.getDatabaseConnection(identity, connection);
     }
 
     public Connection getDeploymentConnection(Identity identity, RelationalDatabaseConnection connection)
