@@ -2481,7 +2481,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   assert(($propertyMappings->size() == 1) && $propertyMappings->forAll(pm | $pm->instanceOf(SemiStructuredRelationalPropertyMapping)),
         | 'Expected semi structured property mappings. Got: ' + $propertyMappings->map(x | $x->genericType().rawType->toOne()->elementToPath())->joinStrings('[', ', ', ']'));
 
-  let binding = $propertyMappings->at(0)->cast(@SemiStructuredRelationalPropertyMapping).transformer->cast(@BindingTransformer<Any>).binding->toOne();
+  let binding = $propertyMappings->cast(@SemiStructuredRelationalPropertyMapping).transformer->cast(@BindingTransformer<Any>).binding->removeDuplicates()->toOne('found zero or multiple bindings for propertyMappings, expected exactly one');
   let typeConfigDescriptor = $extensions.availableExternalFormats->meta::external::format::shared::utils::getExternalFormatContractForContentType($binding.contentType).schemaConfig.polymorphicTypesConfigDescriptor->toOne();  
   let typeConfig = $typeConfigDescriptor.typeConfigFromBindingGenerator->eval($binding); 
 
@@ -2527,10 +2527,10 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
    let leftSideSelect = $leftSideSWC.select;
    let propertyMappings = $processedLeftSide.currentPropertyMapping;
 
-   assert(($propertyMappings->size() == 1) && $propertyMappings->forAll(pm | $pm->instanceOf(SemiStructuredRelationalPropertyMapping)),
+   assert(($propertyMappings->size() >= 1) && $propertyMappings->forAll(pm | $pm->instanceOf(SemiStructuredRelationalPropertyMapping)),
           | 'Expected semi structured property mappings. Got: ' + $propertyMappings->map(x | $x->genericType().rawType->toOne()->elementToPath())->joinStrings('[', ', ', ']'));
 
-  let binding = $propertyMappings->at(0)->cast(@SemiStructuredRelationalPropertyMapping).transformer->cast(@BindingTransformer<Any>).binding->toOne();
+  let binding = $propertyMappings->cast(@SemiStructuredRelationalPropertyMapping).transformer->cast(@BindingTransformer<Any>).binding->removeDuplicates()->toOne('found zero or multiple bindings for propertyMappings, expected exactly one');
   let typeConfigDescriptor = $extensions.availableExternalFormats->meta::external::format::shared::utils::getExternalFormatContractForContentType($binding.contentType).schemaConfig.polymorphicTypesConfigDescriptor->toOne();  
   let typeConfig = $typeConfigDescriptor.typeConfigFromBindingGenerator->eval($binding);  
 
@@ -2542,49 +2542,32 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   let typeNamesFromConfig = $allSubTypes->map(cls | $typeConfigDescriptor.typeNameForClassFromTypeConfig->eval($typeConfig, $cls));  
 
   let typeNameExpectedTypeValueMismatch = zip($allSubTypes, $typeNamesFromConfig)->filter(p|$p.first.name != $p.second);
+  let typePathExpectedTypeValueMismatch = zip($allSubTypes, $typeNamesFromConfig)->filter(p|$p.first->elementToPath() != $p.second);
 
-  if($typeNameExpectedTypeValueMismatch->isEmpty(), 
-    | 
-      let typeIdentifierKey = $typeConfigDescriptor.typeKeyNameFromTypeConfig->eval($typeConfig);
-      let typeNameBuilder = {r:RelationalOperationElement[*] |
-          assert($r->size() == 1, | 'Expected one relational operation element when processing \'typeName\'. Found: ' + $r->size()->toString());
-          ^SemiStructuredPropertyAccess(operand = $r->toOne(), property = ^Literal(value = $typeIdentifierKey), returnType = String);
-      };
+  assert($typeNameExpectedTypeValueMismatch->isEmpty() || $typePathExpectedTypeValueMismatch->isEmpty(), 'expected type identifier values must match with either the subtype names or fully qualified paths for every possible subclass');
 
-      let newSelect = if ($state.inFilter,
-                          | ^$leftSideSelect(filteringOperation = $typeNameBuilder->eval($leftSideSelect.filteringOperation)),
-                          | ^$leftSideSelect(columns = $typeNameBuilder->eval($leftSideSelect.columns))
-                      );
-      $newSelect->validate($extensions);
-      ^$leftSideSWC
-      (
-          select = $newSelect
-      );, 
-    |
-      let typeIdentifierKey = $typeConfigDescriptor.typeKeyNameFromTypeConfig->eval($typeConfig);
-      let typePathExpectedTypeValueMismatch = zip($allSubTypes, $typeNamesFromConfig)->filter(p|$p.first->elementToPath() != $p.second);
-
-      assertEmpty($typePathExpectedTypeValueMismatch, 'expected type identifier values must match with either the subtype names or fully qualified paths');
-
-      let typeNameBuilder = {r:RelationalOperationElement[*] |
-          assert($r->size() == 1, | 'Expected one relational operation element when processing \'typeName\'. Found: ' + $r->size()->toString());
-          let sspa = ^SemiStructuredPropertyAccess(operand = $r->toOne(), property = ^Literal(value = $typeIdentifierKey), returnType = String);
-          let reversed = ^DynaFunction(name = 'reverseString', parameters = $sspa);
-          let index = ^DynaFunction(name = 'indexOf', parameters = [$reversed, ^Literal(value='::')]);
-          let startPos = ^DynaFunction(name = 'minus', parameters = [^DynaFunction(name = 'plus', parameters = [^DynaFunction(name='length', parameters = $sspa), ^Literal(value=2)]), $index]);
-          let substr = ^DynaFunction(name = 'substring', parameters = [$sspa, $startPos]);
-      };
-
-      let newSelect = if ($state.inFilter,
-                          | ^$leftSideSelect(filteringOperation = $typeNameBuilder->eval($leftSideSelect.filteringOperation)),
-                          | ^$leftSideSelect(columns = $typeNameBuilder->eval($leftSideSelect.columns))
-                      );
-      $newSelect->validate($extensions);
-      ^$leftSideSWC
-      (
-          select = $newSelect
-      );      
-  );
+  let typeIdentifierKey = $typeConfigDescriptor.typeKeyNameFromTypeConfig->eval($typeConfig);
+  let typeNameBuilder = {r:RelationalOperationElement[*] |
+    assert($r->size() == 1, | 'Expected one relational operation element when processing \'typeName\'. Found: ' + $r->size()->toString());
+    let sspa = ^SemiStructuredPropertyAccess(operand = $r->toOne(), property = ^Literal(value = $typeIdentifierKey), returnType = String);
+    if($typeNameExpectedTypeValueMismatch->isEmpty(), 
+      | $sspa, 
+      |
+        let reversed = ^DynaFunction(name = 'reverseString', parameters = $sspa);
+        let index = ^DynaFunction(name = 'indexOf', parameters = [$reversed, ^Literal(value='::')]);
+        let startPos = ^DynaFunction(name = 'minus', parameters = [^DynaFunction(name = 'plus', parameters = [^DynaFunction(name='length', parameters = $sspa), ^Literal(value=2)]), $index]);
+        let substr = ^DynaFunction(name = 'substring', parameters = [$sspa, $startPos]);       
+    );  
+  };
+  let newSelect = if ($state.inFilter,
+                      | ^$leftSideSelect(filteringOperation = $typeNameBuilder->eval($leftSideSelect.filteringOperation)),
+                      | ^$leftSideSelect(columns = $typeNameBuilder->eval($leftSideSelect.columns))
+                  );
+  $newSelect->validate($extensions);
+  ^$leftSideSWC
+  (
+      select = $newSelect
+  );  
 }
 
 
