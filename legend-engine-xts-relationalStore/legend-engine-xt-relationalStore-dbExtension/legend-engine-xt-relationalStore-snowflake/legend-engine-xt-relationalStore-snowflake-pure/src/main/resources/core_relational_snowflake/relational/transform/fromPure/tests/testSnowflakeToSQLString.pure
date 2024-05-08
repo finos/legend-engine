@@ -222,3 +222,23 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::simpleGr
  let snowflakeSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select "productTable_d#5_d#2_m2".NAME as "90.01", count(*) as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "productTable_d#5_d#2_m2" on ("root".prodId = "productTable_d#5_d#2_m2".ID) group by "90.01"', $snowflakeSql);
 }
+
+function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testJaroWinklerSimilarity():Boolean[1]
+{
+   let sql = toSQLString(
+      |Person.all()
+         ->project(p|$p.firstName->jaroWinklerSimilarity('John'), 'similarity')
+   , simpleRelationalMapping, DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+
+   assertEquals('select JAROWINKLER_SIMILARITY("root".FIRSTNAME, \'John\') as "similarity" from personTable as "root"', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testLevenshteinDistance():Boolean[1]
+{
+   let sql = toSQLString(
+      |Person.all()
+         ->project(p|$p.firstName->levenshteinDistance('John'), 'similarity')
+   , simpleRelationalMapping, DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+
+   assertEquals('select EDITDISTANCE("root".FIRSTNAME, \'John\') as "similarity" from personTable as "root"', $sql);
+}
