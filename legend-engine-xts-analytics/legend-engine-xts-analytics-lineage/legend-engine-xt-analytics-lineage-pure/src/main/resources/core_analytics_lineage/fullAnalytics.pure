@@ -218,7 +218,8 @@ function meta::analytics::lineage::flowDatabase::toFlowDatabase(p:PropertyPathTr
                              sp:Property<Nil,Any|*>[1]|let propertyMappings = $wsets->map(s|$s->_propertyMappingsByPropertyName($pr.property.name->toOne()););
                                                        let isDataTypeProperty = !$pr.property.genericType.rawType->isEmpty() && $pr.property.genericType.rawType->toOne()->instanceOf(DataType);
                                                        if ($isDataTypeProperty,
-                                                         | $propertyMappings->cast(@RelationalPropertyMapping)->map(pm|$pm->meta::analytics::lineage::flowDatabase::getTables());,
+                                                         | $propertyMappings->map(pm | assert($pm->instanceOf(RelationalPropertyMapping), 'Unable to compute lineage for the given type of mapping: ' + $pm->typeName()));
+                                                           $propertyMappings->cast(@RelationalPropertyMapping)->map(pm|$pm->meta::analytics::lineage::flowDatabase::getTables());,
                                                          | $propertyMappings->map(pm|processNonDataTypeProperty($p, $pm, $possiblePropertyTargetClasses, $m, $extraChildren))
                                                        );,
                              q:QualifiedProperty<Any>[1]|if($q->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(),
