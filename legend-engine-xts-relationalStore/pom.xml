@@ -30,7 +30,6 @@
 
     <modules>
         <module>legend-engine-xt-relationalStore-analytics</module>
-        <module>legend-engine-xt-relationalStore-connection</module>
         <module>legend-engine-xt-relationalStore-dbExtension</module>
         <module>legend-engine-xt-relationalStore-execution</module>
         <module>legend-engine-xt-relationalStore-generation</module>

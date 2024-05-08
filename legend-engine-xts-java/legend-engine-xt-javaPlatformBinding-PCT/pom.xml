@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright 2020 Goldman Sachs
+ Copyright 2022 Goldman Sachs
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -18,14 +18,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine-xt-relationalStore-test</artifactId>
-        <version>4.46.3-SNAPSHOT</version>
+        <artifactId>legend-engine-xts-java</artifactId>
+        <version>4.43.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-xt-relationalStore-test-relation</artifactId>
+    <artifactId>legend-engine-xt-javaPlatformBinding-PCT</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Relational Store - Test - Relation</name>
+    <name>Legend Engine - XT - Java Platform Binding - PCT</name>
 
     <build>
         <plugins>
@@ -36,10 +36,10 @@
                     <mode>Compiled</mode>
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.relation.Test_Relational_H2_BaseFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.relation.Test_Relational_H2_BasicFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.relation.Test_Relational_H2_GrammarFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.relation.Test_Relational_H2_RelationFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_BaseFunction_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_BasicFunction_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_GrammarFunction_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_RelationFunction_PCT</PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
                 <executions>
@@ -82,18 +82,13 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m2-functions-base-pure</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m2-functions-relation-pure</artifactId>
-            <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections</artifactId>
-            <scope>test</scope>
-        </dependency>
+
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -161,17 +156,12 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-pureExtensions</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-test-framework</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-executionPlan</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

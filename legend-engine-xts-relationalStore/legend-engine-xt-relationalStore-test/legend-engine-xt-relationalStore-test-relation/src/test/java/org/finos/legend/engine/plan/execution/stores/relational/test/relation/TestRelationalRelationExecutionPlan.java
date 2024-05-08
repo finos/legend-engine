@@ -29,9 +29,8 @@ public class TestRelationalRelationExecutionPlan extends TestSuite
 {
     public static Test suite()
     {
-        System.setProperty("legend.test.h2.port", String.valueOf(DynamicPortGenerator.generatePort()));
-
-        System.out.println(System.getProperty("legend.test.h2.port"));
+//        System.setProperty("legend.test.h2.port", String.valueOf(DynamicPortGenerator.generatePort()));
+//        System.out.println(System.getProperty("legend.test.h2.port"));
 
         return wrapSuite(
                 () -> true,

@@ -110,7 +110,7 @@ function meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanT
   generatePlatformCode($plan, $platformId, ^PlatformBindingConfig(), extractClasspathExtensions())
 }
 
-function <<access.private>> meta::pure::executionPlan::platformBinding::localBinding::extractClasspathExtensions(): Extension[*]
+function meta::pure::executionPlan::platformBinding::localBinding::extractClasspathExtensions(): Extension[*]
 {
   let errorMessage = 'bindTestPlanToPlatformWithClasspathExtensions works only if meta::pure::extension::runtime::getExtensions__Extension_MANY__ function (defined in core_external_extensions repo) is available';
   

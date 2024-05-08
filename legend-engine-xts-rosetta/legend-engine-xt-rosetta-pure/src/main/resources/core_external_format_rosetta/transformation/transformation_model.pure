@@ -43,7 +43,7 @@ function meta::external::format::rosetta::generation::processStereotypes(stereot
 
 }
 
-function meta::external::format::rosetta::generation::processProperties(properties:Property<Any,Any|*>[*], space:String[1]):String[1]
+function meta::external::format::rosetta::generation::processProperties(properties:Property<Nil,Any|*>[*], space:String[1]):String[1]
 {
    $properties->map(p|
                     $space+ $p.name->toOne()+

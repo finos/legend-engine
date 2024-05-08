@@ -379,6 +379,11 @@
                     <artifactId>depgraph-maven-plugin</artifactId>
                     <version>${depgraph-maven-plugin.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.finos.legend.pure</groupId>
+                    <artifactId>legend-pure-maven-generation-pct</artifactId>
+                    <version>${legend.pure.version}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
 

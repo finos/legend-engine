@@ -465,19 +465,25 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                       let processed = $s.value->cluster([], $openVariables, $s.executionContext, ^$debug(space = $debug.space+'   '), $analyticsDecision, $extensions);
                       if ($processed.cluster->instanceOf(StoreClusteredValueSpecification),
                         |$processed,
-                        |^ClusterResponse( cluster = 
+                        | 
+                          let store = if ($s.store->isEmpty(),
+                            |//Store is currently not specified for use cases like cos(2)->from($runtime)
+                             $s.runtime.connectionStores.element->cast(@Store)->toOne(),
+                            |$s.store->toOne()
+                          );
+                          ^ClusterResponse( cluster = 
                                                 ^StoreClusteredValueSpecification(
                                                       genericType  = $s.genericType,
                                                       multiplicity = $s.multiplicity,
-                                                      s = meta::pure::extension::storeContractFromStore($extensions, $s.store->toOne()),
-                                                      store = $s.store->toOne(),
+                                                      s = meta::pure::extension::storeContractFromStore($extensions, $store),
+                                                      store = $store,
                                                       runtime = $s.runtime,
                                                       openVars = $openVariables,
                                                       val = $processed.cluster,
                                                       exeCtx = $s.executionContext,
                                                       executable = true
                                                   )
-                         )
+                         );
                       );
                ,
                e:ExtendedRoutedValueSpecification[1] | ^ClusterResponse(cluster=$e->clusterFunctionExpressions($openVariables, $exeCtx, $extensions, $debug)->toOne())
