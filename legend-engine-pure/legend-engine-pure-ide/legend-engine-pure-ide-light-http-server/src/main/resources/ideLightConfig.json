@@ -30,7 +30,8 @@
   },
   "sourceLocationConfiguration": {
     "welcomeFileDirectory": "./",
-    "directories" : ["."]
+    "directories" : ["."],
+    "pathPatternToExclude" : "**/{archetype,target}/"
   },
   "requiredRepositories" : []
 }

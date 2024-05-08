@@ -25,6 +25,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.finos.legend.engine.ide.api.*;
@@ -50,14 +51,10 @@ import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.fs.Muta
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.io.UncheckedIOException;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.*;
 
 public abstract class PureIDEServer extends Application<ServerConfiguration>
 {
@@ -163,47 +160,60 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
 
     protected MutableList<RepositoryCodeStorage> buildRepositories(SourceLocationConfiguration sourceLocationConfiguration)
     {
-        Map<CodeRepository, Path> codeRepositoryPathMap = new HashMap<>();
+        MutableMap<CodeRepository, Path> codeRepositoryPathMap = Maps.mutable.empty();
         List<String> directoriesToSearch = sourceLocationConfiguration.directories != null && !sourceLocationConfiguration.directories.isEmpty()
                                             ? sourceLocationConfiguration.directories
                                             : Lists.mutable.of(".");
 
         for (String path : directoriesToSearch)
         {
-            Map<CodeRepository, Path> p = findCodeRepositoriesAndMapToPath(path);
+            Map<CodeRepository, Path> p = findCodeRepositoriesAndMapToPath(path, sourceLocationConfiguration.pathPatternsToExclude);
             codeRepositoryPathMap.putAll(p);
         }
 
         MutableList<RepositoryCodeStorage> result = Lists.mutable.empty();
-        for (CodeRepository r : codeRepositoryPathMap.keySet())
+        codeRepositoryPathMap.forEachKeyValue((r, repoDefFilePath) ->
         {
             if (r instanceof GenericCodeRepository) //TODO is this correct/needed?
             {
-                Path repoDefFilePath = codeRepositoryPathMap.get(r);
-                String fileName = repoDefFilePath.getFileName().toString();
-                String dirName = fileName.substring(0, fileName.indexOf('.'));
+                String dirName = r.getName();
                 Path parentDirectory = repoDefFilePath.getParent();
-
                 result.add(new MutableFSCodeStorage(r, parentDirectory.resolve(dirName)));
             }
-        }
+        });
 
         return result;
     }
 
     //TODO: This should probably be moved to CodeRepositoryProviderHelper in legend-pure
-    protected Map<CodeRepository, Path> findCodeRepositoriesAndMapToPath(String path)
+    protected Map<CodeRepository, Path> findCodeRepositoriesAndMapToPath(String path, String patternsToExclude)
     {
-        Map<CodeRepository, Path> result = new HashMap<>();
+        Map<CodeRepository, Path> result = Maps.mutable.empty();
+        PathMatcher excludeMatcher = FileSystems.getDefault().getPathMatcher("glob:" + patternsToExclude);
         try
         {
-            Path pth = Paths.get(path);
-            List<Path> defFiles = Files.walk(pth).filter(p -> !p.toString().contains("archetype") && !p.toString().contains("target") && p.toString().endsWith(".definition.json")).collect(Collectors.toList());
-            defFiles.forEach(p -> result.put(GenericCodeRepository.build(p), p));
+            Files.walkFileTree(Paths.get(path), new SimpleFileVisitor<Path>()
+            {
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, java.nio.file.attribute.BasicFileAttributes attrs)
+                {
+                    return excludeMatcher.matches(dir) ? FileVisitResult.SKIP_SUBTREE : FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                {
+                    if (file.toString().endsWith(".definition.json"))
+                    {
+                        result.put(GenericCodeRepository.build(file), file);
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+            });
         }
         catch (IOException e)
         {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
         return result;
     }
