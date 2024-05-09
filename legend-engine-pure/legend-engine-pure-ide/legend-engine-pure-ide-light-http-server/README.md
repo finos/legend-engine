@@ -45,7 +45,8 @@ sourceLocationConfiguration section:
 ```
 "sourceLocationConfiguration": {
     "welcomeFileDirectory": "./",
-    "directories" : ["."]
+    "directories" : ["."],
+    "pathPatternsToExclude" : "*/**/{archetype-resources,target}"
   },
 ```
 
@@ -63,6 +64,9 @@ folder (for example legend-engine-xts-java) then the code repositories
 under this folder will be loaded as mutable *and* all its required
 dependencies too.  All other modules will be loaded via the class
 loader mechanism (and hence not editable).
+
+The pathPatternsToExclude property specifies a glob pattern of paths to ignore when searching directories for code repositories.
+The example config excludes any paths containing archetype-resources and target. 
 
 #### Specifying required repositories to load
 
