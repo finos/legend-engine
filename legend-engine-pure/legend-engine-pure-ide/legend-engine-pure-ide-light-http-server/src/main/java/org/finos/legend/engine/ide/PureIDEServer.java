@@ -27,6 +27,7 @@ import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.MutableSet;
+import org.eclipse.collections.impl.collector.Collectors2;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.finos.legend.engine.ide.api.*;
 import org.finos.legend.engine.ide.api.concept.Concept;
@@ -186,10 +187,12 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
     }
 
     //TODO: This should probably be moved to CodeRepositoryProviderHelper in legend-pure
-    protected Map<CodeRepository, Path> findCodeRepositoriesAndMapToPath(String path, String patternsToExclude)
+    protected Map<CodeRepository, Path> findCodeRepositoriesAndMapToPath(String path, List<String> patternsToExclude)
     {
         Map<CodeRepository, Path> result = Maps.mutable.empty();
-        PathMatcher excludeMatcher = FileSystems.getDefault().getPathMatcher("glob:" + patternsToExclude);
+        FileSystem f = FileSystems.getDefault();
+        MutableList<PathMatcher> excludeMatchers = patternsToExclude.stream().map(p -> f.getPathMatcher("glob:" + p)).collect(Collectors2.toList());
+
         try
         {
             Files.walkFileTree(Paths.get(path), new SimpleFileVisitor<Path>()
@@ -197,7 +200,7 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
                 @Override
                 public FileVisitResult preVisitDirectory(Path dir, java.nio.file.attribute.BasicFileAttributes attrs)
                 {
-                    return excludeMatcher.matches(dir) ? FileVisitResult.SKIP_SUBTREE : FileVisitResult.CONTINUE;
+                    return excludeMatchers.anySatisfy(m -> m.matches(dir)) ? FileVisitResult.SKIP_SUBTREE : FileVisitResult.CONTINUE;
                 }
 
                 @Override
