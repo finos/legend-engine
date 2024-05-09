@@ -42,14 +42,22 @@ import org.finos.legend.engine.ide.session.PureSession;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositorySet;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.RepositoryCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.fs.MutableFSCodeStorage;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public abstract class PureIDEServer extends Application<ServerConfiguration>
 {
@@ -135,7 +143,7 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
 
         CodeRepositorySet codeRepositorySet = CodeRepositorySet.newBuilder().withCodeRepositories(repoToCodeStorageMap.keySet()).build();
 
-        if (requiredRepositories != null)
+        if (requiredRepositories != null && !requiredRepositories.isEmpty())
         {
             MutableSet<String> requiredSet = Sets.mutable.withAll(requiredRepositories);
             if (codeRepositorySet.hasRepository("pure_ide"))
@@ -153,5 +161,48 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
         return pureSession;
     }
 
-    protected abstract MutableList<RepositoryCodeStorage> buildRepositories(SourceLocationConfiguration sourceLocationConfiguration);
+    protected MutableList<RepositoryCodeStorage> buildRepositories(SourceLocationConfiguration sourceLocationConfiguration)
+    {
+        Map<CodeRepository, Path> codeRepositoryPathMap = new HashMap<>();
+        List<String> directoriesToSearch = sourceLocationConfiguration.directories != null ? sourceLocationConfiguration.directories : Lists.mutable.of(".");
+
+        for (String path : sourceLocationConfiguration.directories)
+        {
+            Map<CodeRepository, Path> p = findCodeRepositoriesAndMapToPath(path);
+            codeRepositoryPathMap.putAll(p);
+        }
+
+        MutableList<RepositoryCodeStorage> result = Lists.mutable.empty();
+        for (CodeRepository r : codeRepositoryPathMap.keySet())
+        {
+            if (r instanceof GenericCodeRepository) //TODO is this correct/needed?
+            {
+                Path repoDefFilePath = codeRepositoryPathMap.get(r);
+                String fileName = repoDefFilePath.getFileName().toString();
+                String dirName = fileName.substring(0, fileName.indexOf('.'));
+                Path parentDirectory = repoDefFilePath.getParent();
+
+                result.add(new MutableFSCodeStorage(r, parentDirectory.resolve(dirName)));
+            }
+        }
+
+        return result;
+    }
+
+    //TODO: This should probably in CodeRepositoryProviderHelper in legend-pure
+    protected Map<CodeRepository, Path> findCodeRepositoriesAndMapToPath(String path)
+    {
+        Map<CodeRepository, Path> result = new HashMap<>();
+        try
+        {
+            Path pth = Paths.get(path);
+            List<Path> defFiles = Files.walk(pth).filter(p -> !p.toString().contains("archetype") && !p.toString().contains("target") && p.toString().endsWith(".definition.json")).collect(Collectors.toList());
+            defFiles.forEach(p -> result.put(GenericCodeRepository.build(p), p));
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+        return result;
+    }
 }

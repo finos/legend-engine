@@ -1,9 +1,9 @@
-#Pure IDE Light
+# Pure IDE Light
 
 Pure IDE Light is a development environment for Pure, the language underlying the Legend platform.
 
 
-##Running Pure IDE Light
+## Quick Start
 
 From the root of legend-engine, run the following to launch the Pure IDE Light server.
 
@@ -11,4 +11,71 @@ From the root of legend-engine, run the following to launch the Pure IDE Light s
 mvn -pl legend-engine-pure-ide-light exec:java -Dexec.mainClass="org.finos.legend.engine.ide.PureIDELight" -Dexec.args="server ./legend-engine-pure-ide-light/src/main/resources/ideLightConfig.json"
 ```
 
-Then navigate to http://127.0.0.1/ide
+Then navigate to http://127.0.0.1:9200/ide 
+
+# Configuration
+## Configuration file
+### Port 
+The port used by IDE Light is specified in the port option under the server->connection section:
+```
+"server": {
+    "type": "simple",
+    "applicationContextPath": "/",
+    "adminContextPath": "/admin",
+    "connector": {
+      "maxRequestHeaderSize": "32KiB",
+      "type": "http",
+      "port": 9200
+    },
+    "requestLog": {
+      "appenders": [
+      ]
+    }
+```
+
+### Location of repositories
+The configuration file for Pure IDE Light allows you to specify directories containing Pure source code which will be loaded up in an editable state. 
+This is controlled in the sourceLocationConfiguration section:
+
+```
+"sourceLocationConfiguration": {
+    "welcomeFileDirectory": "./",
+    "directories" : ["."]
+  },
+```
+The welcomeFileDirectory specifies the directory where the welcome file should be loaded from/stored to allowing you to keep multiple welcome files and load as needed. Note only one welcome file is loaded at startup.
+The directories folder specifies the location to search for code repositories. This directory is traversed and all code repositories are loaded in mutable state allowing you to make edits. 
+By default this location is the current directory in which the Pure IDE Light is executed from. 
+
+If you specify a specific extension folder (for example legend-engine-xts-java) then the code repositories under this folder will be loaded as mutable *and* all its required dependencies too. 
+All other modules will be loaded via the class loader mechanism (and hence not editable). 
+
+#### Specifying required repositories to load
+You can further control which repositories are loaded in mutable state by using the requiredRepositories configuration:
+
+```
+  "requiredRepositories" : ["core_external_language_java"]
+```
+
+This will load the core_external_language_java in mutable state and all its dependencies. No other repositories will be loaded (e.g. repositories discovered by the service loader)
+
+### Runtime Pure properties
+The platform uses a number of properties to help with debugging of execution plan generation.
+In particular:
+
+1. PlanLocal - during query execution perform execution plan generation in the IDE rather than performing this on engine server
+2. DebugPlatformCodeGen - enable debug output for the platform code generation (currently Java code) 
+3. ShowLocalPlan - print out the execution plan into the console (needs PlanLocal to be enabled)
+4. ExecPlan - when executing a query use the generatePlan/executePlan endpoints on engine server rather than execute. If PlanLocal is true then the plan will be generated in the IDE and then sent to executePlan for execution, if not then the plan is generated via generatePlan before being sent to the executePlan endpoint.
+
+These options can be set at startup via Java VM properties, for example:
+
+```
+-Dpure.option.PlanLocal
+```
+
+These options can also be enabled/disabled using REST endpoints that are documented using Swagger: http://127.0.0.1:9200/swagger#/Pure%20Runtime%20Options/
+
+For example to enable the PlanLocal setting you can execute http://127.0.0.1:9200/pureRuntimeOptions/setPureRuntimeOption/PlanLocal/true
+
+Note that GUI support via the Pure IDE Light to enable/disable/view these options is planned to be supported soon.
