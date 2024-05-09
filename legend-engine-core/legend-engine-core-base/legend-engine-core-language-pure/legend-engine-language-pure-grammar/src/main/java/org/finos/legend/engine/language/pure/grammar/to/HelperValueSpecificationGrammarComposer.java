@@ -38,6 +38,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CSt
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PathElement;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PropertyPathElement;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -79,6 +81,27 @@ public class HelperValueSpecificationGrammarComposer
                 valueSpecification instanceof CStrictTime ||
                 valueSpecification instanceof CLatestDate
         );
+    }
+
+
+    public static String printColSpec(ColSpec col, DEPRECATED_PureGrammarComposerCore transformer)
+    {
+        return (col.name.contains(" ") ? "'" + col.name + "'" : col.name) + (col.type != null ? ":" + col.type : "") + (col.function1 != null ? ":" +  (transformer.isRenderingPretty() ? " " : "") + col.function1.accept(transformer) : "") + (col.function2 != null ? ":" + col.function2.accept(transformer) : "");
+    }
+
+    public static String printColSpecArray(ColSpecArray colSpecArray, DEPRECATED_PureGrammarComposerCore transformer)
+    {
+        StringBuilder builder = new StringBuilder().append("~[");
+        if (transformer.isRenderingPretty())
+        {
+            builder.append(transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) + " ");
+        }
+        builder.append(LazyIterate.collect(colSpecArray.colSpecs, colSpec -> printColSpec(colSpec, transformer)).makeString("," + (transformer.isRenderingPretty() ? transformer.returnChar() + " " + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : " ")));
+        if (transformer.isRenderingPretty())
+        {
+            builder.append(transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, 0)).append(" ");
+        }
+        return builder.append("]").toString();
     }
 
     public static String renderFunction(AppliedFunction appliedFunction, DEPRECATED_PureGrammarComposerCore transformer)
