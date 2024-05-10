@@ -15,8 +15,11 @@
 package org.finos.legend.engine.testable.function.extension;
 
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.CorePureProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.extension.TestableRunnerExtension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
@@ -44,6 +47,17 @@ public class FunctionTestableRunnerExtension implements TestableRunnerExtension
         if (testable instanceof  org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition)
         {
             return new FunctionTestRunner((ConcreteFunctionDefinition<?>) testable, pureVersion);
+        }
+        return null;
+    }
+
+    @Override
+    public String getTestableTestName(PackageableElement element)
+    {
+        if (element instanceof Function)
+        {
+            Function _function = (Function) element;
+            return HelperModelBuilder.getFunctionNameWithoutSignature(_function) + HelperModelBuilder.terseSignatureSuffix(_function, true);
         }
         return null;
     }

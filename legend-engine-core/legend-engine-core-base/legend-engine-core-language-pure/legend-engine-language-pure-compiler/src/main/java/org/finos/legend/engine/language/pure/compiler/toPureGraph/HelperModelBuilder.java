@@ -303,14 +303,21 @@ public class HelperModelBuilder
         return function.name.endsWith(suffix) ? function.name : function.name + suffix;
     }
 
-    private static String terseSignatureSuffix(Function function)
+    public static String terseSignatureSuffix(Function function)
     {
-        String functionSignature = LazyIterate.collect(function.parameters, HelperModelBuilder::getParameterSignature).select(Objects::nonNull).makeString("__")
-                // TODO: do we have to take care of void return type ~ Nil?
-                + "__" + getClassSignature(function.returnType) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
-        return function.parameters.isEmpty() ? functionSignature : ("_" + functionSignature);
+        return terseSignatureSuffix(function, false);
     }
 
+    public static String terseSignatureSuffix(Function function, boolean compact)
+    {
+        String paramSeparator = compact ? "" : "__";
+        String multiplicitySeparator = compact ? "" : "_";
+        // TODO: do we have to take care of void return type ~ Nil?
+        String functionSignature = LazyIterate.collect(function.parameters, HelperModelBuilder::getParameterSignature).select(Objects::nonNull).makeString(paramSeparator)
+                                    + paramSeparator + getClassSignature(function.returnType) + multiplicitySeparator +
+                                     getMultiplicitySignature(function.returnMultiplicity) + multiplicitySeparator;
+        return function.parameters.isEmpty() ? functionSignature : (multiplicitySeparator + functionSignature);
+    }
 
     private static String getParameterSignature(Variable p)
     {

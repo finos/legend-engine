@@ -16,6 +16,7 @@ package org.finos.legend.engine.testable.extension;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.shared.core.extension.LegendExtension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Testable;
 
@@ -36,4 +37,9 @@ public interface TestableRunnerExtension extends LegendExtension
     String getSupportedClassifierPath();
 
     TestRunner getTestRunner(Testable testable);
+
+    default String getTestableTestName(PackageableElement element)
+    {
+        return null;
+    }
 }

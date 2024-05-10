@@ -35,13 +35,26 @@ public class TestHelperModelBuilder
                         "function model::test(): String[*] \n" +
                         "{ \n" +
                         "    'test'; \n" +
+                        "} \n" +
+                        "function model::test2(myTest:String[1]): String[*] \n" +
+                        "{ \n" +
+                        "  'test'; \n" +
                         "} \n");
         PureModelContextData pmcd = modelWithInput.getOne();
         String testFuntionName = "model::test__String_MANY_";
         List<PackageableElement> testFunction = pmcd.getElements().stream().filter(el -> testFuntionName.equals(el.getPath())).collect(Collectors.toList());
         Assert.assertEquals(1, testFunction.size());
-        Assert.assertEquals("test__String_MANY_", HelperModelBuilder.getSignature((Function) testFunction.get(0)));
-        Assert.assertEquals("test", HelperModelBuilder.getFunctionNameWithoutSignature((Function) testFunction.get(0)));
-        Assert.assertEquals("test__String_MANY_", HelperModelBuilder.getTerseSignature((Function) testFunction.get(0)));
+        Function _function = (Function) testFunction.get(0);
+        Assert.assertEquals("test__String_MANY_", HelperModelBuilder.getSignature(_function));
+        Assert.assertEquals("test", HelperModelBuilder.getFunctionNameWithoutSignature(_function));
+        Assert.assertEquals("test__String_MANY_", HelperModelBuilder.getTerseSignature(_function));
+        Assert.assertEquals("testStringMANY", HelperModelBuilder.getFunctionNameWithoutSignature(_function) + HelperModelBuilder.terseSignatureSuffix(_function, true));
+        String function2name = "model::test2_String_1__String_MANY_";
+        Function testFunction2 = (Function) pmcd.getElements().stream().filter(el -> function2name.equals(el.getPath())).collect(Collectors.toList()).get(0);
+        Assert.assertEquals("test2_String_1__String_MANY_", HelperModelBuilder.getSignature(testFunction2));
+        Assert.assertEquals("test2", HelperModelBuilder.getFunctionNameWithoutSignature(testFunction2));
+        Assert.assertEquals("test2_String_1__String_MANY_", HelperModelBuilder.getTerseSignature(testFunction2));
+        Assert.assertEquals("test2String_1StringMANY", HelperModelBuilder.getFunctionNameWithoutSignature(testFunction2) + HelperModelBuilder.terseSignatureSuffix(testFunction2, true));
+
     }
 }
