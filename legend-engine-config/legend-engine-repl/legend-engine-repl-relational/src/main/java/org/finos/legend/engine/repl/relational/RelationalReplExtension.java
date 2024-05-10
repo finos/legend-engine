@@ -81,7 +81,7 @@ public class RelationalReplExtension implements ReplExtension
         }
         catch (Exception e)
         {
-            this.client.getTerminal().writer().println(e.getMessage());
+           throw new RuntimeException(e);
         }
     }
 
