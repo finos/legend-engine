@@ -126,14 +126,7 @@ public class Completer
 
             ProcessingContext processingContext = new ProcessingContext("");
 
-            CompletionResult completionResult = processValueSpecification(topExpression, currentExpression, pureModel, processingContext);
-            for (CompletionItem completionItem: completionResult.getCompletion())
-            {
-                String completion = completionItem.getCompletion();
-                int startColumn = findCommonSubstringStartColumn(value, completion);
-                completionItem.setCompletion(completion.substring(startColumn));
-            }
-            return completionResult;
+            return processValueSpecification(topExpression, currentExpression, pureModel, processingContext);
         }
         catch (EngineException e)
         {
@@ -143,33 +136,6 @@ public class Completer
             }
             return new CompletionResult(new EngineException("parsing error", new SourceInformation("", 6, 1, 6, value.length()), EngineErrorType.PARSER));
         }
-    }
-
-    private int findCommonSubstringStartColumn(String inputValue, String completion)
-    {
-        int startColumn = 0;
-        int inputLength = inputValue.length();
-        int inputIndex = 0;
-        int completionLength = completion.length();
-        boolean found = false;
-        while (inputIndex < inputLength)
-        {
-            if (startColumn < completionLength && inputValue.charAt(inputIndex) == completion.charAt(startColumn))
-            {
-                startColumn++;
-                found = true;
-            }
-            else if (found)
-            {
-                startColumn = 0;
-            }
-            inputIndex++;
-        }
-        if (completion.substring(0, startColumn).equals(inputValue.substring(inputIndex - startColumn)))
-        {
-            return startColumn;
-        }
-        return 0;
     }
 
     public CompletionResult processValueSpecification(ValueSpecification topExpression, ValueSpecification currentExpression, PureModel pureModel, ProcessingContext processingContext)
