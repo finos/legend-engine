@@ -14,10 +14,8 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.duckdb;
 
-import com.google.common.base.Strings;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DriverWrapper;
 
-import java.util.List;
 import java.util.Properties;
 
 public class DuckDBDriver extends DriverWrapper

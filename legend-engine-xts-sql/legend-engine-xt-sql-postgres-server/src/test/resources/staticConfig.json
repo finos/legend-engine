@@ -12,7 +12,8 @@
   },
   "otelConfig": {
     "zipkinEndpoint": "http://localhost:9411/api/v2/spans",
-    "serviceName": "legend-postgres-sql"
+    "serviceName": "legend-postgres-sql",
+    "traceURLEndpoint": "http://localhost:9411/zipkin/traces/"
   },
   "logConfigFile": "legend-engine-xt-sql-postgres-server/src/test/resources/logback-test.xml"
 }

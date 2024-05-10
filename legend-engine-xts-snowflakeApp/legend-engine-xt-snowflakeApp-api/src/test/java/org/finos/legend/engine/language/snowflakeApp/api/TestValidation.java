@@ -15,14 +15,12 @@
 package org.finos.legend.engine.language.snowflakeApp.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.functionActivator.api.FunctionActivatorAPI;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
 import org.finos.legend.engine.functionActivator.api.input.FunctionActivatorInput;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
-import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
@@ -32,7 +30,6 @@ import org.junit.Test;
 
 import javax.ws.rs.core.Response;
 import java.util.List;
-import java.util.ServiceLoader;
 
 public class TestValidation
 {

@@ -10,6 +10,8 @@
     "platform_dsl_graph",
     "core",
     "core_generation",
-    "core_service"
+    "core_service",
+    "core_relational",
+    "platform_store_relational"
   ]
 }

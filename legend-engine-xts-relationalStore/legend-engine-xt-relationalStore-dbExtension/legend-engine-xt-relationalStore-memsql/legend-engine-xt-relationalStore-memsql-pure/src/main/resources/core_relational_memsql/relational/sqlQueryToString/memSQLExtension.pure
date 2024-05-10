@@ -1,3 +1,4 @@
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::relational::functions::sqlQueryToString::memsql::*;
 import meta::relational::functions::sqlQueryToString::default::*;
 import meta::relational::functions::sqlQueryToString::*;
@@ -31,6 +32,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForMemSQL_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
+      tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForMemSQL_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       upsertSQLQueryProcessor = processUpsertSQLQueryForMemSQL_UpsertSQLQuery_1__SqlGenerationContext_1__String_1_,
@@ -233,6 +235,22 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::dateFormatsMemSQL():String[*]
 {
    ['YYYY-MM-DD', 'MMMYYYY', 'YYYYMMDD'];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processTableFunctionParamPlaceHolder(r:RelationalOperationElement[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  assert($r->instanceOf(TableFunctionParamPlaceHolder), 'sqlQueryToString for relational element ' + $r->type().name->toOne() + ' has not been implemented yet for snowflake');
+  $r->match([
+    t: TableFunctionParamPlaceHolder[1] | $t.var->replaceVarPlaceHolderForAppGeneration($sgc)
+  ]);
+}
+
+function <<access.private>>  meta::relational::functions::sqlQueryToString::memsql::replaceVarPlaceHolderForAppGeneration(v:VarPlaceHolder[1], sgc:SqlGenerationContext[1]): String[1]
+{
+  assertEmpty($v.propertyPath, 'processing for variable with propertyPath access is not implemented');
+  assertFalse($v->isCollectionPlaceHolder() || $v->isOptionalPlaceHolder() || $v.type->instanceOf(Enumeration), 'only variables of primitive types and multiplicity one can be used');
+
+  $v.name;
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processSemiStructuredElementForMemSQL(s:RelationalOperationElement[1], sgc:SqlGenerationContext[1]): String[1]

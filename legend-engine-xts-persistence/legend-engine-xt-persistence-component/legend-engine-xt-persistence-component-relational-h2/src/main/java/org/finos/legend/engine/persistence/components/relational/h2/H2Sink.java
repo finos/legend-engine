@@ -42,13 +42,10 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.ParseJs
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ToArrayFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.TryCastFunction;
-import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
-import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
-import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.api.DataError;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.relational.api.ApiUtils;
@@ -195,7 +192,7 @@ public class H2Sink extends AnsiSqlSink
             LOGICAL_PLAN_VISITOR_BY_CLASS,
             (executor, sink, dataset) -> sink.doesTableExist(dataset),
             (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new H2DataTypeMapping()),
-            (executor, sink, dataset) -> sink.constructDatasetFromDatabase(dataset, new H2JdbcPropertiesToLogicalDataTypeMapping()));
+            (executor, sink, dataset) -> sink.constructDatasetFromDatabase(dataset, new H2JdbcPropertiesToLogicalDataTypeMapping(), false));
     }
 
     @Override
@@ -209,22 +206,6 @@ public class H2Sink extends AnsiSqlSink
         else
         {
             throw new UnsupportedOperationException("Only JdbcConnection is supported for H2 Sink");
-        }
-    }
-
-    @Override
-    public Optional<Optimizer> optimizerForCaseConversion(CaseConversion caseConversion)
-    {
-        switch (caseConversion)
-        {
-            case TO_LOWER:
-                return Optional.of(new LowerCaseOptimizer());
-            case TO_UPPER:
-                return Optional.of(new UpperCaseOptimizer());
-            case NONE:
-                return Optional.empty();
-            default:
-                throw new IllegalArgumentException("Unrecognized case conversion: " + caseConversion);
         }
     }
 

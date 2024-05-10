@@ -24,7 +24,7 @@ import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 
@@ -75,7 +75,7 @@ public class LocalLegendInterface implements LegendInterface
     @Override
     public PureModel compile(PureModelContextData pureModelContextData)
     {
-        return Compiler.compile(pureModelContextData, DeploymentMode.PROD, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
+        return Compiler.compile(pureModelContextData, DeploymentMode.PROD, Identity.getAnonymousIdentity().getName());
     }
 
     @Override

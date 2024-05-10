@@ -41,6 +41,60 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
     }
 
     @Test
+    public void testCompilationWithSchema()
+    {
+        test("###Relational\n" +
+                "Database my::Store\n" +
+                "(\n" +
+                "  Schema mySchema\n" +
+                "  (\n" +
+                "    Table myTable\n" +
+                "    (\n" +
+                "      id INTEGER,\n" +
+                "      name VARCHAR(200)\n" +
+                "    )\n" +
+                "  )\n" +
+                "\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Pure\n" +
+                "function my::func(): Any[*]\n" +
+                "{\n" +
+                "  #>{my::Store.mySchema.myTable}#->filter(\n" +
+                "    c|$c.name == 'ok'\n" +
+                "  )\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testCompilationWithSchemaError()
+    {
+        test("###Relational\n" +
+                "Database my::Store\n" +
+                "(\n" +
+                "  Schema mySchema\n" +
+                "  (\n" +
+                "    Table myTable\n" +
+                "    (\n" +
+                "      id INTEGER,\n" +
+                "      name VARCHAR(200)\n" +
+                "    )\n" +
+                "  )\n" +
+                "\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Pure\n" +
+                "function my::func(): Any[*]\n" +
+                "{\n" +
+                "  #>{my::Store.SchemaMissing.myTable}#->filter(\n" +
+                "    c|$c.name == 'ok'\n" +
+                "  )\n" +
+                "}\n", "COMPILATION error at [19:3-38]: The schema SchemaMissing can't be found in the store Store");
+    }
+
+    @Test
     public void testCompilationOfRelationStoreAccessorUnknownTable()
     {
         try

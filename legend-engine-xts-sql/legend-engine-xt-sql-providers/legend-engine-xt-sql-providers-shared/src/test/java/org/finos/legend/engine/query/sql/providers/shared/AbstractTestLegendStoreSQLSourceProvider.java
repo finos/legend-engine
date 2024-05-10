@@ -79,7 +79,7 @@ public abstract class AbstractTestLegendStoreSQLSourceProvider
                 new TableSourceArgument("coordinates", null, "group:artifact:version"),
                 new TableSourceArgument("connection", null, connectionName)));
 
-        IllegalArgumentException exception = Assert.assertThrows("Should throw given no store found", IllegalArgumentException.class, () -> getProvider().resolve(FastList.newListWith(table), null, IdentityFactoryProvider.getInstance().getAnonymousIdentity()));
+        IllegalArgumentException exception = Assert.assertThrows("Should throw given no store found", IllegalArgumentException.class, () -> getProvider().resolve(FastList.newListWith(table), null, Identity.getAnonymousIdentity()));
         Assert.assertEquals("'store' parameter is required", exception.getMessage());
     }
 
@@ -94,13 +94,13 @@ public abstract class AbstractTestLegendStoreSQLSourceProvider
                 new TableSourceArgument("connection", null, connectionName),
                 new TableSourceArgument("coordinates", null, "group:artifact:version")));
 
-        IllegalArgumentException exception = Assert.assertThrows("Should throw given no store found", IllegalArgumentException.class, () -> getProvider().resolve(FastList.newListWith(table), null, IdentityFactoryProvider.getInstance().getAnonymousIdentity()));
+        IllegalArgumentException exception = Assert.assertThrows("Should throw given no store found", IllegalArgumentException.class, () -> getProvider().resolve(FastList.newListWith(table), null, Identity.getAnonymousIdentity()));
         Assert.assertEquals("No element found for 'store'", exception.getMessage());
     }
 
     protected void testError(TableSource tableSource, String error)
     {
-        IllegalArgumentException exception = Assert.assertThrows("Should throw error", IllegalArgumentException.class, () -> getProvider().resolve(FastList.newListWith(tableSource), null, IdentityFactoryProvider.getInstance().getAnonymousIdentity()));
+        IllegalArgumentException exception = Assert.assertThrows("Should throw error", IllegalArgumentException.class, () -> getProvider().resolve(FastList.newListWith(tableSource), null, Identity.getAnonymousIdentity()));
         Assert.assertEquals(error, exception.getMessage());
     }
 

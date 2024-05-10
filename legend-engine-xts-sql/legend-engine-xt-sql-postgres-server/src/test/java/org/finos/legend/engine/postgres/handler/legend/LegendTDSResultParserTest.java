@@ -30,7 +30,7 @@ public class LegendTDSResultParserTest
     @Test
     public void testParseDataValidateResults() throws IOException
     {
-        try (InputStream pureProjectInputStream = ClassLoader.getSystemClassLoader().getResourceAsStream("legendTdsResult.json");)
+        try (InputStream pureProjectInputStream = ClassLoader.getSystemClassLoader().getResourceAsStream("org/finos/legend/engine/postgres/handler/legend/legendTdsResult.json");)
         {
             LegendTdsResultParser parser = new LegendTdsResultParser(pureProjectInputStream);
             List<LegendColumn> legendColumns = parser.getLegendColumns();
@@ -56,7 +56,7 @@ public class LegendTDSResultParserTest
     @Test
     public void testParseDataNoRelationalTypeValidateResults() throws IOException
     {
-        try (InputStream pureProjectInputStream = ClassLoader.getSystemClassLoader().getResourceAsStream("legendTdsResultNoRelationalType.json");)
+        try (InputStream pureProjectInputStream = ClassLoader.getSystemClassLoader().getResourceAsStream("org/finos/legend/engine/postgres/handler/legend/legendTdsResultNoRelationalType.json");)
         {
             LegendTdsResultParser parser = new LegendTdsResultParser(pureProjectInputStream);
             List<LegendColumn> legendColumns = parser.getLegendColumns();

@@ -19,6 +19,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 
 import java.util.List;
+import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Query
@@ -30,8 +31,11 @@ public class Query
     public String artifactId;
     public String versionId;
     public String originalVersionId;
+    @Deprecated
     public String mapping;
+    @Deprecated
     public String runtime;
+    public QueryExecutionContext executionContext;
     public String content;
     public Long lastUpdatedAt;
     public Long createdAt;
@@ -43,4 +47,6 @@ public class Query
 
     // We make it clear that we only allow a single owner
     public String owner;
+
+    public Map<String, ?> gridConfig;
 }

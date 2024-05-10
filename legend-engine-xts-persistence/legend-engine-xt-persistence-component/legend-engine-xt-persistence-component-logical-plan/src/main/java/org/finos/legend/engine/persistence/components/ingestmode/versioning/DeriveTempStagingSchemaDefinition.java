@@ -50,7 +50,6 @@ public class DeriveTempStagingSchemaDefinition implements VersioningStrategyVisi
     @Override
     public SchemaDefinition visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
     {
-
         return schemaDefBuilder.addAllFields(schemaFields).build();
     }
 

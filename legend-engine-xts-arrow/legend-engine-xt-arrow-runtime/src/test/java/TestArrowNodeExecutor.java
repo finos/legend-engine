@@ -12,13 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.TimeZone;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.VectorSchemaRoot;
-import org.apache.arrow.vector.ipc.ArrowFileWriter;
 import org.apache.arrow.vector.ipc.ArrowStreamReader;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.external.format.arrow.ArrowRuntimeExtension;
@@ -34,7 +31,6 @@ import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -73,9 +69,9 @@ public class TestArrowNodeExecutor
             conn.createStatement().execute("INSERT INTO  testtable (testInt, testString, testDate, testBool) VALUES(1,'A', '2020-01-01 00:00:00-05:00',true),( 2,null, '2020-01-01 00:00:00-02:00',false ),( 3,'B', '2020-01-01 00:00:00-05:00',false )");
             conn.createStatement().execute("INSERT INTO  testtableJoin (testIntR, testStringR) VALUES(6,'A'), (1,'B')");
 
-            RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("SELECT * FROM testtable left join  testtableJoin on testtable.testInt=testtableJoin.testIntR", null)), mockExecutionNode, FastList.newListWith(new SQLResultColumn("testInt", "INTEGER"), new SQLResultColumn("testStringR", "VARCHAR"), new SQLResultColumn("testString", "VARCHAR"), new SQLResultColumn("testDate", "TIMESTAMP"), new SQLResultColumn("testBool", "TIMESTAMP")), null, "America/New_York", conn, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), null, null, new RequestContext());
+            RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("SELECT * FROM testtable left join  testtableJoin on testtable.testInt=testtableJoin.testIntR", null)), mockExecutionNode, FastList.newListWith(new SQLResultColumn("testInt", "INTEGER"), new SQLResultColumn("testStringR", "VARCHAR"), new SQLResultColumn("testString", "VARCHAR"), new SQLResultColumn("testDate", "TIMESTAMP"), new SQLResultColumn("testBool", "TIMESTAMP")), null, "America/New_York", conn, Identity.getAnonymousIdentity(), null, null, new RequestContext());
 
-            ExternalFormatSerializeResult nodeExecute = (ExternalFormatSerializeResult) extension.executeExternalizeTDSExecutionNode(node, result, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), null);
+            ExternalFormatSerializeResult nodeExecute = (ExternalFormatSerializeResult) extension.executeExternalizeTDSExecutionNode(node, result, Identity.getAnonymousIdentity(), null);
 
 
             nodeExecute.stream(outputStream, SerializationFormat.DEFAULT);
@@ -109,9 +105,9 @@ public class TestArrowNodeExecutor
             conn.createStatement().execute("Create Table testtable (testInt INTEGER, testString VARCHAR(255), testDate TIMESTAMP, testBool BOOLEAN)");
             conn.createStatement().execute("INSERT INTO  testtable (testInt, testString, testDate, testBool) VALUES(1,'A', '2020-01-01 00:00:00-05:00',true),( 2,'B', '2020-01-01 00:00:00-02:00',false ),( 3,'B', '2020-01-01 00:00:00-05:00',false )");
 
-            RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("SELECT * FROM testtable", null)), mockExecutionNode, FastList.newListWith(new SQLResultColumn("testInt", "INTEGER"), new SQLResultColumn("testString", "VARCHAR"), new SQLResultColumn("testDate", "TIMESTAMP"), new SQLResultColumn("testBool", "TIMESTAMP")), null, "America/New_York", conn, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), null, null, new RequestContext());
+            RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("SELECT * FROM testtable", null)), mockExecutionNode, FastList.newListWith(new SQLResultColumn("testInt", "INTEGER"), new SQLResultColumn("testString", "VARCHAR"), new SQLResultColumn("testDate", "TIMESTAMP"), new SQLResultColumn("testBool", "TIMESTAMP")), null, "America/New_York", conn, Identity.getAnonymousIdentity(), null, null, new RequestContext());
 
-            ExternalFormatSerializeResult nodeExecute = (ExternalFormatSerializeResult) extension.executeExternalizeTDSExecutionNode(node, result, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), null);
+            ExternalFormatSerializeResult nodeExecute = (ExternalFormatSerializeResult) extension.executeExternalizeTDSExecutionNode(node, result, Identity.getAnonymousIdentity(), null);
 
             String expected = "TESTINT\tTESTSTRING\tTESTDATE\tTESTBOOL\n" +
                     "1\tA\t1577854800000\ttrue\n" +

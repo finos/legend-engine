@@ -18,6 +18,7 @@ public class OpenTelemetryConfig
 {
     private String zipkinEndpoint;
     private String serviceName;
+    private String traceURLEndpoint;
 
     public OpenTelemetryConfig()
     {
@@ -34,12 +35,18 @@ public class OpenTelemetryConfig
         return serviceName;
     }
 
+    public String getTraceURLEndpoint()
+    {
+        return traceURLEndpoint;
+    }
+
     @Override
     public String toString()
     {
         return "OpenTelemetryConfig{" +
                 "zipkinEndpoint='" + zipkinEndpoint + '\'' +
                 ", serviceName='" + serviceName + '\'' +
+                ", traceURLEndpoint='" + traceURLEndpoint + '\'' +
                 '}';
     }
 }

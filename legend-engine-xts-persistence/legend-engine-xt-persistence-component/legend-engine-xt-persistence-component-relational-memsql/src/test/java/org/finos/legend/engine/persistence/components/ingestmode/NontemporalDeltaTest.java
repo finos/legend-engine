@@ -66,8 +66,6 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
                 "WHERE (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`))))";
 
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
-        Assertions.assertEquals(MemsqlTestArtifacts.expectedStagingTableWithDigestCreateQuery, preActionsSqlList.get(1));
-        Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableCreateQuery, preActionsSqlList.get(2));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
         Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableIngestQuery, metaIngestSqlList.get(0));

@@ -80,7 +80,7 @@ Mapping meta::external::function::activator::snowflakeApp::tests::simpleRelation
                 (
                     firstName : personTable.FIRSTNAME,
                     age : personTable.AGE,
-                    gender:  EnumerationMapping genderEnum: personTable.FIRSTNAME
+                    gender:  EnumerationMapping genderEnum: personTable.GENDER
                 ),
                 scope([dbInc]default.personTable)
                 (
@@ -123,7 +123,7 @@ Mapping meta::external::function::activator::snowflakeApp::tests::simpleRelation
 ###Relational
 Database meta::external::function::activator::snowflakeApp::tests::dbInc
 (
-    Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT, LAST_UPDATED TIMESTAMP)
+    Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT, GENDER VARCHAR(200), LAST_UPDATED TIMESTAMP)
     Table validPersonTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
     Table PersonTableExtension (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT, birthDate DATE)
     Table differentPersonTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)

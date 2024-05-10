@@ -1,0 +1,193 @@
+import meta::external::store::rel::compile::ir::*;
+import meta::external::store::rel::compile::ir::tds::*;
+import meta::external::store::rel::compile::ir::utils::*;
+import meta::external::store::rel::mapping::*;
+import meta::external::store::rel::utils::*;
+
+function meta::external::store::rel::compile::ir::utils::describeExprType(exprType: PExprType[1]): String[1] {
+  $exprType->match([
+    t: PExprTypeClass[1]     | $t.set->describe(),
+    t: PExprTypePrimitive[1] | $t.kind->toString()
+  ])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeConstant(c: Constant[1]): String[1] {
+  $c->match([
+    v: ConstString[1]     | $v.value,
+    v: ConstInteger[1]    | $v.value->toString(),
+    v: ConstFloat[1]      | $v.value->toString(),
+    v: ConstBoolean[1]    | $v.value->toString(),
+    v: ConstStrictDate[1] | $v.value->toString(),
+    v: ConstDateTime[1]   | $v.value->toString(),
+    v: ConstEmpty[1]      | '(empty)'
+  ])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeAggregate(agg: PExprAggregate[1]): String[1] {
+  format('Aggregate(%s, %s, %s)', [$agg.map->describe(), $agg.aggregateFunction->describe(), $agg.name->orElse('[NO NAME]')])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeVariablePlaceholder(v: VariablePlaceholder[1]): String[1] {
+  format('VariablePlaceholder(%s)', $v.identifier)
+}
+
+function meta::external::store::rel::compile::ir::utils::describeAll(all: PExprAll[1]): String[1] {
+  format('All(%s)', $all.set->describe())
+}
+
+function meta::external::store::rel::compile::ir::utils::describeFilter(filter: PExprFilter[1]): String[1] {
+  format('Filter(%s, %s)', [$filter.parent->describe(), $filter.predicate->describe()])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeCast(cast: PExprCast[1]): String[1] {
+  format('Cast(%s, %s)', [$cast.parent->describe(), $cast.set->describe()])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeExists(exists: PExprExists[1]): String[1] {
+  format('Exists(%s, %s)', [$exists.parent->describe(), $exists.predicate->describe()])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeForAll(forall: PExprForAll[1]): String[1] {
+  format('ForAll(%s, %s)', [$forall.parent->describe(), $forall.predicate->describe()])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeSet(set: PExprSet[1]): String[1] {
+  format('Set(%s)', $set.set->describe())
+}
+
+function meta::external::store::rel::compile::ir::utils::describeSetAccess(setAccess: PExprSetAccess[1]): String[1] {
+  format('SetAccess(%s, %s)', [$setAccess.set->describe(), $setAccess.variable])
+}
+
+function meta::external::store::rel::compile::ir::utils::describePropertyAccess(propAccess: PExprPropertyAccess[1]): String[1] {
+  format('PropertyAccess(%s, %s)', [$propAccess.parent->describe(), $propAccess.propertyMapping->describe()])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeColumnAccess(colAccess: PExprColumnAccess[1]): String[1] {
+  format('ColumnAccess(%s, %s)', [$colAccess.parent->describe(), $colAccess.column])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeScopeTyped(scope: PExprScopeTyped[1]): String[1] {
+  /*
+   * Include all fields except `parent`.
+   */
+  format('ScopeTyped(%s, %s, %s)', [$scope.variable, $scope.exprType->describeExprType(), $scope.inner->describe()])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeScopeUntyped(scope: PExprScopeUntyped[1]): String[1] {
+  /*
+   * Include all fields except `parent`.
+   */
+  format('ScopeUntyped(%s, %s)', [$scope.variables->makeString(', '), $scope.inner->describe()])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeAt(at: PExprAt[1]): String[1] {
+  format('At(%s, %s)', [$at.parent->describe(), $at.index])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeMap(map: PExprMap[1]): String[1] {
+  format('Map(%s, %s)', [$map.parent->describe(), $map.body->describe()])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeIn(in: PExprIn[1]): String[1] {
+  format('In(%s, [%s])', [$in.parent->describe(), $in.inExprs->map(e | $e->describe())->makeString(', ')])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeProject(project: PExprProject[1]): String[1] {
+  let projections =
+    $project.projections
+      ->map(p: Pair<String,PExprScope>[1] |
+        format('Projection(%s, %s)', [$p.first, $p.second->describe()])
+      )
+      ->makeString('\n', ',\n', '\n');
+  format('Project(%s, [%s])', [$project.parent->describe(), $projections]);
+}
+
+function meta::external::store::rel::compile::ir::utils::describeRestrict(restrict: PExprRestrict[1]): String[1] {
+  format('Restrict(%s, [%s])', [$restrict.parent->describe(), $restrict.columns->makeString('[', ', ', ']')])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeIfThenElse(condition: PExprIfThenElse[1]): String[1] {
+  format('IfThenElse(%s, %s, %s)', [$condition.condition->describe(), $condition.then->describe(), $condition.else->describe()])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeMatch(match: PExprMatch[1]): String[1] {
+  let cases =
+    $match.cases
+      ->map(e: PExprScopeTyped[1] | $e->describe())
+      ->makeString('\n', ',\n', '\n');
+  format('Match(%s, Cases[%s])', [$match.parent->describe(), $cases]);
+}
+
+function meta::external::store::rel::compile::ir::utils::describeFunction(fexpr: PExprFunction<|n>[1]): String[1] {
+  format('Function(%s, %s)', [$fexpr.fn->id(), $fexpr.arguments->map(arg | $arg->describe())->joinStrings('\n')])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeGroupBy(groupby: PExprGroupBy[1]): String[1] {
+  let aggregates =
+    $groupby.aggregates
+      ->map(e: PExprAggregate[1] | $e->toString()) // TODO: provide a describe function.
+      ->makeString('\n', ',\n', '\n');
+  format('GroupBy(%s, [%s])', [$groupby.parent->describe(), $aggregates]);
+}
+
+function meta::external::store::rel::compile::ir::utils::describeCompilationStep(agg: PExprCompilationStep[1]): String[1] {
+  format('CompilationStep(%s, %s)', ['logic', 'property'])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeGroupByColumns(agg: PExprGroupByColumns[1]): String[1] {
+  format('GroupByColumns(%s)', ['groups'])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeGroupByScopes(agg: PExprGroupByScopes[1]): String[1] {
+  format('GroupByScopes(%s, %s)', ['group', 'names'])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeJoin(join: PExprTDSJoin[1]): String[1] {
+  format('Join(%s, %s, %s, %s)', [$join.type->toString(), $join.condition->describe(), $join.left->describe(), $join.right->describe()])
+}
+
+function meta::external::store::rel::compile::ir::utils::describeTDSFilter(filter: PExprTDSFilter[1]): String[1] {
+  format('TDSFilter(%s, %s)', [$filter.parent->describe(), $filter.predicate->describe()])
+}
+
+function meta::external::store::rel::compile::ir::utils::describe(expr: PExpr[1]): String[1] {
+  $expr->match([
+    expr: Constant[1]             | $expr->describeConstant(),
+    expr: PExprAggregate[1]       | $expr->describeAggregate(),
+    expr: PExprAll[1]             | $expr->describeAll(),
+    expr: PExprAt[1]              | $expr->describeAt(),
+    expr: PExprCast[1]            | $expr->describeCast(),
+    expr: PExprColumnAccess[1]    | $expr->describeColumnAccess(),
+    expr: PExprCompilationStep[1] | $expr->describeCompilationStep(),
+    expr: PExprExists[1]          | $expr->describeExists(),
+    expr: PExprFilter[1]          | $expr->describeFilter(),
+    expr: PExprForAll[1]          | $expr->describeForAll(),
+    expr: PExprFunction<|n>[1]    | $expr->describeFunction(),
+    expr: PExprGroupBy[1]         | $expr->describeGroupBy(),
+    expr: PExprGroupByColumns[1]  | $expr->describeGroupByColumns(),
+    expr: PExprGroupByScopes[1]   | $expr->describeGroupByScopes(),
+    expr: PExprIfThenElse[1]      | $expr->describeIfThenElse(),
+    expr: PExprIn[1]              | $expr->describeIn(),
+    expr: PExprMap[1]             | $expr->describeMap(),
+    expr: PExprMatch[1]           | $expr->describeMatch(),
+    expr: PExprProject[1]         | $expr->describeProject(),
+    expr: PExprPropertyAccess[1]  | $expr->describePropertyAccess(),
+    expr: PExprRestrict[1]        | $expr->describeRestrict(),
+    expr: PExprScopeTyped[1]      | $expr->describeScopeTyped(),
+    expr: PExprScopeUntyped[1]    | $expr->describeScopeUntyped(),
+    expr: PExprSet[1]             | $expr->describeSet(),
+    expr: PExprSetAccess[1]       | $expr->describeSetAccess(),
+    expr: VariablePlaceholder[1]  | $expr->describeVariablePlaceholder(),
+    expr: PExprTDSFilter[1]       | $expr->describeTDSFilter(),
+    expr: PExprTDSJoin[1]         | $expr->describeJoin()
+  ]);
+}
+
+function meta::external::store::rel::compile::ir::utils::describe(expr: PExpr[0..1]): String[1] {
+  $expr->map(e: PExpr[1] | $e->describe())->orElse('(no expr)')
+}
+
+function meta::external::store::rel::compile::ir::utils::describeLazy(expr: PExpr[0..1]): FunctionDefinition<{->String[1]}>[1] {
+  {| describe($expr) }
+}

@@ -26,10 +26,6 @@ import meta::pure::router::printer::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::utils::*;
 import meta::core::runtime::*;
-Class meta::pure::router::RoutedVariablePlaceHolder
-{
-   name : String[1];
-}
 
 function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], extensions:Extension[*]):FunctionDefinition<Any>[1]
 {
@@ -53,16 +49,14 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
       assert($unavailableVars->isEmpty(), 'Unable to resolve var(s): ' + $unavailableVars->joinStrings(','));
 
       let unResolvedVars  = $reqVars->filter(v|let resolved = $a.second->get($v.name);
-                                               $resolved.values->isEmpty() || $resolved.values->at(0)->instanceOf(RoutedVariablePlaceHolder););
+                                               $resolved.values->isEmpty() || $resolved.values->at(0)->instanceOf(meta::pure::executionPlan::PlanVarPlaceHolder););
 
       if($unResolvedVars->isNotEmpty(),
         {|
           let unRoutedFunction = ^$l(expressionSequence = $vs, openVariables=$a.second->keys());
           let routedFunction   = routeFunction($unRoutedFunction, getPlatformRoutingStrategy(), $exeCtx, $a.second, $extensions, $debug);
           let deactivatedEs = $routedFunction.expressionSequence->evaluateAndDeactivate();
-          let vars             = $a.second->put($varName->toOne(), ^List<meta::pure::executionPlan::PlanVarPlaceHolder>(values=^meta::pure::executionPlan::PlanVarPlaceHolder(type = $deactivatedEs->last().genericType.rawType->toOne(), 
-                                                                                                                        name=$varName->toOne(), multiplicity = $deactivatedEs->last()->toOne().multiplicity, 
-                                                                                                                        supportsStream = $deactivatedEs->last()->toOne().multiplicity->isToMany())));
+          let vars             = $a.second->put($varName->toOne(), createPlanVarPlaceHolderInScopeVar($varName->toOne(), $deactivatedEs->last()->toOne()));
 
           ^$a
           (
@@ -81,7 +75,8 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
                 |let re   = $vs->reactivate($a.second);
                  let vars = $a.second->put($varName->toOne(), ^List<Any>(values=$re));
                  ^$a(first=$a.first, second = $vars);,
-                |let vars   = $a.second->put($varName->toOne(), ^List<RoutedVariablePlaceHolder>(values=^RoutedVariablePlaceHolder(name=$varName->toOne())));
+                |let deactivatedEs = $routed.expressionSequence->evaluateAndDeactivate();
+                 let vars   = $a.second->put($varName->toOne(), createPlanVarPlaceHolderInScopeVar($varName->toOne(), $deactivatedEs->last()->toOne()));
                  ^$a
                  (
                    first = ^$routed(expressionSequence = $a.first.expressionSequence->concatenate($routed.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>),
@@ -103,7 +98,7 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
   let vs      = $expressions->last()->toOne();
   let varName = $vs->extractLetVariableName();
   let vars    = if($varName->isNotEmpty(),
-                   | $initStatements.second->put($varName->toOne(), ^List<RoutedVariablePlaceHolder>(values=^RoutedVariablePlaceHolder(name=$varName->toOne()))),
+                   | $initStatements.second->put($varName->toOne(), createPlanVarPlaceHolderInScopeVar($varName->toOne(), $vs->cast(@FunctionExpression).parametersValues->evaluateAndDeactivate()->at(1))), // Since its a let function, use ->at(1) parameter
                    | $initStatements.second);
   let newF    = ^$l(expressionSequence    = $vs,
                     openVariables         = $vars->keys(),
@@ -111,6 +106,18 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
 
   let routed  = routeFunction($newF, getPlatformRoutingStrategy(), $exeCtx, $vars, $extensions, $debug);
   ^$routed(expressionSequence = $initStatements.first.expressionSequence->tail()->concatenate($routed.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>);
+}
+
+function <<access.private>> meta::pure::router::createPlanVarPlaceHolderInScopeVar(varName: String[1], vs: ValueSpecification[1]): List<meta::pure::executionPlan::PlanVarPlaceHolder>[1]
+{
+   ^List<meta::pure::executionPlan::PlanVarPlaceHolder>(
+      values = ^meta::pure::executionPlan::PlanVarPlaceHolder(
+         name = $varName,
+         type = $vs.genericType.rawType->toOne(), 
+         multiplicity = $vs.multiplicity,
+         supportsStream = $vs.multiplicity->isToMany()
+      )
+   )
 }
 
 function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routingStrategy:RoutingStrategy[1], exeCtx: meta::pure::runtime::ExecutionContext[1], inScopeVars:Map<String, List<Any>>[0..1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]

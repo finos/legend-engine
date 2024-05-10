@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
@@ -23,12 +24,16 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.MutableSet;
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionExpressionBuilderRegistrationInfo;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerDispatchBuilderInfo;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -60,11 +65,16 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSp
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceSupportInfo;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import java.util.Collections;
@@ -112,18 +122,26 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                     {
                         throw new EngineException("Data space must have at least one execution context", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                     }
+                    HashSet<String> executionContextSet = new HashSet<>();
                     metamodel._executionContexts(ListIterate.collect(dataSpace.executionContexts, executionContext ->
                     {
-                        Root_meta_pure_runtime_PackageableRuntime runtime = context.resolvePackageableRuntime(executionContext.defaultRuntime.path, executionContext.defaultRuntime.sourceInformation);
-                        Mapping mapping = context.resolveMapping(executionContext.mapping.path, executionContext.mapping.sourceInformation);
-                        Root_meta_pure_data_EmbeddedData data = Objects.isNull(executionContext.testData) ? null : executionContext.testData.accept(new EmbeddedDataFirstPassBuilder(context, new ProcessingContext("Dataspace '" + metamodel._name() + "' First Pass")));
-                        return new Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceExecutionContext"))
-                                ._name(executionContext.name)
-                                ._title(executionContext.title)
-                                ._description(executionContext.description)
-                                ._mapping(mapping)
-                                ._testData(data)
-                                ._defaultRuntime(runtime);
+                        if (executionContextSet.add(executionContext.name))
+                        {
+                            Root_meta_pure_runtime_PackageableRuntime runtime = context.resolvePackageableRuntime(executionContext.defaultRuntime.path, executionContext.defaultRuntime.sourceInformation);
+                            Mapping mapping = context.resolveMapping(executionContext.mapping.path, executionContext.mapping.sourceInformation);
+                            Root_meta_pure_data_EmbeddedData data = Objects.isNull(executionContext.testData) ? null : executionContext.testData.accept(new EmbeddedDataFirstPassBuilder(context, new ProcessingContext("Dataspace '" + metamodel._name() + "' First Pass")));
+                            return new Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceExecutionContext"))
+                                    ._name(executionContext.name)
+                                    ._title(executionContext.title)
+                                    ._description(executionContext.description)
+                                    ._mapping(mapping)
+                                    ._testData(data)
+                                    ._defaultRuntime(runtime);
+                        }
+                        else
+                        {
+                            throw new EngineException("Data space execution context, " + executionContext.name + ", is not unique", executionContext.sourceInformation, EngineErrorType.COMPILATION);
+                        }
                     }));
                     Assert.assertTrue(dataSpace.defaultExecutionContext != null, () -> "Default execution context is missing", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                     Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext defaultExecutionContext = metamodel._executionContexts().toList().select(c -> dataSpace.defaultExecutionContext.equals(c._name())).getFirst();
@@ -164,39 +182,39 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                     }
 
                     // executables
-                    HashSet<String> executableTitles = new HashSet<>();
+                    HashSet<String> executableIds = new HashSet<>();
                     metamodel._executables(dataSpace.executables != null ? ListIterate.collect(dataSpace.executables, executable ->
                     {
-                        if (executableTitles.add(executable.title))
+                        if (executable instanceof DataSpacePackageableElementExecutable)
                         {
-                            if (executable instanceof DataSpacePackageableElementExecutable)
+                            return new Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpacePackageableElementExecutable"))
+                                    ._title(executable.title)
+                                    ._description(executable.description)
+                                    ._executable(context.pureModel.getPackageableElement(((DataSpacePackageableElementExecutable) executable).executable.path, ((DataSpacePackageableElementExecutable) executable).executable.sourceInformation));
+                        }
+                        else if (executable instanceof DataSpaceTemplateExecutable)
+                        {
+                            if (executableIds.add(((DataSpaceTemplateExecutable) executable).id))
                             {
-                                return new Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpacePackageableElementExecutable"))
+                                if (((DataSpaceTemplateExecutable) executable).executionContextKey != null && !dataSpace.executionContexts.stream().map(c -> c.name).collect(Collectors.toList()).contains(((DataSpaceTemplateExecutable) executable).executionContextKey))
+                                {
+                                    throw new EngineException("Data space template executable's executionContextKey, " + ((DataSpaceTemplateExecutable) executable).executionContextKey + ", is not valid. Please specify one from " + dataSpace.executionContexts.stream().map(c -> c.name).collect(Collectors.toList()).toString(), dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                                }
+                                return new Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceTemplateExecutable"))
+                                        ._id(((DataSpaceTemplateExecutable) executable).id)
                                         ._title(executable.title)
                                         ._description(executable.description)
-                                        ._executable(context.pureModel.getPackageableElement(((DataSpacePackageableElementExecutable) executable).executable.path, ((DataSpacePackageableElementExecutable) executable).executable.sourceInformation));
-                            }
-                            else if (executable instanceof DataSpaceTemplateExecutable)
-                            {
-                                    if (((DataSpaceTemplateExecutable) executable).executionContextKey != null && !dataSpace.executionContexts.stream().map(c -> c.name).collect(Collectors.toList()).contains(((DataSpaceTemplateExecutable) executable).executionContextKey))
-                                    {
-                                        throw new EngineException("Data space template executable's executionContextKey, " + ((DataSpaceTemplateExecutable) executable).executionContextKey + ", is not valid. Please specify one from " + dataSpace.executionContexts.stream().map(c -> c.name).collect(Collectors.toList()).toString(), dataSpace.sourceInformation, EngineErrorType.COMPILATION);
-                                    }
-                                    return new Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceTemplateExecutable"))
-                                            ._title(executable.title)
-                                            ._description(executable.description)
-                                            ._query(HelperValueSpecificationBuilder.buildLambda(((DataSpaceTemplateExecutable) executable).query, context))
-                                            ._executionContextKey(((DataSpaceTemplateExecutable) executable).executionContextKey);
-
+                                        ._query(HelperValueSpecificationBuilder.buildLambda(((DataSpaceTemplateExecutable) executable).query, context))
+                                        ._executionContextKey(((DataSpaceTemplateExecutable) executable).executionContextKey);
                             }
                             else
                             {
-                                throw new EngineException("Data space executables could only be template or executable", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                                throw new EngineException("Data space executable id, " + ((DataSpaceTemplateExecutable) executable).id + ", is not unique", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                             }
                         }
                         else
                         {
-                            throw new EngineException("Data space executable title, " + executable.title +  ", is not unique", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                            throw new EngineException("Data space executables could only be template or executable", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                         }
                     }) : null);
 
@@ -257,6 +275,24 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
         return org.eclipse.collections.impl.factory.Maps.mutable.of(
                 MappingIncludeDataSpace.class.getName(), new DataSpaceIncludedMappingHandler()
         );
+    }
+
+
+    @Override
+    public List<Function3<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, CompileContext, ProcessingContext, InstanceValue>> getExtraValueSpecificationBuilderForFuncExpr()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with((packageableElement, context, processingContext) ->
+        {
+            if (packageableElement instanceof Root_meta_pure_metamodel_dataSpace_DataSpace)
+            {
+                GenericType dSGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::dataSpace::DataSpace"));
+                return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
+                        ._genericType(dSGenericType)
+                        ._multiplicity(context.pureModel.getMultiplicity("one"))
+                        ._values(processingContext.peek().equals("Applying new") ? FastList.newList() : FastList.newListWith(packageableElement));
+            }
+            return null;
+        });
     }
 
     @Override
@@ -332,4 +368,31 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                 .collect(d -> Iterate.detect(d.executionContexts, e -> e.name.equals(d.defaultExecutionContext)).testData)
                 .collect(d -> EmbeddedDataCompilerHelper.getEmbeddedDataFromDataElement(d, pureModelContextData));
     }
+
+    @Override
+    public List<Function<Handlers, List<FunctionHandlerDispatchBuilderInfo>>> getExtraFunctionHandlerDispatchBuilderInfoCollectors()
+    {
+        return Collections.singletonList((handlers) ->
+                org.eclipse.collections.api.factory.Lists.mutable.with(
+                        new FunctionHandlerDispatchBuilderInfo("meta::pure::mapping::from_T_m__DataSpaceExecutionContext_1__T_m_", (List<ValueSpecification> ps) -> ps.size() == 2 && handlers.isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "DataSpaceExecutionContext".equals(ps.get(1)._genericType()._rawType()._name()))),
+                        new FunctionHandlerDispatchBuilderInfo("meta::pure::metamodel::dataSpace::get_DataSpace_1__String_1__DataSpaceExecutionContext_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && handlers.isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "DataSpace".equals(ps.get(0)._genericType()._rawType()._name())) && handlers.isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "String".equals(ps.get(1)._genericType()._rawType()._name())))
+
+                ));
+    }
+
+    @Override
+    public List<Function<Handlers, List<FunctionExpressionBuilderRegistrationInfo>>> getExtraFunctionExpressionBuilderRegistrationInfoCollectors()
+    {
+        return Collections.singletonList((handlers) ->
+                org.eclipse.collections.api.factory.Lists.mutable.with(
+                        new FunctionExpressionBuilderRegistrationInfo(org.eclipse.collections.impl.factory.Lists.mutable.with(0),
+                                handlers.m(handlers.h("meta::pure::mapping::from_T_m__DataSpaceExecutionContext_1__T_m_", false, ps -> handlers.res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && handlers.typeOne(ps.get(1), "DataSpaceExecutionContext")))
+                        ),
+                        // getter for execution parameters from execution environment
+                        new FunctionExpressionBuilderRegistrationInfo(null,
+                                handlers.m(handlers.m(handlers.h("meta::pure::metamodel::dataSpace::get_DataSpace_1__String_1__DataSpaceExecutionContext_1_", false, ps -> handlers.res("meta::pure::metamodel::dataSpace::DataSpaceExecutionContext", "one"), ps -> ps.size() == 2))))
+
+                ));
+    }
+
 }

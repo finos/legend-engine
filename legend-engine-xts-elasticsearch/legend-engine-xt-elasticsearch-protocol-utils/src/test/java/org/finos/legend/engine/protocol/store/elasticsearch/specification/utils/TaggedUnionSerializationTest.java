@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TaggedUnionSerializationTest

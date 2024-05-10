@@ -130,14 +130,24 @@ public class LogicalPlanUtils
         return getColumnsMatchCondition(mainDataSet, stagingDataSet, partitionColumns);
     }
 
-    public static Condition getPartitionColumnsDoNotMatchCondition(Dataset mainDataSet, Dataset stagingDataSet, String[] partitionColumns)
-    {
-        return getColumnsDoNotMatchCondition(mainDataSet, stagingDataSet, partitionColumns);
-    }
-
     public static Condition getPartitionColumnValueMatchInCondition(Dataset dataSet, Map<String, Set<String>> partitionFilter)
     {
         return getColumnValueMatchInCondition(dataSet, partitionFilter);
+    }
+
+    // (key1 = val11 AND key2 = val21) OR (key1 = val12 AND key2 = val22) OR ...
+    public static Condition getPartitionSpecMatchCondition(Dataset dataSet, List<Map<String, Object>> partitionSpecList)
+    {
+        return Or.of(partitionSpecList.stream()
+                 .map(partitionSpec -> And.of(
+                         partitionSpec.entrySet().stream()
+                                 .map(columnValuePair ->
+                                         Equals.of(
+                                                 FieldValue.builder().datasetRef(dataSet.datasetReference()).fieldName(columnValuePair.getKey()).build(),
+                                                 columnValuePair.getValue() instanceof Number ? ObjectValue.of(columnValuePair.getValue()) : StringValue.of((String) columnValuePair.getValue()))
+                                 )
+                        .collect(Collectors.toList()))
+        ).collect(Collectors.toList()));
     }
 
     private static Condition getColumnValueMatchInCondition(Dataset dataSet, Map<String, Set<String>> keyValuePair)

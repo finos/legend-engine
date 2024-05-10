@@ -129,17 +129,20 @@ public class JdbcHelper implements RelationalExecutionHelper
     @Override
     public void closeTransactionManager()
     {
-        try
+        if (this.transactionManager != null)
         {
-            this.transactionManager.close();
-        }
-        catch (SQLException e)
-        {
-            throw new RuntimeException(e);
-        }
-        finally
-        {
-            this.transactionManager = null;
+            try
+            {
+                this.transactionManager.close();
+            }
+            catch (SQLException e)
+            {
+                throw new RuntimeException(e);
+            }
+            finally
+            {
+                this.transactionManager = null;
+            }
         }
     }
 
@@ -256,14 +259,18 @@ public class JdbcHelper implements RelationalExecutionHelper
     }
 
     @Override
-    public Dataset constructDatasetFromDatabase(Dataset dataset, TypeMapping typeMapping)
+    public Dataset constructDatasetFromDatabase(Dataset dataset, TypeMapping typeMapping, boolean escape)
     {
         String tableName = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
         String schemaName = dataset.datasetReference().group().orElse(null);
         String databaseName = dataset.datasetReference().database().orElse(null);
+
+        String escapedTableName = tableName.replace("_", "\\_");
+        String escapedSchemaName = schemaName == null ? null : schemaName.replace("_", "\\_");
+
         try
         {
-            if (!(typeMapping instanceof  JdbcPropertiesToLogicalDataTypeMapping))
+            if (!(typeMapping instanceof JdbcPropertiesToLogicalDataTypeMapping))
             {
                 throw new IllegalStateException("Only JdbcPropertiesToLogicalDataTypeMapping allowed in constructDatasetFromDatabase");
             }
@@ -272,7 +279,7 @@ public class JdbcHelper implements RelationalExecutionHelper
 
             // Get primary keys
             Set<String> primaryKeys = new HashSet<>();
-            ResultSet primaryKeyResult = dbMetaData.getPrimaryKeys(databaseName, schemaName, tableName);
+            ResultSet primaryKeyResult = escape ? dbMetaData.getPrimaryKeys(databaseName, escapedSchemaName, escapedTableName) : dbMetaData.getPrimaryKeys(databaseName, schemaName, tableName);
             while (primaryKeyResult.next())
             {
                 primaryKeys.add(primaryKeyResult.getString(RelationalExecutionHelper.COLUMN_NAME));
@@ -321,7 +328,7 @@ public class JdbcHelper implements RelationalExecutionHelper
 
             // Get all columns
             List<Field> fields = new ArrayList<>();
-            ResultSet columnResult = dbMetaData.getColumns(databaseName, schemaName, tableName, null);
+            ResultSet columnResult = escape ? dbMetaData.getColumns(databaseName, escapedSchemaName, escapedTableName, null) : dbMetaData.getColumns(databaseName, schemaName, tableName, null);
             while (columnResult.next())
             {
                 String columnName = columnResult.getString(RelationalExecutionHelper.COLUMN_NAME);

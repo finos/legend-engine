@@ -21,7 +21,6 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.sqldo
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
-import java.util.stream.Collectors;
 
 public class StagedFilesDatasetReferenceVisitor implements LogicalPlanVisitor<StagedFilesDatasetReference>
 {

@@ -44,6 +44,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.DatabaseMetaData;
 import java.sql.JDBCType;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -115,6 +116,8 @@ public class TestUtils
     public static String dataSplitName = "data_split";
     public static String batchName = "batch";
     public static String ratingName = "rating";
+    public static String accountNumName = "accountNum";
+    public static String dimensionName = "dimension";
     public static String COMMA_DELIMITER = ",";
 
     public static HashMap<String, Set<String>> partitionFilter = new HashMap<String, Set<String>>()
@@ -132,7 +135,7 @@ public class TestUtils
     public static Field nullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
     public static Field decimalIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.DECIMAL, 10, 2)).fieldAlias(incomeName).build();
     public static Field startTime = Field.builder().name(startTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(startTimeName).build();
-    public static Field startTimeTimestamp = Field.builder().name(startTimeName).type(FieldType.of(DataType.TIMESTAMP, null, 6)).primaryKey(true).fieldAlias(startTimeName).build();
+    public static Field startTimeTimestamp = Field.builder().name(startTimeName).type(FieldType.of(DataType.TIMESTAMP, 6, null)).primaryKey(true).fieldAlias(startTimeName).build();
     public static Field expiryDate = Field.builder().name(expiryDateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).fieldAlias(expiryDateName).build();
     public static Field expiryDatePk = Field.builder().name(expiryDateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(expiryDateName).build();
     public static Field date = Field.builder().name(dateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(dateName).build();
@@ -168,7 +171,8 @@ public class TestUtils
     public static Field dataSplit = Field.builder().name(dataSplitName).type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(dataSplitName).build();
     public static Field batch = Field.builder().name(batchName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(batchName).primaryKey(true).build();
     public static Field rating = Field.builder().name(ratingName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(ratingName).build();
-
+    public static Field accountNum = Field.builder().name(accountNumName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias(accountNumName).primaryKey(true).build();
+    public static Field dimension = Field.builder().name(dimensionName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias(dimensionName).primaryKey(true).build();
 
     public static DatasetDefinition getBasicMainTable()
     {
@@ -1225,6 +1229,23 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getSchemaEvolutionAddColumnMainTableUpperCase()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName.toUpperCase())
+            .name(mainTableName.toUpperCase())
+            .schema(SchemaDefinition.builder()
+                .addFields(id.withName(idName.toUpperCase()))
+                .addFields(name.withName(nameName.toUpperCase()))
+                .addFields(startTime.withName(startTimeName.toUpperCase()))
+                .addFields(expiryDate.withName(expiryDateName.toUpperCase()))
+                .addFields(digest.withName(digestName.toUpperCase()))
+                .addFields(batchUpdateTimestamp.withName(batchUpdateTimeName.toUpperCase()))
+                .addFields(batchId.withName(batchIdName.toUpperCase()))
+                .build())
+            .build();
+    }
+
     public static DatasetDefinition expectedMainTableSchema()
     {
         return DatasetDefinition.builder()
@@ -1447,6 +1468,19 @@ public class TestUtils
                 }
             }
         }
+    }
+
+    // This is to check the actual database table - what are the columns of a table
+    public static List<String> getColumnsFromTable(Connection connection, String databaseName, String schemaName, String tableName) throws SQLException
+    {
+        DatabaseMetaData dbMetaData = connection.getMetaData();
+        ResultSet columnResult = dbMetaData.getColumns(databaseName, schemaName, tableName, null);
+        List<String> columnNames = new ArrayList<>();
+        while (columnResult.next())
+        {
+            columnNames.add(columnResult.getString(RelationalExecutionHelper.COLUMN_NAME));
+        }
+        return columnNames;
     }
 
     // This is to check the actual database table - whether columns have the right nullability

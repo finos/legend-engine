@@ -16,7 +16,6 @@ package org.finos.legend.engine.protocol.pure.v1.extension;
 
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
-import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.ServiceLoader;

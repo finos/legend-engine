@@ -17,6 +17,7 @@ package org.finos.legend.engine.persistence.components.scenarios;
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOp;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
 
@@ -93,5 +94,20 @@ public class UnitemporalSnapshotBatchIdBasedScenarios extends BaseTest
                 .putAllPartitionValuesByField(partitionFilter)
                 .build();
         return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithBaseSchemaAndDigest, ingestMode);
+    }
+
+    public TestScenario BATCH_ID_BASED__WITH_PARTITION_SPEC_LIST__NO_DEDUP__NO_VERSION()
+    {
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+                .digestField(digestField)
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName(batchIdInField)
+                        .batchIdOutName(batchIdOutField)
+                        .build())
+                .addAllPartitionFields(Arrays.asList(partitionKeysMulti))
+                .addAllPartitionSpecList(partitionSpecList())
+                .emptyDatasetHandling(DeleteTargetData.builder().build())
+                .build();
+        return new TestScenario(mainTableMultiPartitionsBased, stagingTableWithMultiPartitions, ingestMode);
     }
 }

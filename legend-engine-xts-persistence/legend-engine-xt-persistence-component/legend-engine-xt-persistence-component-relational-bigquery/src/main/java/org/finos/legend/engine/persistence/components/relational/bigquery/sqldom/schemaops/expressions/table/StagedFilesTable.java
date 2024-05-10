@@ -15,7 +15,6 @@
 package org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schemaops.expressions.table;
 
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
-import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.table.TableLike;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 

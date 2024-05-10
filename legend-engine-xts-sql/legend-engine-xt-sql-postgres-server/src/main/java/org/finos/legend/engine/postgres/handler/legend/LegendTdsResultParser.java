@@ -25,8 +25,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
 import static java.util.Objects.requireNonNull;
+
 import java.util.stream.Collectors;
+import org.finos.legend.engine.postgres.PostgresServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,10 +153,10 @@ public class LegendTdsResultParser
                     value = null;
                     break;
                 case VALUE_NUMBER_INT:
-                    value = parser.getIntValue();
+                    value = parser.getLongValue();
                     break;
                 case VALUE_NUMBER_FLOAT:
-                    value = parser.getFloatValue();
+                    value = parser.getDoubleValue();
                     break;
                 case VALUE_TRUE:
                     value = parser.getBooleanValue();
@@ -226,9 +229,9 @@ public class LegendTdsResultParser
     {
         if (actualToken == null || !expectedTokens.contains(actualToken))
         {
-            throw new RuntimeException("" +
+            throw new PostgresServerException("Expected: '" +
                     expectedTokens.stream().map(o -> Objects.toString(o)).collect(Collectors.joining(", "))
-                    + "', Found '" + actualToken);
+                    + "', Found: '" + actualToken + "'");
         }
     }
 
@@ -237,7 +240,7 @@ public class LegendTdsResultParser
     {
         if (actualFieldName == null || !expectedFieldName.equals(actualFieldName))
         {
-            throw new RuntimeException("Failed to parse JSON expected '" + expectedFieldName + "', Found '" + actualFieldName);
+            throw new PostgresServerException("Failed to parse JSON expected '" + expectedFieldName + "', Found '" + actualFieldName);
         }
     }
 }

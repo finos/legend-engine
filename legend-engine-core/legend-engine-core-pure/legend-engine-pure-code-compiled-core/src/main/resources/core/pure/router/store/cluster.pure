@@ -434,18 +434,33 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                v:VariableExpression[1]|print(if($debug.debug,|$v->asString()->debug($debug.space+'Var: '),|''));
                                        ^ClusterResponse(cluster=$v);,
                c:StoreMappingClusteredValueSpecification[1] | ^ClusterResponse(cluster = $c),
-               t:TDSRoutedValueSpecification[1] | ^ClusterResponse(cluster = ^StoreMappingClusteredValueSpecification(
-                                                                                genericType  = $t.genericType,
-                                                                                multiplicity = $t.multiplicity,
-                                                                                s = $extensions->meta::pure::extension::storeContractFromStore($t.store),
-                                                                                store = $t.store,
-                                                                                mapping = $t.mapping,
-                                                                                runtime = $t.runtime,
-                                                                                openVars = $openVariables,
-                                                                                val = $t,
-                                                                                exeCtx = $t.executionContext,
-                                                                                executable = true
-                                                                              )),
+               t:TDSRoutedValueSpecification[1] |
+                    let cluster = if ($t.mapping->isEmpty(),
+                        | ^StoreClusteredValueSpecification(
+                                                            genericType  = $t.genericType,
+                                                            multiplicity = $t.multiplicity,
+                                                            s = $extensions->meta::pure::extension::storeContractFromStore($t.store),
+                                                            store = $t.store,
+                                                            runtime = $t.runtime,
+                                                            openVars = $openVariables,
+                                                            val = $t,
+                                                            exeCtx = $t.executionContext,
+                                                            executable = true
+                                                        ),
+                        | ^StoreMappingClusteredValueSpecification(
+                                                              genericType  = $t.genericType,
+                                                              multiplicity = $t.multiplicity,
+                                                              s = $extensions->meta::pure::extension::storeContractFromStore($t.store),
+                                                              store = $t.store,
+                                                              mapping = $t.mapping->toOne(),
+                                                              runtime = $t.runtime,
+                                                              openVars = $openVariables,
+                                                              val = $t,
+                                                              exeCtx = $t.executionContext,
+                                                              executable = true
+                                                        )
+                    );
+                    ^ClusterResponse(cluster = $cluster);,
                s:StoreRoutedValueSpecification[1]|
                       let processed = $s.value->cluster([], $openVariables, $s.executionContext, ^$debug(space = $debug.space+'   '), $analyticsDecision, $extensions);
                       if ($processed.cluster->instanceOf(StoreClusteredValueSpecification),

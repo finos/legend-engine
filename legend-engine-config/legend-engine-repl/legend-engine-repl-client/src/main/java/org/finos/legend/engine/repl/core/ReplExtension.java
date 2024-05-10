@@ -48,7 +48,7 @@ public interface ReplExtension extends LegendExtension
 
     String print(Result res);
 
-    void setClient(Client client);
-
     MutableList<String> generateDynamicContent(String code);
+
+    void initialize(Client client);
 }

@@ -15,7 +15,6 @@
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
 @Deprecated

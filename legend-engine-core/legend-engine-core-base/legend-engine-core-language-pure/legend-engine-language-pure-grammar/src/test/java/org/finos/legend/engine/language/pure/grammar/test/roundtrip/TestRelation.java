@@ -68,4 +68,16 @@ public class TestRelation
         testLambda("|#>{path::Store.table}#->extend(~[a, b])");
     }
 
+    @Test
+    public void testSimpleProject()
+    {
+        testLambda("|test::Person.all()->project(~[mycol:x|$x.name])");
+    }
+
+    @Test
+    public void testProject()
+    {
+        testLambda("|test::Person.all()->project(~[first:x|$x.name, second:x|$x.val])");
+    }
+
 }

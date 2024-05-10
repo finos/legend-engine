@@ -332,8 +332,11 @@ class BulkLoadPlanner extends Planner
     public LogicalPlan buildLogicalPlanForPreActions(Resources resources)
     {
         List<Operation> operations = new ArrayList<>();
-        operations.add(Create.of(true, mainDataset()));
-        operations.add(Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()));
+        if (!options().skipMainAndMetadataDatasetCreation())
+        {
+            operations.add(Create.of(true, mainDataset()));
+            operations.add(Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()));
+        }
         if (!transformWhileCopy)
         {
             operations.add(Create.of(false, externalDataset));

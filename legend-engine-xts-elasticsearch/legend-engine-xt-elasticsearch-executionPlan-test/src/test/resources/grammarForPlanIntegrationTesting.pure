@@ -55,3 +55,30 @@ function abc::abc::indexToTDSGroupByFunction(): TabularDataSet[1]
 {
     indexToTDS(abc::abc::Store, 'index1')->from(abc::abc::EmptyMapping, abc::abc::Runtime)->groupBy(['prop1', '_id'], agg('count', r | $r.getString('prop1'), agg | $agg->count()));
 }
+
+// Check to see if the fn compiles
+function abc::abc::functionWithMappingAndRuntimeParam(mapping: meta::pure::mapping::Mapping[1], runtime: meta::pure::runtime::PackageableRuntime[1]): TabularDataSet[1]
+{
+  indexToTDS(abc::abc::Store, 'index1')->from(
+    $mapping,
+    $runtime
+  );
+}
+
+function abc::abc::functionWithMappingAndRuntimeProperty(): TabularDataSet[1]
+{
+  let mapping = abc::abc::EmptyMapping;
+  let runtime = abc::abc::Runtime;
+  indexToTDS(abc::abc::Store, 'index1')->from(
+    $mapping,
+    $runtime
+  );
+}
+
+function abc::abc::functionWithRuntimeProperty(): TabularDataSet[1]
+{
+  let runtime = abc::abc::Runtime;
+  indexToTDS(abc::abc::Store, 'index1')->from(
+    $runtime
+  );
+}

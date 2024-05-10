@@ -48,6 +48,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchemaSet;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.RelationalMapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
@@ -100,6 +101,7 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                         .withSubtype(Unit.class, "unit")
                         .withSubtype(ExternalFormatSchemaSet.class, "externalFormatSchemaSet")
                         .withSubtype(Binding.class, "binding")
+                        .withSubtype(RelationalMapper.class, "relationalMapper")
                         .build(),
                 // Runtime
                 ProtocolSubTypeInfo.newBuilder(Runtime.class)
@@ -172,6 +174,7 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 .withKeyValue(DataElement.class, "meta::pure::data::DataElement")
                 .withKeyValue(ExternalFormatSchemaSet.class, "meta::external::format::shared::metamodel::SchemaSet")
                 .withKeyValue(Binding.class, "meta::external::format::shared::binding::Binding")
-                .withKeyValue(SectionIndex.class, "meta::pure::metamodel::section::SectionIndex");
+                .withKeyValue(SectionIndex.class, "meta::pure::metamodel::section::SectionIndex")
+                .withKeyValue(RelationalMapper.class, "meta::relational::metamodel::RelationalMapper");
     }
 }

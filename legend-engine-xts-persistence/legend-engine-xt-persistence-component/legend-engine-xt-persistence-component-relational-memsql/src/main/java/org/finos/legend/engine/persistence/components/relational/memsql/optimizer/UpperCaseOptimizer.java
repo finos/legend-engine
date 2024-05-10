@@ -14,12 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.memsql.optimizer;
 
-import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
-import org.finos.legend.engine.persistence.components.relational.memsql.sqldom.schemaops.statements.AlterTable;
-import org.finos.legend.engine.persistence.components.relational.memsql.sqldom.schemaops.statements.ShowCommand;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.table.Table;
 
-import java.util.function.Function;
 
 public class UpperCaseOptimizer extends StringCaseOptimizer
 {

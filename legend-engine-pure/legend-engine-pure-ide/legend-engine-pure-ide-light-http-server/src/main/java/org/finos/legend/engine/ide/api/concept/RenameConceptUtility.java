@@ -16,7 +16,6 @@ package org.finos.legend.engine.ide.api.concept;
 
 import org.eclipse.collections.api.block.predicate.Predicate;
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.ide.api.concept.AbstractRenameConceptEntry;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

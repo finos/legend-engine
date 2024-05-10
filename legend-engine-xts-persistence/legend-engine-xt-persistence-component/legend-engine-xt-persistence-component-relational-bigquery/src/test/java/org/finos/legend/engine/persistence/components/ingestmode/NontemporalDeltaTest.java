@@ -71,8 +71,7 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
             "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'))";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
-        Assertions.assertEquals(BigQueryTestArtifacts.expectedStagingTableWithDigestCreateQuery, preActionsSqlList.get(1));
-        Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, preActionsSqlList.get(2));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, preActionsSqlList.get(1));
         Assertions.assertEquals(mergeSql, milestoningSqlList.get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableIngestQuery, metaIngestSqlList.get(0));
 

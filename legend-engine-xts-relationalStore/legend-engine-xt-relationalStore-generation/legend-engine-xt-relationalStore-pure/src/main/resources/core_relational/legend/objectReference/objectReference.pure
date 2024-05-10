@@ -74,7 +74,7 @@ function meta::alloy::objectReference::parseAlloyObjectReferenceV1(ref : String[
 
    if($type->toLower() == 'relational',
       |parseAlloyRelationalStoreObjectReferenceV1($ref->substring($typeEnd+1), $lengthStringSize, $type),
-      |fail('Not Supported Yet!!'); []->newMap(););
+      |fail('Not Supported Yet!!'); [pair('x',$type)]->newMap(););
 }
 
 function meta::alloy::objectReference::parseAlloyRelationalStoreObjectReferenceV1(ref : String[1], lengthStringSize:Integer[1], type:String[1]):Map<String, Any>[1]

@@ -52,9 +52,8 @@ public class AppendOnlyTest extends AppendOnlyTestCases
                 "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN') " +
                 "FROM \"mydb\".\"staging\" as stage)";
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTableCreateQueryWithNoPKs, preActionsSqlList.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseStagingTableCreateQueryWithNoPKs, preActionsSqlList.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSqlList.get(2));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedLockInfoTableCreateQuery, preActionsSqlList.get(3));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSqlList.get(1));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedLockInfoTableCreateQuery, preActionsSqlList.get(2));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
 
         Assertions.assertEquals(lockInitializedQuery, initializeLockSql.get(0));

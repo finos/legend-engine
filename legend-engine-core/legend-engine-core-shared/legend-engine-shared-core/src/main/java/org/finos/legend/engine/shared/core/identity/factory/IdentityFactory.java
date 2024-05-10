@@ -15,7 +15,6 @@
 package org.finos.legend.engine.shared.core.identity.factory;
 
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.shared.core.extension.LegendConnectionExtension;
 import org.finos.legend.engine.shared.core.extension.LegendExtension;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.pac4j.core.profile.CommonProfile;
@@ -29,10 +28,6 @@ public interface IdentityFactory extends LegendExtension
     Identity makeIdentity(Subject subject);
 
     Identity makeIdentity(MutableList<CommonProfile> profiles);
-
-    Identity makeIdentityForTesting(String name);
-
-    Identity getAnonymousIdentity();
 
     /*
         A helper function to translate from Identity to Profile.

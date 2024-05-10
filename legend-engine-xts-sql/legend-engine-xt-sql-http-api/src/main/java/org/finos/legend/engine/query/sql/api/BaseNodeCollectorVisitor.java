@@ -16,7 +16,6 @@
 package org.finos.legend.engine.query.sql.api;
 
 import org.eclipse.collections.impl.list.mutable.FastList;
-import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.sql.metamodel.AliasedRelation;
 import org.finos.legend.engine.protocol.sql.metamodel.AllColumns;
@@ -80,7 +79,6 @@ import org.finos.legend.engine.protocol.sql.metamodel.WindowFrame;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
 {

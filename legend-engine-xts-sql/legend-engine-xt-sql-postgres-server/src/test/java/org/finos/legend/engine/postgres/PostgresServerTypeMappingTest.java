@@ -16,6 +16,7 @@ package org.finos.legend.engine.postgres;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import java.sql.Connection;
 import java.sql.Date;
@@ -27,19 +28,26 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+
 import java.util.TimeZone;
 import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.auth.NoPasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.handler.legend.LegendExecutionService;
 import org.finos.legend.engine.postgres.handler.legend.LegendHttpClient;
+
 import static org.finos.legend.engine.postgres.handler.legend.LegendResultSet.TIMESTAMP_FORMATTER;
+
 import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
 import static org.finos.legend.engine.postgres.handler.legend.LegendDataType.*;
 
 
@@ -50,6 +58,10 @@ public class PostgresServerTypeMappingTest
     public static WireMockRule wireMockRule = new WireMockRule(options().dynamicPort(), false);
     private static TestPostgresServer testPostgresServer;
 
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
+
+
     @BeforeClass
     public static void setUpClass()
     {
@@ -57,7 +69,9 @@ public class PostgresServerTypeMappingTest
         LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);
-        testPostgresServer = new TestPostgresServer(serverConfig, legendSessionFactory, (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()));
+        testPostgresServer = new TestPostgresServer(serverConfig, legendSessionFactory,
+                (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()),
+                new Messages((exception) -> exception.getMessage()));
         testPostgresServer.startUp();
         //stub to handle miscellaneous message that we don't care about
         wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/executeQueryString"))
@@ -92,6 +106,15 @@ public class PostgresServerTypeMappingTest
         validate(BOOLEAN, "null", "bool", null);
     }
 
+    @Test()
+    public void testBooleanInvalidData() throws Exception
+    {
+        expectedException.expect(Exception.class);
+        expectedException.expectMessage("ERROR: Unexpected data type for value '1234....' in column 'column1'." +
+                " Expected data type 'java.lang.Boolean', actual data type 'java.lang.Long'");
+        validate(BOOLEAN, "1234", "bool", null);
+    }
+
     @Test
     public void testDateTime() throws Exception
     {
@@ -103,6 +126,17 @@ public class PostgresServerTypeMappingTest
         validate(DATE_TIME, "null", "timestamp", null);
     }
 
+    @Test()
+    public void testDateTimeInvalidData() throws Exception
+    {
+        //invalid date format
+        String timeStamp = "20200607T04:15:27.000000000+0000";
+        expectedException.expect(Exception.class);
+        expectedException.expectMessage("ERROR: Unexpected value '20200....' in column 'column1'." +
+                " Expected data type 'java.lang.String', value format 'Date (YYYY-MM-DD) or Timestamp (YYYY-MM-DDThh:mm:ss.000000000+0000)");
+        validate(DATE_TIME, "\"" + timeStamp + "\"", null, null);
+    }
+
     @Test
     public void testDateAsTimeStamp() throws Exception
     {
@@ -112,6 +146,16 @@ public class PostgresServerTypeMappingTest
         validate(DATE, "\"" + timeStamp + "\"", "timestamp", expected);
     }
 
+    @Test()
+    public void testDateAsTimeStampInvalidData() throws Exception
+    {
+        //invalid date format
+        String timeStamp = "2020-Jun-07T04:15:27.000000000+0000";
+        expectedException.expect(Exception.class);
+        expectedException.expectMessage("ERROR: Unexpected value '2020-....' in column 'column1'." +
+                " Expected data type 'java.lang.String', value format 'Date (YYYY-MM-DD) or Timestamp (YYYY-MM-DDThh:mm:ss.000000000+0000)");
+        validate(DATE, "\"" + timeStamp + "\"", null, null);
+    }
 
     @Test
     public void testDateAsDate() throws Exception
@@ -121,6 +165,17 @@ public class PostgresServerTypeMappingTest
         Timestamp expected = new Timestamp(temporalAccessor.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli());
 
         validate(DATE, "\"" + timeStamp + "\"", "timestamp", expected);
+    }
+
+    @Test()
+    public void testDateAsDateInvalidData() throws Exception
+    {
+        //invalid date format
+        String timeStamp = "20200607";
+        expectedException.expect(Exception.class);
+        expectedException.expectMessage("ERROR: Unexpected value '20200....' in column 'column1'. " +
+                "Expected data type 'java.lang.String', value format 'Date (YYYY-MM-DD) or Timestamp (YYYY-MM-DDThh:mm:ss.000000000+0000)'");
+        validate(DATE, "\"" + timeStamp + "\"", null, null);
     }
 
     @Test
@@ -137,24 +192,65 @@ public class PostgresServerTypeMappingTest
     }
 
 
+    @Test()
+    public void testStrictDateInvalidData() throws Exception
+    {
+        //invalid date format
+        String date = "20200607";
+        expectedException.expect(Exception.class);
+        expectedException.expectMessage("ERROR: Unexpected value '20200....' in column 'column1'." +
+                " Expected data type 'java.lang.String', value format 'Date (YYYY-MM-DD)'");
+        validate(STRICT_DATE, "\"" + date + "\"", null, null);
+    }
+
     @Test
     public void testFloat() throws Exception
     {
-        validate(FLOAT, "5.5", "float4", 5.5F);
-        validate(FLOAT, "null", "float4", null);
+        validate(FLOAT, "5.5", "float8", 5.5D);
+        validate(FLOAT, "null", "float8", null);
+        validate(FLOAT, "2645198855588.533433343434", "float8", 2645198855588.533433343434D);
+    }
+
+
+    @Test()
+    public void testFloatInvalidData() throws Exception
+    {
+        expectedException.expect(Exception.class);
+        expectedException.expectMessage("ERROR: Unexpected data type for value 'foooo....' in column 'column1'." +
+                " Expected data type 'java.lang.Number', actual data type 'java.lang.String'");
+        validate(FLOAT, "\"fooooo\"", null, null);
     }
 
     @Test
     public void testInteger() throws Exception
     {
-        validate(INTEGER, "5", "int4", 5);
-        validate(INTEGER, "null", "int4", null);
+        validate(INTEGER, "5", "int8", 5L);
+        validate(INTEGER, "2645198855588", "int8", 2645198855588L);
+        validate(INTEGER, "null", "int8", null);
+    }
+
+    @Test()
+    public void testIntegerInvalidData() throws Exception
+    {
+        expectedException.expect(Exception.class);
+        expectedException.expectMessage("ERROR: Unexpected data type for value 'foo....' in column 'column1'. " +
+                "Expected data type 'java.lang.Number', actual data type 'java.lang.String'");
+        validate(INTEGER, "\"foo\"", null, null);
     }
 
     @Test
     public void testNumberAsInteger() throws Exception
     {
         validate(NUMBER, "5", "float8", 5.0D);
+    }
+
+    @Test()
+    public void testNumberAsIntegerInvalidData() throws Exception
+    {
+        expectedException.expect(Exception.class);
+        expectedException.expectMessage("ERROR: Unexpected data type for value 'foo....' in column 'column1'. " +
+                "Expected data type 'java.lang.Number', actual data type 'java.lang.String'");
+        validate(NUMBER, "\"foo\"", null, null);
     }
 
     @Test
@@ -194,6 +290,7 @@ public class PostgresServerTypeMappingTest
             Assert.assertEquals(expectedValue, object);
         }
     }
+
 
     private static String buildLegendResponseMessage(String columnType, String value)
     {

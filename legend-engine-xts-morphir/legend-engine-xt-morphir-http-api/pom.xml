@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-xts-morphir</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.43.1-SNAPSHOT</version>
+        <version>4.45.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-morphir-http-api</artifactId>
@@ -35,6 +35,12 @@
                         <id>httpEnforcement</id>
                         <configuration>
                             <skip>false</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>default</id>
+                        <configuration>
+                            <skip>true</skip>
                         </configuration>
                     </execution>
                 </executions>
