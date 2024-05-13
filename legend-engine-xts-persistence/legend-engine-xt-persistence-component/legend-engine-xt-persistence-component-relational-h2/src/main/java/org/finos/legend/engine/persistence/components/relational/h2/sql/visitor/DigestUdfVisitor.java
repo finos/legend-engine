@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.h2.sql.visitor;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
@@ -27,7 +28,7 @@ import java.util.Map;
 public class DigestUdfVisitor extends org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DigestUdfVisitor
 {
 
-    protected Value getColumnValueAsStringType(Value value, DataType dataType, Map<DataType, String> typeConversionUdfNames)
+    protected Value getColumnValueAsStringType(Value value, FieldType dataType, Map<DataType, String> typeConversionUdfNames)
     {
         if (value instanceof StagedFilesFieldValue)
         {
@@ -37,9 +38,9 @@ public class DigestUdfVisitor extends org.finos.legend.engine.persistence.compon
         }
 
         // Else need to convert the field into a String
-        if (typeConversionUdfNames.containsKey(dataType))
+        if (typeConversionUdfNames.containsKey(dataType.dataType()))
         {
-            return org.finos.legend.engine.persistence.components.logicalplan.values.Udf.builder().udfName(typeConversionUdfNames.get(dataType)).addParameters(value).build();
+            return org.finos.legend.engine.persistence.components.logicalplan.values.Udf.builder().udfName(typeConversionUdfNames.get(dataType.dataType())).addParameters(value).build();
         }
         else
         {

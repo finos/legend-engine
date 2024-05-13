@@ -275,7 +275,7 @@ class BulkLoadPlanner extends Planner
         List<Value> fieldsToInsert = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
 
         // Add digest
-        List<DataType> fieldTypes = stagingDataset().schema().fields().stream().map(field -> field.type().dataType()).collect(Collectors.toList());
+        List<FieldType> fieldTypes = stagingDataset().schema().fields().stream().map(field -> field.type()).collect(Collectors.toList());
         ingestMode().digestGenStrategy().accept(new DigestGenerationHandler(mainDataset(), fieldsToSelect, fieldsToInsert, fieldTypes));
 
         // Add batch_id field
@@ -304,7 +304,7 @@ class BulkLoadPlanner extends Planner
         List<Value> fieldsToInsertIntoMain = new ArrayList<>(externalDataset.schemaReference().fieldValues());
 
         // Add digest
-        List<DataType> fieldTypes = externalDataset.schema().fields().stream().map(field -> field.type().dataType()).collect(Collectors.toList());
+        List<FieldType> fieldTypes = externalDataset.schema().fields().stream().map(field -> field.type()).collect(Collectors.toList());
         ingestMode().digestGenStrategy().accept(new DigestGenerationHandler(mainDataset(), fieldsToSelect, fieldsToInsertIntoMain, fieldTypes));
 
         // Add batch_id field
