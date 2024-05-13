@@ -30,6 +30,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Execut
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaClass;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.KerberosUtils;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
@@ -53,7 +54,7 @@ public class ExecutionNodeJavaPlatformHelper
     {
         Result childResult = node.executionNodes().isEmpty() ? null : node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(identity, executionState));
         ExecutionNodeContext context = contextFactory.create(executionState, childResult);
-        Subject subject = identity.getSubjectFromIdentity();
+        Subject subject = KerberosUtils.getSubjectFromIdentity(identity);
         return subject == null
                 ? callJavaExecute(node, context, executionState, null)
                 : Subject.doAs(subject, (PrivilegedAction<Result>) () -> callJavaExecute(node, context, executionState, identity));

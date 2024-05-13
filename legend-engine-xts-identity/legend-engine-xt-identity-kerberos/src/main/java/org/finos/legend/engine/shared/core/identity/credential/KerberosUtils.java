@@ -14,10 +14,12 @@
 
 package org.finos.legend.engine.shared.core.identity.credential;
 
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 import javax.security.auth.Subject;
 import java.security.PrivilegedActionException;
+import java.util.Objects;
 
 public class KerberosUtils
 {
@@ -32,5 +34,13 @@ public class KerberosUtils
     {
         LegendKerberosCredential wrapper = identity.getCredential(LegendKerberosCredential.class).get();
         return Subject.doAs(wrapper.getSubject(), action);
+    }
+
+    public static Subject getSubjectFromIdentity(Identity identity)
+    {
+        return LazyIterate.selectInstancesOf(identity.getCredentials(), LegendKerberosCredential.class)
+                .select(Objects::nonNull)
+                .collect(LegendKerberosCredential::getSubject)
+                .getFirst();
     }
 }
