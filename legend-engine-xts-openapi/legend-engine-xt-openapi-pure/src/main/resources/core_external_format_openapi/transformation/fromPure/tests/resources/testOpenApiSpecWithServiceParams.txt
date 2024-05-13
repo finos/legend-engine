@@ -91,6 +91,201 @@
   },
   "components": {
     "schemas": {
+      "Any": {
+        "type": "object",
+        "properties": {}
+      },
+      "PropertyMappingsImplementation": {
+        "type": "object",
+        "properties": {
+          "propertyMappings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PropertyMapping"
+            }
+          },
+          "stores": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Store"
+            }
+          }
+        }
+      },
+      "DataType": {
+        "type": "object",
+        "properties": {}
+      },
+      "Import": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        }
+      },
+      "Association": {
+        "type": "object",
+        "properties": {
+          "properties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Property"
+            }
+          },
+          "originalMilestonedProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Property"
+            }
+          },
+          "qualifiedProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QualifiedProperty"
+            }
+          }
+        }
+      },
+      "Store": {
+        "type": "object",
+        "properties": {
+          "includes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Store"
+            }
+          }
+        }
+      },
+      "Type": {
+        "type": "object",
+        "properties": {
+          "generalizations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Generalization"
+            }
+          },
+          "name": {
+            "type": "string"
+          },
+          "specializations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Generalization"
+            }
+          }
+        }
+      },
+      "Constraint": {
+        "type": "object",
+        "properties": {
+          "functionDefinition": {
+            "$ref": "#/components/schemas/FunctionDefinition"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "enforcementLevel": {
+            "type": "string"
+          },
+          "messageFunction": {
+            "$ref": "#/components/schemas/FunctionDefinition"
+          },
+          "externalId": {
+            "type": "string"
+          }
+        }
+      },
+      "DefaultValue": {
+        "type": "object",
+        "properties": {
+          "functionDefinition": {
+            "$ref": "#/components/schemas/FunctionDefinition"
+          }
+        }
+      },
+      "PackageableElement": {
+        "type": "object",
+        "properties": {
+          "package": {
+            "$ref": "#/components/schemas/Package"
+          },
+          "referenceUsages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReferenceUsage"
+            }
+          }
+        }
+      },
+      "Property": {
+        "type": "object",
+        "properties": {
+          "aggregation": {
+            "type": "string",
+            "enum": [
+              "None",
+              "Shared",
+              "Composite"
+            ]
+          },
+          "defaultValue": {
+            "$ref": "#/components/schemas/DefaultValue"
+          }
+        }
+      },
+      "Stereotype": {
+        "type": "object",
+        "properties": {}
+      },
+      "FunctionDefinition": {
+        "type": "object",
+        "properties": {
+          "expressionSequence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValueSpecification"
+            }
+          }
+        }
+      },
+      "TypeParameter": {
+        "type": "object",
+        "properties": {
+          "lowerBound": {
+            "$ref": "#/components/schemas/GenericType"
+          },
+          "name": {
+            "type": "string"
+          },
+          "contravariant": {
+            "type": "boolean"
+          },
+          "upperBound": {
+            "$ref": "#/components/schemas/GenericType"
+          }
+        }
+      },
+      "AnnotatedElement": {
+        "type": "object",
+        "properties": {}
+      },
+      "ReferenceUsage": {
+        "type": "object",
+        "properties": {
+          "propertyName": {
+            "type": "string"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/Any"
+          },
+          "offset": {
+            "type": "integer"
+          }
+        }
+      },
       "TabularDataSet": {
         "type": "object",
         "properties": {
@@ -108,13 +303,207 @@
           }
         }
       },
-      "DataType": {
+      "QualifiedProperty": {
         "type": "object",
         "properties": {}
       },
-      "Any": {
+      "Test": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "testable": {
+            "$ref": "#/components/schemas/Testable"
+          }
+        }
+      },
+      "Enum": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "Tag": {
         "type": "object",
         "properties": {}
+      },
+      "MappingInclude": {
+        "type": "object",
+        "properties": {
+          "storeSubstitutions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubstituteStore"
+            }
+          },
+          "owner": {
+            "$ref": "#/components/schemas/Mapping"
+          },
+          "included": {
+            "$ref": "#/components/schemas/Mapping"
+          }
+        }
+      },
+      "PropertyMapping": {
+        "type": "object",
+        "properties": {
+          "localMappingProperty": {
+            "type": "boolean"
+          },
+          "store": {
+            "$ref": "#/components/schemas/Store"
+          },
+          "localMappingPropertyType": {
+            "$ref": "#/components/schemas/Type"
+          },
+          "localMappingPropertyMultiplicity": {
+            "$ref": "#/components/schemas/Multiplicity"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/PropertyMappingsImplementation"
+          },
+          "property": {
+            "$ref": "#/components/schemas/Property"
+          },
+          "targetSetImplementationId": {
+            "type": "string"
+          },
+          "sourceSetImplementationId": {
+            "type": "string"
+          }
+        }
+      },
+      "Package": {
+        "type": "object",
+        "properties": {
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PackageableElement"
+            }
+          }
+        }
+      },
+      "Mapping": {
+        "type": "object",
+        "properties": {
+          "classMappings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SetImplementation"
+            }
+          },
+          "enumerationMappings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EnumerationMapping"
+            }
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MappingInclude"
+            }
+          },
+          "associationMappings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssociationImplementation"
+            }
+          }
+        }
+      },
+      "SetImplementation": {
+        "type": "object",
+        "properties": {
+          "root": {
+            "type": "boolean"
+          },
+          "class": {
+            "$ref": "#/components/schemas/Class"
+          }
+        }
+      },
+      "FunctionExpression": {
+        "type": "object",
+        "properties": {
+          "propertyName": {
+            "$ref": "#/components/schemas/InstanceValue"
+          },
+          "importGroup": {
+            "$ref": "#/components/schemas/ImportGroup"
+          },
+          "originalMilestonedPropertyParametersValues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValueSpecification"
+            }
+          },
+          "resolvedTypeParameters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GenericType"
+            }
+          },
+          "func": {
+            "$ref": "#/components/schemas/Function"
+          },
+          "resolvedMultiplicityParameters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Multiplicity"
+            }
+          },
+          "functionName": {
+            "type": "string"
+          },
+          "qualifiedPropertyName": {
+            "$ref": "#/components/schemas/InstanceValue"
+          },
+          "parametersValues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValueSpecification"
+            }
+          },
+          "originalMilestonedProperty": {
+            "$ref": "#/components/schemas/Function"
+          }
+        }
+      },
+      "InstanceValue": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Any"
+            }
+          }
+        }
+      },
+      "EnumerationMapping": {
+        "type": "object",
+        "properties": {
+          "enumValueMappings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EnumValueMapping"
+            }
+          },
+          "name": {
+            "type": "string"
+          },
+          "parent": {
+            "$ref": "#/components/schemas/Mapping"
+          },
+          "enumeration": {
+            "$ref": "#/components/schemas/Enumeration"
+          }
+        }
       },
       "TDSColumn": {
         "type": "object",
@@ -131,11 +520,45 @@
           "documentation": {
             "type": "string"
           },
+          "enumMapping": {
+            "$ref": "#/components/schemas/EnumerationMapping"
+          },
           "offset": {
             "type": "integer"
           },
           "type": {
             "$ref": "#/components/schemas/DataType"
+          }
+        }
+      },
+      "Function": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "applications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FunctionExpression"
+            }
+          },
+          "functionName": {
+            "type": "string"
+          },
+          "referenceUsages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReferenceUsage"
+            }
+          }
+        }
+      },
+      "MultiplicityValue": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "integer"
           }
         }
       },
@@ -152,6 +575,187 @@
             "$ref": "#/components/schemas/TabularDataSet"
           }
         }
+      },
+      "Profile": {
+        "type": "object",
+        "properties": {
+          "p_tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
+          },
+          "p_stereotypes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Stereotype"
+            }
+          }
+        }
+      },
+      "Testable": {
+        "type": "object",
+        "properties": {
+          "tests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Test"
+            }
+          }
+        }
+      },
+      "ValueSpecification": {
+        "type": "object",
+        "properties": {
+          "usageContext": {
+            "$ref": "#/components/schemas/ValueSpecificationContext"
+          },
+          "genericType": {
+            "$ref": "#/components/schemas/GenericType"
+          },
+          "multiplicity": {
+            "$ref": "#/components/schemas/Multiplicity"
+          }
+        }
+      },
+      "Enumeration": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "object"
+          }
+        }
+      },
+      "AssociationImplementation": {
+        "type": "object",
+        "properties": {
+          "association": {
+            "$ref": "#/components/schemas/Association"
+          }
+        }
+      },
+      "ImportGroup": {
+        "type": "object",
+        "properties": {
+          "imports": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Import"
+            }
+          }
+        }
+      },
+      "Multiplicity": {
+        "type": "object",
+        "properties": {
+          "lowerBound": {
+            "$ref": "#/components/schemas/MultiplicityValue"
+          },
+          "multiplicityParameter": {
+            "type": "string"
+          },
+          "upperBound": {
+            "$ref": "#/components/schemas/MultiplicityValue"
+          }
+        }
+      },
+      "SubstituteStore": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "$ref": "#/components/schemas/MappingInclude"
+          },
+          "original": {
+            "$ref": "#/components/schemas/Store"
+          },
+          "substitute": {
+            "$ref": "#/components/schemas/Store"
+          }
+        }
+      },
+      "TaggedValue": {
+        "type": "object",
+        "properties": {
+          "tag": {
+            "$ref": "#/components/schemas/Tag"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "EnumValueMapping": {
+        "type": "object",
+        "properties": {
+          "sourceValues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Any"
+            }
+          },
+          "enum": {
+            "$ref": "#/components/schemas/Enum"
+          }
+        }
+      },
+      "ValueSpecificationContext": {
+        "type": "object",
+        "properties": {
+          "offset": {
+            "type": "integer"
+          }
+        }
+      },
+      "Class": {
+        "type": "object",
+        "properties": {
+          "qualifiedPropertiesFromAssociations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QualifiedProperty"
+            }
+          },
+          "typeParameters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TypeParameter"
+            }
+          },
+          "properties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Property"
+            }
+          },
+          "originalMilestonedProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Property"
+            }
+          },
+          "propertiesFromAssociations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Property"
+            }
+          },
+          "qualifiedProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QualifiedProperty"
+            }
+          },
+          "multiplicityParameters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InstanceValue"
+            }
+          }
+        }
+      },
+      "PropertyOwner": {
+        "type": "object",
+        "properties": {}
       }
     }
   }
