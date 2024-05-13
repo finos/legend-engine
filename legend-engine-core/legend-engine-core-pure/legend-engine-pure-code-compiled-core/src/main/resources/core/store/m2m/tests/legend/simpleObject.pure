@@ -1354,3 +1354,66 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::M
 
 
 )
+
+
+###Pure
+import meta::pure::executionPlan::profiles::*;
+
+Class meta::pure::mapping::modelToModel::test::shared::source::A
+{
+  id : String[1];
+  b : meta::pure::mapping::modelToModel::test::shared::source::B[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::shared::source::B
+{
+  i : Integer[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::shared::dest::Target
+{
+  id : String[1];
+  i : Integer[*];
+}
+
+// Package named so that scanProperties will work
+function meta::pure::mapping::modelToModel::test::alloy::f(a : meta::pure::mapping::modelToModel::test::shared::source::A[1], b : meta::pure::mapping::modelToModel::test::shared::source::B[*]) : String[1]
+{
+  if($a.id != '' && $b->isNotEmpty(), | 'N/A', | 'A/N');
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> { serverVersion.start='v1_19_0' } meta::pure::mapping::modelToModel::test::alloy::simple::testConcreteFunctionCallWithNoPropertyAccess() : Boolean[1]
+{
+  let tree = #{meta::pure::mapping::modelToModel::test::shared::dest::Target { id, i}}#;
+  let query = {| meta::pure::mapping::modelToModel::test::shared::dest::Target.all()->meta::pure::graphFetch::execution::graphFetch($tree)->meta::pure::graphFetch::execution::serialize($tree)};
+  let mapping = meta::pure::mapping::modelToModel::test::shared::dest::MappingWithNoPropertyAccessOnClass;
+  let runtime = ^meta::core::runtime::Runtime(
+    connectionStores = [
+      ^meta::core::runtime::ConnectionStore(
+        element=^meta::external::store::model::ModelStore(),
+        connection = ^meta::external::store::model::JsonModelConnection(
+          class=meta::pure::mapping::modelToModel::test::shared::source::A,
+          url='data:application/json,{"id":"hello", "i" : []}'
+        )
+      )
+    ]
+  );
+
+  let result = execute($query, $mapping, $runtime, meta::pure::extension::defaultExtensions());
+  assert(meta::json::jsonEquivalent('{"id":"A/N","i":[]}'->meta::json::parseJSON(), $result.values->toOne()->meta::json::parseJSON()));
+}
+
+
+
+###Mapping 
+Mapping meta::pure::mapping::modelToModel::test::shared::dest::MappingWithNoPropertyAccessOnClass
+(
+  *meta::pure::mapping::modelToModel::test::shared::dest::Target : Pure 
+  {
+    ~src meta::pure::mapping::modelToModel::test::shared::source::A
+    id : meta::pure::mapping::modelToModel::test::alloy::f($src, [])
+    i : []
+  }
+)
+
+
