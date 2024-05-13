@@ -188,3 +188,11 @@ function <<test.Test>> meta::relational::tests::mapping::function::snowflake::te
                                                 meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select to_timestamp("root".stringDateTimeFormat,\'YYYY-MM-DDTHH:MI:SS.FF\') as "convertToDateTime" from dataTable as "root"',$s);
 }
+
+function <<test.Test>> meta::relational::tests::mapping::function::snowflake::testToBoolean():Boolean[1]
+{
+   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.toBoolean], ['bolValue']),
+                                                testMapping,
+                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+   assertEquals('select to_boolean(\'true\') as "bolValue" from dataTable as "root"',$s);
+}
