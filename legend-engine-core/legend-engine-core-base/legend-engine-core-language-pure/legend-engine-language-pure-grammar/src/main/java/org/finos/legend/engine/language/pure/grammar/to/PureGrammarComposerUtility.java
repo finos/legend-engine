@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class PureGrammarComposerUtility
 {
     private static final String PACKAGE_SEPARATOR = "::";
-    private static final Pattern UNQUOTED_IDENTIFIER_PATTERN = Pattern.compile("[A-Za-z0-9_][A-Za-z0-9_$~]*"); // TODO
+    private static final Pattern UNQUOTED_IDENTIFIER_PATTERN = Pattern.compile("[A-Za-z_][A-Za-z0-9_$~]*"); // TODO
 
     public static final String TAB = "  ";
 
