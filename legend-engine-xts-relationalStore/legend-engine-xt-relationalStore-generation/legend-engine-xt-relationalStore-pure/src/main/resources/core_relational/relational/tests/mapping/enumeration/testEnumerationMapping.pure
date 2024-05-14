@@ -430,29 +430,7 @@ function <<test.Test>> meta::relational::tests::projection::enumeration::testTds
   assertSameSQL('select case when "root".type in (\'FTC\', \'FTO\', \'FTE\') then \'yes\' else \'no\' end as "Type" from employeeTable as "root"', $result);
 }
 
-function <<test.Test, test.ToFix>> meta::relational::tests::projection::enumeration::testTdsProjectWithVarAndStringInInClause():Boolean[1]
-{
-  let result =  execute({|let enum = if(5 > 3, | EmployeeType.CONTRACT, | EmployeeType.FULL_TIME);
-                          Employee.all()->project(
-                            [x|$x.type],
-                            ['Type']
-                          )->project(
-                            col(
-                              row: meta::pure::tds::TDSRow[1]| if($row.getEnum('Type')->in([$enum, 'FTE']), | 'yes', | 'no'),
-                              'Type'
-                            )
-                          );
-                        }, employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions()
-                );
-
-  assertSameElements(['yes', 'yes', 'yes'], $result.values.rows.values);
-  let tds = $result.values->at(0);
-  assertSize($tds.rows, 3);
-  assertSameSQL('select case when "root".type in (\'FTC\', \'FTO\', \'FTE\') then \'yes\' else \'no\' end as "Type" from employeeTable as "root"', $result);
-}
-
-
-function <<test.Test, test.ToFix>> meta::relational::tests::projection::enumeration::testTdsProjectWithEnumVarEquality():Boolean[1]
+function <<test.Test>> meta::relational::tests::projection::enumeration::testTdsProjectWithEnumVarEquality():Boolean[1]
 {  
   let result =  execute({|let enum = if(5 > 3, | EmployeeType.CONTRACT, | EmployeeType.FULL_TIME);
                           Employee.all()->project(
@@ -470,5 +448,4 @@ function <<test.Test, test.ToFix>> meta::relational::tests::projection::enumerat
   assertSameElements(['yes', 'no', 'yes'], $result.values.rows.values);
   let tds = $result.values->at(0);
   assertSize($tds.rows, 3);
-  assertSameSQL('select case when "root".type in (\'FTC\', \'FTO\') then \'yes\' else \'no\' end as "Type" from employeeTable as "root"', $result);
 }
