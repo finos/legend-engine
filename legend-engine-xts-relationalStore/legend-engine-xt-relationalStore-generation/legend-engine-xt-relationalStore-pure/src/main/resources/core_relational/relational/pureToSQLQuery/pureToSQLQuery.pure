@@ -5398,21 +5398,21 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
 
                                               if($params.first.values->isNotEmpty(),
                                                 | let enumVarParam = $params.first.values->toOne()->evaluateAndDeactivate()->cast(@FunctionExpression);
-                                                  let secondParam = $params.second.values->toOne()->evaluateAndDeactivate();
+                                                  let otherParam = $params.second.values->toOne()->evaluateAndDeactivate();
                                                   
                                                   let enumVarProcessedParam = $enumVarParam->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne();
-                                                  let secondProcessedParam = $secondParam->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne();
+                                                  let otherProcessedParam = $otherParam->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne();
                                                   let enumPropertyMapping = getEnumExprPropertyMapping($enumVarParam, $paths);
 
-                                                  if($secondProcessedParam->hasReferenceToEnum(),
+                                                  if($otherProcessedParam->hasReferenceToEnum(),
                                                     | if($enumPropertyMapping->isNotEmpty(),
                                                         | let left = ^EnumProcessingHolder(param = $enumVarParam, processedParam = $enumVarProcessedParam, currentPropertyMapping = ^OperationWithParentPropertyMapping(element=$enumVarProcessedParam, currentPropertyMapping=$enumPropertyMapping));
-                                                          let right = ^EnumProcessingHolder(param = $secondParam, processedParam = $secondProcessedParam, currentPropertyMapping = ^OperationWithParentPropertyMapping(element=$secondProcessedParam));
+                                                          let right = ^EnumProcessingHolder(param = $otherParam, processedParam = $otherProcessedParam, currentPropertyMapping = ^OperationWithParentPropertyMapping(element=$otherProcessedParam));
                                                           processEqualsForEnum($left, $right, $context, $state);,
-                                                        | let newParam = ^Literal(value = $secondProcessedParam->cast(@Literal).value->cast(@Enum).name->toOne());
+                                                        | let newParam = ^Literal(value = $otherProcessedParam->cast(@Literal).value->cast(@Enum).name->toOne());
                                                           newDynaFunction('equal', [$enumVarProcessedParam, $newParam]);
                                                       ),
-                                                    | newDynaFunction('equal', [$enumVarProcessedParam, $secondProcessedParam]);
+                                                    | newDynaFunction('equal', [$enumVarProcessedParam, $otherProcessedParam]);
                                                   );, 
                                                 | newDynaFunction('equal', $f.parametersValues->map(p| $p->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne()));
                                               );
