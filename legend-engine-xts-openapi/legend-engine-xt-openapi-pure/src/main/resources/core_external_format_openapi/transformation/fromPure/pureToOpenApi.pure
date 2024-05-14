@@ -303,7 +303,7 @@ function <<access.private>> meta::external::function::description::openapi::tran
 
 function <<access.private>> meta::external::function::description::openapi::transformation::fromPure::scanClass(c:GenericType[1], allClasses:GenericType[*]):GenericType[*]
 {
-  if($c.rawType->toOne()==GenericType, | [], | 
+  if($c.rawType->toOne()==GenericType || $c.rawType->toOne() == meta::pure::mapping::EnumerationMapping, | [], |
   
   let propertyTypes = $c->properties()->filter(p|$p.owner!=Any)
                         ->map(p|

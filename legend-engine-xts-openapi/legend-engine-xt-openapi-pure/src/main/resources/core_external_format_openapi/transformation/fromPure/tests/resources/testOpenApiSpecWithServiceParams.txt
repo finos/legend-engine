@@ -119,6 +119,9 @@
       "TDSColumn": {
         "type": "object",
         "properties": {
+          "enumMapping": {
+            "$ref": "#/components/schemas/EnumerationMapping"
+          },
           "enumMappingId": {
             "type": "string"
           },
