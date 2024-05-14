@@ -354,9 +354,6 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
         );
     }
 
-
-
-
     @Test
     public void testGroupBy()
     {
@@ -463,6 +460,113 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
         );
     }
 
+    @Test
+    public void testPivot()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->pivot(~[other], ~new : x|$x.id : y|$y->sum())\n" +
+                        "}"
+        );
+    }
+
+    // TODO: @akphi casting should be supported in engine as it works in Pure
+//    @Test
+//    public void testPivotCompose()
+//    {
+//        test(
+//                "###Relational\n" +
+//                        "Database a::A (" +
+//                        "   Table tb(id Integer, other VARCHAR(200))" +
+//                        ")\n" +
+//                        "\n" +
+//                        "###Pure\n" +
+//                        "function test::f():Any[*]\n" +
+//                        "{\n" +
+////                        "   #>{a::A.tb}#->pivot(~[other], ~new : x|$x.id : y|$y->sum())->select(~someCol: String)\n" +
+//                        "   #>{a::A.tb}#->select(~other)\n" +
+//                        "}"
+//        );
+//    }
+
+    @Test
+    public void testErrorPivotComposeWithoutCasting()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->pivot(~[other], ~new : x|$x.id : y|$y->sum())->select(~many)\n" +
+                        "}",
+                "COMPILATION error at [7:73-76]: The column 'many' can't be found in the relation ()"
+        );
+    }
+
+    @Test
+    public void testPivotErrorCol()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->pivot(~[oteher], ~new : x|$x.id : y|$y->sum())\n" +
+                        "}",
+                "COMPILATION error at [7:26-31]: The column 'oteher' can't be found in the relation (id:Integer, other:String)"
+        );
+    }
+
+    @Test
+    public void testPivotErrorAggMap()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->pivot(~[other], ~new : x|$x.ied : y|$y->sum())\n" +
+                        "}",
+                "COMPILATION error at [7:46-48]: The column 'ied' can't be found in the relation (id:Integer, other:String)"
+        );
+    }
+
+    @Test
+    public void testPivotErrorAggReduce()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->pivot(~[other], ~new : x|$x.other : y|$y->sum())\n" +
+                        "}",
+                "COMPILATION error at [7:60-62]: Can't find a match for function 'sum(String[*])"
+        );
+    }
 
     @Override
     public String getDuplicatedElementTestCode()
@@ -481,5 +585,4 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
     {
         return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
     }
-
 }
