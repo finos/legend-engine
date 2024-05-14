@@ -43,6 +43,7 @@
         <module>legend-engine-xt-relationalStore-presto</module>
         <module>legend-engine-xt-relationalStore-databricks</module>
         <module>legend-engine-xt-relationalStore-sparksql</module>
+        <module>legend-engine-xt-relationalStore-h2</module>
 
         <module>legend-engine-xt-relationalStore-test-reports</module>
         <module>legend-engine-xt-relationalStore-test-http-server</module>

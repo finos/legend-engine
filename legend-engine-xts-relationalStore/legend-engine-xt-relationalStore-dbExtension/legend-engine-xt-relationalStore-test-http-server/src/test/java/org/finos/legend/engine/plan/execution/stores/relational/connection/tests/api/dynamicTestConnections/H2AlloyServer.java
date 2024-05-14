@@ -16,14 +16,14 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.DynamicTestConnection;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DefaultH2AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 
-public class H2AlloyServer implements DynamicTestConnection
+public class H2AlloyServer implements TestConnectionIntegration
 {
     @Override
     public DatabaseType getDatabaseType()

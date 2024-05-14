@@ -28,6 +28,5 @@
 
     <modules>
         <module>legend-engine-xt-relationalStore-test-mutation</module>
-        <module>legend-engine-xt-relationalStore-test-relation</module>
     </modules>
 </project>

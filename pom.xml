@@ -1012,6 +1012,33 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-functions-testConnection-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-testConnection</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-testConnection</artifactId>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-testConnection</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-testConnection</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-functions-pureExtensions-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
