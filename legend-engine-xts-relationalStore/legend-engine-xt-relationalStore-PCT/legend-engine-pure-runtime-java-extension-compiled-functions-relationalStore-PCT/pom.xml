@@ -25,7 +25,7 @@
 
     <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - Pure - Runtime - Java Extension - Compiled - Functions - TestConnection</name>
+    <name>Legend Engine - Pure - Runtime - Java Extension - Compiled - Functions - RelationalStore - PCT</name>
 
     <build>
         <plugins>

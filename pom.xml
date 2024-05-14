@@ -2907,7 +2907,12 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-data-push-server</artifactId>
+                <artifactId>legend-engine-xt-relationalStore-h2-PCT</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-duckdb-PCT</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

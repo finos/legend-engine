@@ -18,14 +18,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine-xt-relationalStore-test</artifactId>
-        <version>4.46.3-SNAPSHOT</version>
+        <artifactId>legend-engine-xt-relationalStore-duckdb</artifactId>
+        <version>4.43.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-xt-relationalStore-h2-PCT</artifactId>
+    <artifactId>legend-engine-xt-relationalStore-duckdb-PCT</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Relational Store - H2 - PCT</name>
+    <name>Legend Engine - XT - Relational Store - DuckDB - PCT</name>
 
     <build>
         <plugins>
@@ -47,10 +47,10 @@
                     <mode>Compiled</mode>
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.h2.pct.Test_Relational_H2_BaseFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.h2.pct.Test_Relational_H2_BasicFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.h2.pct.Test_Relational_H2_GrammarFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.h2.pct.Test_Relational_H2_RelationFunctions_PCT</PCTTestSuite>
+<!--                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_BaseFunctions_PCT</PCTTestSuite>-->
+<!--                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_BasicFunctions_PCT</PCTTestSuite>-->
+                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_GrammarFunctions_PCT</PCTTestSuite>
+<!--                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_RelationFunctions_PCT</PCTTestSuite>-->
                     </PCTTestSuites>
                 </configuration>
                 <executions>
@@ -97,13 +97,10 @@
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
+
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-functions-base-pure</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-functions-relation-pure</artifactId>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-duckdb-protocol</artifactId>
         </dependency>
 
         <dependency>
@@ -114,22 +111,13 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-protocol</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-shared-core</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-test-framework</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-        </dependency>
 
-        <!-- TEST -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
@@ -143,7 +131,19 @@
             <scope>runtime</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-duckdb-grammar</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-duckdb-execution</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
+
+        <!-- TEST -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -197,6 +197,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-planExecution</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-pureExtensions</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

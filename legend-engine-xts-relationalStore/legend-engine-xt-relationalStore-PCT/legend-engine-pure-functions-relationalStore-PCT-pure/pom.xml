@@ -25,7 +25,7 @@
 
     <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - Pure - Functions - LegendCompiler - TestConnection</name>
+    <name>Legend Engine - Pure - Functions - LegendCompiler - RelationalStore - PCT - Pure</name>
 
     <build>
         <plugins>

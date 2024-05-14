@@ -33,6 +33,14 @@ function <<PCT.adapter>> meta::relational::tests::pct::testAdapterForRelationalW
   )
 }
 
+function <<PCT.adapter>> meta::relational::tests::pct::testAdapterForRelationalWithDuckDBExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+{
+  meta::relational::tests::pct::testAdapterForRelationalExecution(
+      $f,
+      meta::pure::testConnection::getTestConnection(DatabaseType.DuckDB)
+  )
+}
+
 function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:Function<{->X[o]}>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1]):X[o]
 {
     let debug = noDebug();
@@ -141,7 +149,7 @@ function meta::relational::relation::testUtils::reprocess(f:Function<{->Any[*]}>
             print(if($debug.debug,|'AFTER: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($result.first, '') + '\n',|''));
 
             // Update the database ------------
-            let setUpSQLs = $reprocessed.csvs->joinStrings('\n-\n')->meta::alloy::service::execution::setUpDataSQLs($reprocessed.database->toOne());
+            let setUpSQLs = $reprocessed.csvs->joinStrings('\n-\n')->meta::alloy::service::execution::setUpDataSQLs($reprocessed.database->toOne(), $dbc.type);
 
             let updatePlan = ^meta::pure::executionPlan::ExecutionPlan
             (
@@ -202,7 +210,7 @@ function meta::relational::relation::testUtils::initState(openVars:Map<String,An
 
   let schema = ^Schema
   (
-    name='default',
+    name='leSchema',
     database = $db
   );
 

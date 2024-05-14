@@ -14,7 +14,7 @@
 
     <modules>
         <module>legend-engine-xt-relationalStore-duckdb-execution</module>
-        <module>legend-engine-xt-relationalStore-duckdb-execution-tests</module>
+        <module>legend-engine-xt-relationalStore-duckdb-PCT</module>
         <module>legend-engine-xt-relationalStore-duckdb-grammar</module>
         <module>legend-engine-xt-relationalStore-duckdb-protocol</module>
         <module>legend-engine-xt-relationalStore-duckdb-pure</module>
