@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-graphQL</artifactId>
-        <version>4.45.2-SNAPSHOT</version>
+        <version>4.45.2</version>
     </parent>
 
     <artifactId>legend-engine-xt-graphQL-generation-http-api</artifactId>
