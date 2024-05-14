@@ -1012,28 +1012,28 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-functions-testConnection-pure</artifactId>
+                <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-testConnection</artifactId>
+                <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-relationalStore-PCT</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-testConnection</artifactId>
+                <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-relationalStore-PCT</artifactId>
                 <type>test-jar</type>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-testConnection</artifactId>
+                <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-relationalStore-PCT</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-testConnection</artifactId>
+                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

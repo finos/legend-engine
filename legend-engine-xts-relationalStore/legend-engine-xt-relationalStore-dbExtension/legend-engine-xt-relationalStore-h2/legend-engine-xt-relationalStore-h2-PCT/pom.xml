@@ -92,13 +92,13 @@
         <!-- TEST -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-testConnection-pure</artifactId>
+            <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-testConnection</artifactId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>

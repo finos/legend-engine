@@ -31,6 +31,6 @@
         <module>legend-engine-pure-runtime-pureExtensions</module>
         <module>legend-engine-pure-runtime-planExecution</module>
         <module>legend-engine-pure-runtime-javaCompiler</module>
-        <module>legend-engine-pure-runtime-testConnection</module>
+<!--        <module>legend-engine-pure-runtime-testConnection</module>-->
     </modules>
 </project>
