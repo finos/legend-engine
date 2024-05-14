@@ -90,6 +90,22 @@ public class TestLambdaPrettyRendering
     }
 
     @Test
+    public void testQuotedColumnNameInRelationLambda()
+    {
+        testLambda("|Customer.all()->project(~['Company Name':x|$x.companyName, companyTitle:x|$x.companyTitle, contactName:x|$x.contactName, faxNumber:x|$x.faxNumber, id:x|$x.id, telephoneNumber:x|$x.telephoneNumber])",
+                "|Customer.all()->project(\n" +
+                        "  ~[\n" +
+                        "     'Company Name': x|$x.companyName,\n" +
+                        "     companyTitle: x|$x.companyTitle,\n" +
+                        "     contactName: x|$x.contactName,\n" +
+                        "     faxNumber: x|$x.faxNumber,\n" +
+                        "     id: x|$x.id,\n" +
+                        "     telephoneNumber: x|$x.telephoneNumber\n" +
+                        "   ]\n" +
+                        ")", RenderStyle.PRETTY);
+    }
+
+    @Test
     public void testLambdaWithIfInPrettyRendering()
     {
         testLambda("|if($this.id == 'testing',|'test',|'nonTest')",

@@ -1373,7 +1373,9 @@ public class DomainParseTreeWalker
 
         colSpec.sourceInformation = walkerSourceInformation.getSourceInformation(oneColSpec);
 
-        colSpec.name = oneColSpec.identifier().getText().trim();
+        DomainParserGrammar.ColSpecNameContext colSpecNameCtx = oneColSpec.colSpecName();
+        String colName = colSpecNameCtx.STRING() != null ? PureGrammarParserUtility.fromGrammarString(colSpecNameCtx.STRING().getText(), true) : colSpecNameCtx.identifier().getText();
+        colSpec.name = colName.trim();
         colSpec.name = colSpec.name.charAt(0) == '\'' ? colSpec.name.substring(1, colSpec.name.length() - 1) : colSpec.name;
         colSpec.type = oneColSpec.type() == null ? null : oneColSpec.type().getText();
         if (oneColSpec.lambdaParam() != null && oneColSpec.lambdaPipe() != null)

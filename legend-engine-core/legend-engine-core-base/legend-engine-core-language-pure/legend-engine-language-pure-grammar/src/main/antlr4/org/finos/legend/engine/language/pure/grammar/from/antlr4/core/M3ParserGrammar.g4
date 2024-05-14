@@ -109,7 +109,9 @@ atomicExpression:                               dsl
 
 columnBuilders: TILDE (oneColSpec | colSpecArray)
 ;
-oneColSpec: identifier ((COLON (type | lambdaParam lambdaPipe) extraFunction? ))?
+oneColSpec: colSpecName ((COLON (type | lambdaParam lambdaPipe) extraFunction? ))?
+;
+colSpecName: identifier | STRING
 ;
 colSpecArray: (BRACKET_OPEN oneColSpec(COMMA oneColSpec)* BRACKET_CLOSE)
 ;
