@@ -34,7 +34,7 @@ public class SnowflakeTestDatabaseAuthenticationFlowProvider extends AbstractDat
     @Override
     public void configure(DatabaseAuthenticationFlowProviderConfiguration configuration)
     {
-        if (!(configuration instanceof SnowflakeTestDatabaseAuthenticationFlowProviderConfiguration))
+        if (configuration != null && !(configuration instanceof SnowflakeTestDatabaseAuthenticationFlowProviderConfiguration))
         {
             String message = "Mismatch in flow provider configuration. It should be an instance of " + SnowflakeTestDatabaseAuthenticationFlowProviderConfiguration.class.getSimpleName();
             throw new RuntimeException(message);

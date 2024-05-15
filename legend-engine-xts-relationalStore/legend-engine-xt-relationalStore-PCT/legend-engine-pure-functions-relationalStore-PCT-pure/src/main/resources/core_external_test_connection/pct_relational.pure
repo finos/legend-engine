@@ -41,6 +41,14 @@ function <<PCT.adapter>> meta::relational::tests::pct::testAdapterForRelationalW
   )
 }
 
+function <<PCT.adapter>> meta::relational::tests::pct::testAdapterForRelationalWithPostgresExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+{
+  meta::relational::tests::pct::testAdapterForRelationalExecution(
+      $f,
+      meta::pure::testConnection::getTestConnection(DatabaseType.Postgres)
+  )
+}
+
 function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:Function<{->X[o]}>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1]):X[o]
 {
     let debug = noDebug();

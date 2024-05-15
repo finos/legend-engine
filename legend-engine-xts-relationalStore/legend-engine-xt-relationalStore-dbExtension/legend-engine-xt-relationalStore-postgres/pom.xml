@@ -29,7 +29,7 @@
     <modules>
         <module>legend-engine-xt-relationalStore-postgres-connection</module>
         <module>legend-engine-xt-relationalStore-postgres-execution</module>
-        <module>legend-engine-xt-relationalStore-postgres-execution-tests</module>
+        <module>legend-engine-xt-relationalStore-postgres-PCT</module>
         <module>legend-engine-xt-relationalStore-postgres-pure</module>
     </modules>
 </project>

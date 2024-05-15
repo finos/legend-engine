@@ -51,6 +51,18 @@ public class H2TestConnectionIntegration implements TestConnectionIntegration, T
     @Override
     public RelationalDatabaseConnection getConnection()
     {
+        if (h2Server == null || !h2Server.isRunning(false))
+        {
+            // Start the container is the function is called from within the IDE
+            try
+            {
+                setup();
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
         StaticDatasourceSpecification H2DataSourceSpecification = new StaticDatasourceSpecification();
         H2DataSourceSpecification.host = "localhost";
         H2DataSourceSpecification.port = this.port;

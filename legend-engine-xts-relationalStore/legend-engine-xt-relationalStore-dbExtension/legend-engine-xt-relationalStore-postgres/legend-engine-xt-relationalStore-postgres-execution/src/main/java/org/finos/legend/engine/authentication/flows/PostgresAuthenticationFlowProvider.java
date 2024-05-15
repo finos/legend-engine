@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,36 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.authentication;
+package org.finos.legend.engine.authentication.flows;
 
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.authentication.flows.TrinoWithDelegatedKerberosFlow;
-import org.finos.legend.engine.authentication.flows.TrinoWithUserPasswordFlow;
+import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
+import org.finos.legend.engine.authentication.flows.PostgresStaticWithUserPasswordFlow;
+import org.finos.legend.engine.authentication.flows.middletier.PostgresStaticWithMiddletierUserNamePasswordAuthenticationFlow;
 import org.finos.legend.engine.authentication.provider.AbstractDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 
-public class TrinoTestDatabaseAuthenticationFlowProvider
-        extends AbstractDatabaseAuthenticationFlowProvider
+public class PostgresAuthenticationFlowProvider extends AbstractDatabaseAuthenticationFlowProvider
 {
-    private ImmutableList<DatabaseAuthenticationFlow<? extends DatasourceSpecification, ? extends AuthenticationStrategy>> flows(TrinoTestDatabaseAuthenticationFlowProviderConfiguration configuration)
+    private ImmutableList<DatabaseAuthenticationFlow<? extends DatasourceSpecification, ? extends AuthenticationStrategy>> flows()
     {
         return Lists.immutable.of(
-                new TrinoWithDelegatedKerberosFlow(),
-                new TrinoWithUserPasswordFlow()
+                new PostgresStaticWithUserPasswordFlow(),
+                new PostgresStaticWithMiddletierUserNamePasswordAuthenticationFlow()
         );
     }
 
     @Override
     public void configure(DatabaseAuthenticationFlowProviderConfiguration configuration)
     {
-        if (configuration != null && !(configuration instanceof TrinoTestDatabaseAuthenticationFlowProviderConfiguration))
-        {
-            String message = "Mismatch in flow provider configuration. It should be an instance of " + TrinoTestDatabaseAuthenticationFlowProviderConfiguration.class.getSimpleName();
-            throw new RuntimeException(message);
-        }
-        flows((TrinoTestDatabaseAuthenticationFlowProviderConfiguration) configuration).forEach(this::registerFlow);
+        flows().forEach(this::registerFlow);
     }
 }
