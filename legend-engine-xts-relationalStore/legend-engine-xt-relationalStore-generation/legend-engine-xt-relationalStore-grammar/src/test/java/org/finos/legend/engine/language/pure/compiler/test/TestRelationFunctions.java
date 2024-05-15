@@ -477,24 +477,36 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
         );
     }
 
-    // TODO: @akphi casting should be supported in engine as it works in Pure
-//    @Test
-//    public void testPivotCompose()
-//    {
-//        test(
-//                "###Relational\n" +
-//                        "Database a::A (" +
-//                        "   Table tb(id Integer, other VARCHAR(200))" +
-//                        ")\n" +
-//                        "\n" +
-//                        "###Pure\n" +
-//                        "function test::f():Any[*]\n" +
-//                        "{\n" +
-////                        "   #>{a::A.tb}#->pivot(~[other], ~new : x|$x.id : y|$y->sum())->select(~someCol: String)\n" +
-//                        "   #>{a::A.tb}#->select(~other)\n" +
-//                        "}"
-//        );
-//    }
+    @Test
+    public void testPivotCompose()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->pivot(~[other], ~new : x|$x.id : y|$y->sum())->select(~someCol)\n" +
+                        "}",
+                "COMPILATION error at [7:73-79]: The column 'someCol' can't be found in the relation ()"
+        );
+
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->pivot(~[other], ~new : x|$x.id : y|$y->sum())->select(~[someCol: String])\n" +
+                        "}"
+        );
+    }
 
     @Test
     public void testErrorPivotComposeWithoutCasting()

@@ -59,6 +59,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m3.navigation.relation._Column;
 import org.finos.legend.pure.m3.navigation.relation._RelationType;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -242,6 +243,9 @@ public class Handlers
                 pureModel);
     }
 
+    // NOTE: right now we return relation type with no columns since the return relation type for pivot()
+    // is not determinable at compile time, ideally what we want to return is Relation<Any>
+    // but this particular shape potentially results in simpler code logic
     public static TypeAndMultiplicity PivotReturnInference(List<ValueSpecification> ps, PureModel pureModel)
     {
         ProcessorSupport processorSupport = pureModel.getExecutionSupport().getProcessorSupport();
@@ -390,7 +394,23 @@ public class Handlers
 
         specs.forEach(c ->
         {
-            Column<?, ?> found = findColumn(type, c, cc.pureModel.getExecutionSupport().getProcessorSupport());
+            Column<?, ?> found;
+            try
+            {
+                found = findColumn(type, c, cc.pureModel.getExecutionSupport().getProcessorSupport());
+            }
+            catch (Exception e)
+            {
+                // NOTE: if column type is specified in select() expression, we will consider it as a form of casting
+                if (c.type != null)
+                {
+                    found = _Column.getColumnInstance(c.name, false, null, (GenericType) cc.pureModel.getExecutionSupport().getProcessorSupport().type_wrapGenericType(_Package.getByUserPath(c.type, cc.pureModel.getExecutionSupport().getProcessorSupport())), null, cc.pureModel.getExecutionSupport().getProcessorSupport());
+                }
+                else
+                {
+                    throw e;
+                }
+            }
             c.type = _Column.getColumnType(found)._rawType()._name();
         });
 
