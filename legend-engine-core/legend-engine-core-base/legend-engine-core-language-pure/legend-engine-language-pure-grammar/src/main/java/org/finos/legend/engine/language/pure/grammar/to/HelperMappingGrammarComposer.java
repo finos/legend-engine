@@ -166,7 +166,7 @@ public class HelperMappingGrammarComposer
 
     public static String renderMappingId(String id)
     {
-        return (id != null ? ("[" + PureGrammarComposerUtility.convertIdentifier(id) + "]") : "");
+        return (id != null ? ("[" + id + "]") : "");
     }
 
     public static String renderAggregateSetImplementationContainer(AggregateSetImplementationContainer agg, DEPRECATED_PureGrammarComposerCore transformer)
