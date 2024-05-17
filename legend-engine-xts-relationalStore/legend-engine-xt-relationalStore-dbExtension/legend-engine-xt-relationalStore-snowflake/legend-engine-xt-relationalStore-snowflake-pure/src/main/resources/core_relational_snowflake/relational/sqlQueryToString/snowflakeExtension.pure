@@ -158,7 +158,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='date_part(\'hour\', %s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='CHARINDEX(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[1]|$p->transformAlphaNumericParamsDefault()})),
-    dynaFnToSql('jaroWinklerSimilarity',  $allStates,            ^ToSql(format='JAROWINKLER_SIMILARITY(%s, %s)')),
+    dynaFnToSql('jaroWinklerSimilarity',  $allStates,            ^ToSql(format='ROUND(JAROWINKLER_SIMILARITY(%s, %s)/100, 2)')),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='listagg(%s, %s)')),
     dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log(10, %s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),

@@ -1784,7 +1784,7 @@ public class Library
         return new JaroWinklerSimilarity().apply(str1, str2);
     }
 
-    public static int levenshteinDistance(String str1, String str2)
+    public static long levenshteinDistance(String str1, String str2)
     {
         return new LevenshteinDistance().apply(str1, str2);
     }

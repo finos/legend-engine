@@ -64,7 +64,7 @@ function meta::relational::functions::sqlQueryToString::duckDB::convertDateToSql
       | if ($date->hasSubsecond(),
             | let d= format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss.SSSSSS}', $date);
               format('TIMESTAMP \'%s\'',$d);,
-            | let d= format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss}', $date); 
+            | let d= format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss}', $date);
               format('TIMESTAMP_S \'%s\'',$d);
            ),
       | let d =format('%t{[' + $timeZone + ']yyyy-MM-dd}', $date);
@@ -74,12 +74,12 @@ function meta::relational::functions::sqlQueryToString::duckDB::convertDateToSql
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::getDynaFunctionToSqlForDuckDB(): DynaFunctionToSql[*]
 {
   let allStates = allGenerationStates();
-  
+
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | $p->at(0) + ',' + constructIntervalFunction($p->at(2), $p->at(1)) })),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='every(%s)')),
-    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='any(%s)')),  
-    dynaFnToSql('castBoolean',            $allStates,            ^ToSql(format='cast(%s as boolean)')),  
+    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='any(%s)')),
+    dynaFnToSql('castBoolean',            $allStates,            ^ToSql(format='cast(%s as boolean)')),
     dynaFnToSql('chr',                    $allStates,            ^ToSql(format='char(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     // dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateH2()})),
@@ -145,7 +145,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     // dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampH2()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
-    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
+    dynaFnToSql('jaroWinklerSimilarity',  $allStates,            ^ToSql(format='JARO_WINKLER_SIMILARITY(%s, %s)'))
   ];
 }
 
@@ -158,8 +159,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
      if($dayOfWeek->at(1)=='\'Sunday\'',
       |'dayofweek('+$dayOfWeek->at(0)+')+1',
       |'isodow('+$dayOfWeek->at(0)+')'                           // (Monday = 1, Sunday = 7).
-     ); 
-  );                         
+     );
+  );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processPaddingParams(p:String[*]):String[*]
@@ -177,7 +178,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 function meta::relational::functions::sqlQueryToString::duckDB::constructIntervalFunction(unit:String[1], i:String[1]):String[1]
 {
    let unitWithoutQuotes = $unit->removeQuotesIfExist();
-   
+
    let interval_func= [
       pair(DurationUnit.YEARS->toString(), 'to_years'),
       pair(DurationUnit.MONTHS->toString(), 'to_months'),

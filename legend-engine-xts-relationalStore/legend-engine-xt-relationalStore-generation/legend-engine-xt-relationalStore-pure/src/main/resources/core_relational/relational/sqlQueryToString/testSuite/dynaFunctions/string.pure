@@ -374,7 +374,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::jaroWinklerSimilarity::testJaroWinklerSimilarity(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='jaroWinklerSimilarity', parameters=[^Literal(value='John Smith'), ^Literal(value = 'Jane Smith')]);
-  let expected = ^Literal(value=88);
+  let expected = ^Literal(value=0.88);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
