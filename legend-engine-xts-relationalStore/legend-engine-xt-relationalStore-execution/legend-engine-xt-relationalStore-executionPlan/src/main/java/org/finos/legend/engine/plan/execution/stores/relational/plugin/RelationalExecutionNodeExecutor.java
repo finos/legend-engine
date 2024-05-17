@@ -955,9 +955,25 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     .stream()
                     .map(row -> row.stream().map(normalizer).collect(Collectors.joining(",", "(", ")")))
                     .collect(Collectors.joining(",", "", ""));
-            prepareExecutionStateForTempTableExecution("temp_table_rows_from_result_set", threadExecutionState, valuesTuples);
+            RelationalStoreExecutionState relationalStoreExecutionState = (RelationalStoreExecutionState) threadExecutionState.getStoreExecutionState(StoreType.Relational);
+            relationalStoreExecutionState.setIgnoreFreeMarkerProcessing(true);
+            prepareExecutionNodeToIngestDataIntoTempTable(node, valuesTuples);
             node.accept(new ExecutionNodeExecutor(identity, threadExecutionState));
+            relationalStoreExecutionState.setIgnoreFreeMarkerProcessing(false);
         }
+    }
+
+    private static ExecutionNode prepareExecutionNodeToIngestDataIntoTempTable(ExecutionNode executionNode, String result)
+    {
+        executionNode.executionNodes.forEach(node ->
+        {
+            if (node instanceof SQLExecutionNode)
+            {
+                String sqlQuery = (((SQLExecutionNode) node).sqlQuery).replace("${temp_table_rows_from_result_set}", result);
+                ((SQLExecutionNode) node).sqlQuery = sqlQuery;
+            }
+        });
+        return executionNode;
     }
 
     public static void prepareExecutionStateForTempTableExecution(String key, ExecutionState state, String result)
