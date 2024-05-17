@@ -30,7 +30,7 @@ public class RelationalStoreExecutionState implements StoreExecutionState
     private boolean retainConnection;
     private BlockConnectionContext blockConnectionContext;
     private RuntimeContext runtimeContext;
-    private Boolean ignoreFreeMarkerProcessing = false;
+    private boolean ignoreFreeMarkerProcessing;
 
     private RelationalStoreExecutionState(RelationalStoreState storeState, boolean retainConnection, BlockConnectionContext blockConnectionContext, RuntimeContext runtimeContext)
     {
@@ -110,7 +110,7 @@ public class RelationalStoreExecutionState implements StoreExecutionState
         return this.ignoreFreeMarkerProcessing;
     }
 
-    public void setIgnoreFreeMarkerProcessing(Boolean ignoreFreeMarkerProcessing)
+    public void setIgnoreFreeMarkerProcessing(boolean ignoreFreeMarkerProcessing)
     {
         this.ignoreFreeMarkerProcessing = ignoreFreeMarkerProcessing;
     }
