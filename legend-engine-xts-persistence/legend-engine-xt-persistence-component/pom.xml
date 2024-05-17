@@ -37,6 +37,7 @@
         <module>legend-engine-xt-persistence-component-relational-snowflake</module>
         <module>legend-engine-xt-persistence-component-relational-bigquery</module>
         <module>legend-engine-xt-persistence-component-relational-postgres</module>
+        <module>legend-engine-xt-persistence-component-relational-duckdb</module>
     </modules>
 
     <properties>
