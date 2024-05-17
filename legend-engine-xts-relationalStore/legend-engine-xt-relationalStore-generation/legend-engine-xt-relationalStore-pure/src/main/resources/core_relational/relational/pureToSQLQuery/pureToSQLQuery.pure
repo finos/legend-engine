@@ -239,15 +239,15 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::manageD
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::printDebugQuery(select:SelectSQLQuery[1], space:String[1], extensions:Extension[*]):String[1]
 {
-   $select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n'+
-              $space+'             >>>>> '+$select.savedFilteringOperation.second->map(z|$z->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions))->makeString(',')+'\n'+
-              $space+'             }}}}} '+$select.extraFilteringOperation->map(z|$z->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions))->makeString(',')+'\n'+
+   $select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n'+
+              $space+'             >>>>> '+$select.savedFilteringOperation.second->map(z|$z->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions))->makeString(',')+'\n'+
+              $space+'             }}}}} '+$select.extraFilteringOperation->map(z|$z->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions))->makeString(',')+'\n'+
               $space+'             $$$$$ '+$select.leftSideOfFilter->size()->toString()+'\n';
 }
 
 function meta::relational::functions::pureToSqlQuery::printRelationalTreeNode(s:RelationalTreeNode[1], extensions:Extension[*]):String[1]
 {
-   $s->match([root:RootJoinTreeNode[1]|'root',j:JoinTreeNode[1]|$j.joinName+'('+$j.join.operation->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+')']) + '['+ $s->children()->map(c|$c->printRelationalTreeNode($extensions))->makeString(',') +']';
+   $s->match([root:RootJoinTreeNode[1]|'root',j:JoinTreeNode[1]|$j.joinName+'('+$j.join.operation->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+')']) + '['+ $s->children()->map(c|$c->printRelationalTreeNode($extensions))->makeString(',') +']';
 }
 
 function meta::relational::functions::pureToSqlQuery::printNode(t:RelationalTreeNode[0..1]):String[1]
@@ -540,7 +540,7 @@ function meta::relational::functions::pureToSqlQuery::processValue(vals:Any[*], 
                                                               data = ^RootJoinTreeNode(alias = $tableAlias)
                                                            )
                                                 );
-                                      print(if(!$context.debug, |'', | $context.space+'>Processing Relation Database Accessor: '+$res.select->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.H2, $extensions) + '\n'));
+                                      print(if(!$context.debug, |'', | $context.space+'>Processing Relation Database Accessor: '+$res.select->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.DebugPrint, $extensions) + '\n'));
                                       // let node = ^RootJoinTreeNode(alias = ^TableAlias(name='dbAccessor', relationalElement=$relation));
                                       // ^$operation(select = ^TdsSelectSqlQuery(data = $node), currentTreeNode = $node);
                                       $res;,
@@ -719,7 +719,7 @@ function  meta::relational::functions::pureToSqlQuery::processObjectGroupBy(f:Fu
 
                              print(if(!$context.debug, |'',
                                       | $context.space+'>Build Isolated Query For Agg: \n'+
-                                        $context.space+'   (Q)Base Query>  '+$selectWithCursor.select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n'));
+                                        $context.space+'   (Q)Base Query>  '+$selectWithCursor.select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n'));
 
                              let sqlQuery = $selectWithCursor.select;
 
@@ -731,7 +731,7 @@ function  meta::relational::functions::pureToSqlQuery::processObjectGroupBy(f:Fu
                                                         );
 
                              print(if(!$context.debug, |'',
-                                          | $context.space+'   (A)Result With Agg>  '+$newSelect->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n'));
+                                          | $context.space+'   (A)Result With Agg>  '+$newSelect->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n'));
 
                              ^$elem(element=^$selectWithCursor(select=$newSelect));
                        );
@@ -1286,7 +1286,7 @@ function meta::relational::functions::pureToSqlQuery::processColumnsInRelational
                                                           // the alias we are trying to find might be from a view
                                                           let allNodes = $s.data->toOne()->getAllNodes()->cast(@RelationalTreeNode);
                                                           let aliasesToUse = $t.column->extractColumnAliasesInRelationalTreeNodes($t.alias.relationalElement, $allNodes, $context, $extensions);
-                                                          assert($aliasesToUse->size() == 1, | 'Found too many (or not enough) tables that could support the column '+$t.column.name+' in the nested SQL '+$s->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions));
+                                                          assert($aliasesToUse->size() == 1, | 'Found too many (or not enough) tables that could support the column '+$t.column.name+' in the nested SQL '+$s->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions));
                                                           let newSQL = ^$s(columns+=^Alias(name=$t.column.name, relationalElement=$aliasesToUse->toOne()));
                                                           let newTreeNode = ^$currentTreeNode(alias = ^$alias(relationalElement = $newSQL));
                                                           let newData = if ($currentTreeNode->instanceOf(RootJoinTreeNode),
@@ -2036,7 +2036,7 @@ function meta::relational::functions::pureToSqlQuery::replaceJoinTableWithSelect
    );
 
    print(if(!$context.debug, |'',
-            | $context.space+'   (R)New Select Operation>  '+$result->cast(@SelectWithCursor).select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n'));
+            | $context.space+'   (R)New Select Operation>  '+$result->cast(@SelectWithCursor).select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n'));
 
    $result;
 }
@@ -2132,7 +2132,7 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
    // -----------------------------
 
    let res = if ($operation.select.data->isEmpty(),
-      |print(if(!$context.debug, |'', | $transformed->map(t|$context.space+' >Result: '+$t.element->cast(@SelectWithCursor).select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n')->makeString('')));
+      |print(if(!$context.debug, |'', | $transformed->map(t|$context.space+' >Result: '+$t.element->cast(@SelectWithCursor).select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n')->makeString('')));
        let firstSel = $transformed->at(0).element->cast(@SelectWithCursor).select;
 
        let selects = $transformed.element->cast(@SelectWithCursor).select->map(s | $s->pushSavedFilteringOperation($extensions));
@@ -2183,8 +2183,8 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
                                                                          pair($child, buildConcatenateSubSelect($child, $t.element->cast(@SelectWithCursor).select, $isDataType, $propertyName, $state.inFilter, $extensions));
                                                                     );
                                                  );
-       print(if(!$context.debug, |'', | $transformed->zip($newSelectsWithCutNode.second)->map(t|$context.space+' >Result: '+$t.first.element->cast(@SelectWithCursor).select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n'+
-                                                                                                $context.space+' >Result reprocessed: '+$t.second->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n'
+       print(if(!$context.debug, |'', | $transformed->zip($newSelectsWithCutNode.second)->map(t|$context.space+' >Result: '+$t.first.element->cast(@SelectWithCursor).select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n'+
+                                                                                                $context.space+' >Result reprocessed: '+$t.second->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n'
                                                                                              )->makeString('')
              )
        );
@@ -2217,7 +2217,7 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
                        )
                    );
 
-       print(if(!$context.debug, |'', | $context.space+' >Union: '+$union->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n'));
+       print(if(!$context.debug, |'', | $context.space+' >Union: '+$union->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n'));
 
        let unionNode = ^TableAlias(name = 'union'+$nodeId, relationalElement = $union);
 
@@ -2258,7 +2258,7 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
        );
    );
 
-   print(if(!$context.debug, |'', | $context.space+' >Union Result: '+$res.select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n'));
+   print(if(!$context.debug, |'', | $context.space+' >Union Result: '+$res.select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n'));
 
    $res;
 }
@@ -5554,7 +5554,7 @@ function meta::relational::functions::pureToSqlQuery::processPath(pa:Path<Nil,An
      let joinResult = $projection.element->cast(@SelectWithCursor);
 
      print(if(!$context.debug, |'',
-              | $context.space+'   (P)'+$pa.path->last()->cast(@PropertyPathElement).property.name->toOne()+'>  '+$joinResult->cast(@SelectWithCursor).select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n'));
+              | $context.space+'   (P)'+$pa.path->last()->cast(@PropertyPathElement).property.name->toOne()+'>  '+$joinResult->cast(@SelectWithCursor).select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n'));
 
 
      let selectWithCursor = if ($state.inFilter,
@@ -5772,7 +5772,7 @@ function meta::relational::functions::pureToSqlQuery::processProject(ids:String[
 
    print(if(!$context.debug, |'',
             | $context.space+'*>Process Project: '+$functions->map(f|$f->match([p:Path<Nil,Any|1>[1]|$p->printPath('/'), f:FunctionDefinition<Any>[1]|'\'Function\'']))->makeString(', ')+'\n'+
-              $context.space+'   (P)Source Operation>  '+$operation->cast(@SelectWithCursor).select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n'));
+              $context.space+'   (P)Source Operation>  '+$operation->cast(@SelectWithCursor).select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n'));
    let sourceQuery = processValueSpecification($expression.parametersValues->at(0), [], $operation, $vars, ^$state(inProject=true), JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne()->cast(@SelectWithCursor);
 
    let sourceSelect = $sourceQuery.select;
@@ -6112,7 +6112,7 @@ function meta::relational::functions::pureToSqlQuery::addSelfJoinOnNode(select:S
 {
    let res = addSelfJoin($select, $selfJoinNode, $select.savedFilteringOperation.second->map(q|$q->buildUniqueName(false, $extensions))->makeString('_'), $extensions);
    let newSelect = $res.first;
-   print(if(!$context.debug, |'',| $context.space+'SelfJoin Added: '+$newSelect->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)));
+   print(if(!$context.debug, |'',| $context.space+'SelfJoin Added: '+$newSelect->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)));
    let revisedCurrentTreeNode = $res.second.values->filter(p|$p.first==$currentTreeNode)->first();
    let newCurrentTreeNode = if(!$revisedCurrentTreeNode->isEmpty(),|$revisedCurrentTreeNode.second,|if($currentTreeNode == $select.data,|$newSelect.data,|$currentTreeNode));
    ^IsolationSelectState(foundNode =if($selfJoinNode->instanceOf(RootJoinTreeNode),|$newSelect.data->map(x|$x->children())->toOne(),|$newSelect->findBestNodeToIsolate()), select=$newSelect, currentTreeNode=$newCurrentTreeNode);
@@ -6371,7 +6371,7 @@ function meta::relational::functions::pureToSqlQuery::replaceJoin(currentJoin:Re
 function meta::relational::functions::pureToSqlQuery::moveSelectQueryToSubSelect(select:SelectSQLQuery[1], currentTreeNode:RelationalTreeNode[0..1], extraColumns : TableAliasColumn[*], nodeId:String[1], context:DebugContext[1], extensions:Extension[*]):SelectSQLQuery[1]
 {
     print(if(!$context.debug, |'',
-            | $context.space+ 'Query Before Move To Sub Select:' + $select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n'));
+            | $context.space+ 'Query Before Move To Sub Select:' + $select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n'));
 
     let currentAlias = $select.data.alias->toOne();
     let targetAlias = '_sub' + $nodeId;
@@ -6423,7 +6423,7 @@ function meta::relational::functions::pureToSqlQuery::moveSelectQueryToSubSelect
                    );
 
     print(if(!$context.debug, |'',
-            | $context.space+ 'Query After Move To Sub Select:' + $newSelect->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n'));
+            | $context.space+ 'Query After Move To Sub Select:' + $newSelect->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n'));
 
     $newSelect;
 }
@@ -6805,7 +6805,7 @@ function meta::relational::functions::pureToSqlQuery::processJoinStrings(express
 function meta::relational::functions::pureToSqlQuery::buildJoinStrings(strings:SelectSQLQuery[1], prefix:RelationalOperationElement[1], separator:RelationalOperationElement[1], suffix:RelationalOperationElement[1], operation:SelectWithCursor[1], nodeId:String[1], state:State[1], inFilter:Boolean[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
    print(if(!$context.debug, |'',
-            | $context.space+ 'Start build join strings:' + $operation.select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n'));
+            | $context.space+ 'Start build join strings:' + $operation.select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n'));
 
    let js = ^JoinStrings(
                          strings=$inFilter->if(|$strings.filteringOperation, |$strings.columns),
@@ -6835,7 +6835,7 @@ function meta::relational::functions::pureToSqlQuery::buildJoinStrings(strings:S
              );
 
    print(if(!$context.debug, |'',
-            | $context.space+ 'End build join strings:' + $res.select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n'));
+            | $context.space+ 'End build join strings:' + $res.select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n'));
 
    $res;
 }
@@ -7122,14 +7122,14 @@ function meta::relational::functions::pureToSqlQuery::merge(parentTargetTreeNode
 function meta::relational::functions::pureToSqlQuery::mergeSQLQueryData(preQuerySet:SelectSQLQuery[*], nodeId:String[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):SelectSQLQuery[1]
 {
    print(if(!$context.debug, |'',
-            | $context.space+'   Merge\n'+$preQuerySet->map(q|$q.leftSideOfFilter->size()->toString()+' '+$q->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.H2, $extensions))->makeString($context.space+'     [\n'+$context.space+'       ','\n'+$context.space+'       ','\n'+$context.space+'     ]')+'\n'));
+            | $context.space+'   Merge\n'+$preQuerySet->map(q|$q.leftSideOfFilter->size()->toString()+' '+$q->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.DebugPrint, $extensions))->makeString($context.space+'     [\n'+$context.space+'       ','\n'+$context.space+'       ','\n'+$context.space+'     ]')+'\n'));
 
    let hasIsolations = $preQuerySet->map(p|$p.data->getAllNodeNames()->filter(n|$n->startsWith('__iso'))->makeString('|'))->removeDuplicates()->size() > 1;
    let querySet = $preQuerySet->map(q|let selfJoinAddedPreviously = if($q.data->isNotEmpty(),|$q.data->toOne()->addedSelfJoin(),|false);
                                     $q->manageIsolation([], [], $nodeId, false, ^$state(shouldIsolate = ($state.shouldIsolate || $hasIsolations) && !$selfJoinAddedPreviously), $context, $extensions););
 
    print(if(!$context.debug, |'',
-            | $context.space+'   Merge(hasIsolations:'+$hasIsolations->toString()+')\n'+$querySet->map(q|$q.leftSideOfFilter->size()->toString()+' '+$q->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.H2, $extensions))->makeString($context.space+'     [\n'+$context.space+'       ','\n'+$context.space+'       ','\n'+$context.space+'     ]')+'\n'));
+            | $context.space+'   Merge(hasIsolations:'+$hasIsolations->toString()+')\n'+$querySet->map(q|$q.leftSideOfFilter->size()->toString()+' '+$q->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.DebugPrint, $extensions))->makeString($context.space+'     [\n'+$context.space+'       ','\n'+$context.space+'       ','\n'+$context.space+'     ]')+'\n'));
 
    $querySet->map(q|$q->validate($extensions));
 
@@ -7493,7 +7493,7 @@ function meta::relational::functions::pureToSqlQuery::findTarget(join:Join[1], s
                                                            if ($j->isEmpty(),
                                                               | fail('Join ' + $join.name + ' not correctly specified/mapped. It does not join to the target table ' + $sourceTableAlias.relation->match([t:Table[1]|$t.name,
                                                                                                                                                                                                           u:Union[1]|'\'union\'',
-                                                                                                                                                                                                          s:SelectSQLQuery[1]|'\''+$s->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+' (mainTable: '+$tb.name+') \'';
+                                                                                                                                                                                                          s:SelectSQLQuery[1]|'\''+$s->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+' (mainTable: '+$tb.name+') \'';
                                                                                                                                                                                                          ])
                                                                                                                                                                                                    );
                                                                 $j->toOne();,

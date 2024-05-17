@@ -67,10 +67,12 @@ public class PostgresTestConnectionIntegration implements TestConnectionIntegrat
         postgresDatasourceSpecification.host = "localhost";
         postgresDatasourceSpecification.port = this.postgreSQLContainer.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT);
         postgresDatasourceSpecification.databaseName = "test";
+
         UserNamePasswordAuthenticationStrategy authSpec = new UserNamePasswordAuthenticationStrategy();
         authSpec.baseVaultReference = "postgresql.";
         authSpec.userNameVaultReference = "user";
         authSpec.passwordVaultReference = "password";
+
         RelationalDatabaseConnection conn = new RelationalDatabaseConnection(postgresDatasourceSpecification, authSpec, DatabaseType.Postgres);
         conn.type = DatabaseType.Postgres;           // for compatibility with legacy DatabaseConnection
         conn.element = null;

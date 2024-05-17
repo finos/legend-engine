@@ -56,7 +56,7 @@
                 <executions>
                     <execution>
                         <id>PCT-Generation</id>
-                        <phase>prepare-package</phase>
+                        <phase>process-test-classes</phase>
                         <goals>
                             <goal>generate-pct</goal>
                         </goals>
@@ -165,7 +165,6 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
@@ -226,6 +225,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-executionPlan</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
         <!-- TEST -->
     </dependencies>

@@ -48,9 +48,9 @@ public class VoidRelationalResult extends Result
     {
         super("VOID");
 
+        String sql = ((RelationalExecutionActivity) activities.getLast()).sql;
         try
         {
-            String sql = ((RelationalExecutionActivity) activities.getLast()).sql;
             this.connection = connection;
             this.statement = connection.createStatement();
             long start = System.currentTimeMillis();
@@ -70,7 +70,7 @@ public class VoidRelationalResult extends Result
         }
         catch (SQLException e)
         {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error while executing: " + sql, e);
         }
         finally
         {

@@ -49,6 +49,14 @@ function <<PCT.adapter>> meta::relational::tests::pct::testAdapterForRelationalW
   )
 }
 
+function <<PCT.adapter>> meta::relational::tests::pct::testAdapterForRelationalWithSnowflakeExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+{
+  meta::relational::tests::pct::testAdapterForRelationalExecution(
+      $f,
+      meta::pure::testConnection::getTestConnection(DatabaseType.Snowflake)
+  )
+}
+
 function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:Function<{->X[o]}>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1]):X[o]
 {
     let debug = noDebug();
@@ -158,6 +166,7 @@ function meta::relational::relation::testUtils::reprocess(f:Function<{->Any[*]}>
 
             // Update the database ------------
             let setUpSQLs = $reprocessed.csvs->joinStrings('\n-\n')->meta::alloy::service::execution::setUpDataSQLs($reprocessed.database->toOne(), $dbc.type);
+            print(if($debug.debug,|'\n' + $setUpSQLs->joinStrings('\n') + '\n',|''));
 
             let updatePlan = ^meta::pure::executionPlan::ExecutionPlan
             (
@@ -383,9 +392,10 @@ function meta::relational::relation::testUtils::reprocessNew(values:Any[*], type
 function meta::relational::relation::testUtils::processTDS(tds:TDS<Any>[1], state:ProcessingState[1]):ProcessingState[1]
 {
   let map = meta::relational::transform::fromPure::pureTypeToDataTypeMap();
+  let rand = random() * 10000000;
   let table = ^Table
   (
-    name = 'tb' + now()->toEpochValue(DurationUnit.MILLISECONDS)->toString(),
+    name = 'tb_' + $rand->floor()->toString() + '_' + now()->toEpochValue(DurationUnit.MILLISECONDS)->toString(),
     columns = $tds->columns()->map(c|
                     ^meta::relational::metamodel::Column(
                         name=$c.name->toOne(),
