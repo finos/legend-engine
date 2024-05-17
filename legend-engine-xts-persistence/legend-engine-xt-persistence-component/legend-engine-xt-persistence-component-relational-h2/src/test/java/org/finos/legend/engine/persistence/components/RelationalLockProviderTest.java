@@ -55,7 +55,7 @@ public class RelationalLockProviderTest extends BaseTest
                 .build();
         Executor executor = RelationalIngestor.getExecutor(H2Sink.get(), JdbcConnection.of(h2Sink.connection()));
         lockProvider.createAndInitialize(executor, lockInfoDataset, "main");
-        lockProvider.lock(executor, lockInfoDataset);
+        lockProvider.acquireLock(executor, lockInfoDataset);
 
         List<Map<String, Object>> result = h2Sink.executeQuery("select * from main_legend_persistence_lock");
         Assertions.assertEquals("2000-01-01 00:00:00.0", result.get(0).get("insert_ts_utc").toString());

@@ -22,12 +22,12 @@ import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnec
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 
-public class TestRunner implements Runnable
+public class LockTestRunner implements Runnable
 {
     private RelationalLockProvider lockProvider;
     private JdbcHelper h2Sink;
 
-    public TestRunner(RelationalLockProvider lockProvider, String h2User, String h2Pwd, String h2JdbcUrl)
+    public LockTestRunner(RelationalLockProvider lockProvider, String h2User, String h2Pwd, String h2JdbcUrl)
     {
         this.lockProvider = lockProvider;
         this.h2Sink = JdbcHelper.of(H2Sink.createConnection(h2User, h2Pwd, h2JdbcUrl));
@@ -40,7 +40,7 @@ public class TestRunner implements Runnable
         Executor executor = RelationalIngestor.getExecutor(H2Sink.get(), JdbcConnection.of(h2Sink.connection()));
 
         executor.begin();
-        lockProvider.lock(executor, lockInfoDataset);
+        lockProvider.acquireLock(executor, lockInfoDataset);
         String sql = "select max(table_batch_id) as batch_id from batch_metadata";
         int nextBatchId = ((int) h2Sink.executeQuery(sql).get(0).get("batch_id")) + 1;
         String insertNextBatch = "INSERT INTO batch_metadata" +

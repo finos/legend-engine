@@ -90,16 +90,16 @@ public abstract class RelationalLockProviderAbstract
     public void createAndInitialize(Executor<SqlGen, TabularData, SqlPlan> executor, LockInfoDataset lockDataset, String tableName)
     {
         executor.setSqlLogging(sqlLogging());
-        LOGGER.info("Creating and initializing Lock dataset: " + lockDataset.name());
+        LOGGER.info(String.format("Creating and initializing Lock dataset: %s, Case Conversion %s", lockDataset.name(), caseConversion()));
         Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
         placeHolderKeyValues.put(BATCH_START_TS_PATTERN, PlaceholderValue.of(LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER), false));
         executor.executePhysicalPlan(createAndInitializeLockSqlPlan(lockDataset, tableName), placeHolderKeyValues);
     }
 
-    public void lock(Executor<SqlGen, TabularData, SqlPlan> executor, LockInfoDataset lockDataset)
+    public void acquireLock(Executor<SqlGen, TabularData, SqlPlan> executor, LockInfoDataset lockDataset)
     {
         executor.setSqlLogging(sqlLogging());
-        LOGGER.info("Acquiring lock using LockInfoDataset: " + lockDataset.name());
+        LOGGER.info(String.format("Acquiring lock with Lock dataset: %s, Case Conversion %s", lockDataset.name(), caseConversion()));
         Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
         placeHolderKeyValues.put(BATCH_START_TS_PATTERN, PlaceholderValue.of(LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER), false));
         executor.executePhysicalPlan(acquireLockSqlPlan(lockDataset), placeHolderKeyValues);

@@ -46,8 +46,8 @@ public class RelationalLockProviderMultiThreadTest extends BaseTest
         RelationalSinkCleanerTest.createBatchMetadataTableWithData("batch_metadata", "main");
         lockProvider.createAndInitialize(executor, lockInfoDataset, "main");
 
-        Thread t1 = new Thread(new TestRunner(lockProvider, H2_USER_NAME, H2_PASSWORD, H2_JDBC_URL));
-        Thread t2 = new Thread(new TestRunner(lockProvider, H2_USER_NAME, H2_PASSWORD, H2_JDBC_URL));
+        Thread t1 = new Thread(new LockTestRunner(lockProvider, H2_USER_NAME, H2_PASSWORD, H2_JDBC_URL));
+        Thread t2 = new Thread(new LockTestRunner(lockProvider, H2_USER_NAME, H2_PASSWORD, H2_JDBC_URL));
         t1.start();
         t2.start();
         t1.join();
