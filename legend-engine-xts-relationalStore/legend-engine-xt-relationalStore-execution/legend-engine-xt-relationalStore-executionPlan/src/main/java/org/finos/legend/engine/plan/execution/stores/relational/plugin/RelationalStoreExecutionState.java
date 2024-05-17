@@ -105,7 +105,7 @@ public class RelationalStoreExecutionState implements StoreExecutionState
         this.blockConnectionContext = blockConnectionContext;
     }
 
-    public Boolean ignoreFreeMarkerProcessing()
+    public boolean ignoreFreeMarkerProcessing()
     {
         return this.ignoreFreeMarkerProcessing;
     }
