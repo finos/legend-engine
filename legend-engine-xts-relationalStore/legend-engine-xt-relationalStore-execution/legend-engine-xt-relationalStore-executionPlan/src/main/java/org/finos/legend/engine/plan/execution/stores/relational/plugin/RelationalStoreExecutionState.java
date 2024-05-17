@@ -30,7 +30,7 @@ public class RelationalStoreExecutionState implements StoreExecutionState
     private boolean retainConnection;
     private BlockConnectionContext blockConnectionContext;
     private RuntimeContext runtimeContext;
-    private boolean ignoreFreeMarkerProcessing;
+    private boolean ignoreFreeMarkerProcessing = false;
 
     private RelationalStoreExecutionState(RelationalStoreState storeState, boolean retainConnection, BlockConnectionContext blockConnectionContext, RuntimeContext runtimeContext)
     {
