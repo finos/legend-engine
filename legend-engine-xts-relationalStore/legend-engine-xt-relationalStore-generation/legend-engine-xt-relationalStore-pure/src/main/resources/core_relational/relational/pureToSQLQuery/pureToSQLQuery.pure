@@ -5336,7 +5336,7 @@ function meta::relational::functions::pureToSqlQuery::addQuotesIfNoQuotes(aliasN
     if($aliasName->startsWith('"'),| $aliasName ,|'"'+$aliasName+'"');
 }
 
-function meta::relational::functions::pureToSqlQuery::getEnumExprPropertyMapping(f:FunctionExpression[1], paths:Pair<String, PathInformation>[*]):RelationalPropertyMapping[*]
+function <<access.private>> meta::relational::functions::pureToSqlQuery::getEnumExprPropertyMapping(f:FunctionExpression[1], paths:Pair<String, PathInformation>[*]):RelationalPropertyMapping[*]
 {
   let name = $f->instanceValueAtParameter(1)->cast(@String);
   let matchedPath = $paths->filter(p|$p.first->toLower() == $name->toLower());
@@ -5347,7 +5347,7 @@ function meta::relational::functions::pureToSqlQuery::getEnumExprPropertyMapping
   ); 
 }
 
-function meta::relational::functions::pureToSqlQuery::isFunctionWithName(r: ValueSpecification[1], functionName: String[1]):Boolean[1]
+function <<access.private>> meta::relational::functions::pureToSqlQuery::isFunctionWithName(r: ValueSpecification[1], functionName: String[1]):Boolean[1]
 {
   $r->instanceOf(FunctionExpression) && $r->cast(@FunctionExpression).func.functionName == $functionName;
 }
