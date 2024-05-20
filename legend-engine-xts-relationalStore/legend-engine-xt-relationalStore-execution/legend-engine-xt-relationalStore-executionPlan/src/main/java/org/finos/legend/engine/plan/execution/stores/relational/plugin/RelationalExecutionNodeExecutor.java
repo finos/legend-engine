@@ -957,6 +957,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     .collect(Collectors.joining(",", "", ""));
             RelationalStoreExecutionState relationalStoreExecutionState = (RelationalStoreExecutionState) threadExecutionState.getStoreExecutionState(StoreType.Relational);
             relationalStoreExecutionState.setIgnoreFreeMarkerProcessing(true);
+            prepareExecutionStateForTempTableExecution("temp_table_rows_from_result_set", threadExecutionState, valuesTuples);
             prepareExecutionNodeToIngestDataIntoTempTable(node, valuesTuples);
             node.accept(new ExecutionNodeExecutor(identity, threadExecutionState));
             relationalStoreExecutionState.setIgnoreFreeMarkerProcessing(false);
