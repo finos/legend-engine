@@ -36,19 +36,19 @@ public class Core_JavaBinding_PCTReportProvider implements PCTReportProvider
         {
             return Lists.mutable.with(
                     JsonMapper.builder().build().readValue(
-                            Core_JavaBinding_PCTReportProvider.class.getResourceAsStream("/pct-reports/base_compiled_testAdapterForJavaBindingExecution_Function_1__X_o_.json"),
+                            Core_JavaBinding_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_base_compiled_Java.json"),
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
-                            Core_JavaBinding_PCTReportProvider.class.getResourceAsStream("/pct-reports/basic_compiled_testAdapterForJavaBindingExecution_Function_1__X_o_.json"),
+                            Core_JavaBinding_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_basic_compiled_Java.json"),
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
-                            Core_JavaBinding_PCTReportProvider.class.getResourceAsStream("/pct-reports/grammar_compiled_testAdapterForJavaBindingExecution_Function_1__X_o_.json"),
+                            Core_JavaBinding_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_grammar_compiled_Java.json"),
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
-                            Core_JavaBinding_PCTReportProvider.class.getResourceAsStream("/pct-reports/relation_compiled_testAdapterForJavaBindingExecution_Function_1__X_o_.json"),
+                            Core_JavaBinding_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_relation_compiled_Java.json"),
                             AdapterReport.class
                     )
             );

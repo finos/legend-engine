@@ -23,7 +23,7 @@ public class TestPCRReport
     @Test
     public void canFindPCTReport()
     {
-        Assert.assertEquals("meta::pure::test::pct::testAdapterForInMemoryExecution_Function_1__X_o_, meta::relational::tests::pct::testAdapterForRelationalWithPostgresExecution_Function_1__X_o_", PCTReportProviderLoader.gatherReports().collect(c -> c.adapter).distinct().sortThis().makeString(", "));
+        Assert.assertEquals("Native, Postgres", PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey.adapter.name).distinct().sortThis().makeString(", "));
         Assert.assertEquals(8, PCTReportProviderLoader.gatherReports().size());
     }
 }

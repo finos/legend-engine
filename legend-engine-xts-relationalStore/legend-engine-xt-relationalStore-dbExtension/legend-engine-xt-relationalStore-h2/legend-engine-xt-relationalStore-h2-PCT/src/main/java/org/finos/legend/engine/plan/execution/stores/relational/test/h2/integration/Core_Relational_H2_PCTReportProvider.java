@@ -36,19 +36,19 @@ public class Core_Relational_H2_PCTReportProvider implements PCTReportProvider
         {
             return Lists.mutable.with(
                     JsonMapper.builder().build().readValue(
-                            Core_Relational_H2_PCTReportProvider.class.getResourceAsStream("/pct-reports/base_compiled_testAdapterForRelationalWithH2Execution_Function_1__X_o_.json"),
+                            Core_Relational_H2_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_base_compiled_H2.json"),
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
-                            Core_Relational_H2_PCTReportProvider.class.getResourceAsStream("/pct-reports/basic_compiled_testAdapterForRelationalWithH2Execution_Function_1__X_o_.json"),
+                            Core_Relational_H2_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_basic_compiled_H2.json"),
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
-                            Core_Relational_H2_PCTReportProvider.class.getResourceAsStream("/pct-reports/grammar_compiled_testAdapterForRelationalWithH2Execution_Function_1__X_o_.json"),
+                            Core_Relational_H2_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_grammar_compiled_H2.json"),
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
-                            Core_Relational_H2_PCTReportProvider.class.getResourceAsStream("/pct-reports/relation_compiled_testAdapterForRelationalWithH2Execution_Function_1__X_o_.json"),
+                            Core_Relational_H2_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_relation_compiled_H2.json"),
                             AdapterReport.class
                     )
             );

@@ -36,19 +36,19 @@ public class Core_Relational_DuckDB_PCTReportProvider implements PCTReportProvid
         {
             return Lists.mutable.with(
                     JsonMapper.builder().build().readValue(
-                            Core_Relational_DuckDB_PCTReportProvider.class.getResourceAsStream("/pct-reports/base_compiled_testAdapterForRelationalWithDuckDBExecution_Function_1__X_o_.json"),
+                            Core_Relational_DuckDB_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_base_compiled_DuckDB.json"),
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
-                            Core_Relational_DuckDB_PCTReportProvider.class.getResourceAsStream("/pct-reports/basic_compiled_testAdapterForRelationalWithDuckDBExecution_Function_1__X_o_.json"),
+                            Core_Relational_DuckDB_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_basic_compiled_DuckDB.json"),
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
-                            Core_Relational_DuckDB_PCTReportProvider.class.getResourceAsStream("/pct-reports/grammar_compiled_testAdapterForRelationalWithDuckDBExecution_Function_1__X_o_.json"),
+                            Core_Relational_DuckDB_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_grammar_compiled_DuckDB.json"),
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
-                            Core_Relational_DuckDB_PCTReportProvider.class.getResourceAsStream("/pct-reports/relation_compiled_testAdapterForRelationalWithDuckDBExecution_Function_1__X_o_.json"),
+                            Core_Relational_DuckDB_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_relation_compiled_DuckDB.json"),
                             AdapterReport.class
                     )
             );

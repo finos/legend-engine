@@ -36,19 +36,19 @@ public class Core_Relational_Snowflake_PCTReportProvider implements PCTReportPro
         {
             return Lists.mutable.with(
                     JsonMapper.builder().build().readValue(
-                            Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/base_compiled_testAdapterForRelationalWithSnowflakeExecution_Function_1__X_o_.json"),
+                            Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_base_compiled_Snowflake.json"),
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
-                            Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/basic_compiled_testAdapterForRelationalWithSnowflakeExecution_Function_1__X_o_.json"),
+                            Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_basic_compiled_Snowflake.json"),
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
-                            Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/grammar_compiled_testAdapterForRelationalWithSnowflakeExecution_Function_1__X_o_.json"),
+                            Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_grammar_compiled_Snowflake.json"),
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
-                            Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/relation_compiled_testAdapterForRelationalWithSnowflakeExecution_Function_1__X_o_.json"),
+                            Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_relation_compiled_Snowflake.json"),
                             AdapterReport.class
                     )
             );
