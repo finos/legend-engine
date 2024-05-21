@@ -17,32 +17,39 @@ package org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.int
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.pure.m3.pct.PCTReportProvider;
-import org.finos.legend.pure.m3.pct.model.Report;
+import org.finos.legend.pure.m3.pct.functions.model.Functions;
+import org.finos.legend.pure.m3.pct.reports.model.AdapterReport;
+import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProvider;
 
 public class Core_Relational_DuckDB_PCTReportProvider implements PCTReportProvider
 {
     @Override
-    public MutableList<Report> getReports()
+    public MutableList<Functions> getFunctions()
+    {
+        return Lists.mutable.empty();
+    }
+
+    @Override
+    public MutableList<AdapterReport> getAdapterReports()
     {
         try
         {
             return Lists.mutable.with(
                     JsonMapper.builder().build().readValue(
                             Core_Relational_DuckDB_PCTReportProvider.class.getResourceAsStream("/pct-reports/base_compiled_testAdapterForRelationalWithDuckDBExecution_Function_1__X_o_.json"),
-                            Report.class
+                            AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
                             Core_Relational_DuckDB_PCTReportProvider.class.getResourceAsStream("/pct-reports/basic_compiled_testAdapterForRelationalWithDuckDBExecution_Function_1__X_o_.json"),
-                            Report.class
+                            AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
                             Core_Relational_DuckDB_PCTReportProvider.class.getResourceAsStream("/pct-reports/grammar_compiled_testAdapterForRelationalWithDuckDBExecution_Function_1__X_o_.json"),
-                            Report.class
+                            AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
                             Core_Relational_DuckDB_PCTReportProvider.class.getResourceAsStream("/pct-reports/relation_compiled_testAdapterForRelationalWithDuckDBExecution_Function_1__X_o_.json"),
-                            Report.class
+                            AdapterReport.class
                     )
             );
         }

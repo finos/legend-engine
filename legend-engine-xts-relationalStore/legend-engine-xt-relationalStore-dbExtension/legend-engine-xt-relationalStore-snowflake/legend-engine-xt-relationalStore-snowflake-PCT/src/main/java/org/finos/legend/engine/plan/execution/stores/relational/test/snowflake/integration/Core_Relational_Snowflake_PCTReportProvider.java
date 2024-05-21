@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.test.h2.integration;
+package org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.integration;
 
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.eclipse.collections.api.factory.Lists;
@@ -21,7 +21,7 @@ import org.finos.legend.pure.m3.pct.functions.model.Functions;
 import org.finos.legend.pure.m3.pct.reports.model.AdapterReport;
 import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProvider;
 
-public class Core_Relational_H2_PCTReportProvider implements PCTReportProvider
+public class Core_Relational_Snowflake_PCTReportProvider implements PCTReportProvider
 {
     @Override
     public MutableList<Functions> getFunctions()
@@ -36,19 +36,19 @@ public class Core_Relational_H2_PCTReportProvider implements PCTReportProvider
         {
             return Lists.mutable.with(
                     JsonMapper.builder().build().readValue(
-                            Core_Relational_H2_PCTReportProvider.class.getResourceAsStream("/pct-reports/base_compiled_testAdapterForRelationalWithH2Execution_Function_1__X_o_.json"),
+                            Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/base_compiled_testAdapterForRelationalWithSnowflakeExecution_Function_1__X_o_.json"),
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
-                            Core_Relational_H2_PCTReportProvider.class.getResourceAsStream("/pct-reports/basic_compiled_testAdapterForRelationalWithH2Execution_Function_1__X_o_.json"),
+                            Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/basic_compiled_testAdapterForRelationalWithSnowflakeExecution_Function_1__X_o_.json"),
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
-                            Core_Relational_H2_PCTReportProvider.class.getResourceAsStream("/pct-reports/grammar_compiled_testAdapterForRelationalWithH2Execution_Function_1__X_o_.json"),
+                            Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/grammar_compiled_testAdapterForRelationalWithSnowflakeExecution_Function_1__X_o_.json"),
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
-                            Core_Relational_H2_PCTReportProvider.class.getResourceAsStream("/pct-reports/relation_compiled_testAdapterForRelationalWithH2Execution_Function_1__X_o_.json"),
+                            Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/relation_compiled_testAdapterForRelationalWithSnowflakeExecution_Function_1__X_o_.json"),
                             AdapterReport.class
                     )
             );

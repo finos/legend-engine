@@ -17,32 +17,39 @@ package org.finos.legend.engine.pure.code.core.java.binding;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.pure.m3.pct.PCTReportProvider;
-import org.finos.legend.pure.m3.pct.model.Report;
+import org.finos.legend.pure.m3.pct.functions.model.Functions;
+import org.finos.legend.pure.m3.pct.reports.model.AdapterReport;
+import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProvider;
 
 public class Core_JavaBinding_PCTReportProvider implements PCTReportProvider
 {
     @Override
-    public MutableList<Report> getReports()
+    public MutableList<Functions> getFunctions()
+    {
+        return Lists.mutable.empty();
+    }
+
+    @Override
+    public MutableList<AdapterReport> getAdapterReports()
     {
         try
         {
             return Lists.mutable.with(
                     JsonMapper.builder().build().readValue(
                             Core_JavaBinding_PCTReportProvider.class.getResourceAsStream("/pct-reports/base_compiled_testAdapterForJavaBindingExecution_Function_1__X_o_.json"),
-                            Report.class
+                            AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
                             Core_JavaBinding_PCTReportProvider.class.getResourceAsStream("/pct-reports/basic_compiled_testAdapterForJavaBindingExecution_Function_1__X_o_.json"),
-                            Report.class
+                            AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
                             Core_JavaBinding_PCTReportProvider.class.getResourceAsStream("/pct-reports/grammar_compiled_testAdapterForJavaBindingExecution_Function_1__X_o_.json"),
-                            Report.class
+                            AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
                             Core_JavaBinding_PCTReportProvider.class.getResourceAsStream("/pct-reports/relation_compiled_testAdapterForJavaBindingExecution_Function_1__X_o_.json"),
-                            Report.class
+                            AdapterReport.class
                     )
             );
         }

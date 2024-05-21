@@ -58,7 +58,7 @@
                         <id>PCT-Generation</id>
                         <phase>process-test-classes</phase>
                         <goals>
-                            <goal>generate-pct</goal>
+                            <goal>generate-pct-report</goal>
                         </goals>
                     </execution>
                 </executions>

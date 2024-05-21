@@ -33,7 +33,7 @@ public class SnowflakeTestConnectionIntegration implements TestConnectionIntegra
     @Override
     public MutableList<String> group()
     {
-        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "Postgres");
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "Snowflake");
     }
 
     @Override
