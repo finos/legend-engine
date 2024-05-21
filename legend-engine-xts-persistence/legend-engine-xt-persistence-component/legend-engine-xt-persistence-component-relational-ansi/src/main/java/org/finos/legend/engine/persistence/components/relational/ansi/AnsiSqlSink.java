@@ -172,6 +172,7 @@ import static org.finos.legend.engine.persistence.components.util.ValidationCate
 public class AnsiSqlSink extends RelationalSink
 {
     private static final RelationalSink INSTANCE;
+    private static final Set<Capability> CAPABILITIES;
     protected static final Map<Class<?>, LogicalPlanVisitor<?>> LOGICAL_PLAN_VISITOR_BY_CLASS;
 
     private static final String FILE = "legend_persistence_file";
@@ -179,6 +180,10 @@ public class AnsiSqlSink extends RelationalSink
 
     static
     {
+        Set<Capability> capabilities = new HashSet<>();
+        capabilities.add(Capability.ALIAS_IN_HAVING);
+        CAPABILITIES = Collections.unmodifiableSet(capabilities);
+
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
         logicalPlanVisitorByClass.put(Drop.class, new SQLDropVisitor());
         logicalPlanVisitorByClass.put(Truncate.class, new TruncateVisitor());
@@ -263,7 +268,7 @@ public class AnsiSqlSink extends RelationalSink
     private AnsiSqlSink()
     {
         super(
-            Collections.emptySet(),
+            CAPABILITIES,
             Collections.emptyMap(),
             Collections.emptyMap(),
             SqlGenUtils.QUOTE_IDENTIFIER,

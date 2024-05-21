@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-xts-morphir</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.45.1-SNAPSHOT</version>
+        <version>4.46.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-morphir-http-api</artifactId>
@@ -69,6 +69,14 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-shared-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-identity-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-identity-pac4j</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

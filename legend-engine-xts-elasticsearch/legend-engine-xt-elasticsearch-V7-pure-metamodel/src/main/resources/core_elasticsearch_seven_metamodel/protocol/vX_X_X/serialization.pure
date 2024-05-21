@@ -68,11 +68,11 @@ function meta::external::store::elasticsearch::v7::protocol::vX_X_X::elasticsear
           conn: Elasticsearch7StoreConnection[1] | $conn->meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::transformConnection($extensions)
       ],
 
-      transfers_executionPlan_transformNode = {mapping:Mapping[1], extensions:Extension[*] |
+      transfers_executionPlan_transformNode = {extensions:Extension[*] |
           [
               esNode: Elasticsearch7RequestExecutionNode[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::Elasticsearch7RequestExecutionNode(
                 _type = 'elasticsearch7RequestExecutionNode',
-                resultType = $esNode.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                resultType = $esNode.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($extensions),
                 connection = $esNode.connection->meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::transformConnection($extensions),
                 request = $esNode.request,
                 metadata = $esNode.metadata->match([

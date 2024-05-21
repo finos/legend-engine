@@ -323,7 +323,7 @@ class UnitemporalSnapshotTest extends BaseTest
         String dataPass1 = basePathForInput + "less_columns_in_staging/staging_data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "less_columns_in_staging/expected_pass1.csv";
         // 1. Load staging table
-        loadBasicStagingDataWithColumnsThanMain(dataPass1);
+        loadBasicStagingDataWithLessColumnsThanMain(dataPass1);
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01, " order by \"id\", \"batch_id_in\"");
@@ -332,7 +332,7 @@ class UnitemporalSnapshotTest extends BaseTest
         String dataPass2 = basePathForInput + "less_columns_in_staging/staging_data_pass2.csv";
         String expectedDataPass2 = basePathForExpected + "less_columns_in_staging/expected_pass2.csv";
         // 1. Load staging table
-        loadBasicStagingDataWithColumnsThanMain(dataPass2);
+        loadBasicStagingDataWithLessColumnsThanMain(dataPass2);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(4, 0, 1, 1, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01, " order by \"id\", \"batch_id_in\"");

@@ -715,6 +715,7 @@ Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionD
    dayOfWeek: String[1];
    dateTime: DateTime[1];
    adjustDate: DateTime[1];
+   toBoolean: Boolean[1];
 }
 
 Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemoForPresto
@@ -826,7 +827,8 @@ Mapping meta::relational::tests::mapping::sqlFunction::model::mapping::testMappi
           decodeBase64Result : decodeBase64(encodeBase64(alphaNumericString)),
 
           dateTime: dateTime,
-          adjustDate: adjust(dateTime, -7, 'DAYS')
+          adjustDate: adjust(dateTime, -7, 'DAYS'),
+          toBoolean: parseBoolean('true')
        )
 
     }

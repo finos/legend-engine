@@ -2874,6 +2874,40 @@ function meta::external::language::java::factory::knownPackage(pkg: meta::extern
    )))))))));
 }
 
+function meta::external::language::java::factory::isKnownPackage(pkg: meta::external::language::java::metamodel::Package[1]):Boolean[1]
+{
+     let pkgName = $pkg->packageToString();
+
+   if($pkg->instanceOf(KnownPackage),
+      | true,
+      |
+   if($pkgName == 'java.lang',
+      | true,
+      |
+   if($pkgName == 'java.util',
+      | true,
+      |
+   if($pkgName == 'java.util.function',
+      | true,
+      |
+   if($pkgName == 'java.util.stream',
+      | true,
+      |
+   if($pkgName == 'java.io',
+      | true,
+      |
+   if($pkgName == 'java.net',
+      | true,
+      |
+   if($pkgName == 'java.math',
+      | true,
+      |
+   if($pkgName == 'java.time',
+      | true,
+      | false
+   )))))))));
+}
+
 function meta::external::language::java::factory::javaLangPackage(): meta::external::language::java::factory::KnownPackage[1]
 {
    ^meta::external::language::java::factory::KnownPackage(
@@ -3478,44 +3512,53 @@ function <<access.private>> meta::external::language::java::factory::project::me
       {|
          let existing = $base->getClass($srcDirPath, $classFullName)->toOne();
          
-         let imports = $existing.additionalImports->concatenate($class.additionalImports)->removeDuplicates();
+         if ($existing->instanceOf(meta::external::language::java::metamodel::Enumeration) && $class->instanceOf(meta::external::language::java::metamodel::Class),
+          | $base,
+          | if ($existing->instanceOf(meta::external::language::java::metamodel::Class) && $class->instanceOf(meta::external::language::java::metamodel::Enumeration),
+            | $base->replaceClass($class),
+            | let imports = $existing.additionalImports->concatenate($class.additionalImports)->removeDuplicates();
 
-         let superType = if($existing.superType->isEmpty(),
-                            {|$class.superType},
-                            |
-                         if($class.superType->isEmpty(),
-                            {|$existing.superType},
-                            {|
-                               assert($existing.superType == $class.superType, |'Cannot change superType from ' + $existing.superType->toOne()->typeToString() + ' to ' + $class.superType->toOne()->typeToString());
-                               $existing.superType;
-                            }
-                         ));
+              let superType = if($existing.superType->isEmpty(),
+                                  {|$class.superType},
+                                  |
+                              if($class.superType->isEmpty(),
+                                  {|$existing.superType},
+                                  {|
+                                    assert($existing.superType == $class.superType, |'Cannot change superType from ' + $existing.superType->toOne()->typeToString() + ' to ' + $class.superType->toOne()->typeToString());
+                                    $existing.superType;
+                                  }
+                              ));
 
-         let interfaces = $existing.interfaces->concatenate($class.interfaces)->removeDuplicates();
-         
-         let newlyDefinedFields = $class.fields->filter({newField |
-            let existingField = $existing.fields->filter({m | $m.name == $newField.name});
-            assert($existingField->isEmpty() || (($existingField.type == $newField.type) && ($existingField.value == $newField.value) && ($existingField.valueCode == $newField.valueCode)), | 'Cannot merge field ' + $newField.name + ' in ' + $classFullName);
-            $existingField->isEmpty();
-         });
-         let fields = $existing.fields->concatenate($newlyDefinedFields);
-         
-         let newlyDefinedMethods = $class.methods->filter({newMethod|
-            let existingMethod = $existing.methods->filter({m| $m.name == $newMethod.name && $m.parameters.type == $newMethod.parameters.type});
-            assert($existingMethod->isEmpty() || ($existingMethod.body == $newMethod.body && $existingMethod.bodyCode == $newMethod.bodyCode), {| $existingMethod.bodyCode->match([
-                                                                                                                                                 c:Code[1] | println($c->codeToString()),
-                                                                                                                                                 x:Code[0] | println($existingMethod.body->toOne())
-                                                                                                                                               ]);
-                                                                                                                                               $newMethod.bodyCode->match([
-                                                                                                                                                 c:Code[1] | println($c->codeToString()),
-                                                                                                                                                 x:Code[0] | println($newMethod.body->toOne())
-                                                                                                                                               ]);
-                                                                                                                                              'Cannot merge implementations of ' + $newMethod->methodSignature() + ' in ' + $classFullName;});
-            $existingMethod->isEmpty();
-         });
-         let methods = $existing.methods->concatenate($newlyDefinedMethods);
+              let interfaces = $existing.interfaces->concatenate($class.interfaces)->removeDuplicates();
+              
+              let newlyDefinedFields = $class.fields->filter({newField |
+                  let existingField = $existing.fields->filter({m | $m.name == $newField.name});
+                  assert($existingField->isEmpty() || (($existingField.type == $newField.type) && ($existingField.value == $newField.value) && ($existingField.valueCode == $newField.valueCode)), | 'Cannot merge field ' + $newField.name + ' in ' + $classFullName);
+                  $existingField->isEmpty();
+              });
+              let fields = $existing.fields->concatenate($newlyDefinedFields);
+              
+              let newlyDefinedMethods = $class.methods->filter({newMethod|
+                  let existingMethod = $existing.methods->filter({m| $m.name == $newMethod.name && $m.parameters.type == $newMethod.parameters.type});
+                  assert($existingMethod->isEmpty() || ($existingMethod.body == $newMethod.body && $existingMethod.bodyCode == $newMethod.bodyCode), {| $existingMethod.bodyCode->match([
+                                                                                                                                                      c:Code[1] | println($c->codeToString()),
+                                                                                                                                                      x:Code[0] | println($existingMethod.body->toOne())
+                                                                                                                                                    ]);
+                                                                                                                                                    $newMethod.bodyCode->match([
+                                                                                                                                                      c:Code[1] | println($c->codeToString()),
+                                                                                                                                                      x:Code[0] | println($newMethod.body->toOne())
+                                                                                                                                                    ]);
+                                                                                                                                                    'Cannot merge implementations of ' + $newMethod->methodSignature() + ' in ' + $classFullName;});
+                  $existingMethod->isEmpty();
+              });
+              let methods = $existing.methods->concatenate($newlyDefinedMethods);
 
-         $base->replaceClass(^$existing(additionalImports=$imports, superType=$superType, interfaces=$interfaces, fields=$fields, methods=$methods));
+              let modifiers = $existing.modifiers->concatenate($class.modifiers)->removeDuplicates();
+              let f = ^$existing(additionalImports=$imports, superType=$superType, interfaces=$interfaces, fields=$fields, methods=$methods, modifiers=$modifiers);
+
+              $base->replaceClass($f);
+              
+            ));
       }
    );
 }

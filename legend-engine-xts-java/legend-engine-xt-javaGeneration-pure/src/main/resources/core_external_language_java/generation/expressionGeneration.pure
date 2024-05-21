@@ -285,16 +285,22 @@ function <<access.private>> meta::external::language::java::transform::processCo
         if(!$state.visitedFunctions->contains($fe.func->elementToPath()),
            |print(if($debug.debug,|$debug.space+'Implementation of: \''+$fe.func->elementToPath()+'\'\n',|''));
            let updatedState = $state->addDependencyVisitedFunction($fe.func->elementToPath());
-
+            
             let implBody    = $fe.func->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate()->generateJavaMethodBody($newCon, $debug->indent());
-            let classesUsed = $signature.method->typesUsed()->concatenate($implBody->typesUsed())->typesToClasses();
+            let classesUsed = $signature.method->typesUsed()
+                                ->typesToClasses()
+                                ->filter(c | !meta::external::language::java::factory::isKnownPackage($c.package))
+                                ->filter(c | !meta::external::language::java::transform::isProvidedClass($conventions, $c))
+                                ->map(c | $c->addModifiers(['public'])
+                                            ->usingKnownPackages($conventions->knownPackages()));
+            
             let withImports = javaClass('public', $signature.class)
                     ->usingKnownPackages($conventions->knownPackages())
                     ->imports($conventions->standardImports());
             let impl             = $withImports->addMethod(javaMethod(['public', 'static'], $signature.method.returnType, $signature.method.name, $signature.method.parameters, $implBody));
             let dependencies     = $implBody->dependencies()->removeDuplicates();
             let withDependencies = $dependencies->resolveProjects($updatedState);
-            let project          = mergeProjects(newProject()->addClass($impl)->concatenate($withDependencies->getProjects($dependencies))->toOneMany());
+            let project          = mergeProjects(newProject()->addClass($impl)->addClasses($classesUsed)->concatenate($withDependencies->getProjects($dependencies))->toOneMany());
             $withDependencies->addDependencyProject($name, $project);
           ,|$state);
         }

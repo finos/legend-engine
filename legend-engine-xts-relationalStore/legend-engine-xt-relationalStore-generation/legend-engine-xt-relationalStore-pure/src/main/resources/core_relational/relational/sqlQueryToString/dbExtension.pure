@@ -1027,6 +1027,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   parseFloat,
   parseInteger,
   parseJson,
+  parseBoolean,
   percentile,
   plus,
   position,

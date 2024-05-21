@@ -65,3 +65,9 @@ function <<test.Test>> meta::relational::tests::query::snowflake::testFilterBool
 }
 
 
+function <<test.Test>> meta::relational::tests::query::snowflake::testBooleanParsing():Boolean[1]
+{
+   let fn = {|Person.all()->project([col(p|$p.firstName,'firstName'), col(p|'true'->parseBoolean(), 'bool')])};
+   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+   assertEquals('select "root".FIRSTNAME as "firstName", to_boolean(\'true\') as "bool" from personTable as "root"',$s);
+}
