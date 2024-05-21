@@ -246,7 +246,7 @@ public class SnowflakeSink extends AnsiSqlSink
                 return results.size() > 0;
             },
             (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new SnowflakeDataTypeMapping()),
-            (executor, sink, dataset) -> sink.constructDatasetFromDatabase(dataset, new SnowflakeJdbcPropertiesToLogicalDataTypeMapping()));
+            (executor, sink, dataset) -> sink.constructDatasetFromDatabase(dataset, new SnowflakeJdbcPropertiesToLogicalDataTypeMapping(), true));
     }
 
     @Override

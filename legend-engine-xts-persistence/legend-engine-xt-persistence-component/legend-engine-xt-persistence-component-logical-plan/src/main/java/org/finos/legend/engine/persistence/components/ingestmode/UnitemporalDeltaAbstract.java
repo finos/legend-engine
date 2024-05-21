@@ -26,7 +26,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.Vers
 import org.immutables.value.Value;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.immutables.value.Value.Default;
 import static org.immutables.value.Value.Immutable;

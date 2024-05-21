@@ -16,7 +16,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.s
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -48,8 +47,8 @@ public class TestPoolName extends TestConnectionManagement
     @Test
     public void testPoolNameIncludesCredentialType()
     {
-        Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("pool1");
-        Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("pool2");
+        Identity user1 = new Identity("pool1");
+        Identity user2 = new Identity("pool2");
         DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Collections.singletonList("DROP TABLE IF EXISTS T1;"));
 
         String pool1 = connectionStateManager.poolNameFor(user1, ds1.getConnectionKey());

@@ -22,6 +22,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.result.Relationa
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.core.ReplExtension;
+import org.finos.legend.engine.repl.relational.commands.Cache;
 import org.finos.legend.engine.repl.relational.commands.DB;
 import org.finos.legend.engine.repl.relational.commands.Load;
 import org.finos.legend.engine.repl.relational.local.LocalConnectionManagement;
@@ -34,7 +35,6 @@ import java.awt.*;
 import java.sql.SQLException;
 
 import static org.finos.legend.engine.repl.relational.grid.Grid.prettyGridPrint;
-import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
 
 public class RelationalReplExtension implements ReplExtension
 {
@@ -77,15 +77,12 @@ public class RelationalReplExtension implements ReplExtension
 
         try
         {
-            if (canShowGrid())
-            {
-                this.replGridServer = new ReplGridServer(this.client);
-                this.replGridServer.initializeServer();
-            }
+            this.replGridServer = new ReplGridServer(this.client);
+            this.replGridServer.initializeServer();
         }
         catch (Exception e)
         {
-            this.client.getTerminal().writer().println(e.getMessage());
+           throw new RuntimeException(e);
         }
     }
 
@@ -99,10 +96,8 @@ public class RelationalReplExtension implements ReplExtension
     public MutableList<Command> getExtraCommands()
     {
         MutableList<Command> extraCommands = Lists.mutable.with(new DB(this.client, this), new Load(this.client, this));
-        if (canShowGrid())
-        {
-            extraCommands.add(new Show(this.client, this.replGridServer));
-        }
+        extraCommands.add(new Show(this.client, this.replGridServer));
+        extraCommands.add(new Cache(this.client, this.client.getPlanExecutor()));
         return extraCommands;
     }
 

@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.ide.api.execution.function.manager;
 
-import org.finos.legend.engine.ide.api.execution.function.manager.ContentType;
 
 enum OutputFormat
 {

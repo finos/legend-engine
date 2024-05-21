@@ -27,7 +27,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -72,7 +71,7 @@ public class TestLocalH2DatasourceSpecificationCaching extends DbSpecificTests
     @Test
     public void multipleRequestsShareSameLocalH2DatasourceSpecification() throws Exception
     {
-        Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+        Identity identity1 = new Identity("identity1");
 
         assertEquals(0, ConnectionPoolTestUtils.getDataSourceSpecifications().size());
         assertEquals(0, ConnectionPoolTestUtils.getConnectionPools().size());
@@ -119,7 +118,7 @@ public class TestLocalH2DatasourceSpecificationCaching extends DbSpecificTests
     @Test
     public void multipleRequestsDoNoShareSameLocalH2DatasourceSpecificationWhenSetupSQLsDiffer() throws Exception
     {
-        Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+        Identity identity1 = new Identity("identity1");
 
         // User gets a connection
         RelationalDatabaseConnection spec1 = this.buildLocalH2DatasourceSpecWithTableName("PERSON1");

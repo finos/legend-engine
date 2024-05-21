@@ -40,7 +40,6 @@ import org.finos.legend.engine.postgres.config.GSSConfig;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 import org.finos.legend.engine.postgres.types.PGType;
 import org.finos.legend.engine.postgres.types.PGTypes;
-import org.finos.legend.engine.postgres.utils.ExceptionUtil;
 import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
@@ -208,12 +207,14 @@ public class PostgresWireProtocol
     private AuthenticationContext authContext;
     private Properties properties;
 
+    private Messages messages;
 
     public PostgresWireProtocol(SessionsFactory sessions,
             /*Function<CoordinatorSessionSettings, AccessControl> getAcessControl,*/
             /*Consumer<ChannelPipeline> addTransportHandler,*/
                                 AuthenticationProvider authService,
-                                GSSConfig gssConfig, Supplier<SslContext> getSslContext)
+                                GSSConfig gssConfig, Supplier<SslContext> getSslContext,
+                                Messages messages)
     {
         this.sessions = sessions;
         //this.getAccessControl = getAcessControl;
@@ -222,6 +223,7 @@ public class PostgresWireProtocol
         this.decoder = new PgDecoder(getSslContext);
         this.handler = new MessageHandler();
         this.gssConfig = gssConfig;
+        this.messages = messages;
     }
 
 
@@ -283,11 +285,13 @@ public class PostgresWireProtocol
     {
 
         private final Channel channel;
+        private final Messages messages;
         //private final TransactionState transactionState;
 
-        private ReadyForQueryCallback(Channel channel)
+        private ReadyForQueryCallback(Channel channel, Messages messages)
         {
             this.channel = channel;
+            this.messages = messages;
             //this.transactionState = transactionState;
         }
 
@@ -298,7 +302,7 @@ public class PostgresWireProtocol
                     || (t != null && t.getCause() instanceof ClientInterrupted);
             if (!clientInterrupted)
             {
-                Messages.sendReadyForQuery(channel);
+                messages.sendReadyForQuery(channel);
             }
         }
     }
@@ -334,10 +338,10 @@ public class PostgresWireProtocol
                     /*AccessControl accessControl = session == null
                         ? AccessControl.DISABLED
                         : getAccessControl.apply(session.sessionSettings());
-                    Messages.sendErrorResponse(channel, accessControl, t);
+                    messages.sendErrorResponse(channel, accessControl, t);
                     */
                     LOGGER.error("Unable to handle query", t);
-                    Messages.sendErrorResponse(channel, t);
+                    messages.sendErrorResponse(channel, t);
                 }
                 catch (Throwable ti)
                 {
@@ -421,13 +425,13 @@ public class PostgresWireProtocol
                     channel.close();
                     return;
                 default:
-                   /* Messages.sendErrorResponse(
+                   /* messages.sendErrorResponse(
                         channel,
                         session == null
                             ? AccessControl.DISABLED
                             : getAccessControl.apply(session.sessionSettings()),
                         new UnsupportedOperationException("Unsupported messageType: " + decoder.msgType()));*/
-                    Messages.sendErrorResponse(channel,
+                    messages.sendErrorResponse(channel,
                             new UnsupportedOperationException("Unsupported messageType: " + decoder.msgType()));
             }
         }
@@ -511,24 +515,24 @@ public class PostgresWireProtocol
                     "No valid auth.host_based entry found for host \"%s\", user \"%s\". Did you enable TLS in your client?",
                     address.getHostAddress(), userName
             );
-            Messages.sendAuthenticationError(channel, errorMessage);
+            messages.sendAuthenticationError(channel, errorMessage);
         }
         else
         {
             authContext = new AuthenticationContext(authMethod, connProperties, userName, LOGGER);
             if (authMethod.name() == AuthenticationMethodType.PASSWORD)
             {
-                Messages.sendAuthenticationCleartextPassword(channel);
+                messages.sendAuthenticationCleartextPassword(channel);
                 return;
             }
             if (authMethod.name() == AuthenticationMethodType.GSS)
             {
                 if (gssConfig == null)
                 {
-                    Messages.sendAuthenticationError(channel, "GSS Auth not configured in this server");
+                    messages.sendAuthenticationError(channel, "GSS Auth not configured in this server");
                     return;
                 }
-                Messages.sendAuthenticationKerberos(channel);
+                messages.sendAuthenticationKerberos(channel);
                 return;
             }
             finishAuthentication(channel);
@@ -545,7 +549,7 @@ public class PostgresWireProtocol
         }
         catch (Exception e)
         {
-            Messages.sendAuthenticationError(channel, e.getMessage());
+            messages.sendAuthenticationError(channel, e.getMessage());
             LOGGER.error("Auth Error", e);
         }
         finally
@@ -565,7 +569,7 @@ public class PostgresWireProtocol
         }
         catch (Exception e)
         {
-            Messages.sendAuthenticationError(channel, e.getMessage());
+            messages.sendAuthenticationError(channel, e.getMessage());
             LOGGER.error("Auth Error", e);
         }
         finally
@@ -580,12 +584,12 @@ public class PostgresWireProtocol
         String database = properties.getProperty("database");
         session = sessions.createSession(database, authenticatedUser);
         MDC.put("user", authenticatedUser.getName());
-        Messages.sendAuthenticationOK(channel)
+        messages.sendAuthenticationOK(channel)
                 .addListener(f -> sendParams(channel))
-                //.addListener(f -> Messages.sendKeyData(channel, session.id(), session.secret()))
+                //.addListener(f -> messages.sendKeyData(channel, session.id(), session.secret()))
                 .addListener(f ->
                 {
-                    Messages.sendReadyForQuery(channel);
+                    messages.sendReadyForQuery(channel);
                 /*if (properties.containsKey("CrateDBTransport")) {
                     switchToTransportProtocol(channel);
                 }*/
@@ -603,14 +607,14 @@ public class PostgresWireProtocol
 
     private void sendParams(Channel channel)
     {
-        /* Messages.sendParameterStatus(channel, "crate_version", Version.CURRENT.externalNumber());
+        /* messages.sendParameterStatus(channel, "crate_version", Version.CURRENT.externalNumber());
          */
-        Messages.sendParameterStatus(channel, "server_version", PG_SERVER_VERSION);
-        Messages.sendParameterStatus(channel, "server_encoding", "UTF8");
-        Messages.sendParameterStatus(channel, "client_encoding", "UTF8");
-        Messages.sendParameterStatus(channel, "datestyle", "ISO");
-        Messages.sendParameterStatus(channel, "TimeZone", "UTC");
-        Messages.sendParameterStatus(channel, "integer_datetimes", "on");
+        messages.sendParameterStatus(channel, "server_version", PG_SERVER_VERSION);
+        messages.sendParameterStatus(channel, "server_encoding", "UTF8");
+        messages.sendParameterStatus(channel, "client_encoding", "UTF8");
+        messages.sendParameterStatus(channel, "datestyle", "ISO");
+        messages.sendParameterStatus(channel, "TimeZone", "UTC");
+        messages.sendParameterStatus(channel, "integer_datetimes", "on");
     }
 
     /**
@@ -637,8 +641,8 @@ public class PostgresWireProtocol
         }
         catch (Throwable t)
         {
-            //Messages.sendErrorResponse(channel, getAccessControl.apply(session.sessionSettings()), t);
-            Messages.sendErrorResponse(channel, t);
+            //messages.sendErrorResponse(channel, getAccessControl.apply(session.sessionSettings()), t);
+            messages.sendErrorResponse(channel, t);
 
         }
     }
@@ -666,7 +670,7 @@ public class PostgresWireProtocol
             paramTypes.add(dataType);
         }
         session.parse(statementName, query, paramTypes);
-        Messages.sendParseComplete(channel);
+        messages.sendParseComplete(channel);
     }
 
     private void handlePassword(ByteBuf buffer, final Channel channel, int payloadLength)
@@ -677,7 +681,7 @@ public class PostgresWireProtocol
                 byte[] inputToken = readByteArray(buffer, payloadLength);
                 if (inputToken == null)
                 {
-                    Messages.sendErrorResponse(channel, new IllegalStateException("GSS Token cannot be empty"));
+                    messages.sendErrorResponse(channel, new IllegalStateException("GSS Token cannot be empty"));
                     return;
                 }
                 Subject serverSubject = SubjectTools.getSubjectFromKeytab(gssConfig.getKerberosKeytabFile(), gssConfig.getKerberosUserPrincipal(), false);
@@ -695,7 +699,7 @@ public class PostgresWireProtocol
                         outputToken = gssContext.acceptSecContext(inputToken, 0, inputToken.length);
                         if (outputToken != null)
                         {
-                            Messages.sendGssOutToken(channel, outputToken);
+                            messages.sendGssOutToken(channel, outputToken);
                         }
                     }
 
@@ -768,7 +772,7 @@ public class PostgresWireProtocol
                         break;
 
                     default:
-                       /* Messages.sendErrorResponse(
+                       /* messages.sendErrorResponse(
                             channel,
                             getAccessControl.apply(session.sessionSettings()),
                             new UnsupportedOperationException(String.format(
@@ -778,7 +782,7 @@ public class PostgresWireProtocol
                                 paramType.getName())
                             )
                         );*/
-                        Messages.sendErrorResponse(
+                        messages.sendErrorResponse(
                                 channel,
                                 new UnsupportedOperationException(String.format(
                                         Locale.ENGLISH,
@@ -794,7 +798,7 @@ public class PostgresWireProtocol
 
         FormatCodes.FormatCode[] resultFormatCodes = FormatCodes.fromBuffer(buffer);
         session.bind(portalName, statementName, params, resultFormatCodes);
-        Messages.sendBindComplete(channel);
+        messages.sendBindComplete(channel);
     }
 
     private <T> List<T> createList(short size)
@@ -825,17 +829,17 @@ public class PostgresWireProtocol
             if (type == 'S')
             {
                 ParameterMetaData parameters = describeResult.getParameters();
-                Messages.sendParameterDescription(channel, parameters);
+                messages.sendParameterDescription(channel, parameters);
             }
             if (fields == null)
             {
-                Messages.sendNoData(channel);
+                messages.sendNoData(channel);
             }
             else
             {
                 FormatCodes.FormatCode[] resultFormatCodes =
                         type == 'P' ? session.getResultFormatCodes(portalOrStatement) : null;
-                Messages.sendRowDescription(channel, fields, resultFormatCodes);
+                messages.sendRowDescription(channel, fields, resultFormatCodes);
             }
             OpenTelemetryUtil.TOTAL_SUCCESS_METADATA.add(1);
             OpenTelemetryUtil.METADATA_DURATION.record(System.currentTimeMillis() - startTime);
@@ -874,7 +878,7 @@ public class PostgresWireProtocol
  /*       if (query.isEmpty()) {
             // remove portal so that it doesn't stick around and no attempt to batch it with follow up statement is made
             session.close((byte) 'P', portalName);
-            Messages.sendEmptyQueryResponse(channel);
+            messages.sendEmptyQueryResponse(channel);
             return;
         }*/
       /*  List<? extends DataType> outputTypes = session.getOutputTypes(portalName);
@@ -923,13 +927,13 @@ public class PostgresWireProtocol
 
 
             DelayableWriteChannel.DelayedWrites delayedWrites = channel.delayWrites();
-            ResultSetReceiver resultReceiver = new ResultSetReceiver(query, channel, delayedWrites, false, null);
+            ResultSetReceiver resultReceiver = new ResultSetReceiver(query, channel, delayedWrites, false, null,messages);
             session.execute(portalName, maxRows, resultReceiver);
         }
         catch (Exception e)
         {
             span.recordException(e);
-            throw ExceptionUtil.wrapException(e);
+            throw PostgresServerException.wrapException(e);
         }
         finally
         {
@@ -955,19 +959,19 @@ public class PostgresWireProtocol
             //session.resetDeferredExecutions();
             channel.writePendingMessages();*/
             session.clearState();
-            Messages.sendReadyForQuery(channel);
+            messages.sendReadyForQuery(channel);
             return;
         }
         try
         {
-            ReadyForQueryCallback readyForQueryCallback = new ReadyForQueryCallback(channel);
+            ReadyForQueryCallback readyForQueryCallback = new ReadyForQueryCallback(channel, messages);
             session.sync().whenComplete(readyForQueryCallback);
         }
         catch (Throwable t)
         {
             channel.discardDelayedWrites();
-            Messages.sendErrorResponse(channel, t);
-            Messages.sendReadyForQuery(channel);
+            messages.sendErrorResponse(channel, t);
+            messages.sendReadyForQuery(channel);
         }
     }
 
@@ -979,7 +983,7 @@ public class PostgresWireProtocol
         byte b = buffer.readByte();
         String portalOrStatementName = readCString(buffer);
         session.close((char) b, portalOrStatementName);
-        Messages.sendCloseComplete(channel);
+        messages.sendCloseComplete(channel);
     }
 
     /*    void handleSimpleQuery(ByteBuf buffer, final DelayableWriteChannel channel) {
@@ -987,7 +991,7 @@ public class PostgresWireProtocol
             assert queryString != null : "query must not be nulL";
 
             if (queryString.isEmpty() || ";".equals(queryString)) {
-                Messages.sendEmptyQueryResponse(channel);
+                messages.sendEmptyQueryResponse(channel);
                 sendReadyForQuery(channel, TransactionState.IDLE);
                 return;
             }
@@ -996,7 +1000,7 @@ public class PostgresWireProtocol
             try {
                 statements = SqlParser.createStatements(queryString);
             } catch (Exception ex) {
-                Messages.sendErrorResponse(channel, getAccessControl.apply(session.sessionSettings()), ex);
+                messages.sendErrorResponse(channel, getAccessControl.apply(session.sessionSettings()), ex);
                 sendReadyForQuery(channel, TransactionState.IDLE);
                 return;
             }
@@ -1018,8 +1022,8 @@ public class PostgresWireProtocol
 
             if (queryString.isEmpty() || ";".equals(queryString))
             {
-                Messages.sendEmptyQueryResponse(channel);
-                Messages.sendReadyForQuery(channel);
+                messages.sendEmptyQueryResponse(channel);
+                messages.sendReadyForQuery(channel);
                 return;
             }
 
@@ -1029,7 +1033,7 @@ public class PostgresWireProtocol
             {
                 composedFuture = composedFuture.thenCompose(result -> handleSingleQuery(query, channel));
             }
-            composedFuture.whenComplete(new ReadyForQueryCallback(channel));
+            composedFuture.whenComplete(new ReadyForQueryCallback(channel, messages));
         }
         catch (Exception e)
         {
@@ -1054,14 +1058,14 @@ public class PostgresWireProtocol
 
             if (query.isEmpty() || ";".equals(query))
             {
-                Messages.sendEmptyQueryResponse(channel);
+                messages.sendEmptyQueryResponse(channel);
                 result.complete(null);
                 return result;
             }
             try
             {
                 DelayableWriteChannel.DelayedWrites delayedWrites = channel.delayWrites();
-                ResultSetReceiver resultReceiver = new ResultSetReceiver(query, channel, delayedWrites, true, null);
+                ResultSetReceiver resultReceiver = new ResultSetReceiver(query, channel, delayedWrites, true, null, messages);
                 session.executeSimple(query, resultReceiver);
                 return session.sync();
             }
@@ -1070,7 +1074,7 @@ public class PostgresWireProtocol
                 //TODO need to understand this usecase
                 LOGGER.warn("Error processing single query", t);
                 session.clearState();
-                Messages.sendErrorResponse(channel, t);
+                messages.sendErrorResponse(channel, t);
                 result.completeExceptionally(t);
                 return result;
             }

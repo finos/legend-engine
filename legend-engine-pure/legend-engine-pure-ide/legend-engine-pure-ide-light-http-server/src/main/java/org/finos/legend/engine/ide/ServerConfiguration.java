@@ -17,7 +17,6 @@ package org.finos.legend.engine.ide;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.dropwizard.Configuration;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
-import org.finos.legend.engine.ide.SourceLocationConfiguration;
 
 import java.util.List;
 

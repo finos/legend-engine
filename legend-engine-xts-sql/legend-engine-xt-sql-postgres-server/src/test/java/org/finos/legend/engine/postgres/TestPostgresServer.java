@@ -24,9 +24,10 @@ import org.finos.legend.engine.postgres.config.ServerConfig;
 public class TestPostgresServer extends PostgresServer
 {
 
-    public TestPostgresServer(ServerConfig serverConfig, SessionsFactory sessionsFactory, AuthenticationProvider authenticationProvider)
+    public TestPostgresServer(ServerConfig serverConfig, SessionsFactory sessionsFactory,
+                              AuthenticationProvider authenticationProvider, Messages messages)
     {
-        super(serverConfig, sessionsFactory, authenticationProvider);
+        super(serverConfig, sessionsFactory, authenticationProvider, messages);
     }
 
     public void startUp()

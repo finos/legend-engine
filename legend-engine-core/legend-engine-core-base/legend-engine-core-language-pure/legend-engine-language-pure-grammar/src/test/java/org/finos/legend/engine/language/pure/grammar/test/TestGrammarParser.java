@@ -20,10 +20,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.*;
@@ -39,6 +42,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class TestGrammarParser
 {
@@ -103,7 +107,7 @@ public class TestGrammarParser
             }
             catch (Exception e)
             {
-                LogInfo errorResponse = new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.PARSE_ERROR, e);
+                LogInfo errorResponse = new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.PARSE_ERROR, e);
                 Assert.assertNotNull("No source information provided in error", errorResponse.sourceInformation);
                 MatcherAssert.assertThat(EngineException.buildPrettyErrorMessage(errorResponse.message, errorResponse.sourceInformation,
                         EngineErrorType.PARSER), CoreMatchers.startsWith(expectedErrorMsg));
@@ -179,6 +183,56 @@ public class TestGrammarParser
                 "}",
                 "PARSER error at [6:12-33]: Function name in test 'SimpleFunctionMisMatch' does not match function name 'SimpleFunction'"
                 );
+    }
+
+    @Test
+    public void testGetFunctionDescriptor()
+    {
+        PureModelContextData pmcd = TestGrammarParserTestSuite.test("###Pure \n" +
+                "function model::test(name: String[1], isTrue: Boolean[*]): String[*]\n" +
+                "{ \n" +
+                "   'test'; \n" +
+                "} \n");
+        String testFunctionName = "model::test_String_1__Boolean_MANY__String_MANY_";
+        List<PackageableElement> testFunction = pmcd.getElements().stream().filter(el -> testFunctionName.equals(el.getPath())).collect(Collectors.toList());
+        Assert.assertEquals(1, testFunction.size());
+        Assert.assertEquals("model::test(String[1],Boolean[*]):String[*]",
+                HelperValueSpecificationGrammarComposer.getFunctionDescriptor((Function) testFunction.get(0)));
+    }
+
+    @Test
+    public void testGetFunctionDescriptorEmptyParameter()
+    {
+        PureModelContextData pmcd = TestGrammarParserTestSuite.test("###Pure \n" +
+                "function model::test(): Any[1]\n" +
+                "{ \n" +
+                "   'test'; \n" +
+                "} \n");
+        String testFunctionName = "model::test__Any_1_";
+        List<PackageableElement> testFunction = pmcd.getElements().stream().filter(el -> testFunctionName.equals(el.getPath())).collect(Collectors.toList());
+        Assert.assertEquals(1, testFunction.size());
+        Assert.assertEquals("model::test():Any[1]",
+                HelperValueSpecificationGrammarComposer.getFunctionDescriptor((Function) testFunction.get(0)));
+    }
+
+    @Test
+    public void testGetFunctionDescriptorClassInParametersAndReturnValue()
+    {
+        PureModelContextData pmcd = TestGrammarParserTestSuite.test("###Pure \n" +
+                "Class model::TestClass\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "function model::test(myClass: model::TestClass[1]): model::TestClass[1]\n" +
+                "{ \n" +
+                "   $myClass; \n" +
+                "} \n");
+        String testFunctionName = "model::test_TestClass_1__TestClass_1_";
+        List<PackageableElement> testFunction = pmcd.getElements().stream().filter(el -> testFunctionName.equals(el.getPath())).collect(Collectors.toList());
+        Assert.assertEquals(1, testFunction.size());
+        Assert.assertEquals("model::test(TestClass[1]):TestClass[1]",
+                HelperValueSpecificationGrammarComposer.getFunctionDescriptor((Function) testFunction.get(0)));
     }
 
     public static void testFromJson(Class<?> _class, String path, String code)

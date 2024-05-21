@@ -31,10 +31,9 @@ import org.finos.legend.engine.repl.autocomplete.CompletionItem;
 import org.finos.legend.engine.repl.autocomplete.CompletionResult;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
+import org.finos.legend.engine.repl.core.Helpers;
 import org.finos.legend.engine.repl.core.ReplExtension;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
-import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.jline.reader.Candidate;
@@ -150,7 +149,7 @@ public class Execute implements Command
         }
 
         // Execute
-        Identity identity = this.resolveIdentityFromLocalSubject();
+        Identity identity = Helpers.resolveIdentityFromLocalSubject(this.client);
         Result res = this.planExecutor.execute((SingleExecutionPlan) PlanExecutor.readExecutionPlan(planStr), new HashMap<>(), identity.getName(), identity, null);
         if (res instanceof ConstantResult)
         {
@@ -167,22 +166,6 @@ public class Execute implements Command
             {
                 throw new RuntimeException(res.getClass() + " not supported!");
             }
-        }
-    }
-
-    private Identity resolveIdentityFromLocalSubject()
-    {
-        try
-        {
-            return IdentityFactoryProvider.getInstance().makeIdentity(SubjectTools.getLocalSubject());
-        }
-        catch (Exception e)
-        {
-            if (this.client.isDebug())
-            {
-                this.client.getTerminal().writer().println("Couldn't resolve identity from local subject");
-            }
-            return IdentityFactoryProvider.getInstance().getAnonymousIdentity();
         }
     }
 

@@ -17,7 +17,6 @@
 package org.finos.legend.engine.service.post.validation.runner;
 
 import java.io.OutputStream;
-import java.sql.SQLException;
 
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;

@@ -28,7 +28,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.WorkspaceSDLC;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
+import org.finos.legend.engine.shared.core.identity.credential.KerberosUtils;
 
 
 public abstract class GraphQL
@@ -55,7 +55,7 @@ public abstract class GraphQL
         PureModelContextPointer pointer = new PureModelContextPointer();
         pointer.sdlcInfo = sdlcInfo;
 
-        Subject subject = identity.getSubjectFromIdentity();
+        Subject subject = KerberosUtils.getSubjectFromIdentity(identity);
         return subject == null ?
                 this.modelManager.loadModel(pointer, PureClientVersions.production, identity, "") :
                 Subject.doAs(subject, (PrivilegedExceptionAction<PureModel>) () -> this.modelManager.loadModel(pointer, PureClientVersions.production, identity, ""));
@@ -63,7 +63,7 @@ public abstract class GraphQL
 
     protected PureModel loadProjectModel(Identity identity, String groupId, String artifactId, String versionId) throws PrivilegedActionException
     {
-        Subject subject = identity.getSubjectFromIdentity();
+        Subject subject = KerberosUtils.getSubjectFromIdentity(identity);
         PureModelContextPointer pointer = new PureModelContextPointer();
         AlloySDLC sdlcInfo = new AlloySDLC();
         sdlcInfo.groupId = groupId;

@@ -552,6 +552,11 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "    MT22: [200],\n" +
                 "    MT23: [300, 400]\n" +
                 "  }\n" +
+                "  meta::pure::mapping::modelToModel::test::enumerationMapping::enumToEnum::model::DayCount: EnumerationMapping\n" +
+                "  {\n" +
+                "    '30_ACT': [My::DayCount.'30_ACT'],\n" +
+                "    '30_360': [My::DayCount.'30_360']\n" +
+                "  }\n" +
                 ")\n");
     }
 

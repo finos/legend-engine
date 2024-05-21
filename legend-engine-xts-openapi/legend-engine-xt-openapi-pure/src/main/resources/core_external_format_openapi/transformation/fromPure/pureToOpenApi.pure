@@ -63,20 +63,20 @@ function <<Generation.Configuration>> meta::external::function::description::ope
    meta::pure::generation::describeConfiguration(OpenAPISchemaConfig,meta::external::function::description::openapi::transformation::fromPure::defaultConfig__OpenAPISchemaConfig_1_,[]);
 }
 
-function meta::external::function::description::openapi::transformation::fromPure::generateOpenApiFromPure(config:OpenAPISchemaConfig[1]):OpenApiGenerationOutput[*]
+function meta::external::function::description::openapi::transformation::fromPure::generateOpenApiFromPure(config:OpenAPISchemaConfig[1], extensions: meta::pure::extension::Extension[*]):OpenApiGenerationOutput[*]
 {
   $config.scopeElements->filter(e|!$e->instanceOf(Package))->map(e|assert($e->instanceOf(Service),'OpenApi generation supported only for legend services'));
   let scopeElements = $config.allPackageScopeElements->filter(e|$e->instanceOf(Service));
-  let specs=$scopeElements->map(s|^OpenApiGenerationOutput(content=$s->cast(@Service)->serviceToOpenApi(^Server(url='/test')),fileName=$s->typeName(),format='json'));
+  let specs=$scopeElements->map(s|^OpenApiGenerationOutput(content=$s->cast(@Service)->serviceToOpenApi(^Server(url='/test'), $extensions),fileName=$s->typeName(),format='json'));
   $specs;
 }
 
-function <<ServiceSpecGeneration.OpenAPI>> meta::external::function::description::openapi::transformation::fromPure::serviceToOpenApi(service: Service[1], server: Server[1]):String[1]
+function <<ServiceSpecGeneration.OpenAPI>> meta::external::function::description::openapi::transformation::fromPure::serviceToOpenApi(service: Service[1], server: Server[1], extensions: meta::pure::extension::Extension[*]):String[1]
 {
-  $service->serviceToOpenApi([], $server);
+  $service->serviceToOpenApi([], $server, $extensions);
 }
 
-function <<ServiceSpecGeneration.OpenAPI>> meta::external::function::description::openapi::transformation::fromPure::serviceToOpenApi(service: Service[1], elements: PackageableElement[*], server: Server[1]):String[1]
+function <<ServiceSpecGeneration.OpenAPI>> meta::external::function::description::openapi::transformation::fromPure::serviceToOpenApi(service: Service[1], elements: PackageableElement[*], server: Server[1], extensions: meta::pure::extension::Extension[*]):String[1]
 {
   ^FunctionInfo(
     func = $service.execution->cast(@PureExecution).func,
@@ -85,11 +85,11 @@ function <<ServiceSpecGeneration.OpenAPI>> meta::external::function::description
     version = '1.0.0',
     title = 'Legend API',
     paramsExample = ^Map<String,String>()
-  )->meta::external::function::description::openapi::transformation::fromPure::funcInfoToOpenApi($elements, $server)
+  )->meta::external::function::description::openapi::transformation::fromPure::funcInfoToOpenApi($elements, $server, $extensions)
   ->asString()->makeString()->replace('\\/','/');
 }
 
-function <<access.private>> meta::external::function::description::openapi::transformation::fromPure::funcInfoToOpenApi(funcInfos:FunctionInfo[*], elements: PackageableElement[*], server:Server[1]):OpenApi[1]
+function <<access.private>> meta::external::function::description::openapi::transformation::fromPure::funcInfoToOpenApi(funcInfos:FunctionInfo[*], elements: PackageableElement[*], server:Server[1], extensions: meta::pure::extension::Extension[*]):OpenApi[1]
 {
   ^OpenApi(
     openapi='3.0.0',
@@ -101,7 +101,7 @@ function <<access.private>> meta::external::function::description::openapi::tran
                                     let ret = $fi->getReturnType();
 
                                     let tdsColumns = if($ret->instanceOf(GenericType) && $ret->cast(@GenericType).rawType == TabularDataSet ,
-                                                          |list(meta::pure::tds::schema::resolveSchemaImpl($func.expressionSequence->evaluateAndDeactivate()->last()->toOne(),^Map<String, List<Any>>(),[]).columns->map(c | ^TDSResult(column = $c.name, type = ^GenericType(rawType= $c.type)->generateOpenApiType());));,
+                                                          |list(meta::pure::tds::schema::resolveSchemaImpl($func.expressionSequence->evaluateAndDeactivate()->last()->toOne(), ^Map<String, List<Any>>(), $extensions).columns->map(c | ^TDSResult(column = $c.name, type = ^GenericType(rawType= $c.type)->generateOpenApiType());));,
                                                           |[]
                                                         );
 
@@ -122,7 +122,7 @@ function <<access.private>> meta::external::function::description::openapi::tran
                                   )
                   ),  
     components= generateComponent($funcInfos, $elements)
-   
+
   );
 }
 
@@ -303,7 +303,7 @@ function <<access.private>> meta::external::function::description::openapi::tran
 
 function <<access.private>> meta::external::function::description::openapi::transformation::fromPure::scanClass(c:GenericType[1], allClasses:GenericType[*]):GenericType[*]
 {
-  if($c.rawType->toOne()==GenericType, | [], | 
+  if($c.rawType->toOne()==GenericType || $c.rawType->toOne() == meta::pure::mapping::EnumerationMapping, | [], |
   
   let propertyTypes = $c->properties()->filter(p|$p.owner!=Any)
                         ->map(p|

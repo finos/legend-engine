@@ -18,7 +18,6 @@ import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionAct
 import org.finos.legend.engine.protocol.hostedService.deployment.model.GenerationInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 
 public class HostedServiceArtifact extends FunctionActivatorArtifact
 {

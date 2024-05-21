@@ -34,13 +34,6 @@ public abstract class SinkCleanupGeneratorResultAbstract
 
     public abstract SqlPlan dropSqlPlan();
 
-    public abstract SqlPlan cleanupSqlPlan();
-
-    public List<String> cleanupSql()
-    {
-        return cleanupSqlPlan().getSqlList();
-    }
-
     public List<String> dropSql()
     {
         return dropSqlPlan().getSqlList();

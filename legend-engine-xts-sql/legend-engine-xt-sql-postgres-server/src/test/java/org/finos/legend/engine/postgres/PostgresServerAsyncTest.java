@@ -93,7 +93,9 @@ public class PostgresServerAsyncTest
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);
 
-        testPostgresServer = new TestPostgresServer(serverConfig, legendSessionFactory, (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()));
+        testPostgresServer = new TestPostgresServer(serverConfig, legendSessionFactory,
+                (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()),
+                new Messages((exception) -> exception.getMessage()));
         testPostgresServer.startUp();
     }
 

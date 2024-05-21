@@ -1536,8 +1536,9 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         Result childResult = null;
         List<Object> childObjects = new ArrayList<>();
         List<Object> parentObjects = new ArrayList<>();
-        
-        try (Scope ignored = GlobalTracer.get().buildSpan("local store property graph fetch").withTag("storeType", "relational").withTag("property", ((PropertyGraphFetchTree) node.graphFetchTree).property).startActive(true))
+
+        String property = ((PropertyGraphFetchTree) node.graphFetchTree).property;
+        try (Scope ignored = GlobalTracer.get().buildSpan("local property graph fetch (" + property + ")").withTag("storeType", "relational").withTag("property", property).startActive(true))
         {
             childResult = node.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.identity, this.executionState));
 
@@ -1614,7 +1615,8 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
     {
         Result childResult = null;
 
-        try (Scope ignored = GlobalTracer.get().buildSpan("local store property graph fetch").withTag("storeType", "relational").withTag("property", ((PropertyGraphFetchTree) node.graphFetchTree).property).startActive(true))
+        String property = ((PropertyGraphFetchTree) node.graphFetchTree).property;
+        try (Scope ignored = GlobalTracer.get().buildSpan("local property graph fetch (" + property + ")").withTag("storeType", "relational").withTag("property", property).startActive(true))
         {
             List<Object> parentObjects = new ArrayList<>();
             List<Object> childObjects = new ArrayList<>();
@@ -1827,7 +1829,8 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         relationalStoreExecutionState.setBlockConnectionContext(new BlockConnectionContext());
         relationalStoreExecutionState.setRetainConnection(true);
 
-        try (Scope ignored = GlobalTracer.get().buildSpan("cross store property graph fetch").withTag("storeType", "relational").withTag("property", ((PropertyGraphFetchTree) node.graphFetchTree).property).startActive(true))
+        String property = ((PropertyGraphFetchTree) node.graphFetchTree).property;
+        try (Scope ignored = GlobalTracer.get().buildSpan("cross property graph fetch (" + property + ")").withTag("storeType", "relational").withTag("property", property).startActive(true))
         {
             IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.identity);
 

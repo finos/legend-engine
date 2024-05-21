@@ -29,6 +29,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class TestGridServer
@@ -105,14 +106,32 @@ public class TestGridServer
         test(expectedResult, lambda);
     }
 
+    @Test
+    public void testSlice()
+    {
+        String lambda = "#>{test::TestDatabase.TEST0}#->filter(c | ($c.FIRSTNAME != 'Doe' && $c.LASTNAME != 'Doe'))->from(^meta::pure::mapping::Mapping(), test::test)";
+        String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\"},{\"name\":\"LASTNAME\",\"type\":\"String\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select top 100 \\\"test0_0\\\".FIRSTNAME as \\\"FIRSTNAME\\\", \\\"test0_0\\\".LASTNAME as \\\"LASTNAME\\\" from TEST0 as \\\"test0_0\\\" where ((\\\"test0_0\\\".FIRSTNAME <> 'Doe' OR \\\"test0_0\\\".FIRSTNAME is null) and (\\\"test0_0\\\".LASTNAME <> 'Doe' OR \\\"test0_0\\\".LASTNAME is null))\"}],\"result\":{\"columns\":[\"FIRSTNAME\",\"LASTNAME\"],\"rows\":[{\"values\":[\"Tim\",\"Smith\"]}]}}";
+        test(expectedResult, lambda, true);
+    }
+
     private void test(String expectedResult, String function)
+    {
+        test(expectedResult, function, false);
+    }
+
+    private void test(String expectedResult, String function, boolean isPaginationEnabled)
     {
         try
         {
             Function originalFunction = (Function) pureModelContextData.getElements().stream().filter(e -> e.getPath().equals("a::b::c::d__Any_MANY_")).collect(Collectors.toList()).get(0);
             ValueSpecification originalFunctionBody = originalFunction.body.get(0);
             AppliedFunction currentFunction = (AppliedFunction) PureGrammarParser.newInstance().parseValueSpecification(function, null, 0, 0, true);
-            originalFunction.body = Lists.mutable.of(currentFunction);
+            List<ValueSpecification> newBody = Lists.mutable.of(currentFunction);
+            if (isPaginationEnabled)
+            {
+                ReplGridServer.applySliceFunction(newBody);
+            }
+            originalFunction.body = newBody;
             String response = ReplGridServer.executeLambda(legendInterface, pureModelContextData, originalFunction, originalFunctionBody);
             ReplGridServer.GridServerResult result = objectMapper.readValue(response, ReplGridServer.GridServerResult.class);
             Assert.assertEquals(expectedResult, RelationalResultToJsonDefaultSerializer.removeComment(result.getResult()));

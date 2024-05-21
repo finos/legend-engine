@@ -40,7 +40,7 @@ public class TestMorphirFileGeneration
     public void testGenerateMorphirRentalExample() throws IOException
     {
         PureModelContextData pureModelContextData = getProtocol("org/finos/legend/engine/external/language/morphir/tests/simpleFileGeneration.json");
-        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(pureModelContextData, Identity.getAnonymousIdentity().getName(), DeploymentMode.PROD);
         FileGenerationSpecification fileGeneration = pureModelContextData.getElementsOfType(FileGenerationSpecification.class).get(0);
         MorphirGenerationConfig morphirConfig = MorphirGenerationConfigFromFileGenerationSpecificationBuilder.build(fileGeneration);
         Root_meta_external_language_morphir_generation_MorphirConfig metaModelConfig = morphirConfig.process(pureModel);

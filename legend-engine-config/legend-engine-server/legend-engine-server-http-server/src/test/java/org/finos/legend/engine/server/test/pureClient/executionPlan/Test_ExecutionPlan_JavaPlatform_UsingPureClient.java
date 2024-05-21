@@ -16,7 +16,6 @@ package org.finos.legend.engine.server.test.pureClient.executionPlan;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.finos.legend.engine.server.test.shared.PureTestHelper;
 import org.finos.legend.engine.server.test.shared.PureWithEngineHelper;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;

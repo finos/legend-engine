@@ -62,7 +62,6 @@ import org.finos.legend.engine.external.format.xsd.compile.parseTree.XsdWhiteSpa
 import org.finos.legend.engine.external.format.xsd.compile.parseTree.visit.XsdObjectVisitor;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalFormatSchemaException;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.pure.generated.Root_meta_external_format_xml_metamodel_xml_QName;
 import org.finos.legend.pure.generated.Root_meta_external_format_xml_metamodel_xml_QName_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_format_xml_metamodel_xsd_XsdAll;

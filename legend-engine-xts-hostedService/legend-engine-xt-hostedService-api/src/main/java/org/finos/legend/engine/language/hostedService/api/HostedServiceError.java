@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.hostedService.api;
 
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
 
 public class HostedServiceError extends FunctionActivatorError

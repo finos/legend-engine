@@ -76,7 +76,7 @@ public class TestRelationalElementApi
         PureModelContextData generatedModel = objectMapper.readValue(actualJson, PureModelContextData.class);
         PureModelContextData fullModel = generatedModel.combine(inputPmcd);
         // compile generated model and input database
-        testManager.loadModelAndData(fullModel, fullModel.serializer.version, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), null);
+        testManager.loadModelAndData(fullModel, fullModel.serializer.version, Identity.getAnonymousIdentity(), null);
     }
 
     @Test

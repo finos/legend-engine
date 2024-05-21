@@ -21,11 +21,11 @@ function meta::protocols::pure::vX_X_X::external::shared::format::serializerExte
 {
    ^meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X(
       transfers_executionPlan_transformNode =
-         {mapping:Mapping[1], extensions:Extension[*] |
+         {extensions:Extension[*] |
             [
-               d:meta::external::format::shared::executionPlan::ExternalFormatExternalizeExecutionNode[1] | transformExternalFormatExternalizeExecutionNode($d, $mapping, $extensions),
-               s:meta::external::format::shared::executionPlan::ExternalFormatInternalizeExecutionNode[1] | transformExternalFormatInternalizeExecutionNode($s, $mapping, $extensions),
-               t:meta::external::format::shared::executionPlan::ExternalFormatExternalizeTDSExecutionNode[1] | transformExternalFormatExternalizeTDSExecutionNode($t, $mapping, $extensions)
+               d:meta::external::format::shared::executionPlan::ExternalFormatExternalizeExecutionNode[1] | transformExternalFormatExternalizeExecutionNode($d, $extensions),
+               s:meta::external::format::shared::executionPlan::ExternalFormatInternalizeExecutionNode[1] | transformExternalFormatInternalizeExecutionNode($s, $extensions),
+               t:meta::external::format::shared::executionPlan::ExternalFormatExternalizeTDSExecutionNode[1] | transformExternalFormatExternalizeTDSExecutionNode($t, $extensions)
 
             ]
          }

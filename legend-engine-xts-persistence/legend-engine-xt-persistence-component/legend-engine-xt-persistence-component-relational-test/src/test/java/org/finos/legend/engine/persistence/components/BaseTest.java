@@ -104,10 +104,44 @@ public class BaseTest
     protected String validityThroughTargetField = "validity_through_target";
 
     protected String[] partitionKeys = new String[]{"biz_date"};
+
+    protected String[] partitionKeysMulti = new String[]{"biz_date", "account_type"};
     protected Map<String, Set<String>> partitionFilter = new HashMap<String, Set<String>>()
     {{
         put("biz_date", new HashSet<>(Arrays.asList("2000-01-01 00:00:00", "2000-01-02 00:00:00")));
     }};
+
+    protected Map<String, Set<String>> partitionFilterWithMultiValuesForMultipleKeys = new HashMap<String, Set<String>>()
+    {{
+        put("biz_date", new HashSet<>(Arrays.asList("2000-01-01 00:00:00", "2000-01-02 00:00:00")));
+        put("account_type", new HashSet<>(Arrays.asList("1", "2")));
+    }};
+
+    protected Map<String, Set<String>> partitionFilterWithMultiValuesForOneKey = new HashMap<String, Set<String>>()
+    {{
+        put("biz_date", new HashSet<>(Arrays.asList("2000-01-01 00:00:00", "2000-01-02 00:00:00")));
+        put("account_type", new HashSet<>(Arrays.asList("1")));
+    }};
+
+    protected List<Map<String, Object>> partitionSpecList()
+    {
+        List<Map<String, Object>> partitionSpecList = new ArrayList<>();
+        addPartitionSpec(partitionSpecList, "2024-01-01", 1);
+        addPartitionSpec(partitionSpecList, "2024-01-02", 1);
+        addPartitionSpec(partitionSpecList, "2024-01-02", 2);
+        return partitionSpecList;
+    }
+
+    private static void addPartitionSpec(List<Map<String, Object>> partitionSpecList, String date, Integer accountType)
+    {
+        partitionSpecList.add(new HashMap<String,Object>()
+        {
+            {
+                put("biz_date", date);
+                put("account_type", accountType);
+            }
+        });
+    }
 
     // Base Columns: Primary keys : id, name
     protected Field id = Field.builder().name("id").type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).build();
@@ -116,6 +150,7 @@ public class BaseTest
     protected Field name = Field.builder().name("name").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).build();
     protected Field nameModified = Field.builder().name("name").type(FieldType.of(DataType.VARCHAR, 64, null)).primaryKey(true).build();
     protected Field amount = Field.builder().name("amount").type(FieldType.of(DataType.DOUBLE, Optional.empty(), Optional.empty())).build();
+    protected Field accountType = Field.builder().name("account_type").type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).build();
     protected Field floatAmount = Field.builder().name("amount").type(FieldType.of(DataType.FLOAT, Optional.empty(), Optional.empty())).build();
     protected Field bizDate = Field.builder().name("biz_date").type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).build();
 
@@ -216,6 +251,17 @@ public class BaseTest
         .addFields(batchIdOut)
         .build();
 
+    protected SchemaDefinition mainTableWithMultiPartitionsBasedSchema = SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(accountType)
+            .addFields(bizDate)
+            .addFields(digest)
+            .addFields(batchIdIn)
+            .addFields(batchIdOut)
+            .build();
+
     protected SchemaDefinition mainTableBatchIdAndVersionBasedSchema = SchemaDefinition.builder()
             .addFields(id)
             .addFields(name)
@@ -264,6 +310,15 @@ public class BaseTest
         .addFields(bizDate)
         .addFields(digest)
         .build();
+
+    protected SchemaDefinition stagingTableSchemaWithMultiplePartitions = SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(accountType)
+            .addFields(bizDate)
+            .addFields(digest)
+            .build();
 
     protected SchemaDefinition mainTableSchemaWithDigest = SchemaDefinition.builder()
         .addFields(id)
@@ -652,6 +707,11 @@ public class BaseTest
             .schema(stagingTableSchemaWithDigest)
             .build();
 
+    protected Dataset stagingTableWithMultiPartitions = DatasetDefinition.builder()
+            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+            .schema(stagingTableSchemaWithMultiplePartitions)
+            .build();
+
     protected Dataset stagingTableWithFilter = DerivedDataset.builder()
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
             .schema(stagingTableSchemaWithDigest)
@@ -747,6 +807,10 @@ public class BaseTest
             .schema(mainTableBatchIdBasedSchema)
             .build();
 
+    protected Dataset mainTableMultiPartitionsBased = DatasetDefinition.builder()
+            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+            .schema(mainTableWithMultiPartitionsBasedSchema)
+            .build();
 
     protected Dataset mainTableWithBatchIdAndVersionBasedSchema = DatasetDefinition.builder()
             .database(mainDbName).name(mainTableName).alias(mainTableAlias)

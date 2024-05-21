@@ -14,17 +14,31 @@
 
 package org.finos.legend.engine.repl.relational.httpServer;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.collections.api.RichIterable;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.apache.commons.io.IOUtils;
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
@@ -32,38 +46,29 @@ import org.finos.legend.engine.plan.execution.stores.relational.result.Relationa
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
+import org.finos.legend.engine.repl.autocomplete.Completer;
+import org.finos.legend.engine.repl.autocomplete.CompletionResult;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.legend.LegendInterface;
+import org.finos.legend.engine.repl.relational.autocomplete.RelationalCompleterExtension;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
+import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionError;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.stream.Collectors;
 
 public class ReplGridServer
 {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final PlanExecutor planExecutor = PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build();
     private PureModelContextData currentPMCD;
-    private Client client;
-    private InetSocketAddress serverPortAddress = new InetSocketAddress(0);
+    private final Client client;
+    private int port;
 
     public ReplGridServer(Client client)
     {
@@ -72,7 +77,7 @@ public class ReplGridServer
 
     public String getGridUrl()
     {
-        return "http://localhost:" + serverPortAddress.getPort() + "/repl/grid";
+        return "http://localhost:" + this.port + "/repl/grid";
     }
 
     public static class GridServerResult
@@ -104,6 +109,7 @@ public class ReplGridServer
 
     public void initializeServer() throws Exception
     {
+        InetSocketAddress serverPortAddress = new InetSocketAddress(0);
         HttpServer server = HttpServer.create(serverPortAddress, 0);
 
         server.createContext("/licenseKey", new HttpHandler()
@@ -131,124 +137,202 @@ public class ReplGridServer
             }
         });
 
-        server.createContext("/repl/", new HttpHandler()
+        server.createContext("/repl/", exchange ->
         {
-            @Override
-            public void handle(HttpExchange exchange)
+            if ("GET".equals(exchange.getRequestMethod()))
             {
-                if ("GET".equals(exchange.getRequestMethod()))
+                String[] path = exchange.getRequestURI().getPath().split("/repl/");
+                String resourcePath = "/web-content/package/dist/repl/" + (path[1].equals("grid") ? "index.html" : path[1]);
+                try (OutputStream os = exchange.getResponseBody();
+                     InputStream is = ReplGridServer.class.getResourceAsStream(resourcePath)
+                )
                 {
-                    try
+                    if (is == null)
                     {
-                        String[] path = exchange.getRequestURI().getPath().split("/repl/");
-                        Path currentPath = Paths.get("").toAbsolutePath();
-                        byte[] response = Files.readAllBytes(Paths.get(currentPath.toString() + "/legend-engine-config/legend-engine-repl/legend-engine-repl-relational/target/web-content/package/dist/repl/" + (path[1].equals("grid") ? "index.html" : path[1])));
-                        exchange.sendResponseHeaders(200, response.length);
-                        OutputStream os = exchange.getResponseBody();
-                        os.write(response);
-                        os.close();
+                        exchange.sendResponseHeaders(404, -1);
                     }
-                    catch (Exception e)
+                    else
                     {
-                        handleResponse(exchange, 500, e.getMessage());
-                    }
+                        if (resourcePath.endsWith(".html"))
+                        {
+                            exchange.getResponseHeaders().add("Content-Type", "text/html; charset=utf-8");
+                        }
+                        if (resourcePath.endsWith(".js"))
+                        {
+                            exchange.getResponseHeaders().add("Content-Type", "text/javascript; charset=utf-8");
+                        }
+                        else if (resourcePath.endsWith(".css"))
+                        {
+                            exchange.getResponseHeaders().add("Content-Type", "text/css; charset=utf-8");
+                        }
 
+                        exchange.sendResponseHeaders(200, 0);
+                        IOUtils.copy(is, os);
+                    }
+                }
+                catch (Exception e)
+                {
+                    handleResponse(exchange, 500, e.getMessage());
                 }
             }
         });
 
-        server.createContext("/initialLambda", new HttpHandler()
+        server.createContext("/initialLambda", exchange ->
         {
-            @Override
-            public void handle(HttpExchange exchange)
+            if ("GET".equals(exchange.getRequestMethod()))
             {
-                if ("GET".equals(exchange.getRequestMethod()))
+                try
                 {
-                    try
-                    {
-                        Function func = (Function) currentPMCD.getElements().stream().filter(e -> e.getPath().equals("a::b::c::d__Any_MANY_")).collect(Collectors.toList()).get(0);
-                        Lambda lambda = new Lambda();
-                        lambda.body = func.body;
-                        String response = objectMapper.writeValueAsString(lambda);
-                        handleResponse(exchange, 200, response);
-                    }
-                    catch (Exception e)
-                    {
-                        handleResponse(exchange, 500, e.getMessage());
-                    }
+                    Function func = (Function) currentPMCD.getElements().stream().filter(e -> e.getPath().equals("a::b::c::d__Any_MANY_")).collect(Collectors.toList()).get(0);
+                    Lambda lambda = new Lambda();
+                    lambda.body = func.body;
+                    String response = objectMapper.writeValueAsString(lambda);
+                    handleResponse(exchange, 200, response);
+                }
+                catch (Exception e)
+                {
+                    handleResponse(exchange, 500, e.getMessage());
                 }
             }
         });
 
-        server.createContext("/gridResult", new HttpHandler()
+        server.createContext("/executeLambda", exchange ->
         {
-            @Override
-            public void handle(HttpExchange exchange)
+            if ("POST".equals(exchange.getRequestMethod()))
             {
-                if ("GET".equals(exchange.getRequestMethod()))
+                try
                 {
-                    ValueSpecification funcBody = null;
-                    Function func = null;
-                    try
+                    InputStreamReader inputStreamReader = new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8);
+                    BufferedReader bufferReader = new BufferedReader(inputStreamReader);
+                    String requestBody = bufferReader.lines().collect(Collectors.joining());
+                    AppliedFunction body = (AppliedFunction) PureGrammarParser.newInstance().parseValueSpecification(requestBody, "", 0, 0, true);
+                    List<ValueSpecification> newBody = Lists.mutable.of(body);
+                    if (checkIfPaginationIsEnabled(exchange.getRequestURI().getQuery()))
                     {
-                        func = (Function) currentPMCD.getElements().stream().filter(e -> e.getPath().equals("a::b::c::d__Any_MANY_")).collect(Collectors.toList()).get(0);
-                        funcBody = func.body.get(0);
-
-                        AppliedFunction sliceFunction = new AppliedFunction();
-                        sliceFunction.function = "slice";
-                        sliceFunction.parameters = Lists.mutable.of(funcBody);
-                        sliceFunction.multiplicity = Multiplicity.PURE_MANY;
-                        sliceFunction.parameters.add(new CInteger(0));
-                        sliceFunction.parameters.add(new CInteger(100));
-                        func.body = Lists.mutable.of(sliceFunction);
-
-                        String response = executeLambda(client.getLegendInterface(), currentPMCD, func, funcBody);
-                        handleResponse(exchange, 200, response);
+                        applySliceFunction(newBody);
                     }
-                    catch (Exception e)
-                    {
-                        System.out.println(e.getMessage());
-                        if (func != null)
-                        {
-                            func.body = Lists.mutable.of(funcBody);
-                        }
-                        handleResponse(exchange, 500, e.getMessage());
-                    }
-
+                    Function func = (Function) currentPMCD.getElements().stream().filter(e -> e.getPath().equals("a::b::c::d__Any_MANY_")).collect(Collectors.toList()).get(0);
+                    func.body = newBody;
+                    String response = executeLambda(client.getLegendInterface(), currentPMCD, func, newBody.get(0));
+                    handleResponse(exchange, 200, response);
                 }
-                else if ("POST".equals(exchange.getRequestMethod()))
+                catch (Exception e)
                 {
-                    ValueSpecification funcBody = null;
-                    Function func = null;
-                    try
+                    handleResponse(exchange, 500, e.getMessage());
+                }
+            }
+        });
+
+        server.createContext("/typeahead", exchange ->
+        {
+            if ("POST".equals(exchange.getRequestMethod()))
+            {
+                try
+                {
+                    InputStreamReader inputStreamReader = new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8);
+                    BufferedReader bufferReader = new BufferedReader(inputStreamReader);
+                    String requestBody = bufferReader.lines().collect(Collectors.joining());
+                    String buildCodeContext = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build()).renderPureModelContextData(currentPMCD);
+                    CompletionResult result = new Completer(buildCodeContext, Lists.mutable.with(new RelationalCompleterExtension())).complete(requestBody);
+                    if (result.getEngineException() != null)
                     {
-                        InputStreamReader inputStreamReader = new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8);
-                        BufferedReader bufferReader = new BufferedReader(inputStreamReader);
-                        String requestBody = bufferReader.lines().collect(Collectors.joining());
-                        Lambda request = objectMapper.readValue(requestBody, Lambda.class);
-                        func = (Function) currentPMCD.getElements().stream().filter(e -> e.getPath().equals("a::b::c::d__Any_MANY_")).collect(Collectors.toList()).get(0);
-                        funcBody = func.body.get(0);
-                        func.body = request.body;
-                        String response = executeLambda(client.getLegendInterface(), currentPMCD, func, funcBody);
-                        handleResponse(exchange, 200, response);
+                        handleResponse(exchange, 500, result.getEngineException().toPretty());
                     }
-                    catch (Exception e)
+                    else
                     {
-                        System.out.println(e.getMessage());
-                        if (func != null)
-                        {
-                            func.body = Lists.mutable.of(funcBody);
-                        }
-                        handleResponse(exchange, 500, e.getMessage());
+                        handleResponse(exchange, 200, objectMapper.writeValueAsString(result.getCompletion()));
                     }
+                }
+                catch (Exception e)
+                {
+                    handleResponse(exchange, 500, e.getMessage());
+                }
+            }
+        });
+
+        server.createContext("/parseQuery", exchange ->
+        {
+            if ("POST".equals(exchange.getRequestMethod()))
+            {
+                try
+                {
+                    InputStreamReader inputStreamReader = new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8);
+                    BufferedReader bufferReader = new BufferedReader(inputStreamReader);
+                    String requestBody = bufferReader.lines().collect(Collectors.joining("\n"));
+                    PureGrammarParser.newInstance().parseValueSpecification(requestBody, "", 0, 0, true);
+                    exchange.sendResponseHeaders(200, -1);
+                }
+                catch (Exception e)
+                {
+                    handleResponse(exchange, 400, objectMapper.writeValueAsString(new ExceptionError(-1, e)));
+                }
+            }
+        });
+
+        server.createContext("/gridResult", exchange ->
+        {
+            if ("GET".equals(exchange.getRequestMethod()))
+            {
+                ValueSpecification funcBody = null;
+                Function func = null;
+                try
+                {
+                    func = (Function) currentPMCD.getElements().stream().filter(e -> e.getPath().equals("a::b::c::d__Any_MANY_")).collect(Collectors.toList()).get(0);
+                    funcBody = func.body.get(0);
+
+                    List<ValueSpecification> newBody = Lists.mutable.of(funcBody);
+                    if (checkIfPaginationIsEnabled(exchange.getRequestURI().getQuery()))
+                    {
+                        applySliceFunction(newBody);
+                    }
+                    func.body = newBody;
+
+                    String response = executeLambda(client.getLegendInterface(), currentPMCD, func, funcBody);
+                    handleResponse(exchange, 200, response);
+                }
+                catch (Exception e)
+                {
+                    System.out.println(e.getMessage());
+                    if (func != null)
+                    {
+                        func.body = Lists.mutable.of(funcBody);
+                    }
+                    handleResponse(exchange, 500, e.getMessage());
+                }
+
+            }
+            else if ("POST".equals(exchange.getRequestMethod()))
+            {
+                ValueSpecification funcBody = null;
+                Function func = null;
+                try
+                {
+                    InputStreamReader inputStreamReader = new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8);
+                    BufferedReader bufferReader = new BufferedReader(inputStreamReader);
+                    String requestBody = bufferReader.lines().collect(Collectors.joining());
+                    Lambda request = objectMapper.readValue(requestBody, Lambda.class);
+                    func = (Function) currentPMCD.getElements().stream().filter(e -> e.getPath().equals("a::b::c::d__Any_MANY_")).collect(Collectors.toList()).get(0);
+                    funcBody = func.body.get(0);
+                    func.body = request.body;
+                    String response = executeLambda(client.getLegendInterface(), currentPMCD, func, funcBody);
+                    handleResponse(exchange, 200, response);
+                }
+                catch (Exception e)
+                {
+                    System.out.println(e.getMessage());
+                    if (func != null)
+                    {
+                        func.body = Lists.mutable.of(funcBody);
+                    }
+                    handleResponse(exchange, 500, e.getMessage());
                 }
             }
         });
 
         server.setExecutor(null);
         server.start();
-        serverPortAddress = server.getAddress();
-        System.out.println("REPL Grid Server has started at port " + serverPortAddress.getPort());
+        this.port = server.getAddress().getPort();
+        System.out.println("REPL Grid Server has started at port " + this.port);
     }
 
     public static String executeLambda(LegendInterface legendInterface, PureModelContextData currentRequestPMCD, Function func, ValueSpecification funcBody) throws IOException
@@ -264,7 +348,7 @@ public class ReplGridServer
         String planStr = PlanGenerator.serializeToJSON(plan, "vX_X_X", pureModel, extensions, LegendPlanTransformers.transformers);
 
         // Execute
-        Result res =  planExecutor.execute(planStr);
+        Result res = planExecutor.execute(planStr);
         func.body = Lists.mutable.of(funcBody);
         if (res instanceof RelationalResult)
         {
@@ -290,5 +374,48 @@ public class ReplGridServer
         {
             System.out.println(e.getMessage());
         }
+    }
+
+    public static void applySliceFunction(List<ValueSpecification> body)
+    {
+        CInteger startValue = new CInteger(0);
+        CInteger endValue = new CInteger(100);
+        ValueSpecification currentExpression = body.get(0);
+        while (currentExpression instanceof AppliedFunction)
+        {
+            if (((AppliedFunction) currentExpression).function.equals("from"))
+            {
+                ValueSpecification childExpression = ((AppliedFunction) currentExpression).parameters.get(0);
+                if (childExpression instanceof AppliedFunction && ((AppliedFunction) childExpression).function.equals("slice"))
+                {
+                    ((AppliedFunction) childExpression).parameters = Lists.mutable.of(((AppliedFunction) childExpression).parameters.get(0), startValue, endValue);
+                    break;
+                }
+                AppliedFunction sliceFunction = new AppliedFunction();
+                sliceFunction.function = "slice";
+                sliceFunction.parameters = Lists.mutable.of(((AppliedFunction) currentExpression).parameters.get(0), startValue, endValue);
+                ((AppliedFunction) currentExpression).parameters.set(0, sliceFunction);
+                break;
+            }
+            currentExpression = ((AppliedFunction) currentExpression).parameters.get(0);
+        }
+    }
+
+    private static boolean checkIfPaginationIsEnabled(String queryParamsString)
+    {
+        Map<String, String> queryParams = new HashMap<>();
+        for (String param : queryParamsString.split("&"))
+        {
+            String[] entry = param.split("=");
+            if (entry.length > 1)
+            {
+                queryParams.put(entry[0], entry[1]);
+            }
+            else
+            {
+                queryParams.put(entry[0], "");
+            }
+        }
+        return queryParams.get("isPaginationEnabled").equals("true");
     }
 }

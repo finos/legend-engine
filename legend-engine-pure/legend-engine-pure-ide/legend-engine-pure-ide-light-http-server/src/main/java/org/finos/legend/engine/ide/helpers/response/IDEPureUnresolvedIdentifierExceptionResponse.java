@@ -16,8 +16,6 @@ package org.finos.legend.engine.ide.helpers.response;
 
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
-import org.finos.legend.engine.ide.helpers.response.Candidate;
-import org.finos.legend.engine.ide.helpers.response.IDEExceptionResponse;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 

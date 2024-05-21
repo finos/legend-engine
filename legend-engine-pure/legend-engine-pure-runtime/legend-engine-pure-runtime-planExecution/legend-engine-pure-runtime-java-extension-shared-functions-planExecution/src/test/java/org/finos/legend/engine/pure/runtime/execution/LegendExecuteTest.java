@@ -25,8 +25,6 @@ import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeReposito
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
 import org.finos.legend.pure.m3.serialization.runtime.*;
-import org.finos.legend.pure.m3.serialization.runtime.binary.PureRepositoryJarLibrary;
-import org.finos.legend.pure.m3.serialization.runtime.binary.SimplePureRepositoryJarLibrary;
 import org.finos.legend.pure.m3.serialization.runtime.cache.ClassLoaderPureGraphCache;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.junit.Assert;

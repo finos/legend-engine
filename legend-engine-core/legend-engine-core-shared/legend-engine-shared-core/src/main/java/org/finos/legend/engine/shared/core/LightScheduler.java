@@ -42,7 +42,7 @@ public class LightScheduler
 
     public void schedule(String id, int frequency, Function0<String> f)
     {
-        LOGGER.info(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.LIGHT_SCHEDULER_REGISTER, "Registering light schedule " + id + " with frequency " + frequency).toString());
+        LOGGER.info(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.LIGHT_SCHEDULER_REGISTER, "Registering light schedule " + id + " with frequency " + frequency).toString());
         TimerTask task = getTask(id, f);
         infoBuffer.put(id, Tuples.pair(task, new Info(id, frequency)));
         Timer timer = new Timer();
@@ -52,7 +52,7 @@ public class LightScheduler
 
     public void schedule(String id, Date start, int frequency, Function0<String> f)
     {
-        LOGGER.info(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.LIGHT_SCHEDULER_REGISTER, "Registering light schedule " + id + " with frequency " + frequency).toString());
+        LOGGER.info(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.LIGHT_SCHEDULER_REGISTER, "Registering light schedule " + id + " with frequency " + frequency).toString());
         TimerTask task = getTask(id, f);
         infoBuffer.put(id, Tuples.pair(task, new Info(id, start, frequency)));
         Timer timer = new Timer();
@@ -71,7 +71,7 @@ public class LightScheduler
 
     public void forceTrigger(String id)
     {
-        LOGGER.info(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.LIGHT_SCHEDULER_FORCE_START, "Force execution for " + id).toString());
+        LOGGER.info(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.LIGHT_SCHEDULER_FORCE_START, "Force execution for " + id).toString());
         this.infoBuffer.get(id).getOne().run();
     }
 
@@ -84,7 +84,7 @@ public class LightScheduler
             {
                 try
                 {
-                    LOGGER.info(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.LIGHT_SCHEDULER_EXECUTE_START, "Start executing " + id).toString());
+                    LOGGER.info(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.LIGHT_SCHEDULER_EXECUTE_START, "Start executing " + id).toString());
                     long t = System.currentTimeMillis();
                     String info = f.value();
                     Info feedback = infoBuffer.get(id).getTwo();
@@ -92,13 +92,13 @@ public class LightScheduler
                     feedback.lastExecuted = new Date();
                     long execTime = System.currentTimeMillis() - t;
                     feedback.lastExecutionDuration = execTime;
-                    LOGGER.info(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.LIGHT_SCHEDULER_EXECUTE_STOP, "Finished executing " + id + " (info:" + info + ")", execTime).toString());
+                    LOGGER.info(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.LIGHT_SCHEDULER_EXECUTE_STOP, "Finished executing " + id + " (info:" + info + ")", execTime).toString());
                 }
                 catch (Exception e)
                 {
                     Info feedback = infoBuffer.get(id).getTwo();
                     feedback.message = "ERROR: " + e.getMessage();
-                    LOGGER.error(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.LIGHT_SCHEDULER_EXECUTE_ERROR, "Error executing " + id).toString(), e);
+                    LOGGER.error(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.LIGHT_SCHEDULER_EXECUTE_ERROR, "Error executing " + id).toString(), e);
                 }
             }
         };

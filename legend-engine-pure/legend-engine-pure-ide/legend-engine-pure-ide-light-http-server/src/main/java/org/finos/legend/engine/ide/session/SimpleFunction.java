@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.ide.session;
 
-import org.finos.legend.engine.ide.session.PureSession;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 

@@ -1,0 +1,805 @@
+{
+  "clientVersion": "",
+  "functionActivator": "projito::demo::memsqlFunction::NewMemSqlFunction",
+  "model": {
+    "_type": "data",
+    "elements": [
+      {
+        "_type": "memSqlFunction",
+        "name": "NewMemSqlFunction",
+        "package": "projito::demo::memsqlFunction",
+        "description": "Test TVF function",
+        "owner": "sasate",
+        "functionName": "MEMSQL_TVF_FUNCTION_TEST",
+        "function": {
+          "path": "projito::demo::memsqlFunction::NativeApp_QueryFunction(Integer[1]):TabularDataSet[1]",
+          "type": "FUNCTION"
+        },
+        "activationConfiguration": {
+          "_type": "memSqlFunctionConfig",
+          "activationConnection": {
+            "_type": "connectionPointer",
+            "connection": "projito::demo::memsqlFunction::DemoMemsqlConnection"
+          }
+        }
+      },
+      {
+        "_type": "function",
+        "name": "NativeApp_QueryFunction_Integer_1__TabularDataSet_1_",
+        "package": "projito::demo::memsqlFunction",
+        "body": [
+          {
+            "_type": "func",
+            "function": "from",
+            "parameters": [
+              {
+                "_type": "func",
+                "function": "project",
+                "parameters": [
+                  {
+                    "_type": "func",
+                    "function": "filter",
+                    "parameters": [
+                      {
+                        "_type": "func",
+                        "function": "getAll",
+                        "parameters": [
+                          {
+                            "_type": "packageableElementPtr",
+                            "fullPath": "projito::demo::memsqlFunction::NativeApp",
+                            "sourceInformation": {
+                              "endColumn": 40,
+                              "endLine": 923,
+                              "sourceId": "",
+                              "startColumn": 3,
+                              "startLine": 923
+                            }
+                          }
+                        ],
+                        "sourceInformation": {
+                          "endColumn": 46,
+                          "endLine": 923,
+                          "sourceId": "",
+                          "startColumn": 41,
+                          "startLine": 923
+                        }
+                      },
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "_type": "func",
+                            "function": "and",
+                            "parameters": [
+                              {
+                                "_type": "func",
+                                "function": "equal",
+                                "parameters": [
+                                  {
+                                    "_type": "property",
+                                    "parameters": [
+                                      {
+                                        "_type": "var",
+                                        "name": "x",
+                                        "sourceInformation": {
+                                          "endColumn": 8,
+                                          "endLine": 3,
+                                          "sourceId": "projito::demo::memsqlFunction::NativeApp_QueryFunction_Integer_1__TabularDataSet_1_",
+                                          "startColumn": 7,
+                                          "startLine": 3
+                                        }
+                                      }
+                                    ],
+                                    "property": "PersonID",
+                                    "sourceInformation": {
+                                      "endColumn": 16,
+                                      "endLine": 3,
+                                      "sourceId": "projito::demo::memsqlFunction::NativeApp_QueryFunction_Integer_1__TabularDataSet_1_",
+                                      "startColumn": 10,
+                                      "startLine": 3
+                                    }
+                                  },
+                                  {
+                                    "_type": "var",
+                                    "sourceInformation": {
+                                      "endColumn": 25,
+                                      "endLine": 3,
+                                      "sourceId": "projito::demo::memsqlFunction::NativeApp_QueryFunction_Integer_1__TabularDataSet_1_",
+                                      "startColumn": 21,
+                                      "startLine": 3
+                                    },
+                                    "name":"person_id"
+                                  }
+
+                                ],
+                                "sourceInformation": {
+                                  "endColumn": 19,
+                                  "endLine": 3,
+                                  "sourceId": "projito::demo::memsqlFunction::NativeApp_QueryFunction_Integer_1__TabularDataSet_1_",
+                                  "startColumn": 18,
+                                  "startLine": 3
+                                }
+                              }
+                            ],
+                            "sourceInformation": {
+                              "endColumn": 7,
+                              "endLine": 2,
+                              "sourceId": "projito::demo::memsqlFunction::NativeApp_QueryFunction_Integer_1__TabularDataSet_1_",
+                              "startColumn": 5,
+                              "startLine": 2
+                            }
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ],
+                        "sourceInformation": {
+                          "endColumn": 5,
+                          "endLine": 4,
+                          "sourceId": "projito::demo::memsqlFunction::NativeApp_QueryFunction_Integer_1__TabularDataSet_1_",
+                          "startColumn": 4,
+                          "startLine": 2
+                        }
+                      }
+                    ],
+                    "sourceInformation": {
+                      "endColumn": 53,
+                      "endLine": 1,
+                      "sourceId": "projito::demo::memsqlFunction::NativeApp_QueryFunction_Integer_1__TabularDataSet_1_",
+                      "startColumn": 48,
+                      "startLine": 1
+                    }
+                  },
+                  {
+                    "_type": "collection",
+                    "multiplicity": {
+                      "lowerBound": 5,
+                      "upperBound": 5
+                    },
+                    "sourceInformation": {
+                      "endColumn": 5,
+                      "endLine": 930,
+                      "sourceId": "",
+                      "startColumn": 5,
+                      "startLine": 924
+                    },
+                    "values": [
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "_type": "property",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "x",
+                                "sourceInformation": {
+                                  "endColumn": 10,
+                                  "endLine": 925,
+                                  "sourceId": "",
+                                  "startColumn": 9,
+                                  "startLine": 925
+                                }
+                              }
+                            ],
+                            "property": "PersonID",
+                            "sourceInformation": {
+                              "endColumn": 18,
+                              "endLine": 925,
+                              "sourceId": "",
+                              "startColumn": 12,
+                              "startLine": 925
+                            }
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ],
+                        "sourceInformation": {
+                          "endColumn": 18,
+                          "endLine": 925,
+                          "sourceId": "",
+                          "startColumn": 8,
+                          "startLine": 925
+                        }
+                      },
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "_type": "property",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "x",
+                                "sourceInformation": {
+                                  "endColumn": 10,
+                                  "endLine": 926,
+                                  "sourceId": "",
+                                  "startColumn": 9,
+                                  "startLine": 926
+                                }
+                              }
+                            ],
+                            "property": "FirstName",
+                            "sourceInformation": {
+                              "endColumn": 16,
+                              "endLine": 926,
+                              "sourceId": "",
+                              "startColumn": 12,
+                              "startLine": 926
+                            }
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ],
+                        "sourceInformation": {
+                          "endColumn": 16,
+                          "endLine": 926,
+                          "sourceId": "",
+                          "startColumn": 8,
+                          "startLine": 926
+                        }
+                      },
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "_type": "property",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "x",
+                                "sourceInformation": {
+                                  "endColumn": 10,
+                                  "endLine": 927,
+                                  "sourceId": "",
+                                  "startColumn": 9,
+                                  "startLine": 927
+                                }
+                              }
+                            ],
+                            "property": "LastName",
+                            "sourceInformation": {
+                              "endColumn": 16,
+                              "endLine": 927,
+                              "sourceId": "",
+                              "startColumn": 12,
+                              "startLine": 927
+                            }
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ],
+                        "sourceInformation": {
+                          "endColumn": 16,
+                          "endLine": 927,
+                          "sourceId": "",
+                          "startColumn": 8,
+                          "startLine": 927
+                        }
+                      },
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "_type": "property",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "x",
+                                "sourceInformation": {
+                                  "endColumn": 10,
+                                  "endLine": 928,
+                                  "sourceId": "",
+                                  "startColumn": 9,
+                                  "startLine": 928
+                                }
+                              }
+                            ],
+                            "property": "Address",
+                            "sourceInformation": {
+                              "endColumn": 18,
+                              "endLine": 928,
+                              "sourceId": "",
+                              "startColumn": 12,
+                              "startLine": 928
+                            }
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ],
+                        "sourceInformation": {
+                          "endColumn": 18,
+                          "endLine": 928,
+                          "sourceId": "",
+                          "startColumn": 8,
+                          "startLine": 928
+                        }
+                      },
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "_type": "property",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "x",
+                                "sourceInformation": {
+                                  "endColumn": 10,
+                                  "endLine": 929,
+                                  "sourceId": "",
+                                  "startColumn": 9,
+                                  "startLine": 929
+                                }
+                              }
+                            ],
+                            "property": "City",
+                            "sourceInformation": {
+                              "endColumn": 14,
+                              "endLine": 929,
+                              "sourceId": "",
+                              "startColumn": 12,
+                              "startLine": 929
+                            }
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ],
+                        "sourceInformation": {
+                          "endColumn": 14,
+                          "endLine": 929,
+                          "sourceId": "",
+                          "startColumn": 8,
+                          "startLine": 929
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "collection",
+                    "multiplicity": {
+                      "lowerBound": 5,
+                      "upperBound": 5
+                    },
+                    "sourceInformation": {
+                      "endColumn": 5,
+                      "endLine": 937,
+                      "sourceId": "",
+                      "startColumn": 5,
+                      "startLine": 931
+                    },
+                    "values": [
+                      {
+                        "_type": "string",
+                        "sourceInformation": {
+                          "endColumn": 16,
+                          "endLine": 932,
+                          "sourceId": "",
+                          "startColumn": 7,
+                          "startLine": 932
+                        },
+                        "value": "Person ID"
+                      },
+                      {
+                        "_type": "string",
+                        "sourceInformation": {
+                          "endColumn": 13,
+                          "endLine": 933,
+                          "sourceId": "",
+                          "startColumn": 7,
+                          "startLine": 933
+                        },
+                        "value": "First Name"
+                      },
+                      {
+                        "_type": "string",
+                        "sourceInformation": {
+                          "endColumn": 13,
+                          "endLine": 934,
+                          "sourceId": "",
+                          "startColumn": 7,
+                          "startLine": 934
+                        },
+                        "value": "Last Name"
+                      },
+                      {
+                        "_type": "string",
+                        "sourceInformation": {
+                          "endColumn": 15,
+                          "endLine": 935,
+                          "sourceId": "",
+                          "startColumn": 7,
+                          "startLine": 935
+                        },
+                        "value": "Address"
+                      },
+                      {
+                        "_type": "string",
+                        "sourceInformation": {
+                          "endColumn": 11,
+                          "endLine": 936,
+                          "sourceId": "",
+                          "startColumn": 7,
+                          "startLine": 936
+                        },
+                        "value": "City"
+                      }
+                    ]
+                  }
+                ],
+                "sourceInformation": {
+                  "endColumn": 55,
+                  "endLine": 923,
+                  "sourceId": "",
+                  "startColumn": 49,
+                  "startLine": 923
+                }
+              },
+              {
+                "_type": "packageableElementPtr",
+                "fullPath": "projito::demo::memsqlFunction::DemoMapping",
+                "sourceInformation": {
+                  "endColumn": 44,
+                  "endLine": 939,
+                  "sourceId": "",
+                  "startColumn": 5,
+                  "startLine": 939
+                }
+              },
+              {
+                "_type": "packageableElementPtr",
+                "fullPath": "projito::demo::memsqlFunction::DemoRuntime",
+                "sourceInformation": {
+                  "endColumn": 44,
+                  "endLine": 940,
+                  "sourceId": "",
+                  "startColumn": 5,
+                  "startLine": 940
+                }
+              }
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "_type": "var",
+            "class": "Integer",
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "person_id"
+          }
+        ],
+        "postConstraints": [],
+        "preConstraints": [],
+        "returnMultiplicity": {
+          "lowerBound": 1,
+          "upperBound": 1
+        },
+        "returnType": "meta::pure::tds::TabularDataSet"
+      },
+      {
+        "_type": "class",
+        "name": "NativeApp",
+        "package": "projito::demo::memsqlFunction",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "PersonID",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "FirstName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "LastName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "Address",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "City",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "mapping",
+        "classMappings": [
+          {
+            "_type": "relational",
+            "class": "projito::demo::memsqlFunction::NativeApp",
+            "distinct": false,
+            "mainTable": {
+              "_type": "Table",
+              "database": "projito::demo::memsqlFunction::DemoDb",
+              "mainTableDb": "projito::demo::memsqlFunction::DemoDb",
+              "schema": "database_45734",
+              "table": "Persons"
+            },
+            "primaryKey": [
+              {
+                "_type": "column",
+                "column": "PersonID",
+                "table": {
+                  "_type": "Table",
+                  "database": "projito::demo::memsqlFunction::DemoDb",
+                  "mainTableDb": "projito::demo::memsqlFunction::DemoDb",
+                  "schema": "database_45734",
+                  "table": "Persons"
+                },
+                "tableAlias": "Persons"
+              }
+            ],
+            "propertyMappings": [
+              {
+                "_type": "relationalPropertyMapping",
+                "property": {
+                  "class": "projito::demo::memsqlFunction::NativeApp",
+                  "property": "PersonID"
+                },
+                "relationalOperation": {
+                  "_type": "column",
+                  "column": "PersonID",
+                  "table": {
+                    "_type": "Table",
+                    "database": "projito::demo::memsqlFunction::DemoDb",
+                    "mainTableDb": "projito::demo::memsqlFunction::DemoDb",
+                    "schema": "database_45734",
+                    "table": "Persons"
+                  },
+                  "tableAlias": "Persons"
+                }
+              },
+              {
+                "_type": "relationalPropertyMapping",
+                "property": {
+                  "class": "projito::demo::memsqlFunction::NativeApp",
+                  "property": "FirstName"
+                },
+                "relationalOperation": {
+                  "_type": "column",
+                  "column": "FirstName",
+                  "table": {
+                    "_type": "Table",
+                    "database": "projito::demo::memsqlFunction::DemoDb",
+                    "mainTableDb": "projito::demo::memsqlFunction::DemoDb",
+                    "schema": "database_45734",
+                    "table": "Persons"
+                  },
+                  "tableAlias": "Persons"
+                }
+              },
+              {
+                "_type": "relationalPropertyMapping",
+                "property": {
+                  "class": "projito::demo::memsqlFunction::NativeApp",
+                  "property": "LastName"
+                },
+                "relationalOperation": {
+                  "_type": "column",
+                  "column": "LastName",
+                  "table": {
+                    "_type": "Table",
+                    "database": "projito::demo::memsqlFunction::DemoDb",
+                    "mainTableDb": "projito::demo::memsqlFunction::DemoDb",
+                    "schema": "database_45734",
+                    "table": "Persons"
+                  },
+                  "tableAlias": "Persons"
+                }
+              },
+              {
+                "_type": "relationalPropertyMapping",
+                "property": {
+                  "class": "projito::demo::memsqlFunction::NativeApp",
+                  "property": "Address"
+                },
+                "relationalOperation": {
+                  "_type": "column",
+                  "column": "Address",
+                  "table": {
+                    "_type": "Table",
+                    "database": "projito::demo::memsqlFunction::DemoDb",
+                    "mainTableDb": "projito::demo::memsqlFunction::DemoDb",
+                    "schema": "database_45734",
+                    "table": "Persons"
+                  },
+                  "tableAlias": "Persons"
+                }
+              },
+              {
+                "_type": "relationalPropertyMapping",
+                "property": {
+                  "class": "projito::demo::memsqlFunction::NativeApp",
+                  "property": "City"
+                },
+                "relationalOperation": {
+                  "_type": "column",
+                  "column": "City",
+                  "table": {
+                    "_type": "Table",
+                    "database": "projito::demo::memsqlFunction::DemoDb",
+                    "mainTableDb": "projito::demo::memsqlFunction::DemoDb",
+                    "schema": "database_45734",
+                    "table": "Persons"
+                  },
+                  "tableAlias": "Persons"
+                }
+              }
+            ],
+            "root": true
+          }
+        ],
+        "enumerationMappings": [],
+        "includedMappings": [],
+        "name": "DemoMapping",
+        "package": "projito::demo::memsqlFunction",
+        "tests": []
+      },
+      {
+        "_type": "runtime",
+        "name": "DemoRuntime",
+        "package": "projito::demo::memsqlFunction",
+        "runtimeValue": {
+          "_type": "engineRuntime",
+          "connectionStores": [],
+          "connections": [
+            {
+              "store": {
+                "path": "projito::demo::memsqlFunction::DemoDb",
+                "type": "STORE"
+              },
+              "storeConnections": [
+                {
+                  "connection": {
+                    "_type": "connectionPointer",
+                    "connection": "projito::demo::memsqlFunction::DemoMemsqlConnection"
+                  },
+                  "id": "connection_1"
+                }
+              ]
+            }
+          ],
+          "mappings": [
+            {
+              "path": "projito::demo::memsqlFunction::DemoMapping",
+              "type": "MAPPING"
+            }
+          ]
+        }
+      },
+      {
+        "_type": "relational",
+        "filters": [],
+        "includedStores": [],
+        "joins": [],
+        "name": "DemoDb",
+        "package": "projito::demo::memsqlFunction",
+        "schemas": [
+          {
+            "name": "database_45734",
+            "tables": [
+              {
+                "columns": [
+                  {
+                    "name": "PersonID",
+                    "nullable": true,
+                    "type": {
+                      "_type": "Integer"
+                    }
+                  },
+                  {
+                    "name": "FirstName",
+                    "nullable": false,
+                    "type": {
+                      "_type": "Varchar",
+                      "size": 16777216
+                    }
+                  },
+                  {
+                    "name": "LastName",
+                    "nullable": true,
+                    "type": {
+                      "_type": "Varchar",
+                      "size": 16777216
+                    }
+                  },
+                  {
+                    "name": "Address",
+                    "nullable": true,
+                    "type": {
+                      "_type": "Varchar",
+                      "size": 16777216
+                    }
+                  },
+                  {
+                    "name": "City",
+                    "nullable": true,
+                    "type": {
+                      "_type": "Varchar",
+                      "size": 16777216
+                    }
+                  }
+                ],
+                "name": "Persons",
+                "primaryKey": [
+                  "PersonID"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "_type": "connection",
+        "connectionValue": {
+          "_type": "RelationalDatabaseConnection",
+          "authenticationStrategy": {
+            "_type": "userNamePassword",
+            "userNameVaultReference": "admin",
+            "passwordVaultReference": "11ZNwMP1nH04t6vn7tfo8eIh7LSTDWym"
+          },
+          "databaseType": "MemSQL",
+          "datasourceSpecification": {
+            "_type": "static",
+            "host": "svc-e3040456-bc5f-4e6c-ae8d-bb421db07816-dml.aws-virginia-5.svc.singlestore.com",
+            "port": 3306,
+            "databaseName": "database_45734"
+          },
+          "element": "projito::demo::memsqlFunction::DemoDb",
+          "type": "MemSQL"
+        },
+        "name": "DemoMemsqlConnection",
+        "package": "projito::demo::memsqlFunction"
+      }
+    ]
+  }
+}

@@ -12,16 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::*;
 import meta::protocols::pure::vX_X_X::metamodel::executionPlan::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external::shared::format::*;
 import meta::pure::mapping::*;
 import meta::pure::extension::*;
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external::shared::format::transformExternalFormatExternalizeExecutionNode(node:meta::external::format::shared::executionPlan::ExternalFormatExternalizeExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:Extension[*]): ExecutionNode[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external::shared::format::transformExternalFormatExternalizeExecutionNode(node:meta::external::format::shared::executionPlan::ExternalFormatExternalizeExecutionNode[1], extensions:Extension[*]): ExecutionNode[1]
 {
    ^meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::ExternalFormatExternalizeExecutionNode(
       _type             = 'externalFormatExternalize',
-      resultType        = $node.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+      resultType        = $node.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($extensions),
       resultSizeRange   = $node.resultSizeRange->map(s| $s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
       checked           = $node.checked,
       binding           = $node.binding->elementToPath(),
@@ -29,21 +30,21 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external:
    );
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external::shared::format::transformExternalFormatExternalizeTDSExecutionNode(node:meta::external::format::shared::executionPlan::ExternalFormatExternalizeTDSExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:Extension[*]): ExecutionNode[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external::shared::format::transformExternalFormatExternalizeTDSExecutionNode(node:meta::external::format::shared::executionPlan::ExternalFormatExternalizeTDSExecutionNode[1], extensions:Extension[*]): ExecutionNode[1]
 {
    ^meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::ExternalFormatExternalizeTDSExecutionNode(
       _type             = 'externalFormatExternalizeTDS',
-      resultType        = $node.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+      resultType        = $node.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($extensions),
       resultSizeRange   = $node.resultSizeRange->map(s| $s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
       contentType       = $node.contentType
    );
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external::shared::format::transformExternalFormatInternalizeExecutionNode(node:meta::external::format::shared::executionPlan::ExternalFormatInternalizeExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:Extension[*]): ExecutionNode[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external::shared::format::transformExternalFormatInternalizeExecutionNode(node:meta::external::format::shared::executionPlan::ExternalFormatInternalizeExecutionNode[1], extensions:Extension[*]): ExecutionNode[1]
 {
    ^meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode(
       _type             = 'externalFormatInternalize',
-      resultType        = $node.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+      resultType        = $node.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($extensions),
       resultSizeRange   = $node.resultSizeRange->map(s| $s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
       tree              = $node.tree->map(t| $t->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], ^Map<String,List<Any>>(), $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RootGraphFetchTree),
       binding           = $node.binding->elementToPath(),

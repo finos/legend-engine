@@ -36,6 +36,7 @@ public interface DataErrorAbstract
     public static final String COLUMN_NAME = "column_name";
     public static final String CHARACTER_POSITION = "character_position";
     public static final String NUM_DUPLICATES = "num_duplicates";
+    public static final String NUM_PK_DUPLICATES = "num_pk_duplicates";
     public static final String NUM_DATA_VERSION_ERRORS = "num_data_version_errors";
 
     String errorMessage();

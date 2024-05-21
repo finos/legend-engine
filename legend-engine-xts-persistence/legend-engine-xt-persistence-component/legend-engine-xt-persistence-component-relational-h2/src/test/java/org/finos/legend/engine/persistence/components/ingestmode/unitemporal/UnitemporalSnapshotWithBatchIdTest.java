@@ -19,33 +19,22 @@ import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOp;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static org.finos.legend.engine.persistence.components.TestUtils.batchIdInName;
-import static org.finos.legend.engine.persistence.components.TestUtils.batchIdOutName;
-import static org.finos.legend.engine.persistence.components.TestUtils.priceName;
-import static org.finos.legend.engine.persistence.components.TestUtils.dateName;
-import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
-import static org.finos.legend.engine.persistence.components.TestUtils.expiryDateName;
-import static org.finos.legend.engine.persistence.components.TestUtils.idName;
-import static org.finos.legend.engine.persistence.components.TestUtils.incomeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
-import static org.finos.legend.engine.persistence.components.TestUtils.partitionFilter;
-import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.entityName;
-import static org.finos.legend.engine.persistence.components.TestUtils.volumeName;
+import static org.finos.legend.engine.persistence.components.TestUtils.*;
 
 class UnitemporalSnapshotWithBatchIdTest extends BaseTest
 {
@@ -75,6 +64,8 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .emptyDatasetHandling(DeleteTargetData.builder().build())
+            .deduplicationStrategy(FailOnDuplicates.builder().build())
+            .versioningStrategy(NoVersioningStrategy.builder().failOnDuplicatePrimaryKeys(true).build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
@@ -235,6 +226,122 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 3);
         executePlansAndVerifyResults(ingestModeWithDeleteTargetData, options, datasets, schema, expectedDataPass3, expectedStats);
+    }
+
+    @Test
+    void testUnitemporalSnapshotMilestoningLogicWithMultiplePartitionValues() throws Exception
+    {
+        DatasetDefinition mainTable = DatasetDefinition.builder()
+                .group(testSchemaName).name(mainTableName)
+                .schema(SchemaDefinition.builder()
+                        .addFields(date)
+                        .addFields(accountNum)
+                        .addFields(dimension)
+                        .addFields(balance)
+                        .addFields(digest)
+                        .addFields(batchIdIn)
+                        .addFields(batchIdOut)
+                        .build()).build();
+
+        DatasetDefinition stagingTable = DatasetDefinition.builder()
+                .group(testSchemaName).name(stagingTableName)
+                .schema(SchemaDefinition.builder()
+                        .addFields(date)
+                        .addFields(accountNum)
+                        .addFields(dimension)
+                        .addFields(balance)
+                        .addFields(digest)
+                        .build()).build();
+
+        String[] schema = new String[]{dateName, accountNumName, dimensionName, balanceName, digestName, batchIdInName, batchIdOutName};
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+
+        List<Map<String, Object>> partitionSpecList = new ArrayList<>();
+        addPartitionSpec(partitionSpecList, "2024-01-01", "ACCOUNT_1");
+        addPartitionSpec(partitionSpecList, "2024-01-01", "ACCOUNT_2");
+        addPartitionSpec(partitionSpecList, "2024-01-02", "ACCOUNT_1");
+        addPartitionSpec(partitionSpecList, "2024-01-02", "ACCOUNT_2");
+        addPartitionSpec(partitionSpecList, "2024-01-03", "ACCOUNT_1");
+        addPartitionSpec(partitionSpecList, "2024-01-03", "ACCOUNT_2");
+
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+                .digestField(digestName)
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName(batchIdInName)
+                        .batchIdOutName(batchIdOutName)
+                        .build())
+                .addAllPartitionFields(Arrays.asList(dateName, accountNumName))
+                .addAllPartitionSpecList(partitionSpecList)
+                .build();
+
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass1 ------------------------
+        String dataPass1 = basePathForInput + "with_multi_values_partition/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_multi_values_partition/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataForWithMultiPartition(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(15, 0, 15, 0, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass2 ------------------------
+        String dataPass2 = basePathForInput + "with_multi_values_partition/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "with_multi_values_partition/expected_pass2.csv";
+
+
+        partitionSpecList = new ArrayList<>();
+        addPartitionSpec(partitionSpecList, "2024-01-01", "ACCOUNT_1");
+        addPartitionSpec(partitionSpecList, "2024-01-01", "ACCOUNT_3");
+        addPartitionSpec(partitionSpecList, "2024-01-02", "ACCOUNT_2");
+        addPartitionSpec(partitionSpecList, "2024-01-04", "ACCOUNT_1");
+        ingestMode = ingestMode.withPartitionSpecList(partitionSpecList);
+
+        // 1. Load staging table
+        loadStagingDataForWithMultiPartition(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(5, 0, 2, 2, 3);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass3 (Empty Batch - No Op) ------------------------
+        IngestMode ingestModeWithNoOpBatchHandling = ingestMode.withEmptyDatasetHandling(NoOp.builder().build());
+
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
+        String expectedDataPass3 = basePathForExpected + "with_multi_values_partition/expected_pass2.csv";
+        // 1. Load Staging table
+        loadStagingDataForWithMultiPartition(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
+        executePlansAndVerifyResults(ingestModeWithNoOpBatchHandling, options, datasets, schema, expectedDataPass3, expectedStats);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass3 (Empty Batch - Delete target Data) ------------------------
+
+        partitionSpecList = new ArrayList<>();
+        addPartitionSpec(partitionSpecList, "2024-01-01", "ACCOUNT_1");
+        addPartitionSpec(partitionSpecList, "2024-01-02", "ACCOUNT_2");
+        IngestMode ingestModeWithDeleteTargetData = ingestMode.withPartitionSpecList(partitionSpecList).withEmptyDatasetHandling(DeleteTargetData.builder().build());
+        dataPass3 = "src/test/resources/data/empty_file.csv";
+        expectedDataPass3 = basePathForExpected + "with_multi_values_partition/expected_pass3.csv";
+        // 1. Load Staging table
+        loadStagingDataForWithMultiPartition(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 3);
+        executePlansAndVerifyResults(ingestModeWithDeleteTargetData, options, datasets, schema, expectedDataPass3, expectedStats);
+    }
+
+    private static void addPartitionSpec(List<Map<String, Object>> partitionSpecList, String date, String accountNum)
+    {
+        partitionSpecList.add(new HashMap<String,Object>()
+        {
+            {
+            put(dateName, date);
+            put(accountNumName, accountNum);
+            }
+        });
     }
 
     /*

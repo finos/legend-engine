@@ -26,12 +26,10 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.slf4j.Logger;
 
 import javax.security.auth.Subject;
-import javax.security.auth.kerberos.KerberosTicket;
 import javax.sql.DataSource;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
-import java.util.Optional;
 import java.util.Properties;
 
 import static java.util.concurrent.TimeUnit.SECONDS;

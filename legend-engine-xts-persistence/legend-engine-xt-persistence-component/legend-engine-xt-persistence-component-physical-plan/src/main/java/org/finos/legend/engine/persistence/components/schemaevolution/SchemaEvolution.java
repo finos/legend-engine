@@ -103,7 +103,7 @@ public class SchemaEvolution
         this.schemaEvolutionCapabilitySet = schemaEvolutionCapabilitySet;
     }
 
-    public SchemaEvolutionResult buildLogicalPlanForSchemaEvolution(Dataset mainDataset, Dataset stagingDataset)
+    public SchemaEvolutionResult buildLogicalPlanForSchemaEvolution(Dataset mainDataset, SchemaDefinition stagingDataset)
     {
         List<Operation> operations = new ArrayList<>();
         Set<Field> modifiedFields = new HashSet<>();
@@ -116,9 +116,9 @@ public class SchemaEvolution
         return SchemaEvolutionResult.of(LogicalPlan.of(operations), mainDataset.withSchema(evolvedSchema));
     }
 
-    private void validatePrimaryKeys(Dataset mainDataset, Dataset stagingDataset)
+    private void validatePrimaryKeys(Dataset mainDataset, SchemaDefinition stagingDataset)
     {
-        List<Field> stagingFilteredFields = stagingDataset.schema().fields().stream().filter(field -> !(ingestMode.accept(STAGING_TABLE_FIELDS_TO_IGNORE).contains(field.name()))).collect(Collectors.toList());
+        List<Field> stagingFilteredFields = stagingDataset.fields().stream().filter(field -> !(ingestMode.accept(STAGING_TABLE_FIELDS_TO_IGNORE).contains(field.name()))).collect(Collectors.toList());
         Set<String> stagingPkNames = stagingFilteredFields.stream().filter(Field::primaryKey).map(Field::name).collect(Collectors.toSet());
         List<Field> mainFilteredFields = mainDataset.schema().fields().stream().filter(field -> !(ingestMode.accept(MAIN_TABLE_FIELDS_TO_IGNORE).contains(field.name()))).collect(Collectors.toList());
         Set<String> mainPkNames = mainFilteredFields.stream().filter(Field::primaryKey).map(Field::name).collect(Collectors.toSet());
@@ -129,14 +129,11 @@ public class SchemaEvolution
     }
 
     //Validate all columns (allowing exceptions) in staging dataset must have a matching column in main dataset
-    private List<Operation> stagingToMainTableColumnMatch(Dataset mainDataset,
-            Dataset stagingDataset,
-            Set<String> fieldsToIgnore,
-            Set<Field> modifiedFields)
+    private List<Operation> stagingToMainTableColumnMatch(Dataset mainDataset, SchemaDefinition stagingDataset, Set<String> fieldsToIgnore, Set<Field> modifiedFields)
     {
         List<Operation> operations = new ArrayList<>();
         List<Field> mainFields = mainDataset.schema().fields();
-        List<Field> stagingFields = stagingDataset.schema().fields();
+        List<Field> stagingFields = stagingDataset.fields();
         List<Field> filteredFields = stagingFields.stream().filter(field -> !fieldsToIgnore.contains(field.name())).collect(Collectors.toList());
         for (Field stagingField : filteredFields)
         {
@@ -145,12 +142,19 @@ public class SchemaEvolution
             if (matchedMainField == null)
             {
                 // Add the new column in the main table if database supports ADD_COLUMN capability and
-                // if user capability supports ADD_COLUMN or is empty (since empty means no overriden preference)
+                // if user capability supports ADD_COLUMN
                 if (sink.capabilities().contains(Capability.ADD_COLUMN)
                         && (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.ADD_COLUMN)))
                 {
-                    operations.add(Alter.of(mainDataset, Alter.AlterOperation.ADD, stagingField, Optional.empty()));
-                    modifiedFields.add(stagingField);
+                    if (stagingField.nullable())
+                    {
+                        operations.add(Alter.of(mainDataset, Alter.AlterOperation.ADD, stagingField, Optional.empty()));
+                        modifiedFields.add(stagingField);
+                    }
+                    else
+                    {
+                        throw new IncompatibleSchemaChangeException(String.format("Non-nullable field \"%s\" in staging dataset cannot be added, as it is backward-incompatible change.", stagingFieldName));
+                    }
                 }
                 else
                 {
@@ -270,11 +274,11 @@ public class SchemaEvolution
         }
     }
 
-    private List<Operation> mainToStagingTableColumnMatch(Dataset mainDataset, Dataset stagingDataset, Set<String> fieldsToIgnore, Set<Field> modifiedFields)
+    private List<Operation> mainToStagingTableColumnMatch(Dataset mainDataset, SchemaDefinition stagingDataset, Set<String> fieldsToIgnore, Set<Field> modifiedFields)
     {
         List<Operation> operations = new ArrayList<>();
         List<Field> mainFields = mainDataset.schema().fields();
-        Set<String> stagingFieldNames = stagingDataset.schema().fields().stream().map(Field::name).collect(Collectors.toSet());
+        Set<String> stagingFieldNames = stagingDataset.fields().stream().map(Field::name).collect(Collectors.toSet());
         for (Field mainField : mainFields.stream().filter(field -> !fieldsToIgnore.contains(field.name())).collect(Collectors.toList()))
         {
             String mainFieldName = mainField.name();

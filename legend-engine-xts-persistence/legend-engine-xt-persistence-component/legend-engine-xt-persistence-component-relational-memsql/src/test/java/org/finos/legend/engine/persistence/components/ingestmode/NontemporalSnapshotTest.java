@@ -48,8 +48,6 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
                 "FROM `mydb`.`staging` as stage)";
 
-        Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTableCreateQuery, preActionsSqlList.get(0));
-        Assertions.assertEquals(MemsqlTestArtifacts.expectedStagingTableCreateQuery, preActionsSqlList.get(1));
         Assertions.assertEquals(MemsqlTestArtifacts.cleanUpMainTableSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
 

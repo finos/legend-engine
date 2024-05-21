@@ -33,5 +33,6 @@ public enum PackageableElementType
     DATASPACE,
     DIAGRAM,
     FILE_GENERATION,
-    DATA
+    DATA,
+    QUERYPOSTPROCESSOR
 }

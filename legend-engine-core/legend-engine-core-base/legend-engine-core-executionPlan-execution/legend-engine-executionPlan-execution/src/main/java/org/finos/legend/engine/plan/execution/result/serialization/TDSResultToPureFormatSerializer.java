@@ -21,17 +21,12 @@ import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.eclipse.collections.impl.block.procedure.checked.ThrowingProcedure;
-import org.eclipse.collections.impl.block.procedure.checked.ThrowingProcedure2;
-import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import org.finos.legend.engine.plan.execution.result.TDSResult;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSColumn;
 
 public abstract class TDSResultToPureFormatSerializer extends Serializer
 {

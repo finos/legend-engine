@@ -307,6 +307,16 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     }
 
     @Test
+    public void testNumbersInEnumerationName()
+    {
+        test("Enum my::Enum\n" +
+                "{\n" +
+                "  '30_360',\n" +
+                "  '30_ACT'\n" +
+                "}\n");
+    }
+
+    @Test
     public void testAssociations()
     {
         test("Association myAsso\n" +

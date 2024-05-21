@@ -201,6 +201,14 @@ public class BigQueryTestArtifacts
             "`id` INT64 NOT NULL,`name` STRING NOT NULL,`amount` FLOAT64,`biz_date` DATE,`digest` STRING," +
             "`batch_id_in` INT64 NOT NULL,`batch_id_out` INT64,PRIMARY KEY (`id`, `name`, `batch_id_in`) NOT ENFORCED)";
 
+    public static String expectedMainTableWithMultiPartitionCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
+            "`id` INT64 NOT NULL,`name` STRING NOT NULL,`amount` FLOAT64,`account_type` INT64,`biz_date` DATE,`digest` STRING," +
+            "`batch_id_in` INT64 NOT NULL,`batch_id_out` INT64,PRIMARY KEY (`id`, `name`, `batch_id_in`) NOT ENFORCED)";
+
+    public static String expectedMainTableWithMultiPartitionCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`" +
+            "(`ID` INT64 NOT NULL,`NAME` STRING NOT NULL,`AMOUNT` FLOAT64,`ACCOUNT_TYPE` INT64,`BIZ_DATE` DATE,`DIGEST` STRING," +
+            "`BATCH_ID_IN` INT64 NOT NULL,`BATCH_ID_OUT` INT64,PRIMARY KEY (`ID`, `NAME`, `BATCH_ID_IN`) NOT ENFORCED)";
+
     public static String expectedMetadataTableCreateQuery = "CREATE TABLE IF NOT EXISTS batch_metadata" +
             "(`table_name` STRING(255)," +
             "`batch_start_ts_utc` DATETIME," +
@@ -524,6 +532,12 @@ public class BigQueryTestArtifacts
         "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`legend_persistence_count` as `legend_persistence_count`,DENSE_RANK() OVER (PARTITION BY stage.`id`,stage.`name` ORDER BY stage.`biz_date` ASC) as `data_split` " +
         "FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,COUNT(*) as `legend_persistence_count` FROM `mydb`.`staging` as stage " +
         "GROUP BY stage.`id`, stage.`name`, stage.`amount`, stage.`biz_date`) as stage)";
+
+    public static String maxPkDupsErrorCheckSql = "SELECT MAX(`legend_persistence_pk_count`) as `MAX_PK_DUPLICATES` FROM " +
+        "(SELECT COUNT(*) as `legend_persistence_pk_count` FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage GROUP BY `id`, `name`) as stage";
+
+    public static String dupPkRowsSql = "SELECT `id`,`name`,COUNT(*) as `legend_persistence_pk_count` FROM " +
+        "`mydb`.`staging_temp_staging_lp_yosulf` as stage GROUP BY `id`, `name` HAVING `legend_persistence_pk_count` > 1 LIMIT 20";
 
     public static String maxDupsErrorCheckSql = "SELECT MAX(stage.`legend_persistence_count`) as `MAX_DUPLICATES` FROM " +
             "`mydb`.`staging_temp_staging_lp_yosulf` as stage";

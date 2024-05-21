@@ -110,8 +110,11 @@ function meta::external::store::elasticsearch::v7::contract::routeFunctionExpres
     fe:FunctionExpression[1] | $fe.func == meta::external::store::elasticsearch::v7::tds::indexToTDS_Elasticsearch7Store_1__String_1__TabularDataSet_1_,
     {function: Function<Any>[1], fe: FunctionExpression[1], state: RoutingState[1], executionContext: meta::pure::runtime::ExecutionContext[1], vars: Map<VariableExpression, ValueSpecification>[1], inScopeVars: Map<String, List<Any>>[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1] |
           let store = $fe->instanceValuesAtParameter(0, $vars, $inScopeVars)->toOne()->cast(@Elasticsearch7Store);
-          let mapping = $state.routingStrategy->cast(@meta::pure::router::store::metamodel::StoreMappingRoutingStrategy).mapping;
-          let runtime = $state.routingStrategy->cast(@meta::pure::router::store::metamodel::StoreMappingRoutingStrategy).runtime;
+          let mapping = if($state.routingStrategy->instanceOf(meta::pure::router::store::metamodel::StoreMappingRoutingStrategy),
+            |$state.routingStrategy->cast(@meta::pure::router::store::metamodel::StoreMappingRoutingStrategy).mapping,
+            |[]
+          );
+          let runtime = $state.routingStrategy->cast(@meta::pure::router::store::metamodel::StoreRoutingStrategy).runtime;
           ^$state(value = ^TDSRoutedValueSpecification(
                   genericType = $fe.genericType,
                   multiplicity = $fe.multiplicity,

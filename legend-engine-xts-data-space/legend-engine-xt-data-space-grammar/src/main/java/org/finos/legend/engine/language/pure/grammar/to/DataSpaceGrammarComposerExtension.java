@@ -159,7 +159,7 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
     private static String renderDataspaceTemplateExecutable(DataSpaceTemplateExecutable executable, PureGrammarComposerContext context)
     {
         return getTabString(2) + "{\n" +
-                (getTabString(3) + "id: " + convertIdentifier(executable.id) + ";\n") +
+                (getTabString(3) + "id: " + executable.id + ";\n") +
                 (getTabString(3) + "title: " + convertString(executable.title, true) + ";\n") +
                 (executable.description != null ? (getTabString(3) + "description: " + convertString(executable.description, true) + ";\n") : "") +
                 getTabString(3) + "query: " + executable.query.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).withIndentation(getTabSize(2)).build()) + ";\n" +
