@@ -327,6 +327,27 @@ public class TestUtils
             .build();
     }
 
+    public static SchemaDefinition getDedupAndVersioningSchemaWithVersion =
+        SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(version)
+            .addFields(income)
+            .addFields(expiryDate)
+            .addFields(digest)
+            .build();
+
+    public static SchemaDefinition getDedupAndVersioningSchemaWithVersionAndBatch =
+        SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(version)
+            .addFields(income)
+            .addFields(expiryDate)
+            .addFields(digest)
+            .addFields(batch)
+            .build();
+
     public static SchemaDefinition getStagingSchemaWithDataSplits()
     {
         return SchemaDefinition.builder()
@@ -631,11 +652,12 @@ public class TestUtils
             .build();
     }
 
-    public static Dataset getCsvDatasetRefWithLessColumnsThanMain(String dataPath)
+    public static DatasetDefinition getDatasetWithLessColumnsThanMain()
     {
-        return CsvExternalDatasetReference.builder()
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
             .schema(getStagingSchemaWithLessColumnThanMain())
-            .csvDataPath(dataPath)
             .build();
     }
 

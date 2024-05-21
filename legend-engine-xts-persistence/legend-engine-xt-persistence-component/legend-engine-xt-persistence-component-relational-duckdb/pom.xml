@@ -49,6 +49,7 @@
             <groupId>org.duckdb</groupId>
             <artifactId>duckdb_jdbc</artifactId>
             <version>0.10.2</version>
+            <scope>runtime</scope>
         </dependency>
         <!-- DRIVER -->
 

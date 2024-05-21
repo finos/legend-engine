@@ -18,6 +18,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataT
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.relational.sql.JdbcPropertiesToLogicalDataTypeMapping;
 
+// TODO: have not been confirmed
 public class DuckDBJdbcPropertiesToLogicalDataTypeMapping implements JdbcPropertiesToLogicalDataTypeMapping
 {
     public FieldType getDataType(String typeName, String dataType, Integer columnSize, Integer decimalDigits)

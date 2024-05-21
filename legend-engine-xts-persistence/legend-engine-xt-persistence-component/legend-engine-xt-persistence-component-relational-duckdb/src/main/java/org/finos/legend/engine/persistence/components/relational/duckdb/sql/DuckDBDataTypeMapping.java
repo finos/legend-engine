@@ -36,6 +36,7 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.schema.T
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.VarChar;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.VariableSizeDataType;
 
+// TODO: have not been confirmed
 public class DuckDBDataTypeMapping implements DataTypeMapping
 {
     public DataType getDataType(FieldType type)
