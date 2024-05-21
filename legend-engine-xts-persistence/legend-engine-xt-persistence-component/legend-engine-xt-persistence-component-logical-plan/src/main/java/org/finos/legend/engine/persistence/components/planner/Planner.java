@@ -498,7 +498,7 @@ public abstract class Planner
                 dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.MAX_PK_DUPLICATES, logicalPlanForMaxDuplicatePkCount);
             }
 
-            LogicalPlan logicalPlanForDuplicatePkRows = ingestMode.versioningStrategy().accept(new DeriveDuplicatePkRowsLogicalPlan(primaryKeys, stagingDataset(), options().sampleRowCount()));
+            LogicalPlan logicalPlanForDuplicatePkRows = ingestMode.versioningStrategy().accept(new DeriveDuplicatePkRowsLogicalPlan(primaryKeys, stagingDataset(), options().sampleRowCount(), capabilities.contains(Capability.ALIAS_IN_HAVING)));
             if (logicalPlanForDuplicatePkRows != null)
             {
                 dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.PK_DUPLICATE_ROWS, logicalPlanForDuplicatePkRows);
