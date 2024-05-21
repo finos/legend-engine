@@ -498,7 +498,7 @@ public abstract class Planner
                 dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.MAX_PK_DUPLICATES, logicalPlanForMaxDuplicatePkCount);
             }
 
-            LogicalPlan logicalPlanForDuplicatePkRows = ingestMode.versioningStrategy().accept(new DeriveDuplicatePkRowsLogicalPlan(primaryKeys, stagingDataset(), options().sampleRowCount()));
+            LogicalPlan logicalPlanForDuplicatePkRows = ingestMode.versioningStrategy().accept(new DeriveDuplicatePkRowsLogicalPlan(primaryKeys, stagingDataset(), options().sampleRowCount(), capabilities.contains(Capability.ALIAS_IN_HAVING)));
             if (logicalPlanForDuplicatePkRows != null)
             {
                 dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.PK_DUPLICATE_ROWS, logicalPlanForDuplicatePkRows);
@@ -517,7 +517,7 @@ public abstract class Planner
                 dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.MAX_DATA_ERRORS, logicalPlanForDataErrorCheck);
             }
 
-            LogicalPlan logicalPlanForDataErrors = ingestMode.versioningStrategy().accept(new DeriveDataErrorRowsLogicalPlan(primaryKeys, remainingColumns, tempStagingDataset(), options().sampleRowCount()));
+            LogicalPlan logicalPlanForDataErrors = ingestMode.versioningStrategy().accept(new DeriveDataErrorRowsLogicalPlan(primaryKeys, remainingColumns, tempStagingDataset(), options().sampleRowCount(), capabilities.contains(Capability.ALIAS_IN_HAVING)));
             if (logicalPlanForDataErrors != null)
             {
                 dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.DATA_ERROR_ROWS, logicalPlanForDataErrors);

@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.ingestmode.versioning;
 
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
@@ -29,15 +30,17 @@ public class DeriveDataErrorRowsLogicalPlan implements VersioningStrategyVisitor
     private List<String> remainingColumns;
     private Dataset tempStagingDataset;
     private int sampleRowCount;
+    private boolean useAliasInHaving;
 
     public static final String DATA_VERSION_ERROR_COUNT = "legend_persistence_error_count";
 
-    public DeriveDataErrorRowsLogicalPlan(List<String> primaryKeys, List<String> remainingColumns, Dataset tempStagingDataset, int sampleRowCount)
+    public DeriveDataErrorRowsLogicalPlan(List<String> primaryKeys, List<String> remainingColumns, Dataset tempStagingDataset, int sampleRowCount, boolean useAliasInHaving)
     {
         this.primaryKeys = primaryKeys;
         this.remainingColumns = remainingColumns;
         this.tempStagingDataset = tempStagingDataset;
         this.sampleRowCount = sampleRowCount;
+        this.useAliasInHaving = useAliasInHaving;
     }
 
     @Override
@@ -51,7 +54,7 @@ public class DeriveDataErrorRowsLogicalPlan implements VersioningStrategyVisitor
     {
         if (maxVersionStrategy.performStageVersioning())
         {
-            return getLogicalPlanForDataErrors(maxVersionStrategy.versioningField());
+            return getLogicalPlanForDataErrors(maxVersionStrategy.versioningField(), useAliasInHaving);
         }
         else
         {
@@ -64,7 +67,7 @@ public class DeriveDataErrorRowsLogicalPlan implements VersioningStrategyVisitor
     {
         if (allVersionsStrategyAbstract.performStageVersioning())
         {
-            return getLogicalPlanForDataErrors(allVersionsStrategyAbstract.versioningField());
+            return getLogicalPlanForDataErrors(allVersionsStrategyAbstract.versioningField(), useAliasInHaving);
         }
         else
         {
@@ -72,7 +75,7 @@ public class DeriveDataErrorRowsLogicalPlan implements VersioningStrategyVisitor
         }
     }
 
-    private LogicalPlan getLogicalPlanForDataErrors(String versionField)
+    private LogicalPlan getLogicalPlanForDataErrors(String versionField, boolean useAliasInHaving)
     {
         List<Value> pKsAndVersion = new ArrayList<>();
         for (String pk: primaryKeys)
@@ -93,12 +96,14 @@ public class DeriveDataErrorRowsLogicalPlan implements VersioningStrategyVisitor
                 .alias(DATA_VERSION_ERROR_COUNT)
                 .build();
 
+        Condition havingCondition = GreaterThan.of(useAliasInHaving ? FieldValue.builder().fieldName(DATA_VERSION_ERROR_COUNT).build() : countDistinct, ObjectValue.of(1));
+
         Selection selectDataError = Selection.builder()
                 .source(tempStagingDataset)
                 .groupByFields(pKsAndVersion)
                 .addAllFields(pKsAndVersion)
                 .addFields(countDistinct)
-                .havingCondition(GreaterThan.of(FieldValue.builder().fieldName(DATA_VERSION_ERROR_COUNT).build(), ObjectValue.of(1)))
+                .havingCondition(havingCondition)
                 .limit(sampleRowCount)
                 .build();
 
