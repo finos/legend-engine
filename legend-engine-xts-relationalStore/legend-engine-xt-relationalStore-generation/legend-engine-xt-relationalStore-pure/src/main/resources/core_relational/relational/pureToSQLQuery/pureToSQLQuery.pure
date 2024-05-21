@@ -4628,6 +4628,51 @@ function meta::relational::functions::pureToSqlQuery::processGroupBy(expression:
    );
 }
 
+function meta::relational::functions::pureToSqlQuery::processPivot(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+  let mainQuery = processValueSpecification($expression.parametersValues->at(0), [], $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
+  let select = $mainQuery.select->cast(@TdsSelectSqlQuery);
+  let pivotColumns = findAliasOrFail($expression, $select,  $vars, $state)->map(x|$x.relationalElement);
+  let aggVS = $expression.parametersValues->at(2)->reprocessVS()->reactivate($state.inScopeVars)->evaluateAndDeactivate()->match([    
+                      avs:meta::pure::tds::AggregateValue<Any,Any>[*]|$avs->map(a|^AggContainer(name=$a.name,map=$a.mapFn,reduce=$a.aggregateFn));,
+                      x:meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1]|^AggContainer(name=$x.name,map=$x.map,reduce=$x.reduce);,
+                      z:meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>[1]|$z.aggSpecs->map(x|^AggContainer(name=$x.name,map=$x.map,reduce=$x.reduce));
+                    ]);
+  let aggColumns= $aggVS->map(a|let aggFn = $a.reduce->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->evaluateAndDeactivate();
+                                let params = if($a.map->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->instanceOf(FunctionExpression) || $a.map->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->instanceOf(InstanceValue),
+                                                |let inScopeVarsWithPlaceholdersState = $a.map->cast(@FunctionDefinition<Any>)->addPlaceHoldersForLambdaOpenVariables($vars, $state);
+                                                processTdsLambda($a.map->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->evaluateAndDeactivate(), $select.columns->cast(@Alias), false, $vars, $inScopeVarsWithPlaceholdersState, $currentPropertyMapping, $context);,
+                                                |[]
+                                            );
+                                ^Alias(name='"'+$a.name+'"', relationalElement=$aggFn->processAggFn($params)->at(0));
+                          );
+  let existingPaths = $select.paths;
+  let pathInfos = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match(
+                                                                                          [
+                                                                                            s:String[*]|$s,
+                                                                                            x:meta::pure::metamodel::relation::ColSpecArray<Any>[1]|$x.names,
+                                                                                            z:meta::pure::metamodel::relation::ColSpec<Any>[1]|$z.name
+                                                                                          ]
+                                                                                        )->map(n|$existingPaths->filter(p|$p.first == $n))
+                  ->concatenate($aggVS->map(a|  let pureType = $a.reduce->functionReturnType().rawType->toOne();
+                                                pair($a.name, ^PathInformation(type=$pureType, relationalType= meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureType)));));
+
+  let newAlias = ^TableAlias(name = 'pivot_' + $nodeId, relationalElement=$select);
+  let newData = ^RootJoinTreeNode(alias = $newAlias);
+
+  ^$select(
+    // we don't know which columns will present in the result, new columns based off the unique values of pivoted columns will be present
+    // so we specify no columns in order to force a `select *`
+    columns = [],
+    data = $newData,
+    pivot = ^Pivot(
+      pivotColumns = $pivotColumns,
+      aggColumns = $aggColumns
+    ),
+    paths = $pathInfos
+  )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($mainQuery, $state, $extensions);
+}
+
 function meta::relational::functions::pureToSqlQuery::processAggFn(v:ValueSpecification[1], params:RelationalOperationElement[*]):RelationalOperationElement[*]
 {
    $v->match(
@@ -4937,6 +4982,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
                      &&
                        (($origSelect.distinct->isEmpty() || !$origSelect.distinct->toOne()))
                      );
+    
 
    let newCols = $projectAliasNames->map(aliasName|let origCol = $origColumnsByNameAsMap->get($aliasName); assertNotEmpty($origCol, | 'Failed to find column ' + $aliasName + ' in ' + $origColumnsByNameAsMap->keys()->joinStrings('[', ',', ']')); $origCol->toOne(););
 
@@ -8198,7 +8244,11 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processProjectColumns_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::size_Relation_1__Integer_1_, second=meta::relational::functions::pureToSqlQuery::processRowCount_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::select_Relation_1__ColSpecArray_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processTdsRestrict_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processTdsRestrict_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_)
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processTdsRestrict_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processPivot_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processPivot_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),        
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processPivot_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),        
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processPivot_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_)
         
   
    ])

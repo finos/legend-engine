@@ -1,0 +1,103 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::sqlstring::*;
+import meta::relational::tests::sqlQueryToString::duckDB::*;
+import meta::relational::relation::testUtils::*;
+
+Class <<access.private>> meta::relational::tests::sqlQueryToString::duckDB::Report
+{
+  country: String[1];
+  city: String[1];
+  treePlanted: Integer[1];
+  year: Integer[1];
+}
+
+function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testSimpleRelationFunctions():Boolean[1]
+{
+  let res = meta::relational::relation::testUtils::classesToDatabase(
+    ^Report
+    (
+      country = 'USA',
+      city = 'New_York',
+      treePlanted = 2000,
+      year = 2001
+    ),[]
+  );
+
+  assertEquals('select "root".country as "country", "root".city as "city", "root".treePlanted as "treePlanted", "root".year as "year" from Report as "root"', toSQLString(
+    {
+      |Report.all()->project(~[
+        country: x|$x.country,
+        city : x|$x.city,
+        treePlanted: x|$x.treePlanted,
+        year: x|$x.year
+      ])
+    },
+    $res.mapping->toOne(), meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions()
+  ));
+
+  assertEquals('select "root".country as "country", "root".city as "city", sum("root".treePlanted) as "total" from Report as "root" group by "country","city"', toSQLString(
+    {
+      |Report.all()->project(~[
+        country: x|$x.country,
+        city : x|$x.city,
+        treePlanted: x|$x.treePlanted,
+        year: x|$x.year
+      ])->groupBy(~[country, city], ~[total: x|$x.treePlanted : x|$x->sum()])
+    },
+    $res.mapping->toOne(), meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions()
+  ));
+
+  // FIXME: when building the JAR for duckdb-pure, we encountered the error:
+  // External reference cannot be created for instance of meta::pure::metamodel::type::generics::GenericType: @_003tbfc(4859153) instanceOf GenericType (source information: /platform_functions_relation/relation/functions/rename.pure:17c123)
+  // in fact, this would come up if we have an external reference to the function `rename` from any other file than `rename.pure`.
+  //
+  // assertEquals('select "rename__d"."country" as "country", "rename__d"."city" as "city", "rename__d"."treePlanted" as "treePlanted", "rename__d"."year" as "yr" from (select "root".country as "country", "root".city as "city", "root".treePlanted as "treePlanted", "root".year as "year" from Report as "root") as "rename__d"', toSQLString(
+  //   {
+  //     |Report.all()->project(~[
+  //       country: x|$x.country,
+  //       city : x|$x.city,
+  //       treePlanted: x|$x.treePlanted,
+  //       year: x|$x.year
+  //     ])->rename(~year, ~yr)
+  //   },
+  //   $res.mapping->toOne(), meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions()
+  // ));
+
+  assertEquals('select * from (pivot (select "root".country as "country", "root".city as "city", "root".treePlanted as "treePlanted", "root".year as "year" from Report as "root") as "pivot__d" on country || "__|__" || city using sum(treePlanted) as "_|__total")', toSQLString(
+    {
+      |Report.all()->project(~[
+        country: x|$x.country,
+        city : x|$x.city,
+        treePlanted: x|$x.treePlanted,
+        year: x|$x.year
+      ])->pivot(~[country, city], ~[total: x|$x.treePlanted : x|$x->sum()])
+    },
+    $res.mapping->toOne(), meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions()
+  ));
+
+  // FIXME: support casting with select
+  // assertEquals('select * from (pivot (select "root".country as "country", "root".city as "city", "root".treePlanted as "treePlanted", "root".year as "year" from Report as "root") as "pivot__d" on country, city using sum(treePlanted))', toSQLString(
+  //   {
+  //     |Report.all()->project(~[
+  //       country: x|$x.country,
+  //       city : x|$x.city,
+  //       treePlanted: x|$x.treePlanted,
+  //       year: x|$x.year
+  //     ])->pivot(~[country, city], ~[total: x|$x.treePlanted : x|$x->sum()])->select(~[year: Integer, US_NYC: String])
+  //   },
+  //   $res.mapping->toOne(), meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions()
+  // ));
+}

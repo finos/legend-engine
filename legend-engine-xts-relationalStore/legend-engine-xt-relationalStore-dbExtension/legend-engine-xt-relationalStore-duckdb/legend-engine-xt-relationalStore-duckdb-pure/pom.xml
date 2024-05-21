@@ -54,7 +54,6 @@
                     </execution>
                 </executions>
                 <dependencies>
-
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-code-compiled-core</artifactId>
@@ -98,7 +97,6 @@
                     </execution>
                 </executions>
                 <dependencies>
-
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-code-compiled-core</artifactId>
@@ -147,6 +145,14 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-functions-relation</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>

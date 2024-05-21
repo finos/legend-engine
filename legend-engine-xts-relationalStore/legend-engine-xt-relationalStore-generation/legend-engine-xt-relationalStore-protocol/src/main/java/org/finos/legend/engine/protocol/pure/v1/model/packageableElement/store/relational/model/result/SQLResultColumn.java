@@ -71,7 +71,7 @@ public class SQLResultColumn
         {
             return Tuples.pair(this.label, "Float");
         }
-        else if (type.startsWith("INTEGER") || type.startsWith("BIGINT") || type.startsWith("SMALLINT") || type.startsWith("TINYINT"))
+        else if (type.startsWith("INTEGER") || type.startsWith("BIGINT") || type.startsWith("SMALLINT") || type.startsWith("TINYINT") || type.startsWith("HUGEINT"))
         {
             return Tuples.pair(this.label, "Integer");
         }
