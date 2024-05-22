@@ -31,9 +31,9 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.And
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Exists;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Not;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
@@ -107,7 +107,7 @@ class AppendOnlyPlanner extends Planner
     @Override
     public LogicalPlan buildLogicalPlanForIngest(Resources resources)
     {
-        Pair<List<Value>, List<DataType>> dataFieldsWithTypes = getDataFieldsWithTypes();
+        Pair<List<Value>, List<FieldType>> dataFieldsWithTypes = getDataFieldsWithTypes();
         List<Value> dataFields = dataFieldsWithTypes.getOne();
         List<Value> fieldsToSelect = new ArrayList<>(dataFields);
         List<Value> fieldsToInsert = new ArrayList<>(dataFields);

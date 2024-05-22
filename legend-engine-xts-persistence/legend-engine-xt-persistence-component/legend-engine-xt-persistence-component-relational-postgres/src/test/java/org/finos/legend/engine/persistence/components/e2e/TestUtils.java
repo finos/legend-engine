@@ -333,6 +333,15 @@ public class TestUtils
             .addFields(digest)
             .build();
 
+    public static SchemaDefinition getDedupAndVersioningSchemaWithoutVersion =
+        SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(income)
+            .addFields(expiryDate)
+            .addFields(digest)
+            .build();
+
     public static SchemaDefinition getDedupAndVersioningSchemaWithVersionAndBatch =
         SchemaDefinition.builder()
             .addFields(id)
@@ -578,14 +587,6 @@ public class TestUtils
             .build();
     }
 
-    public static JsonExternalDatasetReference getBasicJsonDatasetReferenceTable(String dataPath)
-    {
-        return JsonExternalDatasetReference.builder()
-            .schema(getStagingSchema())
-            .data(readFile(dataPath))
-            .build();
-    }
-
     public static JsonExternalDatasetReference getJsonDatasetWithoutDigest(String dataPath, String database, String group, String name)
     {
         return JsonExternalDatasetReference.builder()
@@ -620,20 +621,13 @@ public class TestUtils
             .build();
     }
 
-    public static CsvExternalDatasetReference getBasicCsvDatasetReferenceTable(String dataPath)
+    public static DatasetDefinition getDatasetWithDataSplits()
     {
-        return CsvExternalDatasetReference.builder()
-            .schema(getStagingSchema())
-            .csvDataPath(dataPath)
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchemaWithDataSplits())
             .build();
-    }
-
-    public static CsvExternalDatasetReference getBasicCsvDatasetReferenceTableWithDataSplits(String dataPath)
-    {
-        return CsvExternalDatasetReference.builder()
-                .schema(getStagingSchemaWithDataSplits())
-                .csvDataPath(dataPath)
-                .build();
     }
 
     public static CsvExternalDatasetReference getCsvDatasetReferenceTable(String dataPath, String database, String name, String group, String alias)

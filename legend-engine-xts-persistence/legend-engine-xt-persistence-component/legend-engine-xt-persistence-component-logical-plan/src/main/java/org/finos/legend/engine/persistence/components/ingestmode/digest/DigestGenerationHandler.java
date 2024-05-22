@@ -14,8 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.digest;
 
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
@@ -30,10 +30,10 @@ public class DigestGenerationHandler implements DigestGenStrategyVisitor<Void>
 {
     private List<Value> fieldsToSelect;
     private List<Value> fieldsToInsert;
-    private List<DataType> fieldTypes;
+    private List<FieldType> fieldTypes;
     private Dataset mainDataset;
 
-    public DigestGenerationHandler(Dataset mainDataset, List<Value> fieldsToSelect, List<Value> fieldsToInsert, List<DataType> fieldTypes)
+    public DigestGenerationHandler(Dataset mainDataset, List<Value> fieldsToSelect, List<Value> fieldsToInsert, List<FieldType> fieldTypes)
     {
         this.mainDataset = mainDataset;
         this.fieldsToSelect = fieldsToSelect;
@@ -53,7 +53,7 @@ public class DigestGenerationHandler implements DigestGenStrategyVisitor<Void>
         Set<String> fieldsToExclude = udfBasedDigestGenStrategy.fieldsToExcludeFromDigest();
         List<String> filteredStagingFieldNames = new ArrayList<>();
         List<Value> filteredStagingFieldValues = new ArrayList<>();
-        List<DataType> filteredStagingFieldTypes = new ArrayList<>();
+        List<FieldType> filteredStagingFieldTypes = new ArrayList<>();
 
         List<Value> sortedFieldsToSelect = fieldsToSelect.stream().sorted((o1, o2) ->
         {
@@ -71,7 +71,7 @@ public class DigestGenerationHandler implements DigestGenStrategyVisitor<Void>
         for (Value value : sortedFieldsToSelect)
         {
             int index = fieldsToSelect.indexOf(value);
-            DataType dataType = fieldTypes.get(index);
+            FieldType dataType = fieldTypes.get(index);
 
             if (value instanceof FieldValue)
             {

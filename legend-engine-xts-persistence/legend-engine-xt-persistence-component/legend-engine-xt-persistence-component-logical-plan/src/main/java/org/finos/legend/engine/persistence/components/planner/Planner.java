@@ -35,10 +35,10 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThan;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FilteredDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.*;
@@ -239,10 +239,10 @@ public abstract class Planner
         return tempStagingDatasetWithoutPks.orElseThrow(IllegalStateException::new);
     }
 
-    protected Pair<List<Value>, List<DataType>> getDataFieldsWithTypes()
+    protected Pair<List<Value>, List<FieldType>> getDataFieldsWithTypes()
     {
         List<Value> dataFields = new ArrayList<>();
-        List<DataType> fieldTypes = new ArrayList<>();
+        List<FieldType> fieldTypes = new ArrayList<>();
 
         Optional<String> dedupField = ingestMode.deduplicationStrategy().accept(DeduplicationVisitors.EXTRACT_DEDUP_FIELD);
         Optional<String> dataSplitField = ingestMode.dataSplitField();
@@ -256,7 +256,7 @@ public abstract class Planner
                 continue;
             }
             dataFields.add(fieldValue);
-            fieldTypes.add(stagingDataset().schema().fields().get(i).type().dataType());
+            fieldTypes.add(stagingDataset().schema().fields().get(i).type());
         }
 
         return Tuples.pair(dataFields, fieldTypes);
@@ -498,7 +498,7 @@ public abstract class Planner
                 dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.MAX_PK_DUPLICATES, logicalPlanForMaxDuplicatePkCount);
             }
 
-            LogicalPlan logicalPlanForDuplicatePkRows = ingestMode.versioningStrategy().accept(new DeriveDuplicatePkRowsLogicalPlan(primaryKeys, stagingDataset(), options().sampleRowCount()));
+            LogicalPlan logicalPlanForDuplicatePkRows = ingestMode.versioningStrategy().accept(new DeriveDuplicatePkRowsLogicalPlan(primaryKeys, stagingDataset(), options().sampleRowCount(), capabilities.contains(Capability.ALIAS_IN_HAVING)));
             if (logicalPlanForDuplicatePkRows != null)
             {
                 dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.PK_DUPLICATE_ROWS, logicalPlanForDuplicatePkRows);
@@ -517,7 +517,7 @@ public abstract class Planner
                 dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.MAX_DATA_ERRORS, logicalPlanForDataErrorCheck);
             }
 
-            LogicalPlan logicalPlanForDataErrors = ingestMode.versioningStrategy().accept(new DeriveDataErrorRowsLogicalPlan(primaryKeys, remainingColumns, tempStagingDataset(), options().sampleRowCount()));
+            LogicalPlan logicalPlanForDataErrors = ingestMode.versioningStrategy().accept(new DeriveDataErrorRowsLogicalPlan(primaryKeys, remainingColumns, tempStagingDataset(), options().sampleRowCount(), capabilities.contains(Capability.ALIAS_IN_HAVING)));
             if (logicalPlanForDataErrors != null)
             {
                 dedupAndVersioningErrorChecks.put(DedupAndVersionErrorSqlType.DATA_ERROR_ROWS, logicalPlanForDataErrors);

@@ -117,6 +117,24 @@ public class ApiUtils
         return datasetReference;
     }
 
+    public static LockInfoDataset applyCase(LockInfoDataset lockInfoDataset, CaseConversion caseConversion)
+    {
+        Function<String, String> strategy;
+        if (caseConversion == CaseConversion.TO_UPPER)
+        {
+            strategy = String::toUpperCase;
+        }
+        else if (caseConversion == CaseConversion.TO_LOWER)
+        {
+            strategy = String::toLowerCase;
+        }
+        else
+        {
+            return lockInfoDataset;
+        }
+        return new DatasetCaseConverter().applyCaseOnLockInfoDataset(lockInfoDataset, strategy);
+    }
+
     public static SchemaDefinition applyCase(SchemaDefinition schema, CaseConversion caseConversion)
     {
         DatasetCaseConverter converter = new DatasetCaseConverter();

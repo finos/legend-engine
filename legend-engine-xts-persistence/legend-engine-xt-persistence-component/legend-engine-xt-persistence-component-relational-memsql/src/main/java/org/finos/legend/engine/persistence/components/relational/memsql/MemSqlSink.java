@@ -79,6 +79,7 @@ public class MemSqlSink extends AnsiSqlSink
     {
         Set<Capability> capabilities = new HashSet<>();
         capabilities.add(Capability.ADD_COLUMN);
+        capabilities.add(Capability.ALIAS_IN_HAVING);
         capabilities.add(Capability.IMPLICIT_DATA_TYPE_CONVERSION);
         capabilities.add(Capability.EXPLICIT_DATA_TYPE_CONVERSION);
         capabilities.add(Capability.DATA_TYPE_LENGTH_CHANGE);
