@@ -930,18 +930,18 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             }
             if (v instanceof Number)
             {
-                return v.toString();
+                return (String) ResultNormalizer.normalizeToSql(v, databaseTimeZone);
             }
-            if (v instanceof PureDate)
+            if (v instanceof String)
             {
-                return "'" + (String) ResultNormalizer.normalizeToSql(v, databaseTimeZone) + "'";
-            }
-            if (v instanceof String && quoteCharacterReplacement != null)
-            {
-                return "'" + ((String) v).replace("'", quoteCharacterReplacement) + "'";
+                if (quoteCharacterReplacement != null)
+                {
+                    return "'" + ((String)ResultNormalizer.normalizeToSql(v, databaseTimeZone)).replace("'", quoteCharacterReplacement) + "'";
+                }
+                return "'" + ResultNormalizer.normalizeToSql(v, databaseTimeZone) + "'";
             }
             // TODO - Implement db specific processing for boolean type
-            return "'" + v.toString() + "'";
+            return "'" + ResultNormalizer.normalizeToSql(v, databaseTimeZone) + "'";
         };
     }
 
