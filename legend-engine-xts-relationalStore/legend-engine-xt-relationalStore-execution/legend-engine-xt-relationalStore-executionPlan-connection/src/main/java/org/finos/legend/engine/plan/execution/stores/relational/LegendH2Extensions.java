@@ -312,21 +312,21 @@ public class LegendH2Extensions
         }
     }
 
-    public static Value legend_h2_extension_edit_distance(Value string1, Value string2) throws Exception
+    public static Value legend_h2_extension_edit_distance(Value string1, Value string2)
     {
         if (string1 == ValueNull.INSTANCE || string2 == ValueNull.INSTANCE)
         {
-            throw new IllegalArgumentException("Null values not supported in legend_h2_extension_edit_distance");
+            return ValueNull.INSTANCE;
         }
 
         return ValueInteger.get(new LevenshteinDistance().apply(string1.getString(), string2.getString()));
     }
 
-    public static Value legend_h2_extension_jaro_winkler_similarity(Value string1, Value string2) throws Exception
+    public static Value legend_h2_extension_jaro_winkler_similarity(Value string1, Value string2)
     {
         if (string1 == ValueNull.INSTANCE || string2 == ValueNull.INSTANCE)
         {
-            throw new IllegalArgumentException("Null values not supported in legend_h2_extension_jaro_winkler_similarity");
+            return ValueNull.INSTANCE;
         }
 
         return ValueDouble.get(new JaroWinklerSimilarity().apply(string1.getString(), string2.getString()));

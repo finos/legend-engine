@@ -88,7 +88,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::string
          fc2(encodeUrl_String_1__String_1__String_1_,                            {ctx,str,charset            | $library->j_invoke('encodeUrl', [$str, $charset], javaString())}),
 
          fc2(hash_String_1__HashType_1__String_1_,                               {ctx,text,hashType          | $library->j_invoke('hash', [$text, $hashType], javaString())}),
-         fc2(jaroWinklerSimilarity_String_1__String_1__Float_1_,                 {ctx,str1,str2              | $library->j_invoke('jaroWinklerSimilarity',[$str1, $str2], javaFloat())}),
+         fc2(jaroWinklerSimilarity_String_1__String_1__Float_1_,                 {ctx,str1,str2              | $library->j_invoke('jaroWinklerSimilarity',[$str1, $str2], javaDouble())}),
          fc2(levenshteinDistance_String_1__String_1__Integer_1_,                 {ctx,str1,str2              | $library->j_invoke('levenshteinDistance',[$str1, $str2], javaLong())})
       ]);
 
