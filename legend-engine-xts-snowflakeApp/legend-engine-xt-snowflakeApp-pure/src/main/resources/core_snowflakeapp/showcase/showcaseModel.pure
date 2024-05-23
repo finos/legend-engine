@@ -93,7 +93,7 @@ Mapping meta::external::function::activator::snowflakeApp::tests::simpleRelation
     Gender: EnumerationMapping genderEnum
     {
           M:  'male',
-          F: 'female'
+          F: ['female', 'Female']
     }
 )
 
