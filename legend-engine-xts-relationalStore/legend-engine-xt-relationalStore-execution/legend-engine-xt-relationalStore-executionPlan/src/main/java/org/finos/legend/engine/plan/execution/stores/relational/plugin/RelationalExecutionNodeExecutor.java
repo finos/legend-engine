@@ -158,6 +158,7 @@ import java.util.Spliterators;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -957,24 +958,31 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     .collect(Collectors.joining(",", "", ""));
             RelationalStoreExecutionState relationalStoreExecutionState = (RelationalStoreExecutionState) threadExecutionState.getStoreExecutionState(StoreType.Relational);
             relationalStoreExecutionState.setIgnoreFreeMarkerProcessing(true);
-            prepareExecutionStateForTempTableExecution("temp_table_rows_from_result_set", threadExecutionState, valuesTuples);
-            prepareExecutionNodeToIngestDataIntoTempTable(node, valuesTuples);
-            node.accept(new ExecutionNodeExecutor(identity, threadExecutionState));
+            prepareExecutionNodeToIngestDataIntoTempTable(node, valuesTuples, threadExecutionState, identity);
             relationalStoreExecutionState.setIgnoreFreeMarkerProcessing(false);
         }
     }
 
-    private static ExecutionNode prepareExecutionNodeToIngestDataIntoTempTable(ExecutionNode executionNode, String result)
+    private static void prepareExecutionNodeToIngestDataIntoTempTable(ExecutionNode executionNode, String result, ExecutionState executionState, Identity identity)
     {
+        AtomicReference<SQLExecutionNode> insertSqlExecutionNode = new AtomicReference<>();
+        AtomicReference<String> insertSqlQuery = new AtomicReference<>();
         executionNode.executionNodes.forEach(node ->
         {
             if (node instanceof SQLExecutionNode)
             {
-                String sqlQuery = (((SQLExecutionNode) node).sqlQuery).replace("${temp_table_rows_from_result_set}", result);
-                ((SQLExecutionNode) node).sqlQuery = sqlQuery;
+                String sqlQuery = ((SQLExecutionNode) node).sqlQuery;
+                if (sqlQuery.contains("${temp_table_rows_from_result_set}"))
+                {
+                    insertSqlQuery.set(sqlQuery);
+                    String sqlQueryWithValueTuples = sqlQuery.replace("${temp_table_rows_from_result_set}", result);
+                    insertSqlExecutionNode.set((SQLExecutionNode) node);
+                    ((SQLExecutionNode) node).sqlQuery = sqlQueryWithValueTuples;
+                }
             }
         });
-        return executionNode;
+        executionNode.accept(new ExecutionNodeExecutor(identity, executionState));
+        insertSqlExecutionNode.get().sqlQuery = insertSqlQuery.get();
     }
 
     public static void prepareExecutionStateForTempTableExecution(String key, ExecutionState state, String result)
