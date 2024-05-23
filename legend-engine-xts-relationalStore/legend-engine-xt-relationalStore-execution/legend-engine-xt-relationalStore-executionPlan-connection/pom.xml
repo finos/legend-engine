@@ -235,6 +235,13 @@
         </dependency>
         <!-- COMMONS-LANG -->
 
+        <!-- COMMONS-TEXT (Fuzzy Search) -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+        </dependency>
+        <!-- COMMONS-TEXT -->
+
         <!-- COMMONS CODEC (Base64)-->
         <dependency>
             <groupId>commons-codec</groupId>
