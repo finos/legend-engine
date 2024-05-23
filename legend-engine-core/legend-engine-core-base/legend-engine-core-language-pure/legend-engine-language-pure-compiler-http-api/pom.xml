@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core-language-pure</artifactId>
-        <version>4.44.4-SNAPSHOT</version>
+        <version>4.46.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-language-pure-compiler-http-api</artifactId>
@@ -162,6 +162,14 @@
             <artifactId>legend-engine-language-pure-compiler</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-identity-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-identity-pac4j</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>

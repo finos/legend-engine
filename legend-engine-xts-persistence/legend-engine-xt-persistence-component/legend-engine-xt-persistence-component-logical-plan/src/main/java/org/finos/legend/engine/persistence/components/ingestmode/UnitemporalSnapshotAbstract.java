@@ -26,10 +26,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.Merg
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolverAbstract;
 import org.immutables.value.Value;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.immutables.value.Value.Derived;
 import static org.immutables.value.Value.Immutable;
@@ -52,7 +49,9 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
 
     List<String> partitionFields();
 
-    Map<String, Set<String>> partitionValuesByField();
+    List<Map<String, Object>> partitionSpecList(); // [ {date: D1, Id: ID1, Name: N1}, {date: D2, Id: ID2, Name: N2}, ....]
+
+    Map<String, Set<String>> partitionValuesByField(); // for Backward compatibility -- to be deprecated
 
     @Derived
     default boolean partitioned()
@@ -75,6 +74,12 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
     @Value.Check
     default void validate()
     {
+
+        if (!partitionValuesByField().isEmpty() && !partitionSpecList().isEmpty())
+        {
+            throw new IllegalStateException("Can not build UnitemporalSnapshot, Provide either partitionValuesByField or partitionSpecList, both not supported together");
+        }
+
         // All the keys in partitionValuesByField must exactly match the fields in partitionFields
         if (!partitionValuesByField().isEmpty())
         {
@@ -87,6 +92,39 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
                 if (!partitionFields().contains(partitionKey))
                 {
                     throw new IllegalStateException(String.format("Can not build UnitemporalSnapshot, partitionKey: [%s] not specified in partitionFields", partitionKey));
+                }
+            }
+            int partitionKeysWithMoreThanOneValues = 0;
+            for (Set<String> partitionValues: partitionValuesByField().values())
+            {
+                if (partitionValues.size() > 1)
+                {
+                    partitionKeysWithMoreThanOneValues++;
+                }
+            }
+            if (partitionKeysWithMoreThanOneValues > 1)
+            {
+                throw new IllegalStateException(String.format("Can not build UnitemporalSnapshot, in partitionValuesByField at most one of the partition keys can have more than one value, all other partition keys must have exactly one value"));
+            }
+        }
+
+        if (!partitionSpecList().isEmpty())
+        {
+            for (Map<String, Object> partitionSpec : partitionSpecList())
+            {
+                if (partitionFields().size() != partitionSpec.size())
+                {
+                    throw new IllegalStateException("Can not build UnitemporalSnapshot, size of each partitionSpec must be same as size of partitionFields");
+                }
+            }
+            for (Map<String, Object> partitionSpec : partitionSpecList())
+            {
+                for (String partitionKey: partitionSpec.keySet())
+                {
+                    if (!partitionFields().contains(partitionKey))
+                    {
+                        throw new IllegalStateException(String.format("Can not build UnitemporalSnapshot, partitionKey: [%s] not specified in partitionSpec", partitionKey));
+                    }
                 }
             }
         }

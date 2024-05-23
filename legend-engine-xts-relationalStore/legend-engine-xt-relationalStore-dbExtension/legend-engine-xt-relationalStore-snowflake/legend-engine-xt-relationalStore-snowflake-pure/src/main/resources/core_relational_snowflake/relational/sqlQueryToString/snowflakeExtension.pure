@@ -171,6 +171,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
     dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='parse_json(%s)')),
+    dynaFnToSql('parseBoolean',           $allStates,            ^ToSql(format='to_boolean(%s)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),
     dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='dateadd(DAY, case when %s - DAYOFWEEK(%s) +1  >= 0 then %s  - DAYOFWEEK(%s) -1 - 7 else %s - DAYOFWEEK(%s) -1 end, %s)', transform={p:String[1..2] | $p->formatMostRecentSnowflake('current_date')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
@@ -302,7 +303,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       a: SemiStructuredArrayElementAccess[1] | '[' + $a.index->cast(@Literal).value->toString() + ']'
    ]);
 
-   $elementAccess + castSuffixForSnowflakeSemiStructuredData($s.returnType);
+   if($s.avoidCastIfPrimitive == true, | $elementAccess, | $elementAccess + castSuffixForSnowflakeSemiStructuredData($s.returnType));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processSemiStructuredArrayFlattenForSnowflake(s:SemiStructuredArrayFlatten[1], sgc:SqlGenerationContext[1]): String[1]

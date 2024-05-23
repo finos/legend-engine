@@ -1349,7 +1349,7 @@ public class DomainParseTreeWalker
             else if (colSpecArray != null)
             {
                 ColSpecArray colSpecArr = new ColSpecArray();
-                colSpecArr.colSpecs = ListIterate.collect(colSpecArray.oneColSpec(), c -> processOneColSpec(c, typeParametersNames, lambdaContext, space, wrapFlag, addLines, expressions));
+                colSpecArr.colSpecs = ListIterate.collect(colSpecArray.oneColSpec(), c -> processOneColSpec(c, typeParametersNames, lambdaContext, space, wrapFlag, addLines, Lists.mutable.of()));
                 result = DomainParseTreeWalker.wrapWithClassInstance(colSpecArr, walkerSourceInformation.getSourceInformation(colSpecArray), "colSpecArray");
                 ;
             }
@@ -1366,7 +1366,7 @@ public class DomainParseTreeWalker
         return result;
     }
 
-    private ColSpec processOneColSpec(DomainParserGrammar.OneColSpecContext oneColSpec, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines, List<Variable> expressions)
+    private ColSpec processOneColSpec(DomainParserGrammar.OneColSpecContext oneColSpec, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines, List<Variable> params)
     {
         ValueSpecification result;
         ColSpec colSpec = new ColSpec();
@@ -1379,8 +1379,8 @@ public class DomainParseTreeWalker
         if (oneColSpec.lambdaParam() != null && oneColSpec.lambdaPipe() != null)
         {
             Variable var = this.lambdaParam(oneColSpec.lambdaParam().lambdaParamType(), oneColSpec.lambdaParam().identifier(), typeParametersNames, space);
-            expressions.add(var);
-            colSpec.function1 = this.lambdaPipe(oneColSpec.lambdaPipe(), oneColSpec.lambdaParam().getStart(), expressions, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+            params.add(var);
+            colSpec.function1 = this.lambdaPipe(oneColSpec.lambdaPipe(), oneColSpec.lambdaParam().getStart(), params, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
             if (oneColSpec.extraFunction() != null)
             {
                 List<Variable> var2 = Lists.mutable.with(this.lambdaParam(oneColSpec.extraFunction().lambdaParam().lambdaParamType(), oneColSpec.extraFunction().lambdaParam().identifier(), typeParametersNames, space));

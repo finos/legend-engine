@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
@@ -23,12 +24,16 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.MutableSet;
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionExpressionBuilderRegistrationInfo;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerDispatchBuilderInfo;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -60,11 +65,16 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSp
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceSupportInfo;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import java.util.Collections;
@@ -267,6 +277,24 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
         );
     }
 
+
+    @Override
+    public List<Function3<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, CompileContext, ProcessingContext, InstanceValue>> getExtraValueSpecificationBuilderForFuncExpr()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with((packageableElement, context, processingContext) ->
+        {
+            if (packageableElement instanceof Root_meta_pure_metamodel_dataSpace_DataSpace)
+            {
+                GenericType dSGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::dataSpace::DataSpace"));
+                return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
+                        ._genericType(dSGenericType)
+                        ._multiplicity(context.pureModel.getMultiplicity("one"))
+                        ._values(processingContext.peek().equals("Applying new") ? FastList.newList() : FastList.newListWith(packageableElement));
+            }
+            return null;
+        });
+    }
+
     @Override
     public Map<PackageableElementType, Function2<StoreProviderPointer, CompileContext, Store>> getExtraStoreProviderHandlers()
     {
@@ -340,4 +368,31 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                 .collect(d -> Iterate.detect(d.executionContexts, e -> e.name.equals(d.defaultExecutionContext)).testData)
                 .collect(d -> EmbeddedDataCompilerHelper.getEmbeddedDataFromDataElement(d, pureModelContextData));
     }
+
+    @Override
+    public List<Function<Handlers, List<FunctionHandlerDispatchBuilderInfo>>> getExtraFunctionHandlerDispatchBuilderInfoCollectors()
+    {
+        return Collections.singletonList((handlers) ->
+                org.eclipse.collections.api.factory.Lists.mutable.with(
+                        new FunctionHandlerDispatchBuilderInfo("meta::pure::mapping::from_T_m__DataSpaceExecutionContext_1__T_m_", (List<ValueSpecification> ps) -> ps.size() == 2 && handlers.isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "DataSpaceExecutionContext".equals(ps.get(1)._genericType()._rawType()._name()))),
+                        new FunctionHandlerDispatchBuilderInfo("meta::pure::metamodel::dataSpace::get_DataSpace_1__String_1__DataSpaceExecutionContext_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && handlers.isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "DataSpace".equals(ps.get(0)._genericType()._rawType()._name())) && handlers.isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "String".equals(ps.get(1)._genericType()._rawType()._name())))
+
+                ));
+    }
+
+    @Override
+    public List<Function<Handlers, List<FunctionExpressionBuilderRegistrationInfo>>> getExtraFunctionExpressionBuilderRegistrationInfoCollectors()
+    {
+        return Collections.singletonList((handlers) ->
+                org.eclipse.collections.api.factory.Lists.mutable.with(
+                        new FunctionExpressionBuilderRegistrationInfo(org.eclipse.collections.impl.factory.Lists.mutable.with(0),
+                                handlers.m(handlers.h("meta::pure::mapping::from_T_m__DataSpaceExecutionContext_1__T_m_", false, ps -> handlers.res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && handlers.typeOne(ps.get(1), "DataSpaceExecutionContext")))
+                        ),
+                        // getter for execution parameters from execution environment
+                        new FunctionExpressionBuilderRegistrationInfo(null,
+                                handlers.m(handlers.m(handlers.h("meta::pure::metamodel::dataSpace::get_DataSpace_1__String_1__DataSpaceExecutionContext_1_", false, ps -> handlers.res("meta::pure::metamodel::dataSpace::DataSpaceExecutionContext", "one"), ps -> ps.size() == 2))))
+
+                ));
+    }
+
 }

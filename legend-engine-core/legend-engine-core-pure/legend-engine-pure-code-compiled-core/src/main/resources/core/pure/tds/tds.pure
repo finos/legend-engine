@@ -35,6 +35,9 @@ Class meta::pure::tds::TDSColumn
    
    <<equality.Key>>
    enumMappingId : String[0..1];
+
+   <<equality.Key>>
+   enumMapping: meta::pure::mapping::EnumerationMapping<Any>[0..1];
    
    <<equality.Key>>
    documentation : String[0..1];

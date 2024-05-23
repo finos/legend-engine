@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.ingestmode.versioning;
 
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
@@ -33,14 +34,16 @@ public class DeriveDuplicatePkRowsLogicalPlan implements VersioningStrategyVisit
     private List<String> primaryKeys;
     private Dataset tempStagingDataset;
     private int sampleRowCount;
+    private boolean useAliasInHaving;
 
     public static final String DUPLICATE_PK_COUNT = "legend_persistence_pk_count";
 
-    public DeriveDuplicatePkRowsLogicalPlan(List<String> primaryKeys, Dataset tempStagingDataset, int sampleRowCount)
+    public DeriveDuplicatePkRowsLogicalPlan(List<String> primaryKeys, Dataset tempStagingDataset, int sampleRowCount, boolean useAliasInHaving)
     {
         this.primaryKeys = primaryKeys;
         this.tempStagingDataset = tempStagingDataset;
         this.sampleRowCount = sampleRowCount;
+        this.useAliasInHaving = useAliasInHaving;
     }
 
     @Override
@@ -56,12 +59,14 @@ public class DeriveDuplicatePkRowsLogicalPlan implements VersioningStrategyVisit
                 .alias(DUPLICATE_PK_COUNT)
                 .build();
 
+            Condition havingCondition = GreaterThan.of(useAliasInHaving ? FieldValue.builder().fieldName(DUPLICATE_PK_COUNT).build() : count, ObjectValue.of(1));
+
             Selection selectDuplicatePks = Selection.builder()
                 .source(tempStagingDataset)
                 .groupByFields(pks)
                 .addAllFields(pks)
                 .addFields(count)
-                .havingCondition(GreaterThan.of(FieldValue.builder().fieldName(DUPLICATE_PK_COUNT).build(), ObjectValue.of(1)))
+                .havingCondition(havingCondition)
                 .limit(sampleRowCount)
                 .build();
 

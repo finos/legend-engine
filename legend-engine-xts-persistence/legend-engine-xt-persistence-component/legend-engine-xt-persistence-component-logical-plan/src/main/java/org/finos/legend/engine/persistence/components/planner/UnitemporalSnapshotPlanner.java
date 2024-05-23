@@ -124,6 +124,10 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
             {
                 whereClauseForNotInSink.add(LogicalPlanUtils.getPartitionColumnValueMatchInCondition(mainDataset(), ingestMode().partitionValuesByField()));
             }
+            else if (!ingestMode().partitionSpecList().isEmpty())
+            {
+                whereClauseForNotInSink.add(LogicalPlanUtils.getPartitionSpecMatchCondition(mainDataset(), ingestMode().partitionSpecList()));
+            }
             else
             {
                 whereClauseForNotInSink.add(LogicalPlanUtils.getPartitionColumnsMatchCondition(mainDataset(), stagingDataset(), ingestMode().partitionFields().toArray(new String[0])));
@@ -193,7 +197,15 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
 
         if (ingestMode().partitioned())
         {
-            if (ingestMode().partitionValuesByField().isEmpty())
+            if (!ingestMode().partitionValuesByField().isEmpty())
+            {
+                whereClauseForPartition.add(LogicalPlanUtils.getPartitionColumnValueMatchInCondition(mainDataset(), ingestMode().partitionValuesByField()));
+            }
+            else if (!ingestMode().partitionSpecList().isEmpty())
+            {
+                whereClauseForPartition.add(LogicalPlanUtils.getPartitionSpecMatchCondition(mainDataset(), ingestMode().partitionSpecList()));
+            }
+            else
             {
                 Condition partitionColumnCondition = Exists.of(
                     Selection.builder()
@@ -202,10 +214,6 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
                         .addAllFields(LogicalPlanUtils.ALL_COLUMNS())
                         .build());
                 whereClauseForPartition.add(partitionColumnCondition);
-            }
-            else
-            {
-                whereClauseForPartition.add(LogicalPlanUtils.getPartitionColumnValueMatchInCondition(mainDataset(), ingestMode().partitionValuesByField()));
             }
         }
 
@@ -229,6 +237,10 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         if (ingestMode().partitioned() && !(ingestMode().partitionValuesByField().isEmpty()))
         {
             conditions.add(LogicalPlanUtils.getPartitionColumnValueMatchInCondition(mainDataset(), ingestMode().partitionValuesByField()));
+        }
+        else if (ingestMode().partitioned() && !ingestMode().partitionSpecList().isEmpty())
+        {
+            conditions.add(LogicalPlanUtils.getPartitionSpecMatchCondition(mainDataset(), ingestMode().partitionSpecList()));
         }
         return UpdateAbstract.of(mainDataset(), values, And.of(conditions));
     }
@@ -254,7 +266,7 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         public LogicalPlan visitDeleteTargetData(DeleteTargetDataAbstract deleteTargetDataAbstract)
         {
             List<Operation> operations = new ArrayList<>();
-            if (ingestMode().partitioned() && ingestMode().partitionValuesByField().isEmpty())
+            if (ingestMode().partitioned() && ingestMode().partitionValuesByField().isEmpty() && ingestMode().partitionSpecList().isEmpty())
             {
                 return LogicalPlan.of(operations);
             }

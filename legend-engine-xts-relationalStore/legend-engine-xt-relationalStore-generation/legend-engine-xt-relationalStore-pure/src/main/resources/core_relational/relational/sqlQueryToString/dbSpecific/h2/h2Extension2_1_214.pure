@@ -272,7 +272,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 
   let lhs = ^TableAliasColumn(column = ^Column(name = '__INPUT__', type = ^meta::relational::metamodel::datatype::SemiStructured()),alias = $j.alias);
   let rhs = $j.alias.relationalElement->cast(@SemiStructuredArrayFlatten).navigation->cast(@SemiStructuredObjectNavigation);
-  let joinOperation = ^DynaFunction(name= 'equal', parameters = [$lhs, ^$rhs(returnType=String)]);
+  let joinOperation = ^DynaFunction(name= 'equal', parameters = [$lhs, ^$rhs(returnType=String, avoidCastIfPrimitive=false)]);
 
   ' ' + $format.separator() + 'left outer join '
   + $j.alias
@@ -401,7 +401,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
       a: SemiStructuredArrayElementAccess[1] | semiStructuredArrayElementAccessForH2($processedOperand, $a.index->cast(@Literal).value->toString())
    ]);
 
-  $elementAccess->castToReturnTypeForSemiStructuredData($s.returnType);
+   if($s.avoidCastIfPrimitive == true, | $elementAccess, | $elementAccess->castToReturnTypeForSemiStructuredData($s.returnType));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::processJoinStringsOperationForH2(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]

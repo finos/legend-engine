@@ -326,7 +326,6 @@ function <<test.Test>> meta::relational::tests::projection::enumeration::testPro
     assertEquals(['My Product 2', ProductSynonymType.CUSIP], $tds.rows->at(2).values);
 }
 
-
 function <<test.Test>> meta::relational::tests::projection::enumeration::testProjectWithIfWhereEnumEqualsClassProp():Boolean[1]
 {
   let result = execute(|meta::relational::tests::model::simple::Synonym.all()->project([p|if($p.type == meta::relational::tests::model::simple::ProductSynonymType.CUSIP,|$p.name,|$p.typeAsString)], ['ress']), meta::relational::tests::simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
@@ -334,4 +333,119 @@ function <<test.Test>> meta::relational::tests::projection::enumeration::testPro
   let tds = $result.values->at(0);
   assertSize($tds.rows, 6);
   assertSameSQL('select case when "root".TYPE = \'CUSIP\' then "root".NAME else "root".TYPE end as "ress" from productSchema.synonymTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::projection::enumeration::testTdsProjectWithSingleStringEnumEqualityComparison():Boolean[1]
+{
+  let result =  execute(|Employee.all()->project(
+                    [x|$x.type],
+                    ['Type']
+                  )->project(
+                    col(
+                      row: meta::pure::tds::TDSRow[1]| if($row.getEnum('Type') == EmployeeType.FULL_TIME, | 'yes', | 'no'),
+                      'Type'
+                    )
+                  ), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions()
+                );
+
+  assertSameElements(['no', 'yes', 'no'], $result.values.rows.values);
+  let tds = $result.values->at(0);
+  assertSize($tds.rows, 3);
+  assertSameSQL('select case when "root".type = \'FTE\' then \'yes\' else \'no\' end as "Type" from employeeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::projection::enumeration::testTdsProjectWithMultiStringEnumEqualityComparison():Boolean[1]
+{
+  let result =  execute(|Employee.all()->project(
+                    [x|$x.type],
+                    ['Type']
+                  )->project(
+                    col(
+                      row: meta::pure::tds::TDSRow[1]| if($row.getEnum('Type') == EmployeeType.CONTRACT, | 'yes', | 'no'),
+                      'Type'
+                    )
+                  ), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions()
+                );
+
+  assertSameElements(['yes', 'no', 'yes'], $result.values.rows.values);
+  let tds = $result.values->at(0);
+  assertSize($tds.rows, 3);
+  assertSameSQL('select case when "root".type in (\'FTC\', \'FTO\') then \'yes\' else \'no\' end as "Type" from employeeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::projection::enumeration::testTdsProjectWithEnumInequalityComparison():Boolean[1]
+{
+  let result =  execute(|Employee.all()->project(
+                    [x|$x.type],
+                    ['Type']
+                  )->project(
+                    col(
+                      row: meta::pure::tds::TDSRow[1]| if(EmployeeType.CONTRACT != $row.getEnum('Type'), | 'yes', | 'no'),
+                      'Type'
+                    )
+                  ), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions()
+                );
+
+  assertSameElements(['no', 'yes', 'no'], $result.values.rows.values);
+  let tds = $result.values->at(0);
+  assertSize($tds.rows, 3);
+  assertSameSQL('select case when ("root".type not in (\'FTC\', \'FTO\') OR "root".type is null) then \'yes\' else \'no\' end as "Type" from employeeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::projection::enumeration::testTdsProjectWithEnumToStringEqualityComparison():Boolean[1]
+{
+  let result =  execute(|Employee.all()->project(
+                    [x|$x.type],
+                    ['Type']
+                  )->project(
+                    col(
+                      row: meta::pure::tds::TDSRow[1]| if($row.getEnum('Type') == 'FTE', | 'yes', | 'no'),
+                      'Type'
+                    )
+                  ), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions()
+                );
+
+  assertSameElements(['no', 'yes', 'no'], $result.values.rows.values);
+  let tds = $result.values->at(0);
+  assertSize($tds.rows, 3);
+  assertSameSQL('select case when "root".type = \'FTE\' then \'yes\' else \'no\' end as "Type" from employeeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::projection::enumeration::testTdsProjectWithEnumsInInClause():Boolean[1]
+{
+  let result =  execute(|Employee.all()->project(
+                    [x|$x.type],
+                    ['Type']
+                  )->project(
+                    col(
+                      row: meta::pure::tds::TDSRow[1]| if($row.getEnum('Type')->in([EmployeeType.CONTRACT, EmployeeType.FULL_TIME]), | 'yes', | 'no'),
+                      'Type'
+                    )
+                  ), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions()
+                );
+
+  assertSameElements(['yes', 'yes', 'yes'], $result.values.rows.values);
+  let tds = $result.values->at(0);
+  assertSize($tds.rows, 3);
+  assertSameSQL('select case when "root".type in (\'FTC\', \'FTO\', \'FTE\') then \'yes\' else \'no\' end as "Type" from employeeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::projection::enumeration::testTdsProjectWithEnumVarEquality():Boolean[1]
+{  
+  let result =  execute({|let enum = if(5 > 3, | EmployeeType.CONTRACT, | EmployeeType.FULL_TIME);
+                          Employee.all()->project(
+                            [x|$x.type],
+                            ['Type']
+                          )->project(
+                            col(
+                              row: meta::pure::tds::TDSRow[1]| if($row.getEnum('Type') == $enum, | 'yes', | 'no'),
+                              'Type'
+                            )
+                          );
+                        }, employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions()
+                      );
+
+  assertSameElements(['yes', 'no', 'yes'], $result.values.rows.values);
+  let tds = $result.values->at(0);
+  assertSize($tds.rows, 3);
 }
