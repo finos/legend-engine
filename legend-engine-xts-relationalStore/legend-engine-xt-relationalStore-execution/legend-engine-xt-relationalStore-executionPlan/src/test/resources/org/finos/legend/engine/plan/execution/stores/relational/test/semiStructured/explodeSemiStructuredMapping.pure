@@ -123,6 +123,80 @@ Database simple::store::semistructured
   Join Order_Product(Semistructured.Orders.IDENTIFIER = Semistructured.Product.IDENTIFIER)
 )
 
+
+Database view::store::semistructured
+(
+  Schema Semistructured
+  (
+    Table AllBlocksVersions
+    (
+      ID VARCHAR(100) PRIMARY KEY,
+      VERSION VARCHAR(100) PRIMARY KEY,
+      ACCOUNT VARCHAR(100),
+      BLOCKDATA SEMISTRUCTURED
+    )
+    Table TradesTable
+    (
+      ID VARCHAR(100) PRIMARY KEY,
+      STATUS VARCHAR(100),
+      TRADESUMMARY SEMISTRUCTURED
+    )
+    Table Orders
+    (
+      ID VARCHAR(100) PRIMARY KEY,
+      IDENTIFIER VARCHAR(100),
+      QUANTITY INTEGER,
+      SIDE VARCHAR(100),
+      PRICE DOUBLE
+    )
+    Table Product
+    (
+      IDENTIFIER VARCHAR(100) PRIMARY KEY,
+      PRODUCT VARCHAR(100),
+      VERSION VARCHAR(100)
+    )
+    Table Attributes
+    (
+      ATTRIBUTE_ID VARCHAR(100) PRIMARY KEY,
+      VERSION VARCHAR(100) PRIMARY KEY,
+      ATTRIBUTE_VALUE VARCHAR(100),
+      DESCRIPTION VARCHAR(100)
+    )
+
+    View LatestBlockVersion
+    (
+      ~groupBy
+      (
+        Semistructured.AllBlocksVersions.ID
+      )
+      ID: Semistructured.AllBlocksVersions.ID PRIMARY KEY,
+      MAX_VERSION: max(Semistructured.AllBlocksVersions.VERSION)
+    )
+    View Blocks
+    (
+      ID: Semistructured.LatestBlockVersion.ID PRIMARY KEY,
+      ACCOUNT: [view::store::semistructured]@AllBlocksVersions_LatestBlockVersion | Semistructured.AllBlocksVersions.ACCOUNT,
+      BLOCKDATA: [view::store::semistructured]@AllBlocksVersions_LatestBlockVersion | Semistructured.AllBlocksVersions.BLOCKDATA
+    )
+    View Trades
+    (
+      ID: Semistructured.TradesTable.ID PRIMARY KEY,
+      STATUS: Semistructured.TradesTable.STATUS,
+      TRADESUMMARY: Semistructured.TradesTable.TRADESUMMARY
+    )
+  )
+
+  Join AllBlocksVersions_LatestBlockVersion(Semistructured.AllBlocksVersions.ID = Semistructured.LatestBlockVersion.ID
+    and Semistructured.AllBlocksVersions.VERSION = Semistructured.LatestBlockVersion.MAX_VERSION)
+  Join Block_Order(extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tag', 'VARCHAR') = 'order'
+    and extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tagId', 'VARCHAR') = Semistructured.Orders.ID)
+  Join Block_Trade(extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tag', 'VARCHAR') = 'trade'
+    and extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tagId', 'VARCHAR') = Semistructured.Trades.ID)
+  Join Order_Product(Semistructured.Orders.IDENTIFIER = Semistructured.Product.IDENTIFIER)
+  Join Block_Attributes(extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'attributes', 'SEMISTRUCTURED'), 'id', 'VARCHAR') = Semistructured.Attributes.ATTRIBUTE_ID
+    and extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'attributes', 'SEMISTRUCTURED'), 'version', 'VARCHAR') = Semistructured.Attributes.VERSION)
+)
+
 ###Mapping
 Mapping simple::mapping::semistructured
 (
@@ -182,6 +256,66 @@ Mapping simple::mapping::semistructured
   }
 )
 
+
+Mapping view::mapping::semistructured
+(
+  *simple::model::block: Relational
+  {
+    ~primaryKey
+    (
+      [view::store::semistructured]Semistructured.Blocks.ID
+    )
+    ~mainTable [view::store::semistructured]Semistructured.Blocks
+    id: [view::store::semistructured]Semistructured.Blocks.ID,
+    account: [view::store::semistructured]Semistructured.Blocks.ACCOUNT,
+    trades[simple_model_trade]: [view::store::semistructured]@Block_Trade,
+    orders[simple_model_order]: [view::store::semistructured]@Block_Order,
+    products: [view::store::semistructured]@Block_Order > [view::store::semistructured]@Order_Product | [view::store::semistructured]Semistructured.Product.PRODUCT,
+    blockData: Binding simple::binding::binding : [view::store::semistructured]Semistructured.Blocks.BLOCKDATA
+  }
+  *simple::model::order: Relational
+  {
+    ~primaryKey
+    (
+      [view::store::semistructured]Semistructured.Orders.ID
+    )
+    ~mainTable [view::store::semistructured]Semistructured.Orders
+    id: [view::store::semistructured]Semistructured.Orders.ID,
+    quantity: [view::store::semistructured]Semistructured.Orders.QUANTITY,
+    side: [view::store::semistructured]Semistructured.Orders.SIDE,
+    price: [view::store::semistructured]Semistructured.Orders.PRICE,
+    block[simple_model_block]: [view::store::semistructured]@Block_Order,
+    account: [view::store::semistructured]@Block_Order | [view::store::semistructured]Semistructured.Blocks.ACCOUNT,
+    tradeId: [view::store::semistructured]@Block_Order > [view::store::semistructured]@Block_Trade | [view::store::semistructured]Semistructured.Trades.ID,
+    identifier: [view::store::semistructured]Semistructured.Orders.IDENTIFIER,
+    product: [view::store::semistructured]@Order_Product
+  }
+  *simple::model::trade: Relational
+  {
+    ~primaryKey
+    (
+      [view::store::semistructured]Semistructured.Trades.ID
+    )
+    ~mainTable [view::store::semistructured]Semistructured.Trades
+    id: [view::store::semistructured]Semistructured.Trades.ID,
+    status: [view::store::semistructured]Semistructured.Trades.STATUS,
+    block[simple_model_block]: [view::store::semistructured]@Block_Trade,
+    tradeSummary: Binding simple::binding::binding : [view::store::semistructured]Semistructured.Trades.TRADESUMMARY
+  }
+  *simple::model::Product: Relational
+  {
+    ~primaryKey
+    (
+      [view::store::semistructured]Semistructured.Product.IDENTIFIER
+    )
+    ~mainTable [view::store::semistructured]Semistructured.Product
+    identifier: [view::store::semistructured]Semistructured.Product.IDENTIFIER,
+    version: [view::store::semistructured]Semistructured.Product.VERSION,
+    product: [view::store::semistructured]Semistructured.Product.PRODUCT
+  }
+)
+
+
 ###Connection
 RelationalDatabaseConnection simple::connection::snowflake
 {
@@ -202,6 +336,25 @@ RelationalDatabaseConnection simple::connection::snowflake
   auth: Test;
 }
 
+RelationalDatabaseConnection view::connection::snowflake
+{
+  store: view::store::semistructured;
+  type: H2;
+  specification: LocalH2
+    {
+         testDataSetupSqls:
+             [
+                'drop schema if exists semistructured cascade;',
+                'create schema semistructured;',
+                'create table if not exists semistructured.AllBlocksVersions ( id int, version int, account varchar(100), blockData varchar(1000), primary key(id, version) ) as values (1, 1, \'a1\', \'{"status": "placed", "relatedEntities": [{"tag": "trade", "tagId": "t1"}, {"tag": "order", "tagId": "o1"}]}\'), (1, 2, \'a1\', \'{"status": "accepted", "relatedEntities": [{"tag": "trade", "tagId": "t1"}, {"tag": "order", "tagId": "o1"}]}\'), (1, 3, \'a1\', \'{"status": "fulfilled", "relatedEntities": [{"tag": "trade", "tagId": "t1"}, {"tag": "order", "tagId": "o1"}]}\'), (2, 1, \'a1\', \'{"status": "placed", "relatedEntities": [{"tag": "trade", "tagId": "t2"}, {"tag": "order", "tagId": "o2"}, {"tag": "order", "tagId": "o1"}]}\'), (2, 2, \'a1\', \'{"status": "cancelled", "relatedEntities": [{"tag": "trade", "tagId": "t2"}, {"tag": "order", "tagId": "o2"}, {"tag": "order", "tagId": "o1"}]}\'), (3, 1, \'a2\', \'{"status": "fulfilled", "relatedEntities": [{"tag": "trade", "tagId": "t3"}, {"tag": "trade", "tagId": "t4"}, {"tag": "order", "tagId": "o3"}]}\'), (3, 2, \'a2\', \'{"status": "fulfilled", "relatedEntities": [{"tag": "trade", "tagId": "t3"}, {"tag": "trade", "tagId": "t4"}, {"tag": "order", "tagId": "o3"}]}\'), (4, 1, \'a2\', \'{"status": "accepted", "relatedEntities": [{"tag": "trade", "tagId": "t5"}, {"tag": "trade", "tagId": "t6"}, {"tag": "order", "tagId": "o4"}]}\'), (5, 1, \'a1\', \'{"status": "fulfilled", "relatedEntities": [{"tag": "trade", "tagId": "t7"}, {"tag": "order", "tagId": "o5"}, {"tag": "order", "tagId": "o6"}]}\'), (6, 1, \'a3\', \'{"status": "rejected", "relatedEntities": []}\');',
+                'create table if not exists semistructured.TradesTable ( id varchar(100) primary key, status varchar(100), tradeSummary varchar(1000) ) as values (\'t1\', \'accepted\', \'{"identifier": "i1", "execQuantity": 100, "execPrice": 100, "side": "SELL"}\'), (\'t2\', \'rejected\', \'{"identifier": "i2", "execQuantity": 100, "execPrice": 10, "side": "BUY"}\'), (\'t3\', \'accepted\', \'{"identifier": "i3", "execQuantity": 100, "execPrice": 100, "side": "BUY"}\'), (\'t4\', \'accepted\', \'{"identifier": "i3", "execQuantity": 100, "execPrice": 105, "side": "BUY"}\'), (\'t5\', \'accepted\', \'{"identifier": "i1", "execQuantity": 70, "execPrice": 100, "side": "SELL"}\'), (\'t6\', \'rejected\', \'{"identifier": "i1", "execQuantity": 80, "execPrice": 90, "side": "SELL"}\'), (\'t7\', \'accepted\', \'{"identifier": "i4", "execQuantity": 60, "execPrice": 50, "side": "SELL"}\'), (\'t8\', \'invalid\', \'{"identifier": "i4", "execQuantity": 60, "execPrice": 50, "side": "SELL"}\');',
+                'create table if not exists semistructured.orders ( id varchar(100) primary key, identifier varchar(100), quantity int, side varchar(10), price double ) as values (\'o1\', \'i1\', 100, \'SELL\', 100), (\'o2\', \'i2\', 100, \'BUY\', 10), (\'o3\', \'i3\', 200, \'BUY\', 100), (\'o4\', \'i1\', 150, \'SELL\', 100), (\'o5\', \'i4\', 60, \'SELL\', 50), (\'o6\', \'i4\', 60, \'SELL\', 50);',
+                'create table if not exists semistructured.product ( product varchar(100), identifier varchar(100), version varchar(100)) as values (\'p1\', \'i1\', \'v1\'), (\'p2\', \'i2\', \'v1\'), (\'p3\', \'i3\', \'v1\'), (\'p1\', \'i4\', \'v1\');'
+             ];
+    };
+  auth: Test;
+}
+
 ###Runtime
 Runtime simple::runtime::runtime
 {
@@ -214,6 +367,21 @@ Runtime simple::runtime::runtime
     simple::store::semistructured:
     [
       connection_1: simple::connection::snowflake
+    ]
+  ];
+}
+
+Runtime view::runtime::runtime
+{
+  mappings:
+  [
+    view::mapping::semistructured
+  ];
+  connections:
+  [
+    view::store::semistructured:
+    [
+      connection_1: view::connection::snowflake
     ]
   ];
 }
