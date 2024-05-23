@@ -958,12 +958,12 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     .collect(Collectors.joining(",", "", ""));
             RelationalStoreExecutionState relationalStoreExecutionState = (RelationalStoreExecutionState) threadExecutionState.getStoreExecutionState(StoreType.Relational);
             relationalStoreExecutionState.setIgnoreFreeMarkerProcessing(true);
-            prepareExecutionNodeToIngestDataIntoTempTable(node, valuesTuples, threadExecutionState, identity);
+            ingestDataIntoTempTable(node, valuesTuples, threadExecutionState, identity);
             relationalStoreExecutionState.setIgnoreFreeMarkerProcessing(false);
         }
     }
 
-    private static void prepareExecutionNodeToIngestDataIntoTempTable(ExecutionNode executionNode, String result, ExecutionState executionState, Identity identity)
+    private static void ingestDataIntoTempTable(ExecutionNode executionNode, String result, ExecutionState executionState, Identity identity)
     {
         AtomicReference<SQLExecutionNode> insertSqlExecutionNode = new AtomicReference<>();
         AtomicReference<String> insertSqlQuery = new AtomicReference<>();
