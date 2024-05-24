@@ -53,6 +53,7 @@ Class meta::relational::mapping::SQLExecutionNode extends ExecutionNode
    onConnectionCloseRollbackQuery : String[0..1];
    resultColumns : SQLResultColumn[*];
    connection: DatabaseConnection[1];
+   isResultColumnsDynamic : Boolean[0..1];
 }
 
 Class meta::relational::mapping::RelationalSaveNode extends ExecutionNode

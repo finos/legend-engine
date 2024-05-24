@@ -36,8 +36,8 @@ import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecut
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.test.full.functions.in.TestPlanExecutionForIn;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.junit.Assert;
@@ -478,6 +478,21 @@ public class TestExecutionPlan extends AlloyTestServer
         Assert.assertTrue(((RelationalExecutionActivity) graphFetchResult.activities.get(0)).comment.matches("-- \"executionTraceID\" : \"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\""));
         Assert.assertTrue(((SQLExecutionResult) graphFetchResult).getExecutedSql().matches("-- \"executionTraceID\" : \"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\"\nselect \"root\".fullName as \"pk_0\", \"root\".fullName as \"fullName\" from PERSON as \"root\""));
         Assert.assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":[{\"fullName\":\"P1\"},{\"fullName\":\"P2\"}]}", result.flush(new JsonStreamToJsonDefaultSerializer(result)));
+    }
+
+    @Test
+    public void testPivotWithDynamicResultColumns() throws JsonProcessingException
+    {
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): Any[1]\n" +
+                "{\n" +
+                "  {| test::Person.all()\n" +
+                "     ->project(~[fullName: x|$x.fullName])->pivot(~fullName, ~sum : x|1 : x|$x->sum())}\n" +
+                "}";
+        SingleExecutionPlan plan = super.buildPlan(TestPlanExecutionForIn.LOGICAL_MODEL + TestPlanExecutionForIn.STORE_MODEL + TestPlanExecutionForIn.MAPPING + TestPlanExecutionForIn.RUNTIME + fetchFunction, null);
+        Assert.assertTrue(((SQLExecutionNode) plan.rootExecutionNode.executionNodes.get(0)).isResultColumnsDynamic);
+        RelationalResult result = (RelationalResult) planExecutor.execute(plan);
+        Assert.assertEquals("{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select * from (select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\") as \\\"person_0\\\"\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]},{\"values\":[\"P2\"]}]}}", RelationalResultToJsonDefaultSerializer.removeComment(result.flush(new RelationalResultToJsonDefaultSerializer(result))));
     }
 
     @Test

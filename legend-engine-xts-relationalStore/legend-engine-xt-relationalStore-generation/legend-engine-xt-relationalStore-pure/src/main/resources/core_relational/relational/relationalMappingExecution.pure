@@ -172,9 +172,11 @@ function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], 
       resultColumns = $query->match([sel:SelectSQLQuery[1] | $sel.columns->map(c| ^SQLResultColumn(label = $c->columnLabel($connection, $extensions), dataType = $c->getRelationalTypeFromRelationalOperationElement()->translateCoreTypeToDbSpecificType(^TranslationContext(dbType = $connection.type)))), a:Any[1] | []]),
       resultType = ^ResultType(type = Any),
       connection = $connection->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection),
-      supportFunctions = relationalPlanSupportFunctions($connection)->concatenate($enumMapSupportFunctions)
+      supportFunctions = relationalPlanSupportFunctions($connection)->concatenate($enumMapSupportFunctions),
+      // the only case that we yield result with dynamic columns is when pivot() is used and no casting is done afterwards, resulting
+      // in a select statement with no columns being specified
+      isResultColumnsDynamic = $query->match([sel:SelectSQLQuery[1] | !$sel.pivot->isEmpty() && $sel.columns->isEmpty(), a:Any[1] | []])
    );
-
 }
 
 function meta::relational::mapping::updateConnection(conn:Connection[1], extensions:Extension[*]):Connection[1]
