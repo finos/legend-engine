@@ -326,6 +326,52 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     }
 
     @Test
+    public void testDatabaseStereotype()
+    {
+        test("###Pure\n" +
+                "Profile meta::pure::profiles::storeType\n" +
+                "{\n" +
+                "    stereotypes: [type1, type2];\n" +
+                "}\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database <<meta::pure::profiles::storeType.type2>> app::dbInc\n" +
+                "(\n" +
+                "  Table Product\n" +
+                "  (\n" +
+                "    ProductID VARCHAR(30) PRIMARY KEY\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database <<meta::pure::profiles::storeType.type2, meta::pure::profiles::storeType.type1>> app::db\n" +
+                "(\n" +
+                "  Table Product\n" +
+                "  (\n" +
+                "    ProductID VARCHAR(30) PRIMARY KEY\n" +
+                "  )\n" +
+                ")");
+
+        test("###Pure\n" +
+                        "Profile meta::pure::profiles::storeType\n" +
+                        "{\n" +
+                        "    stereotypes: [type1, type2];\n" +
+                        "}\n" +
+                        "\n" +
+                        "###Relational\n" +
+                        "Database <<meta::pure::profiles::storeType.type3>> app::dbInc\n" +
+                        "(\n" +
+                        "  Table Product\n" +
+                        "  (\n" +
+                        "    ProductID VARCHAR(30) PRIMARY KEY,\n" +
+                        "    ProductID VARCHAR(30) PRIMARY KEY\n" +
+                        "  )\n" +
+                        ")",
+                "COMPILATION error at [8:12-48]: Can't find stereotype 'type3' in profile 'meta::pure::profiles::storeType'"
+        );
+    }
+
+    @Test
     public void testSelfJoin()
     {
         test("###Relational\n" + "Database app::dbInc\n" +
