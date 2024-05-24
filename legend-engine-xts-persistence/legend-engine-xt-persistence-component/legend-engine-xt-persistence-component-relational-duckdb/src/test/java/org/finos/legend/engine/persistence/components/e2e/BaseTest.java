@@ -376,12 +376,22 @@ public class BaseTest
         duckDBSink.executeStatement(loadSql);
     }
 
-    protected void loadBasicStagingDataWithColumnsThanMain(String path)
+    protected void loadBasicStagingDataWithLessColumnsThanMain(String path)
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
             "COPY \"TEST\".\"staging\"" +
             "(\"id\", \"name\", \"income\", \"start_time\", \"digest\")" +
+            " FROM '" + path + "' CSV";
+        duckDBSink.executeStatement(loadSql);
+    }
+
+    protected void loadBasicStagingDataWithDataSplit(String path)
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "COPY \"TEST\".\"staging\"" +
+            "(\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"digest\", \"data_split\")" +
             " FROM '" + path + "' CSV";
         duckDBSink.executeStatement(loadSql);
     }
@@ -446,13 +456,43 @@ public class BaseTest
         duckDBSink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataWithDeleteInd(String path) throws Exception
+    protected void loadStagingDataWithDeleteInd(String path)
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest, delete_indicator) " +
-            "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE) ,  \"digest\", \"delete_indicator\"" +
-            " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest, delete_indicator', NULL )";
+            "COPY \"TEST\".\"staging\"" +
+            "(\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"digest\", \"delete_indicator\")" +
+            " FROM '" + path + "' CSV";
+        duckDBSink.executeStatement(loadSql);
+    }
+
+    public static void loadDedupAndVersioningStagingDataWithoutVersion(String path)
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "COPY \"TEST\".\"staging\"" +
+            "(\"id\", \"name\", \"income\", \"expiry_date\", \"digest\")" +
+            " FROM '" + path + "' CSV";
+        duckDBSink.executeStatement(loadSql);
+    }
+
+    public static void loadDedupAndVersioningStagingDataWithVersion(String path)
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "COPY \"TEST\".\"staging\"" +
+            "(\"id\", \"name\", \"version\", \"income\", \"expiry_date\", \"digest\")" +
+            " FROM '" + path + "' CSV";
+        duckDBSink.executeStatement(loadSql);
+    }
+
+    public static void loadDedupAndVersioningStagingDataWithVersionAndBatch(String path)
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "COPY \"TEST\".\"staging\"" +
+            "(\"id\", \"name\", \"version\", \"income\", \"expiry_date\", \"digest\", \"batch\")" +
+            " FROM '" + path + "' CSV";
         duckDBSink.executeStatement(loadSql);
     }
 
@@ -486,23 +526,23 @@ public class BaseTest
         duckDBSink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataWithFilter(String path) throws Exception
+    protected void loadStagingDataWithFilter(String path)
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest, batch) " +
-            "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest, CONVERT( \"batch\",INT)" +
-            " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest, batch', NULL )";
+            "COPY \"TEST\".\"staging\"" +
+            "(\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"digest\", \"batch\")" +
+            " FROM '" + path + "' CSV";
         duckDBSink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataWithFilterWithVersion(String path) throws Exception
+    protected void loadStagingDataWithFilterWithVersion(String path)
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest, version, batch) " +
-            "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest, CONVERT( \"version\",INT), CONVERT( \"batch\",INT)" +
-            " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest, version, batch', NULL )";
+            "COPY \"TEST\".\"staging\"" +
+            "(\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"digest\", \"version\", \"batch\")" +
+            " FROM '" + path + "' CSV";
         duckDBSink.executeStatement(loadSql);
     }
 

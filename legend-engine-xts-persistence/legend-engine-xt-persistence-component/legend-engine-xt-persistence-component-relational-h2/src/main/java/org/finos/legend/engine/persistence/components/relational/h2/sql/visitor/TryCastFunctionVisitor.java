@@ -19,8 +19,8 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.TryCast
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2DataTypeMapping;
-import org.finos.legend.engine.persistence.components.relational.h2.sqldom.schemaops.values.CastFunction;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.DataType;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.CastFunction;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 

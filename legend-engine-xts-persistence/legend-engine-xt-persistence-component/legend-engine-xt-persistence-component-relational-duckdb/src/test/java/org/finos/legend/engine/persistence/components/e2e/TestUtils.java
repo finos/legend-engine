@@ -624,6 +624,15 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getDatasetWithDataSplits()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchemaWithDataSplits())
+            .build();
+    }
+
     public static CsvExternalDatasetReference getBasicCsvDatasetReferenceTable(String dataPath)
     {
         return CsvExternalDatasetReference.builder()

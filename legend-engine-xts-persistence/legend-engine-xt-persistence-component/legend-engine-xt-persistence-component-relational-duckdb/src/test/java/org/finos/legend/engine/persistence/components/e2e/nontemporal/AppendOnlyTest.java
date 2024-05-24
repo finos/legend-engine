@@ -441,7 +441,7 @@ class AppendOnlyTest extends BaseTest
         String dataPass1 = basePath + "input/less_columns_in_staging/data_pass1.csv";
         String expectedDataPass1 = basePath + "expected/less_columns_in_staging/expected_pass1.csv";
         // 1. Load staging table
-        loadBasicStagingDataWithColumnsThanMain(dataPass1);
+        loadBasicStagingDataWithLessColumnsThanMain(dataPass1);
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01, " order by \"batch_id\", \"income\"");
@@ -450,7 +450,7 @@ class AppendOnlyTest extends BaseTest
         String dataPass2 = basePath + "input/less_columns_in_staging/data_pass2.csv";
         String expectedDataPass2 = basePath + "expected/less_columns_in_staging/expected_pass2.csv";
         // 1. Load staging table
-        loadBasicStagingDataWithColumnsThanMain(dataPass2);
+        loadBasicStagingDataWithLessColumnsThanMain(dataPass2);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_02, " order by \"batch_id\", \"income\"");
