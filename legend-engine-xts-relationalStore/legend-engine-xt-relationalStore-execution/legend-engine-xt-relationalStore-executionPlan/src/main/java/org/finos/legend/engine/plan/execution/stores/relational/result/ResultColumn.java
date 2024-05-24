@@ -228,7 +228,7 @@ public class ResultColumn
         {
             return Tuples.pair(this.label, "Float");
         }
-        if (type.startsWith("INTEGER") || type.startsWith("BIGINT") || type.startsWith("SMALLINT") || type.startsWith("TINYINT"))
+        if (type.startsWith("INTEGER") || type.startsWith("BIGINT") || type.startsWith("SMALLINT") || type.startsWith("TINYINT") || type.startsWith("HUGEINT"))
         {
             return Tuples.pair(this.label, "Integer");
         }

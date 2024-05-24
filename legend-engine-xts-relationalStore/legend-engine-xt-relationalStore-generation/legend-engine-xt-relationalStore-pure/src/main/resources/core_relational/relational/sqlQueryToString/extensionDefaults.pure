@@ -326,19 +326,34 @@ function meta::relational::functions::sqlQueryToString::default::processTop(s:Se
 
 function meta::relational::functions::sqlQueryToString::default::processSelectColumns(s:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], conditionalExprAllowed:Boolean[1], extensions:Extension[*]):String[1]
 {
-   if ($s->size() == 0,
-         |'*',
-         | $format.separator + $s->map(r|  $r->match([a:Alias[1] | let shouldWrapWithCase = ( $a.relationalElement->isBooleanOperation($extensions) && !$conditionalExprAllowed );
+  processSelectColumns($s, $dbConfig, $format, ^Config(), $conditionalExprAllowed, $extensions);
+}
 
-                                                                   $shouldWrapWithCase->if(|'case when (' + $a.relationalElement->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = true), $extensions) + ') then \'true\' else \'false\' end as ' + $a.name,
-                                                                                           | $r->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $extensions)
+function meta::relational::functions::sqlQueryToString::default::processSelectColumns(s:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], config:Config[1], conditionalExprAllowed:Boolean[1], extensions:Extension[*]):String[1]
+{
+   processSelectColumns($s, $dbConfig, $format, $config, ', ', $conditionalExprAllowed, $extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::default::processSelectColumns(s:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], config:Config[1], separator:String[1], conditionalExprAllowed:Boolean[1], extensions:Extension[*]):String[1]
+{
+  if ($s->size() == 0,
+         |'*',
+         | $format.separator + $s->map(r|  $r->match([a:Alias[1] | let shouldWrapWithCase = ( $a.relationalElement->isBooleanOperation($extensions) && !$conditionalExprAllowed);
+
+                                                                   $shouldWrapWithCase->if(|'case when (' + $a.relationalElement->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = true), $config, $extensions) + ') then \'true\' else \'false\' end as ' + $a.name,
+                                                                                           | $r->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $config, $extensions)
                                                                                            );,
-                                                      z:RelationalOperationElement[1]   | $z->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $extensions)
+                                                      z:RelationalOperationElement[1]   | $z->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $config, $extensions)
                                                       ])
 
-                                      )->joinStrings(', ' + $format.separator);
+                                      )->joinStrings($separator + $format.separator);
 
        );
+}
+
+function meta::relational::functions::sqlQueryToString::default::processSelectConcatenatedColumns(s:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], config:Config[1], separator:String[1], conditionalExprAllowed:Boolean[1], extensions:Extension[*]):String[1]
+{
+  processSelectColumns($s, $dbConfig, $format, $config, ' || ' + $separator + ' || ', $conditionalExprAllowed, $extensions);
 }
 
 function meta::relational::functions::sqlQueryToString::default::convertFullOuterJoinToLeftRightOuter(s:SelectSQLQuery[1]) : RelationalOperationElement[1] 

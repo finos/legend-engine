@@ -16,6 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.result;
 
 import io.opentracing.Span;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
 import org.finos.legend.engine.plan.execution.result.ResultVisitor;
@@ -91,7 +92,26 @@ public class SQLExecutionResult extends SQLResult
 
             this.columnCount = this.resultSetMetaData.getColumnCount();
 
-            this.sqlResultColumns = this.SQLExecutionNode.getSQLResultColumns();
+            // if there is a mismatch in the columns in the execution result and the plan
+            // and there is no result column in the plan, it is implied that the columns
+            // cannot be determined at plan build time, due to dynamic operations such as
+            // pivoting, so we would need to dynamically update the result columns
+            if (isResultColumnsDynamicallyDetermined(this.SQLExecutionNode, this.columnCount))
+            {
+                MutableList<SQLResultColumn> sqlResultColumns = Lists.mutable.empty();
+                for (int i = 1; i <= this.columnCount; i++)
+                {
+                    SQLResultColumn col = new SQLResultColumn(resultSetMetaData.getColumnLabel(i), resultSetMetaData.getColumnTypeName(i));
+                    col.dataType = col.labelTypePair().getTwo();
+                    sqlResultColumns.add(col);
+                }
+                this.sqlResultColumns = sqlResultColumns;
+            }
+            else
+            {
+                this.sqlResultColumns = this.SQLExecutionNode.getSQLResultColumns();
+            }
+
             for (int i = 1; i <= this.columnCount; i++)
             {
                 String columnLabel = resultSetMetaData.getColumnLabel(i);
@@ -186,5 +206,10 @@ public class SQLExecutionResult extends SQLResult
     {
         ResultColumn resultColumn = this.getResultColumns().get(columnIndex - 1);
         return resultColumn.getTransformedValue(this.getResultSet(), calendar);
+    }
+
+    public static boolean isResultColumnsDynamicallyDetermined(SQLExecutionNode executionNode, int columnCount)
+    {
+        return executionNode.getSQLResultColumns().isEmpty() && columnCount != 0;
     }
 }
