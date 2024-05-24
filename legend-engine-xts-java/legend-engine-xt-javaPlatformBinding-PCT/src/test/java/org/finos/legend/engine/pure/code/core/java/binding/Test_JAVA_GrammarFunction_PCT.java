@@ -32,53 +32,53 @@ public class Test_JAVA_GrammarFunction_PCT extends PCTReportConfiguration
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
                 // Eq
-                one("meta::pure::functions::boolean::tests::equality::eq::testEqNonPrimitive_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"Unhandled value type: meta::pure::functions::boolean::tests::equalitymodel::SideClass\""),
-                one("meta::pure::functions::boolean::tests::equality::eq::testEqVarIdentity_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"Unhandled value type: meta::pure::functions::boolean::tests::equalitymodel::BottomClass\""),
+                one("meta::pure::functions::boolean::tests::equality::eq::testEqNonPrimitive_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::boolean::tests::equalitymodel::SideClass\""),
+                one("meta::pure::functions::boolean::tests::equality::eq::testEqVarIdentity_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::boolean::tests::equalitymodel::BottomClass\""),
 
                 // Equal
-                one("meta::pure::functions::boolean::tests::equality::equal::testEqualNonPrimitive_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"Unhandled value type: meta::pure::functions::boolean::tests::equalitymodel::SideClass\""),
-                one("meta::pure::functions::boolean::tests::equality::equal::testEqualVarIdentity_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"Unhandled value type: meta::pure::functions::boolean::tests::equalitymodel::BottomClass\""),
+                one("meta::pure::functions::boolean::tests::equality::equal::testEqualNonPrimitive_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::boolean::tests::equalitymodel::SideClass\""),
+                one("meta::pure::functions::boolean::tests::equality::equal::testEqualVarIdentity_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::boolean::tests::equalitymodel::BottomClass\""),
 
                 // GreaterThan
-                one("meta::pure::functions::boolean::tests::inequalities::greaterThan::testGreaterThan_Boolean_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"Assert failed\""),
+                one("meta::pure::functions::boolean::tests::inequalities::greaterThan::testGreaterThan_Boolean_Function_1__Boolean_1_", "\"Assert failed\""),
 
                 // GreaterThanEqual
-                one("meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Boolean_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"Assert failed\""),
+                one("meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Boolean_Function_1__Boolean_1_", "\"Assert failed\""),
 
                 // Filter
-                one("meta::pure::functions::collection::tests::filter::testFilterInstance_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"Unhandled value type: meta::pure::functions::collection::tests::model::CO_Person\""),
+                one("meta::pure::functions::collection::tests::filter::testFilterInstance_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::model::CO_Person\""),
 
                 // First
-                one("meta::pure::functions::collection::tests::first::testFirstComplex_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"Unhandled value type: meta::pure::functions::collection::tests::model::CO_Firm\""),
-                one("meta::pure::functions::collection::tests::first::testFirstOnEmptySet_Function_1__Boolean_1_", "Execution error at (resource:/core_java_platform_binding/legendJavaPlatformBinding/pct_java.pure lines:19c87-40c1), \"Unexpected error executing function with params [Anonymous_Lambda]\""),
+                one("meta::pure::functions::collection::tests::first::testFirstComplex_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::model::CO_Firm\""),
+                one("meta::pure::functions::collection::tests::first::testFirstOnEmptySet_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
 
                 // Map
-                one("meta::pure::functions::collection::tests::map::testMapInstance_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Person\""),
-                one("meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToMany_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Person\""),
-                one("meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToOne_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Person\""),
-                one("meta::pure::functions::collection::tests::map::testMapRelationshipFromOneToOne_Function_1__Boolean_1_", "Execution error at (resource:/core/pure/router/platform/routing.pure line:78 column:8), \"Match failure: NoSetRoutedValueSpecificationObject instanceOf NoSetRoutedValueSpecification\""),
+                one("meta::pure::functions::collection::tests::map::testMapInstance_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Person\""),
+                one("meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToMany_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Person\""),
+                one("meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToOne_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Person\""),
+                one("meta::pure::functions::collection::tests::map::testMapRelationshipFromOneToOne_Function_1__Boolean_1_", "\"Match failure: NoSetRoutedValueSpecificationObject instanceOf NoSetRoutedValueSpecification\""),
 
                 // Divide
-                one("meta::pure::functions::math::tests::divide::testDecimalDivide_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:21 column:5), \"\nexpected: -31.42D\nactual:   -31.42\""),
+                one("meta::pure::functions::math::tests::divide::testDecimalDivide_Function_1__Boolean_1_", "\"\nexpected: -31.42D\nactual:   -31.42\""),
 
                 // Minus
                 one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.math.BigDecimal (java.lang.Double and java.math.BigDecimal are in module java.base of loader 'bootstrap')"),
-                one("meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_", "Execution error at (resource:/core/pure/router/platform/routing.pure line:78 column:8), \"Match failure: NoSetRoutedValueSpecificationObject instanceOf NoSetRoutedValueSpecification\""),
-                one("meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_", "Execution error at (resource:/core_java_platform_binding/legendJavaPlatformBinding/pct_java.pure lines:19c87-40c1), \"Unexpected error executing function with params [Anonymous_Lambda]\""),
+                one("meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_", "\"Match failure: NoSetRoutedValueSpecificationObject instanceOf NoSetRoutedValueSpecification\""),
+                one("meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
 
                 // Plus
                 one("meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.math.BigDecimal (java.lang.Double and java.math.BigDecimal are in module java.base of loader 'bootstrap')"),
-                one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:21 column:5), \"\nexpected: -1\nactual:   -9223372036854775790\""),
-                one("meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_", "Execution error at (resource:/core/pure/router/platform/routing.pure line:78 column:8), \"Match failure: NoSetRoutedValueSpecificationObject instanceOf NoSetRoutedValueSpecification\""),
+                one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "\"\nexpected: -1\nactual:   -9223372036854775790\""),
+                one("meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_", "\"Match failure: NoSetRoutedValueSpecificationObject instanceOf NoSetRoutedValueSpecification\""),
 
                 // Times
-                one("meta::pure::functions::math::tests::times::testDecimalTimes_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:21 column:5), \"\nexpected: 353791.470D\nactual:   353791.47\""),
-                one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:21 column:5), \"\nexpected: -1\nactual:   -2\""),
-                one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:21 column:5), \"\nexpected: -1\nactual:   -2\""),
+                one("meta::pure::functions::math::tests::times::testDecimalTimes_Function_1__Boolean_1_", "\"\nexpected: 353791.470D\nactual:   353791.47\""),
+                one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "\"\nexpected: -1\nactual:   -2\""),
+                one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "\"\nexpected: -1\nactual:   -2\""),
 
                 // String plus
-                one("meta::pure::functions::string::tests::plus::testPlusInIterate_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"Unhandled value type: meta::pure::functions::string::tests::plus::model::P_Person\""),
-                one("meta::pure::functions::string::tests::plus::testPlusInCollect_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"Unhandled value type: meta::pure::functions::string::tests::plus::model::P_Person\"")
+                one("meta::pure::functions::string::tests::plus::testPlusInIterate_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::string::tests::plus::model::P_Person\""),
+                one("meta::pure::functions::string::tests::plus::testPlusInCollect_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::string::tests::plus::model::P_Person\"")
 
     );
 

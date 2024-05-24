@@ -4517,8 +4517,22 @@ function meta::relational::functions::pureToSqlQuery::processEvaluate(expression
          processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne();
       ,
       |
-         let operationWithoutFilter = $operation->removeFilteringOperation();
-         let filterFunctionExpression = $expression.parametersValues->at(0)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->cast(@FunctionDefinition<Any>).expressionSequence->at(0);
+        let filterFunctionExpression = $expression.parametersValues->at(0)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->match(
+          [
+            f:FunctionDefinition<Any>[1]|
+                $f.expressionSequence->at(0);,
+            n:NativeFunction<Any>[1]|
+                ^FunctionExpression
+                (
+                    func = $n,
+                    importGroup = ^ImportGroup(),
+                    multiplicity=PureOne,
+                    genericType=$n->functionReturnType(),
+                    parametersValues = $expression.parametersValues->tail()->evaluateAndDeactivate()
+                  )->evaluateAndDeactivate();
+          ]
+        );
+        let operationWithoutFilter = $operation->removeFilteringOperation();
          let rightSide = processValueSpecification($expression.parametersValues->at(1), $currentPropertyMapping, $operationWithoutFilter, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne();
          processValueSpecification($filterFunctionExpression, $currentPropertyMapping, $rightSide->extractSelectWithCursor($operationWithoutFilter), $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne();
       );
@@ -8048,6 +8062,7 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::lang::whenSubType_Any_1__T_1__T_$0_1$_,second=meta::relational::functions::pureToSqlQuery::processNoOp_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::lang::whenSubType_Any_$0_1$__T_1__T_$0_1$_,second=meta::relational::functions::pureToSqlQuery::processNoOp_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::lang::whenSubType_Any_MANY__T_1__T_MANY_,second=meta::relational::functions::pureToSqlQuery::processNoOp_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::lang::eval_Function_1__T_n__U_p__V_m_,second=meta::relational::functions::pureToSqlQuery::processEvaluate_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::lang::eval_Function_1__T_n__V_m_,second=meta::relational::functions::pureToSqlQuery::processEvaluate_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::lang::eval_Function_1__V_m_,second=meta::relational::functions::pureToSqlQuery::processEvaluate_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::boolean::not_Boolean_1__Boolean_1_,second=meta::relational::functions::pureToSqlQuery::processNot_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),

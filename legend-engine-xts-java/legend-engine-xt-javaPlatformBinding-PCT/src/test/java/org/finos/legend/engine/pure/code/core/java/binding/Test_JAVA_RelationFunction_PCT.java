@@ -32,51 +32,51 @@ public class Test_JAVA_RelationFunction_PCT extends PCTReportConfiguration
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             // Extend
-            one("meta::pure::functions::relation::tests::composition::testExtendFilter_Function_1__Boolean_1_", "Assert failure at (resource:/core_external_language_java/generation/expressionGeneration.pure line:235 column:10), \"meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::composition::testExtendFilter_Function_1__Boolean_1_", "\"meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_ is not supported yet!\""),
 
             // Concatenate
-            pack("meta::pure::functions::relation::tests::concatenate", "Assert failure at (resource:/core_external_language_java/generation/expressionGeneration.pure line:235 column:10), \"meta::pure::functions::relation::concatenate_Relation_1__Relation_1__Relation_1_ is not supported yet!\""),
+            pack("meta::pure::functions::relation::tests::concatenate", "\"meta::pure::functions::relation::concatenate_Relation_1__Relation_1__Relation_1_ is not supported yet!\""),
 
             //Drop
-            pack("meta::pure::functions::relation::tests::drop", "Assert failure at (resource:/core_external_language_java/generation/expressionGeneration.pure line:235 column:10), \"meta::pure::functions::relation::drop_Relation_1__Integer_1__Relation_1_ is not supported yet!\""),
+            pack("meta::pure::functions::relation::tests::drop", "\"meta::pure::functions::relation::drop_Relation_1__Integer_1__Relation_1_ is not supported yet!\""),
 
             // Extend
-            pack("meta::pure::functions::relation::tests::extend", "Assert failure at (resource:/core_external_language_java/generation/expressionGeneration.pure line:235 column:10), \"meta::pure::functions::relation::extend_Relation_1__FuncColSpec_1__Relation_1_ is not supported yet!\""),
-            one("meta::pure::functions::relation::tests::extend::testSimpleMultipleColumns_Function_1__Boolean_1_", "Assert failure at (resource:/core_external_language_java/generation/expressionGeneration.pure line:235 column:10), \"meta::pure::functions::relation::extend_Relation_1__FuncColSpecArray_1__Relation_1_ is not supported yet!\""),
+            pack("meta::pure::functions::relation::tests::extend", "\"meta::pure::functions::relation::extend_Relation_1__FuncColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::extend::testSimpleMultipleColumns_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1__FuncColSpecArray_1__Relation_1_ is not supported yet!\""),
 
             // Filter
-            pack("meta::pure::functions::relation::tests::filter", "Assert failure at (resource:/core_external_language_java/generation/expressionGeneration.pure line:235 column:10), \"meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_ is not supported yet!\""),
+            pack("meta::pure::functions::relation::tests::filter", "\"meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_ is not supported yet!\""),
 
             // GroupBy
-            one("meta::pure::functions::relation::tests::groupBy::testSimpleGroupBySingleSingle_Function_1__Boolean_1_", "Assert failure at (resource:/core_external_language_java/generation/expressionGeneration.pure line:235 column:10), \"meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
-            one("meta::pure::functions::relation::tests::groupBy::testSimpleGroupByMultipleMultiple_Function_1__Boolean_1_", "Assert failure at (resource:/core_external_language_java/generation/expressionGeneration.pure line:235 column:10), \"meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_ is not supported yet!\""),
-            one("meta::pure::functions::relation::tests::groupBy::testSimpleGroupByMultipleSingle_Function_1__Boolean_1_", "Assert failure at (resource:/core_external_language_java/generation/expressionGeneration.pure line:235 column:10), \"meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
-            one("meta::pure::functions::relation::tests::groupBy::testSimpleGroupBySingleMultiple_Function_1__Boolean_1_", "Assert failure at (resource:/core_external_language_java/generation/expressionGeneration.pure line:235 column:10), \"meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::groupBy::testSimpleGroupBySingleSingle_Function_1__Boolean_1_", "\"meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::groupBy::testSimpleGroupByMultipleMultiple_Function_1__Boolean_1_", "\"meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::groupBy::testSimpleGroupByMultipleSingle_Function_1__Boolean_1_", "\"meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::groupBy::testSimpleGroupBySingleMultiple_Function_1__Boolean_1_", "\"meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_ is not supported yet!\""),
 
             // Join
-            one("meta::pure::functions::relation::tests::join::testSimpleJoinShared_Function_1__Boolean_1_", "Assert failure at (resource:/core_external_language_java/generation/expressionGeneration.pure line:235 column:10), \"meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::join::testSimpleJoinShared_Function_1__Boolean_1_", "\"meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_ is not supported yet!\""),
 
             // Limit
-            one("meta::pure::functions::relation::tests::limit::testSimpleLimitShared_Function_1__Boolean_1_", "Assert failure at (resource:/core_external_language_java/generation/expressionGeneration.pure line:235 column:10), \"meta::pure::functions::relation::limit_Relation_1__Integer_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::limit::testSimpleLimitShared_Function_1__Boolean_1_", "\"meta::pure::functions::relation::limit_Relation_1__Integer_1__Relation_1_ is not supported yet!\""),
 
             // Project
-            pack("meta::pure::functions::relation::tests::project", "Assert failure at (resource:/core_external_language_java/generation/expressionGeneration.pure line:235 column:10), \"meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_ is not supported yet!\""),
+            pack("meta::pure::functions::relation::tests::project", "\"meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_ is not supported yet!\""),
 
             // Rename
-            one("meta::pure::functions::relation::tests::rename::testSimpleRenameShared_Function_1__Boolean_1_", "Assert failure at (resource:/core_external_language_java/generation/expressionGeneration.pure line:235 column:10), \"meta::pure::functions::relation::rename_Relation_1__ColSpec_1__ColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::rename::testSimpleRenameShared_Function_1__Boolean_1_", "\"meta::pure::functions::relation::rename_Relation_1__ColSpec_1__ColSpec_1__Relation_1_ is not supported yet!\""),
 
             // Select
-            one("meta::pure::functions::relation::tests::select::testMultiColsSelectShared_Function_1__Boolean_1_", "Assert failure at (resource:/core_external_language_java/generation/expressionGeneration.pure line:235 column:10), \"meta::pure::functions::relation::select_Relation_1__ColSpecArray_1__Relation_1_ is not supported yet!\""),
-            one("meta::pure::functions::relation::tests::select::testSingleColSelectShared_Function_1__Boolean_1_", "Assert failure at (resource:/core_external_language_java/generation/expressionGeneration.pure line:235 column:10), \"meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::select::testMultiColsSelectShared_Function_1__Boolean_1_", "\"meta::pure::functions::relation::select_Relation_1__ColSpecArray_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::select::testSingleColSelectShared_Function_1__Boolean_1_", "\"meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_ is not supported yet!\""),
 
             // Size
-            pack("meta::pure::functions::relation::tests::size", "Assert failure at (resource:/core_external_language_java/generation/expressionGeneration.pure line:235 column:10), \"meta::pure::functions::relation::size_Relation_1__Integer_1_ is not supported yet!\""),
+            pack("meta::pure::functions::relation::tests::size", "\"meta::pure::functions::relation::size_Relation_1__Integer_1_ is not supported yet!\""),
 
             // Slice
-            one("meta::pure::functions::relation::tests::slice::testSimpleSliceShared_Function_1__Boolean_1_", "Assert failure at (resource:/core_external_language_java/generation/expressionGeneration.pure line:235 column:10), \"meta::pure::functions::relation::slice_Relation_1__Integer_1__Integer_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::slice::testSimpleSliceShared_Function_1__Boolean_1_", "\"meta::pure::functions::relation::slice_Relation_1__Integer_1__Integer_1__Relation_1_ is not supported yet!\""),
 
             // Sort
-            one("meta::pure::functions::relation::tests::sort::testSimpleSortShared_Function_1__Boolean_1_", "Assert failure at (resource:/core_external_language_java/generation/expressionGeneration.pure line:235 column:10), \"meta::pure::functions::relation::sort_Relation_1__SortInfo_MANY__Relation_1_ is not supported yet!\"")
+            one("meta::pure::functions::relation::tests::sort::testSimpleSortShared_Function_1__Boolean_1_", "\"meta::pure::functions::relation::sort_Relation_1__SortInfo_MANY__Relation_1_ is not supported yet!\"")
 
 
 

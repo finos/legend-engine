@@ -22,7 +22,7 @@ import meta::relational::metamodel::*;
 import meta::pure::mapping::*;
 import meta::pure::store::*;
 import meta::pure::metamodel::relation::*;
-import meta::relational::relation::testUtils::*;
+import meta::relational::tests::pct::process::*;
 import meta::pure::test::pct::*;
 
 function <<PCT.adapter>> meta::relational::tests::pct::testAdapterForRelationalWithH2Execution<X|o>(f:Function<{->X[o]}>[1]):X[o]
@@ -61,7 +61,7 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
 {
     let debug = noDebug();
 
-    let newFunction = $f->meta::relational::relation::testUtils::reprocess($dbc, $debug).first;
+    let newFunction = $f->meta::relational::tests::pct::process::reprocess($dbc, $debug).first;
 
     let extensions =  meta::relational::extension::relationalExtensions();
 
@@ -104,7 +104,7 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
     )->cast(@X)->toMultiplicity(@[o]);
 }
 
-function meta::relational::relation::testUtils::reprocess(f:Function<{->Any[*]}>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1], debug: DebugContext[1]):Pair<FunctionDefinition<{->Any[*]}>,List<Pair<TDS<Any>,RelationStoreAccessor<Any>>>>[1]
+function meta::relational::tests::pct::process::reprocess(f:Function<{->Any[*]}>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1], debug: DebugContext[1]):Pair<FunctionDefinition<{->Any[*]}>,ProcessingState>[1]
 {  
   $f->match(
     [
@@ -112,7 +112,7 @@ function meta::relational::relation::testUtils::reprocess(f:Function<{->Any[*]}>
             print(if($debug.debug,|'BEFORE: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($z, '')+'\n',|''));
 
             // Init
-            let initState = meta::relational::relation::testUtils::initState(
+            let initState = meta::relational::tests::pct::process::initState(
               $z->openVariableValues(),
               $dbc
             );
@@ -126,8 +126,7 @@ function meta::relational::relation::testUtils::reprocess(f:Function<{->Any[*]}>
             // Add 'from'
             let returnGenericType = $z.expressionSequence->evaluateAndDeactivate()->last().genericType->toOne();
             let returnMultiplicity = $z.expressionSequence->evaluateAndDeactivate()->last().multiplicity->toOne();
-            let result = pair(
-                                ^$z
+            let newFunction =   ^$z
                                 (
                                   expressionSequence =  ^SimpleFunctionExpression
                                                         (
@@ -158,11 +157,9 @@ function meta::relational::relation::testUtils::reprocess(f:Function<{->Any[*]}>
                                                           resolvedMultiplicityParameters = $returnMultiplicity,
                                                           resolvedTypeParameters = $returnGenericType
                                                         )                                                                
-                                ),
-                                list($reprocessed.replaced)
-                          );
+                                );
 
-            print(if($debug.debug,|'AFTER: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($result.first, '') + '\n',|''));
+            print(if($debug.debug,|'AFTER: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, '') + '\n',|''));
 
             // Update the database ------------
             let setUpSQLs = $reprocessed.csvs->joinStrings('\n-\n')->meta::alloy::service::execution::setUpDataSQLs($reprocessed.database->toOne(), $dbc.type);
@@ -187,16 +184,15 @@ function meta::relational::relation::testUtils::reprocess(f:Function<{->Any[*]}>
             meta::legend::executePlanAsJSON($planAsJson, []);
             // Update the database ------------
 
-            $result;
+            pair($newFunction, $reprocessed->toOne());
     ]
   );
 }
 
-Class meta::relational::relation::testUtils::ProcessingState
+Class meta::relational::tests::pct::process::ProcessingState
 {
    database : Database[1];
    schema : Schema[1];
-   tables : Table[*];
    runtime : Runtime[1];
    mapping : Mapping[0..1];
    current : Any[0..1];
@@ -205,11 +201,10 @@ Class meta::relational::relation::testUtils::ProcessingState
    csvs : String[*];
 }
 
-function meta::relational::relation::testUtils::merge(s1:ProcessingState[1], s2:ProcessingState[1]):ProcessingState[1]
+function meta::relational::tests::pct::process::merge(s1:ProcessingState[1], s2:ProcessingState[1]):ProcessingState[1]
 {
   ^$s1
   (
-    tables += $s2.tables,
     mapping += $s2.mapping,
     replaced += $s2.replaced,
     csvs += $s2.csvs,
@@ -217,12 +212,12 @@ function meta::relational::relation::testUtils::merge(s1:ProcessingState[1], s2:
   );
 }
 
-function meta::relational::relation::testUtils::initState(openVars:Map<String,Any>[0..1], connection:meta::external::store::relational::runtime::DatabaseConnection[1]):ProcessingState[1]
+function meta::relational::tests::pct::process::initState(openVars:Map<String,Any>[0..1], connection:meta::external::store::relational::runtime::DatabaseConnection[1]):ProcessingState[1]
 {
   let db = ^Database
   (
     name = 'MyDatabase',
-    package = meta::relational::relation::testUtils
+    package = meta::relational::tests::pct::process
   );
 
   let schema = ^Schema
@@ -259,15 +254,15 @@ import meta::core::runtime::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
 import meta::pure::metamodel::relation::*;
-import  meta::relational::relation::testUtils::*;
+import  meta::relational::tests::pct::process::*;
 import meta::pure::store::*;
 
-function meta::relational::relation::testUtils::reprocess(a:Any[1], state:ProcessingState[1]):ProcessingState[1]
+function meta::relational::tests::pct::process::reprocess(a:Any[1], state:ProcessingState[1]):ProcessingState[1]
 {
   $a->match(
     [
       z:FunctionExpression[1]| if($z.func == new_Class_1__String_1__KeyExpression_MANY__T_1_,
-                                | meta::relational::relation::testUtils::reprocessNew($z->reactivate()->evaluateAndDeactivate(), $z.genericType.rawType->toOne()->cast(@Class<Any>), $state);,
+                                | meta::relational::tests::pct::process::reprocessNew($z->reactivate()->evaluateAndDeactivate(), $z.genericType.rawType->toOne()->cast(@Class<Any>), $state);,
                                 | if (!$z.func->in(
                                               [
                                                   meta::pure::functions::relation::funcColSpecArray_FuncColSpec_MANY__P_1__FuncColSpecArray_1_,
@@ -281,7 +276,6 @@ function meta::relational::relation::testUtils::reprocess(a:Any[1], state:Proces
                                           current = ^$z(parametersValues = $repro.current->cast(@ValueSpecification))->evaluateAndDeactivate(),
                                           mapping = $repro.mapping->first(),
                                           replaced = $repro.replaced,
-                                          tables = $repro.tables,
                                           csvs = $repro.csvs
                                       );,
                                     | ^$state
@@ -293,8 +287,11 @@ function meta::relational::relation::testUtils::reprocess(a:Any[1], state:Proces
       ix:InstanceValue[1]|
                           let i = $ix->evaluateAndDeactivate();
                           let type = $i.genericType.rawType->toOne();
-                          if ($type->instanceOf(Class) && $type != LambdaFunction && $type != TDS && $type != Enumeration && $type != SortInfo,
+                          let hasClass = $i.values->find(x|$x->instanceOf(Class))->isNotEmpty();                          
+                          // Nil is for Empty Sets, Any is currently for collection of primitives of different types (may create an issue if we have classes of different types)
+                          if ($type->instanceOf(Class) && $type != Any && $type != Nil && !$type->subTypeOf(Function) && $type != TDS && $type != Enumeration && $type != SortInfo,
                               |
+                                // Process class
                                 let values = $i.values->map(
                                     x|$x->match([
                                                   v:ValueSpecification[1]|$v->reactivate()->evaluateAndDeactivate(),
@@ -302,8 +299,9 @@ function meta::relational::relation::testUtils::reprocess(a:Any[1], state:Proces
                                                 ]
                                           )
                                 );
-                                meta::relational::relation::testUtils::reprocessNew($values, $type->cast(@Class<Any>), $state);,
+                                meta::relational::tests::pct::process::reprocessNew($values, $type->cast(@Class<Any>), $state);,
                               |
+                                // Primitive pass through
                                 let repro = $i.values->map(x|$x->reprocess($state));
                                 ^$state
                                 (
@@ -314,7 +312,6 @@ function meta::relational::relation::testUtils::reprocess(a:Any[1], state:Proces
                                             ),
                                   mapping = $repro.mapping->first(),
                                   replaced = $repro.replaced,
-                                  tables = $repro.tables,
                                   csvs = $repro.csvs
                                 );
                           );,
@@ -324,7 +321,6 @@ function meta::relational::relation::testUtils::reprocess(a:Any[1], state:Proces
                                     current=^$z(expressionSequence = $repro.current->cast(@ValueSpecification)->toOneMany()),
                                     mapping = $repro.mapping->first(),
                                     replaced=$repro.replaced,
-                                    tables = $repro.tables,
                                     csvs = $repro.csvs
                                  );,
       v:VariableExpression[1] | let openVar = $state.openVars->toOne()->get($v.name);
@@ -333,7 +329,7 @@ function meta::relational::relation::testUtils::reprocess(a:Any[1], state:Proces
                                    (
                                       current = $v
                                    ),
-                                  |reprocess(^InstanceValue
+                                  |reprocess( ^InstanceValue
                                               (
                                                 genericType = $openVar->toOne()->cast(@List<Any>).values->at(0)->genericType()->toOne(),
                                                 multiplicity = PureOne,
@@ -341,31 +337,16 @@ function meta::relational::relation::testUtils::reprocess(a:Any[1], state:Proces
                                               ), $state)
                                   );,
       x:TDS<Any>[1] | processTDS($x, $state),
-      e:Enumeration<Any>[1] | ^$state
-                              (
-                                current = $e
-                              );,                      
-      r:Integer[1] | ^$state
-                     (
-                      current = $r
-                     );,
-      s:String[1] |  ^$state
-                     (
-                      current = $s
-                     );,
-      x:Float[1] |  ^$state
-                     (
-                      current = $x
-                     );,
-      x:Boolean[1] |  ^$state
-                     (
-                      current = $x
-                     );
+      x:Any[1] |
+              ^$state
+                (
+                current = $x
+                );             
     ]
   );
 }
 
-function meta::relational::relation::testUtils::reprocessNew(values:Any[*], type:Class<Any>[1], state:ProcessingState[1]):ProcessingState[1]
+function meta::relational::tests::pct::process::reprocessNew(values:Any[*], type:Class<Any>[1], state:ProcessingState[1]):ProcessingState[1]
 {
     let newState = $state->merge(classesToDatabase($values, $state));      
     ^$newState
@@ -389,7 +370,7 @@ function meta::relational::relation::testUtils::reprocessNew(values:Any[*], type
     );
 }
 
-function meta::relational::relation::testUtils::processTDS(tds:TDS<Any>[1], state:ProcessingState[1]):ProcessingState[1]
+function meta::relational::tests::pct::process::processTDS(tds:TDS<Any>[1], state:ProcessingState[1]):ProcessingState[1]
 {
   let map = meta::relational::transform::fromPure::pureTypeToDataTypeMap();
   let rand = random() * 10000000;
@@ -425,7 +406,6 @@ function meta::relational::relation::testUtils::processTDS(tds:TDS<Any>[1], stat
   (
     current = $relAccessor,
     replaced = pair($tds, $relAccessor),
-    tables += $table,
     csvs += $csv
   );
 }
@@ -437,15 +417,15 @@ function meta::relational::relation::testUtils::processTDS(tds:TDS<Any>[1], stat
 import meta::relational::metamodel::execute::*;
 import meta::relational::functions::database::*;
 import meta::external::store::relational::runtime::*;
-import meta::relational::relation::testUtils::tests::*;
-import meta::relational::relation::testUtils::*;
+import meta::relational::tests::pct::process::tests::classToDB::*;
+import meta::relational::tests::pct::process::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::mapping::*;
 import meta::pure::mapping::*;
 
-function meta::relational::relation::testUtils::classesToDatabase(values:Any[*], givenState:ProcessingState[1]):ProcessingState[1]
+function meta::relational::tests::pct::process::classesToDatabase(values:Any[*], givenState:ProcessingState[1]):ProcessingState[1]
 {
   let _state = $givenState;
   let state = ^$_state(
@@ -453,36 +433,41 @@ function meta::relational::relation::testUtils::classesToDatabase(values:Any[*],
                             (
                               name = 'myMapping'
                             )
-              );
+              );  
 
   if (!$values->isEmpty(),
     | // Scan types
       let rootType = $values->genericType().rawType->first()->toOne()->cast(@Class<Any>);
-      let allClasses = scanClass($rootType);
+      if ($rootType != KeyExpression,
+        | let allClasses = scanClass($rootType);
 
-      // Build schema
-      let tables = $allClasses->map(c|$c->classToTable($state.schema, $state.mapping->toOne()));
-      let joins = $allClasses->map(c|$c->buildJoins($tables, $state.database));
-      $state.schema->mutateAdd('tables', $tables.table);
-      $state.database->mutateAdd('joins', $joins.join);
+          // Build schema
+          let tables = $allClasses->map(c|$c->classToTable($state.schema, $state.mapping->toOne()));
+          let joins = $allClasses->map(c|$c->buildJoins($tables, $state.database));
 
-      buildCSV($values, $rootType, [], 1, $tables);
-      let csvs = $tables->map(k|$k.csv->joinStrings('\n'));
-      $state.mapping->toOne()->mutateAdd('classMappings', $tables.classMapping);
+          $state.schema->mutateAdd('tables', $tables.table);
+          $state.database->mutateAdd('joins', $joins.join);
 
-      let runtime = $state.runtime;
-      let mapping = $state.mapping->toOne();
+          buildCSV($values, $rootType, [], 1, $tables);
+          let csvs = $tables->map(k|$k.csv->joinStrings('\n'));
+          $state.mapping->toOne()->mutateAdd('classMappings', $tables.classMapping);
 
-      ^$state
-      (
-        csvs += $csvs
+          let runtime = $state.runtime;
+          let mapping = $state.mapping->toOne();
+
+          ^$state
+          (
+            csvs += $csvs
+          );,
+        |$state
       );,
     | $state
   );
 
+
 }
 
-function meta::relational::relation::testUtils::buildCSV(values:Any[*], class:Class<Any>[1], property:Property<Nil, Any|*>[0..1], parentId:Integer[1], maps:ClassTableMapping[*]):ClassTableMapping[*]
+function meta::relational::tests::pct::process::buildCSV(values:Any[*], class:Class<Any>[1], property:Property<Nil, Any|*>[0..1], parentId:Integer[1], maps:ClassTableMapping[*]):ClassTableMapping[*]
 {
   let info = $maps->filter(c|$c.class == $class)->toOne();
   let header = $info.table.schema.name->toOne()+'\n'+
@@ -491,9 +476,8 @@ function meta::relational::relation::testUtils::buildCSV(values:Any[*], class:Cl
   let rows = $values->map
   (
     v | let id = $values->indexOf($v) + $parentId*10;
-
         let r = $id
-        ->concatenate($info.properties->map(p | $p->eval($v)))
+        ->concatenate($info.properties->map(p | let res = $p->eval($v); if($res->isEmpty(),|'',|$res);))
         ->concatenate($info.parentProperties->map(p | if($p == $property,|$parentId,|'-1')))
         ->makeString(',');
 
@@ -515,7 +499,7 @@ function meta::relational::relation::testUtils::buildCSV(values:Any[*], class:Cl
   $maps;
 }
 
-Class meta::relational::relation::testUtils::ClassTableMapping
+Class meta::relational::tests::pct::process::ClassTableMapping
 {
   class : Class<Any>[1];
   table : Table[1];
@@ -525,13 +509,13 @@ Class meta::relational::relation::testUtils::ClassTableMapping
   csv : String[*];
 }
 
-Class meta::relational::relation::testUtils::PropertyColumnMapping
+Class meta::relational::tests::pct::process::PropertyColumnMapping
 {
   property : Property<Nil,Any|*>[1];
   column : Column[1];
 }
 
-function meta::relational::relation::testUtils::classToTable(class:Class<Any>[1], schema:Schema[1], mapping:Mapping[1]):ClassTableMapping[1]
+function meta::relational::tests::pct::process::classToTable(class:Class<Any>[1], schema:Schema[1], mapping:Mapping[1]):ClassTableMapping[1]
 {
   let map = meta::relational::transform::fromPure::pureTypeToDataTypeMap();
   let properties = $class.properties->filter(p|$p->isPrimitiveValueProperty());                
@@ -580,7 +564,7 @@ function meta::relational::relation::testUtils::classToTable(class:Class<Any>[1]
   );  
 }
 
-Class meta::relational::relation::testUtils::JoinRes
+Class meta::relational::tests::pct::process::JoinRes
 {
   join : Join[1];
   property : Property<Nil,Any|*>[1];
@@ -588,7 +572,7 @@ Class meta::relational::relation::testUtils::JoinRes
   propertyMapping : RelationalPropertyMapping[1];
 }
 
-function meta::relational::relation::testUtils::buildJoins(class:Class<Any>[1], classTableMappings:ClassTableMapping[*], db:Database[1]):meta::relational::relation::testUtils::JoinRes[*]
+function meta::relational::tests::pct::process::buildJoins(class:Class<Any>[1], classTableMappings:ClassTableMapping[*], db:Database[1]):meta::relational::tests::pct::process::JoinRes[*]
 {
   let src = $classTableMappings->filter(ctm|$ctm.class == $class)->toOne();
   let cols = $class.properties
@@ -647,22 +631,22 @@ function meta::relational::relation::testUtils::buildJoins(class:Class<Any>[1], 
 
 
 
-function meta::relational::relation::testUtils::scanClass(a:Class<Any>[1]):Class<Any>[*]
+function meta::relational::tests::pct::process::scanClass(a:Class<Any>[1]):Class<Any>[*]
 {
   $a->scanClass([])->removeDuplicates();
 }
 
-function meta::relational::relation::testUtils::scanClass(a:Class<Any>[1], visited:Class<Any>[*]):Class<Any>[*]
+function meta::relational::tests::pct::process::scanClass(a:Class<Any>[1], visited:Class<Any>[*]):Class<Any>[*]
 {
-  let newVisited = $visited->concatenate($a);
   if ($a->in($visited),
     |[],
-    | $a
+    | let newVisited = $visited->concatenate($a);
+        $a
         ->concatenate(
           $a.properties->map(p|$p.genericType.rawType)->filter(c|$c->instanceOf(Class))->cast(@Class<Any>)->map(x|$x->scanClass($newVisited))
         )->concatenate(
           $a.generalizations.general.rawType->filter(x|$x != Any && $x->instanceOf(Class))->cast(@Class<Any>)->map(x|$x->scanClass($newVisited))
-        )
+        );
   );
 }
 
@@ -672,38 +656,117 @@ function meta::relational::relation::testUtils::scanClass(a:Class<Any>[1], visit
 
 
 
+###Pure
+import meta::relational::tests::pct::process::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::pct::process::tests::functionReprocess::*;
+
+Class meta::relational::tests::pct::process::tests::functionReprocess::SimpleClass
+{
+  value : String[1];
+}
 
 
+function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testConstantFunctionReprocess():Boolean[1]
+{
+  let newState = reprocess(|1+1, meta::pure::testConnection::getTestConnection(DatabaseType.H2), noDebug());
+  assertEquals('{|(1 + 1)->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEmpty($newState.second.mapping);
+  assertEmpty($newState.second.database.schemas->at(0).tables);
+}
+
+function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testTDSReprocess():Boolean[1]
+{
+  let newState = reprocess(|#TDS
+                            col
+                            value#->filter(x|$x.col == 'test'), meta::pure::testConnection::getTestConnection(DatabaseType.H2), noDebug());
+  assertEquals('{|RelationElementAccessor(RelationStoreAccessor)->filter({x|(col == \'test\')})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEmpty($newState.second.mapping);
+  assertEquals(1, $newState.second.database.schemas->at(0).tables->size());
+}
+
+function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testClassReprocess():Boolean[1]
+{
+  let newState = reprocess(|[^SimpleClass(value='myValue'), ^SimpleClass(value='myValue2')]->filter(x|$x.value == 'test'), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
+  assertEquals('{|meta::relational::tests::pct::process::tests::functionReprocess::SimpleClass.getAll()->filter({x|($x.value == \'test\')})->from(myMapping, Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEquals(1, $newState.second.mapping->size());
+  assertEquals(1, $newState.second.database.schemas->at(0).tables->size());
+  assertEquals( 'leSchema\n'+
+                'SimpleClass\n'+
+                '_pureId,value\n'+
+                '10,myValue\n'+
+                '11,myValue2', $newState.second.csvs);
+}
+
+function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testClassAsVariableReprocess():Boolean[1]
+{
+  let vals = [^SimpleClass(value='myValue'), ^SimpleClass(value='myValue2')];
+  let newState = reprocess(|$vals->filter(x|$x.value == 'test'), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
+  assertEquals('{|meta::relational::tests::pct::process::tests::functionReprocess::SimpleClass.getAll()->filter({x|($x.value == \'test\')})->from(myMapping, Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEquals(1, $newState.second.mapping->size());
+  assertEquals(1, $newState.second.database.schemas->at(0).tables->size());
+  assertEquals( 'leSchema\n'+
+                'SimpleClass\n'+
+                '_pureId,value\n'+
+                '10,myValue\n'+
+                '11,myValue2', $newState.second.csvs);
+}
+
+function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testPrimitiveListReprocess():Boolean[1]
+{
+  let newState = reprocess(|[1,2,3,4]->filter(x|$x > 1), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
+  assertEquals('{|[1, 2, 3, 4]->filter({x|($x > 1)})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEmpty($newState.second.mapping);
+  assertEmpty($newState.second.database.schemas->at(0).tables);
+  assertEmpty($newState.second.csvs);
+}
+
+function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testPrimitiveAnyReprocess():Boolean[1]
+{
+  let newState = reprocess(|[1,'a']->filter(x|$x == 1), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
+  assertEquals('{|[1, \'a\']->filter({x|($x == 1)})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEmpty($newState.second.mapping);
+  assertEmpty($newState.second.database.schemas->at(0).tables);
+  assertEmpty($newState.second.csvs);
+}
 
 
+function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testEmptySetReprocess():Boolean[1]
+{
+  let newState = reprocess(|[]->filter(x|$x > 1), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
+  assertEquals('{|[]->filter({x|($x > 1)})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEmpty($newState.second.mapping);
+  assertEmpty($newState.second.database.schemas->at(0).tables);
+  assertEmpty($newState.second.csvs);
+}
 
 
 ###Pure
 import meta::relational::mapping::*;
-import meta::relational::relation::testUtils::tests::*;
+import meta::relational::tests::pct::process::tests::classToDB::*;
 
-Class meta::relational::relation::testUtils::tests::Firm
+Class meta::relational::tests::pct::process::tests::classToDB::Firm
 {
     legalName : String[1];
     employees : Person[*];
     address : Address[1];
 }
 
-Class meta::relational::relation::testUtils::tests::Person
+Class meta::relational::tests::pct::process::tests::classToDB::Person
 {
     firstName : String[0..1];
     lastName : String[1];
     addresses : Address[*];
 }
 
-Class meta::relational::relation::testUtils::tests::Address
+Class meta::relational::tests::pct::process::tests::classToDB::Address
 {
     zip : Integer[1];
 }
 
-function <<test.Test>> meta::relational::relation::testUtils::tests::testClassToDB():Boolean[1]
+function <<test.Test>> meta::relational::tests::pct::process::tests::classToDB::testClassToDB():Boolean[1]
 {
-  let res = meta::relational::relation::testUtils::classesToDatabase(
+  let res = meta::relational::tests::pct::process::classesToDatabase(
     ^Firm
     (
       legalName = 'Goldman',
@@ -726,7 +789,7 @@ function <<test.Test>> meta::relational::relation::testUtils::tests::testClassTo
                   zip = 1999
                 )
     ),
-      meta::relational::relation::testUtils::initState(
+      meta::relational::tests::pct::process::initState(
         [],
         ^meta::external::store::relational::runtime::TestDatabaseConnection
         (

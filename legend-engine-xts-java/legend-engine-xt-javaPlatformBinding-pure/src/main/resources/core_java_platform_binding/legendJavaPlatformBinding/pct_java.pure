@@ -18,7 +18,9 @@ import meta::pure::test::pct::*;
 
 function <<PCT.adapter>> meta::pure::executionPlan::platformBinding::legendJava::pct::testAdapterForJavaBindingExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
-    let rawPlan = meta::pure::executionPlan::executionPlan($f->cast(@FunctionDefinition<{->Any[*]}>), ^meta::pure::runtime::ExecutionContext(), [], debug());
+    let debug = noDebug();
+
+    let rawPlan = meta::pure::executionPlan::executionPlan($f->cast(@FunctionDefinition<{->Any[*]}>), ^meta::pure::runtime::ExecutionContext(), [], $debug);
 
     let planBindToJava = $rawPlan->meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocallyWithClasspathExtensions('LegendJava');
 

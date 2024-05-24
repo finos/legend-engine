@@ -32,26 +32,41 @@ public class Test_JAVA_BasicFunction_PCT extends PCTReportConfiguration
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             // Add
-            one("meta::pure::functions::collection::tests::add::testAddWithOffset_Function_1__Boolean_1_", "Assert failure at (resource:/core_external_language_java/generation/expressionGeneration.pure line:235 column:10), \"meta::pure::functions::collection::add_T_MANY__Integer_1__T_1__T_$1_MANY$_ is not supported yet!\""),
+            one("meta::pure::functions::collection::tests::add::testAddWithOffset_Function_1__Boolean_1_", "\"meta::pure::functions::collection::add_T_MANY__Integer_1__T_1__T_$1_MANY$_ is not supported yet!\""),
 
             // Concatenate
-            one("meta::pure::functions::collection::tests::concatenate::testConcatenateMixedType_Function_1__Boolean_1_", "Execution error at (resource:/core_java_platform_binding/legendJavaPlatformBinding/platform/executionPlanNodes/platformUnion/platformUnion.pure line:24 column:112), \"The system is trying to get an element at offset 0 where the collection is of size 0\""),
-            one("meta::pure::functions::collection::tests::concatenate::testConcatenateSimple_Function_1__Boolean_1_", "Execution error at (resource:/core_java_platform_binding/legendJavaPlatformBinding/platform/executionPlanNodes/platformUnion/platformUnion.pure line:24 column:112), \"The system is trying to get an element at offset 0 where the collection is of size 0\""),
-            one("meta::pure::functions::collection::tests::concatenate::testConcatenateTypeInference_Function_1__Boolean_1_", "Execution error at (resource:/core_java_platform_binding/legendJavaPlatformBinding/platform/executionPlanNodes/platformUnion/platformUnion.pure line:24 column:112), \"The system is trying to get an element at offset 0 where the collection is of size 0\""),
+            one("meta::pure::functions::collection::tests::concatenate::testConcatenateMixedType_Function_1__Boolean_1_", "\"The system is trying to get an element at offset 0 where the collection is of size 0\""),
+            one("meta::pure::functions::collection::tests::concatenate::testConcatenateSimple_Function_1__Boolean_1_", "\"The system is trying to get an element at offset 0 where the collection is of size 0\""),
+            one("meta::pure::functions::collection::tests::concatenate::testConcatenateTypeInference_Function_1__Boolean_1_", "\"The system is trying to get an element at offset 0 where the collection is of size 0\""),
 
             // Fold
-            one("meta::pure::functions::collection::tests::fold::testFoldEmptyListAndEmptyIdentity_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"Assert failed\""),
-            one("meta::pure::functions::collection::tests::fold::testFoldFiltering_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"Unhandled value type: meta::pure::functions::collection::tests::fold::FO_Person\""),
-            one("meta::pure::functions::collection::tests::fold::testFoldToMany_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"Unhandled value type: meta::pure::functions::collection::tests::fold::FO_Person\""),
-            one("meta::pure::functions::collection::tests::fold::testFold_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"Unhandled value type: meta::pure::functions::collection::tests::fold::FO_Person\""),
+            one("meta::pure::functions::collection::tests::fold::testFoldEmptyListAndEmptyIdentity_Function_1__Boolean_1_", "\"Assert failed\""),
+            one("meta::pure::functions::collection::tests::fold::testFoldFiltering_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::fold::FO_Person\""),
+            one("meta::pure::functions::collection::tests::fold::testFoldToMany_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::fold::FO_Person\""),
+            one("meta::pure::functions::collection::tests::fold::testFold_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::fold::FO_Person\""),
 
             // Sort
-            one("meta::pure::functions::collection::tests::sort::testMixedSortNoComparator_Function_1__Boolean_1_", "Execution error at (resource:/core/pure/platform/executionPlan/executionPlan_generation.pure line:55 column:62), \"Cannot cast a collection of size 0 to multiplicity [1]\""),
-            one("meta::pure::functions::collection::tests::sort::testSimpleSortNoComparator_Function_1__Boolean_1_", "Execution error at (resource:/core/pure/platform/executionPlan/executionPlan_generation.pure line:55 column:62), \"Cannot cast a collection of size 0 to multiplicity [1]\""),
-            one("meta::pure::functions::collection::tests::sort::testSimpleSortReversed_Function_1__Boolean_1_", "Execution error at (resource:/core/pure/platform/executionPlan/executionPlan_generation.pure line:55 column:62), \"Cannot cast a collection of size 0 to multiplicity [1]\""),
-            one("meta::pure::functions::collection::tests::sort::testSimpleSort_Function_1__Boolean_1_", "Execution error at (resource:/core/pure/platform/executionPlan/executionPlan_generation.pure line:55 column:62), \"Cannot cast a collection of size 0 to multiplicity [1]\""),
-            one("meta::pure::functions::collection::tests::sort::testSortEmptySet_Function_1__Boolean_1_", "Execution error at (resource:/core/pure/platform/executionPlan/executionPlan_generation.pure line:55 column:62), \"Cannot cast a collection of size 0 to multiplicity [1]\"")
-    );
+            one("meta::pure::functions::collection::tests::sort::testMixedSortNoComparator_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
+            one("meta::pure::functions::collection::tests::sort::testSimpleSortNoComparator_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
+            one("meta::pure::functions::collection::tests::sort::testSimpleSortReversed_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
+            one("meta::pure::functions::collection::tests::sort::testSimpleSort_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
+            one("meta::pure::functions::collection::tests::sort::testSortEmptySet_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
+
+            // Format
+            one("meta::pure::functions::string::tests::format::testFormatInEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__U_p__V_m_ is prohibited!\""),
+            one("meta::pure::functions::string::tests::format::testFormatInEvaluate_Function_1__Boolean_1_", "\"evaluate_Function_1__List_MANY__Any_MANY_ is prohibited!\""),
+            one("meta::pure::functions::string::tests::format::testFormatList_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
+            one("meta::pure::functions::string::tests::format::testFormatPair_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
+
+            // ToString
+            one("meta::pure::functions::string::tests::toString::testClassToString_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
+            one("meta::pure::functions::string::tests::toString::testEnumerationToString_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
+            one("meta::pure::functions::string::tests::toString::testListToString_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
+            one("meta::pure::functions::string::tests::toString::testPairCollectionToString_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::Pair\""),
+            one("meta::pure::functions::string::tests::toString::testPairToString_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
+            one("meta::pure::functions::string::tests::toString::testComplexClassToString_Function_1__Boolean_1_", "\"\nexpected: '// Warning: Good for gin -- Sad times no tonic'\nactual:   '_pure.internal.meta.pure.functions.string.tests.toString.ClassWithComplexToString_Impl")
+
+        );
 
     public static Test suite()
     {
