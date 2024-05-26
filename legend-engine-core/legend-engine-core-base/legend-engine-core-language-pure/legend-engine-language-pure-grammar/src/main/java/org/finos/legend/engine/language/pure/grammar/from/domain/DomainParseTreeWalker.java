@@ -1307,6 +1307,10 @@ public class DomainParseTreeWalker
             {
                 result = this.unitTypeReference(ctx.type());
             }
+            else if (ctx.type().typeArguments() != null && !ctx.type().typeArguments().type().get(0).columnType().isEmpty())
+            {
+                result = this.processRelationColumnTypes(ctx.type());
+            }
             else
             {
                 result = this.typeReference(ctx.type());
@@ -1351,7 +1355,6 @@ public class DomainParseTreeWalker
                 ColSpecArray colSpecArr = new ColSpecArray();
                 colSpecArr.colSpecs = ListIterate.collect(colSpecArray.oneColSpec(), c -> processOneColSpec(c, typeParametersNames, lambdaContext, space, wrapFlag, addLines, Lists.mutable.of()));
                 result = DomainParseTreeWalker.wrapWithClassInstance(colSpecArr, walkerSourceInformation.getSourceInformation(colSpecArray), "colSpecArray");
-                ;
             }
             else
             {
@@ -1373,8 +1376,7 @@ public class DomainParseTreeWalker
 
         colSpec.sourceInformation = walkerSourceInformation.getSourceInformation(oneColSpec);
 
-        colSpec.name = oneColSpec.identifier().getText().trim();
-        colSpec.name = colSpec.name.charAt(0) == '\'' ? colSpec.name.substring(1, colSpec.name.length() - 1) : colSpec.name;
+        colSpec.name = PureGrammarParserUtility.fromIdentifier(oneColSpec.identifier());
         colSpec.type = oneColSpec.type() == null ? null : oneColSpec.type().getText();
         if (oneColSpec.lambdaParam() != null && oneColSpec.lambdaPipe() != null)
         {
@@ -1604,6 +1606,29 @@ public class DomainParseTreeWalker
         return genericTypeInstance;
     }
 
+    private GenericTypeInstance processRelationColumnTypes(DomainParserGrammar.TypeContext ctx)
+    {
+        String fullPath = ctx.qualifiedName().getText();
+        GenericTypeInstance genericTypeInstance = new GenericTypeInstance();
+        genericTypeInstance.fullPath = fullPath;
+        genericTypeInstance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (!"meta::pure::metamodel::relation::Relation".equals(fullPath) && !"Relation".equals(fullPath))
+        {
+            throw new EngineException("Casting to type with generics is only supported for Relation type", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
+        List<DomainParserGrammar.ColumnTypeContext> columnTypeContexts = ctx.typeArguments().type().get(0).columnType();
+        ColSpecArray colSpecArr = new ColSpecArray();
+        colSpecArr.colSpecs = ListIterate.collect(columnTypeContexts, columnTypeContext ->
+        {
+            ColSpec colSpec = new ColSpec();
+            colSpec.sourceInformation = walkerSourceInformation.getSourceInformation(columnTypeContext);
+            colSpec.name = PureGrammarParserUtility.fromIdentifier(columnTypeContext.identifier().get(0));
+            colSpec.type = PureGrammarParserUtility.fromIdentifier(columnTypeContext.identifier().get(1));
+            return colSpec;
+        });
+        genericTypeInstance.typeArguments = Lists.mutable.with(DomainParseTreeWalker.wrapWithClassInstance(colSpecArr, walkerSourceInformation.getSourceInformation(ctx), "colSpecArray"));
+        return genericTypeInstance;
+    }
 
     private ValueSpecification allOrFunction(DomainParserGrammar.AllOrFunctionContext ctx, List<? extends ValueSpecification> params, DomainParserGrammar.QualifiedNameContext funcName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean addLines)
     {
