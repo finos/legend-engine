@@ -150,6 +150,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
@@ -965,24 +966,53 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
     private static void ingestDataIntoTempTable(ExecutionNode executionNode, String result, ExecutionState executionState, Identity identity)
     {
-        AtomicReference<SQLExecutionNode> insertSqlExecutionNode = new AtomicReference<>();
-        AtomicReference<String> insertSqlQuery = new AtomicReference<>();
-        executionNode.executionNodes.forEach(node ->
+        if (executionNode instanceof SequenceExecutionNode)
         {
-            if (node instanceof SQLExecutionNode)
+            SequenceExecutionNode sequenceExecutionNode = (SequenceExecutionNode) executionNode;
+            SequenceExecutionNode copyOfSequenceExecutionNode = new SequenceExecutionNode();
+
+            copyOfSequenceExecutionNode.resultType = sequenceExecutionNode.resultType;
+            copyOfSequenceExecutionNode.executionNodes = sequenceExecutionNode.childNodes();
+            copyOfSequenceExecutionNode.resultSizeRange = sequenceExecutionNode.resultSizeRange;
+            copyOfSequenceExecutionNode.requiredVariableInputs = sequenceExecutionNode.requiredVariableInputs;
+            copyOfSequenceExecutionNode.implementation = sequenceExecutionNode.implementation;
+            copyOfSequenceExecutionNode.authDependent = sequenceExecutionNode.authDependent;
+
+            ListIterator<ExecutionNode> iterator = copyOfSequenceExecutionNode.executionNodes.listIterator();
+            SQLExecutionNode copyOfSqlExecutionNode;
+            while (iterator.hasNext())
             {
-                String sqlQuery = ((SQLExecutionNode) node).sqlQuery;
-                if (sqlQuery.contains("${temp_table_rows_from_result_set}"))
+                ExecutionNode node = iterator.next();
+                if (node instanceof SQLExecutionNode)
                 {
-                    insertSqlQuery.set(sqlQuery);
-                    String sqlQueryWithValueTuples = sqlQuery.replace("${temp_table_rows_from_result_set}", result);
-                    insertSqlExecutionNode.set((SQLExecutionNode) node);
-                    ((SQLExecutionNode) node).sqlQuery = sqlQueryWithValueTuples;
+                    SQLExecutionNode sqlExecutionNode = ((SQLExecutionNode) node);
+                    String sqlQuery = sqlExecutionNode.sqlQuery;
+                    if (sqlQuery.contains("${temp_table_rows_from_result_set}"))
+                    {
+                        copyOfSqlExecutionNode = new SQLExecutionNode();
+                        copyOfSqlExecutionNode.sqlComment = sqlExecutionNode.sqlComment;
+                        copyOfSqlExecutionNode.sqlQuery = sqlQuery.replace("${temp_table_rows_from_result_set}", result);
+                        copyOfSqlExecutionNode.onConnectionCloseCommitQuery = sqlExecutionNode.onConnectionCloseCommitQuery;
+                        copyOfSqlExecutionNode.onConnectionCloseRollbackQuery = sqlExecutionNode.onConnectionCloseRollbackQuery;
+                        copyOfSqlExecutionNode.connection = sqlExecutionNode.connection;
+                        copyOfSqlExecutionNode.resultColumns = sqlExecutionNode.resultColumns;
+
+                        copyOfSqlExecutionNode.resultType = sqlExecutionNode.resultType;
+                        copyOfSqlExecutionNode.executionNodes = sqlExecutionNode.childNodes();
+                        copyOfSqlExecutionNode.resultSizeRange = sqlExecutionNode.resultSizeRange;
+                        copyOfSqlExecutionNode.requiredVariableInputs = sqlExecutionNode.requiredVariableInputs;
+                        copyOfSqlExecutionNode.implementation = sqlExecutionNode.implementation;
+                        copyOfSqlExecutionNode.authDependent = sqlExecutionNode.authDependent;
+                        iterator.set(copyOfSqlExecutionNode);
+                    }
                 }
             }
-        });
-        executionNode.accept(new ExecutionNodeExecutor(identity, executionState));
-        insertSqlExecutionNode.get().sqlQuery = insertSqlQuery.get();
+            copyOfSequenceExecutionNode.accept(new ExecutionNodeExecutor(identity, executionState));
+        }
+        else
+        {
+            throw new RuntimeException("Inserting values into a temp table should be done using SequenceExecutionNode found:" + executionNode.getClass());
+        }
     }
 
     public static void prepareExecutionStateForTempTableExecution(String key, ExecutionState state, String result)
