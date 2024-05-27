@@ -24,7 +24,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.InterpretedMetadata;
 import org.finos.legend.engine.pure.runtime.testConnection.shared.GetTestConnectionShared;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.navigation.M3Properties;
@@ -58,7 +58,7 @@ public class GetTestConnection extends NativeFunction
         connection.connectionValue = GetTestConnectionShared.getDatabaseConnection(DatabaseType.valueOf(dbType.getName()));
         PureModelContextData data = PureModelContextData.newPureModelContextData(null, null, Lists.mutable.with(connection));
 
-        PureModel pureModel = org.finos.legend.engine.language.pure.compiler.Compiler.compile(data, DeploymentMode.PROD, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), "", new InterpretedMetadata(processorSupport));
+        PureModel pureModel = org.finos.legend.engine.language.pure.compiler.Compiler.compile(data, DeploymentMode.PROD, Identity.getAnonymousIdentity().getName(), "", new InterpretedMetadata(processorSupport));
 
         return ValueSpecificationBootstrap.wrapValueSpecification(Lists.mutable.with(pureModel.getConnection("toGetValue::Conn", null)), false, processorSupport);
     }

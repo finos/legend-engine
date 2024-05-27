@@ -22,7 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.pure.runtime.testConnection.shared.GetTestConnectionShared;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_RelationalDatabaseConnection;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.navigation.Instance;
@@ -58,7 +58,7 @@ public class GetTestConnection extends AbstractNative
         connection.connectionValue = GetTestConnectionShared.getDatabaseConnection(DatabaseType.valueOf(code._name()));
         PureModelContextData data = PureModelContextData.newPureModelContextData(null, null, Lists.mutable.with(connection));
 
-        PureModel pureModel = org.finos.legend.engine.language.pure.compiler.Compiler.compile(data, DeploymentMode.PROD, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), "", ((CompiledExecutionSupport) es).getProcessorSupport().getMetadata());
+        PureModel pureModel = org.finos.legend.engine.language.pure.compiler.Compiler.compile(data, DeploymentMode.PROD, Identity.getAnonymousIdentity().getName(), "", ((CompiledExecutionSupport) es).getProcessorSupport().getMetadata());
 
         return (Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) pureModel.getConnection("toGetValue::Conn", null);
     }
