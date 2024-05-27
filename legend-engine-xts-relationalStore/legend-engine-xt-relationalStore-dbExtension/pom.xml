@@ -47,6 +47,5 @@
         <module>legend-engine-xt-relationalStore-test-reports</module>
         <module>legend-engine-xt-relationalStore-test-http-server</module>
         <module>legend-engine-xt-relationalStore-dbExtension-archetype</module>
-        <module>legend-engine-xt-relationalStore-duckdb/legend-engine-xt-relationalStore-duckdb-execution-tests</module>
     </modules>
 </project>

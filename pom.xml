@@ -1173,6 +1173,11 @@
                 <artifactId>legend-engine-xt-relationalStore-duckdb-execution</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-duckdb-execution-tests</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>

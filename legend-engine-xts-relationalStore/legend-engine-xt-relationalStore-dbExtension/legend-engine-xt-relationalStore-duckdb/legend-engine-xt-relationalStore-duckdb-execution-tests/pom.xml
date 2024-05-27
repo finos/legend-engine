@@ -37,75 +37,13 @@
     </build>
 
     <dependencies>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
-        </dependency>
-        <!-- LEGEND ENGINE -->
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-executionPlan</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-protocol-pure</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-executionPlan-execution</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-authentication</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-executionPlan-connection</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-protocol</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-shared-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-identity-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-duckdb-execution</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-duckdb-protocol</artifactId>
-        </dependency>
-        <!-- LEGEND ENGINE -->
-
-        <!-- ECLIPSE COLLECTIONS -->
-        <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections</artifactId>
-        </dependency>
-        <!-- ECLIPSE COLLECTIONS -->
-
-        <!-- JACKSON -->
+        <!-- Jackson -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-        </dependency>
-        <!-- JACKSON -->
+        <!-- Jackson -->
 
         <!-- JUNIT -->
         <dependency>
@@ -154,6 +92,11 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-tests</artifactId>
             <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->
