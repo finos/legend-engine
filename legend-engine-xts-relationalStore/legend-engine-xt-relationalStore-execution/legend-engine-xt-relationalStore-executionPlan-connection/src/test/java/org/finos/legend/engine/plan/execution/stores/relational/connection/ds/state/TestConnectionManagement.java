@@ -91,4 +91,11 @@ public abstract class TestConnectionManagement
             assertNotNull("State not found for pool=" + poolName, connectionStateManager.getConnectionStateManagerPOJO(poolName));
         }
     }
+
+    DataSourceWithStatistics getDataSourceWithStatistics(String user, ConnectionKey key)
+    {
+        Identity identity = new Identity(user);
+        String poolName = connectionStateManager.poolNameFor(identity, key);
+        return connectionStateManager.getDataSourceByPoolName(poolName);
+    }
 }

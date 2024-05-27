@@ -244,6 +244,17 @@ public class ConnectionStateManager implements Closeable
         });
     }
 
+    private void evictPool(String poolName)
+    {
+        LOGGER.info("Manually evicting pool {}", poolName);
+        DataSourceStatistics ds = getDataSourceByPoolName(poolName).getStatistics();
+
+        // we call atomicallyRemovePool() to make sure pool is not used by other connections by using lock
+        this.atomicallyRemovePool(poolName, DataSourceStatistics.clone(ds));
+        MetricsHandler.removeConnectionMetrics(poolName);
+        LOGGER.info("Evicted pool {}", poolName);
+    }
+
     public int size()
     {
         return this.connectionPools.size();
@@ -334,7 +345,7 @@ public class ConnectionStateManager implements Closeable
 
         if (!identityState.isValid())
         {
-            throw new RuntimeException(String.format("Invalid Identity found, cannot build connection pool for %s for %s",principal,connectionKey.shortId()));
+            throw new RuntimeException(String.format("Invalid Identity found, cannot build connection pool for %s for %s", principal, connectionKey.shortId()));
         }
 
         //why do we need getIfAbsentPut?  the first ever pool creation request will create a new Hikari Data Source
@@ -365,6 +376,8 @@ public class ConnectionStateManager implements Closeable
                     catch (Exception e)
                     {
                         LOGGER.error("Error creating pool {} {}", poolName, e);
+                        //evict pool having invalid or null datasource caused by having exception thrown while building datasource
+                        evictPool(poolName);
                         throw new RuntimeException(e);
                     }
                 }
