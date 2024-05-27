@@ -24,11 +24,7 @@ import org.finos.legend.engine.repl.client.jline3.JLine3Highlighter;
 import org.finos.legend.engine.repl.client.jline3.JLine3Parser;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.core.ReplExtension;
-import org.finos.legend.engine.repl.core.commands.Debug;
-import org.finos.legend.engine.repl.core.commands.Execute;
-import org.finos.legend.engine.repl.core.commands.Ext;
-import org.finos.legend.engine.repl.core.commands.Graph;
-import org.finos.legend.engine.repl.core.commands.Help;
+import org.finos.legend.engine.repl.core.commands.*;
 import org.finos.legend.engine.repl.core.legend.LegendInterface;
 import org.finos.legend.engine.repl.core.legend.LocalLegendInterface;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -38,6 +34,8 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
+
+import static org.jline.reader.LineReader.BLINK_MATCHING_PAREN;
 
 public class Client
 {
@@ -89,8 +87,15 @@ public class Client
 
         this.reader = LineReaderBuilder.builder()
                 .terminal(terminal)
+                // Disable cursor jumping to opening brace when typing closing brace
+                // See https://github.com/jline/jline3/issues/216
+                .variable(BLINK_MATCHING_PAREN, false)
+                // Make sure hitting <tab> at the beginning of line will insert a tab instead of triggering a completion
+                // which will cause error since the completer doesn't handle such case
+                // See https://github.com/jline/jline3/wiki/Completion
+                .option(LineReader.Option.INSERT_TAB, true)
                 .highlighter(new JLine3Highlighter())
-                .parser(new JLine3Parser())//new DefaultParser().quoteChars(new char[]{'"'}))
+                .parser(new JLine3Parser()) //new DefaultParser().quoteChars(new char[]{'"'}))
                 .completer(new JLine3Completer(this.commands))
                 .build();
 

@@ -45,7 +45,7 @@ public class JLine3Parser implements Parser
         public String word()
         {
             int index = wordIndex();
-            if (result.words.size() > index)
+            if (index >= 0 && result.words.size() > index)
             {
                 return result.words.get(index);
             }
