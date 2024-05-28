@@ -24,15 +24,15 @@ public class TestCompleter
     @Test
     public void testPrimitives()
     {
-        Assert.assertEquals("[sqrt , sqrt], [pow , pow], [exp , exp]", checkResultNoException(new Completer("").complete("1->")));
-        Assert.assertEquals("[contains , contains], [startsWith , startsWith], [endsWith , endsWith], [toLower , toLower], [toUpper , toUpper], [lpad , lpad], [rpad , rpad], [parseInteger , parseInteger], [parseFloat , parseFloat]", checkResultNoException(new Completer("").complete("'a'->")));
-        Assert.assertEquals("[sum , sum], [mean , mean], [average , average], [min , min], [max , max], [count , count], [percentile , percentile], [variancePopulation , variancePopulation], [varianceSample , varianceSample], [stdDevPopulation , stdDevPopulation], [stdDevSample , stdDevSample]", checkResultNoException(new Completer("").complete("[1,2]->")));
+        Assert.assertEquals("[sqrt , sqrt(], [pow , pow(], [exp , exp(]", checkResultNoException(new Completer("").complete("1->")));
+        Assert.assertEquals("[contains , contains(], [startsWith , startsWith(], [endsWith , endsWith(], [toLower , toLower(], [toUpper , toUpper(], [lpad , lpad(], [rpad , rpad(], [parseInteger , parseInteger(], [parseFloat , parseFloat(]", checkResultNoException(new Completer("").complete("'a'->")));
+        Assert.assertEquals("[sum , sum(], [mean , mean(], [average , average(], [min , min(], [max , max(], [count , count(], [percentile , percentile(], [variancePopulation , variancePopulation(], [varianceSample , varianceSample(], [stdDevPopulation , stdDevPopulation(], [stdDevSample , stdDevSample(]", checkResultNoException(new Completer("").complete("[1,2]->")));
     }
 
     @Test
     public void testArrowOnType()
     {
-        Assert.assertEquals("[project , project]", checkResultNoException(new Completer("Class x::A{name:String[1];other:Integer[1];}").complete("x::A.all()->")));
+        Assert.assertEquals("[project , project(]", checkResultNoException(new Completer("Class x::A{name:String[1];other:Integer[1];}").complete("x::A.all()->")));
         Assert.assertEquals("", checkResultNoException(new Completer("Class x::A{name:String[1];other:Integer[1];}").complete("x::A.all()->fu")));
     }
 
