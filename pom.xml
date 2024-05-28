@@ -144,7 +144,7 @@
         <postgres.version>9.4.1208.jre7</postgres.version>
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
         <snowflake.version>3.13.5</snowflake.version>
-        <duckdb.version>0.10.0</duckdb.version>
+        <duckdb.version>0.10.3</duckdb.version>
 
         <!-- Dependency versions -->
         <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
