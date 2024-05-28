@@ -489,340 +489,340 @@ class UnitemporalDeltaTest extends BaseTest
         }
     }
 
-//    @Test
-//    void testMilestoningWithFilterStagingTable() throws Exception
-//    {
-//        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
-//        DerivedDataset stagingTable = TestUtils.getDerivedStagingTableWithFilter();
-//
-//        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
-//
-//        // Create staging table
-//        DatasetDefinition stagingTableForDB = TestUtils.getStagingTableWithFilterForDB();
-//        createStagingTable(stagingTableForDB);
-//
-//        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
-//            .digestField(digestName)
-//            .transactionMilestoning(BatchIdAndDateTime.builder()
-//                .batchIdInName(batchIdInName)
-//                .batchIdOutName(batchIdOutName)
-//                .dateTimeInName(batchTimeInName)
-//                .dateTimeOutName(batchTimeOutName)
-//                .build())
-//            .build();
-//
-//        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
-//        Datasets datasets = Datasets.of(mainTable, stagingTable);
-//
-//        // ------------ Perform Pass1 ------------------------
-//        String dataPass1 = basePathForInput + "with_staging_filter/with_no_versioning/staging_data_pass1.csv";
-//        String expectedDataPass1 = basePathForExpected + "with_staging_filter/with_no_versioning/expected_pass1.csv";
-//        // 1. Load staging table
-//        loadStagingDataWithFilter(dataPass1);
-//        // 2. Execute plans and verify results
-//        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
-//        IngestorResult result = executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
-//        Assertions.assertEquals(Optional.of(1), result.batchId());
-//        Assertions.assertEquals("2000-01-01 00:00:00.000000", result.ingestionTimestampUTC());
-//
-//        // 3. Assert that the staging table is NOT truncated
-//        List<Map<String, Object>> stagingTableList = postgresSink.executeQuery("select * from \"TEST\".\"staging\"");
-//        Assertions.assertEquals(stagingTableList.size(), 6);
-//
-//        // ------------ Perform Pass2 ------------------------
-//        // 0. Create new filter
-//        datasets = Datasets.of(mainTable, TestUtils.getStagingTableWithFilterSecondPass());
-//        String dataPass2 = basePathForInput + "with_staging_filter/with_no_versioning/staging_data_pass2.csv";
-//        String expectedDataPass2 = basePathForExpected + "with_staging_filter/with_no_versioning/expected_pass2.csv";
-//        // 1. Load staging table
-//        loadStagingDataWithFilter(dataPass2);
-//        // 2. Execute plans and verify results
-//        expectedStats = createExpectedStatsMap(3, 0, 1, 1, 0);
-//        result = executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
-//        Assertions.assertEquals(Optional.of(2), result.batchId());
-//        Assertions.assertEquals("2000-01-01 00:00:00.000000", result.ingestionTimestampUTC());
-//
-//        // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-//        String dataPass3 = "data/empty_file.csv";
-//        String expectedDataPass3 = basePathForExpected + "with_staging_filter/with_no_versioning/expected_pass3.csv";
-//        // 1. Load staging table
-//        loadStagingDataWithFilter(dataPass3);
-//        // 2. Execute plans and verify results
-//        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
-//        result = executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
-//        Assertions.assertEquals(Optional.of(3), result.batchId());
-//        Assertions.assertEquals("2000-01-01 00:00:00.000000", result.ingestionTimestampUTC());
-//    }
+    @Test
+    void testMilestoningWithFilterStagingTable() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DerivedDataset stagingTable = TestUtils.getDerivedStagingTableWithFilter();
 
-//    @Test
-//    void testMilestoningWithFilterDupsMaxVersionGreaterThanWithStagingFilters() throws Exception
-//    {
-//        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
-//        DerivedDataset stagingTable = TestUtils.getDerivedStagingTableWithFilterWithVersion();
-//
-//        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
-//
-//        // Create staging table
-//        DatasetDefinition stagingTableForDB = TestUtils.getStagingTableWithFilterWithVersionForDB();
-//        createStagingTableWithoutPks(stagingTableForDB);
-//
-//        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
-//            .digestField(digestName)
-//            .transactionMilestoning(BatchIdAndDateTime.builder()
-//                .batchIdInName(batchIdInName)
-//                .batchIdOutName(batchIdOutName)
-//                .dateTimeInName(batchTimeInName)
-//                .dateTimeOutName(batchTimeOutName)
-//                .build())
-//            .versioningStrategy(MaxVersionStrategy.builder()
-//                .versioningField(versionName)
-//                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
-//                .performStageVersioning(false)
-//                .build())
-//            .deduplicationStrategy(FilterDuplicates.builder().build())
-//            .build();
-//
-//        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
-//        Datasets datasets = Datasets.of(mainTable, stagingTable);
-//
-//        // ------------ Perform Pass1 ------------------------
-//        String dataPass1 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than/without_dedup/staging_data_pass1.csv";
-//        String expectedDataPass1 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/without_dedup/expected_pass1.csv";
-//        // 1. Load staging table
-//        loadStagingDataWithFilterWithVersion(dataPass1);
-//        // 2. Execute plans and verify results
-//        Map<String, Object> expectedStats = createExpectedStatsMap(6, 0, 3, 0, 0);
-//        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
-//        // 3. Assert that the staging table is NOT truncated
-//        List<Map<String, Object>> stagingTableList = postgresSink.executeQuery("select * from \"TEST\".\"staging\"");
-//        Assertions.assertEquals(stagingTableList.size(), 9);
-//
-//        // ------------ Perform Pass2 ------------------------
-//        // 0. Create new filter
-//        datasets = Datasets.of(mainTable, TestUtils.getStagingTableWithFilterWithVersionSecondPass());
-//        String dataPass2 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than/without_dedup/staging_data_pass2.csv";
-//        String expectedDataPass2 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/without_dedup/expected_pass2.csv";
-//        // 1. Load staging table
-//        loadStagingDataWithFilterWithVersion(dataPass2);
-//        // 2. Execute plans and verify results
-//        expectedStats = createExpectedStatsMap(4, 0, 1, 1, 0);
-//        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
-//
-//        // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-//        String dataPass3 = "data/empty_file.csv";
-//        String expectedDataPass3 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/without_dedup/expected_pass3.csv";
-//        // 1. Load staging table
-//        loadStagingDataWithFilterWithVersion(dataPass3);
-//        // 2. Execute plans and verify results
-//        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
-//        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
-//    }
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
 
-//    @Test
-//    void testMilestoningWithFailOnDupsMaxVersionGreaterThanEqualToWithStagingFilters() throws Exception
-//    {
-//        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
-//        DerivedDataset stagingTable = TestUtils.getDerivedStagingTableWithFilterWithVersion();
-//
-//        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
-//
-//        // Create staging table
-//        DatasetDefinition stagingTableForDB = TestUtils.getStagingTableWithFilterWithVersionForDB();
-//        createStagingTableWithoutPks(stagingTableForDB);
-//
-//        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
-//            .digestField(digestName)
-//            .transactionMilestoning(BatchIdAndDateTime.builder()
-//                .batchIdInName(batchIdInName)
-//                .batchIdOutName(batchIdOutName)
-//                .dateTimeInName(batchTimeInName)
-//                .dateTimeOutName(batchTimeOutName)
-//                .build())
-//            .versioningStrategy(MaxVersionStrategy.builder()
-//                .versioningField(versionName)
-//                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN_EQUAL_TO))
-//                .performStageVersioning(false)
-//                .build())
-//            .deduplicationStrategy(FailOnDuplicates.builder().build())
-//            .build();
-//
-//        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
-//        Datasets datasets = Datasets.of(mainTable, stagingTable);
-//
-//        // ------------ Perform Pass1 ------------------------
-//        String dataPass1 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than_equal_to/without_dedup/staging_data_pass1.csv";
-//        String expectedDataPass1 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than_equal_to/without_dedup/expected_pass1.csv";
-//        // 1. Load staging table
-//        loadStagingDataWithFilterWithVersion(dataPass1);
-//        // 2. Execute plans and verify results
-//        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
-//        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
-//        // 3. Assert that the staging table is NOT truncated
-//        List<Map<String, Object>> stagingTableList = postgresSink.executeQuery("select * from \"TEST\".\"staging\"");
-//        Assertions.assertEquals(stagingTableList.size(), 6);
-//
-//        // ------------ Perform Pass2 ------------------------
-//        // 0. Create new filter
-//        datasets = Datasets.of(mainTable, TestUtils.getStagingTableWithFilterWithVersionSecondPass());
-//        String dataPass2 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than_equal_to/without_dedup/staging_data_pass2.csv";
-//        String expectedDataPass2 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than_equal_to/without_dedup/expected_pass2.csv";
-//        // 1. Load staging table
-//        loadStagingDataWithFilterWithVersion(dataPass2);
-//        // 2. Execute plans and verify results
-//        expectedStats = createExpectedStatsMap(4, 0, 1, 2, 0);
-//        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
-//
-//        // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-//        String dataPass3 = "data/empty_file.csv";
-//        String expectedDataPass3 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than_equal_to/without_dedup/expected_pass3.csv";
-//        // 1. Load staging table
-//        loadStagingDataWithFilterWithVersion(dataPass3);
-//        // 2. Execute plans and verify results
-//        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
-//        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
-//
-//        // ------------ Perform Pass4 Fail on Dups -------------------------
-//        String dataPass4 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than_equal_to/without_dedup/staging_data_pass4.csv";
-//        // 1. Load staging table
-//        loadStagingDataWithFilterWithVersion(dataPass4);
-//        // 2. Execute plans and verify results
-//        try
-//        {
-//            executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
-//            Assertions.fail("Should not succeed");
-//        }
-//        catch (Exception e)
-//        {
-//            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
-//        }
-//    }
+        // Create staging table
+        DatasetDefinition stagingTableForDB = TestUtils.getStagingTableWithFilterForDB();
+        createStagingTable(stagingTableForDB);
 
-//    @Test
-//    void testMilestoningWithFilterStagingTableWithMaxVersioningGreaterThan() throws Exception
-//    {
-//        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
-//        DerivedDataset stagingTable = TestUtils.getDerivedStagingTableWithFilterWithVersion();
-//
-//        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
-//
-//        // Create staging table
-//        DatasetDefinition stagingTableForDB = TestUtils.getStagingTableWithFilterWithVersionForDB();
-//        createStagingTable(stagingTableForDB);
-//
-//        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
-//            .digestField(digestName)
-//            .transactionMilestoning(BatchIdAndDateTime.builder()
-//                .batchIdInName(batchIdInName)
-//                .batchIdOutName(batchIdOutName)
-//                .dateTimeInName(batchTimeInName)
-//                .dateTimeOutName(batchTimeOutName)
-//                .build())
-//            .versioningStrategy(MaxVersionStrategy.builder()
-//                .versioningField(versionName)
-//                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
-//                .performStageVersioning(true)
-//                .build())
-//            .build();
-//
-//        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
-//        Datasets datasets = Datasets.of(mainTable, stagingTable);
-//
-//        // ------------ Perform Pass1 ------------------------
-//        String dataPass1 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than/with_dedup/staging_data_pass1.csv";
-//        String expectedDataPass1 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/with_dedup/expected_pass1.csv";
-//        // 1. Load staging table
-//        loadStagingDataWithFilterWithVersion(dataPass1);
-//        // 2. Execute plans and verify results
-//        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
-//        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
-//        // 3. Assert that the staging table is NOT truncated
-//        List<Map<String, Object>> stagingTableList = postgresSink.executeQuery("select * from \"TEST\".\"staging\"");
-//        Assertions.assertEquals(stagingTableList.size(), 6);
-//
-//        // ------------ Perform Pass2 ------------------------
-//        // 0. Create new filter
-//        datasets = Datasets.of(mainTable, TestUtils.getStagingTableWithFilterWithVersionSecondPass());
-//        String dataPass2 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than/with_dedup/staging_data_pass2.csv";
-//        String expectedDataPass2 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/with_dedup/expected_pass2.csv";
-//        // 1. Load staging table
-//        loadStagingDataWithFilterWithVersion(dataPass2);
-//        // 2. Execute plans and verify results
-//        expectedStats = createExpectedStatsMap(9, 0, 1, 1, 0);
-//        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
-//
-//        // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-//        String dataPass3 = "data/empty_file.csv";
-//        String expectedDataPass3 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/with_dedup/expected_pass3.csv";
-//        // 1. Load staging table
-//        loadStagingDataWithFilterWithVersion(dataPass3);
-//        // 2. Execute plans and verify results
-//        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
-//        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
-//    }
+        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+            .digestField(digestName)
+            .transactionMilestoning(BatchIdAndDateTime.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .dateTimeInName(batchTimeInName)
+                .dateTimeOutName(batchTimeOutName)
+                .build())
+            .build();
 
-//    @Test
-//    void testMilestoningWithFilterDupsMaxVersioningDigestBasedWithStagingFilters() throws Exception
-//    {
-//        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
-//        DerivedDataset stagingTable = TestUtils.getDerivedStagingTableWithFilterWithVersion();
-//
-//        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
-//
-//        // Create staging table
-//        DatasetDefinition stagingTableForDB = TestUtils.getStagingTableWithFilterWithVersionForDB();
-//        createStagingTable(stagingTableForDB);
-//
-//        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
-//            .digestField(digestName)
-//            .transactionMilestoning(BatchIdAndDateTime.builder()
-//                .batchIdInName(batchIdInName)
-//                .batchIdOutName(batchIdOutName)
-//                .dateTimeInName(batchTimeInName)
-//                .dateTimeOutName(batchTimeOutName)
-//                .build())
-//            .versioningStrategy(MaxVersionStrategy.builder()
-//                .versioningField(versionName)
-//                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
-//                .performStageVersioning(true)
-//                .build())
-//            .deduplicationStrategy(FilterDuplicates.builder().build())
-//            .build();
-//
-//        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
-//        Datasets datasets = Datasets.of(mainTable, stagingTable);
-//
-//        // ------------ Perform Pass1 ------------------------
-//        String dataPass1 = basePathForInput + "with_staging_filter/with_max_versioning/digest_based/staging_data_pass1.csv";
-//        String expectedDataPass1 = basePathForExpected + "with_staging_filter/with_max_versioning/digest_based/expected_pass1.csv";
-//        // 1. Load staging table
-//        loadStagingDataWithFilterWithVersion(dataPass1);
-//        // 2. Execute plans and verify results
-//        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
-//        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
-//        // 3. Assert that the staging table is NOT truncated
-//        List<Map<String, Object>> stagingTableList = postgresSink.executeQuery("select * from \"TEST\".\"staging\"");
-//        Assertions.assertEquals(stagingTableList.size(), 6);
-//
-//        // ------------ Perform Pass2 ------------------------
-//        // 0. Create new filter
-//        datasets = Datasets.of(mainTable, TestUtils.getStagingTableWithFilterWithVersionSecondPass());
-//        String dataPass2 = basePathForInput + "with_staging_filter/with_max_versioning/digest_based/staging_data_pass2.csv";
-//        String expectedDataPass2 = basePathForExpected + "with_staging_filter/with_max_versioning/digest_based/expected_pass2.csv";
-//        // 1. Load staging table
-//        loadStagingDataWithFilterWithVersion(dataPass2);
-//        // 2. Execute plans and verify results
-//        expectedStats = createExpectedStatsMap(9, 0, 1, 2, 0);
-//        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
-//
-//        // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-//        String dataPass3 = "data/empty_file.csv";
-//        String expectedDataPass3 = basePathForExpected + "with_staging_filter/with_max_versioning/digest_based/expected_pass3.csv";
-//        // 1. Load staging table
-//        loadStagingDataWithFilterWithVersion(dataPass3);
-//        // 2. Execute plans and verify results
-//        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
-//        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
-//    }
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        // ------------ Perform Pass1 ------------------------
+        String dataPass1 = basePathForInput + "with_staging_filter/with_no_versioning/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_staging_filter/with_no_versioning/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilter(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+        IngestorResult result = executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
+        Assertions.assertEquals(Optional.of(1), result.batchId());
+        Assertions.assertEquals("2000-01-01 00:00:00.000000", result.ingestionTimestampUTC());
+
+        // 3. Assert that the staging table is NOT truncated
+        List<Map<String, Object>> stagingTableList = postgresSink.executeQuery("select * from \"TEST\".\"staging\"");
+        Assertions.assertEquals(stagingTableList.size(), 6);
+
+        // ------------ Perform Pass2 ------------------------
+        // 0. Create new filter
+        datasets = Datasets.of(mainTable, TestUtils.getStagingTableWithFilterSecondPass());
+        String dataPass2 = basePathForInput + "with_staging_filter/with_no_versioning/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "with_staging_filter/with_no_versioning/expected_pass2.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilter(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(3, 0, 1, 1, 0);
+        result = executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
+        Assertions.assertEquals(Optional.of(2), result.batchId());
+        Assertions.assertEquals("2000-01-01 00:00:00.000000", result.ingestionTimestampUTC());
+
+        // ------------ Perform Pass3 empty batch (No Impact) -------------------------
+        String dataPass3 = "data/empty_file.csv";
+        String expectedDataPass3 = basePathForExpected + "with_staging_filter/with_no_versioning/expected_pass3.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilter(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
+        result = executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
+        Assertions.assertEquals(Optional.of(3), result.batchId());
+        Assertions.assertEquals("2000-01-01 00:00:00.000000", result.ingestionTimestampUTC());
+    }
+
+    @Test
+    void testMilestoningWithFilterDupsMaxVersionGreaterThanWithStagingFilters() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
+        DerivedDataset stagingTable = TestUtils.getDerivedStagingTableWithFilterWithVersion();
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
+
+        // Create staging table
+        DatasetDefinition stagingTableForDB = TestUtils.getStagingTableWithFilterWithVersionForDB();
+        createStagingTableWithoutPks(stagingTableForDB);
+
+        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+            .digestField(digestName)
+            .transactionMilestoning(BatchIdAndDateTime.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .dateTimeInName(batchTimeInName)
+                .dateTimeOutName(batchTimeOutName)
+                .build())
+            .versioningStrategy(MaxVersionStrategy.builder()
+                .versioningField(versionName)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
+                .performStageVersioning(false)
+                .build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        // ------------ Perform Pass1 ------------------------
+        String dataPass1 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than/without_dedup/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/without_dedup/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilterWithVersion(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(6, 0, 3, 0, 0);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
+        // 3. Assert that the staging table is NOT truncated
+        List<Map<String, Object>> stagingTableList = postgresSink.executeQuery("select * from \"TEST\".\"staging\"");
+        Assertions.assertEquals(stagingTableList.size(), 9);
+
+        // ------------ Perform Pass2 ------------------------
+        // 0. Create new filter
+        datasets = Datasets.of(mainTable, TestUtils.getStagingTableWithFilterWithVersionSecondPass());
+        String dataPass2 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than/without_dedup/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/without_dedup/expected_pass2.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilterWithVersion(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(4, 0, 1, 1, 0);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
+
+        // ------------ Perform Pass3 empty batch (No Impact) -------------------------
+        String dataPass3 = "data/empty_file.csv";
+        String expectedDataPass3 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/without_dedup/expected_pass3.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilterWithVersion(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
+    }
+
+    @Test
+    void testMilestoningWithFailOnDupsMaxVersionGreaterThanEqualToWithStagingFilters() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
+        DerivedDataset stagingTable = TestUtils.getDerivedStagingTableWithFilterWithVersion();
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
+
+        // Create staging table
+        DatasetDefinition stagingTableForDB = TestUtils.getStagingTableWithFilterWithVersionForDB();
+        createStagingTableWithoutPks(stagingTableForDB);
+
+        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+            .digestField(digestName)
+            .transactionMilestoning(BatchIdAndDateTime.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .dateTimeInName(batchTimeInName)
+                .dateTimeOutName(batchTimeOutName)
+                .build())
+            .versioningStrategy(MaxVersionStrategy.builder()
+                .versioningField(versionName)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN_EQUAL_TO))
+                .performStageVersioning(false)
+                .build())
+            .deduplicationStrategy(FailOnDuplicates.builder().build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        // ------------ Perform Pass1 ------------------------
+        String dataPass1 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than_equal_to/without_dedup/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than_equal_to/without_dedup/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilterWithVersion(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
+        // 3. Assert that the staging table is NOT truncated
+        List<Map<String, Object>> stagingTableList = postgresSink.executeQuery("select * from \"TEST\".\"staging\"");
+        Assertions.assertEquals(stagingTableList.size(), 6);
+
+        // ------------ Perform Pass2 ------------------------
+        // 0. Create new filter
+        datasets = Datasets.of(mainTable, TestUtils.getStagingTableWithFilterWithVersionSecondPass());
+        String dataPass2 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than_equal_to/without_dedup/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than_equal_to/without_dedup/expected_pass2.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilterWithVersion(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(4, 0, 1, 2, 0);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
+
+        // ------------ Perform Pass3 empty batch (No Impact) -------------------------
+        String dataPass3 = "data/empty_file.csv";
+        String expectedDataPass3 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than_equal_to/without_dedup/expected_pass3.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilterWithVersion(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
+
+        // ------------ Perform Pass4 Fail on Dups -------------------------
+        String dataPass4 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than_equal_to/without_dedup/staging_data_pass4.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilterWithVersion(dataPass4);
+        // 2. Execute plans and verify results
+        try
+        {
+            executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
+        }
+    }
+
+    @Test
+    void testMilestoningWithFilterStagingTableWithMaxVersioningGreaterThan() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
+        DerivedDataset stagingTable = TestUtils.getDerivedStagingTableWithFilterWithVersion();
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
+
+        // Create staging table
+        DatasetDefinition stagingTableForDB = TestUtils.getStagingTableWithFilterWithVersionForDB();
+        createStagingTable(stagingTableForDB);
+
+        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+            .digestField(digestName)
+            .transactionMilestoning(BatchIdAndDateTime.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .dateTimeInName(batchTimeInName)
+                .dateTimeOutName(batchTimeOutName)
+                .build())
+            .versioningStrategy(MaxVersionStrategy.builder()
+                .versioningField(versionName)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
+                .performStageVersioning(true)
+                .build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        // ------------ Perform Pass1 ------------------------
+        String dataPass1 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than/with_dedup/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/with_dedup/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilterWithVersion(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
+        // 3. Assert that the staging table is NOT truncated
+        List<Map<String, Object>> stagingTableList = postgresSink.executeQuery("select * from \"TEST\".\"staging\"");
+        Assertions.assertEquals(stagingTableList.size(), 6);
+
+        // ------------ Perform Pass2 ------------------------
+        // 0. Create new filter
+        datasets = Datasets.of(mainTable, TestUtils.getStagingTableWithFilterWithVersionSecondPass());
+        String dataPass2 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than/with_dedup/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/with_dedup/expected_pass2.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilterWithVersion(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(9, 0, 1, 1, 0);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
+
+        // ------------ Perform Pass3 empty batch (No Impact) -------------------------
+        String dataPass3 = "data/empty_file.csv";
+        String expectedDataPass3 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/with_dedup/expected_pass3.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilterWithVersion(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
+    }
+
+    @Test
+    void testMilestoningWithFilterDupsMaxVersioningDigestBasedWithStagingFilters() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
+        DerivedDataset stagingTable = TestUtils.getDerivedStagingTableWithFilterWithVersion();
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
+
+        // Create staging table
+        DatasetDefinition stagingTableForDB = TestUtils.getStagingTableWithFilterWithVersionForDB();
+        createStagingTable(stagingTableForDB);
+
+        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+            .digestField(digestName)
+            .transactionMilestoning(BatchIdAndDateTime.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .dateTimeInName(batchTimeInName)
+                .dateTimeOutName(batchTimeOutName)
+                .build())
+            .versioningStrategy(MaxVersionStrategy.builder()
+                .versioningField(versionName)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
+                .performStageVersioning(true)
+                .build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        // ------------ Perform Pass1 ------------------------
+        String dataPass1 = basePathForInput + "with_staging_filter/with_max_versioning/digest_based/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_staging_filter/with_max_versioning/digest_based/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilterWithVersion(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
+        // 3. Assert that the staging table is NOT truncated
+        List<Map<String, Object>> stagingTableList = postgresSink.executeQuery("select * from \"TEST\".\"staging\"");
+        Assertions.assertEquals(stagingTableList.size(), 6);
+
+        // ------------ Perform Pass2 ------------------------
+        // 0. Create new filter
+        datasets = Datasets.of(mainTable, TestUtils.getStagingTableWithFilterWithVersionSecondPass());
+        String dataPass2 = basePathForInput + "with_staging_filter/with_max_versioning/digest_based/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "with_staging_filter/with_max_versioning/digest_based/expected_pass2.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilterWithVersion(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(9, 0, 1, 2, 0);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
+
+        // ------------ Perform Pass3 empty batch (No Impact) -------------------------
+        String dataPass3 = "data/empty_file.csv";
+        String expectedDataPass3 = basePathForExpected + "with_staging_filter/with_max_versioning/digest_based/expected_pass3.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilterWithVersion(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
+    }
 
     @Test
     void testMilestoningWithFilterStagingTableWithMaxVersioningGreaterThanWithDedupWithUpperCase() throws Exception

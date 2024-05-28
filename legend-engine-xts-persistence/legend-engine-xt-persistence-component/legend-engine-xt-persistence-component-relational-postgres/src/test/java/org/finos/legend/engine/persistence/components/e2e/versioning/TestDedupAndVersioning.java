@@ -817,4 +817,14 @@ public class TestDedupAndVersioning extends BaseTest
                 " FROM '/" + path + "' CSV";
         postgresSink.executeStatement(loadSql);
     }
+
+    public static void loadDataIntoStagingTableWithVersionAndBatch(String path) throws Exception
+    {
+        postgresTestContainer.copyFileToContainer(path, path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+                "COPY \"TEST\".\"staging\"" +
+                "(id, name, version, income ,expiry_date, digest, batch) " +
+                " FROM '/" + path + "' CSV";
+                postgresSink.executeStatement(loadSql);
+    }
 }
