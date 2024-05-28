@@ -553,7 +553,7 @@ class UnitemporalDeltaTest extends BaseTest
 //        Assertions.assertEquals(Optional.of(3), result.batchId());
 //        Assertions.assertEquals("2000-01-01 00:00:00.000000", result.ingestionTimestampUTC());
 //    }
-//
+
 //    @Test
 //    void testMilestoningWithFilterDupsMaxVersionGreaterThanWithStagingFilters() throws Exception
 //    {
@@ -617,7 +617,7 @@ class UnitemporalDeltaTest extends BaseTest
 //        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
 //        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
 //    }
-//
+
 //    @Test
 //    void testMilestoningWithFailOnDupsMaxVersionGreaterThanEqualToWithStagingFilters() throws Exception
 //    {
@@ -696,7 +696,7 @@ class UnitemporalDeltaTest extends BaseTest
 //            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
 //        }
 //    }
-//
+
 //    @Test
 //    void testMilestoningWithFilterStagingTableWithMaxVersioningGreaterThan() throws Exception
 //    {
@@ -759,7 +759,7 @@ class UnitemporalDeltaTest extends BaseTest
 //        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
 //        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
 //    }
-//
+
 //    @Test
 //    void testMilestoningWithFilterDupsMaxVersioningDigestBasedWithStagingFilters() throws Exception
 //    {
@@ -824,64 +824,64 @@ class UnitemporalDeltaTest extends BaseTest
 //        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01, " order by \"batch_id_in\", \"id\"");
 //    }
 
-//    @Test
-//    void testMilestoningWithFilterStagingTableWithMaxVersioningGreaterThanWithDedupWithUpperCase() throws Exception
-//    {
-//        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
-//        DerivedDataset stagingTable = TestUtils.getDerivedStagingTableWithFilterWithVersion();
-//
-//        String[] schema = new String[]{idName.toUpperCase(), nameName.toUpperCase(), incomeName.toUpperCase(), startTimeName.toUpperCase(), expiryDateName.toUpperCase(), digestName.toUpperCase(), versionName.toUpperCase(), batchIdInName.toUpperCase(), batchIdOutName.toUpperCase(), batchTimeInName.toUpperCase(), batchTimeOutName.toUpperCase()};
-//
-//        // Create staging table
-//        postgresSink.executeStatement("CREATE TABLE IF NOT EXISTS \"TEST\".\"STAGING\"(\"ID\" INTEGER NOT NULL,\"NAME\" VARCHAR(64) NOT NULL,\"INCOME\" BIGINT,\"START_TIME\" TIMESTAMP NOT NULL,\"EXPIRY_DATE\" DATE,\"DIGEST\" VARCHAR,\"VERSION\" INT,\"BATCH\" INT,PRIMARY KEY (\"ID\", \"START_TIME\", \"VERSION\", \"BATCH\"))");
-//
-//        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
-//            .digestField(digestName)
-//            .transactionMilestoning(BatchIdAndDateTime.builder()
-//                .batchIdInName(batchIdInName)
-//                .batchIdOutName(batchIdOutName)
-//                .dateTimeInName(batchTimeInName)
-//                .dateTimeOutName(batchTimeOutName)
-//                .build())
-//            .versioningStrategy(MaxVersionStrategy.builder()
-//                .versioningField(versionName)
-//                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
-//                .performStageVersioning(true)
-//                .build())
-//            .build();
-//
-//        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
-//        Datasets datasets = Datasets.of(mainTable, stagingTable);
-//
-//        // ------------ Perform Pass1 ------------------------
-//        String dataPass1 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than/with_dedup/staging_data_pass1.csv";
-//        String expectedDataPass1 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/with_dedup/expected_pass1.csv";
-//        // 1. Load staging table
-//        loadStagingDataWithFilterWithVersionInUpperCase(dataPass1);
-//        // 2. Execute plans and verify results
-//        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
-//        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01, " order by \"BATCH_ID_IN\", \"ID\"");
-//
-//        // ------------ Perform Pass2 ------------------------
-//        // 0. Create new filter
-//        datasets = Datasets.of(mainTable, TestUtils.getStagingTableWithFilterWithVersionSecondPass());
-//        String dataPass2 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than/with_dedup/staging_data_pass2.csv";
-//        String expectedDataPass2 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/with_dedup/expected_pass2.csv";
-//        // 1. Load staging table
-//        loadStagingDataWithFilterWithVersionInUpperCase(dataPass2);
-//        // 2. Execute plans and verify results
-//        expectedStats = createExpectedStatsMap(9, 0, 1, 1, 0);
-//        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01, " order by \"BATCH_ID_IN\", \"ID\"");
-//
-//        // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-//        String dataPass3 = "data/empty_file.csv";
-//        String expectedDataPass3 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/with_dedup/expected_pass3.csv";
-//        // 1. Load staging table
-//        loadStagingDataWithFilterWithVersionInUpperCase(dataPass3);
-//        // 2. Execute plans and verify results
-//        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
-//        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01, " order by \"BATCH_ID_IN\", \"ID\"");
-//    }
+    @Test
+    void testMilestoningWithFilterStagingTableWithMaxVersioningGreaterThanWithDedupWithUpperCase() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
+        DerivedDataset stagingTable = TestUtils.getDerivedStagingTableWithFilterWithVersion();
+
+        String[] schema = new String[]{idName.toUpperCase(), nameName.toUpperCase(), incomeName.toUpperCase(), startTimeName.toUpperCase(), expiryDateName.toUpperCase(), digestName.toUpperCase(), versionName.toUpperCase(), batchIdInName.toUpperCase(), batchIdOutName.toUpperCase(), batchTimeInName.toUpperCase(), batchTimeOutName.toUpperCase()};
+
+        // Create staging table
+        postgresSink.executeStatement("CREATE TABLE IF NOT EXISTS \"TEST\".\"STAGING\"(\"ID\" INTEGER NOT NULL,\"NAME\" VARCHAR(64) NOT NULL,\"INCOME\" BIGINT,\"START_TIME\" TIMESTAMP NOT NULL,\"EXPIRY_DATE\" DATE,\"DIGEST\" VARCHAR,\"VERSION\" INT,\"BATCH\" INT,PRIMARY KEY (\"ID\", \"START_TIME\", \"VERSION\", \"BATCH\"))");
+
+        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+            .digestField(digestName)
+            .transactionMilestoning(BatchIdAndDateTime.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .dateTimeInName(batchTimeInName)
+                .dateTimeOutName(batchTimeOutName)
+                .build())
+            .versioningStrategy(MaxVersionStrategy.builder()
+                .versioningField(versionName)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
+                .performStageVersioning(true)
+                .build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        // ------------ Perform Pass1 ------------------------
+        String dataPass1 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than/with_dedup/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/with_dedup/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilterWithVersionInUpperCase(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01, " order by \"BATCH_ID_IN\", \"ID\"");
+
+        // ------------ Perform Pass2 ------------------------
+        // 0. Create new filter
+        datasets = Datasets.of(mainTable, TestUtils.getStagingTableWithFilterWithVersionSecondPass());
+        String dataPass2 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than/with_dedup/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/with_dedup/expected_pass2.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilterWithVersionInUpperCase(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(9, 0, 1, 1, 0);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01, " order by \"BATCH_ID_IN\", \"ID\"");
+
+        // ------------ Perform Pass3 empty batch (No Impact) -------------------------
+        String dataPass3 = "data/empty_file.csv";
+        String expectedDataPass3 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/with_dedup/expected_pass3.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilterWithVersionInUpperCase(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01, " order by \"BATCH_ID_IN\", \"ID\"");
+    }
 
     @Test
     void testMilestoningWithMaxVersioningGreaterThanWithDedupWithFilteredDatasetWithUpperCase() throws Exception

@@ -54,13 +54,7 @@ class UnitemporalDeltaDbAndSchemaMissingTest extends BaseTest
     void testMilestoningDbAndSchemaBothPresent() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getUnitemporalMainTable();
-//        mainTable = mainTable.withDatabase(testDatabaseName)
-//            .withGroup(testSchemaName);
-
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
-//        stagingTable.withDatabase(testDatabaseName)
-//            .withGroup(testSchemaName);
-
         testMilestoning(mainTable, stagingTable);
     }
 
