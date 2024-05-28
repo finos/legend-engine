@@ -337,6 +337,15 @@ public class TestUtils
             .addFields(digest)
             .build();
 
+    public static SchemaDefinition getDedupAndVersioningSchemaWithoutVersion =
+        SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(income)
+            .addFields(expiryDate)
+            .addFields(digest)
+            .build();
+
     public static SchemaDefinition getDedupAndVersioningSchemaWithVersionAndBatch =
         SchemaDefinition.builder()
             .addFields(id)
