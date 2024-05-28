@@ -125,7 +125,12 @@ function meta::external::function::activator::snowflakeApp::tests::simpleRelatio
     ->from(simpleRelationalMapping, testRuntimeWithTimeZone(dbInc))
 }
 
-function <<access.private>> meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifactForFunction(function: PackageableFunction<Any>[1], expected: String[1]): Boolean[1]
+function meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifactForFunction(function: PackageableFunction<Any>[1], expected: String[1]): Boolean[1]
+{
+  meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifactForFunction($function, $expected, []);
+}
+
+function meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifactForFunction(function: PackageableFunction<Any>[1], expected: String[1], extensions::meta::pure::extension::Extension[*]): Boolean[1]
 {
   let app =  ^SnowflakeApp
    (
@@ -136,6 +141,6 @@ function <<access.private>> meta::external::function::activator::snowflakeApp::t
       function = $function
    );
 
-  let generatedQuery = $app->generateArtifact();  
+  let generatedQuery = if($extensions->isNotEmpty(),| $app->generateArtifact($extensions),|$app->generateArtifact());  
   assertEquals($expected, $generatedQuery);
 }
