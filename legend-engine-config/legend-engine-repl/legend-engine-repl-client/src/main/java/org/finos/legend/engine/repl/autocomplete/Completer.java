@@ -158,7 +158,7 @@ public class Completer
             if (currentExpression == topExpression)
             {
                 // The top function name is being written, propose candidates
-                return new CompletionResult(getFunctionCandidates(leftCompiledVS, pureModel, null).select(c -> c.startsWith(currentlyTypeFunctionName)).collect(c -> new CompletionItem(c, c)));
+                return new CompletionResult(getFunctionCandidates(leftCompiledVS, pureModel, null).select(c -> c.startsWith(currentlyTypeFunctionName)).collect(c -> new CompletionItem(c, c + "(")));
             }
             else if (handler != null)
             {
