@@ -77,6 +77,21 @@ public abstract class RelationalSink implements Sink
         return capabilities;
     }
 
+    public boolean supportsNontemporalSnapshot()
+    {
+        return true;
+    }
+
+    public boolean supportsNontemporalDelta()
+    {
+        return true;
+    }
+
+    public boolean supportsBitemporalDelta()
+    {
+        return true;
+    }
+
     @Override
     public boolean supportsImplicitMapping(DataType source, DataType target)
     {

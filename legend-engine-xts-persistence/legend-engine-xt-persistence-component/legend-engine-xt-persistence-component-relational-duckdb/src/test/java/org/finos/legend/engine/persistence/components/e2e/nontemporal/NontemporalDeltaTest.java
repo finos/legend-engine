@@ -40,6 +40,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Numeric
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -66,6 +67,7 @@ import static org.finos.legend.engine.persistence.components.e2e.TestUtils.start
 import static org.finos.legend.engine.persistence.components.e2e.TestUtils.testSchemaName;
 import static org.finos.legend.engine.persistence.components.e2e.TestUtils.versionName;
 
+@Disabled
 class NontemporalDeltaTest extends BaseTest
 {
     private final String basePath = "src/test/resources/data/incremental-delta-milestoning/";

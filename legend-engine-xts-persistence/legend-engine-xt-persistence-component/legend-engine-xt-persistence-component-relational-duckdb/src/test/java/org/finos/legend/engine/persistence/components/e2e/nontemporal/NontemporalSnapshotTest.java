@@ -28,6 +28,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FilteredDataset;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -47,6 +48,7 @@ import static org.finos.legend.engine.persistence.components.e2e.TestUtils.start
 import static org.finos.legend.engine.persistence.components.e2e.TestUtils.testSchemaName;
 import static org.finos.legend.engine.persistence.components.e2e.TestUtils.versionName;
 
+@Disabled
 class NontemporalSnapshotTest extends BaseTest
 {
     private final String basePath = "src/test/resources/data/snapshot-milestoning/";
@@ -63,31 +65,6 @@ class NontemporalSnapshotTest extends BaseTest
     8. With Auditing, No Version, Fail on Duplicates
      */
 
-    @Test
-    void test() throws Exception
-    {
-        DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
-        createStagingTable(stagingTable);
-
-        duckDBSink.executeStatement("CREATE TABLE IF NOT EXISTS \"TEST\".\"main\"(\"id\" INTEGER NOT NULL,\"name\" VARCHAR(64) NOT NULL,\"income\" BIGINT,\"start_time\" TIMESTAMP NOT NULL,\"expiry_date\" DATE,\"digest\" VARCHAR,\"batch_id\" INTEGER,PRIMARY KEY (\"id\", \"start_time\"))");
-        duckDBSink.executeStatement("CREATE TABLE IF NOT EXISTS batch_metadata(\"table_name\" VARCHAR(255),\"batch_start_ts_utc\" TIMESTAMP,\"batch_end_ts_utc\" TIMESTAMP,\"batch_status\" VARCHAR(32),\"table_batch_id\" INTEGER,\"batch_source_info\" JSON,\"additional_metadata\" JSON)");
-
-        String dataPass1 = basePath + "input/vanilla_case/data_pass1.csv";
-        loadBasicStagingData(dataPass1);
-
-        duckDBSink.executeStatement("DELETE FROM \"TEST\".\"main\" as main");
-        duckDBSink.executeStatement("INSERT INTO \"TEST\".\"main\" (\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"digest\", \"batch_id\") (SELECT staging.\"id\" as \"id\",staging.\"name\" as \"name\",staging.\"income\" as \"income\",staging.\"start_time\" as \"start_time\",staging.\"expiry_date\" as \"expiry_date\",staging.\"digest\" as \"digest\",1 FROM \"TEST\".\"staging\" as staging)");
-        duckDBSink.executeStatement("INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\") (SELECT 'main',1,'2024-05-24 06:08:29.590999','2024-05-24 06:08:29.599921','DONE')\n");
-        List<Map<String, Object>> result = duckDBSink.executeQuery("SELECT * FROM \"TEST\".\"main\"");
-
-        String dataPass2 = basePath + "input/vanilla_case/data_pass2.csv";
-        loadBasicStagingData(dataPass2);
-
-        duckDBSink.executeStatement("DELETE FROM \"TEST\".\"main\" as main");
-        duckDBSink.executeStatement("INSERT INTO \"TEST\".\"main\" (\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"digest\", \"batch_id\") (SELECT staging.\"id\" as \"id\",staging.\"name\" as \"name\",staging.\"income\" as \"income\",staging.\"start_time\" as \"start_time\",staging.\"expiry_date\" as \"expiry_date\",staging.\"digest\" as \"digest\",2 FROM \"TEST\".\"staging\" as staging)");
-        result = duckDBSink.executeQuery("SELECT * FROM \"TEST\".\"main\"");
-        System.out.println("I'm here");
-    }
     /*
     Scenario: Test Nontemporal Snapshot with no auditing
      */

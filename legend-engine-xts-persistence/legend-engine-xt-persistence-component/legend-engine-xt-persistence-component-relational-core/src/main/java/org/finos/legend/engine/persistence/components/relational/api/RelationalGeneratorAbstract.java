@@ -20,7 +20,11 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
+import org.finos.legend.engine.persistence.components.ingestmode.BitemporalDelta;
+import org.finos.legend.engine.persistence.components.ingestmode.BitemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
+import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelta;
+import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
@@ -225,6 +229,8 @@ public abstract class RelationalGeneratorAbstract
 
     GeneratorResult generateOperations(Datasets datasets, Resources resources, Planner planner, IngestMode ingestMode)
     {
+        validateSupportableInSink(ingestMode);
+
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
 
         // pre-run statistics
@@ -359,5 +365,25 @@ public abstract class RelationalGeneratorAbstract
             .putAllPreIngestStatisticsSqlPlan(preIngestStatisticsSqlPlan)
             .putAllPostIngestStatisticsSqlPlan(postIngestStatisticsSqlPlan)
             .build();
+    }
+
+    private void validateSupportableInSink(IngestMode ingestMode)
+    {
+        if (ingestMode instanceof BitemporalSnapshot)
+        {
+            throw new UnsupportedOperationException("Bitemporal Snapshot is not supported");
+        }
+        if (ingestMode instanceof BitemporalDelta && !relationalSink().supportsBitemporalDelta())
+        {
+            throw new UnsupportedOperationException("Bitemporal Delta is not supported for chosen database");
+        }
+        if (ingestMode instanceof NontemporalSnapshot && !relationalSink().supportsNontemporalSnapshot())
+        {
+            throw new UnsupportedOperationException("Nontemporal Snapshot is not supported for chosen database");
+        }
+        if (ingestMode instanceof NontemporalDelta && !relationalSink().supportsNontemporalDelta())
+        {
+            throw new UnsupportedOperationException("Nontemporal Delta is not supported for chosen database");
+        }
     }
 }

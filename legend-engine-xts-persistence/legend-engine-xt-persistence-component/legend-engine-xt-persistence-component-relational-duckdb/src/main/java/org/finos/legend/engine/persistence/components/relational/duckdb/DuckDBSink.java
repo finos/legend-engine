@@ -133,6 +133,24 @@ public class DuckDBSink extends AnsiSqlSink
     }
 
     @Override
+    public boolean supportsNontemporalSnapshot()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean supportsNontemporalDelta()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean supportsBitemporalDelta()
+    {
+        return false;
+    }
+
+    @Override
     public Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor(RelationalConnection relationalConnection)
     {
         if (relationalConnection instanceof JdbcConnection)
