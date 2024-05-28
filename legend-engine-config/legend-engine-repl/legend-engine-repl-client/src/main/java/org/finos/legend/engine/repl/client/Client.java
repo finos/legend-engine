@@ -51,7 +51,6 @@ public class Client
     private ModelState state;
     private final PlanExecutor planExecutor;
 
-
     public static void main(String[] args) throws Exception
     {
         new Client(Lists.mutable.empty(), Lists.mutable.empty(), PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build()).loop();
@@ -234,5 +233,10 @@ public class Client
     public MutableList<CompleterExtension> getCompleterExtensions()
     {
         return this.completerExtensions;
+    }
+
+    public Execute getExecuteCommand()
+    {
+        return (Execute) this.commands.detect(c -> c instanceof Execute);
     }
 }

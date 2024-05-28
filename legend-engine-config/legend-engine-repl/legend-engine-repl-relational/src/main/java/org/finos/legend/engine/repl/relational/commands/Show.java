@@ -15,10 +15,11 @@
 package org.finos.legend.engine.repl.relational.commands;
 
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
-import org.finos.legend.engine.repl.core.commands.Execute;
 import org.finos.legend.engine.repl.relational.httpServer.ReplGridServer;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
@@ -56,24 +57,28 @@ public class Show implements Command
     {
         if (line.startsWith("show"))
         {
-            PureModelContextData currentPMCD = ((Execute) this.client.commands.getLast()).getCurrentPMCD();
-            if (currentPMCD == null)
+            PureModelContextData lastPMCD = this.client.getExecuteCommand().getLastPMCD();
+            Result lastResult = this.client.getExecuteCommand().getLastExecutionResult();
+            if (lastPMCD == null)
             {
-                this.client.getTerminal().writer().println("Unable to show REPL grid, no query has been executed");
+                this.client.getTerminal().writer().println("Can't show result grid. No query has been executed. Try to run a query in REPL...");
+            }
+            else if (!(lastResult instanceof RelationalResult))
+            {
+                this.client.getTerminal().writer().println("Can't show result grid. Last execution result type is not supported.");
             }
             else
             {
                 try
                 {
-                    this.replGridServer.updateGridState(currentPMCD);
-                   if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
-                   {
-                       Desktop.getDesktop().browse(URI.create(replGridServer.getGridUrl()));
-                   }
-                   else
-                   {
-                       this.client.getTerminal().writer().println(replGridServer.getGridUrl());
-                   }
+                    if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
+                    {
+                        Desktop.getDesktop().browse(URI.create(replGridServer.getGridUrl()));
+                    }
+                    else
+                    {
+                        this.client.getTerminal().writer().println(replGridServer.getGridUrl());
+                    }
                 }
                 catch (Exception e)
                 {

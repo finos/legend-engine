@@ -44,6 +44,8 @@ import org.jline.utils.AttributedStyle;
 
 import java.util.HashMap;
 
+import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_SIGNATURE;
+
 public class Execute implements Command
 {
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -51,7 +53,8 @@ public class Execute implements Command
 
     private final PlanExecutor planExecutor;
 
-    private PureModelContextData currentPMCD;
+    private PureModelContextData lastPMCD;
+    private Result lastExecutionResult;
 
     public Execute(Client client, PlanExecutor planExecutor)
     {
@@ -59,9 +62,14 @@ public class Execute implements Command
         this.planExecutor = planExecutor;
     }
 
-    public PureModelContextData getCurrentPMCD()
+    public PureModelContextData getLastPMCD()
     {
-        return currentPMCD;
+        return lastPMCD;
+    }
+
+    public Result getLastExecutionResult()
+    {
+        return lastExecutionResult;
     }
 
     @Override
@@ -115,10 +123,9 @@ public class Execute implements Command
     public String execute(String txt)
     {
         String code = "###Pure\n" +
-                "function a::b::c::d():Any[*]\n{\n" + txt + ";\n}";
+                "function " + REPL_RUN_FUNCTION_SIGNATURE + "\n{\n" + txt + ";\n}";
 
         PureModelContextData d = this.client.getModelState().parseWithTransient(code);
-        this.currentPMCD = d;
 
         if (this.client.isDebug())
         {
@@ -151,6 +158,12 @@ public class Execute implements Command
         // Execute
         Identity identity = Helpers.resolveIdentityFromLocalSubject(this.client);
         Result res = this.planExecutor.execute((SingleExecutionPlan) PlanExecutor.readExecutionPlan(planStr), new HashMap<>(), identity.getName(), identity, null);
+
+        // Handle result and PMCD caching
+        this.lastPMCD = d;
+        this.lastExecutionResult = res;
+
+        // Show result
         if (res instanceof ConstantResult)
         {
             return ((ConstantResult) res).getValue().toString();

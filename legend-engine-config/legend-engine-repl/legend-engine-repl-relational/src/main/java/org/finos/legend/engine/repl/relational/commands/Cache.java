@@ -54,6 +54,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.HashMap;
 
+import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_SIGNATURE;
 import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
 
 public class Cache implements Command
@@ -96,7 +97,7 @@ public class Cache implements Command
             DatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(this.client.getModelState().parse(), connectionPath);
 
             String code = "###Pure\n" +
-                    "function a::b::c::d():Any[*]\n{\n" + expression + ";\n}";
+                    "function " + REPL_RUN_FUNCTION_SIGNATURE + "\n{\n" + expression + ";\n}";
             PureModelContextData parsed = this.client.getModelState().parseWithTransient(code);
             PureModel pureModel = this.client.getLegendInterface().compile(parsed);
             RichIterable<? extends Root_meta_pure_extension_Extension> extensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));

@@ -32,6 +32,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_QUALIFIED_PATH;
+import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_SIGNATURE;
+
 public class TestGridServer
 {
     private String pmcd = "###Relational\n" +
@@ -45,7 +48,7 @@ public class TestGridServer
             ")\n" +
             "\n" +
             "###Pure\n" +
-            "function a::b::c::d(): Any[*]\n" +
+            "function " + REPL_RUN_FUNCTION_SIGNATURE + "\n" +
             "{\n" +
             "   #>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->from(^meta::pure::mapping::Mapping(), test::test)\n" +
             "}\n" +
@@ -123,7 +126,7 @@ public class TestGridServer
     {
         try
         {
-            Function originalFunction = (Function) pureModelContextData.getElements().stream().filter(e -> e.getPath().equals("a::b::c::d__Any_MANY_")).collect(Collectors.toList()).get(0);
+            Function originalFunction = (Function) pureModelContextData.getElements().stream().filter(e -> e.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)).collect(Collectors.toList()).get(0);
             ValueSpecification originalFunctionBody = originalFunction.body.get(0);
             AppliedFunction currentFunction = (AppliedFunction) PureGrammarParser.newInstance().parseValueSpecification(function, null, 0, 0, true);
             List<ValueSpecification> newBody = Lists.mutable.of(currentFunction);
