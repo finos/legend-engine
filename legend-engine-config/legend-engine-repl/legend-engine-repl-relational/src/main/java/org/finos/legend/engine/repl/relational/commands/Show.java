@@ -15,11 +15,10 @@
 package org.finos.legend.engine.repl.relational.commands;
 
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.core.commands.Execute;
-import org.finos.legend.engine.repl.relational.httpServer.ReplGridServer;
+import org.finos.legend.engine.repl.relational.server.REPLServer;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
@@ -27,16 +26,18 @@ import org.jline.reader.ParsedLine;
 import java.awt.*;
 import java.net.URI;
 
+import static org.jline.jansi.Ansi.ansi;
+
 public class Show implements Command
 {
     private final Client client;
 
-    public ReplGridServer replGridServer;
+    public REPLServer REPLServer;
 
-    public Show(Client client, ReplGridServer replGridServer)
+    public Show(Client client, REPLServer REPLServer)
     {
         this.client = client;
-        this.replGridServer = replGridServer;
+        this.REPLServer = REPLServer;
     }
 
     @Override
@@ -48,7 +49,7 @@ public class Show implements Command
     @Override
     public String description()
     {
-        return "show the result for the last executed query in GUI mode";
+        return "show the result for the last executed query in GUI mode (DataCube)";
     }
 
     @Override
@@ -56,28 +57,28 @@ public class Show implements Command
     {
         if (line.startsWith("show"))
         {
-            PureModelContextData currentPMCD = ((Execute) this.client.commands.getLast()).getCurrentPMCD();
-            if (currentPMCD == null)
+            Execute.ExecuteResult lastExecuteResult = this.client.getExecuteCommand().getLastExecuteResult();
+            if (lastExecuteResult == null)
             {
-                this.client.getTerminal().writer().println("Unable to show REPL grid, no query has been executed");
+                this.client.getTerminal().writer().println("Can't show result grid in DataCube. Try to run a query in REPL first...");
             }
             else
             {
+                this.REPLServer.setExecuteResult(lastExecuteResult);
                 try
                 {
-                    this.replGridServer.updateGridState(currentPMCD);
-                   if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
-                   {
-                       Desktop.getDesktop().browse(URI.create(replGridServer.getGridUrl()));
-                   }
-                   else
-                   {
-                       this.client.getTerminal().writer().println(replGridServer.getGridUrl());
-                   }
+                    if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
+                    {
+                        Desktop.getDesktop().browse(URI.create(REPLServer.getUrl()));
+                    }
+                    else
+                    {
+                        this.client.getTerminal().writer().println(REPLServer.getUrl());
+                    }
                 }
                 catch (Exception e)
                 {
-                    this.client.getTerminal().writer().println(e.getMessage());
+                    this.client.getTerminal().writer().println(ansi().fgRed().a(e.getMessage()).reset());
                 }
             }
             return true;

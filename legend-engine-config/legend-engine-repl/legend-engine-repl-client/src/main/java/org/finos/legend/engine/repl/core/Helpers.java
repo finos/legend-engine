@@ -20,6 +20,9 @@ import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 
 public class Helpers
 {
+    public static final String REPL_RUN_FUNCTION_QUALIFIED_PATH = "repl::__internal__::run__Any_MANY_";
+    public static final String REPL_RUN_FUNCTION_SIGNATURE = "repl::__internal__::run():Any[*]";
+
     public static Identity resolveIdentityFromLocalSubject(Client client)
     {
         try

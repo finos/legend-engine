@@ -51,7 +51,6 @@ public class Client
     private ModelState state;
     private final PlanExecutor planExecutor;
 
-
     public static void main(String[] args) throws Exception
     {
         new Client(Lists.mutable.empty(), Lists.mutable.empty(), PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build()).loop();
@@ -62,16 +61,12 @@ public class Client
     public Client(MutableList<ReplExtension> replExtensions, MutableList<CompleterExtension> completerExtensions, PlanExecutor planExecutor) throws Exception
     {
         this.replExtensions = replExtensions;
-
         this.completerExtensions = completerExtensions;
-
         this.planExecutor = planExecutor;
-
         this.state = new ModelState(this.legendInterface, this.replExtensions);
+        this.terminal = TerminalBuilder.terminal();
 
         replExtensions.forEach(e -> e.initialize(this));
-
-        this.terminal = TerminalBuilder.terminal();
 
         this.terminal.writer().println(ansi().fgBrightBlack().a("Welcome to the Legend REPL! Press 'Enter' or type 'help' to see the list of available commands.").reset());
         this.terminal.writer().println("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
@@ -161,7 +156,7 @@ public class Client
             }
             catch (Exception e)
             {
-                this.terminal.writer().println(e.getMessage());
+                this.terminal.writer().println(ansi().fgRed().a(e.getMessage()).reset());
                 if (this.debug)
                 {
                     e.printStackTrace();
@@ -234,5 +229,10 @@ public class Client
     public MutableList<CompleterExtension> getCompleterExtensions()
     {
         return this.completerExtensions;
+    }
+
+    public Execute getExecuteCommand()
+    {
+        return (Execute) this.commands.detect(c -> c instanceof Execute);
     }
 }
