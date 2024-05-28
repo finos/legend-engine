@@ -428,7 +428,7 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
 
 function meta::relational::functions::sqlQueryToString::processTableAlias(tableAlias:TableAlias[1], dbConfig : DbConfig[1], config:Config[1]):String[1]
 {
-  let doubleQuote = if($config.useQuotesForTableAliasColumn == false, |'', |'"');
+  let doubleQuote = if($config.useQuotesForTableAliasColumn == false || $tableAlias.name->contains('|'), |'', |'"');
   if(!$config.generateJoin->isEmpty() && $config.generateJoin->toOne(),|if ($config.generateJoinTarget == $tableAlias,
                                                                             |'{target}.',
                                                                             |let schema = $tableAlias.relationalElement->match([t:Table[1]|$t.schema.name, v:View[1]|$v.schema.name]);
@@ -469,7 +469,10 @@ function meta::relational::functions::sqlQueryToString::processUpsertSQLQuery(u:
 
 function meta::relational::functions::sqlQueryToString::processColumnName(name:String[1], dbConfig:DbConfig[1]):String[1]
 {
-   $dbConfig.identifierProcessor($dbConfig.columnNameToIdentifier($name));
+   // NOTE: pivot columns can contain characters like | so we need to include it here, but generally, we should make sure if the column name
+   // contains invalid characters, it should be quoted
+   let doubleQuote = if($name->contains('|'), |'"', |'');
+   $doubleQuote+$dbConfig.identifierProcessor($dbConfig.columnNameToIdentifier($name))+$doubleQuote;
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::processLiteral(literal:Literal[1], dbConfig : DbConfig[1]) : String[1]
