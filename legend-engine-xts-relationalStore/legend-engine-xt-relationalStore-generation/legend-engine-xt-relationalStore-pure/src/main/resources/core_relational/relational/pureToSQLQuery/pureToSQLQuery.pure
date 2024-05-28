@@ -1331,6 +1331,8 @@ function meta::relational::functions::pureToSqlQuery::processColumnsInRelational
                                      ,
                   l:Literal[1]| let select = $srcOperation.select;
                                 ^$srcOperation(select = $state.inFilter->if(|^$select(filteringOperation = $l),|^$select(columns = $l)));,
+                  ll:LiteralList[1]| let select = $srcOperation.select;
+                                ^$srcOperation(select = $state.inFilter->if(|^$select(filteringOperation = $ll),|^$select(columns = $ll)));,
                   r:RelationalOperationElementWithJoin[1]| // join chain with 0 or more elements, and then ending in a column.
                               let col = $r->extractElement();
                               let currentData = $srcOperation.select.data->toOne();
