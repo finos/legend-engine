@@ -219,7 +219,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
   processLimit($s, $dbConfig, $format, $extensions, processTakeDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_, processSliceOrDropForDuckDB_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
 }
 
-
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processPivotForDuckDB(s:SelectSQLQuery[1], p:Pivot[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]
 {
   $format.separator + 'pivot ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions) +

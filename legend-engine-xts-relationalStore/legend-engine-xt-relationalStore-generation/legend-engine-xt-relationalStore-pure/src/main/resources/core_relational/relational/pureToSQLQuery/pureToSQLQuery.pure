@@ -4659,7 +4659,7 @@ function meta::relational::functions::pureToSqlQuery::processPivot(expression:Fu
   let aggColumns= $aggVS->map(a|let aggFn = $a.reduce->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->evaluateAndDeactivate();
                                 let params = if($a.map->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->instanceOf(FunctionExpression) || $a.map->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->instanceOf(InstanceValue),
                                                 |let inScopeVarsWithPlaceholdersState = $a.map->cast(@FunctionDefinition<Any>)->addPlaceHoldersForLambdaOpenVariables($vars, $state);
-                                                processTdsLambda($a.map->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->evaluateAndDeactivate(), $select.columns->cast(@Alias), false, $vars, $inScopeVarsWithPlaceholdersState, $currentPropertyMapping, $context);,
+                                                processTdsLambda($a.map->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->evaluateAndDeactivate(), $select.columns->cast(@Alias), false, $vars, $inScopeVarsWithPlaceholdersState, $currentPropertyMapping, $select.paths, $context);,
                                                 |[]
                                             );
                                 ^Alias(name='"'+$a.name+'"', relationalElement=$aggFn->processAggFn($params)->at(0));
