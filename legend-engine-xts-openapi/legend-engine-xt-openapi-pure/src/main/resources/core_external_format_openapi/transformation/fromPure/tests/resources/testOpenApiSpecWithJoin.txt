@@ -98,6 +98,9 @@
       "TDSColumn": {
         "type": "object",
         "properties": {
+          "enumMapping": {
+            "$ref": "#/components/schemas/EnumerationMapping"
+          },
           "offset": {
             "type": "integer"
           },

@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-xt-relationalStore-spanner</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.44.4-SNAPSHOT</version>
+        <version>4.46.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -47,7 +47,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-shared-core</artifactId>
+            <artifactId>legend-engine-identity-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -89,6 +89,10 @@
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-core</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-identity-gcp</artifactId>
         </dependency>
         <!-- Test -->
     </dependencies>

@@ -238,7 +238,9 @@ function meta::protocols::pure::v1_33_0::extension::getRelationalExtension():met
             tds:meta::pure::executionPlan::TDSResultType[1]|^meta::protocols::pure::v1_33_0::metamodel::executionPlan::TDSResultType
                                                             (
                                                                _type='tds',
-                                                               tdsColumns=$tds.tdsColumns->map(c|^meta::protocols::pure::v1_33_0::metamodel::invocation::execution::execute::TDSColumn
+                                                               tdsColumns=$tds.tdsColumns->map(c|
+                                                                                                 let enumMappingTransformed = if($c.enumMapping->isEmpty(), | [], | meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformEnumMapping($c.enumMapping->toOne()));
+                                                                                                 ^meta::protocols::pure::v1_33_0::metamodel::invocation::execution::execute::TDSColumn
                                                                                                  (
                                                                                                     name = $c.name,
                                                                                                     doc = $c.documentation,
@@ -250,7 +252,7 @@ function meta::protocols::pure::v1_33_0::extension::getRelationalExtension():met
                                                                                                           d:meta::relational::metamodel::datatype::DataType[1]|$d->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::store::relational::alloyTypeToString()
                                                                                                        ]
                                                                                                     )
-                                                                                                 )
+                                                                                                 );
                                                                                            )
                                                             ),
          rel:meta::pure::executionPlan::RelationResultType[1]|^meta::protocols::pure::v1_33_0::metamodel::executionPlan::RelationResultType

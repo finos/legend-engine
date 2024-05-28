@@ -36,12 +36,12 @@ function meta::protocols::pure::vX_X_X::extension::store::service::getServiceSto
           [
              serviceStoreConnection:ServiceStoreConnection[1] | $serviceStoreConnection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::service::transformServiceStoreConnection($extensions)
           ]},
-      transfers_executionPlan_transformNode = {mapping:Mapping[1], extensions:meta::pure::extension::Extension[*] |
+      transfers_executionPlan_transformNode = {extensions:meta::pure::extension::Extension[*] |
           [
              ser:meta::external::store::service::executionPlan::nodes::RestServiceExecutionNode[1]|
                 ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::RestServiceExecutionNode(
                    _type                    = 'restService',
-                   resultType               = $ser.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                   resultType               = $ser.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($extensions),
                    url                      = $ser.url,
                    method                   = $ser.method,
                    mimeType                 = $ser.mimeType,
@@ -62,13 +62,13 @@ function meta::protocols::pure::vX_X_X::extension::store::service::getServiceSto
              spr:meta::external::store::service::executionPlan::nodes::ServiceParametersResolutionExecutionNode[1]|
                 ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::ServiceParametersResolutionExecutionNode(
                    _type                      = 'serviceParametersResolution',
-                   resultType                 = $spr.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                   resultType                 = $spr.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($extensions),
                    requestParametersBuildInfo = $spr.requestParametersBuildInfo->map(p | $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformServiceRequestParametersBuildInfo($extensions))
                 ),
              limit:meta::external::store::service::executionPlan::nodes::LimitExecutionNode[1]|
                 ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::LimitExecutionNode(
                    _type='limit',
-                   resultType=$limit.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                   resultType=$limit.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($extensions),
                    limit = $limit.limit
                 )
           ]},

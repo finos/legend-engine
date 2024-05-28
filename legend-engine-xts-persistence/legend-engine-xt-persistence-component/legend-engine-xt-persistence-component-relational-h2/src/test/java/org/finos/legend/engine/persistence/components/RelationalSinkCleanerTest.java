@@ -113,7 +113,7 @@ public class RelationalSinkCleanerTest extends BaseTest
         h2Sink.executeStatement("CREATE TABLE TEST." + lockTable + " (ID INT PRIMARY KEY, NAME VARCHAR(255), BIRTH DATETIME)");
     }
 
-    private void createBatchMetadataTableWithData(String metaTableName, String mainTableName)
+    public static void createBatchMetadataTableWithData(String metaTableName, String mainTableName)
     {
         String createMetaTable = "CREATE TABLE IF NOT EXISTS " + metaTableName +
                 " (`table_name` VARCHAR(255)," +

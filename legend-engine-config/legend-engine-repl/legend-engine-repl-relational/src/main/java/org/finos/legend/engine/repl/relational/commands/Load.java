@@ -71,11 +71,12 @@ public class Load implements Command
 
             try (Connection connection = ConnectionHelper.getConnection(databaseConnection, client.getPlanExecutor()))
             {
-                String tableName = "test" + getTables(connection).size() + 1;
+                String tableName = "test" + (getTables(connection).size() + 1);
 
                 try (Statement statement = connection.createStatement())
                 {
                     statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().load(tableName, tokens[1]));
+                    this.client.getTerminal().writer().println("Loaded into table: '" + tableName + "'");
                 }
             }
 

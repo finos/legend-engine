@@ -35,6 +35,7 @@ import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredent
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -57,7 +58,7 @@ public class TestSnowflakeWithKeyPairFlow
         Vault.INSTANCE.registerImplementation(inMemoryVault);
     }
 
-    @Ignore
+    @Test
     public void testFlow() throws Exception
     {
         String privateKeyFromFile = PK;

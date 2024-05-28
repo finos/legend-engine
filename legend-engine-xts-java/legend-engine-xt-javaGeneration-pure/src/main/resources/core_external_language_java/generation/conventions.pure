@@ -99,6 +99,11 @@ function meta::external::language::java::transform::usesLibrary(conventions: Con
    $conventions.libraries->exists(l | $l.name == $name);
 }
 
+function meta::external::language::java::transform::isProvidedClass(conventions: Conventions[1], c: meta::external::language::java::metamodel::Class[1]): Boolean[1]
+{
+  $c->in($conventions.providedTypes->values());
+}
+
 function meta::external::language::java::transform::fieldName(conventions: Conventions[1], property: AbstractProperty<Any>[1]): String[1]
 {
    $conventions->identifier($conventions.fieldNameStrategy->eval($property.name->toOne()));

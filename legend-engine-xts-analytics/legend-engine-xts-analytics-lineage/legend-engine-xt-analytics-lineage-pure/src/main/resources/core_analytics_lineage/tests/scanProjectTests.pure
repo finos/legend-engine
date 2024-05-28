@@ -28,6 +28,17 @@ function <<access.private>> meta::pure::lineage::scanProject::test::executeWithP
                                 ]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 }
 
+function <<access.private>> meta::pure::lineage::scanProject::test::executeWithGroupBy():Any[1]
+{
+   execute(|Trade.all()->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)],
+               [
+                  agg(x | $x.quantity, y | $y->sum()),
+                  agg(x | $x.id, y | $y->count())
+               ],
+               ['tradeDate', 'quantity', 'count']
+               ), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+}
+
 function <<access.private>> meta::pure::lineage::scanProject::test::executeWithProjectUsingCol():Any[1]
 {
    execute(|Firm.all()->project([
@@ -93,4 +104,11 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProject::t
    let x = meta::pure::lineage::scanProject::test::executeWithProjectUsingCol2__Any_1_->scanExecutes();
    let p = $x.funcEntryPoint->toOne()->evaluateAndDeactivate()->meta::pure::lineage::scanProject::scanProject();
    assertEquals(['a', 'b', 'c'], $p.columns.first);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProject::test::testFindGroupBy():Boolean[1]
+{
+   let x = meta::pure::lineage::scanProject::test::executeWithGroupBy__Any_1_->scanExecutes();
+   let p = $x.funcEntryPoint->toOne()->evaluateAndDeactivate()->meta::pure::lineage::scanProject::scanProject();
+   assertEquals(['tradeDate', 'quantity', 'count'], $p.columns.first);
 }

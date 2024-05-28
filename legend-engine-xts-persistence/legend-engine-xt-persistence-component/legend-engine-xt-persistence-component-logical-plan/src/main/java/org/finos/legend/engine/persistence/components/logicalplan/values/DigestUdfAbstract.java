@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.logicalplan.values;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,7 @@ public interface DigestUdfAbstract extends Value
 
     List<Value> values();
 
-    List<DataType> fieldTypes();
+    List<FieldType> fieldTypes();
 
     Map<DataType, String> typeConversionUdfNames();
 }

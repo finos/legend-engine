@@ -208,6 +208,19 @@ function <<access.public>> meta::protocols::pure::vX_X_X::transformation::fromPu
                ]);
 }
 
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::xStore::transformXStorePropertyMapping(pm:PropertyMapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::mapping::xStore::XStorePropertyMapping[1]
+{
+  $pm->match([p:meta::pure::mapping::xStore::XStorePropertyMapping[1]|
+      ^meta::protocols::pure::vX_X_X::metamodel::mapping::xStore::XStorePropertyMapping
+       (
+          _type = 'xStorePropertyMapping',
+          property = ^meta::protocols::pure::vX_X_X::metamodel::domain::PropertyPtr(class=$pm.property->genericType().typeArguments->filter(l| $l->isNotEmpty())->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
+          source = $p.sourceSetImplementationId,
+          target = $p.targetSetImplementationId,
+          crossExpression = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($p.crossExpression, $extensions)
+       )
+   ]);  
+}
 
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::xStore::transformXStorePropertyMapping(pm:PropertyMapping[1], mapping : Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::mapping::xStore::XStorePropertyMapping[1]
 {

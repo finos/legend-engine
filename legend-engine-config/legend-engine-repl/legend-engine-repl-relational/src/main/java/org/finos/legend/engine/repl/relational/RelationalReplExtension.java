@@ -22,6 +22,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.result.Relationa
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.core.ReplExtension;
+import org.finos.legend.engine.repl.relational.commands.Cache;
 import org.finos.legend.engine.repl.relational.commands.DB;
 import org.finos.legend.engine.repl.relational.commands.Load;
 import org.finos.legend.engine.repl.relational.local.LocalConnectionManagement;
@@ -81,7 +82,7 @@ public class RelationalReplExtension implements ReplExtension
         }
         catch (Exception e)
         {
-            this.client.getTerminal().writer().println(e.getMessage());
+           throw new RuntimeException(e);
         }
     }
 
@@ -96,6 +97,7 @@ public class RelationalReplExtension implements ReplExtension
     {
         MutableList<Command> extraCommands = Lists.mutable.with(new DB(this.client, this), new Load(this.client, this));
         extraCommands.add(new Show(this.client, this.replGridServer));
+        extraCommands.add(new Cache(this.client, this.client.getPlanExecutor()));
         return extraCommands;
     }
 

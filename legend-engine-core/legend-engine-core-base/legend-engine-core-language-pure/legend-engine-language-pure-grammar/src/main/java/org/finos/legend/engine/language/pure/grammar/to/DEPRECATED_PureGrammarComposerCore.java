@@ -111,6 +111,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderFunctionTestSuites;
+import static org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer.printColSpecArray;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabSize;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
@@ -718,10 +719,10 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                 return "#>{" + Lists.mutable.withAll(((RelationStoreAccessor) iv.value).path).makeString(".") + "}#";
             case "colSpec":
                 ColSpec col = (ColSpec) iv.value;
-                return "~" + printColSpec(col);
+                return "~" + HelperValueSpecificationGrammarComposer.printColSpec(col, this);
             case "colSpecArray":
                 ColSpecArray colArray = (ColSpecArray) iv.value;
-                return "~[" + LazyIterate.collect(colArray.colSpecs, this::printColSpec).makeString(", ") + "]";
+                return printColSpecArray(colArray, this);
             case "keyExpression":
                 KeyExpression keyExpression = (KeyExpression) iv.value;
                 return PureGrammarParserUtility.removeQuotes(keyExpression.key.accept(this)) + "=" + keyExpression.expression.accept(this);
@@ -749,11 +750,6 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                 }
                 throw new RuntimeException("/* Unsupported instance value " + iv.type + " */");
         }
-    }
-
-    private String printColSpec(ColSpec col)
-    {
-        return (col.name.contains(" ") ? "'" + col.name + "'" : col.name) + (col.type != null ? ":" + col.type : "") + (col.function1 != null ? ":" + col.function1.accept(this) : "") + (col.function2 != null ? ":" + col.function2.accept(this) : "");
     }
 
     @Override

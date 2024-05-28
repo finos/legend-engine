@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>legend-engine</artifactId>
+        <groupId>org.finos.legend.engine</groupId>
+        <version>4.46.2-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <name>Legend Engine - XTS - Identity</name>
+    <modules>
+        <module>legend-engine-xt-identity-oauth</module>
+        <module>legend-engine-xt-identity-middletier</module>
+        <module>legend-engine-xt-identity-apiToken</module>
+        <module>legend-engine-xt-identity-gcp</module>
+        <module>legend-engine-xt-identity-kerberos</module>
+        <module>legend-engine-xt-identity-pac4j</module>
+        <module>legend-engine-xt-identity-plainTextUserPassword</module>
+        <module>legend-engine-xt-identity-privateKey</module>
+    </modules>
+
+    <artifactId>legend-engine-xts-identity</artifactId>
+    <packaging>pom</packaging>
+
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+    </properties>
+
+</project>
