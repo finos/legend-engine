@@ -22,13 +22,10 @@ import org.finos.legend.engine.plan.execution.stores.relational.result.Relationa
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.core.ReplExtension;
-import org.finos.legend.engine.repl.relational.commands.Cache;
-import org.finos.legend.engine.repl.relational.commands.DB;
-import org.finos.legend.engine.repl.relational.commands.Load;
+import org.finos.legend.engine.repl.relational.commands.*;
 import org.finos.legend.engine.repl.relational.local.LocalConnectionManagement;
 import org.finos.legend.engine.repl.relational.local.LocalConnectionType;
 
-import org.finos.legend.engine.repl.relational.commands.Show;
 import org.finos.legend.engine.repl.relational.httpServer.ReplGridServer;
 
 import java.awt.*;
@@ -95,10 +92,13 @@ public class RelationalReplExtension implements ReplExtension
     @Override
     public MutableList<Command> getExtraCommands()
     {
-        MutableList<Command> extraCommands = Lists.mutable.with(new DB(this.client, this), new Load(this.client, this));
-        extraCommands.add(new Show(this.client, this.replGridServer));
-        extraCommands.add(new Cache(this.client, this.client.getPlanExecutor()));
-        return extraCommands;
+        return Lists.mutable.with(
+                new DB(this.client, this),
+                new Load(this.client, this),
+                new Drop(this.client),
+                new Show(this.client, this.replGridServer),
+                new Cache(this.client, this.client.getPlanExecutor())
+        );
     }
 
     @Override
