@@ -132,7 +132,7 @@ public class PostgresSink extends AnsiSqlSink
             LOGICAL_PLAN_VISITOR_BY_CLASS,
             (executor, sink, dataset) -> sink.doesTableExist(dataset),
             (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new PostgresDataTypeMapping()),
-            (executor, sink, dataset) -> sink.constructDatasetFromDatabase(dataset, new PostgresJdbcPropertiesToLogicalDataTypeMapping(), false));
+            (executor, sink, dataset) -> sink.constructDatasetFromDatabase(dataset, new PostgresJdbcPropertiesToLogicalDataTypeMapping(), false, true));
     }
 
     @Override

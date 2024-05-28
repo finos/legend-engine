@@ -36,7 +36,7 @@ public interface RelationalExecutionHelper
 
     void validateDatasetSchema(Dataset dataset, TypeMapping datatypeMapping);
 
-    Dataset constructDatasetFromDatabase(Dataset dataset, TypeMapping mapping, boolean escape);
+    Dataset constructDatasetFromDatabase(Dataset dataset, TypeMapping mapping, boolean escape, boolean constructIndex);
 
     void executeStatement(String sql);
 

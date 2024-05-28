@@ -129,7 +129,7 @@ public abstract class RelationalIngestorAbstract
     @Default
     public boolean enableSchemaEvolutionForMetadataDatasets()
     {
-        return true;
+        return false; // TODO: change back to true after data type mappings are done
     }
 
     @Default

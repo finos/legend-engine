@@ -72,7 +72,6 @@ class NontemporalDeltaTest extends BaseTest
 {
     private final String basePath = "src/test/resources/data/incremental-delta-milestoning/";
 
-
     /*
     Scenarios:
     1. Auditing is not enabled

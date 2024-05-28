@@ -356,6 +356,18 @@ public class BaseTest
         return result;
     }
 
+    protected void truncateStagingData()
+    {
+        String truncateSql = "TRUNCATE TABLE \"TEST\".\"staging\";";
+        duckDBSink.executeStatement(truncateSql);
+    }
+
+    protected void truncateStagingDataInUpperCase()
+    {
+        String truncateSql = "TRUNCATE TABLE \"TEST\".\"STAGING\";";
+        duckDBSink.executeStatement(truncateSql);
+    }
+
     protected void loadBasicStagingData(String path)
     {
         validateFileExists(path);
@@ -366,13 +378,13 @@ public class BaseTest
         duckDBSink.executeStatement(loadSql);
     }
 
-    protected void loadBasicStagingDataInUpperCase(String path) throws Exception
+    protected void loadBasicStagingDataInUpperCase(String path)
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"STAGING\";" +
-                "INSERT INTO \"TEST\".\"STAGING\"(ID, NAME, INCOME, START_TIME ,EXPIRY_DATE, DIGEST) " +
-                "SELECT CONVERT( \"ID\",INT ), \"NAME\", CONVERT( \"INCOME\", BIGINT), CONVERT( \"START_TIME\", DATETIME), CONVERT( \"EXPIRY_DATE\", DATE), DIGEST" +
-                " FROM CSVREAD( '" + path + "', 'ID, NAME, INCOME, START_TIME, EXPIRY_DATE, DIGEST', NULL )";
+            "COPY \"TEST\".\"STAGING\"" +
+            "(\"ID\", \"NAME\", \"INCOME\", \"START_TIME\", \"EXPIRY_DATE\", \"DIGEST\")" +
+            " FROM '" + path + "' CSV";
         duckDBSink.executeStatement(loadSql);
     }
 
@@ -416,13 +428,13 @@ public class BaseTest
         duckDBSink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataForWithPartition(String path) throws Exception
+    protected void loadStagingDataForWithPartition(String path)
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(date, entity, price, volume, digest) " +
-            "SELECT CONVERT( \"date\",DATE ), \"entity\", CONVERT( \"price\", DECIMAL(20,2)), CONVERT( \"volume\", BIGINT), \"digest\"" +
-            " FROM CSVREAD( '" + path + "', 'date, entity, price, volume, digest', NULL )";
+            "COPY \"TEST\".\"staging\"" +
+            "(\"date\", \"entity\", \"price\", \"volume\", \"digest\")" +
+            " FROM '" + path + "' CSV";
         duckDBSink.executeStatement(loadSql);
     }
 
@@ -436,23 +448,23 @@ public class BaseTest
         duckDBSink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataForWithPartitionWithVersion(String path) throws Exception
+    protected void loadStagingDataForWithPartitionWithVersion(String path)
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(date, entity, price, volume, digest, version) " +
-            "SELECT CONVERT( \"date\",DATE ), \"entity\", CONVERT( \"price\", DECIMAL(20,2)), CONVERT( \"volume\", BIGINT), \"digest\", CONVERT( \"version\",INT)" +
-            " FROM CSVREAD( '" + path + "', 'date, entity, price, volume, digest, version', NULL )";
+            "COPY \"TEST\".\"staging\"" +
+            "(\"date\", \"entity\", \"price\", \"volume\", \"digest\", \"version\")" +
+            " FROM '" + path + "' CSV";
         duckDBSink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataForWithPartitionWithVersionInUpperCase(String path) throws Exception
+    protected void loadStagingDataForWithPartitionWithVersionInUpperCase(String path)
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"STAGING\";" +
-            "INSERT INTO \"TEST\".\"STAGING\"(DATE, ENTITY, PRICE, VOLUME, DIGEST, VERSION) " +
-            "SELECT CONVERT( \"DATE\",DATE ), \"ENTITY\", CONVERT( \"PRICE\", DECIMAL(20,2)), CONVERT( \"VOLUME\", BIGINT), \"DIGEST\", CONVERT( \"VERSION\",INT)" +
-            " FROM CSVREAD( '" + path + "', 'DATE, ENTITY, PRICE, VOLUME, DIGEST, VERSION', NULL )";
+            "COPY \"TEST\".\"STAGING\"" +
+            "(\"DATE\", \"ENTITY\", \"PRICE\", \"VOLUME\", \"DIGEST\", \"VERSION\")" +
+            " FROM '" + path + "' CSV";
         duckDBSink.executeStatement(loadSql);
     }
 
