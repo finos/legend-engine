@@ -24,12 +24,12 @@ import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 
-import java.awt.Desktop;
+import java.awt.*;
 import java.net.URI;
 
 public class Show implements Command
 {
-    private Client client;
+    private final Client client;
 
     public ReplGridServer replGridServer;
 
@@ -46,6 +46,12 @@ public class Show implements Command
     }
 
     @Override
+    public String description()
+    {
+        return "show the result for the last executed query in GUI mode";
+    }
+
+    @Override
     public boolean process(String line)
     {
         if (line.startsWith("show"))
@@ -53,7 +59,7 @@ public class Show implements Command
             PureModelContextData currentPMCD = ((Execute) this.client.commands.getLast()).getCurrentPMCD();
             if (currentPMCD == null)
             {
-                this.client.getTerminal().writer().println("Unable to show repl grid, no query has been executed");
+                this.client.getTerminal().writer().println("Unable to show REPL grid, no query has been executed");
             }
             else
             {

@@ -21,6 +21,9 @@ import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 
+import java.util.Collections;
+import java.util.Comparator;
+
 public class Help implements Command
 {
     private final MutableList<Command> commands;
@@ -39,11 +42,22 @@ public class Help implements Command
     }
 
     @Override
+    public String description()
+    {
+        return "show available commands and their usage";
+    }
+
+    @Override
     public boolean process(String cmd) throws Exception
     {
         if (cmd.isEmpty() || cmd.equals("help"))
         {
-            this.client.getTerminal().writer().println(this.commands.collect(c -> "   " + c.documentation()).makeString("\n"));
+            int maxDocLength = this.commands.maxBy(c -> c.documentation().length()).documentation().length();
+            this.client.getTerminal().writer().println(this.commands
+                    .sortThis(Comparator.comparing(Command::documentation))
+                    // pad right to align the command description
+                    .collect(c -> "  " + c.documentation() + String.join("", Collections.nCopies(maxDocLength - c.documentation().length() + 2, " ")) + c.description())
+                    .makeString("\n"));
             return true;
         }
         return false;

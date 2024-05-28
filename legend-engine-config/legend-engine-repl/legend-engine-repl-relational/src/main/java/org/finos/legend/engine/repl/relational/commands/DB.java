@@ -51,6 +51,12 @@ public class DB implements Command
     }
 
     @Override
+    public String description()
+    {
+        return "show schema summary of the database";
+    }
+
+    @Override
     public boolean process(String line) throws Exception
     {
         if (line.startsWith("db"))

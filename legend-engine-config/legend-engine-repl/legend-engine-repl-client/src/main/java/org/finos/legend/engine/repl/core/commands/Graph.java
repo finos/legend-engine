@@ -49,6 +49,12 @@ public class Graph implements Command
     }
 
     @Override
+    public String description()
+    {
+        return "show graph element definition in Pure";
+    }
+
+    @Override
     public boolean process(String line) throws Exception
     {
         if (line.startsWith("graph"))

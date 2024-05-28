@@ -73,7 +73,7 @@ public class Client
 
         this.terminal = TerminalBuilder.terminal();
 
-        this.terminal.writer().println(ansi().fgBrightBlack().a("Welcome to the Legend REPL! Enter 'help' to see the list of available commands.").reset());
+        this.terminal.writer().println(ansi().fgBrightBlack().a("Welcome to the Legend REPL! Press 'Enter' or type 'help' to see the list of available commands.").reset());
         this.terminal.writer().println("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
 
         this.commands = replExtensions

@@ -74,6 +74,12 @@ public class Cache implements Command
     }
 
     @Override
+    public String description()
+    {
+        return "cache the result of the last executed query into a table";
+    }
+
+    @Override
     public boolean process(String line) throws Exception
     {
         if (line.startsWith("cache"))

@@ -53,7 +53,13 @@ public class Load implements Command
     @Override
     public String documentation()
     {
-        return "load <path> <connection> [<table name>]";
+        return "load <path> <connection> (<table name>)";
+    }
+
+    @Override
+    public String description()
+    {
+        return "load CSV file into table";
     }
 
     @Override
