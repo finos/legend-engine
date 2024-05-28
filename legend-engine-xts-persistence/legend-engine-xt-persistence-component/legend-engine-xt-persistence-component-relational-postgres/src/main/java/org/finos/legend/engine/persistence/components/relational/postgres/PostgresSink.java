@@ -30,11 +30,7 @@ import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnec
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.postgres.sql.PostgresDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.postgres.sql.PostgresJdbcPropertiesToLogicalDataTypeMapping;
-import org.finos.legend.engine.persistence.components.relational.postgres.sql.visitor.FieldVisitor;
-import org.finos.legend.engine.persistence.components.relational.postgres.sql.visitor.ParseJsonFunctionVisitor;
-import org.finos.legend.engine.persistence.components.relational.postgres.sql.visitor.SQLMergeVisitor;
-import org.finos.legend.engine.persistence.components.relational.postgres.sql.visitor.SQLUpdateVisitor;
-import org.finos.legend.engine.persistence.components.relational.postgres.sql.visitor.SchemaDefinitionVisitor;
+import org.finos.legend.engine.persistence.components.relational.postgres.sql.visitor.*;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;

@@ -477,7 +477,7 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
             "(SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata " +
             "WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')," +
             "'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'DONE'," +
-            String.format("TO_JSON('%s'::text))", stagingFilters);
+            String.format("TO_JSON('%s'::json))", stagingFilters);
     }
 
     protected String getExpectedMetadataTableIngestQueryWithStagingFiltersAndAdditionalMetadata(String stagingFilters)
@@ -487,7 +487,7 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
             "(SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata " +
             "WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')," +
             "'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'DONE'," +
-            String.format("TO_JSON('%s'::text),", stagingFilters) +
-            "TO_JSON('{\"watermark\":\"my_watermark_value\"}'::text))";
+            String.format("TO_JSON('%s'::json),", stagingFilters) +
+            "TO_JSON('{\"watermark\":\"my_watermark_value\"}'::json))";
     }
 }

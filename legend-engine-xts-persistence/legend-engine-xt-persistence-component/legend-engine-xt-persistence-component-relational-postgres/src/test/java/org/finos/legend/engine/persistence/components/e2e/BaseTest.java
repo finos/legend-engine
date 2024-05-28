@@ -449,6 +449,16 @@ public class BaseTest
         postgresSink.executeStatement(loadSql);
     }
 
+    protected void loadStagingDataWithFilterWithVersionInUpperCase(String path)
+    {
+        postgresTestContainer.copyFileToContainer(path, path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"STAGING\";" +
+                "COPY \"TEST\".\"STAGING\"" +
+                "(\"ID\", \"NAME\", \"INCOME\", \"START_TIME\", \"EXPIRY_DATE\", \"DIGEST\", \"VERSION\", \"BATCH\")" +
+                " FROM '/" + path + "' CSV";
+        postgresSink.executeStatement(loadSql);
+    }
+
     protected void loadStagingDataWithDeleteInd(String path)
     {
         postgresTestContainer.copyFileToContainer(path, path);

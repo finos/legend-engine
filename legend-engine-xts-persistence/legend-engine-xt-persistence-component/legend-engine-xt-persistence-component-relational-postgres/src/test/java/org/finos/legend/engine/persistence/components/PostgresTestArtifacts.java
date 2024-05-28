@@ -94,7 +94,7 @@ public class PostgresTestArtifacts
     public static String expectedBaseTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
             "\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"biz_date\" DATE," +
             "\"batch_id\" INTEGER," +
             "PRIMARY KEY (\"id\", \"name\"))";
@@ -102,14 +102,14 @@ public class PostgresTestArtifacts
     public static String expectedBaseStagingTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging\"(" +
             "\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"biz_date\" DATE," +
             "PRIMARY KEY (\"id\", \"name\"))";
 
     public static String expectedBaseTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"" +
             "(\"ID\" INTEGER NOT NULL," +
             "\"NAME\" VARCHAR NOT NULL," +
-            "\"AMOUNT\" DOUBLE," +
+            "\"AMOUNT\" DOUBLE PRECISION," +
             "\"BIZ_DATE\" DATE," +
             "\"BATCH_ID\" INTEGER," +
             "PRIMARY KEY (\"ID\", \"NAME\"))";
@@ -223,9 +223,9 @@ public class PostgresTestArtifacts
     public static String expectedBaseTableWithAuditPkCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
             "\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"biz_date\" DATE," +
-            "\"batch_update_time\" DATETIME NOT NULL," +
+            "\"batch_update_time\" TIMESTAMP NOT NULL," +
             "\"batch_id\" INTEGER," +
             "PRIMARY KEY (\"id\", \"name\", \"batch_update_time\"))";
 
@@ -246,7 +246,7 @@ public class PostgresTestArtifacts
     public static String expectedBaseTempStagingTableWithVersionAndCount = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging_temp_staging_lp_yosulf\"" +
             "(\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"biz_date\" DATE," +
             "\"digest\" VARCHAR," +
             "\"version\" INTEGER," +
@@ -271,7 +271,7 @@ public class PostgresTestArtifacts
     public static String expectedBaseTempStagingTablePlusDigestWithVersionUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"STAGING_TEMP_STAGING_LP_YOSULF\"" +
             "(\"ID\" INTEGER NOT NULL," +
             "\"NAME\" VARCHAR NOT NULL," +
-            "\"AMOUNT\" DOUBLE," +
+            "\"AMOUNT\" DOUBLE PRECISION," +
             "\"BIZ_DATE\" DATE," +
             "\"DIGEST\" VARCHAR," +
             "\"VERSION\" INTEGER)";
@@ -279,7 +279,7 @@ public class PostgresTestArtifacts
     public static String expectedBaseTempStagingTablePlusDigestWithDataSplit = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging_temp_staging_lp_yosulf\"(" +
             "\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"biz_date\" DATE," +
             "\"digest\" VARCHAR," +
             "\"data_split\" INTEGER NOT NULL)";
@@ -296,7 +296,7 @@ public class PostgresTestArtifacts
     public static String expectedBaseTempStagingTablePlusDigestWithDataSplitAndCount = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging_temp_staging_lp_yosulf\"" +
             "(\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"biz_date\" DATE," +
             "\"digest\" VARCHAR," +
             "\"data_split\" BIGINT NOT NULL," +
@@ -306,7 +306,7 @@ public class PostgresTestArtifacts
     public static String expectedBitemporalMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
             "(\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"digest\" VARCHAR," +
             "\"batch_id_in\" INTEGER NOT NULL," +
             "\"batch_id_out\" INTEGER," +
@@ -317,7 +317,7 @@ public class PostgresTestArtifacts
     public static String expectedBitemporalStagingTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging\"" +
             "(\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"validity_from_reference\" DATETIME NOT NULL," +
             "\"validity_through_reference\" DATETIME," +
             "\"digest\" VARCHAR," +
@@ -326,7 +326,7 @@ public class PostgresTestArtifacts
     public static String expectedBitemporalMainTableWithVersionWithBatchIdDatetimeCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
             "(\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"digest\" VARCHAR," +
             "\"version\" INTEGER," +
             "\"batch_id_in\" INTEGER NOT NULL," +
@@ -340,7 +340,7 @@ public class PostgresTestArtifacts
     public static String expectedBitemporalMainTableWithVersionBatchDateTimeCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
             "(\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"digest\" VARCHAR," +
             "\"version\" INTEGER," +
             "\"batch_time_in\" DATETIME NOT NULL," +
@@ -352,7 +352,7 @@ public class PostgresTestArtifacts
     public static String expectedBitemporalFromOnlyMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
             "(\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"digest\" VARCHAR," +
             "\"batch_id_in\" INTEGER NOT NULL," +
             "\"batch_id_out\" INTEGER," +
@@ -363,7 +363,7 @@ public class PostgresTestArtifacts
     public static String expectedBitemporalFromOnlyMainTableWithVersionCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
         "(\"id\" INTEGER NOT NULL," +
         "\"name\" VARCHAR NOT NULL," +
-        "\"amount\" DOUBLE," +
+        "\"amount\" DOUBLE PRECISION," +
         "\"digest\" VARCHAR," +
         "\"version\" INTEGER," +
         "\"batch_id_in\" INTEGER NOT NULL," +
@@ -375,7 +375,7 @@ public class PostgresTestArtifacts
     public static String expectedBitemporalFromOnlyStagingTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging\"" +
             "(\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"validity_from_reference\" DATETIME NOT NULL," +
             "\"digest\" VARCHAR," +
             "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\"))";
@@ -383,7 +383,7 @@ public class PostgresTestArtifacts
     public static String expectedBitemporalFromOnlyMainTableBatchIdAndTimeBasedCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
             "(\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"digest\" VARCHAR," +
             "\"batch_id_in\" INTEGER NOT NULL," +
             "\"batch_id_out\" INTEGER," +
@@ -396,7 +396,7 @@ public class PostgresTestArtifacts
     public static String expectedBitemporalFromOnlyMainTableDateTimeBasedCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
             "\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"digest\" VARCHAR," +
             "\"batch_time_in\" DATETIME NOT NULL," +
             "\"batch_time_out\" DATETIME," +
@@ -407,7 +407,7 @@ public class PostgresTestArtifacts
     public static String expectedBitemporalMainTableCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"" +
             "(\"ID\" INTEGER NOT NULL," +
             "\"NAME\" VARCHAR NOT NULL," +
-            "\"AMOUNT\" DOUBLE," +
+            "\"AMOUNT\" DOUBLE PRECISION," +
             "\"DIGEST\" VARCHAR," +
             "\"BATCH_ID_IN\" INTEGER NOT NULL," +
             "\"BATCH_ID_OUT\" INTEGER," +
@@ -418,7 +418,7 @@ public class PostgresTestArtifacts
     public static String expectedBitemporalFromOnlyTempTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"temp\"" +
             "(\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"digest\" VARCHAR," +
             "\"batch_id_in\" INTEGER NOT NULL," +
             "\"batch_id_out\" INTEGER," +
@@ -429,7 +429,7 @@ public class PostgresTestArtifacts
     public static String expectedBitemporalFromOnlyTempTableWithVersionCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"temp\"" +
         "(\"id\" INTEGER NOT NULL," +
         "\"name\" VARCHAR NOT NULL," +
-        "\"amount\" DOUBLE," +
+        "\"amount\" DOUBLE PRECISION," +
         "\"digest\" VARCHAR," +
         "\"version\" INTEGER," +
         "\"batch_id_in\" INTEGER NOT NULL," +
@@ -441,7 +441,7 @@ public class PostgresTestArtifacts
     public static String expectedBitemporalFromOnlyTempTableBatchIdAndTimeBasedCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"temp\"(" +
             "\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"digest\" VARCHAR," +
             "\"batch_id_in\" INTEGER NOT NULL," +
             "\"batch_id_out\" INTEGER," +
@@ -454,7 +454,7 @@ public class PostgresTestArtifacts
     public static String expectedBitemporalFromOnlyTempTableDateTimeBasedCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"temp\"(" +
             "\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"digest\" VARCHAR," +
             "\"batch_time_in\" DATETIME NOT NULL," +
             "\"batch_time_out\" DATETIME," +
@@ -465,7 +465,7 @@ public class PostgresTestArtifacts
     public static String expectedBitemporalFromOnlyStageWithoutDuplicatesTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"stagingWithoutDuplicates\"" +
             "(\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"validity_from_reference\" DATETIME NOT NULL," +
             "\"digest\" VARCHAR," +
             "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\"))";
@@ -473,7 +473,7 @@ public class PostgresTestArtifacts
     public static String expectedBitemporalFromOnlyTempTableWithDeleteIndicatorCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"tempWithDeleteIndicator\"" +
             "(\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"digest\" VARCHAR," +
             "\"batch_id_in\" INTEGER NOT NULL," +
             "\"batch_id_out\" INTEGER," +
@@ -485,7 +485,7 @@ public class PostgresTestArtifacts
     public static String expectedBitemporalFromOnlyStageWithVersionWithDataSplitWithoutDuplicatesTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"stagingWithoutDuplicates\"" +
             "(\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"validity_from_reference\" DATETIME NOT NULL," +
             "\"digest\" VARCHAR," +
             "\"version\" INTEGER," +
@@ -495,7 +495,7 @@ public class PostgresTestArtifacts
     public static String expectedBitemporalFromOnlyStageWithDeleteIndicatorWithoutDuplicatesTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"stagingWithoutDuplicates\"" +
             "(\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
+            "\"amount\" DOUBLE PRECISION," +
             "\"validity_from_reference\" DATETIME NOT NULL," +
             "\"digest\" VARCHAR," +
             "\"delete_indicator\" VARCHAR," +
@@ -529,7 +529,7 @@ public class PostgresTestArtifacts
         "(\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"additional_metadata\")" +
         " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata " +
         "WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'DONE'," +
-        "TO_JSON('{\"watermark\":\"my_watermark_value\"}'::text))";
+        "TO_JSON('{\"watermark\":\"my_watermark_value\"}'::json))";
 
     public static String expectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase = "INSERT INTO BATCH_METADATA " +
         "(\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\", \"ADDITIONAL_METADATA\")" +
@@ -541,7 +541,7 @@ public class PostgresTestArtifacts
         "(\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\", \"ADDITIONAL_METADATA\")" +
         " (SELECT 'MAIN',(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA " +
         "WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'SUCCEEDED'," +
-        "TO_JSON('{\"watermark\":\"my_watermark_value\"}'::text))";
+        "TO_JSON('{\"watermark\":\"my_watermark_value\"}'::json))";
 
     public static String expectedInsertIntoBaseTempStagingWithMaxVersionAndFilterDuplicates = "INSERT INTO \"mydb\".\"staging_temp_staging_lp_yosulf\" " +
         "(\"id\", \"name\", \"amount\", \"biz_date\", \"legend_persistence_count\") " +
@@ -643,5 +643,9 @@ public class PostgresTestArtifacts
 
     public static String dataErrorsSql = "SELECT \"id\",\"name\",\"version\",COUNT(DISTINCT(\"digest\")) as \"legend_persistence_error_count\" FROM " +
             "\"mydb\".\"staging_temp_staging_lp_yosulf\" as stage GROUP BY \"id\", \"name\", \"version\" HAVING \"legend_persistence_error_count\" > 1 LIMIT 20";
+
+    public  static String cleanUpMainTableSql = "DELETE FROM \"mydb\".\"main\" as sink";
+
+    public static String cleanupMainTableSqlUpperCase = "DELETE FROM \"MYDB\".\"MAIN\" as sink";
 
 }

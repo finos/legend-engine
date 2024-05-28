@@ -659,6 +659,14 @@ public class TestUtils
             .build();
     }
 
+    public static Dataset getCsvDatasetRefWithLessColumnsThanMain(String dataPath)
+    {
+        return CsvExternalDatasetReference.builder()
+                .schema(getStagingSchemaWithLessColumnThanMain())
+                .csvDataPath(dataPath)
+                .build();
+    }
+
     public static DatasetDefinition getUnitemporalMainTable()
     {
         return DatasetDefinition.builder()
