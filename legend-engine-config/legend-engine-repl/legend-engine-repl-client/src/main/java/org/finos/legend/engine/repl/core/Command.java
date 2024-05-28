@@ -25,5 +25,10 @@ public interface Command
 
     public String documentation();
 
+    public default String description()
+    {
+        return "";
+    }
+
     public MutableList<Candidate> complete(String cmd, LineReader lineReader, ParsedLine parsedLine);
 }
