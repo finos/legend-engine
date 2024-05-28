@@ -48,6 +48,12 @@ public class DuckDBCommands extends RelationalDatabaseCommands
     }
 
     @Override
+    public String dropTable(String tableName, String location)
+    {
+        return "DROP TABLE " + tableName + ";";
+    }
+
+    @Override
     public <T> T accept(RelationalDatabaseCommandsVisitor<T> visitor)
     {
         return visitor.visit(this);
