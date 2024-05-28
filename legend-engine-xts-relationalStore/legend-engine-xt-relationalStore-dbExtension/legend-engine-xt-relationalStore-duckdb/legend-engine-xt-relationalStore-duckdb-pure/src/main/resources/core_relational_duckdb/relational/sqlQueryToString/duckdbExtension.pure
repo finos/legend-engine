@@ -49,10 +49,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
   let literalReplacementPairForString = ^LiteralReplacement(old = '\'', new = '\'\'');
 
    newMap([
-      
       pair(StrictDate,     ^LiteralProcessor(format = '%s', transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringDuckDB($dbTimeZone)})),
       pair(DateTime,       ^LiteralProcessor(format = '%s', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringDuckDB($dbTimeZone)})),
-      pair(Date,           ^LiteralProcessor(format = '%s', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringDuckDB($dbTimeZone)}))
+      pair(Date,           ^LiteralProcessor(format = '%s', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringDuckDB($dbTimeZone)})),
+      pair(Boolean,        ^LiteralProcessor(format = '%s', transform = toString_Any_1__String_1_->literalTransform()))
    ]);
 }
 
