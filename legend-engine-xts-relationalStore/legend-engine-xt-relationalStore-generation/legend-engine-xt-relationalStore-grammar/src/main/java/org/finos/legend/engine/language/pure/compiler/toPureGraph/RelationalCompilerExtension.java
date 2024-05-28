@@ -204,7 +204,8 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = HelperRelationalBuilder.getDatabase(context.pureModel.buildPackageString(srcDatabase._package, srcDatabase.name), srcDatabase.sourceInformation, context);
                     // TODO checkForDuplicatesByName for filters/joins
                     database._joins(srcDatabase.joins == null ? Lists.fixedSize.empty() : ListIterate.collect(srcDatabase.joins, join -> HelperRelationalBuilder.processDatabaseJoin(join, context, database)))
-                            ._filters(srcDatabase.filters == null ? Lists.fixedSize.empty() : ListIterate.collect(srcDatabase.filters, filter -> HelperRelationalBuilder.processDatabaseFilter(filter, context, database)));
+                            ._filters(srcDatabase.filters == null ? Lists.fixedSize.empty() : ListIterate.collect(srcDatabase.filters, filter -> HelperRelationalBuilder.processDatabaseFilter(filter, context, database)))
+                            ._stereotypes(srcDatabase.stereotypes == null ? Lists.fixedSize.empty() : ListIterate.collect(srcDatabase.stereotypes, stereotypePointer -> context.resolveStereotype(stereotypePointer.profile, stereotypePointer.value, stereotypePointer.profileSourceInformation, stereotypePointer.sourceInformation)));
                 },
                 (Database srcDatabase, CompileContext context) ->
                 {

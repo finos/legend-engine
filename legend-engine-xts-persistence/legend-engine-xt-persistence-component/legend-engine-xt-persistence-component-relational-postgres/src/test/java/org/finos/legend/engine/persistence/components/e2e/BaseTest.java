@@ -399,12 +399,22 @@ public class BaseTest
         postgresSink.executeStatement(loadSql);
     }
 
-    protected void loadBasicStagingDataWithColumnsThanMain(String path)
+    protected void loadBasicStagingDataWithLessColumnsThanMain(String path)
     {
         postgresTestContainer.copyFileToContainer(path, path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
             "COPY \"TEST\".\"staging\"" +
             "(\"id\", \"name\", \"income\", \"start_time\", \"digest\")" +
+            " FROM '/" + path + "' CSV";
+        postgresSink.executeStatement(loadSql);
+    }
+
+    protected void loadBasicStagingDataWithDataSplit(String path)
+    {
+        postgresTestContainer.copyFileToContainer(path, path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "COPY \"TEST\".\"staging\"" +
+            "(\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"digest\", \"data_split\")" +
             " FROM '/" + path + "' CSV";
         postgresSink.executeStatement(loadSql);
     }
@@ -449,7 +459,27 @@ public class BaseTest
         postgresSink.executeStatement(loadSql);
     }
 
-    public static void loadStagingDataWithVersionAndBatch(String path)
+    public static void loadDedupAndVersioningStagingDataWithoutVersion(String path)
+    {
+        postgresTestContainer.copyFileToContainer(path, path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "COPY \"TEST\".\"staging\"" +
+            "(\"id\", \"name\", \"income\", \"expiry_date\", \"digest\")" +
+            " FROM '/" + path + "' CSV";
+        postgresSink.executeStatement(loadSql);
+    }
+
+    public static void loadDedupAndVersioningStagingDataWithVersion(String path)
+    {
+        postgresTestContainer.copyFileToContainer(path, path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "COPY \"TEST\".\"staging\"" +
+            "(\"id\", \"name\", \"version\", \"income\", \"expiry_date\", \"digest\")" +
+            " FROM '/" + path + "' CSV";
+        postgresSink.executeStatement(loadSql);
+    }
+
+    public static void loadDedupAndVersioningStagingDataWithVersionAndBatch(String path)
     {
         postgresTestContainer.copyFileToContainer(path, path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +

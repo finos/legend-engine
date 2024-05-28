@@ -16,6 +16,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.KerberosUtils;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
@@ -52,7 +53,7 @@ public class TestDefaultIdentityFactory
         String userName = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(emptyProfile));
         assertEquals(userName, identity.getName());
 
-        Subject subjectFromIdentity3 = identity.getSubjectFromIdentity();
+        Subject subjectFromIdentity3 = KerberosUtils.getSubjectFromIdentity(identity);
         assertEquals(ProfileManagerHelper.extractSubject(emptyProfile), subjectFromIdentity3);
         assertEquals(subjectFromIdentity3, null);
     }
@@ -69,7 +70,7 @@ public class TestDefaultIdentityFactory
         String userName = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(Lists.mutable.with(kerberosProfile)));
         assertEquals(userName, identity.getName() + "@example.com");
 
-        Subject subjectFromIdentity = identity.getSubjectFromIdentity();
+        Subject subjectFromIdentity = KerberosUtils.getSubjectFromIdentity(identity);
         assertEquals(ProfileManagerHelper.extractSubject(Lists.mutable.with(kerberosProfile)), subjectFromIdentity);
         assertEquals(subject, subjectFromIdentity);
     }
@@ -89,7 +90,7 @@ public class TestDefaultIdentityFactory
         String userName = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(profiles));
         assertEquals(userName, identity.getName() + "@example.com");
 
-        Subject subjectFromIdentity = identity.getSubjectFromIdentity();
+        Subject subjectFromIdentity = KerberosUtils.getSubjectFromIdentity(identity);
         Subject subjectFromProfiles = ProfileManagerHelper.extractSubject(profiles);
         assertEquals(subjectFromProfiles, subjectFromIdentity);
         assertEquals(subject1, subjectFromIdentity);

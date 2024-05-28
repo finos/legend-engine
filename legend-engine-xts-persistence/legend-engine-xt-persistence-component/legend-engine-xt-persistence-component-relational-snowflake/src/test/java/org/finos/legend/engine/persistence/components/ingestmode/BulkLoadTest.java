@@ -79,6 +79,12 @@ public class BulkLoadTest
             .columnNumber(5)
             .build();
 
+    private static Field col5 = Field.builder()
+        .name("col_decimal")
+        .type(FieldType.of(DataType.DECIMAL, 4,  1))
+        .columnNumber(6)
+        .build();
+
     private static Field col1NonNullable = Field.builder()
         .name("col_int")
         .type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty()))
@@ -334,7 +340,7 @@ public class BulkLoadTest
                 "(\"COL_INT\", \"COL_INTEGER\", \"DIGEST\", \"BATCH_ID\", \"APPEND_TIME\") " +
                 "FROM " +
                 "(SELECT legend_persistence_stage.$1 as \"COL_INT\",legend_persistence_stage.$2 as \"COL_INTEGER\"," +
-                "LAKEHOUSE_MD5(ARRAY_CONSTRUCT('COL_INT','COL_INTEGER'),ARRAY_CONSTRUCT(legend_persistence_stage.$1,legend_persistence_stage.$2))," +
+                "LAKEHOUSE_MD5(ARRAY_CONSTRUCT('COL_INT','COL_INTEGER'),ARRAY_CONSTRUCT(CAST(legend_persistence_stage.$1 AS INTEGER),CAST(legend_persistence_stage.$2 AS INTEGER)))," +
                 "(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
                 "FROM my_location as legend_persistence_stage) " +
                 "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') " +
@@ -511,7 +517,7 @@ public class BulkLoadTest
                 "(\"col_int\", \"col_integer\", \"digest\", \"batch_id\", \"append_time\") " +
                 "FROM " +
                 "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\"," +
-                "LAKEHOUSE_UDF(ARRAY_CONSTRUCT('col_int','col_integer'),ARRAY_CONSTRUCT(legend_persistence_stage.$1,legend_persistence_stage.$2))," +
+                "LAKEHOUSE_UDF(ARRAY_CONSTRUCT('col_int','col_integer'),ARRAY_CONSTRUCT(CAST(legend_persistence_stage.$1 AS INTEGER),CAST(legend_persistence_stage.$2 AS INTEGER)))," +
                 "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
                 "FROM my_location as legend_persistence_stage) " +
                 "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') " +
@@ -549,7 +555,7 @@ public class BulkLoadTest
                     .location("my_location")
                     .fileFormat(UserDefinedFileFormat.of("my_file_format"))
                     .addAllFilePaths(filesList).build())
-            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4, col5)).build())
             .build();
 
         Dataset mainDataset = DatasetDefinition.builder()
@@ -572,12 +578,12 @@ public class BulkLoadTest
         List<String> ingestSql = operations.ingestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
-        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_int\" INTEGER,\"col_integer\" INTEGER,\"col_bigint\" BIGINT,\"col_variant\" VARIANT,\"digest\" VARCHAR,\"batch_id\" INTEGER,\"append_time\" DATETIME)";
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_int\" INTEGER,\"col_integer\" INTEGER,\"col_bigint\" BIGINT,\"col_variant\" VARIANT,\"col_decimal\" NUMBER(4,1),\"digest\" VARCHAR,\"batch_id\" INTEGER,\"append_time\" DATETIME)";
 
         String expectedIngestSql = "COPY INTO \"my_db\".\"my_name\" " +
-            "(\"col_int\", \"col_integer\", \"col_bigint\", \"col_variant\", \"digest\", \"batch_id\", \"append_time\") FROM " +
-            "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\",legend_persistence_stage.$3 as \"col_bigint\",TO_VARIANT(PARSE_JSON(legend_persistence_stage.$4)) as \"col_variant\"," +
-            "LAKEHOUSE_UDF(ARRAY_CONSTRUCT('col_bigint','col_int','col_integer'),ARRAY_CONSTRUCT(longToString(legend_persistence_stage.$3),intToString(legend_persistence_stage.$1),intToString(legend_persistence_stage.$2)))," +
+            "(\"col_int\", \"col_integer\", \"col_bigint\", \"col_variant\", \"col_decimal\", \"digest\", \"batch_id\", \"append_time\") FROM " +
+            "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\",legend_persistence_stage.$3 as \"col_bigint\",TO_VARIANT(PARSE_JSON(legend_persistence_stage.$4)) as \"col_variant\",legend_persistence_stage.$5 as \"col_decimal\"," +
+            "LAKEHOUSE_UDF(ARRAY_CONSTRUCT('col_bigint','col_decimal','col_int','col_integer'),ARRAY_CONSTRUCT(longToString(CAST(legend_persistence_stage.$3 AS BIGINT)),CAST(legend_persistence_stage.$5 AS NUMBER(4,1)),intToString(CAST(legend_persistence_stage.$1 AS INTEGER)),intToString(CAST(legend_persistence_stage.$2 AS INTEGER))))," +
             "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
             "FROM my_location as legend_persistence_stage) " +
             "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') " +
@@ -640,7 +646,7 @@ public class BulkLoadTest
             "(\"col_int\", \"col_integer\", \"digest\", \"batch_id\", \"append_time\") " +
             "FROM " +
             "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\"," +
-            "LAKEHOUSE_UDF(ARRAY_CONSTRUCT('col_int','col_integer'),ARRAY_CONSTRUCT(legend_persistence_stage.$1,legend_persistence_stage.$2))," +
+            "LAKEHOUSE_UDF(ARRAY_CONSTRUCT('col_int','col_integer'),ARRAY_CONSTRUCT(CAST(legend_persistence_stage.$1 AS INTEGER),CAST(legend_persistence_stage.$2 AS INTEGER)))," +
             "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
             "FROM my_location as legend_persistence_stage) " +
             "PATTERN = '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)' " +
@@ -710,7 +716,7 @@ public class BulkLoadTest
             "(\"col_int\", \"col_integer\", \"digest\", \"batch_id\", \"append_time\") " +
             "FROM " +
             "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\"," +
-            "LAKEHOUSE_UDF(ARRAY_CONSTRUCT('col_integer'),ARRAY_CONSTRUCT(legend_persistence_stage.$2))," +
+            "LAKEHOUSE_UDF(ARRAY_CONSTRUCT('col_integer'),ARRAY_CONSTRUCT(CAST(legend_persistence_stage.$2 AS INTEGER)))," +
             "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
             "FROM my_location as legend_persistence_stage) " +
             "PATTERN = '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)' " +
@@ -775,7 +781,7 @@ public class BulkLoadTest
             "(\"col_int\", \"col_integer\", \"digest\", \"batch_id\", \"append_time\") " +
             "FROM " +
             "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\"," +
-            "LAKEHOUSE_UDF(ARRAY_CONSTRUCT('col_int','col_integer'),ARRAY_CONSTRUCT(legend_persistence_stage.$1,legend_persistence_stage.$2))," +
+            "LAKEHOUSE_UDF(ARRAY_CONSTRUCT('col_int','col_integer'),ARRAY_CONSTRUCT(CAST(legend_persistence_stage.$1 AS INTEGER),CAST(legend_persistence_stage.$2 AS INTEGER)))," +
             "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
             "FROM my_location as legend_persistence_stage) " +
             "PATTERN = '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)' " +

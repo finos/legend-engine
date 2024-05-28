@@ -44,7 +44,7 @@ Class meta::protocols::pure::v1_33_0::metamodel::objectReference::AlloyRelationa
    pkMap                 : Map<String, Any>[1];
 }
 
-Class meta::protocols::pure::v1_33_0::metamodel::store::relational::Database extends meta::protocols::pure::v1_33_0::metamodel::store::Store
+Class meta::protocols::pure::v1_33_0::metamodel::store::relational::Database extends meta::protocols::pure::v1_33_0::metamodel::store::Store, meta::protocols::pure::v1_33_0::metamodel::domain::AnnotatedElement
 {
    schemas : meta::protocols::pure::v1_33_0::metamodel::store::relational::Schema[*];
    joins : meta::protocols::pure::v1_33_0::metamodel::store::relational::Join[*];

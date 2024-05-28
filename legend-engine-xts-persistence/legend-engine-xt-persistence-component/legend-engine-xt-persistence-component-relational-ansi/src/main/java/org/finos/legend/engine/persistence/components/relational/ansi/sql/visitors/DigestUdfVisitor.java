@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ToArrayFunction;
@@ -51,7 +52,7 @@ public class DigestUdfVisitor implements LogicalPlanVisitor<DigestUdf>
         return new VisitorResult(udf, Arrays.asList(toArrayColumnNames, toArrayColumnValues));
     }
 
-    protected Value getColumnValueAsStringType(Value value, DataType dataType, Map<DataType, String> typeConversionUdfNames)
+    protected Value getColumnValueAsStringType(Value value, FieldType dataType, Map<DataType, String> typeConversionUdfNames)
     {
         throw new IllegalStateException("UDF is unsupported in ANSI sink");
     }

@@ -172,6 +172,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
     dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='parse_json(%s)')),
+    dynaFnToSql('parseBoolean',           $allStates,            ^ToSql(format='to_boolean(%s)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),
     dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='dateadd(DAY, case when %s - DAYOFWEEK(%s) +1  >= 0 then %s  - DAYOFWEEK(%s) -1 - 7 else %s - DAYOFWEEK(%s) -1 end, %s)', transform={p:String[1..2] | $p->formatMostRecentSnowflake('current_date')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
@@ -294,7 +295,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 function <<access.private>>  meta::relational::functions::sqlQueryToString::snowflake::replaceVarPlaceHolderForAppGeneration(v:VarPlaceHolder[1], sgc:SqlGenerationContext[1]): String[1]
 {
   assertEmpty($v.propertyPath, 'processing for variable with propertyPath access is not implemented');
-  assertFalse($v->isCollectionPlaceHolder() || $v->isOptionalPlaceHolder(), 'only variables of primitive types and multiplicity one can be used');
+  assertFalse($v->isCollectionPlaceHolder() || $v->isOptionalPlaceHolder(), 'only variables of multiplicity one can be used');
 
   $v.name;
 }

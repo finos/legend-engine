@@ -257,6 +257,7 @@ public class TestLambdaRoundtrip
     public void testLambdaWithEnum()
     {
         testLambda("|MyEnum.ok");
+        testLambda("|MyEnum.'30_360'");
     }
 
     @Test

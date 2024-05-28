@@ -44,6 +44,7 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::store::r
       schemas = $db.schemas->map(s|$s->transformSchema($db, $extensions)),
       joins = $db.joins->map(s|$s->transformJoin($db)),
       filters = $db.filters->map(s|$s->transformFilter($db)),
+      stereotypes = $db.stereotypes->map(s|$s->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::domain::transformStereotype()),
       includedStores = $db.includes->map(i|$i->elementToPath())
    )
 }
