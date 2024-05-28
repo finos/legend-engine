@@ -41,9 +41,9 @@ import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.core.Helpers;
 import org.finos.legend.engine.repl.relational.shared.ConnectionHelper;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.pure.generated.core_pure_executionPlan_executionPlan_print;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.core_pure_executionPlan_executionPlan_print;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
@@ -54,6 +54,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.HashMap;
 
+import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_SIGNATURE;
 import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
 
 public class Cache implements Command
@@ -96,7 +97,7 @@ public class Cache implements Command
             DatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(this.client.getModelState().parse(), connectionPath);
 
             String code = "###Pure\n" +
-                    "function a::b::c::d():Any[*]\n{\n" + expression + ";\n}";
+                    "function " + REPL_RUN_FUNCTION_SIGNATURE + "\n{\n" + expression + ";\n}";
             PureModelContextData parsed = this.client.getModelState().parseWithTransient(code);
             PureModel pureModel = this.client.getLegendInterface().compile(parsed);
             RichIterable<? extends Root_meta_pure_extension_Extension> extensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));

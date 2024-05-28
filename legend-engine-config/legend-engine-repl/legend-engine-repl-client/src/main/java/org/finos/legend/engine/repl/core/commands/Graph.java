@@ -45,7 +45,7 @@ public class Graph implements Command
     @Override
     public String documentation()
     {
-        return "graph (<Packageable Element>)";
+        return "graph (<element path>)";
     }
 
     @Override
