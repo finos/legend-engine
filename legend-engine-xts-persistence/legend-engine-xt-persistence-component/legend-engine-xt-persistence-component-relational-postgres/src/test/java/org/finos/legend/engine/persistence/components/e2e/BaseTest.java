@@ -186,7 +186,7 @@ public class BaseTest
 
     private void verifyLatestStagingFilters(RelationalIngestor ingestor, Datasets datasets) throws Exception
     {
-        List<DatasetFilter> filters = getLatestStagingFilters(JdbcConnection.of(postgresSink.connection()), datasets,ingestor);
+        List<DatasetFilter> filters = ingestor.getLatestStagingFilters(JdbcConnection.of(postgresSink.connection()), datasets);
         DerivedDataset derivedDataset = (DerivedDataset) datasets.stagingDataset();
         List<DatasetFilter> expectedFilters = new ArrayList<>(derivedDataset.datasetFilters());
         Assertions.assertEquals(filters.size(), expectedFilters.size());
@@ -201,49 +201,6 @@ public class BaseTest
             Assertions.assertEquals(expectedFilters.get(i).value(), filters.get(i).value());
         }
     }
-
-    private List<DatasetFilter> getLatestStagingFilters(RelationalConnection connection, Datasets datasets, RelationalIngestor ingestor) throws JsonProcessingException
-    {
-        MetadataDataset metadataDataset = datasets.metadataDataset().isPresent()
-                ? datasets.metadataDataset().get()
-                : MetadataDataset.builder().build();
-        MetadataUtils store = new MetadataUtils(metadataDataset);
-        String tableName = datasets.mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new);
-        Selection selection = store.getLatestStagingFilters(StringValue.of(tableName));
-
-        LogicalPlan logicalPlan = LogicalPlan.builder().addOps(selection).build();
-        Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(ingestor.relationalSink(), ingestor.transformOptions());
-        Executor<SqlGen, TabularData, SqlPlan> executor = ingestor.relationalSink().getRelationalExecutor(connection);
-        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
-        return extractDatasetFilters(metadataDataset, executor, physicalPlan);
-    }
-
-    private static List<DatasetFilter> extractDatasetFilters(MetadataDataset metadataDataset, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan physicalPlan) throws JsonProcessingException
-    {
-        List<DatasetFilter> datasetFilters = new ArrayList<>();
-        List<TabularData> results = executor.executePhysicalPlanAndGetResults(physicalPlan);
-        Optional<String> stagingFilters = results.stream()
-                .findFirst()
-                .map(TabularData::getData)
-                .flatMap(t -> t.stream().findFirst())
-                .map(stringObjectMap -> ((PGobject)stringObjectMap.get(metadataDataset.batchSourceInfoField())).getValue());
-
-        // Convert map of Filters to List of Filters
-        if (stagingFilters.isPresent())
-        {
-            Map<String, Map<String, Map<String, Object>>> datasetFiltersMap = new ObjectMapper().readValue(stagingFilters.get(), new TypeReference<Map<String, Map<String, Map<String, Object>>>>() {});
-            for (Map.Entry<String, Map<String, Object>> filtersMapEntry : datasetFiltersMap.get(BATCH_SOURCE_INFO_STAGING_FILTERS).entrySet())
-            {
-                for (Map.Entry<String, Object> filterEntry : filtersMapEntry.getValue().entrySet())
-                {
-                    DatasetFilter datasetFilter = DatasetFilter.of(filtersMapEntry.getKey(), FilterType.fromName(filterEntry.getKey()), filterEntry.getValue());
-                    datasetFilters.add(datasetFilter);
-                }
-            }
-        }
-        return datasetFilters;
-    }
-
 
     protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets,
                                                           String[] schema, String expectedDataPath, Map<String, Object> expectedStats,
