@@ -18,7 +18,7 @@ import meta::external::format::json::metamodel::externalize::*;
 
 Class meta::external::format::json::metamodel::externalize::JsonSchemaExternalizeConfig extends ExternalFormatExternalizeConfig
 {
-  {doc.doc = 'Give a custom typeKey name. Defaults to @Type'}
+  {doc.doc = 'Give a custom typeKey name. Defaults to @type'}
   typeKeyName : String[1] = '@type';
 
   {doc.doc = 'Set to true to include type info of the serialized class'}
