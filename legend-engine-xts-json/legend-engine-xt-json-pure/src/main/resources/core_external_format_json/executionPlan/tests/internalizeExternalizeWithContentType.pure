@@ -29,6 +29,15 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   assertEquals('{"firstName":"John","lastName":"Doe"}', $result);
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::withContentType::testSimpleJsonQueryWithConfigIncludeTypeInfo(): Boolean[1]
+{
+  let query   = {data:String[1]| Person->fromJson($data)->toJson(#{Person{firstName, lastName}}#, ^meta::external::format::json::metamodel::externalize::JsonSchemaExternalizeConfig(typeKeyName='_type', includeType=true))};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
+
+  assertEquals('{"_type":"meta::external::format::json::executionPlan::test::withContentType::Person","firstName":"John","lastName":"Doe"}', $result);
+}
+
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::withContentType::testSimpleJsonQueryWithByte(): Boolean[1]
 {
   let query   = {data:Byte[*]| Person->fromJson($data)->toJson(#{Person{firstName, lastName}}#)};
