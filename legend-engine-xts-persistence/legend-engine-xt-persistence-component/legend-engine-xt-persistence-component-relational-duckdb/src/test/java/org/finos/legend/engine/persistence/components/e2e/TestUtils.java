@@ -650,14 +650,6 @@ public class TestUtils
             .build();
     }
 
-    public static CsvExternalDatasetReference getBasicCsvDatasetReferenceTableWithDataSplits(String dataPath)
-    {
-        return CsvExternalDatasetReference.builder()
-                .schema(getStagingSchemaWithDataSplits())
-                .csvDataPath(dataPath)
-                .build();
-    }
-
     public static CsvExternalDatasetReference getCsvDatasetReferenceTable(String dataPath, String database, String name, String group, String alias)
     {
         return CsvExternalDatasetReference.builder()
@@ -676,14 +668,6 @@ public class TestUtils
             .group(testSchemaName)
             .name(stagingTableName)
             .schema(getStagingSchemaWithLessColumnThanMain())
-            .build();
-    }
-
-    public static Dataset getCsvDatasetRefWithLessColumnsThanMainForBitemp(String dataPath)
-    {
-        return CsvExternalDatasetReference.builder()
-            .schema(getBitemporalStagingSchemaWithLessColumnThanMain())
-            .csvDataPath(dataPath)
             .build();
     }
 

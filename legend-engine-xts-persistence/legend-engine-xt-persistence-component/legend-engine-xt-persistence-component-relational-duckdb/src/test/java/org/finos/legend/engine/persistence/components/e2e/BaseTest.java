@@ -578,93 +578,13 @@ public class BaseTest
         duckDBSink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataWithFilterWithVersionInUpperCase(String path) throws Exception
+    protected void loadStagingDataWithFilterWithVersionInUpperCase(String path)
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"STAGING\";" +
-            "INSERT INTO \"TEST\".\"STAGING\"(ID, NAME, INCOME, START_TIME ,EXPIRY_DATE, DIGEST, VERSION, BATCH) " +
-            "SELECT CONVERT( \"ID\",INT ), \"NAME\", CONVERT( \"INCOME\", BIGINT), CONVERT( \"START_TIME\", DATETIME), CONVERT( \"EXPIRY_DATE\", DATE), DIGEST, CONVERT( \"VERSION\",INT), CONVERT( \"BATCH\",INT)" +
-            " FROM CSVREAD( '" + path + "', 'ID, NAME, INCOME, START_TIME, EXPIRY_DATE, DIGEST, VERSION, BATCH', NULL )";
-        duckDBSink.executeStatement(loadSql);
-    }
-
-    protected void loadStagingDataForBitemp(String path) throws Exception
-    {
-        validateFileExists(path);
-        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(key1, key2, value1, date_in, date_out, digest) " +
-            "SELECT \"key1\", \"key2\", CONVERT( \"value1\", INT), CONVERT( \"date_in\", DATETIME), CONVERT( \"date_out\", DATETIME) ,  \"digest\"" +
-            " FROM CSVREAD( '" + path + "', 'key1, key2, value1, date_in, date_out, digest', NULL )";
-        duckDBSink.executeStatement(loadSql);
-    }
-
-    protected void loadStagingDataForBitempValidityFromTimeOnly(String path) throws Exception
-    {
-        validateFileExists(path);
-        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(key1, key2, value1, date_in, digest) " +
-            "SELECT \"key1\", \"key2\", CONVERT( \"value1\", INT), CONVERT( \"date_in\", DATETIME),  \"digest\"" +
-            " FROM CSVREAD( '" + path + "', 'key1, key2, value1, date_in, digest', NULL )";
-        duckDBSink.executeStatement(loadSql);
-    }
-
-    protected void loadStagingDataForBitempWithDeleteInd(String path) throws Exception
-    {
-        validateFileExists(path);
-        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(key1, key2, value1, date_in, date_out, digest, delete_indicator) " +
-            "SELECT \"key1\", \"key2\", CONVERT( \"value1\", INT), CONVERT( \"date_in\", DATETIME), CONVERT( \"date_out\", DATETIME) ,  \"digest\", CONVERT( \"delete_indicator\", INT)" +
-            " FROM CSVREAD( '" + path + "', 'key1, key2, value1, date_in, date_out, digest, delete_indicator', NULL )";
-        duckDBSink.executeStatement(loadSql);
-    }
-
-    protected void loadStagingDataForBitemporalFromOnly(String path) throws Exception
-    {
-        validateFileExists(path);
-        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest) " +
-            "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\"" +
-            " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest', NULL )";
-        duckDBSink.executeStatement(loadSql);
-    }
-
-    protected void loadStagingDataForBitemporalFromOnlyWithUpperCase(String path) throws Exception
-    {
-        validateFileExists(path);
-        String loadSql = "TRUNCATE TABLE \"TEST\".\"STAGING\";" +
-                "INSERT INTO \"TEST\".\"STAGING\"(INDEX, DATETIME, BALANCE, DIGEST) " +
-                "SELECT CONVERT( \"INDEX\", INT), CONVERT( \"DATETIME\", DATETIME), CONVERT( \"BALANCE\", BIGINT), \"DIGEST\"" +
-                " FROM CSVREAD( '" + path + "', 'INDEX, DATETIME, BALANCE, DIGEST', NULL )";
-        duckDBSink.executeStatement(loadSql);
-    }
-
-    protected void loadStagingDataForBitemporalFromOnlyWithDeleteInd(String path) throws Exception
-    {
-        validateFileExists(path);
-        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, delete_indicator) " +
-            "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", \"delete_indicator\"" +
-            " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, delete_indicator', NULL )";
-        duckDBSink.executeStatement(loadSql);
-    }
-
-    protected void loadStagingDataForBitemporalFromOnlyWithVersionWithDataSplit(String path) throws Exception
-    {
-        validateFileExists(path);
-        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, version, data_split) " +
-            "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", CONVERT( \"version\", BIGINT), CONVERT( \"data_split\", BIGINT)" +
-            " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, version, data_split', NULL )";
-        duckDBSink.executeStatement(loadSql);
-    }
-
-    protected void loadStagingDataForBitemporalFromOnlyWithDeleteIndWithVersionWithDataSplit(String path) throws Exception
-    {
-        validateFileExists(path);
-        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, version, delete_indicator, data_split) " +
-            "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", CONVERT( \"version\", BIGINT), \"delete_indicator\", CONVERT( \"data_split\", BIGINT)" +
-            " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, version, delete_indicator, data_split', NULL )";
+            "COPY \"TEST\".\"STAGING\"" +
+            "(\"ID\", \"NAME\", \"INCOME\", \"START_TIME\", \"EXPIRY_DATE\", \"DIGEST\", \"VERSION\", \"BATCH\")" +
+            " FROM '" + path + "' CSV";
         duckDBSink.executeStatement(loadSql);
     }
 

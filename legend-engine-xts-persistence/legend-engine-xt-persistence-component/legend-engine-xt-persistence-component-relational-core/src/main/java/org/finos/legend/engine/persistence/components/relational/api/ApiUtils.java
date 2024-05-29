@@ -229,7 +229,7 @@ public class ApiUtils
                 .findFirst()
                 .map(TabularData::getData)
                 .flatMap(t -> t.stream().findFirst())
-                .map(stringObjectMap -> (String) stringObjectMap.get(metadataDataset.batchSourceInfoField()));
+                .map(stringObjectMap -> String.valueOf(stringObjectMap.get(metadataDataset.batchSourceInfoField())));
 
         // Convert map of Filters to List of Filters
         if (stagingFilters.isPresent())

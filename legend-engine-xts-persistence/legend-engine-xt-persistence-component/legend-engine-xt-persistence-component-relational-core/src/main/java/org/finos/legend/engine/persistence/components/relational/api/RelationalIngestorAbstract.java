@@ -56,7 +56,6 @@ import org.immutables.value.Value.Style;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Date;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -129,7 +128,7 @@ public abstract class RelationalIngestorAbstract
     @Default
     public boolean enableSchemaEvolutionForMetadataDatasets()
     {
-        return false; // TODO: change back to true after data type mappings are done
+        return true;
     }
 
     @Default
@@ -878,19 +877,15 @@ public abstract class RelationalIngestorAbstract
             {
                 Object lowerBound = optimizationFilters.get().get(filter).getOne();
                 Object upperBound = optimizationFilters.get().get(filter).getTwo();
-                if (lowerBound instanceof Date)
-                {
-                    placeHolderKeyValues.put(filter.lowerBoundPattern(), PlaceholderValue.of(lowerBound.toString(), true));
-                    placeHolderKeyValues.put(filter.upperBoundPattern(), PlaceholderValue.of(upperBound.toString(), true));
-                }
-                else if (lowerBound instanceof Number)
+                if (lowerBound instanceof Number)
                 {
                     placeHolderKeyValues.put(SINGLE_QUOTE + filter.lowerBoundPattern() + SINGLE_QUOTE, PlaceholderValue.of(lowerBound.toString(), true));
                     placeHolderKeyValues.put(SINGLE_QUOTE + filter.upperBoundPattern() + SINGLE_QUOTE, PlaceholderValue.of(upperBound.toString(), true));
                 }
                 else
                 {
-                    throw new IllegalStateException("Unexpected data type for optimization filter");
+                    placeHolderKeyValues.put(filter.lowerBoundPattern(), PlaceholderValue.of(lowerBound.toString(), true));
+                    placeHolderKeyValues.put(filter.upperBoundPattern(), PlaceholderValue.of(upperBound.toString(), true));
                 }
             }
         }

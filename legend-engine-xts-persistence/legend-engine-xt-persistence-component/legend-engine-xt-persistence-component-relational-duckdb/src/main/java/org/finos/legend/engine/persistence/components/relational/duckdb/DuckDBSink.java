@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class DuckDBSink extends AnsiSqlSink
@@ -162,5 +163,30 @@ public class DuckDBSink extends AnsiSqlSink
         {
             throw new UnsupportedOperationException("Only JdbcConnection is supported for DuckDB Sink");
         }
+    }
+
+    @Override
+    public Field evolveFieldLength(Field evolveFrom, Field evolveTo)
+    {
+        Optional<Integer> length = evolveTo.type().length();
+        Optional<Integer> scale = evolveTo.type().scale();
+
+        //If the oldField and newField have a length associated, pick the greater length
+        if (evolveFrom.type().length().isPresent() && evolveTo.type().length().isPresent())
+        {
+            length = evolveTo.type().length().get() >= evolveFrom.type().length().get()
+                ? evolveTo.type().length()
+                : evolveFrom.type().length();
+        }
+
+        //If the oldField and newField have a scale associated, pick the greater scale
+        if (evolveFrom.type().scale().isPresent() && evolveTo.type().scale().isPresent())
+        {
+            scale = evolveTo.type().scale().get() >= evolveFrom.type().scale().get()
+                ? evolveTo.type().scale()
+                : evolveFrom.type().scale();
+        }
+
+        return createNewField(evolveTo, evolveFrom, length, scale);
     }
 }
