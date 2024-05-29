@@ -39,6 +39,7 @@ public class BaseTestUtils
     public static Field colReal = Field.builder().name("col_real").type(FieldType.of(DataType.REAL, Optional.empty(), Optional.empty())).build();
     public static Field colFloat = Field.builder().name("col_float").type(FieldType.of(DataType.FLOAT, Optional.empty(), Optional.empty())).build();
     public static Field colDecimal = Field.builder().name("col_decimal").type(FieldType.of(DataType.DECIMAL, 10, 4)).build();
+    public static Field colDecimalDuck = Field.builder().name("col_decimal").type(FieldType.of(DataType.DECIMAL, 18, 3)).build();
     public static Field colDouble = Field.builder().name("col_double").type(FieldType.of(DataType.DOUBLE, Optional.empty(), Optional.empty())).build();
     public static Field colBinary = Field.builder().name("col_binary").type(FieldType.of(DataType.BINARY, Optional.empty(), Optional.empty())).build();
     public static Field colTime = Field.builder().name("col_time").type(FieldType.of(DataType.TIME, Optional.empty(), Optional.empty())).build();

@@ -19,10 +19,12 @@ import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMap
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.BigInt;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Binary;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Bit;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Blob;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Boolean;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Char;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.DataType;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Date;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Decimal;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Double;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Integer;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Json;
@@ -33,10 +35,11 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.schema.T
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Time;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Timestamp;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.TimestampWithTimezone;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schema.TinyInt;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.VarChar;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.VariableSizeDataType;
 
-// TODO: have not been confirmed
+// TODO (kminky): have not been confirmed
 public class DuckDBDataTypeMapping implements DataTypeMapping
 {
     public DataType getDataType(FieldType type)
@@ -44,82 +47,60 @@ public class DuckDBDataTypeMapping implements DataTypeMapping
         VariableSizeDataType dataType;
         switch (type.dataType())
         {
+            case BIGINT:
+                dataType = new BigInt();
+                break;
+            case BIT:
+                dataType = new Bit();
+                break;
+            case BINARY:
+            case VARBINARY:
+                dataType = new Blob();
+                break;
+            case BOOLEAN:
+                dataType = new Boolean();
+                break;
+            case DATE:
+                dataType = new Date();
+                break;
+            case DECIMAL:
+            case NUMERIC:
+                dataType = new Decimal(type.length().get(), type.scale().get());
+                break;
+            case DOUBLE:
+                dataType = new Double();
+                break;
             case INT:
             case INTEGER:
                 dataType = new Integer();
                 break;
-            case BIGINT:
-                dataType = new BigInt();
+            case REAL:
+            case FLOAT:
+                dataType = new Real();
                 break;
             case SMALLINT:
                 dataType = new SmallInt();
-                break;
-            case CHAR:
-                dataType = new Char();
-                type.length().ifPresent(dataType::setLength);
-                break;
-            case VARCHAR:
-            case STRING:
-                dataType = new VarChar();
-                type.length().ifPresent(dataType::setLength);
-                break;
-            case TEXT:
-                dataType = new Text();
-                break;
-            case TIMESTAMP:
-            case TIMESTAMP_NTZ:
-            case DATETIME:
-                dataType = new Timestamp();
-                type.length().ifPresent(dataType::setLength);
-                break;
-            case TIMESTAMP_TZ:
-                dataType = new TimestampWithTimezone();
-                type.length().ifPresent(dataType::setLength);
-                break;
-            case DATE:
-                dataType = new Date();
                 break;
             case TIME:
                 dataType = new Time();
                 type.length().ifPresent(dataType::setLength);
                 break;
-            case REAL:
-                dataType = new Real();
+            case TIMESTAMP_TZ:
+                dataType = new TimestampWithTimezone();
                 break;
-            case FLOAT:
-            case DOUBLE:
-                dataType = new Double();
+            case TIMESTAMP:
+            case DATETIME:
+                dataType = new Timestamp();
                 break;
-            case BINARY:
-            case BYTES:
-                dataType = new Binary();
-                type.length().ifPresent(dataType::setLength);
-                break;
-            case BIT:
-                dataType = new Bit();
-                type.length().ifPresent(dataType::setLength);
-                break;
-            case DECIMAL:
-            case NUMERIC:
-                dataType = new Numeric();
-                type.length().ifPresent(dataType::setLength);
-                type.scale().ifPresent(dataType::setScale);
-                break;
-            case BOOLEAN:
-                dataType = new Boolean();
-                break;
-            case VARIANT:
-            case JSON:
-                dataType = new Json();
-                break;
-            case LONGTEXT:
             case TINYINT:
-            case LONGVARCHAR:
-            case VARBINARY:
-            case LONGVARBINARY:
-            case TIMESTAMP_LTZ:
-            case MAP:
-            case ARRAY:
+                dataType = new TinyInt();
+                break;
+            case VARCHAR:
+            case CHAR:
+            case STRING:
+            case TEXT:
+                dataType = new VarChar();
+                break;
             default:
                 throw new IllegalArgumentException("Unexpected value: " + type.dataType());
         }

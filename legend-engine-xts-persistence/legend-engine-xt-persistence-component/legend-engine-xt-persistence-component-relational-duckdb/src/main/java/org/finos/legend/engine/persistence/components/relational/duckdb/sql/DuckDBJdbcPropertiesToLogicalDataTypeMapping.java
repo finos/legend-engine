@@ -18,47 +18,47 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataT
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.relational.sql.JdbcPropertiesToLogicalDataTypeMapping;
 
-// TODO: have not been confirmed
+// TODO (kminky): have not been confirmed
 public class DuckDBJdbcPropertiesToLogicalDataTypeMapping implements JdbcPropertiesToLogicalDataTypeMapping
 {
     public FieldType getDataType(String typeName, String dataType, Integer columnSize, Integer decimalDigits)
     {
+        if (typeName.contains("("))
+        {
+            typeName = typeName.substring(0, typeName.indexOf('('));
+        }
         switch (typeName)
         {
-            case BPCHAR:
-                return FieldType.builder().dataType(DataType.CHAR).length(columnSize).build();
-            case VARCHAR:
-                return FieldType.builder().dataType(DataType.VARCHAR).length(columnSize).build();
-            case BYTEA:
-                return FieldType.builder().dataType(DataType.BINARY).build();
-            case BIT:
-                return FieldType.builder().dataType(DataType.BIT).length(columnSize).build();
-            case TEXT:
-                return FieldType.builder().dataType(DataType.TEXT).build();
-            case BOOL:
-                return FieldType.builder().dataType(DataType.BOOLEAN).build();
-            case INT2:
-                return FieldType.builder().dataType(DataType.SMALLINT).build();
-            case INT4:
-                return FieldType.builder().dataType(DataType.INTEGER).build();
-            case INT8:
+            case BIGINT:
                 return FieldType.builder().dataType(DataType.BIGINT).build();
-            case NUMERIC:
-                return FieldType.builder().dataType(DataType.NUMERIC).length(columnSize).scale(decimalDigits).build();
-            case FLOAT4:
-                return FieldType.builder().dataType(DataType.REAL).build();
-            case FLOAT8:
-                return FieldType.builder().dataType(DataType.DOUBLE).build();
+            case BIT:
+                return FieldType.builder().dataType(DataType.BIT).build();
+            case BLOB:
+                return FieldType.builder().dataType(DataType.BINARY).build();
+            case BOOLEAN:
+                return FieldType.builder().dataType(DataType.BOOLEAN).build();
             case DATE:
                 return FieldType.builder().dataType(DataType.DATE).build();
+            case DECIMAL:
+                return FieldType.builder().dataType(DataType.DECIMAL).length(columnSize).scale(decimalDigits).build();
+            case DOUBLE:
+                return FieldType.builder().dataType(DataType.DOUBLE).build();
+            case INTEGER:
+                return FieldType.builder().dataType(DataType.INTEGER).build();
+            case FLOAT:
+                return FieldType.builder().dataType(DataType.REAL).build();
+            case SMALLINT:
+                return FieldType.builder().dataType(DataType.SMALLINT).build();
             case TIME:
-                return FieldType.builder().dataType(DataType.TIME).length(decimalDigits).build();
+                return FieldType.builder().dataType(DataType.TIME).build();
+            case TIMESTAMP_WITH_TIME_ZONE:
+                return FieldType.builder().dataType(DataType.TIMESTAMP_TZ).build();
             case TIMESTAMP:
-                return FieldType.builder().dataType(DataType.TIMESTAMP).length(decimalDigits).build();
-            case TIMESTAMPTZ:
-                return FieldType.builder().dataType(DataType.TIMESTAMP_TZ).length(decimalDigits).build();
-            case JSON:
-                return FieldType.builder().dataType(DataType.JSON).build();
+                return FieldType.builder().dataType(DataType.TIMESTAMP).build();
+            case TINYINT:
+                return FieldType.builder().dataType(DataType.TINYINT).build();
+            case VARCHAR:
+                return FieldType.builder().dataType(DataType.VARCHAR).build();
             default:
                 throw new IllegalArgumentException("Unexpected values: JDBC TYPE_NAME " + typeName + ", JDBC DATA_TYPE: " + dataType);
         }
