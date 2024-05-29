@@ -130,7 +130,7 @@ function meta::external::function::activator::snowflakeApp::tests::assertSnowfla
   meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifactForFunction($function, $expected, []);
 }
 
-function meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifactForFunction(function: PackageableFunction<Any>[1], expected: String[1], extensions::meta::pure::extension::Extension[*]): Boolean[1]
+function meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifactForFunction(function: PackageableFunction<Any>[1], expected: String[1], extensions:meta::pure::extension::Extension[*]): Boolean[1]
 {
   let app =  ^SnowflakeApp
    (
