@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.persistence.components.relational.jdbc;
 
-import org.postgresql.util.PGobject;
-
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -132,10 +130,6 @@ public class JdbcTransactionManager
             if (metaData.getColumnTypeName(i).equalsIgnoreCase("JSON") && value instanceof byte[])
             {
                 value = new String((byte[]) value, StandardCharsets.UTF_8);
-            }
-            if (metaData.getColumnTypeName(i).equalsIgnoreCase("JSON") && value instanceof PGobject)
-            {
-                value = ((PGobject) value).getValue();
             }
             row.put(metaData.getColumnName(i), value);
         }
