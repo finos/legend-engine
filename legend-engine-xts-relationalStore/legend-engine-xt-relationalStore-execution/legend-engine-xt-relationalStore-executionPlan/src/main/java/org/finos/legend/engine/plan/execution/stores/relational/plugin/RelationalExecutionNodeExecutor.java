@@ -978,26 +978,18 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         if (executionNode instanceof SequenceExecutionNode)
         {
             SequenceExecutionNode sequenceExecutionNode = (SequenceExecutionNode) executionNode;
-            TokenBuffer tbSeqNode = new TokenBuffer(OBJECT_MAPPER, false);
-            OBJECT_MAPPER.writeValue(tbSeqNode, sequenceExecutionNode);
-            SequenceExecutionNode copyOfSequenceExecutionNode = OBJECT_MAPPER.readValue(tbSeqNode.asParser(), SequenceExecutionNode.class);
-            ListIterator<ExecutionNode> iterator = copyOfSequenceExecutionNode.executionNodes.listIterator();
-
-            SQLExecutionNode copyOfSqlExecutionNode;
-            while (iterator.hasNext())
+            TokenBuffer tb = new TokenBuffer(OBJECT_MAPPER, false);
+            OBJECT_MAPPER.writeValue(tb, sequenceExecutionNode);
+            SequenceExecutionNode copyOfSequenceExecutionNode = OBJECT_MAPPER.readValue(tb.asParser(), SequenceExecutionNode.class);
+            for (ExecutionNode node : copyOfSequenceExecutionNode.executionNodes)
             {
-                ExecutionNode node = iterator.next();
                 if (node instanceof SQLExecutionNode)
                 {
                     SQLExecutionNode sqlExecutionNode = ((SQLExecutionNode) node);
                     String sqlQuery = sqlExecutionNode.sqlQuery;
                     if (sqlQuery.contains("${temp_table_rows_from_result_set}"))
                     {
-                        TokenBuffer tbSqlNode = new TokenBuffer(OBJECT_MAPPER, false);
-                        OBJECT_MAPPER.writeValue(tbSqlNode, sqlExecutionNode);
-                        copyOfSqlExecutionNode = OBJECT_MAPPER.readValue(tbSqlNode.asParser(), SQLExecutionNode.class);
-                        copyOfSqlExecutionNode.sqlQuery = copyOfSqlExecutionNode.sqlQuery.replace("${temp_table_rows_from_result_set}", result);
-                        iterator.set(copyOfSqlExecutionNode);
+                        sqlExecutionNode.sqlQuery = sqlExecutionNode.sqlQuery.replace("${temp_table_rows_from_result_set}", result);
                     }
                 }
             }
