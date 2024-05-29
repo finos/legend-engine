@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.46.1-SNAPSHOT</version>
+    <version>4.46.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -106,7 +106,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.5.0</legend.pure.version>
+        <legend.pure.version>5.6.1</legend.pure.version>
         <legend.shared.version>0.25.4</legend.shared.version>
 
         <!-- SONAR -->
@@ -1171,6 +1171,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-duckdb-execution</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-duckdb-execution-tests</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

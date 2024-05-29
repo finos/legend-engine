@@ -59,6 +59,16 @@ function <<access.private>> meta::pure::lineage::scanProject::scanProjectRecursi
                                                                ]
                                                             );
 
+                                                      ),
+                                                      pair('meta::pure::tds::groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_',
+                                                        | let funcs = $fe.parametersValues->at(1)->match([s:InstanceValue[1]|$s.values, a:Any[*]|^Unknown()]);
+                                                          let aggregateFuncs = $fe.parametersValues->at(2)->scanAggregateValue();
+                                                          let allFuncs = $funcs->concatenate($aggregateFuncs);
+                                                          let names = $fe.parametersValues->at(3)->match([s:InstanceValue[1]|$s.values,a:Any[*]|^Unknown()]);
+                                                          ^Project(projectfuncEntryPoint = $fe,
+                                                                    columns = zip($names->match([s:String[*]|$s, a:Unknown[*]|range(1, $allFuncs->size(),1)->map(z|'unknown_'+$z->toString())]),
+                                                                                  $allFuncs->match([s:FunctionDefinition<Any>[*]|$s, a:Unknown[*]|[]]))
+                                                          );
                                                       )
                                                     ];
                                      let funcFullPath = $fe.func->toOne()->elementToPath();
@@ -86,4 +96,13 @@ function <<access.private>> meta::pure::lineage::scanProject::scanProjectRecursi
       a:Any[1]|$project
    ]
   );
+}
+
+function <<access.private>> meta::pure::lineage::scanProject::scanAggregateValue(val:Any[*]):FunctionDefinition<Any>[*]
+{
+  $val->match([
+    s:InstanceValue[*]|$s.values->scanAggregateValue(),
+    se: FunctionExpression[*]| $se->map(x| $x.parametersValues->at(0))->scanAggregateValue(),
+    f: FunctionDefinition<Any>[*]|$f,
+    a:Any[*]|[]]);
 }
