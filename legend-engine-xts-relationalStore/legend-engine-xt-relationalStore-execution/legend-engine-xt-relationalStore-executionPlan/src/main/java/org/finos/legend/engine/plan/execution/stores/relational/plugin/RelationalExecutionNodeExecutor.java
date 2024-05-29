@@ -16,6 +16,8 @@ package org.finos.legend.engine.plan.execution.stores.relational.plugin;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.TokenBuffer;
 import com.google.common.collect.Iterators;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -137,6 +139,7 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleStrategyHashMap;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -170,6 +173,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
     private final ExecutionState executionState;
     private MutableList<Function2<ExecutionState, List<Map<String, Object>>, Result>> resultInterpreterExtensions;
     private Identity identity;
+    private static final ObjectMapper OBJECT_MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
     public RelationalExecutionNodeExecutor(ExecutionState executionState, Identity identity)
     {
@@ -935,7 +939,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             {
                 if (quoteCharacterReplacement != null)
                 {
-                    return "'" + ((String)ResultNormalizer.normalizeToSql(v, databaseTimeZone)).replace("'", quoteCharacterReplacement) + "'";
+                    return "'" + ((String) ResultNormalizer.normalizeToSql(v, databaseTimeZone)).replace("'", quoteCharacterReplacement) + "'";
                 }
                 return "'" + ResultNormalizer.normalizeToSql(v, databaseTimeZone) + "'";
             }
@@ -957,26 +961,28 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     .collect(Collectors.joining(",", "", ""));
             RelationalStoreExecutionState relationalStoreExecutionState = (RelationalStoreExecutionState) threadExecutionState.getStoreExecutionState(StoreType.Relational);
             relationalStoreExecutionState.setIgnoreFreeMarkerProcessing(true);
-            ingestDataIntoTempTable(node, valuesTuples, threadExecutionState, identity);
+            try
+            {
+                ingestDataIntoTempTable(node, valuesTuples, threadExecutionState, identity);
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException("Unable to copy execution nodes and ingest data into temp tables. JSON serialization exception while ", e);
+            }
             relationalStoreExecutionState.setIgnoreFreeMarkerProcessing(false);
         }
     }
 
-    private static void ingestDataIntoTempTable(ExecutionNode executionNode, String result, ExecutionState executionState, Identity identity)
+    private static void ingestDataIntoTempTable(ExecutionNode executionNode, String result, ExecutionState executionState, Identity identity) throws IOException
     {
         if (executionNode instanceof SequenceExecutionNode)
         {
             SequenceExecutionNode sequenceExecutionNode = (SequenceExecutionNode) executionNode;
-            SequenceExecutionNode copyOfSequenceExecutionNode = new SequenceExecutionNode();
-
-            copyOfSequenceExecutionNode.resultType = sequenceExecutionNode.resultType;
-            copyOfSequenceExecutionNode.executionNodes = sequenceExecutionNode.childNodes();
-            copyOfSequenceExecutionNode.resultSizeRange = sequenceExecutionNode.resultSizeRange;
-            copyOfSequenceExecutionNode.requiredVariableInputs = sequenceExecutionNode.requiredVariableInputs;
-            copyOfSequenceExecutionNode.implementation = sequenceExecutionNode.implementation;
-            copyOfSequenceExecutionNode.authDependent = sequenceExecutionNode.authDependent;
-
+            TokenBuffer tbSeqNode = new TokenBuffer(OBJECT_MAPPER, false);
+            OBJECT_MAPPER.writeValue(tbSeqNode, sequenceExecutionNode);
+            SequenceExecutionNode copyOfSequenceExecutionNode = OBJECT_MAPPER.readValue(tbSeqNode.asParser(), SequenceExecutionNode.class);
             ListIterator<ExecutionNode> iterator = copyOfSequenceExecutionNode.executionNodes.listIterator();
+
             SQLExecutionNode copyOfSqlExecutionNode;
             while (iterator.hasNext())
             {
@@ -987,20 +993,10 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     String sqlQuery = sqlExecutionNode.sqlQuery;
                     if (sqlQuery.contains("${temp_table_rows_from_result_set}"))
                     {
-                        copyOfSqlExecutionNode = new SQLExecutionNode();
-                        copyOfSqlExecutionNode.sqlComment = sqlExecutionNode.sqlComment;
-                        copyOfSqlExecutionNode.sqlQuery = sqlQuery.replace("${temp_table_rows_from_result_set}", result);
-                        copyOfSqlExecutionNode.onConnectionCloseCommitQuery = sqlExecutionNode.onConnectionCloseCommitQuery;
-                        copyOfSqlExecutionNode.onConnectionCloseRollbackQuery = sqlExecutionNode.onConnectionCloseRollbackQuery;
-                        copyOfSqlExecutionNode.connection = sqlExecutionNode.connection;
-                        copyOfSqlExecutionNode.resultColumns = sqlExecutionNode.resultColumns;
-
-                        copyOfSqlExecutionNode.resultType = sqlExecutionNode.resultType;
-                        copyOfSqlExecutionNode.executionNodes = sqlExecutionNode.childNodes();
-                        copyOfSqlExecutionNode.resultSizeRange = sqlExecutionNode.resultSizeRange;
-                        copyOfSqlExecutionNode.requiredVariableInputs = sqlExecutionNode.requiredVariableInputs;
-                        copyOfSqlExecutionNode.implementation = sqlExecutionNode.implementation;
-                        copyOfSqlExecutionNode.authDependent = sqlExecutionNode.authDependent;
+                        TokenBuffer tbSqlNode = new TokenBuffer(OBJECT_MAPPER, false);
+                        OBJECT_MAPPER.writeValue(tbSqlNode, sqlExecutionNode);
+                        copyOfSqlExecutionNode = OBJECT_MAPPER.readValue(tbSqlNode.asParser(), SQLExecutionNode.class);
+                        copyOfSqlExecutionNode.sqlQuery = copyOfSqlExecutionNode.sqlQuery.replace("${temp_table_rows_from_result_set}", result);
                         iterator.set(copyOfSqlExecutionNode);
                     }
                 }
@@ -1814,12 +1810,12 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
     {
         List<DelayedGraphFetchResultWithExecInfo> submittedTasks = FastList.newList();
         ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool = this.executionState.getGraphFetchExecutionNodeExecutorPool();
-        RelationalExecutor relationalExecutor = ((RelationalStoreExecutionState)this.executionState.getStoreExecutionState(StoreType.Relational))
+        RelationalExecutor relationalExecutor = ((RelationalStoreExecutionState) this.executionState.getStoreExecutionState(StoreType.Relational))
                 .getRelationalExecutor();
         String dbConnectionKey = relationalExecutor.getConnectionManager().generateKeyFromDatabaseConnection(databaseConnection).shortId();
         String dbConnectionKeyWithIdentity = dbConnectionKey + "_" + identity.getName();
 
-        RelationalGraphFetchExecutor relationalGraphFetchExecutor = ((RelationalStoreExecutionState)this.executionState.getStoreExecutionState(StoreType.Relational))
+        RelationalGraphFetchExecutor relationalGraphFetchExecutor = ((RelationalStoreExecutionState) this.executionState.getStoreExecutionState(StoreType.Relational))
                 .getRelationalGraphFetchExecutor();
 
         boolean parallelizationEnabled = this.executionState.getGraphFetchExecutionConfiguration().canExecuteInParallel() && relationalGraphFetchExecutor.canExecuteInParallel();
@@ -1828,7 +1824,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         {
             Span currentActiveSpan = GlobalTracer.get().activeSpan();
 
-            for (ExecutionNode child: node.children)
+            for (ExecutionNode child : node.children)
             {
                 if (parallelizationEnabled && relationalGraphFetchExecutor.acquireThreads(graphFetchExecutionNodeExecutorPool, dbConnectionKeyWithIdentity, 1, databaseType))
                 {
@@ -2113,7 +2109,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
     private void orchestrate(Queue<DelayedGraphFetchResultWithExecInfo> jobs)
     {
         ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool = this.executionState.getGraphFetchExecutionNodeExecutorPool();
-        RelationalGraphFetchExecutor relationalGraphFetchExecutor = ((RelationalStoreExecutionState)this.executionState.getStoreExecutionState(StoreType.Relational))
+        RelationalGraphFetchExecutor relationalGraphFetchExecutor = ((RelationalStoreExecutionState) this.executionState.getStoreExecutionState(StoreType.Relational))
                 .getRelationalGraphFetchExecutor();
 
         try
@@ -2185,7 +2181,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             {
                 relationalStoreExecutionStateForThread.getBlockConnectionContext().unlockAllBlockConnections();     // done with the current thread. give connection back to the pool
                 relationalStoreExecutionStateForThread.getBlockConnectionContext().closeAllBlockConnectionsAsync();
-                relationalStoreExecutionStateForThread.setBlockConnectionContext(new BlockConnectionContext());    
+                relationalStoreExecutionStateForThread.setBlockConnectionContext(new BlockConnectionContext());
             }
         }
     }
@@ -2217,7 +2213,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
     private static DoubleStrategyHashMap<Object, Object, SQLExecutionResult> switchedParentHashMapPerChildResult(RelationalGraphObjectsBatch relationalGraphObjectsBatch, int parentIndex, ResultSet childResultSet, Supplier<List<String>> parentPrimaryKeyColumnsSupplier, DatabaseConnection databaseConnection)
     {
-        List<String> parentPrimaryKeyColumnNames = UpperCaseColumnsIfDbConnectionIsNotCaseSensitive(parentPrimaryKeyColumnsSupplier.get(),databaseConnection);
+        List<String> parentPrimaryKeyColumnNames = UpperCaseColumnsIfDbConnectionIsNotCaseSensitive(parentPrimaryKeyColumnsSupplier.get(), databaseConnection);
         List<Integer> parentPrimaryKeyIndices = parentPrimaryKeyColumnNames.stream().map(FunctionHelper.unchecked(childResultSet::findColumn)).collect(Collectors.toList());
         DoubleStrategyHashMap<Object, Object, SQLExecutionResult> parentMap = relationalGraphObjectsBatch.getNodeObjectsHashMap(parentIndex);
         RelationalGraphFetchUtils.switchSecondKeyHashingStrategy(parentMap, relationalGraphObjectsBatch.getNodePrimaryKeyGetters(parentIndex), parentPrimaryKeyIndices);
