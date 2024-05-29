@@ -172,7 +172,7 @@ function <<access.private>> meta::external::format::shared::executionPlan::inter
    let enableConstraints  = $state.exeCtx.enableConstraints->isEmpty() || $state.exeCtx.enableConstraints->toOne();
    let bindingArg         = $fe.parametersValues->at(1);
    let inScopeVars        = $state.inScopeVars;
-   let config             = if($fe.parametersValues->size()==4, | $fe.parametersValues->at(3)->cast(@meta::external::format::shared::ExternalFormatInternalizeConfig), | []);
+   let config             = if($fe.parametersValues->size()==4, | $fe.parametersValues->at(3)->cast(@InstanceValue).values->cast(@meta::external::format::shared::ExternalFormatInternalizeConfig)->toOne(), | []);
 
    let classArg           = $fe.parametersValues->at(0);
    assert($classArg->instanceOf(InstanceValue), 'Only literal class is supported');
