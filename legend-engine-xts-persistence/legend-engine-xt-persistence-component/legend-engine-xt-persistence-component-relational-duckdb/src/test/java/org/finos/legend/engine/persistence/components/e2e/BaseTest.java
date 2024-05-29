@@ -43,7 +43,6 @@ import org.finos.legend.engine.persistence.components.relational.duckdb.sql.Duck
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
-import org.finos.legend.engine.persistence.components.relational.sql.JdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
@@ -752,6 +751,7 @@ public class BaseTest
                     "\"varchar_col\" VARCHAR, " +
                     "\"char_col\" CHAR, " +
                     "\"bpchar_col\" BPCHAR, " +
+                    "\"json_col\" JSON, " +
                     "\"text_col\" TEXT, " +
                     "\"string_col\" TEXT" +
 //                    "\"array_col\" ARRAY, " +
@@ -812,7 +812,7 @@ public class BaseTest
         Assertions.assertEquals("BIGINT", getGeneratedSql(mapping.getDataType(colBigint.type())));
         Assertions.assertEquals("TINYINT", getGeneratedSql(mapping.getDataType(colTinyint.type())));
         Assertions.assertEquals("SMALLINT", getGeneratedSql(mapping.getDataType(colSmallint.type())));
-        Assertions.assertEquals("DECIMAL(18,3)", getGeneratedSql(mapping.getDataType(colDecimalDuck.type())));
+        Assertions.assertEquals("DECIMAL(18,3)", getGeneratedSql(mapping.getDataType(colDecimalDefault.type())));
         Assertions.assertEquals("DECIMAL(10,4)", getGeneratedSql(mapping.getDataType(colDecimal.type())));
         Assertions.assertEquals("VARCHAR", getGeneratedSql(mapping.getDataType(colChar.type())));
         Assertions.assertEquals("VARCHAR", getGeneratedSql(mapping.getDataType(colVarchar.type())));
@@ -823,9 +823,10 @@ public class BaseTest
         Assertions.assertEquals("REAL", getGeneratedSql(mapping.getDataType(colReal.type())));
         Assertions.assertEquals("REAL", getGeneratedSql(mapping.getDataType(colFloat.type())));
         Assertions.assertEquals("DOUBLE", getGeneratedSql(mapping.getDataType(colDouble.type())));
-        Assertions.assertEquals("BLOB", getGeneratedSql(mapping.getDataType(colBinary.type())));
+        Assertions.assertEquals("BINARY", getGeneratedSql(mapping.getDataType(colBinary.type())));
         Assertions.assertEquals("TIME", getGeneratedSql(mapping.getDataType(colTime.type())));
         Assertions.assertEquals("BOOLEAN", getGeneratedSql(mapping.getDataType(colBoolean.type())));
+        Assertions.assertEquals("JSON", getGeneratedSql(mapping.getDataType(colJson.type())));
 
     }
 

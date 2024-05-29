@@ -59,6 +59,8 @@ public class DuckDBJdbcPropertiesToLogicalDataTypeMapping implements JdbcPropert
                 return FieldType.builder().dataType(DataType.TINYINT).build();
             case VARCHAR:
                 return FieldType.builder().dataType(DataType.VARCHAR).build();
+            case JSON:
+                return FieldType.builder().dataType(DataType.JSON).build();
             default:
                 throw new IllegalArgumentException("Unexpected values: JDBC TYPE_NAME " + typeName + ", JDBC DATA_TYPE: " + dataType);
         }
