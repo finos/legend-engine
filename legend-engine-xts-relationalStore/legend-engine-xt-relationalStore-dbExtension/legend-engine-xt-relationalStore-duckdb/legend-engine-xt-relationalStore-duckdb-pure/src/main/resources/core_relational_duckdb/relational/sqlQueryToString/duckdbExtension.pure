@@ -16,33 +16,181 @@ function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::d
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::createDbExtensionForDuckDB():DbExtension[1]
 {
-   let reservedWords = duckDBReservedWords();
+   let reservedWords = duckDBReservedWords()->map(kv|$kv->toLower());
    let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsForDuckDB());
    let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
    let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
                               getDynaFunctionToSqlForDuckDB()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
    ^DbExtension(
       isBooleanLiteralSupported = true,
-      isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
+      isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords); },                                          // check case insensitive
       joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
       literalProcessor = $literalProcessor,
       selectSQLQueryProcessor = processSelectSQLQueryForDuckDB_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
-      dynaFuncDispatch = $dynaFuncDispatch
+      dynaFuncDispatch = $dynaFuncDispatch,
+      ddlCommandsTranslator = getDDLCommandsTranslator()
    );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::getDDLCommandsTranslator(): RelationalDDLCommandsTranslator[1]
+{
+  ^RelationalDDLCommandsTranslator(
+                createSchema = translateCreateSchemaStatementDefault_CreateSchemaSQL_1__DbConfig_1__String_1_,
+                dropSchema = translateDropSchemaStatementDefault_DropSchemaSQL_1__DbConfig_1__String_1_,
+                createTable = translateCreateTableStatementDefault_CreateTableSQL_1__DbConfig_1__String_1_,
+                dropTable = translateDropTableStatementDefault_DropTableSQL_1__DbConfig_1__String_1_,
+                loadTable = loadValuesToDbTableDefault_LoadTableSQL_1__DbConfig_1__String_MANY_
+              );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::getLiteralProcessorsForDuckDB():Map<Type,LiteralProcessor>[1]
 {
+  let literalReplacementPairForString = ^LiteralReplacement(old = '\'', new = '\'\'');
+
    newMap([
-   ]->cast(@Pair<Type,LiteralProcessor>))
+      pair(StrictDate,     ^LiteralProcessor(format = '%s', transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringDuckDB($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = '%s', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringDuckDB($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = '%s', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringDuckDB($dbTimeZone)})),
+      pair(Boolean,        ^LiteralProcessor(format = '%s', transform = toString_Any_1__String_1_->literalTransform()))
+   ]);
 }
 
+function meta::relational::functions::sqlQueryToString::duckDB::convertDateToSqlStringDuckDB(date:Date[1], dbTimeZone:String[0..1]):String[1]
+{
+   //Default to UTC, if timezone is not specified. GMT is the same as UTC, UTC is not actually a timezone
+   let timeZone = if( $dbTimeZone->isEmpty(), | 'GMT', |  $dbTimeZone->toOne());
+   if($date->hasSecond(),
+      | if ($date->hasSubsecond(),
+            | let d= format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss.SSSSSS}', $date);
+              format('TIMESTAMP \'%s\'',$d);,
+            | let d= format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss}', $date); 
+              format('TIMESTAMP_S \'%s\'',$d);
+           ),
+      | let d =format('%t{[' + $timeZone + ']yyyy-MM-dd}', $date);
+        format('DATE \'%s\'',$d);
+    );
+}
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::getDynaFunctionToSqlForDuckDB(): DynaFunctionToSql[*]
 {
   let allStates = allGenerationStates();
+  
   [
+    dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | $p->at(0) + ',' + constructIntervalFunction($p->at(2), $p->at(1)) })),
+    dynaFnToSql('booland',                $allStates,            ^ToSql(format='every(%s)')),
+    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='any(%s)')),  
+    dynaFnToSql('castBoolean',            $allStates,            ^ToSql(format='cast(%s as boolean)')),  
+    dynaFnToSql('chr',                    $allStates,            ^ToSql(format='char(%s)')),
+    dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    // dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateH2()})),
+    // dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeH2()})),
+    dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='convert(%s, VARCHAR(128))')),
+    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(\'%s\',%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForDuckDB(),$p->at(0),$p->at(1)]})),
+    dynaFnToSql('datePart',               $allStates,            ^ToSql(format='date_trunc(\'day\', %s)')),
+    dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='day(%s)')),
+    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='dayname(%s)')),
+    dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='%s',transform=dayOfWeekNumberForDuckDB_String_$1_2$__String_1_)),
+    dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='day(%s)')),
+    // dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_decode(%s)')),
+    // dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_encode(%s)')),
+    // dynaFnToSql('extractFromSemiStructured', $allStates,         ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsForH2()})),
+    dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='date_trunc(\'month\', %s)', transform={p:String[1] | $p->repeat(1)})),
+    dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='date_trunc(\'quarter\', %s)', transform={p:String[1] | $p->repeat(1)})),
+    dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='date_trunc(\'month\', now())')),
+    dynaFnToSql('firstDayOfThisQuarter',  $allStates,            ^ToSql(format='date_trunc(\'quarter\', now())')),
+    dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='date_trunc(\'year\',now())')),
+    dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='date_add(%s, to_days(cast(-(isodow(%s)-1) as integer)))', transform={p:String[1] | $p->repeat(2)})),
+    dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='date_trunc(\'year\', %s)', transform={p:String[1] | $p->repeat(1)})),
+    dynaFnToSql('firstHourOfDay',         $allStates,            ^ToSql(format='CAST(date_trunc(\'day\', %s) AS TIMESTAMP_S)', transform={p:String[1] | $p->repeat(1)})),
+    dynaFnToSql('firstMillisecondOfSecond',$allStates,           ^ToSql(format='date_trunc(\'second\', %s)', transform={p:String[1] | $p->repeat(1)})),
+    dynaFnToSql('firstMinuteOfHour',      $allStates,            ^ToSql(format='date_trunc(\'hour\', %s)', transform={p:String[1] | $p->repeat(1)})),
+    dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='date_trunc(\'minute\', %s)', transform={p:String[1] | $p->repeat(1)})),
+    dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
+    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='position(%s IN %s)', transform={p:String[2] | [$p->at(1), $p->at(0)]})),
+    dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),
+    dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format='regexp_matches(%s,\'^[a-zA-Z0-9]*$\')', transform={p:String[1]|$p})),
+    dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='group_concat(%s, %s)')),
+    dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
+    dynaFnToSql('lpad',                   $allStates,            ^ToSql(format='lpad(%s,%s,%s)', transform=processPaddingParams_String_MANY__String_MANY_)),
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format= 'regexp_matches(%s,%s)', transform={p:String[2]|$p})),
+    dynaFnToSql('md5',                    $allStates,            ^ToSql(format='md5(%s)')),
+    dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
+    dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('monthName',              $allStates,            ^ToSql(format='monthname(%s)')),
+    // dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='date_add(DAY, case when %s - DAY_OF_WEEK(%s) > 0 then %s - DAY_OF_WEEK(%s) - 7 else %s - DAY_OF_WEEK(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentH2('current_date()')}, parametersWithinWhenClause = [false, false])),
+    dynaFnToSql('now',                    $allStates,            ^ToSql(format='now()')),
+    // dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='parsedatetime(%s,%s)')),
+    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as decimal)')),
+    dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
+    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
+    // dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='legend_h2_extension_json_parse(%s)')),
+    dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s, %s)')),
+    // dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='date_add(DAY, case when %s - DAY_OF_WEEK(%s) >= 0 then %s - DAY_OF_WEEK(%s) - 7 else %s - DAY_OF_WEEK(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentH2('current_date()')}, parametersWithinWhenClause = [false, false])),
+    dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('reverseString',          $allStates,            ^ToSql(format='legend_h2_extension_reverse_string(%s)')),
+    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('rpad',                   $allStates,            ^ToSql(format='rpad(%s,%s,%s)', transform=processPaddingParams_String_MANY__String_MANY_)),
+    dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
+    dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='sha1(%s)')),
+    dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='sha256(%s)')),
+    dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='split_part(%s, %s, %s)')),
+    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
+    dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
+    dynaFnToSql('today',                  $allStates,            ^ToSql(format='cast(today() as timestamp_s)')),
+    dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
+    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double precision)')),
+    dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
+    // dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampH2()})),
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::dayOfWeekNumberForDuckDB(dayOfWeek: String[1..2]):String[1]
+{
+  if($dayOfWeek->size()==1,
+   | 'dayofweek('+$dayOfWeek->at(0)+') +1',            //dayofweek(date) gives (Sunday = 0, Saturday = 6) >> we need from 1 to 7
+   | println($dayOfWeek);
+     assert(or($dayOfWeek->at(1)=='\'Sunday\'',$dayOfWeek->at(1)=='\'Monday\''),'DayOfWeekNumber Function requires either Sunday or Monday as First Day of Week');
+     if($dayOfWeek->at(1)=='\'Sunday\'',
+      |'dayofweek('+$dayOfWeek->at(0)+')+1',
+      |'isodow('+$dayOfWeek->at(0)+')'                           // (Monday = 1, Sunday = 7).
+     ); 
+  );                         
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processPaddingParams(p:String[*]):String[*]
+{
+   if($p->size()==2,| $p->concatenate('\' \''),| $p);    //pad with empty spaces by default
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processDateDiffDurationUnitForDuckDB(durationUnit:String[1]):String[1]
+{
+   let durationEnumNames = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
+   let durationDbNames = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond'];
+   $durationEnumNames->zip($durationDbNames)->filter(h | $h.first == $durationUnit).second->toOne();
+}
+
+function meta::relational::functions::sqlQueryToString::duckDB::constructIntervalFunction(unit:String[1], i:String[1]):String[1]
+{
+   let unitWithoutQuotes = $unit->removeQuotesIfExist();
+   
+   let interval_func= [
+      pair(DurationUnit.YEARS->toString(), 'to_years'),
+      pair(DurationUnit.MONTHS->toString(), 'to_months'),
+      pair(DurationUnit.WEEKS->toString(), 'to_weeks'),
+      pair(DurationUnit.DAYS->toString(), 'to_days'),
+      pair(DurationUnit.HOURS->toString(), 'to_hours'),
+      pair(DurationUnit.MINUTES->toString(), 'to_minutes'),
+      pair(DurationUnit.SECONDS->toString(), 'to_seconds'),
+      pair(DurationUnit.MILLISECONDS->toString(), 'to_milliseconds'),
+      pair(DurationUnit.MICROSECONDS->toString(), 'to_microseconds')
+   ]->filter(p | $p.first == $unitWithoutQuotes).second->toOne('Unit not found: ' + $unitWithoutQuotes);
+
+   $interval_func +'(' + $i +')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processSelectSQLQueryForDuckDB(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]

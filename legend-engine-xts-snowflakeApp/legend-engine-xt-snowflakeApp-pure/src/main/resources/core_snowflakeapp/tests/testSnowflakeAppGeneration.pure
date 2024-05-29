@@ -40,7 +40,7 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testEnumPushDownWithFilter():Boolean[1]
 {
-  let expected = 'APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"GENDER" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", case when "root".GENDER = \'male\' then \'M\' when "root".GENDER = \'female\' then \'F\' else null end as "Gender" from personTable as "root" where "root".GENDER = \'male\' $$;';
+  let expected = 'APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"GENDER" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", case when "root".GENDER = \'male\' then \'M\' when "root".GENDER in (\'female\', \'Female\') then \'F\' else null end as "Gender" from personTable as "root" where "root".GENDER = \'male\' $$;';
   assertSnowflakeArtifactForFunction( meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionEnumPushDown__TabularDataSet_1_, $expected);
 }
 
@@ -67,7 +67,7 @@ function <<test.Test, test.ToFix>> meta::external::function::activator::snowflak
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithEnumParams():Boolean[1]
 {
-  let expected = 'APP1("gender" VARCHAR) RETURNS TABLE ("FIRSTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName" from personTable as "root" where gender = case when "root".GENDER = \'male\' then \'M\' when "root".GENDER = \'female\' then \'F\' else null end $$;';
+  let expected = 'APP1("gender" VARCHAR) RETURNS TABLE ("FIRSTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName" from personTable as "root" where gender = case when "root".GENDER = \'male\' then \'M\' when "root".GENDER in (\'female\', \'Female\') then \'F\' else null end $$;';
   assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionEnumParam_Gender_1__TabularDataSet_1_, $expected);
 }
 
