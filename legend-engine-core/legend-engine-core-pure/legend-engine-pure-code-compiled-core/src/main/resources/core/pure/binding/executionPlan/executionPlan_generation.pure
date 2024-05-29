@@ -103,7 +103,7 @@ function <<access.private>> meta::external::format::shared::executionPlan::exter
 {
    let parameters      = $fe.parametersValues->evaluateAndDeactivate();
    let children        = $parameters->at(0)->processValueSpecification($state, $extensions, $debug)->toOneMany();
-   let config          = if($parameters->size() == 4, | $parameters->at(3)->cast(@meta::external::format::shared::ExternalFormatExternalizeConfig), | []);
+   let config          = if($parameters->size() == 4, | $parameters->at(3)->cast(@InstanceValue).values->cast(@meta::external::format::shared::ExternalFormatExternalizeConfig)->toOne();, | []);
 
    let inScopeVars     = $state.inScopeVars;
 
