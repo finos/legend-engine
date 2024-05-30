@@ -136,6 +136,20 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting2():Boo
   assertRoundTrip($input, $expected);
 }
 
+Class meta::pure::router::preeval::tests::A 
+{
+  a : Boolean[1] = true;
+  b : String[1] = 'b';
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testNew():Boolean[1]
+{
+  let input = {| let x = ^meta::pure::router::preeval::tests::A(b = 'c'); $x.a;};
+  let expected = {| true};
+  assertRoundTrip($input, $expected);
+
+}
+
 
 function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting2b():Boolean[1]
 {
