@@ -86,7 +86,7 @@ public class HelperValueSpecificationGrammarComposer
 
     public static String printColSpec(ColSpec col, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        return (col.name.contains(" ") ? "'" + col.name + "'" : col.name) + (col.type != null ? ":" + col.type : "") + (col.function1 != null ? ":" +  (transformer.isRenderingPretty() ? " " : "") + col.function1.accept(transformer) : "") + (col.function2 != null ? ":" + col.function2.accept(transformer) : "");
+        return PureGrammarComposerUtility.convertIdentifier(col.name) + (col.type != null ? ":" + col.type : "") + (col.function1 != null ? ":" +  (transformer.isRenderingPretty() ? " " : "") + col.function1.accept(transformer) : "") + (col.function2 != null ? ":" + col.function2.accept(transformer) : "");
     }
 
     public static String printColSpecArray(ColSpecArray colSpecArray, DEPRECATED_PureGrammarComposerCore transformer)

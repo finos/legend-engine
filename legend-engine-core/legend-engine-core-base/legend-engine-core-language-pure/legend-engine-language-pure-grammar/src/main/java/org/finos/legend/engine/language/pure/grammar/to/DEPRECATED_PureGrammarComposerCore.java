@@ -1025,7 +1025,24 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(GenericTypeInstance genericTypeInstance)
     {
-        return '@' + HelperValueSpecificationGrammarComposer.printFullPath(genericTypeInstance.fullPath, this);
+        StringBuilder builder = new StringBuilder();
+        builder.append('@' + HelperValueSpecificationGrammarComposer.printFullPath(genericTypeInstance.fullPath, this));
+        if (genericTypeInstance.typeArguments != null && !genericTypeInstance.typeArguments.isEmpty() && genericTypeInstance.typeArguments.get(0) instanceof ClassInstance && ((ClassInstance) genericTypeInstance.typeArguments.get(0)).type.equals("colSpecArray"))
+        {
+            ColSpecArray colSpecArray = (ColSpecArray) ((ClassInstance) genericTypeInstance.typeArguments.get(0)).value;
+            builder.append("<(");
+            if (this.isRenderingPretty())
+            {
+                builder.append(this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + " ");
+            }
+            builder.append(LazyIterate.collect(colSpecArray.colSpecs, colSpec -> HelperValueSpecificationGrammarComposer.printColSpec(colSpec, this)).makeString("," + (this.isRenderingPretty() ? this.returnChar() + " " + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : " ")));
+            if (this.isRenderingPretty())
+            {
+                builder.append(this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 0)).append(" ");
+            }
+            builder.append(")>");
+        }
+        return builder.toString();
     }
 
     @Override

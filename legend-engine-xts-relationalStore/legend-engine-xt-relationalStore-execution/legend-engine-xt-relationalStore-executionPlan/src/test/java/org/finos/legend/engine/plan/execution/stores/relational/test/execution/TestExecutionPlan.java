@@ -496,6 +496,23 @@ public class TestExecutionPlan extends AlloyTestServer
     }
 
     @Test
+    public void testPivotWithCast() throws JsonProcessingException
+    {
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): Any[1]\n" +
+                "{\n" +
+                "  {| test::Person.all()\n" +
+                "     ->project(~[fullName: x|$x.fullName])->pivot(~fullName, ~sum : x|1 : x|$x->sum())->cast(@meta::pure::metamodel::relation::Relation<(fullName:String)>)}\n" +
+                "}";
+        SingleExecutionPlan plan = super.buildPlan(TestPlanExecutionForIn.LOGICAL_MODEL + TestPlanExecutionForIn.STORE_MODEL + TestPlanExecutionForIn.MAPPING + TestPlanExecutionForIn.RUNTIME + fetchFunction, null);
+        Assert.assertFalse(((SQLExecutionNode) plan.rootExecutionNode.executionNodes.get(0)).isResultColumnsDynamic);
+        // TODO?: test H2 database sets DATABASE_TO_UPPER=true by default, so for nested select resulted from a pivot(),
+        // the column name will automatically be treated as uppercase if not quoted, resulting in invalid column name in the outer select
+//        RelationalResult result = (RelationalResult) planExecutor.execute(plan);
+//        Assert.assertEquals("{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select * from (select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\") as \\\"person_0\\\"\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]},{\"values\":[\"P2\"]}]}}", RelationalResultToJsonDefaultSerializer.removeComment(result.flush(new RelationalResultToJsonDefaultSerializer(result))));
+    }
+
+    @Test
     public void testUnion() throws Exception
     {
         // executionPlan(|meta::pure::tests::model::simple::Person.all(), meta::relational::tests::mapping::union::unionMapping, meta::external::store::relational::tests::testRuntime())->meta::alloy::protocol::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan()->toJSON([], 1000, config(false, false, true, true));

@@ -1054,4 +1054,21 @@ public class TestCompilationFromGrammar
                         "}");
     }
 
+    @Test
+    public void testRelation()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Report{country : String[1]; city: String[1]; year: Integer[1]; treePlanted: Integer[1];}" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   test::Report.all()->project(~[\n" +
+                        "        country: x|$x.country,\n" +
+                        "        city : x|$x.city,\n" +
+                        "        treePlanted: x|$x.treePlanted,\n" +
+                        "        year: x|$x.year\n" +
+                        "      ])->pivot(~[country, city], ~[total: x|$x.treePlanted : x|$x->sum()])->cast(@Relation<(year2:Integer)>)->filter(x|$x.year2 == 2000)\n" +
+                        "}"
+        );
+    }
 }

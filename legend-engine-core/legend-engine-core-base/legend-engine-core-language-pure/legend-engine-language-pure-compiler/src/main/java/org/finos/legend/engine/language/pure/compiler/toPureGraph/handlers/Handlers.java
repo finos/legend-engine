@@ -959,7 +959,24 @@ public class Handlers
                 h("meta::pure::tds::paginated_TabularDataSet_1__Integer_1__Integer_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet"))
         );
 
-        register("meta::pure::functions::lang::cast_Any_m__T_1__T_m_", true, ps -> res(ps.get(1)._genericType(), ps.get(0)._multiplicity()));
+        register("meta::pure::functions::lang::cast_Any_m__T_1__T_m_", true, ps ->
+        {
+            // Support casting to a relation
+            try
+            {
+                RelationType<?> rel = (RelationType<?>) ps.get(1)._genericType()._typeArguments().getFirst()._rawType();
+                return res(
+                        new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.pureModel.getClass(M3Paths.GenericType))
+                                ._rawType(this.pureModel.getType(M3Paths.Relation))
+                                ._typeArguments(Lists.fixedSize.of(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.pureModel.getClass(M3Paths.GenericType))._rawType(rel))),
+                        "one"
+                );
+            }
+            catch (Exception e)
+            {
+                return res(ps.get(1)._genericType(), ps.get(0)._multiplicity());
+            }
+        });
 
         register("meta::pure::functions::collection::at_T_MANY__Integer_1__T_1_", true, ps -> res(ps.get(0)._genericType(), "one"));
 
