@@ -21,6 +21,8 @@ public class TestSnowflakeExplodeSemiStructured extends AbstractTestSnowflakeSem
 {
     private static final String mapping = "simple::mapping::semistructured";
     private static final String runtime = "simple::runtime::runtime";
+    private static final String viewMapping = "view::mapping::semistructured";
+    private static final String viewRuntime = "view::runtime::runtime";
 
     @Test
     public void testSimplePrimitivePropertiesProjectExplodeSource()
@@ -38,6 +40,17 @@ public class TestSnowflakeExplodeSemiStructured extends AbstractTestSnowflakeSem
                 "    )\n";
         String TDSType = "  type = TDS[(Id, String, VARCHAR(100), \"\"), (Account, String, VARCHAR(100), \"\"), (Orders/Id, String, VARCHAR(100), \"\"), (Orders/Identifier, String, VARCHAR(100), \"\"), (Orders/Price, Float, DOUBLE, \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
+
+        String snowflakePlanView = this.buildExecutionPlanString(queryFunction, viewMapping, viewRuntime);
+        String snowflakeExpectedView =
+                "    Relational\n" +
+                "    (\n" +
+                "      type = TDS[(Id, String, VARCHAR(100), \"\"), (Account, String, VARCHAR(100), \"\"), (Orders/Id, String, VARCHAR(100), \"\"), (Orders/Identifier, String, VARCHAR(100), \"\"), (Orders/Price, Float, DOUBLE, \"\")]\n" +
+                "      resultColumns = [(\"Id\", VARCHAR(0)), (\"Account\", VARCHAR(0)), (\"Orders/Id\", VARCHAR(100)), (\"Orders/Identifier\", VARCHAR(100)), (\"Orders/Price\", DOUBLE)]\n" +
+                "      sql = select \"root\".ID as \"Id\", \"root\".ACCOUNT as \"Account\", \"blocks_1\".ID as \"Orders/Id\", \"blocks_1\".IDENTIFIER as \"Orders/Identifier\", \"blocks_1\".PRICE as \"Orders/Price\" from (select \"root\".ID as ID, \"allblocksversions_1\".ACCOUNT as ACCOUNT, \"allblocksversions_1\".BLOCKDATA as BLOCKDATA from (select \"root\".ID as ID, max(\"root\".VERSION) as MAX_VERSION from Semistructured.AllBlocksVersions as \"root\" group by \"root\".ID) as \"root\" left outer join Semistructured.AllBlocksVersions as \"allblocksversions_1\" on (\"allblocksversions_1\".ID = \"root\".ID and \"allblocksversions_1\".VERSION = \"root\".MAX_VERSION)) as \"root\" left outer join (select \"orders_0\".ID, \"orders_0\".IDENTIFIER, \"orders_0\".QUANTITY, \"orders_0\".SIDE, \"orders_0\".PRICE, \"blocks_2\".leftJoinKey_0 as leftJoinKey_0 from (select \"ss_flatten_0\".VALUE as flattened_prop, \"root\".ID as leftJoinKey_0 from (select \"root\".ID as ID, \"allblocksversions_2\".ACCOUNT as ACCOUNT, \"allblocksversions_2\".BLOCKDATA as BLOCKDATA from (select \"root\".ID as ID, max(\"root\".VERSION) as MAX_VERSION from Semistructured.AllBlocksVersions as \"root\" group by \"root\".ID) as \"root\" left outer join Semistructured.AllBlocksVersions as \"allblocksversions_2\" on (\"allblocksversions_2\".ID = \"root\".ID and \"allblocksversions_2\".VERSION = \"root\".MAX_VERSION)) as \"root\" inner join lateral flatten(input => \"root\".BLOCKDATA['relatedEntities'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\") as \"blocks_2\" inner join Semistructured.Orders as \"orders_0\" on (to_varchar(get_path(\"blocks_2\".flattened_prop, 'tag')) = 'order' and to_varchar(get_path(\"blocks_2\".flattened_prop, 'tagId')) = \"orders_0\".ID)) as \"blocks_1\" on (\"root\".ID = \"blocks_1\".leftJoinKey_0)\n" +
+                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                "    )\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpectedView), snowflakePlanView);
     }
 
     @Test
@@ -56,6 +69,17 @@ public class TestSnowflakeExplodeSemiStructured extends AbstractTestSnowflakeSem
                 "    )\n";
         String TDSType = "  type = TDS[(Id, String, VARCHAR(100), \"\"), (Status, String, VARCHAR(100), \"\"), (Block/Id, String, VARCHAR(100), \"\"), (Block/Account, String, VARCHAR(100), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
+
+        String snowflakePlanView = this.buildExecutionPlanString(queryFunction, viewMapping, viewRuntime);
+        String snowflakeExpectedView =
+                "    Relational\n" +
+                "    (\n" +
+                "      type = TDS[(Id, String, VARCHAR(100), \"\"), (Status, String, VARCHAR(100), \"\"), (Block/Id, String, VARCHAR(100), \"\"), (Block/Account, String, VARCHAR(100), \"\")]\n" +
+                "      resultColumns = [(\"Id\", VARCHAR(0)), (\"Status\", VARCHAR(0)), (\"Block/Id\", VARCHAR(0)), (\"Block/Account\", VARCHAR(0))]\n" +
+                "      sql = select \"root\".ID as \"Id\", \"root\".STATUS as \"Status\", \"trades_1\".ID as \"Block/Id\", \"trades_1\".ACCOUNT as \"Block/Account\" from (select \"root\".ID as ID, \"root\".STATUS as STATUS, \"root\".TRADESUMMARY as TRADESUMMARY from Semistructured.TradesTable as \"root\") as \"root\" left outer join (select \"trades_2\".ID as leftJoinKey_0, \"blocks_0\".ID, \"blocks_0\".ACCOUNT, \"blocks_0\".BLOCKDATA from (select \"root\".ID as ID, \"root\".STATUS as STATUS, \"root\".TRADESUMMARY as TRADESUMMARY from Semistructured.TradesTable as \"root\") as \"trades_2\" inner join (select \"ss_flatten_0\".VALUE as flattened_prop, \"root\".ID, \"root\".ACCOUNT, \"root\".BLOCKDATA from (select \"root\".ID as ID, \"allblocksversions_1\".ACCOUNT as ACCOUNT, \"allblocksversions_1\".BLOCKDATA as BLOCKDATA from (select \"root\".ID as ID, max(\"root\".VERSION) as MAX_VERSION from Semistructured.AllBlocksVersions as \"root\" group by \"root\".ID) as \"root\" left outer join Semistructured.AllBlocksVersions as \"allblocksversions_1\" on (\"allblocksversions_1\".ID = \"root\".ID and \"allblocksversions_1\".VERSION = \"root\".MAX_VERSION)) as \"root\" inner join lateral flatten(input => \"root\".BLOCKDATA['relatedEntities'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\") as \"blocks_0\" on (to_varchar(get_path(\"blocks_0\".flattened_prop, 'tag')) = 'trade' and to_varchar(get_path(\"blocks_0\".flattened_prop, 'tagId')) = \"trades_2\".ID)) as \"trades_1\" on (\"root\".ID = \"trades_1\".leftJoinKey_0)\n" +
+                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                "    )\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpectedView), snowflakePlanView);
     }
 
     @Test
@@ -74,6 +98,17 @@ public class TestSnowflakeExplodeSemiStructured extends AbstractTestSnowflakeSem
                         "    )\n";
         String TDSType = "  type = TDS[(Id, String, VARCHAR(100), \"\"), (Entity Tag, String, VARCHAR(8192), \"\"), (Entity Tag Id, String, VARCHAR(8192), \"\"), (Orders/Id, String, VARCHAR(100), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
+
+        String snowflakePlanView = this.buildExecutionPlanString(queryFunction, viewMapping, viewRuntime);
+        String snowflakeExpectedView =
+                "    Relational\n" +
+                "    (\n" +
+                "      type = TDS[(Id, String, VARCHAR(100), \"\"), (Entity Tag, String, VARCHAR(8192), \"\"), (Entity Tag Id, String, VARCHAR(8192), \"\"), (Orders/Id, String, VARCHAR(100), \"\")]\n" +
+                "      resultColumns = [(\"Id\", VARCHAR(0)), (\"Entity Tag\", \"\"), (\"Entity Tag Id\", \"\"), (\"Orders/Id\", VARCHAR(100))]\n" +
+                "      sql = select \"root\".ID as \"Id\", \"ss_flatten_0\".VALUE['tag']::varchar as \"Entity Tag\", \"ss_flatten_0\".VALUE['tagId']::varchar as \"Entity Tag Id\", \"blocks_1\".ID as \"Orders/Id\" from (select \"root\".ID as ID, \"allblocksversions_1\".ACCOUNT as ACCOUNT, \"allblocksversions_1\".BLOCKDATA as BLOCKDATA from (select \"root\".ID as ID, max(\"root\".VERSION) as MAX_VERSION from Semistructured.AllBlocksVersions as \"root\" group by \"root\".ID) as \"root\" left outer join Semistructured.AllBlocksVersions as \"allblocksversions_1\" on (\"allblocksversions_1\".ID = \"root\".ID and \"allblocksversions_1\".VERSION = \"root\".MAX_VERSION)) as \"root\" inner join lateral flatten(input => \"root\".BLOCKDATA['relatedEntities'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\" left outer join (select \"orders_0\".ID, \"orders_0\".IDENTIFIER, \"orders_0\".QUANTITY, \"orders_0\".SIDE, \"orders_0\".PRICE, \"blocks_2\".leftJoinKey_0 as leftJoinKey_0 from (select \"ss_flatten_1\".VALUE as flattened_prop, \"root\".ID as leftJoinKey_0 from (select \"root\".ID as ID, \"allblocksversions_2\".ACCOUNT as ACCOUNT, \"allblocksversions_2\".BLOCKDATA as BLOCKDATA from (select \"root\".ID as ID, max(\"root\".VERSION) as MAX_VERSION from Semistructured.AllBlocksVersions as \"root\" group by \"root\".ID) as \"root\" left outer join Semistructured.AllBlocksVersions as \"allblocksversions_2\" on (\"allblocksversions_2\".ID = \"root\".ID and \"allblocksversions_2\".VERSION = \"root\".MAX_VERSION)) as \"root\" inner join lateral flatten(input => \"root\".BLOCKDATA['relatedEntities'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_1\") as \"blocks_2\" inner join Semistructured.Orders as \"orders_0\" on (to_varchar(get_path(\"blocks_2\".flattened_prop, 'tag')) = 'order' and to_varchar(get_path(\"blocks_2\".flattened_prop, 'tagId')) = \"orders_0\".ID)) as \"blocks_1\" on (\"root\".ID = \"blocks_1\".leftJoinKey_0)\n" +
+                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                "    )\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpectedView), snowflakePlanView);
     }
 
     @Test
@@ -92,6 +127,17 @@ public class TestSnowflakeExplodeSemiStructured extends AbstractTestSnowflakeSem
                 "    )\n";
         String TDSType = "  type = TDS[(Id, String, VARCHAR(100), \"\"), (Account, String, VARCHAR(100), \"\"), (Orders/Id, String, VARCHAR(100), \"\"), (Orders/Identifier, String, VARCHAR(100), \"\"), (Trades/Id, String, VARCHAR(100), \"\"), (Trades/Status, String, VARCHAR(100), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
+
+        String snowflakePlanView = this.buildExecutionPlanString(queryFunction, viewMapping, viewRuntime);
+        String snowflakeExpectedView =
+                "    Relational\n" +
+                "    (\n" +
+                "      type = TDS[(Id, String, VARCHAR(100), \"\"), (Account, String, VARCHAR(100), \"\"), (Orders/Id, String, VARCHAR(100), \"\"), (Orders/Identifier, String, VARCHAR(100), \"\"), (Trades/Id, String, VARCHAR(100), \"\"), (Trades/Status, String, VARCHAR(100), \"\")]\n" +
+                "      resultColumns = [(\"Id\", VARCHAR(0)), (\"Account\", VARCHAR(0)), (\"Orders/Id\", VARCHAR(100)), (\"Orders/Identifier\", VARCHAR(100)), (\"Trades/Id\", VARCHAR(0)), (\"Trades/Status\", VARCHAR(0))]\n" +
+                "      sql = select \"root\".ID as \"Id\", \"root\".ACCOUNT as \"Account\", \"blocks_1\".ID as \"Orders/Id\", \"blocks_1\".IDENTIFIER as \"Orders/Identifier\", \"blocks_3\".ID as \"Trades/Id\", \"blocks_3\".STATUS as \"Trades/Status\" from (select \"root\".ID as ID, \"allblocksversions_1\".ACCOUNT as ACCOUNT, \"allblocksversions_1\".BLOCKDATA as BLOCKDATA from (select \"root\".ID as ID, max(\"root\".VERSION) as MAX_VERSION from Semistructured.AllBlocksVersions as \"root\" group by \"root\".ID) as \"root\" left outer join Semistructured.AllBlocksVersions as \"allblocksversions_1\" on (\"allblocksversions_1\".ID = \"root\".ID and \"allblocksversions_1\".VERSION = \"root\".MAX_VERSION)) as \"root\" left outer join (select \"orders_0\".ID, \"orders_0\".IDENTIFIER, \"orders_0\".QUANTITY, \"orders_0\".SIDE, \"orders_0\".PRICE, \"blocks_2\".leftJoinKey_0 as leftJoinKey_0 from (select \"ss_flatten_0\".VALUE as flattened_prop, \"root\".ID as leftJoinKey_0 from (select \"root\".ID as ID, \"allblocksversions_2\".ACCOUNT as ACCOUNT, \"allblocksversions_2\".BLOCKDATA as BLOCKDATA from (select \"root\".ID as ID, max(\"root\".VERSION) as MAX_VERSION from Semistructured.AllBlocksVersions as \"root\" group by \"root\".ID) as \"root\" left outer join Semistructured.AllBlocksVersions as \"allblocksversions_2\" on (\"allblocksversions_2\".ID = \"root\".ID and \"allblocksversions_2\".VERSION = \"root\".MAX_VERSION)) as \"root\" inner join lateral flatten(input => \"root\".BLOCKDATA['relatedEntities'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\") as \"blocks_2\" inner join Semistructured.Orders as \"orders_0\" on (to_varchar(get_path(\"blocks_2\".flattened_prop, 'tag')) = 'order' and to_varchar(get_path(\"blocks_2\".flattened_prop, 'tagId')) = \"orders_0\".ID)) as \"blocks_1\" on (\"root\".ID = \"blocks_1\".leftJoinKey_0) left outer join (select \"trades_0\".ID, \"trades_0\".STATUS, \"trades_0\".TRADESUMMARY, \"blocks_2\".leftJoinKey_0 as leftJoinKey_0 from (select \"ss_flatten_0\".VALUE as flattened_prop, \"root\".ID as leftJoinKey_0 from (select \"root\".ID as ID, \"allblocksversions_2\".ACCOUNT as ACCOUNT, \"allblocksversions_2\".BLOCKDATA as BLOCKDATA from (select \"root\".ID as ID, max(\"root\".VERSION) as MAX_VERSION from Semistructured.AllBlocksVersions as \"root\" group by \"root\".ID) as \"root\" left outer join Semistructured.AllBlocksVersions as \"allblocksversions_2\" on (\"allblocksversions_2\".ID = \"root\".ID and \"allblocksversions_2\".VERSION = \"root\".MAX_VERSION)) as \"root\" inner join lateral flatten(input => \"root\".BLOCKDATA['relatedEntities'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\") as \"blocks_2\" inner join (select \"root\".ID as ID, \"root\".STATUS as STATUS, \"root\".TRADESUMMARY as TRADESUMMARY from Semistructured.TradesTable as \"root\") as \"trades_0\" on (to_varchar(get_path(\"blocks_2\".flattened_prop, 'tag')) = 'trade' and to_varchar(get_path(\"blocks_2\".flattened_prop, 'tagId')) = \"trades_0\".ID)) as \"blocks_3\" on (\"root\".ID = \"blocks_3\".leftJoinKey_0)\n" +
+                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                "    )\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpectedView), snowflakePlanView);
     }
 
     @Test
@@ -254,6 +300,17 @@ public class TestSnowflakeExplodeSemiStructured extends AbstractTestSnowflakeSem
                 "    )\n";
         String TDSType = "  type = TDS[(Id, String, VARCHAR(100), \"\"), (Trade Id, String, VARCHAR(100), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
+
+        String snowflakePlanView = this.buildExecutionPlanString(queryFunction, viewMapping, viewRuntime);
+        String snowflakeExpectedView =
+                "    Relational\n" +
+                "    (\n" +
+                "      type = TDS[(Id, String, VARCHAR(100), \"\"), (Trade Id, String, VARCHAR(100), \"\")]\n" +
+                "      resultColumns = [(\"Id\", VARCHAR(100)), (\"Trade Id\", VARCHAR(0))]\n" +
+                "      sql = select \"root\".ID as \"Id\", \"blocks_2\".ID as \"Trade Id\" from Semistructured.Orders as \"root\" left outer join (select \"orders_2\".ID as leftJoinKey_0, \"blocks_0\".ID, \"blocks_0\".ACCOUNT, \"blocks_0\".BLOCKDATA from Semistructured.Orders as \"orders_2\" inner join (select \"ss_flatten_0\".VALUE as flattened_prop, \"root\".ID, \"root\".ACCOUNT, \"root\".BLOCKDATA from (select \"root\".ID as ID, \"allblocksversions_1\".ACCOUNT as ACCOUNT, \"allblocksversions_1\".BLOCKDATA as BLOCKDATA from (select \"root\".ID as ID, max(\"root\".VERSION) as MAX_VERSION from Semistructured.AllBlocksVersions as \"root\" group by \"root\".ID) as \"root\" left outer join Semistructured.AllBlocksVersions as \"allblocksversions_1\" on (\"allblocksversions_1\".ID = \"root\".ID and \"allblocksversions_1\".VERSION = \"root\".MAX_VERSION)) as \"root\" inner join lateral flatten(input => \"root\".BLOCKDATA['relatedEntities'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\") as \"blocks_0\" on (to_varchar(get_path(\"blocks_0\".flattened_prop, 'tag')) = 'order' and to_varchar(get_path(\"blocks_0\".flattened_prop, 'tagId')) = \"orders_2\".ID)) as \"orders_1\" on (\"root\".ID = \"orders_1\".leftJoinKey_0) left outer join (select \"trades_0\".ID, \"trades_0\".STATUS, \"trades_0\".TRADESUMMARY, \"blocks_0\".leftJoinKey_0 as leftJoinKey_0 from (select \"ss_flatten_0\".VALUE as flattened_prop, \"root\".ID as leftJoinKey_0 from (select \"root\".ID as ID, \"allblocksversions_2\".ACCOUNT as ACCOUNT, \"allblocksversions_2\".BLOCKDATA as BLOCKDATA from (select \"root\".ID as ID, max(\"root\".VERSION) as MAX_VERSION from Semistructured.AllBlocksVersions as \"root\" group by \"root\".ID) as \"root\" left outer join Semistructured.AllBlocksVersions as \"allblocksversions_2\" on (\"allblocksversions_2\".ID = \"root\".ID and \"allblocksversions_2\".VERSION = \"root\".MAX_VERSION)) as \"root\" inner join lateral flatten(input => \"root\".BLOCKDATA['relatedEntities'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\") as \"blocks_0\" inner join (select \"root\".ID as ID, \"root\".STATUS as STATUS, \"root\".TRADESUMMARY as TRADESUMMARY from Semistructured.TradesTable as \"root\") as \"trades_0\" on (to_varchar(get_path(\"blocks_0\".flattened_prop, 'tag')) = 'trade' and to_varchar(get_path(\"blocks_0\".flattened_prop, 'tagId')) = \"trades_0\".ID)) as \"blocks_2\" on (\"orders_1\".ID = \"blocks_2\".leftJoinKey_0)\n" +
+                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                "    )\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpectedView), snowflakePlanView);
     }
 
     @Override

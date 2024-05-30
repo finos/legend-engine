@@ -451,7 +451,7 @@ function meta::pure::router::routing::processLambda(i:InstanceValue[1], routed:E
                               f:FunctionDefinition<Any>[1]| if($state.shouldBeRouted,
                                                               |$func->functionType().parameters->evaluateAndDeactivate()->map(
                                                                                                           p | let class = $p.genericType.rawType;
-                                                                                                              if (!$class->toOne()->instanceOf(DataType) && $class != TDSRow ,
+                                                                                                              if (!$class->toOne()->instanceOf(DataType) && $class != TDSRow && (!$class->toOne()->instanceOf(RelationType)),
                                                                                                                   | let map = $routed->filter(v|$v->evaluateAndDeactivate().value.genericType.rawType->toOne()->_subTypeOf($class->toOne()););
                                                                                                                     assert(!$map->isEmpty(),| 'Error mapping not found for class '+$class.name->toOne()+' cache:\''+$routed->cast(@meta::pure::router::store::metamodel::StoreMappingRoutedValueSpecification).sets.class.name->joinStrings(', ')+'\'');
                                                                                                                     pair($p.name, $map->at(0)->cast(@Any));,
