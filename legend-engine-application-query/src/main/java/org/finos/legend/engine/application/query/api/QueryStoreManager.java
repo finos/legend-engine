@@ -298,7 +298,7 @@ public class QueryStoreManager
         return matchingQueries;
     }
 
-    public Query getQuery(String queryId)
+    public Query getQuery(String queryId) throws JsonProcessingException
     {
         List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", queryId)), this::documentToQuery).toList();
         if (matchingQueries.size() > 1)
@@ -309,7 +309,11 @@ public class QueryStoreManager
         {
             throw new ApplicationQueryException("Can't find query with ID '" + queryId + "'", Response.Status.NOT_FOUND);
         }
-        return matchingQueries.get(0);
+        Query query = matchingQueries.get(0);
+        query.lastOpenAt = Instant.now().toEpochMilli();
+        query.numberOfView++;
+        this.getQueryCollection().findOneAndReplace(Filters.eq("id", queryId), queryToDocument(query));
+        return query;
     }
 
     public QueryStoreStats getQueryStoreStats() throws JsonProcessingException
