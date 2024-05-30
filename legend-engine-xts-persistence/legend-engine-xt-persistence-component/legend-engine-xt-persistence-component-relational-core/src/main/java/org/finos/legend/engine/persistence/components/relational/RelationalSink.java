@@ -18,6 +18,16 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
+import org.finos.legend.engine.persistence.components.ingestmode.AppendOnlyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.BitemporalDeltaAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.BitemporalSnapshotAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.BulkLoadAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
+import org.finos.legend.engine.persistence.components.ingestmode.IngestModeVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDeltaAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshotAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDeltaAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshotAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -75,21 +85,6 @@ public abstract class RelationalSink implements Sink
     public Set<Capability> capabilities()
     {
         return capabilities;
-    }
-
-    public boolean supportsNontemporalSnapshot()
-    {
-        return true;
-    }
-
-    public boolean supportsNontemporalDelta()
-    {
-        return true;
-    }
-
-    public boolean supportsBitemporalDelta()
-    {
-        return true;
     }
 
     @Override
@@ -210,4 +205,60 @@ public abstract class RelationalSink implements Sink
     public abstract IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, PlaceholderValue> placeHolderKeyValues);
 
     public abstract List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<Pair<Set<FieldValue>, org.finos.legend.engine.persistence.components.relational.SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount, CaseConversion caseConversion);
+
+    public boolean isIngestModeSupported(IngestMode ingestMode)
+    {
+        return ingestMode.accept(IS_INGEST_MODE_SUPPORTED);
+    }
+
+    public static final IngestModeVisitor<Boolean> IS_INGEST_MODE_SUPPORTED = new IngestModeVisitor<Boolean>()
+    {
+        @Override
+        public Boolean visitAppendOnly(AppendOnlyAbstract appendOnly)
+        {
+            return true;
+        }
+
+        @Override
+        public Boolean visitNontemporalSnapshot(NontemporalSnapshotAbstract nontemporalSnapshot)
+        {
+            return true;
+        }
+
+        @Override
+        public Boolean visitNontemporalDelta(NontemporalDeltaAbstract nontemporalDelta)
+        {
+            return true;
+        }
+
+        @Override
+        public Boolean visitUnitemporalSnapshot(UnitemporalSnapshotAbstract unitemporalSnapshot)
+        {
+            return true;
+        }
+
+        @Override
+        public Boolean visitUnitemporalDelta(UnitemporalDeltaAbstract unitemporalDelta)
+        {
+            return true;
+        }
+
+        @Override
+        public Boolean visitBitemporalSnapshot(BitemporalSnapshotAbstract bitemporalSnapshot)
+        {
+            return false;
+        }
+
+        @Override
+        public Boolean visitBitemporalDelta(BitemporalDeltaAbstract bitemporalDelta)
+        {
+            return true;
+        }
+
+        @Override
+        public Boolean visitBulkLoad(BulkLoadAbstract bulkLoad)
+        {
+            return true;
+        }
+    };
 }

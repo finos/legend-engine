@@ -15,6 +15,16 @@
 package org.finos.legend.engine.persistence.components.relational.duckdb;
 
 import org.finos.legend.engine.persistence.components.executor.Executor;
+import org.finos.legend.engine.persistence.components.ingestmode.AppendOnlyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.BitemporalDeltaAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.BitemporalSnapshotAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.BulkLoadAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
+import org.finos.legend.engine.persistence.components.ingestmode.IngestModeVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDeltaAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshotAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDeltaAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshotAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
@@ -134,24 +144,6 @@ public class DuckDBSink extends AnsiSqlSink
     }
 
     @Override
-    public boolean supportsNontemporalSnapshot()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean supportsNontemporalDelta()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean supportsBitemporalDelta()
-    {
-        return false;
-    }
-
-    @Override
     public Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor(RelationalConnection relationalConnection)
     {
         if (relationalConnection instanceof JdbcConnection)
@@ -189,4 +181,60 @@ public class DuckDBSink extends AnsiSqlSink
 
         return createNewField(evolveTo, evolveFrom, length, scale);
     }
+
+    public boolean isIngestModeSupported(IngestMode ingestMode)
+    {
+        return ingestMode.accept(IS_INGEST_MODE_SUPPORTED);
+    }
+
+    private static final IngestModeVisitor<Boolean> IS_INGEST_MODE_SUPPORTED = new IngestModeVisitor<Boolean>()
+    {
+        @Override
+        public Boolean visitAppendOnly(AppendOnlyAbstract appendOnly)
+        {
+            return true;
+        }
+
+        @Override
+        public Boolean visitNontemporalSnapshot(NontemporalSnapshotAbstract nontemporalSnapshot)
+        {
+            return false;
+        }
+
+        @Override
+        public Boolean visitNontemporalDelta(NontemporalDeltaAbstract nontemporalDelta)
+        {
+            return false;
+        }
+
+        @Override
+        public Boolean visitUnitemporalSnapshot(UnitemporalSnapshotAbstract unitemporalSnapshot)
+        {
+            return true;
+        }
+
+        @Override
+        public Boolean visitUnitemporalDelta(UnitemporalDeltaAbstract unitemporalDelta)
+        {
+            return true;
+        }
+
+        @Override
+        public Boolean visitBitemporalSnapshot(BitemporalSnapshotAbstract bitemporalSnapshot)
+        {
+            return false;
+        }
+
+        @Override
+        public Boolean visitBitemporalDelta(BitemporalDeltaAbstract bitemporalDelta)
+        {
+            return false;
+        }
+
+        @Override
+        public Boolean visitBulkLoad(BulkLoadAbstract bulkLoad)
+        {
+            return true;
+        }
+    };
 }
