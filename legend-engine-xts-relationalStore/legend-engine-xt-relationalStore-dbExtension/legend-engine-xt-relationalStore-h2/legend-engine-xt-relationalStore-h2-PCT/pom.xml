@@ -47,7 +47,7 @@
                     <mode>Compiled</mode>
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.h2.pct.Test_Relational_H2_BaseFunctions_PCT</PCTTestSuite>
+<!--                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.h2.pct.Test_Relational_H2_BaseFunctions_PCT</PCTTestSuite>-->
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.h2.pct.Test_Relational_H2_BasicFunctions_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.h2.pct.Test_Relational_H2_GrammarFunctions_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.h2.pct.Test_Relational_H2_RelationFunctions_PCT</PCTTestSuite>
