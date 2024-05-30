@@ -209,7 +209,15 @@ type:                                           (qualifiedName (LESS_THAN typeAr
                                                     BRACE_CLOSE
                                                 )
                                                 |
+                                                (
+                                                    PAREN_OPEN
+                                                        columnType (COMMA columnType)*
+                                                    PAREN_CLOSE
+                                                )
+                                                |
                                                 unitName
+;
+columnType:                                     identifier COLON identifier
 ;
 functionTypePureType:                           type multiplicity
 ;
