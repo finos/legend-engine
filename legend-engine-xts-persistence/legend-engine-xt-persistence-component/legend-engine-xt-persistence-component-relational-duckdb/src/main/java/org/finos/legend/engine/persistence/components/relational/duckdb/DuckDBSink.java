@@ -184,6 +184,7 @@ public class DuckDBSink extends AnsiSqlSink
         return createNewField(evolveTo, evolveFrom, length, scale);
     }
 
+    @Override
     public boolean isIngestModeSupported(IngestMode ingestMode)
     {
         return ingestMode.accept(IS_INGEST_MODE_SUPPORTED);
