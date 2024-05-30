@@ -191,7 +191,7 @@ public abstract class RelationalIngestorAbstract
     public abstract RelationalSink relationalSink();
 
     @Derived
-    public TransformOptions transformOptions()
+    protected TransformOptions transformOptions()
     {
         TransformOptions.Builder builder = TransformOptions.builder()
             .executionTimestampClock(executionTimestampClock())
