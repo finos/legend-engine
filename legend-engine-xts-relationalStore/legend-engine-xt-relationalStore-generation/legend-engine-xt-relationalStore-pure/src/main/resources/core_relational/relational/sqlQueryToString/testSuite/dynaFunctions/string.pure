@@ -370,3 +370,17 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let expected = ^Literal(value=97);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::jaroWinklerSimilarity::testJaroWinklerSimilarity(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='jaroWinklerSimilarity', parameters=[^Literal(value='John Smith'), ^Literal(value = 'Jane Smith')]);
+  let expected = ^Literal(value=0.88);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::levenshteinDistance::testLevenshteinDistance(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='levenshteinDistance', parameters=[^Literal(value='John Smith'), ^Literal(value = 'Jane Smith')]);
+  let expected = ^Literal(value=3);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}

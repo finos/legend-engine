@@ -402,6 +402,9 @@ Class meta::legend::test::handlers::model::TestString
    toUpper(){$this.string->toUpper()}:String[1];
    trim(){$this.string->trim()}:String[1];
    hashString(){$this.string->meta::pure::functions::hash::hash(meta::pure::functions::hash::HashType.MD5)}:String[1];
+
+   jaroWinklerSimilarity(){$this.string->meta::pure::functions::string::jaroWinklerSimilarity($this.string)}:Float[1];
+   levenshteinDistance(){$this.string->meta::pure::functions::string::levenshteinDistance($this.string)}:Integer[1];
 }
 
 Class meta::legend::test::handlers::model::TestDate

@@ -68,5 +68,12 @@
         </dependency>
         <!-- COMMONS-LANG -->
 
+        <!-- COMMONS-TEXT (Fuzzy Search) -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+        </dependency>
+        <!-- COMMONS-TEXT -->
+
     </dependencies>
 </project>
