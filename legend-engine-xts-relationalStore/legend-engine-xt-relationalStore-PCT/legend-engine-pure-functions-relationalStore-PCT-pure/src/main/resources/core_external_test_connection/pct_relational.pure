@@ -688,7 +688,7 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::functionRep
 function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testClassReprocess():Boolean[1]
 {
   let newState = reprocess(|[^SimpleClass(value='myValue'), ^SimpleClass(value='myValue2')]->filter(x|$x.value == 'test'), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
-  assertEquals('{|meta::relational::tests::pct::process::tests::functionReprocess::SimpleClass.getAll()->filter({x|($x.value == \'test\')})->from(myMapping, Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEquals('{|meta::relational::tests::pct::process::tests::functionReprocess::SimpleClass.all()->filter({x|($x.value == \'test\')})->from(myMapping, Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
   assertEquals(1, $newState.second.mapping->size());
   assertEquals(1, $newState.second.database.schemas->at(0).tables->size());
   assertEquals( 'leSchema\n'+
@@ -702,7 +702,7 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::functionRep
 {
   let vals = [^SimpleClass(value='myValue'), ^SimpleClass(value='myValue2')];
   let newState = reprocess(|$vals->filter(x|$x.value == 'test'), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
-  assertEquals('{|meta::relational::tests::pct::process::tests::functionReprocess::SimpleClass.getAll()->filter({x|($x.value == \'test\')})->from(myMapping, Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEquals('{|meta::relational::tests::pct::process::tests::functionReprocess::SimpleClass.all()->filter({x|($x.value == \'test\')})->from(myMapping, Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
   assertEquals(1, $newState.second.mapping->size());
   assertEquals(1, $newState.second.database.schemas->at(0).tables->size());
   assertEquals( 'leSchema\n'+
