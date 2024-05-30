@@ -52,7 +52,7 @@ public class JdbcHelper implements RelationalExecutionHelper
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(JdbcHelper.class);
 
-    private final Connection connection;
+    protected final Connection connection;
     private JdbcTransactionManager transactionManager;
 
     public static final String TYPE_NAME = "TYPE_NAME";
@@ -70,7 +70,7 @@ public class JdbcHelper implements RelationalExecutionHelper
         return new JdbcHelper(connection);
     }
 
-    private JdbcHelper(Connection connection)
+    protected JdbcHelper(Connection connection)
     {
         this.connection = connection;
     }
@@ -154,8 +154,8 @@ public class JdbcHelper implements RelationalExecutionHelper
             String name = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
             String database = dataset.datasetReference().database().orElse(null);
             String schema = dataset.datasetReference().group().orElse(null);
-            ResultSet result = this.connection.getMetaData().getTables(database, schema, name, null);
-            return result.next(); // This method returns true if ResultSet is not empty
+            ResultSet result = this.connection.getMetaData().getTables(database, schema, name, new String[] {Clause.TABLE.get()});
+            return result.isBeforeFirst(); // This method returns true if ResultSet is not empty
         }
         catch (SQLException e)
         {
@@ -259,7 +259,7 @@ public class JdbcHelper implements RelationalExecutionHelper
     }
 
     @Override
-    public Dataset constructDatasetFromDatabase(Dataset dataset, TypeMapping typeMapping, boolean escape, boolean constructIndex)
+    public Dataset constructDatasetFromDatabase(Dataset dataset, TypeMapping typeMapping, boolean escape)
     {
         String tableName = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
         String schemaName = dataset.datasetReference().group().orElse(null);
@@ -287,46 +287,43 @@ public class JdbcHelper implements RelationalExecutionHelper
 
             // Get all unique constraints and indices
             Set<String> uniqueKeys = new HashSet<>();
-            List<Index> indices = new ArrayList<>();
-            if (constructIndex)
+            Map<String, List<String>> indexMap = new HashMap<>();
+            Map<String, Boolean> indexNonUniqueMap = new HashMap<>();
+            ResultSet indexResult = dbMetaData.getIndexInfo(databaseName, schemaName, tableName, false, false);
+            while (indexResult.next())
             {
-                Map<String, List<String>> indexMap = new HashMap<>();
-                Map<String, Boolean> indexNonUniqueMap = new HashMap<>();
-                ResultSet indexResult = dbMetaData.getIndexInfo(databaseName, schemaName, tableName, false, false);
-                while (indexResult.next())
-                {
-                    String indexName = indexResult.getString(INDEX_NAME);
-                    String columnName = indexResult.getString(RelationalExecutionHelper.COLUMN_NAME);
-                    boolean isIndexNonUnique = indexResult.getBoolean(NON_UNIQUE);
+                String indexName = indexResult.getString(INDEX_NAME);
+                String columnName = indexResult.getString(RelationalExecutionHelper.COLUMN_NAME);
+                boolean isIndexNonUnique = indexResult.getBoolean(NON_UNIQUE);
 
-                    if (!indexName.matches(Pattern.compile("PRIMARY_KEY_[a-zA-Z0-9]+").pattern()))
+                if (!indexName.matches(Pattern.compile("PRIMARY_KEY_[a-zA-Z0-9]+").pattern()))
+                {
+                    if (indexName.matches(Pattern.compile("CONSTRAINT_INDEX_[a-zA-Z0-9]+").pattern()) && !isIndexNonUnique)
                     {
-                        if (indexName.matches(Pattern.compile("CONSTRAINT_INDEX_[a-zA-Z0-9]+").pattern()) && !isIndexNonUnique)
+                        // Unique constraint index
+                        uniqueKeys.add(columnName);
+                    }
+                    else
+                    {
+                        // Custom index
+                        if (!indexMap.containsKey(indexName))
                         {
-                            // Unique constraint index
-                            uniqueKeys.add(columnName);
+                            indexMap.put(indexName, new ArrayList<>());
+                            indexNonUniqueMap.put(indexName, isIndexNonUnique);
                         }
-                        else
-                        {
-                            // Custom index
-                            if (!indexMap.containsKey(indexName))
-                            {
-                                indexMap.put(indexName, new ArrayList<>());
-                                indexNonUniqueMap.put(indexName, isIndexNonUnique);
-                            }
-                            indexMap.get(indexName).add(columnName);
-                        }
+                        indexMap.get(indexName).add(columnName);
                     }
                 }
-                for (String indexName : indexMap.keySet())
-                {
-                    Index index = Index.builder()
-                        .indexName(indexName)
-                        .addAllColumns(indexMap.get(indexName))
-                        .unique(!indexNonUniqueMap.get(indexName))
-                        .build();
-                    indices.add(index);
-                }
+            }
+            List<Index> indices = new ArrayList<>();
+            for (String indexName : indexMap.keySet())
+            {
+                Index index = Index.builder()
+                    .indexName(indexName)
+                    .addAllColumns(indexMap.get(indexName))
+                    .unique(!indexNonUniqueMap.get(indexName))
+                    .build();
+                indices.add(index);
             }
 
             // Get all columns

@@ -220,7 +220,7 @@ public class BigQueryHelper implements RelationalExecutionHelper
         validateColumns(userColumns, dbColumns);
     }
 
-    public Dataset constructDatasetFromDatabase(Dataset dataset, TypeMapping typeMapping, boolean escape, boolean constructIndex)
+    public Dataset constructDatasetFromDatabase(Dataset dataset, TypeMapping typeMapping, boolean escape)
     {
         String tableName = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
         String schemaName = dataset.datasetReference().group().orElse(null);

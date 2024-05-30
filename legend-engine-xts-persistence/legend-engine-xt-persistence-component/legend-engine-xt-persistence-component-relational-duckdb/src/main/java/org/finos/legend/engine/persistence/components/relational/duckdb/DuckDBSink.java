@@ -34,13 +34,13 @@ import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
+import org.finos.legend.engine.persistence.components.relational.duckdb.jdbc.DuckDBJdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.DuckDBDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.DuckDBJdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.ParseJsonFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.SQLUpdateVisitor;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
-import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.FieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
@@ -140,7 +140,7 @@ public class DuckDBSink extends AnsiSqlSink
             LOGICAL_PLAN_VISITOR_BY_CLASS,
             (executor, sink, dataset) -> sink.doesTableExist(dataset),
             (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new DuckDBDataTypeMapping()),
-            (executor, sink, dataset) -> sink.constructDatasetFromDatabase(dataset, new DuckDBJdbcPropertiesToLogicalDataTypeMapping(), false, false));
+            (executor, sink, dataset) -> sink.constructDatasetFromDatabase(dataset, new DuckDBJdbcPropertiesToLogicalDataTypeMapping(), false));
     }
 
     @Override
@@ -149,7 +149,7 @@ public class DuckDBSink extends AnsiSqlSink
         if (relationalConnection instanceof JdbcConnection)
         {
             JdbcConnection jdbcConnection = (JdbcConnection) relationalConnection;
-            return new RelationalExecutor(this, JdbcHelper.of(jdbcConnection.connection()));
+            return new RelationalExecutor(this, DuckDBJdbcHelper.of(jdbcConnection.connection()));
         }
         else
         {
@@ -160,6 +160,8 @@ public class DuckDBSink extends AnsiSqlSink
     @Override
     public Field evolveFieldLength(Field evolveFrom, Field evolveTo)
     {
+        // We are not allowing evolving from unspecified length/scale for DuckDB
+
         Optional<Integer> length = evolveTo.type().length();
         Optional<Integer> scale = evolveTo.type().scale();
 

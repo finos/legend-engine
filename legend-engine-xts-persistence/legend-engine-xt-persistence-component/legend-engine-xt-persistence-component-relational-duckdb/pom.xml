@@ -53,6 +53,13 @@
         </dependency>
         <!-- DRIVER -->
 
+        <!-- LOGGING -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <!-- LOGGING -->
+
         <!-- TEST -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
