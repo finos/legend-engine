@@ -82,7 +82,7 @@ jobs:
       - name: Build (PR)
         if: github.ref != 'refs/heads/master'
         run: |
-          mvn -T4 -B -e -DskipTests=true install -DargLine="-XX:MaxRAMPercentage=90.0"
+          mvn -B -e -DskipTests=true install
 
       - name: Build (with Maven Deploy + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
@@ -100,7 +100,7 @@ jobs:
 
       - name: Test
         run: |
-          mvn -T4 -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=90.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         if: always()
