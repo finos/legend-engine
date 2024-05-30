@@ -230,7 +230,7 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testJaro
          ->project(p|$p.firstName->jaroWinklerSimilarity('John'), 'similarity')
    , simpleRelationalMapping, DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select ROUND(jarowinkler_similarity("root".FIRSTNAME, \'John\')/100, 2) as "similarity" from personTable as "root"', $sql);
+   assertEquals('select (jarowinkler_similarity("root".FIRSTNAME, \'John\')/100) as "similarity" from personTable as "root"', $sql);
 }
 
 function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testLevenshteinDistance():Boolean[1]
