@@ -16,6 +16,8 @@ package org.finos.legend.engine.plan.dependencies.util;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.text.similarity.JaroWinklerSimilarity;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.dependencies.domain.date.DayOfWeek;
@@ -1775,5 +1777,15 @@ public class Library
     public static double coTangent(double input)
     {
         return 1.0 / Math.tan(input);
+    }
+
+    public static double jaroWinklerSimilarity(String str1, String str2)
+    {
+        return new JaroWinklerSimilarity().apply(str1, str2);
+    }
+
+    public static long levenshteinDistance(String str1, String str2)
+    {
+        return new LevenshteinDistance().apply(str1, str2);
     }
 }

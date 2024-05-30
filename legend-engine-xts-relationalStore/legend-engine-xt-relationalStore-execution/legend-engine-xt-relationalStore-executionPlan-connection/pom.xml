@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-execution</artifactId>
-        <version>4.46.2-SNAPSHOT</version>
+        <version>4.46.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -234,6 +234,13 @@
             <artifactId>commons-lang3</artifactId>
         </dependency>
         <!-- COMMONS-LANG -->
+
+        <!-- COMMONS-TEXT (Fuzzy Search) -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+        </dependency>
+        <!-- COMMONS-TEXT -->
 
         <!-- COMMONS CODEC (Base64)-->
         <dependency>
