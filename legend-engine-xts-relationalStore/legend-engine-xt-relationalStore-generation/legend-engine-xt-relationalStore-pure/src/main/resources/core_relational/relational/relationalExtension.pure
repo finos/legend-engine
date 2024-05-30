@@ -849,6 +849,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
       ),
 
       pair(
+         'jaroWinklerSimilarity',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Float()}
+            )
+         ])
+      ),
+
+      pair(
          'joinStrings',
          list([
             pair(
@@ -904,6 +914,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
             pair(
                {params: RelationalOperationElement[*] | true},
                {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Bit()}
+            )
+         ])
+      ),
+
+      pair(
+         'levenshteinDistance',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Integer()}
             )
          ])
       ),
