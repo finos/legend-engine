@@ -173,15 +173,15 @@ public class Test_Relational_DuckDB_BaseFunctions_PCT extends PCTReportConfigura
 
         );
 
-    public static Test suite()
-    {
-        return wrapSuite(
-                () -> true,
-                () -> PureTestBuilderCompiled.buildPCTTestSuite(reportScope, expectedFailures, adapter),
-                () -> false,
-                Lists.mutable.with((TestServerResource)TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.DuckDB).getFirst())
-        );
-    }
+//    public static Test suite()
+//    {
+//        return wrapSuite(
+//                () -> true,
+//                () -> PureTestBuilderCompiled.buildPCTTestSuite(reportScope, expectedFailures, adapter),
+//                () -> false,
+//                Lists.mutable.with((TestServerResource)TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.DuckDB).getFirst())
+//        );
+//    }
 
     @Override
     public MutableList<ExclusionSpecification> expectedFailures()

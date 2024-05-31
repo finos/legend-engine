@@ -77,6 +77,7 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
 
     let x = meta::legend::executePlanAsJSON($planAsJson, []);
 
+    print(if($debug.debug,|'\nResult JSON:\n'+$x+'\n',|''));
     // ----
 
     let res = $x->meta::json::parseJSON()->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult);
@@ -85,7 +86,9 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
     let resultType = $f->functionReturnType().rawType;
 
     if ($resultType->toOne()->instanceOf(PrimitiveType),
-      | $res.result.rows->at(0).values->at(0),
+      | let resultFinal = $res.result.rows->at(0).values->at(0);
+        print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->makeString(','),|''));
+        $resultFinal;,
       | let tdsString = $res.result.columns->joinStrings(',') + '\n' +
                         $res.result.rows->map(x|
                             range($x.values->size())->map(z | if($x.values->at($z) == TDSNull,
@@ -100,7 +103,9 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
                                                               )
                                                       )->makeString(',')
                             )->joinStrings('\n');
-          $tdsString->stringToTDS();
+          let resultFinal = $tdsString->stringToTDS();
+          print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->toString(),|''));
+          $resultFinal;
     )->cast(@X)->toMultiplicity(@[o]);
 }
 
