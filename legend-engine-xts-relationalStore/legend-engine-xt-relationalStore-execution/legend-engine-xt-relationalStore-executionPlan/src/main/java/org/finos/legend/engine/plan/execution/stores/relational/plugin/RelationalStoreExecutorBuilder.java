@@ -18,6 +18,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderSelector;
+import org.finos.legend.engine.authentication.provider.DynamicMergeDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
@@ -84,19 +85,26 @@ public class RelationalStoreExecutorBuilder implements StoreExecutorBuilder
             return Optional.empty();
         }
         Class<? extends DatabaseAuthenticationFlowProvider> flowProviderClass = relationalExecutionConfig.getFlowProviderClass();
-        DatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = relationalExecutionConfig.getFlowProviderConfiguration();
+
         if (flowProviderClass == null)
         {
-            // TODO : Implement more strict validation when the flow provider feature is fully rolled out
-            return Optional.empty();
+            DatabaseAuthenticationFlowProvider p = new DynamicMergeDatabaseAuthenticationFlowProvider();
+            p.configure(null);
+            return Optional.of(p);
         }
-        flowProviderConfiguration.credentialProviderProvider = relationalExecutionConfig.getCredentialProviderProvider();
-        Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder = DatabaseAuthenticationFlowProviderSelector.getProvider(flowProviderClass.getCanonicalName());
-        DatabaseAuthenticationFlowProvider flowProvider = flowProviderHolder.orElseThrow(() -> new RuntimeException(String.format("Database authentication provider not found in the classpath. Provider class-%s", flowProviderClass.getCanonicalName())));
-        if (flowProviderConfiguration != null)
+        else
         {
-            flowProvider.configure(flowProviderConfiguration);
+            DatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = relationalExecutionConfig.getFlowProviderConfiguration();
+
+            String className = flowProviderClass.getCanonicalName();
+            Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder = DatabaseAuthenticationFlowProviderSelector.getProvider(className);
+            DatabaseAuthenticationFlowProvider flowProvider = flowProviderHolder.orElseThrow(() -> new RuntimeException(String.format("Database authentication provider not found in the classpath. Provider class-%s", className)));
+            if (flowProviderConfiguration != null)
+            {
+                flowProviderConfiguration.credentialProviderProvider = relationalExecutionConfig.getCredentialProviderProvider();
+                flowProvider.configure(flowProviderConfiguration);
+            }
+            return Optional.of(flowProvider);
         }
-        return Optional.of(flowProvider);
     }
 }

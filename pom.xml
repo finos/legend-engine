@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.46.3-SNAPSHOT</version>
+    <version>4.47.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -106,7 +106,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.7.0</legend.pure.version>
+        <legend.pure.version>5.8.1</legend.pure.version>
         <legend.shared.version>0.25.4</legend.shared.version>
 
         <!-- SONAR -->
@@ -378,6 +378,11 @@
                     <groupId>com.github.ferstl</groupId>
                     <artifactId>depgraph-maven-plugin</artifactId>
                     <version>${depgraph-maven-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.finos.legend.pure</groupId>
+                    <artifactId>legend-pure-maven-generation-pct</artifactId>
+                    <version>${legend.pure.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -1007,6 +1012,33 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-relationalStore-PCT</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-relationalStore-PCT</artifactId>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-relationalStore-PCT</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-functions-pureExtensions-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1315,11 +1347,6 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-postgres-execution-tests</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-postgres-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1439,6 +1466,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-snowflake-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-snowflake-PCT</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -2044,6 +2076,16 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-shared-vault-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-shared-vault-aws</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-shared-extensions</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -2361,6 +2403,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-javaPlatformBinding-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-javaPlatformBinding-PCT</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -2875,7 +2922,17 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-data-push-server</artifactId>
+                <artifactId>legend-engine-xt-relationalStore-h2-PCT</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-duckdb-PCT</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-postgres-PCT</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -3646,6 +3703,26 @@
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>auth</artifactId>
+                <version>${amazon.awssdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>regions</artifactId>
+                <version>${amazon.awssdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>sts</artifactId>
+                <version>${amazon.awssdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>secretsmanager</artifactId>
+                <version>${amazon.awssdk.version}</version>
             </dependency>
 
             <!-- IO Netty -->

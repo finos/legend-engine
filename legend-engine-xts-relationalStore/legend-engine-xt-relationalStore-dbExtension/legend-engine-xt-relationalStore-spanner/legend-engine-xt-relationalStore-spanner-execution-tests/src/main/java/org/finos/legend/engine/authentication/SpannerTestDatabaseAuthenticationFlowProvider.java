@@ -35,7 +35,7 @@ public class SpannerTestDatabaseAuthenticationFlowProvider extends AbstractDatab
     @Override
     public void configure(DatabaseAuthenticationFlowProviderConfiguration configuration)
     {
-        if (!(configuration instanceof SpannerTestDatabaseAuthenticationFlowProviderConfiguration))
+        if (configuration != null && !(configuration instanceof SpannerTestDatabaseAuthenticationFlowProviderConfiguration))
         {
             String message = "Mismatch in flow provider configuration. It should be an instance of "
                     + SpannerTestDatabaseAuthenticationFlowProviderConfiguration.class.getSimpleName();

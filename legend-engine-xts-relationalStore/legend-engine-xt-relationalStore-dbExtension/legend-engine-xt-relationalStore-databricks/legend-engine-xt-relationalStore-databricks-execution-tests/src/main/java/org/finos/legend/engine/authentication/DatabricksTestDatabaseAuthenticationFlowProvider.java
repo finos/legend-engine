@@ -34,7 +34,7 @@ public class DatabricksTestDatabaseAuthenticationFlowProvider extends AbstractDa
     @Override
     public void configure(DatabaseAuthenticationFlowProviderConfiguration configuration)
     {
-        if (!(configuration instanceof DatabricksTestDatabaseAuthenticationFlowProviderConfiguration))
+        if (configuration != null && !(configuration instanceof DatabricksTestDatabaseAuthenticationFlowProviderConfiguration))
         {
             String message = "Mismatch in flow provider configuration. It should be an instance of " + DatabricksTestDatabaseAuthenticationFlowProviderConfiguration.class.getSimpleName();
             throw new RuntimeException(message);

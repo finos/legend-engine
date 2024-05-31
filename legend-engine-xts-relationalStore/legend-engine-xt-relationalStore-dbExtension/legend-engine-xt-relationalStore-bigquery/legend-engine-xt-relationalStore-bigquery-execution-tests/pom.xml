@@ -3,7 +3,7 @@
     <parent>
         <artifactId>legend-engine-xt-relationalStore-bigquery</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.46.3-SNAPSHOT</version>
+        <version>4.47.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -43,15 +43,15 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-shared-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-identity-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-identity-gcp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-vault-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

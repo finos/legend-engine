@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::store::*;
+import meta::core::runtime::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::serialization::grammar::*;
@@ -79,6 +81,8 @@ function meta::pure::metamodel::serialization::grammar::printInstanceValue(i:Ins
                             f:FunctionDefinition<Any>[1] | $f->printFunctionDefinition($space+'    '),
                             f:FunctionExpression[1]      | $f->printPropertyOrFunctionExpression($space),
                             x:InstanceValue[1] | $x->printInstanceValue($space),
+                            r:Runtime[1]|'Runtime('+$r.connectionStores->map(s|$s.element->match([x:String[1]|$x,x:Store[1]|$x.name->toOne()]))->makeString(',')+')',
+                            s:RelationElementAccessor<Any>[1]|'RelationElementAccessor('+$s->genericType().rawType.name->toOne()+')',
                             a:Any[1]                     | $a->toRepresentation()
                          ]))->match([
                            empty:String[0]    |'[]';,
@@ -115,37 +119,48 @@ function meta::pure::metamodel::serialization::grammar::special():Map<String, St
    ]->newMap()
 }
 
+function meta::pure::metamodel::serialization::grammar::forceArrow():String[*]
+{
+  'from'
+}
+
 function meta::pure::metamodel::serialization::grammar::printFunctionExpression(functionExpression:FunctionExpression[1], space:String[1]):String[1]
 {
    let name = $functionExpression.func.functionName->toOne();
     if($functionExpression.parametersValues->isEmpty(),
         |$name->toOne()+'()',
-        |let m = special();
-         if ($m->get($name)->isEmpty(),
-             | let firstParam = $functionExpression.parametersValues->head()->toOne(); 
-               if((($firstParam->instanceOf(SimpleFunctionExpression)   && $firstParam->cast(@SimpleFunctionExpression).functionName->isNotEmpty()  && ($m->get($firstParam->cast(@SimpleFunctionExpression).functionName->toOne())->isNotEmpty()))
-                    || $firstParam->instanceOf(FunctionExpression))   && $firstParam->cast(@FunctionExpression).func.functionName->isNotEmpty()  && ($m->get($firstParam->cast(@FunctionExpression).func.functionName->toOne())->isNotEmpty())  ,
-                   | $functionExpression.func.functionName->toOne() + $functionExpression.parametersValues->map(vs | printValueSpecification($vs, $space))->joinStrings('(', ', ', ')');,
-                   | $functionExpression.parametersValues->head()->toOne()->printValueSpecification($space) + '->' + $functionExpression.func.functionName->toOne() + $functionExpression.parametersValues->tail()->map(vs | printValueSpecification($vs, $space))->joinStrings('(', ', ', ')');
-                   );,
-             |let vals = if ($name->in(['plus', 'minus', 'times']),
-                  |$functionExpression.parametersValues->match([
-                    i:InstanceValue[1] | $i.values,
-                    v:ValueSpecification[1] | $v
-                  ]),
-                  |$functionExpression.parametersValues
-              );
-              if ($name == 'minus' && $vals->size() == 1,
-                  | $m->get($name)->toOne() + $functionExpression.parametersValues->at(0)->printValueSpecification($space),
-                  | if ($name->in(['and', 'or']) && $vals->size() == 1,
-                      | $name + '(' + $vals->at(0)->printValueSpecification($space) + ')',
-                      | if ($vals->size() > 1,
-                        |'(' + $vals->at(0)->printValueSpecification($space) + ' ' + $m->get($name)->toOne() + ' ' + $vals->at(1)->printValueSpecification($space) + ')',
-                        | $m->get($name)->toOne()+'('+$vals->at(0)->printValueSpecification($space)+')'
+        |if ($name == 'getAll',
+           | $functionExpression.parametersValues->at(0)->cast(@InstanceValue).values->at(0)->cast(@Class<Any>)->elementToPath() + '.all()',
+           |let m = special();
+            if ($m->get($name)->isEmpty(),
+                | let firstParam = $functionExpression.parametersValues->head()->toOne(); 
+                  if(forceArrow()->contains($name) || 
+                        !(
+                          ($firstParam->instanceOf(SimpleFunctionExpression) && $firstParam->cast(@SimpleFunctionExpression).functionName->isNotEmpty()  && $m->get($firstParam->cast(@SimpleFunctionExpression).functionName->toOne())->isNotEmpty()) ||
+                          ($firstParam->instanceOf(FunctionExpression) && $firstParam->cast(@FunctionExpression).func.functionName->isNotEmpty()  && $m->get($firstParam->cast(@FunctionExpression).func.functionName->toOne())->isNotEmpty())
+                        )  ,
+                      | $functionExpression.parametersValues->head()->toOne()->printValueSpecification($space) + '->' + $functionExpression.func.functionName->toOne() + $functionExpression.parametersValues->tail()->map(vs | printValueSpecification($vs, $space))->joinStrings('(', ', ', ')');,
+                      | $functionExpression.func.functionName->toOne() + $functionExpression.parametersValues->map(vs | printValueSpecification($vs, $space))->joinStrings('(', ', ', ')');
+                      );,
+                |let vals = if ($name->in(['plus', 'minus', 'times']),
+                      |$functionExpression.parametersValues->match([
+                        i:InstanceValue[1] | $i.values,
+                        v:ValueSpecification[1] | $v
+                      ]),
+                      |$functionExpression.parametersValues
+                  );
+                  if ($name == 'minus' && $vals->size() == 1,
+                      | $m->get($name)->toOne() + $functionExpression.parametersValues->at(0)->printValueSpecification($space),
+                      | if ($name->in(['and', 'or']) && $vals->size() == 1,
+                          | $name + '(' + $vals->at(0)->printValueSpecification($space) + ')',
+                          | if ($vals->size() > 1,
+                            |'(' + $vals->at(0)->printValueSpecification($space) + ' ' + $m->get($name)->toOne() + ' ' + $vals->at(1)->printValueSpecification($space) + ')',
+                            | $m->get($name)->toOne()+'('+$vals->at(0)->printValueSpecification($space)+')'
+                            )
                         )
-                    )
-              );
-         );
+                  );
+            );
+        );
     );
 }
 

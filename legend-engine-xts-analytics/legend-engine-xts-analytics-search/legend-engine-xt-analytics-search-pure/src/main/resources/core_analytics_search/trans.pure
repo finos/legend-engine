@@ -75,7 +75,7 @@ function meta::analytics::search::transformation::class::buildDocument(class: Cl
   );
 }
 
-function meta::analytics::search::transformation::class::buildPropertyList(properties: Property<Any,Any|*>[*]): meta::analytics::search::metamodel::class::ClassProperty[*]
+function meta::analytics::search::transformation::class::buildPropertyList(properties: Property<Nil,Any|*>[*]): meta::analytics::search::metamodel::class::ClassProperty[*]
 {
   $properties->map(p|
     ^meta::analytics::search::metamodel::class::ClassProperty(

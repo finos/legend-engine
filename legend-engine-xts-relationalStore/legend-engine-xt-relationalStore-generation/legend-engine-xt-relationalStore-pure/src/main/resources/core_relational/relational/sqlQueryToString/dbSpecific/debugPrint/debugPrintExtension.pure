@@ -1,0 +1,15 @@
+import meta::relational::functions::sqlQueryToString::duckDB::*;
+import meta::relational::functions::sqlQueryToString::default::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
+
+function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::duckDB::dbExtensionLoaderForDebugPrint():DbExtensionLoader[1]
+{
+  ^DbExtensionLoader(dbType = DatabaseType.DebugPrint, loader = meta::relational::functions::sqlQueryToString::h2::v1_4_200::createDbExtensionForH2__DbExtension_1_);
+}

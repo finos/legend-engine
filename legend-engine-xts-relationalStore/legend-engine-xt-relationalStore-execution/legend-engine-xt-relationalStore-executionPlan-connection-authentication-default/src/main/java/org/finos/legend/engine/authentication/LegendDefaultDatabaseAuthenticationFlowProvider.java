@@ -47,15 +47,13 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
 
     private ImmutableList<DatabaseAuthenticationFlow<? extends DatasourceSpecification, ? extends AuthenticationStrategy>> flows()
     {
-        return Lists.immutable.of(
+        return Lists.mutable.of(
                 new BigQueryWithGCPApplicationDefaultCredentialsFlow(),
-                new BigQueryWithGCPWorkloadIdentityFederationFlow(databaseAuthenticationFlowProviderConfiguration.getAwsConfig(), databaseAuthenticationFlowProviderConfiguration.getGcpWorkloadConfig()),
                 new SpannerWithGCPApplicationDefaultCredentialsFlow(),
                 new DatabricksWithApiTokenFlow(),
                 new H2StaticWithTestUserPasswordFlow(),
                 new H2LocalWithStaticUserPasswordFlow(),
                 new H2LocalWithDefaultUserPasswordFlow(),
-                new SnowflakeWithKeyPairFlow(databaseAuthenticationFlowProviderConfiguration.credentialProviderProvider),
                 new SqlServerStaticWithUserPasswordFlow(),
                 new PostgresStaticWithUserPasswordFlow(),
                 new PostgresStaticWithMiddletierUserNamePasswordAuthenticationFlow(),
@@ -63,13 +61,21 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
                 new MemSQLStaticWithUserPasswordFlow(),
                 new TrinoWithDelegatedKerberosFlow(),
                 new TrinoWithUserPasswordFlow()
-        );
+        ).withAll(
+                databaseAuthenticationFlowProviderConfiguration != null ?
+                        Lists.mutable.of(
+                                new BigQueryWithGCPWorkloadIdentityFederationFlow(databaseAuthenticationFlowProviderConfiguration.getAwsConfig(), databaseAuthenticationFlowProviderConfiguration.getGcpWorkloadConfig()),
+                                new SnowflakeWithKeyPairFlow(databaseAuthenticationFlowProviderConfiguration.credentialProviderProvider)
+                                )
+                        :
+                        Lists.mutable.empty()
+        ).toImmutable();
     }
 
     @Override
     public void configure(DatabaseAuthenticationFlowProviderConfiguration configuration)
     {
-        if (!(configuration instanceof LegendDefaultDatabaseAuthenticationFlowProviderConfiguration))
+        if (configuration != null && !(configuration instanceof LegendDefaultDatabaseAuthenticationFlowProviderConfiguration))
         {
             String message = "Mismatch in flow provider configuration. It should be an instance of " + LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.class.getSimpleName();
             throw new RuntimeException(message);

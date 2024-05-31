@@ -18,6 +18,7 @@ import junit.extensions.TestSetup;
 import junit.framework.TestSuite;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.impl.block.function.checked.ThrowingFunction0;
 import org.finos.legend.engine.plan.execution.stores.relational.test.H2TestServerResource;
 import org.finos.legend.engine.test.shared.framework.PureTestHelperFramework;
 import org.junit.Ignore;
@@ -25,7 +26,7 @@ import org.junit.Ignore;
 public class PureTestHelper
 {
     @Ignore
-    public static TestSetup wrapSuite(Function0<Boolean> init, Function0<TestSuite> suiteBuilder, Function0<Boolean> shutdown)
+    public static TestSetup wrapSuite(ThrowingFunction0<Boolean> init, Function0<TestSuite> suiteBuilder, ThrowingFunction0<Boolean> shutdown)
     {
         return PureTestHelperFramework.wrapSuite(
                 init,

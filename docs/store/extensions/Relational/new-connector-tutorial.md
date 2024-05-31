@@ -167,7 +167,7 @@ If your database supports it, we can alternatively launch a test instance at run
      
     package org.finos.legend.engine.dynamicTestConnections;
      
-    import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.DynamicTestConnection;
+    import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegration;
     import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
     import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
     import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
@@ -267,7 +267,7 @@ If your database supports it, we can alternatively launch a test instance at run
     </dependency>
     ~~~
 
-    Also, we need to define the file "org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.DynamicTestConnection" in src/main/resources/META-INF/services with this content
+    Also, we need to define the file "org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegration" in src/main/resources/META-INF/services with this content
 
     ~~~
     org.finos.legend.engine.dynamicTestConnections.SqlServerUsingTestContainer

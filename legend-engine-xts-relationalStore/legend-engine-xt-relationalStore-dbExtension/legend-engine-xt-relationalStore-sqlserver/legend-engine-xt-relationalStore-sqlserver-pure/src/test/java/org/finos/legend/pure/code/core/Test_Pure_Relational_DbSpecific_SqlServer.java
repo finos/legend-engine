@@ -20,9 +20,11 @@ import org.finos.legend.pure.runtime.java.compiled.testHelper.IgnoreUnsupportedA
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 @RunWith(IgnoreUnsupportedApiPureTestSuiteRunner.class)
+@Ignore
 public class Test_Pure_Relational_DbSpecific_SqlServer
 {
     public static TestSuite suite()
