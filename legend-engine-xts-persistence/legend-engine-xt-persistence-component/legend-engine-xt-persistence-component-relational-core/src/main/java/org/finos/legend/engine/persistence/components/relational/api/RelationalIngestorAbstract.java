@@ -49,6 +49,7 @@ import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
 import org.finos.legend.engine.persistence.components.util.TableNameGenUtils;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.finos.legend.engine.persistence.components.util.SqlLogging;
+import org.immutables.value.Value;
 import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
@@ -199,6 +200,15 @@ public abstract class RelationalIngestorAbstract
         relationalSink().optimizerForCaseConversion(caseConversion()).ifPresent(builder::addOptimizers);
 
         return builder.build();
+    }
+
+    @Value.Check
+    public void validate()
+    {
+        if (!relationalSink().isIngestModeSupported(ingestMode()))
+        {
+            throw new UnsupportedOperationException("Unsupported ingest mode");
+        }
     }
 
     // ---------- Private Fields ----------
