@@ -64,7 +64,7 @@ public class PostgresTestConnectionIntegration implements TestConnectionIntegrat
             this.setup();
         }
         StaticDatasourceSpecification postgresDatasourceSpecification = new StaticDatasourceSpecification();
-        postgresDatasourceSpecification.host = "localhost";
+        postgresDatasourceSpecification.host = this.postgreSQLContainer.getHost();
         postgresDatasourceSpecification.port = this.postgreSQLContainer.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT);
         postgresDatasourceSpecification.databaseName = "test";
 
