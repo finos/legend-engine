@@ -98,6 +98,7 @@ public class DuckDBDataTypeMapping implements DataTypeMapping
                 dataType = new VarChar();
                 break;
             case JSON:
+            case VARIANT:
                 dataType = new Json();
                 break;
             case MAP: // todo (kminky): TBD
@@ -107,7 +108,6 @@ public class DuckDBDataTypeMapping implements DataTypeMapping
             case TIMESTAMP_LTZ:
             case BYTES:
             case LONGVARBINARY:
-            case VARIANT:
             default:
                 throw new IllegalArgumentException("Unexpected value: " + type.dataType());
         }
