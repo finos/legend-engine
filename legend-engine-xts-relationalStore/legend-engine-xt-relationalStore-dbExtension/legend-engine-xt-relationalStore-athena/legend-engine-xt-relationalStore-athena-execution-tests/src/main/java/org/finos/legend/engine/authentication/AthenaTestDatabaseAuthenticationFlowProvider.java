@@ -34,7 +34,7 @@ public class AthenaTestDatabaseAuthenticationFlowProvider extends AbstractDataba
     @Override
     public void configure(DatabaseAuthenticationFlowProviderConfiguration configuration)
     {
-        if (!(configuration instanceof AthenaTestDatabaseAuthenticationFlowProviderConfiguration))
+        if (configuration != null && !(configuration instanceof AthenaTestDatabaseAuthenticationFlowProviderConfiguration))
         {
             String message = "Mismatch in flow provider configuration. It should be an instance of " + AthenaTestDatabaseAuthenticationFlowProviderConfiguration.class.getSimpleName();
             throw new RuntimeException(message);

@@ -34,7 +34,7 @@ public class RedshiftTestDatabaseAuthenticationFlowProvider extends AbstractData
     @Override
     public void configure(DatabaseAuthenticationFlowProviderConfiguration configuration)
     {
-        if (!(configuration instanceof RedshiftTestDatabaseAuthenticationFlowProviderConfiguration))
+        if (configuration != null && !(configuration instanceof RedshiftTestDatabaseAuthenticationFlowProviderConfiguration))
         {
             String message = "Mismatch in flow provider configuration. It should be an instance of " + RedshiftTestDatabaseAuthenticationFlowProviderConfiguration.class.getSimpleName();
             throw new RuntimeException(message);

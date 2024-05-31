@@ -38,3 +38,10 @@ function meta::legend::compileLegendValueSpecification(s : String[1]):Any[1]
   let func = $fStr->pathToElement()->cast(@Function<{String[1]->Any[1]}>);
   $func->eval($s);
 }
+
+function meta::legend::executePlanAsJSON(plan:String[1], vars: Pair<String, Any>[*]):String[1]
+{
+  let fStr = 'meta::legend::execute_String_1__Pair_MANY__String_1_';
+  let func = $fStr->pathToElement()->cast(@Function<{String[1], Pair<String, Any>[*]->String[1]}>);
+  $func->eval($plan, $vars);
+}

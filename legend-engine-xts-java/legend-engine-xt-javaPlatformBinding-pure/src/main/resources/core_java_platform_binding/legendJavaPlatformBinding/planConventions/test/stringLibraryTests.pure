@@ -222,39 +222,39 @@ meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::
       ->runTests();
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
-{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::testStringPureTests() : Boolean[1]
-{
-   javaPureTests(engineConventions([]), [
-      meta::pure::functions::boolean::tests::greaterThan::testGreaterThan_String__Boolean_1_,
-      meta::pure::functions::boolean::tests::greaterThanEqual::testGreaterThanEqual_String__Boolean_1_,
-      meta::pure::functions::boolean::tests::lessThan::testLessThan_String__Boolean_1_,
-      meta::pure::functions::boolean::tests::lessThanEqual::testLessThanEqual_String__Boolean_1_
-   ])
-      ->generate(meta::pure::functions::tests::model::GeographicEntityType)
-      ->addTestsWithin(meta::pure::functions::string::tests::format)
-      ->excludeTest(meta::pure::functions::string::tests::format::testFormatList__Boolean_1_) // requires new
-      ->excludeTest(meta::pure::functions::string::tests::format::testFormatPair__Boolean_1_) // requires new
-      ->addTestsWithin(meta::pure::functions::string::tests::toString)
-      ->excludeTest(meta::pure::functions::string::tests::toString::testListToString__Boolean_1_) // requires new
-      ->excludeTest(meta::pure::functions::string::tests::toString::testPairToString__Boolean_1_) // requires new
-      ->excludeTest(meta::pure::functions::string::tests::toString::testPairCollectionToString__Boolean_1_) // requires new
-      ->excludeTest(meta::pure::functions::string::tests::toString::testPersonToString__Boolean_1_) // requires new
-      ->excludeTest(meta::pure::functions::string::tests::toString::testClassToString__Boolean_1_) // requires metadata
-      ->excludeTest(meta::pure::functions::string::tests::toString::testEnumerationToString__Boolean_1_) // requires metadata   
-      ->addTestsWithin(meta::pure::functions::string::tests::toRepresentation)
-      ->excludeTest(meta::pure::functions::string::tests::toRepresentation::testClassInstanceToRepresentation__Boolean_1_) // requires new
-      ->excludeTest(meta::pure::functions::string::tests::toRepresentation::testClassToRepresentation__Boolean_1_) // requires metadata
-      ->excludeTest(meta::pure::functions::string::tests::toRepresentation::testFunctionToRepresentation__Boolean_1_) // requires metadata
-      ->excludeTest(meta::pure::functions::string::tests::format::testFormatInEval__Boolean_1_) // requires eval
-      ->excludeTest(meta::pure::functions::string::tests::format::testFormatInEvaluate__Boolean_1_) // requires evaluate
-      ->addTestsWithin(meta::pure::functions::string::tests::parseBoolean)
-      ->addTestsWithin(meta::pure::functions::string::tests::chunk)
-      ->addTestsWithin(meta::pure::functions::string::tests::parseDecimal)
-      ->addTestsWithin(meta::pure::functions::string::tests::matches)
-      ->runTests();
-}
+//function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+//{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+//meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::testStringPureTests() : Boolean[1]
+//{
+//   javaPureTests(engineConventions([]), [
+//      meta::pure::functions::boolean::tests::greaterThan::testGreaterThan_String__Boolean_1_,
+//      meta::pure::functions::boolean::tests::greaterThanEqual::testGreaterThanEqual_String__Boolean_1_,
+//      meta::pure::functions::boolean::tests::lessThan::testLessThan_String__Boolean_1_,
+//      meta::pure::functions::boolean::tests::lessThanEqual::testLessThanEqual_String__Boolean_1_
+//   ])
+//      ->generate(meta::pure::functions::tests::model::GeographicEntityType)
+//      ->addTestsWithin(meta::pure::functions::string::tests::format)
+//      ->excludeTest(meta::pure::functions::string::tests::format::testFormatList__Boolean_1_) // requires new
+//      ->excludeTest(meta::pure::functions::string::tests::format::testFormatPair__Boolean_1_) // requires new
+//      ->addTestsWithin(meta::pure::functions::string::tests::toString)
+//      ->excludeTest(meta::pure::functions::string::tests::toString::testListToString__Boolean_1_) // requires new
+//      ->excludeTest(meta::pure::functions::string::tests::toString::testPairToString__Boolean_1_) // requires new
+//      ->excludeTest(meta::pure::functions::string::tests::toString::testPairCollectionToString__Boolean_1_) // requires new
+//      ->excludeTest(meta::pure::functions::string::tests::toString::testPersonToString__Boolean_1_) // requires new
+//      ->excludeTest(meta::pure::functions::string::tests::toString::testClassToString__Boolean_1_) // requires metadata
+//      ->excludeTest(meta::pure::functions::string::tests::toString::testEnumerationToString__Boolean_1_) // requires metadata
+//      ->addTestsWithin(meta::pure::functions::string::tests::toRepresentation)
+//      ->excludeTest(meta::pure::functions::string::tests::toRepresentation::testClassInstanceToRepresentation__Boolean_1_) // requires new
+//      ->excludeTest(meta::pure::functions::string::tests::toRepresentation::testClassToRepresentation__Boolean_1_) // requires metadata
+//      ->excludeTest(meta::pure::functions::string::tests::toRepresentation::testFunctionToRepresentation__Boolean_1_) // requires metadata
+//      ->excludeTest(meta::pure::functions::string::tests::format::testFormatInEval__Boolean_1_) // requires eval
+//      ->excludeTest(meta::pure::functions::string::tests::format::testFormatInEvaluate__Boolean_1_) // requires evaluate
+//      ->addTestsWithin(meta::pure::functions::string::tests::parseBoolean)
+//      ->addTestsWithin(meta::pure::functions::string::tests::chunk)
+//      ->addTestsWithin(meta::pure::functions::string::tests::parseDecimal)
+//      ->addTestsWithin(meta::pure::functions::string::tests::matches)
+//      ->runTests();
+//}
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }

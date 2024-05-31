@@ -33,6 +33,7 @@
         <module>legend-engine-xt-javaGeneration-featureBased-pure</module>
         <module>legend-engine-xt-javaGeneration-pure</module>
         <module>legend-engine-xt-javaPlatformBinding-pure</module>
+        <module>legend-engine-xt-javaPlatformBinding-PCT</module>
         <module>legend-engine-xt-javaPlatformBinding-externalFormat-pure</module>
     </modules>
 </project>

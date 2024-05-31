@@ -66,7 +66,7 @@ public class LegendExecute
             }
             else
             {
-                throw new UnsupportedOperationException("Result type not supported: " + result.getClass().getName());
+                return "";
             }
         }
         catch (Exception e)

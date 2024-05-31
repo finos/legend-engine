@@ -315,7 +315,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
 {
   if ($dropSchemaSQL.schema.name == 'default', 
     |  [], 
-    | 'Drop schema if exists ' + $dropSchemaSQL.schema.name + ';')
+    | 'Drop schema if exists ' + $dropSchemaSQL.schema.name + ' CASCADE;')
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::regexpMatchPostgres(query: String[1]): String[1]
