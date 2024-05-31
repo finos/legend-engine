@@ -298,7 +298,7 @@ public class QueryStoreManager
         return matchingQueries;
     }
 
-    public Query getQuery(String queryId)
+    public Query getQuery(String queryId) throws JsonProcessingException
     {
         List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", queryId)), this::documentToQuery).toList();
         if (matchingQueries.size() > 1)
@@ -309,7 +309,10 @@ public class QueryStoreManager
         {
             throw new ApplicationQueryException("Can't find query with ID '" + queryId + "'", Response.Status.NOT_FOUND);
         }
-        return matchingQueries.get(0);
+        Query query = matchingQueries.get(0);
+        query.lastOpenAt = Instant.now().toEpochMilli();
+        this.getQueryCollection().findOneAndReplace(Filters.eq("id", queryId), queryToDocument(query));
+        return query;
     }
 
     public QueryStoreStats getQueryStoreStats() throws JsonProcessingException
@@ -339,6 +342,7 @@ public class QueryStoreManager
         }
         query.createdAt = Instant.now().toEpochMilli();
         query.lastUpdatedAt = query.createdAt;
+        query.lastOpenAt = query.createdAt;
         this.getQueryCollection().insertOne(queryToDocument(query));
         QueryEvent createdEvent = createEvent(query.id, QueryEvent.QueryEventType.CREATED);
         createdEvent.timestamp = query.createdAt;
@@ -374,6 +378,7 @@ public class QueryStoreManager
         query.owner = currentUser;
         query.createdAt = currentQuery.createdAt;
         query.lastUpdatedAt = Instant.now().toEpochMilli();
+        query.lastOpenAt = Instant.now().toEpochMilli();
         query.originalVersionId = currentQuery.originalVersionId;
         this.getQueryCollection().findOneAndReplace(Filters.eq("id", queryId), queryToDocument(query));
         QueryEvent updatedEvent = createEvent(query.id, QueryEvent.QueryEventType.UPDATED);
@@ -411,6 +416,7 @@ public class QueryStoreManager
         }
         currentQuery.owner = currentUser;
         currentQuery.lastUpdatedAt = Instant.now().toEpochMilli();
+        currentQuery.lastOpenAt = Instant.now().toEpochMilli();
         this.getQueryCollection().findOneAndReplace(Filters.eq("id", queryId), queryToDocument(currentQuery));
         QueryEvent updatedEvent = createEvent(queryId, QueryEvent.QueryEventType.UPDATED);
         updatedEvent.timestamp = currentQuery.lastUpdatedAt;

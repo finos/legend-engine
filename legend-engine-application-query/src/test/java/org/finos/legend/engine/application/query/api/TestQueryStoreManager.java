@@ -576,11 +576,15 @@ public class TestQueryStoreManager
 
         Query query1 = queryStoreManager.getQuery("1");
         Assert.assertEquals(0, query1.defaultParameterValues.size());
+        Assert.assertNotNull(query1.lastOpenAt);
+        Assert.assertNotEquals(query1.lastOpenAt, query1.createdAt);
 
         Query query2 = queryStoreManager.getQuery("2");
         Assert.assertEquals(1, query2.defaultParameterValues.size());
         Assert.assertEquals("booleanParam1", query2.defaultParameterValues.get(0).name);
         Assert.assertEquals("true", query2.defaultParameterValues.get(0).content);
+        Assert.assertNotNull(query2.lastOpenAt);
+        Assert.assertNotEquals(query2.lastOpenAt, query2.createdAt);
 
         Query query4 = queryStoreManager.getQuery("4");
         Assert.assertEquals(3, query4.defaultParameterValues.size());
@@ -588,6 +592,8 @@ public class TestQueryStoreManager
         Assert.assertEquals("stringParam2", query4.defaultParameterValues.get(1).name);
         Assert.assertEquals("myListParam3", query4.defaultParameterValues.get(2).name);
         Assert.assertEquals("['d','a']", query4.defaultParameterValues.get(2).content);
+        Assert.assertNotNull(query4.lastOpenAt);
+        Assert.assertNotEquals(query4.lastOpenAt, query4.createdAt);
     }
 
 
@@ -735,7 +741,7 @@ public class TestQueryStoreManager
         Assert.assertEquals(0, createdQuery.taggedValues.size());
         Assert.assertNotNull(createdQuery.createdAt);
         Assert.assertEquals(createdQuery.createdAt, createdQuery.lastUpdatedAt);
-
+        Assert.assertEquals(createdQuery.lastOpenAt, createdQuery.lastUpdatedAt);
     }
 
     @Test
