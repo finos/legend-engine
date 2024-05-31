@@ -39,6 +39,7 @@ import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.MetadataUtils;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.finos.legend.engine.persistence.components.util.ValidationCategory;
+import org.immutables.value.Value;
 import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
@@ -188,6 +189,15 @@ public abstract class RelationalGeneratorAbstract
         return builder.build();
     }
 
+    @Value.Check
+    public void validate()
+    {
+        if (!relationalSink().isIngestModeSupported(ingestMode()))
+        {
+            throw new UnsupportedOperationException("Unsupported ingest mode");
+        }
+    }
+
     // ---------- API ----------
 
     public GeneratorResult generateOperations(Datasets datasets)
@@ -225,11 +235,6 @@ public abstract class RelationalGeneratorAbstract
 
     GeneratorResult generateOperations(Datasets datasets, Resources resources, Planner planner, IngestMode ingestMode)
     {
-        if (!relationalSink().isIngestModeSupported(ingestMode))
-        {
-            throw new UnsupportedOperationException("Unsupported ingest mode");
-        }
-
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
 
         // pre-run statistics
