@@ -35,10 +35,10 @@ public class Core_Relational_H2_PCTReportProvider implements PCTReportProvider
         try
         {
             return Lists.mutable.with(
-//                    JsonMapper.builder().build().readValue(
-//                            Core_Relational_H2_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_base_compiled_H2.json"),
-//                            AdapterReport.class
-//                    ),
+                    JsonMapper.builder().build().readValue(
+                            Core_Relational_H2_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_base_compiled_H2.json"),
+                            AdapterReport.class
+                    ),
                     JsonMapper.builder().build().readValue(
                             Core_Relational_H2_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_basic_compiled_H2.json"),
                             AdapterReport.class

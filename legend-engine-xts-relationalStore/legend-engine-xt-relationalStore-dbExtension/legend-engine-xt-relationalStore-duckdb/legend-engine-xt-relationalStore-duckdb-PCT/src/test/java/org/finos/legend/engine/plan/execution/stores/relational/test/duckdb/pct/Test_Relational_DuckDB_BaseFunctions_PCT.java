@@ -130,7 +130,6 @@ public class Test_Relational_DuckDB_BaseFunctions_PCT extends PCTReportConfigura
             one("meta::pure::functions::math::tests::mod::testModWithNegativeNumbers_Function_1__Boolean_1_", "\"\nexpected: 3\nactual:   -2\""),
 
             // Pow
-            one("meta::pure::functions::math::tests::pow::testComplexPow_Function_1__Boolean_1_", "\"\nexpected: 182.88729271224378\nactual:   182.88729271224375\""),
             one("meta::pure::functions::math::tests::pow::testNumberPow_Function_1__Boolean_1_", "\"\nexpected: 9.0\nactual:   27.0\""),
 
             // Rem
@@ -173,15 +172,15 @@ public class Test_Relational_DuckDB_BaseFunctions_PCT extends PCTReportConfigura
 
         );
 
-//    public static Test suite()
-//    {
-//        return wrapSuite(
-//                () -> true,
-//                () -> PureTestBuilderCompiled.buildPCTTestSuite(reportScope, expectedFailures, adapter),
-//                () -> false,
-//                Lists.mutable.with((TestServerResource)TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.DuckDB).getFirst())
-//        );
-//    }
+    public static Test suite()
+    {
+        return wrapSuite(
+                () -> true,
+                () -> PureTestBuilderCompiled.buildPCTTestSuite(reportScope, expectedFailures, adapter),
+                () -> false,
+                Lists.mutable.with((TestServerResource)TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.DuckDB).getFirst())
+        );
+    }
 
     @Override
     public MutableList<ExclusionSpecification> expectedFailures()

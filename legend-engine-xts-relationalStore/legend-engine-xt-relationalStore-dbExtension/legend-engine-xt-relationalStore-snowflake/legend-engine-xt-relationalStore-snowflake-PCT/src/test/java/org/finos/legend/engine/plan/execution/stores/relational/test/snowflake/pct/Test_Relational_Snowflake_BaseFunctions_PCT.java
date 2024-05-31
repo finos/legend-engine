@@ -110,8 +110,6 @@ public class Test_Relational_Snowflake_BaseFunctions_PCT extends PCTReportConfig
             one("meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"mod(%s,%s)\"\""),
             one("meta::pure::functions::math::tests::mod::testModWithNegativeNumbers_Function_1__Boolean_1_", "\"\nexpected: 3\nactual:   -2\""),
 
-            one("meta::pure::functions::math::tests::pow::testComplexPow_Function_1__Boolean_1_", "\"\nexpected: 182.88729271224378\nactual:   182.88729271224375\""),
-
             one("meta::pure::functions::math::tests::pow::testNumberPow_Function_1__Boolean_1_", "\"\nexpected: 9.0\nactual:   27.0\""),
 
             one("meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"mod(%s,%s)\"\""),
@@ -142,11 +140,7 @@ public class Test_Relational_Snowflake_BaseFunctions_PCT extends PCTReportConfig
 
             one("meta::pure::functions::math::tests::toDecimal::testDoubleToDecimal_Function_1__Boolean_1_", "class java.lang.Long cannot be cast to class java.math.BigDecimal (java.lang.Long and java.math.BigDecimal are in module java.base of loader 'bootstrap')"),
 
-            one("meta::pure::functions::math::tests::toDecimal::testIntToDecimal_Function_1__Boolean_1_", "class java.lang.Long cannot be cast to class java.math.BigDecimal (java.lang.Long and java.math.BigDecimal are in module java.base of loader 'bootstrap')"),
-
-            one("meta::pure::functions::math::tests::testCubeRootEval_Function_1__Boolean_1_", "\"\nexpected: 3.0\nactual:   3.0000000000000004\""),
-
-            one("meta::pure::functions::math::tests::testCubeRoot_Function_1__Boolean_1_", "\"\nexpected: 3.0\nactual:   3.0000000000000004\"")
+            one("meta::pure::functions::math::tests::toDecimal::testIntToDecimal_Function_1__Boolean_1_", "class java.lang.Long cannot be cast to class java.math.BigDecimal (java.lang.Long and java.math.BigDecimal are in module java.base of loader 'bootstrap')")
 
             );
 

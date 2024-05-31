@@ -27,7 +27,6 @@ import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecificat
 import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.pct.shared.model.ReportScope;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
-import org.junit.Ignore;
 
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.*;
 
@@ -125,6 +124,7 @@ public class Test_Relational_H2_BaseFunctions_PCT extends PCTReportConfiguration
 
             // Pow
             one("meta::pure::functions::math::tests::pow::testNumberPow_Function_1__Boolean_1_", "\"\nexpected: 9.0\nactual:   27.0\""),
+
             // Rem
             one("meta::pure::functions::math::tests::rem::testRemInEvalWithFloat_Function_1__Boolean_1_", "\"\nexpected: 2.5\nactual:   3\""),
             one("meta::pure::functions::math::tests::rem::testRemInEvalWithMixedIntegersAndFloats_Function_1__Boolean_1_", "\"\nexpected: 2.5\nactual:   3\""),
@@ -163,15 +163,15 @@ public class Test_Relational_H2_BaseFunctions_PCT extends PCTReportConfiguration
 
     );
 
-//    public static Test suite()
-//    {
-//        return wrapSuite(
-//                () -> true,
-//                () -> PureTestBuilderCompiled.buildPCTTestSuite(reportScope, expectedFailures, adapter),
-//                () -> false,
-//                Lists.mutable.with((TestServerResource)TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.H2).getFirst())
-//        );
-//    }
+    public static Test suite()
+    {
+        return wrapSuite(
+                () -> true,
+                () -> PureTestBuilderCompiled.buildPCTTestSuite(reportScope, expectedFailures, adapter),
+                () -> false,
+                Lists.mutable.with((TestServerResource)TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.H2).getFirst())
+        );
+    }
 
     @Override
     public MutableList<ExclusionSpecification> expectedFailures()
