@@ -23,7 +23,6 @@ import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -71,7 +70,7 @@ public class TestConnectionProviderApi
                                       @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         try
         {
             LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.EXECUTION_PLAN_EXEC_START, "").toString());

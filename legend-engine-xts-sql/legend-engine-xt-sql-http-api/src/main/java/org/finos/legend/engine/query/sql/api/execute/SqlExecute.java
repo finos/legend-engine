@@ -37,7 +37,6 @@ import org.finos.legend.engine.query.sql.api.SQLExecutor;
 import org.finos.legend.engine.query.sql.providers.core.SQLContext;
 import org.finos.legend.engine.query.sql.providers.core.SQLSourceProvider;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
@@ -113,7 +112,7 @@ public class SqlExecute
                             @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         Query q = extractQuery(query);
         SQLContext context = new SQLContext(q, query.getPositionalArguments());
 
@@ -162,7 +161,7 @@ public class SqlExecute
     public Lambda lambda(@Context HttpServletRequest request, SQLQueryInput query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         Query q = extractQuery(query);
 
         SQLContext context = new SQLContext(q, query.getPositionalArguments());
@@ -205,7 +204,7 @@ public class SqlExecute
     public ExecutionPlan plan(@Context HttpServletRequest request, SQLQueryInput query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         Query q = extractQuery(query);
 
         SQLContext context = new SQLContext(q, query.getPositionalArguments());
@@ -248,7 +247,7 @@ public class SqlExecute
     public Schema schema(@Context HttpServletRequest request, SQLQueryInput query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         return this.executor.schema(extractQuery(query), query.getPositionalArguments(), identity);
     }
 

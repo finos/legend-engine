@@ -23,7 +23,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relationa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
 import org.finos.legend.engine.shared.core.vault.TestVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.After;
@@ -88,8 +87,7 @@ public class TestExecutionWithoutMiddleTierConnections
     @Before
     public void setup() throws Exception
     {
-        DefaultIdentityFactory defaultIdentityFactory = new DefaultIdentityFactory();
-        this.identity = defaultIdentityFactory.makeUnknownIdentity();
+        this.identity = Identity.makeUnknownIdentity();
 
         this.testVaultImplementation = new TestVaultImplementation();
         Vault.INSTANCE.registerImplementation(testVaultImplementation);

@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.KerberosUtils;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
-import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
@@ -34,22 +32,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-public class TestDefaultIdentityFactory
+public class TestIdentityFactoryForKerberosProfile
 {
-    private DefaultIdentityFactory defaultIdentityFactory;
-
-    @Before
-    public void setup()
-    {
-        this.defaultIdentityFactory = (DefaultIdentityFactory) IdentityFactoryProvider.getInstance();
-        assertTrue(defaultIdentityFactory instanceof DefaultIdentityFactory);
-    }
 
     @Test
     public void testWithEmptyProfile()
     {
         MutableList<CommonProfile> emptyProfile = Lists.mutable.empty();
-        Identity identity = defaultIdentityFactory.makeIdentity(emptyProfile);
+        Identity identity = Identity.makeIdentity(emptyProfile);
         String userName = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(emptyProfile));
         assertEquals(userName, identity.getName());
 
@@ -63,7 +53,7 @@ public class TestDefaultIdentityFactory
     {
         Subject subject = new Subject(true, Sets.mutable.with(new KerberosPrincipal("dummy@example.com")), Sets.mutable.empty(), Sets.mutable.empty());
         KerberosProfile kerberosProfile = new KerberosProfile(subject, null);
-        Identity identity = defaultIdentityFactory.makeIdentity(Lists.mutable.with(kerberosProfile));
+        Identity identity = Identity.makeIdentity(Lists.mutable.with(kerberosProfile));
 
         assertTrue(identity.getCredential(LegendKerberosCredential.class).isPresent());
 
@@ -85,7 +75,7 @@ public class TestDefaultIdentityFactory
         KerberosProfile kerberosProfile2 = new KerberosProfile(subject2, null);
 
         MutableList<CommonProfile> profiles = Lists.mutable.with(kerberosProfile1, kerberosProfile2);
-        Identity identity = defaultIdentityFactory.makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
 
         String userName = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(profiles));
         assertEquals(userName, identity.getName() + "@example.com");

@@ -33,7 +33,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
@@ -100,7 +99,7 @@ public class ExternalFormats
     public Response generateModel(GenerateModelInput generateModelInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         boolean interactive = generateModelInput.model instanceof PureModelContextData;
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate Model From External Format Schema").startActive(true))
         {
@@ -130,7 +129,7 @@ public class ExternalFormats
     public Response generateSchema(GenerateSchemaInput generateSchemaInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         boolean interactive = generateSchemaInput.model instanceof PureModelContextData;
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate Model From External Format Schema").startActive(true))
         {

@@ -38,9 +38,6 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -69,14 +66,12 @@ public class FunctionActivatorAPI
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions;
     private  List<FunctionActivatorDeploymentConfiguration> runtimeDeploymentConfig = Lists.mutable.empty();
     private MutableList<FunctionActivatorService<? extends Root_meta_external_function_activator_FunctionActivator, ? extends FunctionActivatorDeploymentConfiguration, ? extends DeploymentResult>>  availableActivatorServices = Lists.mutable.empty();
-    private IdentityFactory identityFactory;
 
     public FunctionActivatorAPI(ModelManager modelManager, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         this.modelManager = modelManager;
         this.routerExtensions = routerExtensions;
         this.emptyModel = Compiler.compile(PureModelContextData.newPureModelContextData(), DeploymentMode.PROD, Identity.getAnonymousIdentity().getName());
-        this.identityFactory = new DefaultIdentityFactory();
     }
 
     public FunctionActivatorAPI(ModelManager modelManager,  List<FunctionActivatorDeploymentConfiguration> activatorConfigurations, MutableList<FunctionActivatorService<? extends Root_meta_external_function_activator_FunctionActivator, ? extends FunctionActivatorDeploymentConfiguration, ? extends DeploymentResult>> availableActivatorServices, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
@@ -94,7 +89,7 @@ public class FunctionActivatorAPI
     public Response list(@ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         MutableList<FunctionActivatorInfo> values = this.availableActivatorServices.isEmpty() ? FunctionActivatorLoader.extensions().collect(x -> x.info(emptyModel, "vX_X_X")) : availableActivatorServices.collect(c -> c.info(emptyModel,"vX_X_X"));
         return ManageConstantResult.manageResult(identity.getName(), values, objectMapper);
     }
@@ -107,14 +102,14 @@ public class FunctionActivatorAPI
     public Response validate(FunctionActivatorInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         try
         {
             String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;
             PureModel pureModel = modelManager.loadModel(input.model, clientVersion, identity, null);
             Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
             FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = getActivatorService(activator, pureModel);
-            return Response.ok(objectMapper.writeValueAsString(service.validate(identityFactory.makeIdentity(profiles), pureModel, activator, input.model, routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
+            return Response.ok(objectMapper.writeValueAsString(service.validate(Identity.makeIdentity(profiles), pureModel, activator, input.model, routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
         {
@@ -131,14 +126,14 @@ public class FunctionActivatorAPI
     public Response publishToSandbox(FunctionActivatorInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         try
         {
             String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;
             PureModel pureModel = modelManager.loadModel(input.model, clientVersion, identity, null);
             Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
             FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = getActivatorService(activator,pureModel);
-            return Response.ok(objectMapper.writeValueAsString(service.publishToSandbox(this.identityFactory.makeIdentity(profiles), pureModel, activator, input.model, service.selectConfig(this.runtimeDeploymentConfig),  routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
+            return Response.ok(objectMapper.writeValueAsString(service.publishToSandbox(Identity.makeIdentity(profiles), pureModel, activator, input.model, service.selectConfig(this.runtimeDeploymentConfig),  routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
         {
@@ -155,7 +150,7 @@ public class FunctionActivatorAPI
     public Response renderArtifact(FunctionActivatorInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         try
         {
             String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;

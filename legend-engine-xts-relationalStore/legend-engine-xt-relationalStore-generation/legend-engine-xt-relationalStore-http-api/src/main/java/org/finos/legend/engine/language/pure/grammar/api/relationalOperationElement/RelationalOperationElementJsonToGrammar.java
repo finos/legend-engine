@@ -32,7 +32,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -66,7 +65,7 @@ public class RelationalOperationElementJsonToGrammar
                                                @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: jsonToGrammar relationalOperationElement").startActive(true))
         {
             PureGrammarComposerExtensionLoader.logExtensionList();
@@ -88,7 +87,7 @@ public class RelationalOperationElementJsonToGrammar
                                                     @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: jsonToGrammar relationalOperationElement").startActive(true))
         {
             PureGrammarComposerExtensionLoader.logExtensionList();

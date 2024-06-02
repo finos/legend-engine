@@ -29,7 +29,6 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.grammar.ParserError;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
@@ -66,7 +65,7 @@ public class TransformRelationalOperationElementGrammarToJson
     public Response transformRelationalOperationElementGrammarToJson(RelationalOperationElementGrammarToJsonInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @QueryParam("returnSourceInfo") boolean returnSourceInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: transformRelationalOperationElementGrammarToJson").startActive(true))
         {
             PureGrammarParserExtensions.logExtensionList();

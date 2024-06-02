@@ -35,7 +35,6 @@ import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -77,7 +76,7 @@ public class StoreEntitlementAnalytics
     public Response generateDatasetSpecifications(StoreEntitlementAnalyticsInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         PureModel pureModel = modelManager.loadModel(input.model, input.clientVersion == null ? PureClientVersions.production : input.clientVersion, identity, null);
         Mapping mapping = pureModel.getMapping(input.mappingPath);
         Root_meta_core_runtime_Runtime runtime = pureModel.getRuntime(input.runtimePath);
@@ -100,7 +99,7 @@ public class StoreEntitlementAnalytics
     public Response generateEntitlementReports(EntitlementReportAnalyticsInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         StoreEntitlementAnalyticsInput storeEntitlementAnalyticsInput = input.getStoreEntitlementAnalyticsInput();
         PureModel pureModel = modelManager.loadModel(storeEntitlementAnalyticsInput.model, storeEntitlementAnalyticsInput.clientVersion == null ? PureClientVersions.production : storeEntitlementAnalyticsInput.clientVersion, identity, null);
         Mapping mapping = pureModel.getMapping(storeEntitlementAnalyticsInput.mappingPath);

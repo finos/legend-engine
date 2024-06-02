@@ -22,7 +22,6 @@ import org.finos.legend.engine.plan.execution.authorization.RootMiddleTierPlanEx
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
-import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
@@ -47,7 +46,7 @@ public class TestExecutionWithMiddleTierConnections extends AbstractMiddleTierEx
         RootMiddleTierPlanExecutionAuthorizer planExecutionAuthorizer = new RootMiddleTierPlanExecutionAuthorizer(Lists.immutable.of(relationalMiddleTierPlanExecutionAuthorizer));
 
         SingleExecutionPlan executionPlan = this.loadPlanFromFile("/plans/planWithSingleMiddleTierConnection.json", postgresTestContainerWrapper.getPort());
-        Response response = new ExecutePlan(buildPlanExecutor(), planExecutionAuthorizer, new DefaultIdentityFactory()).doExecutePlanImpl(new ExecutionRequest(executionPlan), SerializationFormat.defaultFormat, identity);
+        Response response = new ExecutePlan(buildPlanExecutor(), planExecutionAuthorizer).doExecutePlanImpl(new ExecutionRequest(executionPlan), SerializationFormat.defaultFormat, identity);
 
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
@@ -64,7 +63,7 @@ public class TestExecutionWithMiddleTierConnections extends AbstractMiddleTierEx
         RootMiddleTierPlanExecutionAuthorizer planExecutionAuthorizer = new RootMiddleTierPlanExecutionAuthorizer(Lists.immutable.of(relationalMiddleTierPlanExecutionAuthorizer));
 
         SingleExecutionPlan executionPlan = this.loadPlanFromFile("/plans/planWithSingleMiddleTierConnection.json", postgresTestContainerWrapper.getPort());
-        Response response = new ExecutePlan(buildPlanExecutor(), planExecutionAuthorizer, new DefaultIdentityFactory()).doExecutePlanImpl(new ExecutionRequest(executionPlan), SerializationFormat.defaultFormat, identity);
+        Response response = new ExecutePlan(buildPlanExecutor(), planExecutionAuthorizer).doExecutePlanImpl(new ExecutionRequest(executionPlan), SerializationFormat.defaultFormat, identity);
 
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
 
