@@ -17,9 +17,9 @@ package org.finos.legend.engine.protocol.pure.v1.model.context;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-
+import com.fasterxml.jackson.databind.util.StdConverter;
 import java.util.Objects;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 public class PackageableElementPointer
 {
@@ -80,6 +80,15 @@ public class PackageableElementPointer
     public int hashCode()
     {
         return Objects.hash(type, path);
+    }
+
+    public static class ToPathSerializerConverter extends StdConverter<PackageableElementPointer, String>
+    {
+        @Override
+        public String convert(PackageableElementPointer value)
+        {
+            return value.path;
+        }
     }
 }
 

@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 
@@ -22,7 +24,8 @@ import java.util.List;
 
 public class Class extends PackageableElement
 {
-    public List<String> superTypes = Collections.emptyList();
+    @JsonSerialize(contentConverter = PackageableElementPointer.ToPathSerializerConverter.class)
+    public List<PackageableElementPointer> superTypes = Collections.emptyList();
     public List<Property> originalMilestonedProperties = Collections.emptyList();
     public List<Property> properties = Collections.emptyList();
     public List<QualifiedProperty> qualifiedProperties = Collections.emptyList();
