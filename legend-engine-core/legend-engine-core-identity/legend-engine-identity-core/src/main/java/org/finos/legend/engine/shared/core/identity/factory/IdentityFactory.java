@@ -14,30 +14,16 @@
 
 package org.finos.legend.engine.shared.core.identity.factory;
 
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.shared.core.extension.LegendExtension;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.pac4j.core.profile.CommonProfile;
-
-import javax.security.auth.Subject;
-import java.util.Collections;
-import java.util.List;
+import java.util.Optional;
 
 public interface IdentityFactory extends LegendExtension
 {
-    Identity makeIdentity(Subject subject);
-
-    Identity makeIdentity(MutableList<CommonProfile> profiles);
-
-    /*
-        A helper function to translate from Identity to Profile.
-        Legend code base makes use of both Identity and Profile.
-        Some "upper" layers (e.g ServiceRunner APIs)  have been switched to Identity. Some "lower" layers (e.g connection code) have been switched to Identity.
-        However, the "middle" layers still use Profile. So we switch between Identity and Profile.
-        Profile should eventually be removed from the "middle" layers.
-    */
-    default List<CommonProfile> adapt(Identity identity)
-    {
-        return Collections.EMPTY_LIST;
-    }
+    Optional<Identity> makeIdentity(Object authenticationSource);
+        /*
+             This function is supposed to do following things
+             1. return null if authenticationSource is empty/null or authenticationSource is not supported by respective IdentityFactory
+             2. return Identity if authenticationSource is supported by IdentityFactory
+        */
 }

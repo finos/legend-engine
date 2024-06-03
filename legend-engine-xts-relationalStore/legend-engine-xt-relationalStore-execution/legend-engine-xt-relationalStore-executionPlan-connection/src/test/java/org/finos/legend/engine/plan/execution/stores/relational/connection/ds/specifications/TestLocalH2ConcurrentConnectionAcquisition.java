@@ -21,7 +21,6 @@ import org.finos.legend.engine.authentication.demoflows.H2LocalWithDefaultUserPa
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.h2.jdbc.JdbcConnection;
 import org.junit.Test;
 
@@ -127,7 +126,7 @@ public class TestLocalH2ConcurrentConnectionAcquisition
                     Lists.mutable.empty(),
                     new H2Manager(),
                     new TestDatabaseAuthenticationStrategy());
-            Identity identity = IdentityFactoryProvider.getInstance().makeIdentity((Subject) null);
+            Identity identity = Identity.makeIdentity((Subject) null);
             return specification.getConnectionUsingIdentity(identity, plainTextCredentialSupplier());
         }
 

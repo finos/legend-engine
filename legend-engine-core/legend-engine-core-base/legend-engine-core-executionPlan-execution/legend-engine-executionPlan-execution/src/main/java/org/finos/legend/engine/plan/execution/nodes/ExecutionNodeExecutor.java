@@ -21,6 +21,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.identity.extensions.pac4j.Pac4jUtils;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.Constrained;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.finos.legend.engine.plan.dependencies.domain.graphFetch.IGraphInstance;
@@ -86,7 +87,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.SerializationConfig;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.pac4j.core.profile.ProfileManager;
 
 import java.util.Arrays;
@@ -368,7 +368,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                     String executionClassName = JavaHelper.getExecutionClassFullName(javaPlatformImpl);
                     String executionMethodName = JavaHelper.getExecutionMethodName(javaPlatformImpl);
 
-                    Stream<?> transformedResult = ExecutionNodeJavaPlatformHelper.executeStaticJavaMethod(graphFetchExecutionNode, executionClassName, executionMethodName, Arrays.asList(StreamingObjectResult.class, ExecutionNode.class, ExecutionState.class, ProfileManager.class), Arrays.asList(objectResult, graphFetchExecutionNode, this.executionState, Lists.mutable.withAll(IdentityFactoryProvider.getInstance().adapt(identity))), this.executionState, this.identity);
+                    Stream<?> transformedResult = ExecutionNodeJavaPlatformHelper.executeStaticJavaMethod(graphFetchExecutionNode, executionClassName, executionMethodName, Arrays.asList(StreamingObjectResult.class, ExecutionNode.class, ExecutionState.class, ProfileManager.class), Arrays.asList(objectResult, graphFetchExecutionNode, this.executionState, Pac4jUtils.getProfilesFromIdentity(identity)), this.executionState, this.identity);
                     return new StreamingObjectResult<>(transformedResult, objectResult.getResultBuilder(), objectResult);
                 }
                 catch (Exception e)
