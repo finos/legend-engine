@@ -40,7 +40,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,7 +135,7 @@ public class RelationalConnectionManager implements ConnectionManager
     {
         // TODO : pass identity into this method
         RelationalDatabaseConnection testConnection = buildTestDatabaseDatasourceSpecification();
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity((Subject) null);
+        Identity identity = Identity.makeIdentity((Subject) null);
         Optional<CredentialSupplier> credentialHolder = RelationalConnectionManager.getCredential(flowProviderHolder, testConnection, identity, StoreExecutionState.emptyRuntimeContext());
         return this.getDataSourceSpecification(testConnection).getConnectionUsingIdentity(identity, credentialHolder);
     }

@@ -26,7 +26,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.flows.DatabaseAuthenticationFlowKey;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -91,7 +90,7 @@ public class TestRelationalConnectionManager
                         "}";
 
         RelationalDatabaseConnection connectionSpec = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(connectionStr, RelationalDatabaseConnection.class);
-        Identity identity = DefaultIdentityFactory.INSTANCE.makeUnknownIdentity();
+        Identity identity = Identity.makeUnknownIdentity();
         try (Connection connection = manager.getDataSourceSpecification(connectionSpec).getConnectionUsingIdentity(identity, Optional.empty()))
         {
             try (Statement statement = connection.createStatement())
@@ -125,7 +124,7 @@ public class TestRelationalConnectionManager
         RelationalDatabaseConnection connectionSpec = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(connectionStr, RelationalDatabaseConnection.class);
         DatabaseAuthenticationFlowProvider flowProvider = new NoOpFlowProvider();
 
-        Identity identity = DefaultIdentityFactory.INSTANCE.makeUnknownIdentity();
+        Identity identity = Identity.makeUnknownIdentity();
         Optional<CredentialSupplier> credential = RelationalConnectionManager.getCredential(flowProvider, connectionSpec, identity, StoreExecutionState.emptyRuntimeContext());
         assertFalse(credential.isPresent());
     }

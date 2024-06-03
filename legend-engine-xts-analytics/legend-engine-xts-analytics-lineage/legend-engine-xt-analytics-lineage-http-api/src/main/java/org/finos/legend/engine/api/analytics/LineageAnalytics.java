@@ -29,7 +29,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -83,7 +82,7 @@ public class LineageAnalytics
     public Response functionTree(LineageAnalyticsInput lineageAnalyticsInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         long start = System.currentTimeMillis();
         LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.LINEAGE_FUNCTION_TREE_START).toString());
         try (Scope scope = GlobalTracer.get().buildSpan("Lineage: functionTree").startActive(true))
@@ -110,7 +109,7 @@ public class LineageAnalytics
     public Response classLineage(LineageAnalyticsInput lineageAnalyticsInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
 
         long start = System.currentTimeMillis();
         LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.LINEAGE_CLASS_LINEAGE_START).toString());
@@ -140,7 +139,7 @@ public class LineageAnalytics
     public Response databaseLineage(LineageAnalyticsInput lineageAnalyticsInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         long start = System.currentTimeMillis();
         LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.LINEAGE_DATABASE_LINEAGE_START).toString());
 
@@ -173,7 +172,7 @@ public class LineageAnalytics
     public Response reportLineage(LineageAnalyticsInput lineageAnalyticsInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         long start = System.currentTimeMillis();
         LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.LINEAGE_REPORT_LINEAGE_START).toString());
 
@@ -203,7 +202,7 @@ public class LineageAnalytics
     public Response relationTree(LineageAnalyticsInput lineageAnalyticsInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         long start = System.currentTimeMillis();
         LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.LINEAGE_RELATION_TREE_START).toString());
 

@@ -158,7 +158,7 @@ function <<access.private>> meta::pure::changetoken::diff_generation::getAddFiel
             fieldName = $cp.second.name->toOne(),
             fieldType = stripVersionQualifier(printGenericType($cp.second.genericType)) + '[' + printMultiplicity($cp.second.multiplicity) + ']',
             safeCast = true,
-            defaultValue = ^ConstValue(value = lookupOrAny($defaultValues, stripPath($cp.first), $cp.second.name->toOne(), if($cp.second.defaultValue->isEmpty(), | generateDefault($cp.second, $typeKeyName, $versionKeyName), | $cp.second.defaultValue.functionDefinition->toOne()->cast(@Function<{->Any[1]}>)->eval()->serializeAny($cp.second, $typeKeyName, $versionKeyName)), $cp.second, $typeKeyName, $versionKeyName))
+            defaultValue = ^ConstValue(value = lookupOrAny($defaultValues, stripPath($cp.first), $cp.second.name->toOne(), if($cp.second.defaultValue->isEmpty(), | generateDefault($cp.second, $typeKeyName, $versionKeyName), | $cp.second.defaultValue.functionDefinition->toOne()->cast(@Function<{->Any[*]}>)->eval()->serializeAny($cp.second, $typeKeyName, $versionKeyName)), $cp.second, $typeKeyName, $versionKeyName))
     ));
 }
 

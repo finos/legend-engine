@@ -15,7 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.dynamicTestConnections;
 
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.DynamicTestConnection;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DelegatedKerberosAuthenticationStrategy;
@@ -27,7 +27,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.time.Duration;
 
 public class TrinoTestContainersWithDelegatedKerberosAuth
-        implements DynamicTestConnection
+        implements TestConnectionIntegration
 {
     @Override
     public MutableList<String> group()

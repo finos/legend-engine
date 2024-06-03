@@ -458,7 +458,8 @@ function meta::pure::router::routing::processLambda(i:InstanceValue[1], routed:E
                                                                                                                   |[]
                                                                                                               );
                                                                                                           );,
-                                                              |[]);
+                                                              |[]);,
+                               a:Any[1]|[]
                            ]
                       );
 
@@ -493,7 +494,8 @@ function meta::pure::router::routing::routeSubFunction(state:RoutingState[1], ex
                value = $content
             );,
          p: Path<Nil,Any|*>[1] | $p.path->last()->cast(@PropertyPathElement)->toOne().property->meta::pure::router::store::routing::processProperty($i, $state, $executionContext, $extensions, $debug);,       // TODO: cleanup needed
-         p: Property<Nil,Any|*>[1] | $p->meta::pure::router::store::routing::processProperty($i, $state, $executionContext, $extensions, $debug);                                                               // TODO: cleanup needed
+         p: Property<Nil,Any|*>[1] | $p->meta::pure::router::store::routing::processProperty($i, $state, $executionContext, $extensions, $debug);,                                                               // TODO: cleanup needed
+         a: Any[1]|$state
       ]
    );
 }

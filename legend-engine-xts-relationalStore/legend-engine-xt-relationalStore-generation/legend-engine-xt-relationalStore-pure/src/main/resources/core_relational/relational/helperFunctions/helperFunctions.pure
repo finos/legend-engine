@@ -163,9 +163,14 @@ function <<access.private>> meta::alloy::service::execution::replaceWithEmptyVal
    if ($replaced->contains(',,'), | meta::alloy::service::execution::replaceWithEmptyValue($replaced, $delimForEmptyCsvField), | $replaced);
 }
 
+function <<doc.deprecated>> meta::alloy::service::execution::setUpDataSQLs(data:String[1], db:Database[*], type:DatabaseType[1]) : String[*]
+{
+  meta::alloy::service::execution::setUpDataSQLs($data, $db, createDbConfig($type));
+}
+
 function <<doc.deprecated>> meta::alloy::service::execution::setUpDataSQLs(data:String[1], db:Database[*]) : String[*]
 {
-  meta::alloy::service::execution::setUpDataSQLs($data, $db, createDbConfig(DatabaseType.H2));
+  meta::alloy::service::execution::setUpDataSQLs($data, $db, DatabaseType.H2);
 }
 
 function <<doc.deprecated>> meta::alloy::service::execution::setUpDataSQLs(records:List<String>[*], db:Database[*]) : String[*]

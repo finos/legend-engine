@@ -75,7 +75,7 @@ public class TestExecutionPlanCache
         HttpServletRequest request = TestExecutionUtility.buildMockRequest();
         Mockito.when(request.getHeader(RequestContextHelper.LEGEND_USE_PLAN_CACHE)).thenReturn("true");
 
-        Execute execute = new Execute(modelManager, planExecutor, (PureModel pureModel) -> Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, null, null, cache);
+        Execute execute = new Execute(modelManager, planExecutor, (PureModel pureModel) -> Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, null, cache);
         Response response1 = execute.execute(request, inputPointer, SerializationFormat.defaultFormat, null, null);
         Response response2 = execute.execute(request, input2Pointer, SerializationFormat.defaultFormat, null, null);
 
@@ -109,7 +109,7 @@ public class TestExecutionPlanCache
         Mockito.when(request.getHeader(RequestContextHelper.LEGEND_USE_PLAN_CACHE)).thenReturn("true");
         String expected = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"Age\",\"type\":\"Integer\",\"relationalType\":\"INTEGER\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select top 1000 \\\"root\\\".age as \\\"Age\\\" from PersonTable as \\\"root\\\" where \\\"root\\\".age in (20, 30)\"}],\"result\":{\"columns\":[\"Age\"],\"rows\":[{\"values\":[20]},{\"values\":[30]}]}}";
 
-        Execute execute = new Execute(modelManager, planExecutor, (PureModel pureModel) -> Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, null, null, cache);
+        Execute execute = new Execute(modelManager, planExecutor, (PureModel pureModel) -> Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, null, cache);
         Response response = execute.execute(request, inputPointer, SerializationFormat.defaultFormat, null, null);
         assertEquals(expected, RelationalResultToJsonDefaultSerializer.removeComment(TestExecutionUtility.responseAsString(response)));
     }

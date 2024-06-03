@@ -37,9 +37,7 @@ import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -57,18 +55,16 @@ public class ExecutePlan
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ExecutePlan.class);
     private final PlanExecutor planExecutor;
-    private IdentityFactory identityFactory;
     private final PlanExecutionAuthorizer planExecutionAuthorizer;
 
     public ExecutePlan(PlanExecutor planExecutor)
     {
-        this(planExecutor, null, new DefaultIdentityFactory());
+        this(planExecutor, null);
     }
 
-    public ExecutePlan(PlanExecutor planExecutor, PlanExecutionAuthorizer planExecutionAuthorizer, IdentityFactory identityFactory)
+    public ExecutePlan(PlanExecutor planExecutor, PlanExecutionAuthorizer planExecutionAuthorizer)
     {
         this.planExecutor = planExecutor;
-        this.identityFactory = identityFactory;
         this.planExecutionAuthorizer = planExecutionAuthorizer;
     }
 
@@ -81,7 +77,7 @@ public class ExecutePlan
          */
 
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         if (this.planExecutionAuthorizer == null)
         {
             return this.doExecutePlanLegacy(request, executionRequest, format, identity);

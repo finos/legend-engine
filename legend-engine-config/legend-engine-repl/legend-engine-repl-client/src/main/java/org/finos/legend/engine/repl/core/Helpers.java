@@ -16,7 +16,6 @@ package org.finos.legend.engine.repl.core;
 
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 
 public class Helpers
@@ -25,7 +24,7 @@ public class Helpers
     {
         try
         {
-            return IdentityFactoryProvider.getInstance().makeIdentity(SubjectTools.getLocalSubject());
+            return Identity.makeIdentity(SubjectTools.getLocalSubject());
         }
         catch (Exception e)
         {

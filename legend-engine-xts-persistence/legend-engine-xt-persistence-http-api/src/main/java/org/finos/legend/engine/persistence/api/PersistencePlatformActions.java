@@ -28,7 +28,6 @@ import org.finos.legend.engine.language.pure.dsl.persistence.platform.Persistenc
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceContext;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
@@ -89,7 +88,7 @@ public class PersistencePlatformActions
     private void action(PersistencePlatformActionPayload payload, ProfileManager<CommonProfile> pm, Procedure2<PersistencePlatformActionsExtension, PersistencePlatformActionRequest> action)
     {
         FixedSizeList<CommonProfile> profiles = pm.get(true).map(Lists.fixedSize::of).orElse(null);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         Pair<PureModelContextData, PureModel> pureModelContextDataPureModelPair = this.modelManager.loadModelAndData(payload.model, payload.clientVersion, identity, null);
         PureModel model = pureModelContextDataPureModelPair.getTwo();
         PackageableElement packageableElement = model.getPackageableElement(payload.persistenceContextPath);

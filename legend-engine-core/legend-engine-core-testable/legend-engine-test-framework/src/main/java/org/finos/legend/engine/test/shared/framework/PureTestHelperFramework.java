@@ -25,6 +25,7 @@ import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.block.function.checked.ThrowingFunction0;
 import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ArrayIterate;
@@ -68,44 +69,51 @@ public class PureTestHelperFramework
     private static final ThreadLocal<ServersState> state = new ThreadLocal<>();
 
     @Ignore
-    public static TestSetup wrapSuite(Function0<Boolean> init,
+    public static TestSetup wrapSuite(ThrowingFunction0<Boolean> init,
                                       Function0<TestSuite> suiteBuilder,
-                                      Function0<Boolean> shutdown,
+                                      ThrowingFunction0<Boolean> shutdown,
                                       MutableList<TestServerResource> testServerResources)
     {
-        boolean shouldCleanUp = init.value();
-        TestSuite suite = suiteBuilder.value();
-        if (shouldCleanUp)
+        try
         {
-            shutdown.value();
-        }
-        return new TestSetup(suite)
-        {
-            boolean shouldCleanUp;
-
-            @Override
-            protected void setUp() throws Exception
+            boolean shouldCleanUp = init.safeValue();
+            TestSuite suite = suiteBuilder.value();
+            if (shouldCleanUp)
             {
-                super.setUp();
-                shouldCleanUp = init.value();
-                ServersState serversState = new ServersState(testServerResources);
-                serversState.start();
-                state.set(serversState);
+                shutdown.safeValue();
             }
 
-            @Override
-            protected void tearDown() throws Exception
+            return new TestSetup(suite)
             {
-                super.tearDown();
-                state.get().shutDown();
-                state.remove();
-                if (this.shouldCleanUp)
+                boolean shouldCleanUp;
+
+                @Override
+                protected void setUp() throws Exception
                 {
-                    shutdown.value();
+                    super.setUp();
+                    shouldCleanUp = init.safeValue();
+                    ServersState serversState = new ServersState(testServerResources);
+                    serversState.start();
+                    state.set(serversState);
                 }
-                System.out.println("STOP");
-            }
-        };
+
+                @Override
+                protected void tearDown() throws Exception
+                {
+                    super.tearDown();
+                    state.get().shutDown();
+                    state.remove();
+                    if (this.shouldCleanUp)
+                    {
+                        shutdown.safeValue();
+                    }
+                }
+            };
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     private static boolean hasTestStereotypeWithValue(CoreInstance node, String value, ProcessorSupport processorSupport)
