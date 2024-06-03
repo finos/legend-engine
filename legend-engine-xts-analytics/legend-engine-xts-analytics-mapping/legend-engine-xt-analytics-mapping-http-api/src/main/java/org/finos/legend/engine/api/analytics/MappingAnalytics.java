@@ -40,7 +40,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
@@ -99,7 +98,7 @@ public class MappingAnalytics
                                          @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         PureModel pureModel = this.modelManager.loadModel(input.model, input.clientVersion, identity, null);
         PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, identity);
         Mapping mapping = input.mapping == null ? null : pureModel.getMapping(input.mapping);
@@ -196,7 +195,7 @@ public class MappingAnalytics
                                                        @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, identity);
         PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, identity, null);
         Mapping mapping = input.mapping == null ? null : pureModel.getMapping(input.mapping);

@@ -30,7 +30,6 @@ import org.finos.legend.engine.query.graphQL.api.format.generation.GraphQLGenera
 import org.finos.legend.engine.query.graphQL.api.format.generation.GraphQLGenerationInput;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -73,7 +72,7 @@ public class GraphQLGenerationService
     public Response generateGraphQL(GraphQLGenerationInput generateGraphQLInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         boolean interactive = generateGraphQLInput.model instanceof PureModelContextData;
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate GraphQL").startActive(true))
         {
