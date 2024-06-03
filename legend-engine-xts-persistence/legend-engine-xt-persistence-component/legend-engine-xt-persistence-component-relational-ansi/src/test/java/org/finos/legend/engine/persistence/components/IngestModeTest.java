@@ -77,15 +77,18 @@ public class IngestModeTest
     protected Field name = Field.builder().name("name").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).build();
     protected Field amount = Field.builder().name("amount").type(FieldType.of(DataType.DOUBLE, Optional.empty(), Optional.empty())).build();
     protected Field version = Field.builder().name("version").type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).build();
+    protected Field nameInUpperCase = Field.builder().name("NAME").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).build();
+    protected Field amountInUpperCase = Field.builder().name("AMOUNT").type(FieldType.of(DataType.DOUBLE, Optional.empty(), Optional.empty())).build();
+
     protected Field amountWithSize = Field.builder().name("amount").type(FieldType.of(DataType.DOUBLE, 8, null)).build();
     protected Field amountDecimal = Field.builder().name("amount").type(FieldType.of(DataType.DECIMAL, 10, 0)).build();
     protected Field amountVarchar = Field.builder().name("amount").type(FieldType.of(DataType.VARCHAR, 32, null)).build();
     protected Field nonNullableAmount = Field.builder().name("amount").type(FieldType.of(DataType.DOUBLE, Optional.empty(), Optional.empty())).nullable(false).build();
-    protected Field floatAmount = Field.builder().name("amount").type(FieldType.of(DataType.FLOAT, Optional.empty(), Optional.empty())).build();
+    protected Field floatAmount = Field.builder().name("Amount").type(FieldType.of(DataType.FLOAT, Optional.empty(), Optional.empty())).build();
     protected Field bizDate = Field.builder().name("biz_date").type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).build();
     protected Field nonNullableBizDate = Field.builder().name("biz_date").type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).nullable(false).build();
     protected Field description = Field.builder().name("description").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).build();
-    protected Field descriptionModified = Field.builder().name("description").type(FieldType.of(DataType.VARCHAR, 64, null)).build();
+    protected Field descriptionModified = Field.builder().name("Description").type(FieldType.of(DataType.VARCHAR, 64, null)).build();
     protected Field decimalCol = Field.builder().name("decimal_col").type(FieldType.of(DataType.DECIMAL, 10, 0)).build();
     protected Field decimalColModified = Field.builder().name("decimal_col").type(FieldType.of(DataType.DECIMAL, 10, 2)).build();
     protected Field countInt = Field.builder().name("count").type(FieldType.of(DataType.INT, 4, null)).build();
@@ -155,6 +158,13 @@ public class IngestModeTest
             .addFields(amount)
             .addFields(bizDate)
             .build();
+
+    protected SchemaDefinition baseTableSchemaWithSomeColumnsInUpperCase = SchemaDefinition.builder()
+        .addFields(id)
+        .addFields(nameInUpperCase)
+        .addFields(amountInUpperCase)
+        .addFields(bizDate)
+        .build();
 
     protected SchemaDefinition baseTableSchemaWithVersion = SchemaDefinition.builder()
             .addFields(id)

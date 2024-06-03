@@ -431,7 +431,7 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
                 {
                     continue;
                 }
-                SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build(), Arrays.stream(SchemaEvolutionCapability.values()).collect(Collectors.toSet()));
+                SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build(), Arrays.stream(SchemaEvolutionCapability.values()).collect(Collectors.toSet()), false);
                 DatasetDefinition datasetDefinitionStage = list.get(stage);
                 DatasetDefinition datasetDefinitionMain = list.get(main);
                 refreshDataset(relationalExecutor, transformer, datasetDefinitionMain, null);
@@ -577,7 +577,7 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
             RelationalSink relationalSink = BigQuerySink.get();
             Executor<SqlGen, TabularData, SqlPlan> relationalExecutor = relationalSink.getRelationalExecutor(BigQueryConnection.of(bigquery));
             RelationalTransformer transformer = new RelationalTransformer(relationalSink);
-            SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build(), Arrays.stream(SchemaEvolutionCapability.values()).collect(Collectors.toSet()));
+            SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build(), Arrays.stream(SchemaEvolutionCapability.values()).collect(Collectors.toSet()), false);
             DatasetDefinition datasetDefinitionStage = stageDefinition.get(i);
             DatasetDefinition datasetDefinitionMain = mainDefinition.get(i);
             DatasetDefinition datasetDefinitionAssert = assertionDefinition.get(i);

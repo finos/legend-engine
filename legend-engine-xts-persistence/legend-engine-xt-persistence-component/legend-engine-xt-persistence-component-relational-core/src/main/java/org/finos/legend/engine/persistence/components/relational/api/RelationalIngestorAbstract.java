@@ -133,6 +133,12 @@ public abstract class RelationalIngestorAbstract
     }
 
     @Default
+    public boolean ignoreCaseForSchemaEvolution()
+    {
+        return false;
+    }
+
+    @Default
     public CaseConversion caseConversion()
     {
         return CaseConversion.NONE;
@@ -425,7 +431,7 @@ public abstract class RelationalIngestorAbstract
                 existingMetadataDataset = executor.constructDatasetFromDatabase(desiredMetadataDataset);
                 Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
                 schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ADD_COLUMN);
-                SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), this.ingestMode(), schemaEvolutionCapabilitySet);
+                SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), this.ingestMode(), schemaEvolutionCapabilitySet, true);
                 org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(existingMetadataDataset, desiredMetadataDataset.schema());
                 LogicalPlan schemaEvolutionLogicalPlan = schemaEvolutionResult.logicalPlan();
                 Optional<SqlPlan> schemaEvolutionSqlPlan = Optional.of(transformer.generatePhysicalPlan(schemaEvolutionLogicalPlan));
@@ -691,6 +697,7 @@ public abstract class RelationalIngestorAbstract
                 .skipMainAndMetadataDatasetCreation(skipMainAndMetadataDatasetCreation())
                 .enableSchemaEvolution(enableSchemaEvolution())
                 .addAllSchemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet())
+                .ignoreCaseForSchemaEvolution(ignoreCaseForSchemaEvolution())
                 .enableConcurrentSafety(enableConcurrentSafety())
                 .caseConversion(caseConversion())
                 .executionTimestampClock(executionTimestampClock())

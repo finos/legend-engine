@@ -77,6 +77,29 @@ public class SchemaEvolutionForMetadataDatestTest extends BaseTest
     }
 
     @Test
+    void testSchemaEvolutionBatchSourceInfoMissingIgnoreCase() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+        RelationalIngestor ingestor = getRelationalIngestor(CaseConversion.NONE);
+
+        // Pre create metadata table
+        DatasetDefinition meta = getMetadataDatasetDefInUpperCaseWithoutBatchSourceInfo(MetadataDataset.builder().build());
+        createTempTable(meta);
+
+        // Perform Schema Evolution
+        List<String> schemaEvolutionSql = performSchemaEvolutionOfMetadataDataset(datasets, ingestor);
+        String expectedSql = "ALTER TABLE batch_metadata ADD COLUMN \"batch_source_info\" JSON";
+        Assertions.assertEquals(1, schemaEvolutionSql.size());
+        Assertions.assertEquals(expectedSql, schemaEvolutionSql.get(0));
+
+        // Perform Schema Evolution again - nothing should happen now
+        schemaEvolutionSql = performSchemaEvolutionOfMetadataDataset(datasets, ingestor);
+        Assertions.assertTrue(schemaEvolutionSql.isEmpty());
+    }
+
+    @Test
     void testSchemaEvolutionBatchSourceInfoAndAdditionalMetaMissing() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
@@ -139,6 +162,23 @@ public class SchemaEvolutionForMetadataDatestTest extends BaseTest
                         .addFields(Field.builder().name(metadataDataset.additionalMetadataField()).type(FieldType.of(DataType.JSON, Optional.empty(), Optional.empty())).build())
                         .build())
                 .build();
+    }
+
+    private DatasetDefinition getMetadataDatasetDefInUpperCaseWithoutBatchSourceInfo(MetadataDataset metadataDataset)
+    {
+        return DatasetDefinition.builder()
+            .database(metadataDataset.metadataDatasetDatabaseName())
+            .group(metadataDataset.metadataDatasetGroupName())
+            .name(metadataDataset.metadataDatasetName())
+            .schema(SchemaDefinition.builder()
+                .addFields(Field.builder().name(metadataDataset.tableNameField().toUpperCase()).type(FieldType.of(DataType.VARCHAR, 255, null)).build())
+                .addFields(Field.builder().name(metadataDataset.batchStartTimeField().toUpperCase()).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build())
+                .addFields(Field.builder().name(metadataDataset.batchEndTimeField().toUpperCase()).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build())
+                .addFields(Field.builder().name(metadataDataset.batchStatusField().toUpperCase()).type(FieldType.of(DataType.VARCHAR, 32, null)).build())
+                .addFields(Field.builder().name(metadataDataset.tableBatchIdField().toUpperCase()).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).build())
+                .addFields(Field.builder().name(metadataDataset.additionalMetadataField().toUpperCase()).type(FieldType.of(DataType.JSON, Optional.empty(), Optional.empty())).build())
+                .build())
+            .build();
     }
 
     private DatasetDefinition getMetadataDatasetDefWithoutBatchSourceInfoAndAdditionalMetadata(MetadataDataset metadataDataset)

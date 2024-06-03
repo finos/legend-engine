@@ -71,6 +71,12 @@ public abstract class RelationalSchemaEvolutionServiceAbstract
     }
 
     @Default
+    public boolean ignoreCaseForSchemaEvolution()
+    {
+        return false;
+    }
+
+    @Default
     public SqlLogging sqlLogging()
     {
         return SqlLogging.DISABLED;
@@ -118,7 +124,7 @@ public abstract class RelationalSchemaEvolutionServiceAbstract
 
         // 5. Generate schema evolution operations
         LOGGER.info("Generating schema evolution operations");
-        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), ingestMode, schemaEvolutionCapabilitySet());
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), ingestMode, schemaEvolutionCapabilitySet(), ignoreCaseForSchemaEvolution());
         SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainDataset, stagingSchema);
         LogicalPlan schemaEvolutionLogicalPlan = schemaEvolutionResult.logicalPlan();
 

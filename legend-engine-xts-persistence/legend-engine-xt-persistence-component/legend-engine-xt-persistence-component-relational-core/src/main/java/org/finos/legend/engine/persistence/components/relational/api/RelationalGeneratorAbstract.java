@@ -94,6 +94,12 @@ public abstract class RelationalGeneratorAbstract
     }
 
     @Default
+    public boolean ignoreCaseForSchemaEvolution()
+    {
+        return false;
+    }
+
+    @Default
     public Clock executionTimestampClock()
     {
         return Clock.systemUTC();
@@ -265,7 +271,7 @@ public abstract class RelationalGeneratorAbstract
         if (enableSchemaEvolution())
         {
             // Get logical plan and physical plan for schema evolution and update datasets
-            SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), ingestMode, schemaEvolutionCapabilitySet());
+            SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), ingestMode, schemaEvolutionCapabilitySet(), ignoreCaseForSchemaEvolution());
             SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(datasets.mainDataset(), datasets.stagingDataset().schema());
             LogicalPlan schemaEvolutionLogicalPlan = schemaEvolutionResult.logicalPlan();
 
