@@ -368,9 +368,9 @@ public class HelperMappingBuilder
     {
         Root_meta_pure_mapping_MappingClass_Impl mappingClass = new Root_meta_pure_mapping_MappingClass_Impl<>(" ", SourceInformationHelper.toM3SourceInformation(mappingclass.sourceInformation), null);
         mappingClass._name(mappingclass.name);
-        MutableList<Generalization> generalizations = ListIterate.collect(mappingclass.superTypes, (superTypePrt) ->
+        MutableList<Generalization> generalizations = ListIterate.collect(mappingclass.superTypes, (superTypePtr) ->
         {
-            String superType = superTypePrt.path;
+            String superType = superTypePtr.path;
             Generalization generalization = new Root_meta_pure_metamodel_relationship_Generalization_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::relationship::Generalization"))._general(context.resolveGenericType(superType))._specific(mappingClass);
             context.resolveType(superType)._specializationsAdd(generalization);
             return generalization;
