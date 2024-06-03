@@ -78,6 +78,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .deduplicationStrategy(appendOnly.deduplicationStrategy())
                 .versioningStrategy(appendOnly.versioningStrategy().accept(new VersionStrategyCaseConverter()))
                 .filterExistingRecords(appendOnly.filterExistingRecords())
+                .batchIdField(applyCase(appendOnly.batchIdField()))
                 .build();
     }
 
@@ -89,6 +90,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .auditing(nontemporalSnapshot.auditing().accept(new AuditingCaseConverter()))
                 .deduplicationStrategy(nontemporalSnapshot.deduplicationStrategy())
                 .versioningStrategy(nontemporalSnapshot.versioningStrategy().accept(new VersionStrategyCaseConverter()))
+                .batchIdField(applyCase(nontemporalSnapshot.batchIdField()))
                 .build();
     }
 
@@ -102,6 +104,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .auditing(nontemporalDelta.auditing().accept(new AuditingCaseConverter()))
                 .deduplicationStrategy(nontemporalDelta.deduplicationStrategy())
                 .versioningStrategy(nontemporalDelta.versioningStrategy().accept(new VersionStrategyCaseConverter()))
+                .batchIdField(applyCase(nontemporalDelta.batchIdField()))
                 .build();
     }
 

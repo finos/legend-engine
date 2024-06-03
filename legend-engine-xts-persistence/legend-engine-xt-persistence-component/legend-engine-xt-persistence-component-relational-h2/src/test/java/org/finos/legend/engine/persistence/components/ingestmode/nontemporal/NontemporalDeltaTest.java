@@ -114,6 +114,52 @@ class NontemporalDeltaTest extends BaseTest
     }
 
     /*
+    Scenario: Test NonTemporal Delta when Auditing is not enabled and with upper case conversion
+     */
+    @Test
+    void testNonTemporalDeltaWithNoAuditingAndUpperCase() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
+
+        // Create staging table
+        h2Sink.executeStatement("CREATE TABLE IF NOT EXISTS \"TEST\".\"STAGING\"(\"ID\" INTEGER NOT NULL,\"NAME\" VARCHAR(64) NOT NULL,\"INCOME\" BIGINT,\"START_TIME\" TIMESTAMP NOT NULL,\"EXPIRY_DATE\" DATE,\"DIGEST\" VARCHAR,PRIMARY KEY (\"ID\", \"START_TIME\"))");
+
+        // Generate the milestoning object
+        NontemporalDelta ingestMode = NontemporalDelta.builder()
+            .digestField(digestName)
+            .auditing(NoAuditing.builder().build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName.toUpperCase(), nameName.toUpperCase(), incomeName.toUpperCase(), startTimeName.toUpperCase(), expiryDateName.toUpperCase(), digestName.toUpperCase(), batchIdName.toUpperCase()};
+
+        // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
+        String dataPass1 = basePath + "input/vanilla_case/data_pass1.csv";
+        String expectedDataPass1 = basePath + "expected/vanilla_case/expected_pass1.csv";
+        // 1. Load staging table
+        loadBasicStagingDataInUpperCase(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+        // 3. Assert that the staging table is NOT truncated
+        List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"STAGING\"");
+        Assertions.assertEquals(stagingTableList.size(), 3);
+
+        // ------------ Perform incremental (delta) milestoning Pass2 ------------------------
+        String dataPass2 = basePath + "input/vanilla_case/data_pass2.csv";
+        String expectedDataPass2 = basePath + "expected/vanilla_case/expected_pass2.csv";
+        // 1. Load staging table
+        loadBasicStagingDataInUpperCase(dataPass2);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
+    }
+
+    /*
     Scenario: Test NonTemporal Delta when delete indicator is present
      */
     @Test
