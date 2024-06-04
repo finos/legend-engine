@@ -309,7 +309,6 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(getExpectedCleanupSql("\"mydb\".\"temp\"", "temp"), milestoningSql.get(7));
         Assertions.assertEquals(getExpectedCleanupSql("\"mydb\".\"tempWithDeleteIndicator\"", "tempWithDeleteIndicator"), milestoningSql.get(8));
 
-        System.out.println(operations.postCleanupSql());
         Assertions.assertEquals(getDropTempTableQuery("\"mydb\".\"temp\""), operations.postCleanupSql().get(0));
         Assertions.assertEquals(getDropTempTableQuery("\"mydb\".\"tempWithDeleteIndicator\""), operations.postCleanupSql().get(1));
 

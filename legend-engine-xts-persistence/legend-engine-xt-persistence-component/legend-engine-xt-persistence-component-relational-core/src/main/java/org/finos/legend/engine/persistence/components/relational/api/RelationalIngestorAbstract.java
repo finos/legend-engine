@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.persistence.components.common.*;
@@ -49,6 +50,7 @@ import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
 import org.finos.legend.engine.persistence.components.util.TableNameGenUtils;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.finos.legend.engine.persistence.components.util.SqlLogging;
+import org.immutables.value.Value;
 import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
@@ -57,6 +59,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -121,6 +124,12 @@ public abstract class RelationalIngestorAbstract
     }
 
     @Default
+    public boolean writeStatistics()
+    {
+        return false;
+    }
+
+    @Default
     public boolean enableSchemaEvolution()
     {
         return false;
@@ -158,7 +167,13 @@ public abstract class RelationalIngestorAbstract
 
     public abstract Map<String, Object> additionalMetadata();
 
-    public abstract Optional<String> bulkLoadEventIdValue();
+    public abstract Optional<String> ingestRequestId();
+
+    @Default
+    public boolean enableIdempotencyCheck()
+    {
+        return false;
+    }
 
     @Default
     public SqlLogging sqlLogging()
@@ -179,9 +194,19 @@ public abstract class RelationalIngestorAbstract
     }
 
     @Derived
-    public String getIngestRunId()
+    public String getRunId()
     {
         return UUID.randomUUID().toString();
+    }
+
+    @Value.Check
+    void validate()
+    {
+        // If IdempotencyCheck is enabled, concurrentSafety must be enabled and IngestRequestId must be present
+        if (enableIdempotencyCheck() && (!enableConcurrentSafety() || !ingestRequestId().isPresent()))
+        {
+            throw new IllegalStateException("If IdempotencyCheck is enabled, concurrentSafety must be enabled and IngestRequestId must be present");
+        }
     }
 
     //---------- FIELDS ----------
@@ -302,10 +327,14 @@ public abstract class RelationalIngestorAbstract
     {
         LOGGER.info("Invoked ingest method, will perform the ingestion");
         validateDatasetsInitialization();
-        dedupAndVersion();
-        List<DataSplitRange> dataSplitRanges = ApiUtils.getDataSplitRanges(executor, planner, transformer, ingestMode());
         SchemaEvolutionResult schemaEvolutionResult = SchemaEvolutionResult.builder().updatedDatasets(enrichedDatasets).build();
-        List<IngestorResult> result = ingest(dataSplitRanges, schemaEvolutionResult);
+        List<IngestorResult> result = acquireLockAndIdempotencyCheck(schemaEvolutionResult);
+        if (result.isEmpty())
+        {
+            dedupAndVersion();
+            List<DataSplitRange> dataSplitRanges = ApiUtils.getDataSplitRanges(executor, planner, transformer, ingestMode());
+            result = ingest(dataSplitRanges, schemaEvolutionResult);
+        }
         LOGGER.info("Ingestion completed");
         return result;
     }
@@ -529,15 +558,49 @@ public abstract class RelationalIngestorAbstract
         }
     }
 
-    private void acquireLock()
+    private List<IngestorResult> acquireLockAndIdempotencyCheck(SchemaEvolutionResult schemaEvolutionResult)
     {
+        List<IngestorResult> result = new ArrayList<>();
         if (enableConcurrentSafety())
         {
             LOGGER.info("Concurrent safety is enabled, Acquiring lock");
             Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
             placeHolderKeyValues.put(BATCH_START_TS_PATTERN, PlaceholderValue.of(LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER), false));
             executor.executePhysicalPlan(generatorResult.acquireLockSqlPlan().orElseThrow(IllegalStateException::new), placeHolderKeyValues);
+
+            if (enableIdempotencyCheck())
+            {
+                LOGGER.info("Perform Idempotency Check");
+                LogicalPlan logicalPlan = LogicalPlanFactory.getLogicalPlanForIdempotencyCheck(
+                        enrichedDatasets.metadataDataset().orElseThrow(IllegalStateException::new),
+                        ingestRequestId().orElseThrow(IllegalStateException::new),
+                        enrichedDatasets.mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new));
+                SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+                List<TabularData> tabularDataList = executor.executePhysicalPlanAndGetResults(physicalPlan);
+                MetadataDataset metadataDataset = enrichedDatasets.metadataDataset().get();
+                if (!tabularDataList.isEmpty())
+                {
+                    List<Map<String, Object>> metadataResults = tabularDataList.get(0).getData();
+                    for (Map<String, Object> metadata: metadataResults)
+                    {
+                        Timestamp ingestionTimestampUTC = (Timestamp) metadata.get(metadataDataset.batchStartTimeField());
+                        String batchStatus = (String) metadata.get(metadataDataset.batchStatusField());
+                        batchStatus = batchStatus.equalsIgnoreCase(batchSuccessStatusValue())  ? IngestStatus.SUCCEEDED.name() : batchStatus;
+                        IngestorResult ingestorResult = IngestorResult.builder()
+                                .batchId((int) metadata.get(metadataDataset.tableBatchIdField()))
+                                .putAllStatisticByName(readValueAsMap((String) metadata.get(metadataDataset.batchStatisticsField())))
+                                .status(IngestStatus.valueOf(batchStatus))
+                                .updatedDatasets(enrichedDatasets)
+                                .schemaEvolutionSql(schemaEvolutionResult.schemaEvolutionSql())
+                                .ingestionTimestampUTC(ingestionTimestampUTC.toLocalDateTime().format(DATE_TIME_FORMATTER))
+                                .previouslyProcessed(true)
+                                .build();
+                        result.add(ingestorResult);
+                    }
+                }
+            }
         }
+        return result;
     }
 
     private void postCleanup()
@@ -593,21 +656,25 @@ public abstract class RelationalIngestorAbstract
 
         // Evolve Schema
         SchemaEvolutionResult schemaEvolutionResult = evolve();
-
-        // Dedup and Version
-        dedupAndVersion();
-        // Find the data split ranges based on the result of dedup and versioning
-        if (dataSplitRanges.isEmpty())
-        {
-            dataSplitRanges = ApiUtils.getDataSplitRanges(executor, planner, transformer, ingestMode());
-        }
-
-        // Perform Ingestion
         List<IngestorResult> result;
+
         try
         {
             executor.begin();
-            result = ingest(dataSplitRanges, schemaEvolutionResult);
+            result = acquireLockAndIdempotencyCheck(schemaEvolutionResult);
+            if (result.isEmpty())
+            {
+                // Dedup and Version
+                dedupAndVersion();
+                // Find the data split ranges based on the result of dedup and versioning
+                if (dataSplitRanges.isEmpty())
+                {
+                    dataSplitRanges = ApiUtils.getDataSplitRanges(executor, planner, transformer, ingestMode());
+                }
+
+                // Perform Ingestion
+                result = ingest(dataSplitRanges, schemaEvolutionResult);
+            }
             executor.commit();
         }
         catch (Exception e)
@@ -688,6 +755,7 @@ public abstract class RelationalIngestorAbstract
                 .relationalSink(relationalSink())
                 .cleanupStagingData(cleanupStagingData())
                 .collectStatistics(collectStatistics())
+                .writeStatistics(writeStatistics())
                 .skipMainAndMetadataDatasetCreation(skipMainAndMetadataDatasetCreation())
                 .enableSchemaEvolution(enableSchemaEvolution())
                 .addAllSchemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet())
@@ -698,10 +766,10 @@ public abstract class RelationalIngestorAbstract
                 .batchEndTimestampPattern(BATCH_END_TS_PATTERN)
                 .batchIdPattern(BATCH_ID_PATTERN)
                 .putAllAdditionalMetadata(placeholderAdditionalMetadata)
-                .bulkLoadEventIdValue(bulkLoadEventIdValue())
+                .ingestRequestId(ingestRequestId())
                 .batchSuccessStatusValue(batchSuccessStatusValue())
                 .sampleRowCount(sampleRowCount())
-                .ingestRunId(getIngestRunId())
+                .ingestRunId(getRunId())
                 .build();
 
         planner = Planners.get(enrichedDatasets, enrichedIngestMode, generator.plannerOptions(), relationalSink().capabilities());
@@ -716,7 +784,6 @@ public abstract class RelationalIngestorAbstract
          List<IngestorResult> results = new ArrayList<>();
          int dataSplitIndex = 0;
          int dataSplitsCount = (dataSplitRanges == null || dataSplitRanges.isEmpty()) ? 0 : dataSplitRanges.size();
-         acquireLock();
          do
          {
              Optional<DataSplitRange> dataSplitRange = Optional.ofNullable(dataSplitsCount == 0 ? null : dataSplitRanges.get(dataSplitIndex));
@@ -755,6 +822,7 @@ public abstract class RelationalIngestorAbstract
         // Execute metadata ingest SqlPlan
         // add batchEndTimestamp
         placeHolderKeyValues.put(BATCH_END_TS_PATTERN, PlaceholderValue.of(LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER), false));
+        placeHolderKeyValues.put(MetadataUtils.BATCH_STATISTICS_PATTERN, PlaceholderValue.of(writeValueAsString(statisticsResultMap), false));
         executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan(), placeHolderKeyValues);
         return statisticsResultMap;
     }
@@ -764,7 +832,6 @@ public abstract class RelationalIngestorAbstract
                                                  Executor<SqlGen, TabularData, SqlPlan> executor, GeneratorResult generatorResult,
                                                  IngestMode ingestMode, SchemaEvolutionResult schemaEvolutionResult)
     {
-        acquireLock();
         List<IngestorResult> results = new ArrayList<>();
         Map<String, PlaceholderValue> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, Optional.empty());
 
@@ -778,6 +845,7 @@ public abstract class RelationalIngestorAbstract
         // add batchEndTimestamp
         placeHolderKeyValues.put(BATCH_END_TS_PATTERN, PlaceholderValue.of(LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER), false));
         placeHolderKeyValues.put(BULK_LOAD_BATCH_STATUS_PATTERN, PlaceholderValue.of(result.status().name(), false));
+        placeHolderKeyValues.put(MetadataUtils.BATCH_STATISTICS_PATTERN, PlaceholderValue.of(writeValueAsString(result.statisticByName()), false));
         executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan(), placeHolderKeyValues);
         results.add(result);
         // Clean up
@@ -794,7 +862,7 @@ public abstract class RelationalIngestorAbstract
         DatasetReference mainDataSetReference = datasets.mainDataset().datasetReference();
 
         externalDatasetReference = externalDatasetReference
-            .withName(externalDatasetReference.name().isPresent() ? externalDatasetReference.name().get() : TableNameGenUtils.generateTableName(mainDataSetReference.name().orElseThrow(IllegalStateException::new), STAGING, getIngestRunId()))
+            .withName(externalDatasetReference.name().isPresent() ? externalDatasetReference.name().get() : TableNameGenUtils.generateTableName(mainDataSetReference.name().orElseThrow(IllegalStateException::new), STAGING, getRunId()))
             .withDatabase(externalDatasetReference.database().isPresent() ? externalDatasetReference.database().get() : mainDataSetReference.database().orElse(null))
             .withGroup(externalDatasetReference.group().isPresent() ? externalDatasetReference.group().get() : mainDataSetReference.group().orElse(null))
             .withAlias(externalDatasetReference.alias().isPresent() ? externalDatasetReference.alias().get() : mainDataSetReference.alias().orElseThrow(RuntimeException::new) + UNDERSCORE + STAGING);
@@ -829,6 +897,30 @@ public abstract class RelationalIngestorAbstract
         resourcesBuilder.externalDatasetImported(true);
 
         return updatedDatasets;
+    }
+
+    private String writeValueAsString(Map<StatisticName, Object> statisticByName)
+    {
+        try
+        {
+            return new ObjectMapper().writeValueAsString(statisticByName);
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Map<StatisticName, Object> readValueAsMap(String batchStatistics)
+    {
+        try
+        {
+            return new ObjectMapper().readValue(batchStatistics, new TypeReference<HashMap<StatisticName, Object>>() {});
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     private boolean datasetEmpty(Dataset dataset, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor)

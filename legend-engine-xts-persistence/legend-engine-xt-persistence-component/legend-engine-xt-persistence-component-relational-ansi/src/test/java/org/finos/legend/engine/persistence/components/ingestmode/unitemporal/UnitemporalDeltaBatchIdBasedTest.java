@@ -145,11 +145,11 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
                 "AND ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\"))))) AND " +
                 "(stage.\"delete_indicator\" NOT IN ('yes','1','true')))";
 
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableBatchIdBasedCreateQuery, preActionsSql.get(0));
+        Assertions.assertEquals(expectedMainTableBatchIdBasedCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithIngestRequestId(), metadataIngestSql.get(0));
 
         String expectedInsertIntoBaseTempStagingPlusDigestWithFilterDuplicates = "INSERT INTO \"mydb\".\"staging_temp_staging_lp_yosulf\" " +
                 "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"delete_indicator\", \"legend_persistence_count\") " +
@@ -632,6 +632,15 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
     protected String getExpectedMetadataTableIngestQuery()
     {
         return AnsiTestArtifacts.expectedMetadataTableIngestQuery;
+    }
+
+    protected String getExpectedMetadataTableIngestQueryWithIngestRequestId()
+    {
+        return "INSERT INTO batch_metadata " +
+                "(\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"ingest_request_id\", \"batch_statistics\") " +
+                "(SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata " +
+                "WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'DONE','123456789'," +
+                "PARSE_JSON('{BATCH_STATISTICS_PLACEHOLDER}'))";
     }
 
     protected String getExpectedMetadataTableIngestQueryWithUpperCase()
