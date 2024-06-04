@@ -22,6 +22,8 @@
 package org.finos.legend.engine.postgres.types;
 
 import io.netty.buffer.ByteBuf;
+import org.finos.legend.engine.shared.core.operational.Assert;
+
 import java.nio.charset.StandardCharsets;
 
 class CharType extends PGType<Byte>
@@ -65,7 +67,7 @@ class CharType extends PGType<Byte>
     @Override
     public Byte readBinaryValue(ByteBuf buffer, int valueLength)
     {
-        assert valueLength == 1 : "char must have 1 byte";
+        Assert.assertTrue(valueLength == 1, () -> "char must have 1 byte");
         return buffer.readByte();
     }
 

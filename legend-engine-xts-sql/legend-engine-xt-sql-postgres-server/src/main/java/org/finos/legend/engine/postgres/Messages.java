@@ -42,6 +42,7 @@ import org.finos.legend.engine.postgres.types.PGType;
 import org.finos.legend.engine.postgres.types.PGTypes;
 import org.finos.legend.engine.postgres.utils.ErrorMessageFormatter;
 import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
+import org.finos.legend.engine.shared.core.operational.Assert;
 import org.slf4j.Logger;
 
 /**
@@ -358,9 +359,9 @@ public class Messages
                      FormatCodes.FormatCode[] formatCodes) throws Exception
     {
         int length = 4 + 2;
-        assert columnTypes.size() == rs.getMetaData().getColumnCount()
-                : "Number of columns in the row must match number of columnTypes. Row: " + rs + " types: "
-                + columnTypes;
+        Assert.assertTrue(columnTypes.size() == rs.getMetaData().getColumnCount(),
+                () -> "Number of columns in the row must match number of columnTypes. Row: " + rs + " types: "
+                        + columnTypes);
 
         ByteBuf buffer = channel.alloc().buffer();
         buffer.writeByte('D');

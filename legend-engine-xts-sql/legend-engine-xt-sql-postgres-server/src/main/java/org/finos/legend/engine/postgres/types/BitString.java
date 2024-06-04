@@ -21,6 +21,8 @@
 
 package org.finos.legend.engine.postgres.types;
 
+import org.finos.legend.engine.shared.core.operational.Assert;
+
 import java.util.BitSet;
 
 class BitString
@@ -28,8 +30,8 @@ class BitString
 
     public static BitString ofBitString(String bitString)
     {
-        assert bitString.startsWith("B'") : "Bitstring must start with B'";
-        assert bitString.endsWith("'") : "Bitstrign must end with '";
+        Assert.assertTrue(bitString.startsWith("B'"), () -> "BitString must start with B'");
+        Assert.assertTrue(bitString.endsWith("'"), () -> "BitString must end with '");
         return ofRawBits(bitString.substring(2, bitString.length() - 1));
     }
 
