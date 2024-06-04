@@ -22,6 +22,7 @@
 package org.finos.legend.engine.postgres;
 
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
@@ -381,6 +382,7 @@ public class Session implements AutoCloseable
         }
         catch (Exception e)
         {
+            span.setStatus(StatusCode.ERROR, "Failed to execute");
             span.recordException(e);
             throw PostgresServerException.wrapException(e);
         }
@@ -418,6 +420,7 @@ public class Session implements AutoCloseable
         }
         catch (Exception e)
         {
+            span.setStatus(StatusCode.ERROR, "Failed to execute simple query");
             span.recordException(e);
             throw PostgresServerException.wrapException(e);
         }
@@ -564,6 +567,7 @@ public class Session implements AutoCloseable
             }
             catch (Exception e)
             {
+                span.setStatus(StatusCode.ERROR, "Failed to execute");
                 span.recordException(e);
                 resultSetReceiver.fail(e);
                 OpenTelemetryUtil.TOTAL_FAILURE_EXECUTE.add(1);
@@ -615,6 +619,7 @@ public class Session implements AutoCloseable
             }
             catch (Exception e)
             {
+                span.setStatus(StatusCode.ERROR, "Failed to execute");
                 span.recordException(e);
                 resultSetReceiver.fail(e);
                 OpenTelemetryUtil.TOTAL_FAILURE_EXECUTE.add(1);

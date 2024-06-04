@@ -30,6 +30,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
@@ -847,6 +848,7 @@ public class PostgresWireProtocol
         }
         catch (Exception e)
         {
+            span.setStatus(StatusCode.ERROR, "Failed to handle describe message");
             span.recordException(e);
             OpenTelemetryUtil.TOTAL_FAILURE_METADATA.add(1);
             throw e;
@@ -933,6 +935,7 @@ public class PostgresWireProtocol
         }
         catch (Exception e)
         {
+            span.setStatus(StatusCode.ERROR, "Failed to execute");
             span.recordException(e);
             throw PostgresServerException.wrapException(e);
         }
@@ -1038,6 +1041,7 @@ public class PostgresWireProtocol
         }
         catch (Exception e)
         {
+            span.setStatus(StatusCode.ERROR, "Failed to handle simple query");
             span.recordException(e);
             throw e;
         }
