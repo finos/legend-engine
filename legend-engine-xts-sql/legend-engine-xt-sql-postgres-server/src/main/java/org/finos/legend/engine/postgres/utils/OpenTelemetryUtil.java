@@ -25,7 +25,7 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 
 public class OpenTelemetryUtil
 {
-    private static final String LEGEND_ENGINE_XTS_SQL = "alloy-sql-server";
+    private static final String LEGEND_ENGINE_XTS_SQL = "legend-sql-server";
     private static final OpenTelemetry OPEN_TELEMETRY = GlobalOpenTelemetry.get();
 
     public static final LongUpDownCounter
