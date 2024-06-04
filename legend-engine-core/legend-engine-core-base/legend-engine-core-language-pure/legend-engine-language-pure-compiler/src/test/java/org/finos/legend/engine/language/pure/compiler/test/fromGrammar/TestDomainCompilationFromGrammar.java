@@ -473,7 +473,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "\n" +
                 "Class test::B extends NotHere\n" +
                 "{\n" +
-                "}\n", "COMPILATION error at [6:1-8:1]: Can't find type 'NotHere'"
+                "}\n", "COMPILATION error at [6:1-8:1]: Error in 'test::B': Can't find type 'NotHere'"
         );
     }
 
