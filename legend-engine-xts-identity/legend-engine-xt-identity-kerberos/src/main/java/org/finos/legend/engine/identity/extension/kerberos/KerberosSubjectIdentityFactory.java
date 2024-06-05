@@ -38,7 +38,7 @@ public class KerberosSubjectIdentityFactory implements IdentityFactory
         Principal principal = SubjectTools.getPrincipalFromSubject(subject);
         if (principal == null)
         {
-            return Identity.makeUnknownIdentity();
+            return Optional.of(Identity.makeUnknownIdentity());
         }
         String name = principal != null ? principal.getName().split("@")[0] : null;
         return Optional.of(new Identity(name, new LegendKerberosCredential(subject)));
