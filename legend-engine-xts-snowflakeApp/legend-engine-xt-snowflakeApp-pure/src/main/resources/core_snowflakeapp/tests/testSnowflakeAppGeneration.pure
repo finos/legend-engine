@@ -22,39 +22,39 @@ import meta::external::function::activator::snowflakeApp::tests::model::simple::
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunction():Boolean[1]
 {
-  let expected = 'APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'haha\' $$;';
+  let expected = 'APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR(200),"LASTNAME" VARCHAR(200)) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'haha\' $$;';
   assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunction__TabularDataSet_1_, $expected);
 }
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithParams():Boolean[1]
 {
-  let expected = 'APP1("age" number) RETURNS TABLE ("FIRSTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName" from personTable as "root" where ("root".AGE is not null and "root".AGE > age) $$;';
+  let expected = 'APP1("age" number) RETURNS TABLE ("FIRSTNAME" VARCHAR(200)) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName" from personTable as "root" where ("root".AGE is not null and "root".AGE > age) $$;';
   assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithParams_Integer_1__TabularDataSet_1_, $expected);
 }
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithStringParams():Boolean[1]
 {
-  let expected = 'APP1("firstName" VARCHAR) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = firstName $$;';
+  let expected = 'APP1("firstName" VARCHAR) RETURNS TABLE ("FIRSTNAME" VARCHAR(200),"LASTNAME" VARCHAR(200)) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = firstName $$;';
   assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithStringParams_String_1__TabularDataSet_1_, $expected);
 }
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testEnumPushDownWithFilter():Boolean[1]
 {
-  let expected = 'APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"GENDER" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", case when "root".GENDER = \'male\' then \'M\' when "root".GENDER in (\'female\', \'Female\') then \'F\' else null end as "Gender" from personTable as "root" where "root".GENDER = \'male\' $$;';
+  let expected = 'APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR(200),"GENDER" VARCHAR(200)) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", case when "root".GENDER = \'male\' then \'M\' when "root".GENDER in (\'female\', \'Female\') then \'F\' else null end as "Gender" from personTable as "root" where "root".GENDER = \'male\' $$;';
   assertSnowflakeArtifactForFunction( meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionEnumPushDown__TabularDataSet_1_, $expected);
 }
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testRelationalfunctionWithDateTimeHardCoded():Boolean[1]
 {
   // the time zone info in the connection should be ignored in the generated sql
-  let expected = 'APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".LAST_UPDATED = \'2024-02-27 16:21:53\'::timestamp $$;';
+  let expected = 'APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR(200),"LASTNAME" VARCHAR(200)) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".LAST_UPDATED = \'2024-02-27 16:21:53\'::timestamp $$;';
   assertSnowflakeArtifactForFunction( meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithDateTimeHardCoded__TabularDataSet_1_, $expected);
 }
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testRelationalfunctionWithDateTimeParam():Boolean[1]
 {
   // the time zone info in the connection should be ignored in the generated sql
-  let expected = 'APP1("asOf" timestamp) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".LAST_UPDATED = asOf $$;';
+  let expected = 'APP1("asOf" timestamp) RETURNS TABLE ("FIRSTNAME" VARCHAR(200),"LASTNAME" VARCHAR(200)) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".LAST_UPDATED = asOf $$;';
   assertSnowflakeArtifactForFunction( meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithDateTimeParam_DateTime_1__TabularDataSet_1_, $expected);
 }
 
@@ -67,7 +67,7 @@ function <<test.Test, test.ToFix>> meta::external::function::activator::snowflak
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithEnumParams():Boolean[1]
 {
-  let expected = 'APP1("gender" VARCHAR) RETURNS TABLE ("FIRSTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName" from personTable as "root" where gender = case when "root".GENDER = \'male\' then \'M\' when "root".GENDER in (\'female\', \'Female\') then \'F\' else null end $$;';
+  let expected = 'APP1("gender" VARCHAR) RETURNS TABLE ("FIRSTNAME" VARCHAR(200)) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName" from personTable as "root" where gender = case when "root".GENDER = \'male\' then \'M\' when "root".GENDER in (\'female\', \'Female\') then \'F\' else null end $$;';
   assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionEnumParam_Gender_1__TabularDataSet_1_, $expected);
 }
 
