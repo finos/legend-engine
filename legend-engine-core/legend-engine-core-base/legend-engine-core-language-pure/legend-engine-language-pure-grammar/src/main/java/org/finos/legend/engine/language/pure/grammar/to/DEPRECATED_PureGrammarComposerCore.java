@@ -362,7 +362,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         builder.append("Class ").append(HelperDomainGrammarComposer.renderAnnotations(_class.stereotypes, _class.taggedValues)).append(PureGrammarComposerUtility.convertPath(_class.getPath()));
         if (!_class.superTypes.isEmpty())
         {
-            builder.append(" extends ").append(Lists.mutable.withAll(_class.superTypes).makeString(", "));
+            builder.append(" extends ").append(_class.superTypes.stream().map(x -> x.path).collect(Collectors.joining(", ")));
         }
         builder.append("\n");
         if (!_class.constraints.isEmpty())

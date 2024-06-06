@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core-shared</artifactId>
-        <version>4.47.1-SNAPSHOT</version>
+        <version>4.47.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-shared-core</artifactId>
@@ -61,10 +61,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-identity-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-identity-kerberos</artifactId>
         </dependency>
         <!-- ENGINE -->
 
@@ -158,10 +154,6 @@
             <groupId>org.pac4j</groupId>
             <artifactId>pac4j-core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.shared</groupId>
-            <artifactId>legend-shared-pac4j-kerberos</artifactId>
-        </dependency>
         <!-- For ProfileManagerHelper - Extract Subject from ProfileManager -->
 
         <!-- ECLIPSE COLLECTIONS -->
@@ -189,10 +181,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-identity-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-identity-kerberos</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

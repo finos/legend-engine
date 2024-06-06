@@ -62,9 +62,7 @@ import org.finos.legend.engine.query.pure.cache.PureExecutionCacheKey;
 import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -115,28 +113,26 @@ public class Execute
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions;
     private final Iterable<? extends PlanTransformer> transformers;
     private final PlanExecutionAuthorizer planExecutionAuthorizer;
-    private final IdentityFactory identityFactory;
     private final ExecutionPlanCache executionPlanCache;
 
     public Execute(ModelManager modelManager, PlanExecutor planExecutor, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions, Iterable<? extends PlanTransformer> transformers)
     {
-        this(modelManager, planExecutor, extensions, transformers, null, new DefaultIdentityFactory());
+        this(modelManager, planExecutor, extensions, transformers, null);
     }
 
-    public Execute(ModelManager modelManager, PlanExecutor planExecutor, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions, Iterable<? extends PlanTransformer> transformers, PlanExecutionAuthorizer planExecutionAuthorizer, IdentityFactory identityFactory)
+    public Execute(ModelManager modelManager, PlanExecutor planExecutor, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions, Iterable<? extends PlanTransformer> transformers, PlanExecutionAuthorizer planExecutionAuthorizer)
     {
-        this(modelManager, planExecutor, extensions, transformers, planExecutionAuthorizer, identityFactory, null);
+        this(modelManager, planExecutor, extensions, transformers, planExecutionAuthorizer, null);
 
     }
 
     public Execute(ModelManager modelManager, PlanExecutor planExecutor, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions, Iterable<? extends PlanTransformer> transformers,
-                   PlanExecutionAuthorizer planExecutionAuthorizer, IdentityFactory identityFactory, ExecutionPlanCache executionPlanCache)
+                   PlanExecutionAuthorizer planExecutionAuthorizer, ExecutionPlanCache executionPlanCache)
     {
         this.modelManager = modelManager;
         this.planExecutor = planExecutor;
         this.extensions = extensions;
         this.transformers = transformers;
-        this.identityFactory = identityFactory;
         this.planExecutionAuthorizer = planExecutionAuthorizer;
         this.executionPlanCache = executionPlanCache;
         MetricsHandler.createMetrics(this.getClass());
@@ -187,7 +183,7 @@ public class Execute
     {
         long start = System.currentTimeMillis();
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Execute").startActive(true))
         {
             String clientVersion = executeInput.clientVersion == null ? PureClientVersions.production : executeInput.clientVersion;
@@ -225,7 +221,7 @@ public class Execute
     public Response generatePlan(@Context HttpServletRequest request, ExecuteInput executeInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         long start = System.currentTimeMillis();
         try
         {
@@ -252,7 +248,7 @@ public class Execute
     public Response generatePlanDebug(@Context HttpServletRequest request, ExecuteInput executeInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         long start = System.currentTimeMillis();
         try
         {

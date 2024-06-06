@@ -30,7 +30,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 
 import javax.security.auth.Subject;
 import java.sql.Connection;
@@ -71,7 +70,7 @@ public class ConnectionManagerSelector
     public Connection getDatabaseConnection(Subject subject, DatabaseConnection databaseConnection, StoreExecutionState.RuntimeContext runtimeContext)
     {
         DataSourceSpecification datasource = getDataSourceSpecification(databaseConnection);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(subject);
+        Identity identity = Identity.makeIdentity(subject);
         return this.getDatabaseConnectionImpl(identity, databaseConnection, datasource, runtimeContext);
     }
 

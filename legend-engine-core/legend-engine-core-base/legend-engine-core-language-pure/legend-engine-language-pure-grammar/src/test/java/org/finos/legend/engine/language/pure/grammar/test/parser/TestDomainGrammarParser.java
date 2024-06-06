@@ -14,10 +14,19 @@
 
 package org.finos.legend.engine.language.pure.grammar.test.parser;
 
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.antlr.v4.runtime.Vocabulary;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.domain.DomainParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
@@ -77,5 +86,32 @@ public class TestDomainGrammarParser extends TestGrammarParser.TestGrammarParser
                                               "  }#\n";
         String code4 = "function my::test(): Any[*]\n{\n   " + emptySubTypeTreesAtRootLevel.replace("\n", "").replace(" ", "") + "\n}\n";
         test(code4,  "PARSER error at [3:53]: Unexpected token '}'");
+    }
+
+    @Test
+    public void testClass()
+    {
+        PureModelContextData pureModelContextData = test("Class <<temporal.businesstemporal>> {doc.doc = 'something'} A extends B\n" +
+                "{\n" +
+                "  <<equality.Key>> {doc.doc = 'bla'} name: e::R[*];\n" +
+                "  {doc.doc = 'bla'} ok: Integer[1..2];\n" +
+                "  <<devStatus.inProgress>> q(s: String[1]) {$s + 'ok'}: c::d::R[1];\n" +
+                "  {doc.doc = 'bla'} xza(s: z::k::B[1]) {$s + 'ok'}: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class z::k::B\n" +
+                "{\n" +
+                "  z: String[1];\n" +
+                "}\n");
+
+        Map<String, PackageableElement> elementMap = pureModelContextData.getElements().stream().collect(Collectors.toMap(x -> x.getPath(), Function.identity()));
+
+        Class aClass = (Class) elementMap.get("A");
+        Assert.assertEquals(1, aClass.superTypes.size());
+        Assert.assertEquals("B", aClass.superTypes.get(0).path);
+        Assert.assertEquals(PackageableElementType.CLASS, aClass.superTypes.get(0).type);
+        Assert.assertNotNull(aClass.superTypes.get(0).sourceInformation);
+        Assert.assertEquals(1, aClass.superTypes.get(0).sourceInformation.startLine);
+        Assert.assertEquals(71, aClass.superTypes.get(0).sourceInformation.startColumn);
     }
 }
