@@ -106,6 +106,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-iceberg/legend-engine-xt-iceberg-pure", "external-tableformat-iceberg"))
                 .with(this.buildCore("legend-engine-xts-arrow/legend-engine-xt-arrow-pure", "external-format-arrow"))
                 .with(this.buildCore("legend-engine-xts-relationalai/legend-engine-xt-relationalai-pure", "external-query-relationalai"))
+                .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-PCT/legend-engine-pure-functions-relationalStore-PCT-pure", "external_test_connection"))
                 ;
     }
 

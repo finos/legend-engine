@@ -62,7 +62,7 @@ Class meta::relational::mapping::PreAndFinallyExecutionSQLQuery
    finallyQueryExecutionSQLQuery : String[0..1];
 }
 
-function <<access.private>> meta::relational::mapping::generateSQLExecNode(sql:String[1], dbCon:DatabaseConnection[1]) : SQLExecutionNode[1]
+function meta::relational::mapping::generateSQLExecNode(sql:String[1], dbCon:DatabaseConnection[1]) : SQLExecutionNode[1]
 {
    ^SQLExecutionNode(sqlQuery = $sql, resultType = ^meta::pure::executionPlan::VoidResultType(type=meta::pure::router::store::routing::Void), connection = $dbCon);
 }

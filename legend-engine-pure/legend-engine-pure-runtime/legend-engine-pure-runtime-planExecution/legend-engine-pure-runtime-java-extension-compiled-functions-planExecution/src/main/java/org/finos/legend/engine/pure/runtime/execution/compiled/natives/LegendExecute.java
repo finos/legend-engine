@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
+
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
@@ -43,6 +44,18 @@ public class LegendExecute extends AbstractNative
     public String build(CoreInstance topLevelElement, CoreInstance functionExpression, ListIterable<String> transformedParams, ProcessorContext processorContext)
     {
         return this.getClass().getCanonicalName() + ".execute(" + transformedParams.makeString(", ") + ", es)";
+    }
+
+    public String buildBody()
+    {
+        return "new SharedPureFunction<Object>()\n" +
+                "        {\n" +
+                "            @Override\n" +
+                "            public Object execute(ListIterable<?> vars, final ExecutionSupport es)\n" +
+                "            {\n" +
+                "                return " + this.getClass().getCanonicalName() + ".execute((String)vars.get(0), vars.get(1), es);" +
+                "            }\n" +
+                "        }";
     }
 
     public static String execute(String planAsJson, Object variableOrVariables, ExecutionSupport es)

@@ -34,7 +34,7 @@ public class H2TestDatabaseAuthenticationFlowProvider extends AbstractDatabaseAu
     @Override
     public void configure(DatabaseAuthenticationFlowProviderConfiguration configuration)
     {
-        if (!(configuration instanceof H2TestDatabaseAuthenticationFlowProviderConfiguration))
+        if (configuration != null && !(configuration instanceof H2TestDatabaseAuthenticationFlowProviderConfiguration))
         {
             String message = "Mismatch in flow provider configuration. It should be an instance of " + H2TestDatabaseAuthenticationFlowProviderConfiguration.class.getSimpleName();
             throw new RuntimeException(message);

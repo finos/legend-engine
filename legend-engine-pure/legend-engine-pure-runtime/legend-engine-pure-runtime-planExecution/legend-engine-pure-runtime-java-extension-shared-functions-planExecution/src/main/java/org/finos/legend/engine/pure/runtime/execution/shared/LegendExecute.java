@@ -21,7 +21,6 @@ import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.slf4j.Logger;
@@ -40,8 +39,7 @@ public class LegendExecute
         PlanExecutor planExecutor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors(true);
 
         // run using current user credentials
-        IdentityFactory instance = IdentityFactoryProvider.getInstance();
-        Identity identity = instance.makeIdentity(SubjectTools.getCurrentSubject());
+        Identity identity = Identity.makeIdentity(SubjectTools.getCurrentSubject());
 
         PlanExecutor.ExecuteArgs executeArgs = PlanExecutor.withArgs()
                 .withParams(variables)
@@ -66,7 +64,7 @@ public class LegendExecute
             }
             else
             {
-                throw new UnsupportedOperationException("Result type not supported: " + result.getClass().getName());
+                return "";
             }
         }
         catch (Exception e)

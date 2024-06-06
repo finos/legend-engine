@@ -28,7 +28,7 @@ identifier:                                 unquotedIdentifier | STRING
 definition:                                 (database)*
                                             EOF
 ;
-database:                                   DATABASE qualifiedName
+database:                                   DATABASE stereotypes? qualifiedName
                                                 PAREN_OPEN
                                                     include*
                                                     (
@@ -44,6 +44,11 @@ database:                                   DATABASE qualifiedName
 include:                                    INCLUDE qualifiedName
 ;
 
+// -------------------------------------- STEREOTYPE --------------------------------------
+
+stereotypes:                        LESS_THAN LESS_THAN stereotype (COMMA stereotype)* GREATER_THAN GREATER_THAN;
+
+stereotype:                         qualifiedName DOT identifier;
 
 // -------------------------------------- SCHEMA & TABLE --------------------------------------
 

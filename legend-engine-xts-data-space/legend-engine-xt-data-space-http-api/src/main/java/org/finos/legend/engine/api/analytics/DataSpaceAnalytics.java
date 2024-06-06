@@ -35,7 +35,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
@@ -87,7 +86,7 @@ public class DataSpaceAnalytics
     public Response analyzeDataSpace(DataSpaceAnalysisInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, identity);
         PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, identity, null);
         PackageableElement dataSpaceProtocol = pureModelContextData.getElements().stream().filter(el -> input.dataSpace.equals(el.getPath())).findFirst().orElse(null);
@@ -115,7 +114,7 @@ public class DataSpaceAnalytics
     public Response analyzeDataSpaceCoverage(DataSpaceAnalysisInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Identity identity = Identity.makeIdentity(profiles);
         PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, identity);
         PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, identity, null);
         PackageableElement dataSpaceProtocol = pureModelContextData.getElements().stream().filter(el -> input.dataSpace.equals(el.getPath())).findFirst().orElse(null);

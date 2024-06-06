@@ -158,9 +158,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='date_part(\'hour\', %s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='CHARINDEX(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[1]|$p->transformAlphaNumericParamsDefault()})),
+    dynaFnToSql('jaroWinklerSimilarity',  $allStates,            ^ToSql(format='(jarowinkler_similarity(%s, %s)/100)')),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='listagg(%s, %s)')),
     dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log(10, %s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
+    dynaFnToSql('levenshteinDistance',    $allStates,            ^ToSql(format='editdistance(%s, %s)')),
     dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='MONTH(%s)')),
@@ -287,7 +289,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 function <<access.private>>  meta::relational::functions::sqlQueryToString::snowflake::replaceVarPlaceHolderForAppGeneration(v:VarPlaceHolder[1], sgc:SqlGenerationContext[1]): String[1]
 {
   assertEmpty($v.propertyPath, 'processing for variable with propertyPath access is not implemented');
-  assertFalse($v->isCollectionPlaceHolder() || $v->isOptionalPlaceHolder(), 'only variables of primitive types and multiplicity one can be used');
+  assertFalse($v->isCollectionPlaceHolder() || $v->isOptionalPlaceHolder(), 'only variables of multiplicity one can be used');
 
   $v.name;
 }

@@ -26,11 +26,9 @@ import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.postgres.test.PostgresTestContainerWrapper;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.middletier.MiddleTierUserPasswordCredential;
-import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionError;
 import org.finos.legend.engine.shared.core.vault.TestVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
@@ -106,8 +104,7 @@ public class AbstractMiddleTierExecutionTest
     @Before
     public void setup() throws Exception
     {
-        DefaultIdentityFactory defaultIdentityFactory = new DefaultIdentityFactory();
-        this.identity = defaultIdentityFactory.makeUnknownIdentity();
+        this.identity = Identity.makeUnknownIdentity();
 
         this.testVaultImplementation = new TestVaultImplementation();
         MiddleTierUserPasswordCredential middleTierUserPasswordCredential = new MiddleTierUserPasswordCredential(postgresTestContainerWrapper.getUser(), postgresTestContainerWrapper.getPassword(), "unused");

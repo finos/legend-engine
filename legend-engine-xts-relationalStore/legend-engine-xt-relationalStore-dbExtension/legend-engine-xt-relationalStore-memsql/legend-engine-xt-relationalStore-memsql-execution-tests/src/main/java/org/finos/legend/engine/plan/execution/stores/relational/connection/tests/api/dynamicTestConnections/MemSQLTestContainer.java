@@ -16,7 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.memsql.test.MemSQLContainerWrapper;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.DynamicTestConnection;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
@@ -29,7 +29,7 @@ import java.sql.Statement;
 
 import static org.junit.Assert.fail;
 
-public class MemSQLTestContainer implements DynamicTestConnection
+public class MemSQLTestContainer implements TestConnectionIntegration
 {
     private static final String USERNAME_REFERENCE = "username";
     private static final String PASSWORD_REFERENCE = "password";

@@ -14,12 +14,18 @@
 
 package org.finos.legend.pure.code.core;
 
+import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 
 public class CoreJavaPlatformBindingCodeRepositoryProvider implements CodeRepositoryProvider
 {
+    public static final Adapter javaAdapter = new Adapter(
+            "Java",
+            "meta::pure::executionPlan::platformBinding::legendJava::pct::testAdapterForJavaBindingExecution_Function_1__X_o_"
+    );
+
     @Override
     public CodeRepository repository()
     {

@@ -14,6 +14,11 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.domain;
 
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Consumer;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RuleContext;
@@ -90,12 +95,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pac
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Consumer;
 
 public class DomainParseTreeWalker
 {
@@ -295,8 +294,11 @@ public class DomainParseTreeWalker
         _class.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
         _class.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
         _class.constraints = ctx.constraints() == null ? Lists.mutable.empty() : ListIterate.collect(ctx.constraints().constraint(), c -> this.visitConstraint(ctx.constraints().constraint(), c));
-        // TODO ? add source info specific to each superType
-        _class.superTypes = ctx.EXTENDS() == null ? Lists.mutable.empty() : ListIterate.collect(ctx.type(), t -> PureGrammarParserUtility.fromQualifiedName(t.qualifiedName().packagePath() == null ? Collections.emptyList() : t.qualifiedName().packagePath().identifier(), t.qualifiedName().identifier()));
+        _class.superTypes = ctx.EXTENDS() == null ? Lists.mutable.empty() : ListIterate.collect(ctx.type(), t ->
+        {
+            String path = PureGrammarParserUtility.fromQualifiedName(t.qualifiedName().packagePath() == null ? Collections.emptyList() : t.qualifiedName().packagePath().identifier(), t.qualifiedName().identifier());
+            return new PackageableElementPointer(PackageableElementType.CLASS, path, this.walkerSourceInformation.getSourceInformation(t));
+        });
         _class.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
         _class.properties = ctx.classBody().properties().property() == null ? new ArrayList<>() : ListIterate.collect(ctx.classBody().properties().property(), this::visitSimpleProperty);
         _class.qualifiedProperties = ctx.classBody().properties().qualifiedProperty() == null ? new ArrayList<>() : ListIterate.collect(ctx.classBody().properties().qualifiedProperty(), this::visitDerivedProperty);
@@ -448,37 +450,37 @@ public class DomainParseTreeWalker
                 functionTestSuite.sourceInformation = this.walkerSourceInformation.getSourceInformation(functionTestSuiteDefContext);
                 if (functionTestSuiteDefContext.simpleFunctionTest() != null)
                 {
-                    for (DomainParserGrammar.SimpleFunctionTestContext simpleFunctionTestContext: functionTestSuiteDefContext.simpleFunctionTest())
+                    for (DomainParserGrammar.SimpleFunctionTestContext simpleFunctionTestContext : functionTestSuiteDefContext.simpleFunctionTest())
                     {
-                        this.processFuncTest(ctx, functionTestSuite,func.parameters, simpleFunctionTestContext);
+                        this.processFuncTest(ctx, functionTestSuite, func.parameters, simpleFunctionTestContext);
                     }
                 }
                 if (functionTestSuiteDefContext.functionData() != null)
                 {
                     functionTestSuite.testData = Lists.mutable.empty();
-                    for (DomainParserGrammar.FunctionDataContext functionDataContext: functionTestSuiteDefContext.functionData())
+                    for (DomainParserGrammar.FunctionDataContext functionDataContext : functionTestSuiteDefContext.functionData())
                     {
-                       functionTestSuite.testData.add(this.processStoreTestData(functionDataContext));
+                        functionTestSuite.testData.add(this.processStoreTestData(functionDataContext));
                     }
                 }
                 suites.add(functionTestSuite);
             }
             if (functionTestSuiteDefContext.simpleFunctionSuite() != null)
             {
-                for (DomainParserGrammar.SimpleFunctionSuiteContext simpleFunctionSuiteContext: ctx.functionTestSuiteDef().simpleFunctionSuite())
+                for (DomainParserGrammar.SimpleFunctionSuiteContext simpleFunctionSuiteContext : ctx.functionTestSuiteDef().simpleFunctionSuite())
                 {
                     org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite functionTestSuite = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite();
                     functionTestSuite.id = PureGrammarParserUtility.fromIdentifier(simpleFunctionSuiteContext.identifier());
                     functionTestSuite.tests = Lists.mutable.empty();
                     functionTestSuite.sourceInformation = this.walkerSourceInformation.getSourceInformation(simpleFunctionSuiteContext);
-                    for (DomainParserGrammar.SimpleFunctionTestContext simpleFunctionTestContext: simpleFunctionSuiteContext.simpleFunctionTest())
+                    for (DomainParserGrammar.SimpleFunctionTestContext simpleFunctionTestContext : simpleFunctionSuiteContext.simpleFunctionTest())
                     {
-                        this.processFuncTest(ctx, functionTestSuite,func.parameters, simpleFunctionTestContext);
+                        this.processFuncTest(ctx, functionTestSuite, func.parameters, simpleFunctionTestContext);
                     }
                     if (simpleFunctionSuiteContext.functionData() != null)
                     {
                         functionTestSuite.testData = Lists.mutable.empty();
-                        for (DomainParserGrammar.FunctionDataContext functionDataContext: simpleFunctionSuiteContext.functionData())
+                        for (DomainParserGrammar.FunctionDataContext functionDataContext : simpleFunctionSuiteContext.functionData())
                         {
                             functionTestSuite.testData.add(this.processStoreTestData(functionDataContext));
                         }
@@ -509,7 +511,7 @@ public class DomainParseTreeWalker
         functionTest.id = PureGrammarParserUtility.fromIdentifier(simpleFunctionTestContext.identifier(0));
         if (simpleFunctionTestContext.STRING() != null)
         {
-           functionTest.doc = PureGrammarParserUtility.fromGrammarString(simpleFunctionTestContext.STRING().getText(), true);
+            functionTest.doc = PureGrammarParserUtility.fromGrammarString(simpleFunctionTestContext.STRING().getText(), true);
         }
         functionTest.sourceInformation = this.walkerSourceInformation.getSourceInformation(simpleFunctionTestContext);
         DomainParserGrammar.FunctionParamsContext functionParamsContext = simpleFunctionTestContext.functionParams();
@@ -606,7 +608,7 @@ public class DomainParseTreeWalker
         {
             externalFormatData.contentType = contentType;
         }
-        return  externalFormatData;
+        return externalFormatData;
     }
 
     private org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.StoreTestData processStoreTestData(DomainParserGrammar.FunctionDataContext functionDataContext)

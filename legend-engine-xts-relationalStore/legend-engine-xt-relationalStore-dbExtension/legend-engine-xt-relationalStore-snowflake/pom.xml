@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-dbExtension</artifactId>
-        <version>4.46.1-SNAPSHOT</version>
+        <version>4.47.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -29,9 +29,9 @@
     <modules>
         <module>legend-engine-xt-relationalStore-snowflake-connection</module>
         <module>legend-engine-xt-relationalStore-snowflake-execution</module>
-        <module>legend-engine-xt-relationalStore-snowflake-execution-tests</module>
         <module>legend-engine-xt-relationalStore-snowflake-grammar</module>
         <module>legend-engine-xt-relationalStore-snowflake-protocol</module>
+        <module>legend-engine-xt-relationalStore-snowflake-PCT</module>
         <module>legend-engine-xt-relationalStore-snowflake-pure</module>
     </modules>
 

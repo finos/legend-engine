@@ -16,14 +16,19 @@ package org.finos.legend.engine.shared.core.identity;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
 
 import javax.security.auth.Subject;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 
 public class Identity
@@ -31,6 +36,7 @@ public class Identity
     private String name;
     private final List<Credential> credentials = new ArrayList<>();
     private static final Identity ANONYMOUS_IDENTITY = new Identity("Anonymous");
+    private static final MutableList<IdentityFactory> FACTORIES = Iterate.addAllTo(ServiceLoader.load(IdentityFactory.class), Lists.mutable.empty());
 
     public Identity(String name, Credential... credentials)
     {
@@ -40,7 +46,6 @@ public class Identity
 
     public Identity(String name, List<Credential> credentials)
     {
-
         this.name = name;
         this.credentials.addAll(credentials);
     }
@@ -107,5 +112,19 @@ public class Identity
     public boolean hasValidCredentials()
     {
         return credentials.isEmpty() || credentials.stream().allMatch(c -> c.isValid());
+    }
+
+    public static Identity makeUnknownIdentity()
+    {
+        return new Identity("_UNKNOWN_");
+    }
+
+    public static Identity makeIdentity(Object authenticationSource)
+    {
+        return FACTORIES.collect(f -> f.makeIdentity(authenticationSource))
+                .stream().filter(Optional::isPresent)
+                .map(Optional::get)
+                .findFirst()
+                .orElse(makeUnknownIdentity());
     }
 }

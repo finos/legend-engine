@@ -22,7 +22,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
 import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Ignore;
@@ -75,7 +74,7 @@ public class TestRelationalConnectionManagerLocalMode
         authenticationStrategy.publicUserName = "legend-local-snowflake-publicuserName";
         connectionSpec.authenticationStrategy = authenticationStrategy;
 
-        Identity identity = DefaultIdentityFactory.INSTANCE.makeUnknownIdentity();
+        Identity identity = Identity.makeUnknownIdentity();
         DataSourceSpecification dataSourceSpecification = manager.getDataSourceSpecification(connectionSpec);
 
         Connection connection = manager.getDataSourceSpecification(connectionSpec).getConnectionUsingIdentity(identity, Optional.empty());

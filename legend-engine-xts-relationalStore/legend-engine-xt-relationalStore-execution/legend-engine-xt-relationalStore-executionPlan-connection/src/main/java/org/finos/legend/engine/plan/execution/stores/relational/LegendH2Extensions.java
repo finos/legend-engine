@@ -18,6 +18,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.similarity.JaroWinklerSimilarity;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.h2.tools.SimpleResultSet;
 import org.h2.value.Value;
@@ -308,5 +310,25 @@ public class LegendH2Extensions
         {
             throw new RuntimeException(e);
         }
+    }
+
+    public static Value legend_h2_extension_edit_distance(Value string1, Value string2)
+    {
+        if (string1 == ValueNull.INSTANCE || string2 == ValueNull.INSTANCE)
+        {
+            return ValueNull.INSTANCE;
+        }
+
+        return ValueInteger.get(new LevenshteinDistance().apply(string1.getString(), string2.getString()));
+    }
+
+    public static Value legend_h2_extension_jaro_winkler_similarity(Value string1, Value string2)
+    {
+        if (string1 == ValueNull.INSTANCE || string2 == ValueNull.INSTANCE)
+        {
+            return ValueNull.INSTANCE;
+        }
+
+        return ValueDouble.get(new JaroWinklerSimilarity().apply(string1.getString(), string2.getString()));
     }
 }

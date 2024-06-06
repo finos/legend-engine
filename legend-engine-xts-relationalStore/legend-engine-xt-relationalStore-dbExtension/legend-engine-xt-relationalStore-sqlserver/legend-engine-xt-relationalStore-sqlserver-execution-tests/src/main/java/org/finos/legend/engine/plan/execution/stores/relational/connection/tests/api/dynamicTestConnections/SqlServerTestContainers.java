@@ -15,7 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.dynamicTestConnections;
 
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.DynamicTestConnection;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
@@ -27,7 +27,7 @@ import org.testcontainers.containers.MSSQLServerContainer;
 
 import java.util.Properties;
 
-public class SqlServerTestContainers implements DynamicTestConnection
+public class SqlServerTestContainers implements TestConnectionIntegration
 {
     @Override
     public DatabaseType getDatabaseType()

@@ -72,7 +72,7 @@ public class RelationalReplExtension implements ReplExtension
     {
         this.client = client;
         this.localConnectionManagement = new LocalConnectionManagement(client);
-        this.localConnectionManagement.addLocalConnection(LocalConnectionType.H2, "MyTestH2");
+        //this.localConnectionManagement.addLocalConnection(LocalConnectionType.H2, "MyTestH2");
         this.localConnectionManagement.addLocalConnection(LocalConnectionType.DuckDB, "DuckDuck");
 
         try

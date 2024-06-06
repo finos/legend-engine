@@ -98,18 +98,19 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class _class = this.context.pureModel.getClass(fullPath, srcClass.sourceInformation);
         GenericType _classGenericType = this.context.resolveGenericType(fullPath, srcClass.sourceInformation);
         Set<String> uniqueSuperTypes = Sets.mutable.empty();
-        MutableList<Generalization> generalization = ListIterate.collect(srcClass.superTypes, superType ->
+        MutableList<Generalization> generalization = ListIterate.collect(srcClass.superTypes, superTypePtr ->
         {
+            String superType = superTypePtr.path;
             // validate no duplicated class supertype
             if (!uniqueSuperTypes.add(superType))
             {
                 throw new EngineException("Duplicated super type '" + superType + "' in class '" + this.context.pureModel.buildPackageString(srcClass._package, srcClass.name) + "'", srcClass.sourceInformation, EngineErrorType.COMPILATION);
             }
-            Generalization g = new Root_meta_pure_metamodel_relationship_Generalization_Impl("", null, this.context.pureModel.getClass("meta::pure::metamodel::relationship::Generalization"))._general(this.context.resolveGenericType(superType, srcClass.sourceInformation))._specific(_class);
+            Generalization g = new Root_meta_pure_metamodel_relationship_Generalization_Impl("", SourceInformationHelper.toM3SourceInformation(superTypePtr.sourceInformation), this.context.pureModel.getClass("meta::pure::metamodel::relationship::Generalization"))._general(this.context.resolveGenericType(superType, superTypePtr.sourceInformation))._specific(_class);
             if (!this.context.pureModel.isImmutable(superType))
             {
                 org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> superTypeClass;
-                Type type = this.context.resolveType(superType, srcClass.sourceInformation);
+                Type type = this.context.resolveType(superType, superTypePtr.sourceInformation);
                 try
                 {
                     superTypeClass = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) type;

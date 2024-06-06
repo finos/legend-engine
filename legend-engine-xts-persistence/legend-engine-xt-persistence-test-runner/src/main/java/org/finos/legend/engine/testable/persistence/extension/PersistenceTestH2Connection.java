@@ -23,7 +23,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 
 import javax.security.auth.Subject;
 import java.sql.Connection;
@@ -48,7 +47,7 @@ public class PersistenceTestH2Connection
             new H2Manager(),
             new TestDatabaseAuthenticationStrategy(),
             properties);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity((Subject) null);
+        Identity identity = Identity.makeIdentity((Subject) null);
         this.connection = specification.getConnectionUsingIdentity(identity, plainTextCredentialSupplier());
         return this.connection;
     }
