@@ -22,6 +22,8 @@
 package org.finos.legend.engine.postgres.types;
 
 import io.netty.buffer.ByteBuf;
+import org.finos.legend.engine.shared.core.operational.Assert;
+
 import java.nio.charset.StandardCharsets;
 import java.util.BitSet;
 
@@ -102,7 +104,7 @@ public class BitType extends PGType<String>
     @Override
     byte[] encodeAsUTF8Text(String value)
     {
-        assert length >= 0 : "BitType length must be set";
+        Assert.assertTrue(length >= 0, () -> "BitType length must be set");
         // See `varbit_out` in src/backend/utils/adt/varbit.c of PostgreSQL
         return value.getBytes(StandardCharsets.UTF_8);
     }
