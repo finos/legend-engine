@@ -19,4 +19,14 @@ public class DeploymentResult
     public String activatorIdentifier;
     public boolean successful;
     public String deploymentLocation;
+
+    @Override
+    public String toString()
+    {
+        if (!successful)
+        {
+            return "Deployment failed.";
+        }
+        return "Deployment Successful. Location: " + deploymentLocation;
+    }
 }
