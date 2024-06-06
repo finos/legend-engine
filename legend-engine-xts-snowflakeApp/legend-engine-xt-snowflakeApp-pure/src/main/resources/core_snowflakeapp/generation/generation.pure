@@ -32,7 +32,7 @@ function  meta::external::function::activator::snowflakeApp::generation::generat
 {
   let tdsTypeToRelationalTypeMap = PureTypeToSnowflakeTypeMap();
   $r.tdsColumns->map(c|'"'+ $c.name->toUpper() + '" '+ 
-                        if($c.sourceDataType->isNotEmpty() && !$c.sourceDataType->toOne()->instanceOf(eta::relational::metamodel::datatype::Varchar),
+                        if($c.sourceDataType->isNotEmpty() && !$c.sourceDataType->toOne()->instanceOf(meta::relational::metamodel::datatype::Varchar),
                           | $c.sourceDataType->toOne()->cast(@meta::relational::metamodel::datatype::DataType)->meta::relational::metamodel::datatype::dataTypeToSqlText(),
                           | $tdsTypeToRelationalTypeMap->get($c.type->toOne('Column type missing for column: '+$c.name))->toOne('Relational type missing for type: '+ $c.type->toOne()->toString())
                           )
