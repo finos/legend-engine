@@ -215,8 +215,10 @@ public class BigQueryTestArtifacts
             "`batch_end_ts_utc` DATETIME," +
             "`batch_status` STRING(32)," +
             "`table_batch_id` INT64," +
+            "`ingest_request_id` STRING(64)," +
             "`batch_source_info` JSON," +
-            "`additional_metadata` JSON)";
+            "`additional_metadata` JSON," +
+            "`batch_statistics` JSON)";
 
     public static String expectedMetadataTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS BATCH_METADATA" +
             "(`TABLE_NAME` STRING(255)," +
@@ -224,8 +226,10 @@ public class BigQueryTestArtifacts
             "`BATCH_END_TS_UTC` DATETIME," +
             "`BATCH_STATUS` STRING(32)," +
             "`TABLE_BATCH_ID` INT64," +
+            "`INGEST_REQUEST_ID` STRING(64)," +
             "`BATCH_SOURCE_INFO` JSON," +
-            "`ADDITIONAL_METADATA` JSON)";
+            "`ADDITIONAL_METADATA` JSON," +
+            "`BATCH_STATISTICS` JSON)";
 
     public static String expectedMainTableBatchIdBasedCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`" +
             "(`ID` INT64 NOT NULL,`NAME` STRING NOT NULL,`AMOUNT` FLOAT64,`BIZ_DATE` DATE,`DIGEST` STRING," +

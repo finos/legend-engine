@@ -115,7 +115,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadEventIdValue(EVENT_ID)
+            .ingestRequestId(EVENT_ID)
             .batchIdPattern("{NEXT_BATCH_ID}")
             .ingestRunId(ingestRunId)
             .build();
@@ -139,8 +139,11 @@ public class BulkLoadTest
             "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,{NEXT_BATCH_ID},PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') " +
             "FROM `my_db`.`my_name_temp_lp_yosulf` as legend_persistence_temp)";
 
-        String expectedMetadataIngestSql = "INSERT INTO batch_metadata (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `batch_source_info`) " +
-            "(SELECT 'my_name',{NEXT_BATCH_ID},PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"event_id\":\"xyz123\",\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
+        String expectedMetadataIngestSql = "INSERT INTO batch_metadata " +
+                "(`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `ingest_request_id`, `batch_source_info`) " +
+                "(SELECT 'my_name',{NEXT_BATCH_ID},PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
+                "CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}','xyz123'," +
+                "PARSE_JSON('{\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedCopySql, preActionsSql.get(2));
@@ -258,7 +261,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadEventIdValue(EVENT_ID)
+            .ingestRequestId(EVENT_ID)
             .putAllAdditionalMetadata(ADDITIONAL_METADATA)
             .ingestRunId(ingestRunId)
             .build();
@@ -282,11 +285,14 @@ public class BulkLoadTest
             "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MY_NAME') " +
             "FROM `my_db`.`my_name_temp_lp_yosulf` as legend_persistence_temp)";
 
-        String expectedMetaIngestSql = "INSERT INTO batch_metadata (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `batch_source_info`, `additional_metadata`) " +
-            "(SELECT 'my_name',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MY_NAME')," +
-            "PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}'," +
-            "PARSE_JSON('{\"event_id\":\"xyz123\",\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}')," +
-            "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
+        String expectedMetaIngestSql = "INSERT INTO batch_metadata " +
+                "(`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `ingest_request_id`, `batch_source_info`, `additional_metadata`) " +
+                "(SELECT 'my_name',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata " +
+                "WHERE UPPER(batch_metadata.`table_name`) = 'MY_NAME')," +
+                "PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
+                "CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}','xyz123'," +
+                "PARSE_JSON('{\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}')," +
+                "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedCopySql, preActionsSql.get(2));
@@ -327,7 +333,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadEventIdValue(EVENT_ID)
+            .ingestRequestId(EVENT_ID)
             .ingestRunId(ingestRunId)
             .build();
 
@@ -389,7 +395,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadEventIdValue(EVENT_ID)
+            .ingestRequestId(EVENT_ID)
             .caseConversion(CaseConversion.TO_UPPER)
             .ingestRunId(ingestRunId)
             .build();
@@ -456,7 +462,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadEventIdValue(EVENT_ID)
+            .ingestRequestId(EVENT_ID)
             .caseConversion(CaseConversion.TO_UPPER)
             .ingestRunId(ingestRunId)
             .build();
@@ -552,7 +558,7 @@ public class BulkLoadTest
             RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(bulkLoad)
                 .relationalSink(BigQuerySink.get())
-                .bulkLoadEventIdValue(EVENT_ID)
+                .ingestRequestId(EVENT_ID)
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .build();

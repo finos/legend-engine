@@ -113,7 +113,7 @@ public class BulkLoadExecutorTest extends BigQueryEndToEndTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadEventIdValue(EVENT_ID)
+            .ingestRequestId(EVENT_ID)
             .build();
 
         RelationalConnection connection = BigQueryConnection.of(getBigQueryConnection());
@@ -255,7 +255,7 @@ public class BulkLoadExecutorTest extends BigQueryEndToEndTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadEventIdValue(EVENT_ID)
+            .ingestRequestId(EVENT_ID)
             .build();
 
         RelationalConnection connection = BigQueryConnection.of(getBigQueryConnection());

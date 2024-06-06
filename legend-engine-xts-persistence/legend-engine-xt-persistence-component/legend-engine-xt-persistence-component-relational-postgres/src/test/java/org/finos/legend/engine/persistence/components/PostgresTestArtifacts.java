@@ -23,8 +23,10 @@ public class PostgresTestArtifacts
             "\"batch_end_ts_utc\" TIMESTAMP," +
             "\"batch_status\" VARCHAR(32)," +
             "\"table_batch_id\" INTEGER," +
+            "\"ingest_request_id\" VARCHAR(64)," +
             "\"batch_source_info\" JSON," +
-            "\"additional_metadata\" JSON)";
+            "\"additional_metadata\" JSON," +
+            "\"batch_statistics\" JSON)";
 
     public static String expectedMetadataTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS BATCH_METADATA" +
             "(\"TABLE_NAME\" VARCHAR(255)," +
@@ -32,8 +34,10 @@ public class PostgresTestArtifacts
             "\"BATCH_END_TS_UTC\" TIMESTAMP," +
             "\"BATCH_STATUS\" VARCHAR(32)," +
             "\"TABLE_BATCH_ID\" INTEGER," +
+            "\"INGEST_REQUEST_ID\" VARCHAR(64)," +
             "\"BATCH_SOURCE_INFO\" JSON," +
-            "\"ADDITIONAL_METADATA\" JSON)";
+            "\"ADDITIONAL_METADATA\" JSON," +
+            "\"BATCH_STATISTICS\" JSON)";
 
     public static String expectedMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
             "(\"id\" INTEGER NOT NULL," +

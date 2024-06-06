@@ -40,8 +40,10 @@ public class SnowflakeTestArtifacts
             "\"batch_end_ts_utc\" DATETIME," +
             "\"batch_status\" VARCHAR(32)," +
             "\"table_batch_id\" INTEGER," +
+            "\"ingest_request_id\" VARCHAR(64)," +
             "\"batch_source_info\" VARIANT," +
-            "\"additional_metadata\" VARIANT)";
+            "\"additional_metadata\" VARIANT," +
+            "\"batch_statistics\" VARIANT)";
 
     public static String expectedMetadataTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS BATCH_METADATA" +
             "(\"TABLE_NAME\" VARCHAR(255)," +
@@ -49,8 +51,10 @@ public class SnowflakeTestArtifacts
             "\"BATCH_END_TS_UTC\" DATETIME," +
             "\"BATCH_STATUS\" VARCHAR(32)," +
             "\"TABLE_BATCH_ID\" INTEGER," +
+            "\"INGEST_REQUEST_ID\" VARCHAR(64)," +
             "\"BATCH_SOURCE_INFO\" VARIANT," +
-            "\"ADDITIONAL_METADATA\" VARIANT)";
+            "\"ADDITIONAL_METADATA\" VARIANT," +
+            "\"BATCH_STATISTICS\" VARIANT)";
 
     public static String expectedBaseTempStagingTableWithCountAndDataSplit = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging_temp_staging_lp_yosulf\"" +
         "(\"id\" INTEGER NOT NULL," +
