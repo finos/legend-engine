@@ -58,8 +58,9 @@ public class ClassValidator
     private void visitClassSuperType(Class _class, PureModel pureModel, Map<String, Class> classes, Set<Class> visitedClasses, Set<Class> discoveredClasses)
     {
         discoveredClasses.add(_class);
-        _class.superTypes.forEach(superTypePath ->
+        _class.superTypes.forEach(superTypePtr ->
         {
+            String superTypePath = superTypePtr.path;
             Class superType = classes.get(superTypePath);
             if (superType != null)
             {
