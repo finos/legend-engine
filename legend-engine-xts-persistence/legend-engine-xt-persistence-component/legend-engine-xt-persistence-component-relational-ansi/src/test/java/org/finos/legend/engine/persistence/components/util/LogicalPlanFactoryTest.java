@@ -101,7 +101,7 @@ public class LogicalPlanFactoryTest
     {
         MetadataDataset dataset = MetadataDataset.builder().build();
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get());
-        LogicalPlan logicalPlan = LogicalPlanFactory.getLogicalPlanForIdempotencyCheck(dataset, "123xyz", "main");
+        LogicalPlan logicalPlan = LogicalPlanFactory.getLogicalPlanForBatchMetaRowsWithExistingIngestRequestId(dataset, "123xyz", "main");
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
 

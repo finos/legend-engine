@@ -102,7 +102,12 @@ public class LogicalPlanFactory
         return LogicalPlan.builder().addOps(selection).build();
     }
 
-    public static LogicalPlan getLogicalPlanForIdempotencyCheck(MetadataDataset metadataDataset, String ingestRequestId, String mainDatasetName)
+    /*
+        SELECT * FROM batch_metadata as batch_metadata WHERE
+        (batch_metadata."ingest_request_id" = '<ingestRequestId>')
+        AND (batch_metadata."table_name" = '<mainDatasetName>')";
+     */
+    public static LogicalPlan getLogicalPlanForBatchMetaRowsWithExistingIngestRequestId(MetadataDataset metadataDataset, String ingestRequestId, String mainDatasetName)
     {
         Dataset dataset = metadataDataset.get();
         FieldValue ingestRequestField = FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(metadataDataset.ingestRequestIdField()).build();

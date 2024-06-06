@@ -578,7 +578,7 @@ public abstract class RelationalIngestorAbstract
         if (enableConcurrentSafety() && enableIdempotencyCheck())
         {
             LOGGER.info("Perform Idempotency Check");
-            LogicalPlan logicalPlan = LogicalPlanFactory.getLogicalPlanForIdempotencyCheck(
+            LogicalPlan logicalPlan = LogicalPlanFactory.getLogicalPlanForBatchMetaRowsWithExistingIngestRequestId(
                     enrichedDatasets.metadataDataset().orElseThrow(IllegalStateException::new),
                     ingestRequestId().orElseThrow(IllegalStateException::new),
                     enrichedDatasets.mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new));
@@ -591,11 +591,11 @@ public abstract class RelationalIngestorAbstract
                 for (Map<String, Object> metadata: metadataResults)
                 {
                     Timestamp ingestionTimestampUTC = (Timestamp) metadata.get(metadataDataset.batchStartTimeField());
-                    String batchStatus = (String) metadata.get(metadataDataset.batchStatusField());
+                    String batchStatus = String.valueOf(metadata.get(metadataDataset.batchStatusField()));
                     batchStatus = batchStatus.equalsIgnoreCase(batchSuccessStatusValue())  ? IngestStatus.SUCCEEDED.name() : batchStatus;
                     IngestorResult ingestorResult = IngestorResult.builder()
                             .batchId((int) metadata.get(metadataDataset.tableBatchIdField()))
-                            .putAllStatisticByName(readValueAsMap((String) metadata.get(metadataDataset.batchStatisticsField())))
+                            .putAllStatisticByName(readValueAsMap(String.valueOf(metadata.get(metadataDataset.batchStatisticsField()))))
                             .status(IngestStatus.valueOf(batchStatus))
                             .updatedDatasets(enrichedDatasets)
                             .schemaEvolutionSql(schemaEvolutionResult.schemaEvolutionSql())
