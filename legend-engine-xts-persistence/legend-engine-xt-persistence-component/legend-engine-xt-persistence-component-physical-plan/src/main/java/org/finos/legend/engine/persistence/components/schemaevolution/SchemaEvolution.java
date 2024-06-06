@@ -121,11 +121,11 @@ public class SchemaEvolution
 
     private void validatePrimaryKeys(Dataset mainDataset, SchemaDefinition stagingDataset)
     {
-        List<Field> stagingFilteredFields = stagingDataset.fields().stream().filter(field -> !containsWithOptionallyIgnoreCase(ingestMode.accept(STAGING_TABLE_FIELDS_TO_IGNORE), field.name())).collect(Collectors.toList());
+        List<Field> stagingFilteredFields = stagingDataset.fields().stream().filter(field -> !collectionContainsElement(ingestMode.accept(STAGING_TABLE_FIELDS_TO_IGNORE), field.name())).collect(Collectors.toList());
         Set<String> stagingPkNames = stagingFilteredFields.stream().filter(Field::primaryKey).map(Field::name).collect(Collectors.toSet());
-        List<Field> mainFilteredFields = mainDataset.schema().fields().stream().filter(field -> !containsWithOptionallyIgnoreCase(ingestMode.accept(MAIN_TABLE_FIELDS_TO_IGNORE), field.name())).collect(Collectors.toList());
+        List<Field> mainFilteredFields = mainDataset.schema().fields().stream().filter(field -> !collectionContainsElement(ingestMode.accept(MAIN_TABLE_FIELDS_TO_IGNORE), field.name())).collect(Collectors.toList());
         Set<String> mainPkNames = mainFilteredFields.stream().filter(Field::primaryKey).map(Field::name).collect(Collectors.toSet());
-        if (!equalsWithOptionallyIgnoreCase(stagingPkNames, mainPkNames))
+        if (!areEqual(stagingPkNames, mainPkNames))
         {
             throw new IncompatibleSchemaChangeException("Primary keys for main table has changed which is not allowed");
         }
@@ -137,11 +137,11 @@ public class SchemaEvolution
         List<Operation> operations = new ArrayList<>();
         List<Field> mainFields = mainDataset.schema().fields();
         List<Field> stagingFields = stagingDataset.fields();
-        List<Field> filteredFields = stagingFields.stream().filter(field -> !containsWithOptionallyIgnoreCase(fieldsToIgnore, field.name())).collect(Collectors.toList());
+        List<Field> filteredFields = stagingFields.stream().filter(field -> !collectionContainsElement(fieldsToIgnore, field.name())).collect(Collectors.toList());
         for (Field stagingField : filteredFields)
         {
             String stagingFieldName = stagingField.name();
-            Field matchedMainField = mainFields.stream().filter(mainField -> equalsWithOptionallyIgnoreCase(mainField.name(), stagingFieldName)).findFirst().orElse(null);
+            Field matchedMainField = mainFields.stream().filter(mainField -> areEqual(mainField.name(), stagingFieldName)).findFirst().orElse(null);
             if (matchedMainField == null)
             {
                 // Add the new column in the main table if database supports ADD_COLUMN capability and
@@ -282,10 +282,10 @@ public class SchemaEvolution
         List<Operation> operations = new ArrayList<>();
         List<Field> mainFields = mainDataset.schema().fields();
         Set<String> stagingFieldNames = stagingDataset.fields().stream().map(Field::name).collect(Collectors.toSet());
-        for (Field mainField : mainFields.stream().filter(field -> !containsWithOptionallyIgnoreCase(fieldsToIgnore, field.name())).collect(Collectors.toList()))
+        for (Field mainField : mainFields.stream().filter(field -> !collectionContainsElement(fieldsToIgnore, field.name())).collect(Collectors.toList()))
         {
             String mainFieldName = mainField.name();
-            if (!containsWithOptionallyIgnoreCase(stagingFieldNames, mainFieldName))
+            if (!collectionContainsElement(stagingFieldNames, mainFieldName))
             {
                 //Modify the column to nullable in main table
                 if (!mainField.nullable())
@@ -304,7 +304,7 @@ public class SchemaEvolution
 
         List<Field> evolvedFields = schema.fields()
                 .stream()
-                .filter(f -> !containsWithOptionallyIgnoreCase(modifiedFieldNames, f.name()))
+                .filter(f -> !collectionContainsElement(modifiedFieldNames, f.name()))
                 .collect(Collectors.toList());
 
         evolvedFields.addAll(modifiedFields);
@@ -312,12 +312,12 @@ public class SchemaEvolution
         return schema.withFields(evolvedFields);
     }
 
-    private boolean equalsWithOptionallyIgnoreCase(String name1, String name2)
+    private boolean areEqual(String str1, String str2)
     {
-        return ignoreCase ? name1.equalsIgnoreCase(name2) : name1.equals(name2);
+        return ignoreCase ? str1.equalsIgnoreCase(str2) : str1.equals(str2);
     }
 
-    private boolean equalsWithOptionallyIgnoreCase(Set<String> set1, Set<String> set2)
+    private boolean areEqual(Set<String> set1, Set<String> set2)
     {
         if (ignoreCase)
         {
@@ -331,9 +331,9 @@ public class SchemaEvolution
         }
     }
 
-    private boolean containsWithOptionallyIgnoreCase(Collection<String> list, String target)
+    private boolean collectionContainsElement(Collection<String> collection, String target)
     {
-        return ignoreCase ? list.stream().anyMatch(name -> name.equalsIgnoreCase(target)) : list.contains(target);
+        return ignoreCase ? collection.stream().anyMatch(element -> element.equalsIgnoreCase(target)) : collection.contains(target);
     }
 
     // ingest mode visitors
