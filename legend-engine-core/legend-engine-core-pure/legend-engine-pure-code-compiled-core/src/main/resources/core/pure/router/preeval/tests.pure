@@ -140,6 +140,7 @@ Class meta::pure::router::preeval::tests::A
 {
   a : Boolean[1] = true;
   b : String[1] = 'b';
+  d : Decimal[1] = 10.0;
 }
 
 function <<test.Test>> meta::pure::router::preeval::tests::testNew():Boolean[1]
