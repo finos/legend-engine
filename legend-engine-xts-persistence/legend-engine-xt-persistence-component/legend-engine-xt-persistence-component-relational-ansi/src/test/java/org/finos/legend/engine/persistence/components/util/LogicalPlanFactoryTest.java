@@ -96,4 +96,17 @@ public class LogicalPlanFactoryTest
         Assertions.assertEquals(expectedQuery, list.get(0));
     }
 
+    @Test
+    public void testLogicalPlanForIdempotencyCheck()
+    {
+        MetadataDataset dataset = MetadataDataset.builder().build();
+        RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get());
+        LogicalPlan logicalPlan = LogicalPlanFactory.getLogicalPlanForBatchMetaRowsWithExistingIngestRequestId(dataset, "123xyz", "main");
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<String> list = physicalPlan.getSqlList();
+
+        String expectedQuery = "SELECT * FROM batch_metadata as batch_metadata WHERE (batch_metadata.\"ingest_request_id\" = '123xyz') AND (batch_metadata.\"table_name\" = 'main')";
+        Assertions.assertEquals(expectedQuery, list.get(0));
+    }
+
 }

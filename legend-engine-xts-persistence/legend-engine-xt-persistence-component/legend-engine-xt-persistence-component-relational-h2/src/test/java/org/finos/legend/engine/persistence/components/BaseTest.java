@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
@@ -314,6 +315,7 @@ public class BaseTest
                 .enableSchemaEvolution(options.enableSchemaEvolution())
                 .schemaEvolutionCapabilitySet(Collections.emptySet())
                 .caseConversion(CaseConversion.TO_UPPER)
+                .writeStatistics(true)
                 .build();
         return executePlansAndVerifyForCaseConversion(ingestor, datasets, schema, expectedDataPath, expectedStats);
     }
@@ -340,9 +342,16 @@ public class BaseTest
 
         // Verify statistics
         Assertions.assertEquals(expectedStats.size(), actualStats.size());
+
+        String statsStoredStr = (String) h2Sink.executeQuery("select * from \"BATCH_METADATA\" where \"TABLE_BATCH_ID\" = select max(\"TABLE_BATCH_ID\") from \"BATCH_METADATA\"").get(0).get("BATCH_STATISTICS");
+        Map<String, Object> statsStored = new ObjectMapper().readValue(statsStoredStr, Map.class);
+
         for (String statistic : expectedStats.keySet())
         {
+            // Assert expected stats and actual stats
             Assertions.assertEquals(expectedStats.get(statistic).toString(), actualStats.get(StatisticName.valueOf(statistic)).toString());
+            // Assert expected stats and saved stats
+            Assertions.assertEquals(expectedStats.get(statistic).toString(), statsStored.get(StatisticName.valueOf(statistic).toString()).toString());
         }
 
         // Return result (including updated datasets)

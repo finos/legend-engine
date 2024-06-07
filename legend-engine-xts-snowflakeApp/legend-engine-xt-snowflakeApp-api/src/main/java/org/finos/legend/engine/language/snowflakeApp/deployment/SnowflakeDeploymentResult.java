@@ -33,4 +33,14 @@ public class SnowflakeDeploymentResult extends DeploymentResult
     {
         this.errors = errors;
     }
+
+    @Override
+    public String toString()
+    {
+        if (!successful)
+        {
+            return "Deployment failed. Reason(s): " + this.errors.makeString("[", ",", "]");
+        }
+        return super.toString();
+    }
 }

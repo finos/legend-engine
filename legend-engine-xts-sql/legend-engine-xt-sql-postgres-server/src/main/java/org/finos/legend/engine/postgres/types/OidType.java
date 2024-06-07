@@ -22,6 +22,8 @@
 package org.finos.legend.engine.postgres.types;
 
 import io.netty.buffer.ByteBuf;
+import org.finos.legend.engine.shared.core.operational.Assert;
+
 import java.nio.charset.StandardCharsets;
 
 public class OidType extends PGType<Integer>
@@ -68,8 +70,8 @@ public class OidType extends PGType<Integer>
     @Override
     public Integer readBinaryValue(ByteBuf buffer, int valueLength)
     {
-        assert valueLength == TYPE_LEN
-                : "length should be " + TYPE_LEN + " because oid is int32. Actual length: " + valueLength;
+        Assert.assertTrue(valueLength == TYPE_LEN,
+                () -> "length should be " + TYPE_LEN + " because oid is int32. Actual length: " + valueLength);
         return buffer.readInt();
     }
 

@@ -767,7 +767,7 @@ public class TestDedupAndVersioning extends BaseTest
         ingestor.initDatasets(datasets);
         ingestor.create();
         ingestor.dedupAndVersion();
-        return ingestor.getIngestRunId();
+        return ingestor.getRunId();
     }
 
     public static void loadDataIntoStagingTableWithoutVersion(String path) throws Exception

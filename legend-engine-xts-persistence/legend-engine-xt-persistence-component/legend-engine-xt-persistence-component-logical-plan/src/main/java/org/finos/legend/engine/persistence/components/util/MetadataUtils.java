@@ -49,8 +49,8 @@ public class MetadataUtils
 
     public static final String BATCH_SOURCE_INFO_FILE_PATHS = "file_paths";
     public static final String BATCH_SOURCE_INFO_FILE_PATTERNS = "file_patterns";
-    public static final String BATCH_SOURCE_INFO_BULK_LOAD_EVENT_ID = "event_id";
     public static final String BATCH_SOURCE_INFO_STAGING_FILTERS = "staging_filters";
+    public static final String BATCH_STATISTICS_PATTERN = "{BATCH_STATISTICS_PLACEHOLDER}";
 
     private final MetadataDataset dataset;
     private final Dataset metaDataset;
@@ -93,7 +93,7 @@ public class MetadataUtils
 
     public Insert insertMetaData(StringValue mainTableName, BatchStartTimestamp batchStartTimestamp, BatchEndTimestamp batchEndTimestamp, Value batchStatus)
     {
-        return insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, batchStatus, Optional.empty(), Optional.empty());
+        return insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, batchStatus, Optional.empty(), Optional.empty(), Optional.empty(), false);
     }
 
     /*
@@ -104,7 +104,7 @@ public class MetadataUtils
     '{BATCH_END_TIMESTAMP_PLACEHOLDER}',
     'DONE');
      */
-    public Insert insertMetaData(StringValue mainTableName, BatchStartTimestamp batchStartTimestamp, BatchEndTimestamp batchEndTimestamp, Value batchStatusValue, Optional<StringValue> batchSourceInfoValue, Optional<StringValue> additionalMetadataValue)
+    public Insert insertMetaData(StringValue mainTableName, BatchStartTimestamp batchStartTimestamp, BatchEndTimestamp batchEndTimestamp, Value batchStatusValue, Optional<String> ingestRequestId, Optional<StringValue> batchSourceInfoValue, Optional<StringValue> additionalMetadataValue, boolean writeStatistics)
     {
         DatasetReference metaTableRef = this.metaDataset.datasetReference();
         FieldValue tableName = FieldValue.builder().datasetRef(metaTableRef).fieldName(dataset.tableNameField()).build();
@@ -119,6 +119,11 @@ public class MetadataUtils
         metaInsertFields.add(startTs);
         metaInsertFields.add(endTs);
         metaInsertFields.add(batchStatus);
+        if (ingestRequestId.isPresent())
+        {
+            FieldValue ingestRequestIdField = FieldValue.builder().datasetRef(metaTableRef).fieldName(dataset.ingestRequestIdField()).build();
+            metaInsertFields.add(ingestRequestIdField);
+        }
         if (batchSourceInfoValue.isPresent())
         {
             FieldValue batchSourceInfo = FieldValue.builder().datasetRef(metaTableRef).fieldName(dataset.batchSourceInfoField()).build();
@@ -129,6 +134,11 @@ public class MetadataUtils
             FieldValue additionalMetadata = FieldValue.builder().datasetRef(metaTableRef).fieldName(dataset.additionalMetadataField()).build();
             metaInsertFields.add(additionalMetadata);
         }
+        if (writeStatistics)
+        {
+            FieldValue batchStatistics = FieldValue.builder().datasetRef(metaTableRef).fieldName(dataset.batchStatisticsField()).build();
+            metaInsertFields.add(batchStatistics);
+        }
 
         List<Value> metaSelectFields = new ArrayList<>();
         metaSelectFields.add(mainTableName);
@@ -136,6 +146,10 @@ public class MetadataUtils
         metaSelectFields.add(batchStartTimestamp);
         metaSelectFields.add(batchEndTimestamp);
         metaSelectFields.add(batchStatusValue);
+        if (ingestRequestId.isPresent())
+        {
+            metaSelectFields.add(StringValue.of(ingestRequestId.get()));
+        }
         if (batchSourceInfoValue.isPresent())
         {
             ParseJsonFunction batchSourceInfoJson = ParseJsonFunction.builder().jsonString(batchSourceInfoValue.get()).build();
@@ -145,6 +159,11 @@ public class MetadataUtils
         {
             ParseJsonFunction additionalMetadataInfoJson = ParseJsonFunction.builder().jsonString(additionalMetadataValue.get()).build();
             metaSelectFields.add(additionalMetadataInfoJson);
+        }
+        if (writeStatistics)
+        {
+            ParseJsonFunction batchStatisticsJson = ParseJsonFunction.builder().jsonString(StringValue.of(BATCH_STATISTICS_PATTERN)).build();
+            metaSelectFields.add(batchStatisticsJson);
         }
 
         return Insert.of(metaDataset, Selection.builder().addAllFields(metaSelectFields).build(), metaInsertFields);

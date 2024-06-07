@@ -22,6 +22,7 @@
 package org.finos.legend.engine.postgres.types;
 
 import io.netty.buffer.ByteBuf;
+import org.finos.legend.engine.shared.core.operational.Assert;
 
 abstract class BaseTimestampType extends PGType
 {
@@ -73,8 +74,8 @@ abstract class BaseTimestampType extends PGType
     @Override
     public Object readBinaryValue(ByteBuf buffer, int valueLength)
     {
-        assert valueLength == TYPE_LEN : "valueLength must be " + TYPE_LEN +
-                " because timestamp is a 64 bit long. Actual length: " + valueLength;
+        Assert.assertTrue(valueLength == TYPE_LEN, () -> "valueLength must be " + TYPE_LEN +
+                " because timestamp is a 64 bit long. Actual length: " + valueLength);
         long microSecondsSince2K = buffer.readLong();
         return toCrateTimestamp(microSecondsSince2K);
     }

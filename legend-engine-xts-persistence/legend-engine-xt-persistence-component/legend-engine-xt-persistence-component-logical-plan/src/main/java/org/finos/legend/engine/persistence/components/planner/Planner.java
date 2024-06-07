@@ -105,6 +105,12 @@ public abstract class Planner
         }
 
         @Default
+        default boolean writeStatistics()
+        {
+            return false;
+        }
+
+        @Default
         default boolean enableSchemaEvolution()
         {
             return false;
@@ -124,7 +130,7 @@ public abstract class Planner
 
         Map<String, Object> additionalMetadata();
 
-        Optional<String> bulkLoadEventIdValue();
+        Optional<String> ingestRequestId();
 
         @Default
         default String batchSuccessStatusValue()
@@ -337,7 +343,7 @@ public abstract class Planner
         // Save success status into status column
         StringValue status = StringValue.of(options().batchSuccessStatusValue());
 
-        return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, status, batchSourceInfo, additionalMetadata)));
+        return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, status, options().ingestRequestId(), batchSourceInfo, additionalMetadata, options().writeStatistics())));
     }
 
     public LogicalPlan buildLogicalPlanForInitializeLock(Resources resources)

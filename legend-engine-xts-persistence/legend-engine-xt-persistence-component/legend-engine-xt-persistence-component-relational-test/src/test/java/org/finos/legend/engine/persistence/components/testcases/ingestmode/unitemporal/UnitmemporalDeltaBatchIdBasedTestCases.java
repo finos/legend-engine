@@ -83,6 +83,8 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
                 .ingestRunId(ingestRunId)
+                .ingestRequestId(ingestRequestId)
+                .writeStatistics(true)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         verifyUnitemporalDeltaWithDeleteIndFilterDupsNoVersion(operations);

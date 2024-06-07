@@ -81,6 +81,12 @@ public interface MetadataDatasetAbstract
     }
 
     @Default
+    default String ingestRequestIdField()
+    {
+        return "ingest_request_id";
+    }
+
+    @Default
     default String batchSourceInfoField()
     {
         return "batch_source_info";
@@ -90,6 +96,12 @@ public interface MetadataDatasetAbstract
     default String additionalMetadataField()
     {
         return "additional_metadata";
+    }
+
+    @Default
+    default String batchStatisticsField()
+    {
+        return "batch_statistics";
     }
 
     @Derived
@@ -105,8 +117,10 @@ public interface MetadataDatasetAbstract
                 .addFields(Field.builder().name(batchEndTimeField()).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build())
                 .addFields(Field.builder().name(batchStatusField()).type(FieldType.of(DataType.VARCHAR, 32, null)).build())
                 .addFields(Field.builder().name(tableBatchIdField()).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).build())
+                .addFields(Field.builder().name(ingestRequestIdField()).type(FieldType.of(DataType.VARCHAR, 64, null)).build())
                 .addFields(Field.builder().name(batchSourceInfoField()).type(FieldType.of(DataType.JSON, Optional.empty(), Optional.empty())).build())
                 .addFields(Field.builder().name(additionalMetadataField()).type(FieldType.of(DataType.JSON, Optional.empty(), Optional.empty())).build())
+                .addFields(Field.builder().name(batchStatisticsField()).type(FieldType.of(DataType.JSON, Optional.empty(), Optional.empty())).build())
                 .build())
             .build();
     }

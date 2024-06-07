@@ -29,6 +29,8 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
+import org.finos.legend.engine.shared.core.operational.prometheus.Prometheus;
 import org.finos.legend.engine.testData.generation.model.TestDataGenerationInput;
 import org.finos.legend.engine.testData.generation.model.TestDataGenerationResult;
 import org.finos.legend.engine.testData.generation.service.TestDataGenerationService;
@@ -41,8 +43,10 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
@@ -63,18 +67,23 @@ public class TestDataGeneration
     @Path("DONOTUSE_generateTestData")
     @ApiOperation(value = "Studio WIP: will not be backward compatible until we remove the DONOTUSE flag")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response generateTestData(TestDataGenerationInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    @Prometheus(name = "generate test data")
+    public Response generateTestData(TestDataGenerationInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
         Identity identity = Identity.makeIdentity(profiles);
         PureModel pureModel = modelManager.loadModel(input.model, input.clientVersion == null ? PureClientVersions.production : input.clientVersion, identity, null);
+        long start = System.currentTimeMillis();
         try
         {
             TestDataGenerationResult result = new TestDataGenerationResult(TestDataGenerationService.generateEmbeddedData(input.query, pureModel.getMapping(input.mapping), pureModel));
+            long end = System.currentTimeMillis();
+            MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, end);
             return ManageConstantResult.manageResult(identity.getName(), result, objectMapper);
         }
         catch (Exception e)
         {
+            MetricsHandler.observeError(LoggingEventType.TEST_DATA_GENERATION_ERROR, e, null);
             return ExceptionTool.exceptionManager(e, LoggingEventType.TEST_DATA_GENERATION_ERROR,  Response.Status.BAD_REQUEST, identity.getName());
         }
     }
