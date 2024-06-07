@@ -94,9 +94,13 @@ public class SchemaEvolutionForMetadataDatestTest extends BaseTest
 
         // Perform Schema Evolution
         List<String> schemaEvolutionSql = performSchemaEvolutionOfMetadataDataset(datasets, ingestor);
-        String expectedSql = "ALTER TABLE batch_metadata ADD COLUMN \"batch_source_info\" JSON";
-        Assertions.assertEquals(1, schemaEvolutionSql.size());
-        Assertions.assertEquals(expectedSql, schemaEvolutionSql.get(0));
+        String expectedSql1 = "ALTER TABLE batch_metadata ADD COLUMN \"ingest_request_id\" VARCHAR(64)";
+        String expectedSql2 = "ALTER TABLE batch_metadata ADD COLUMN \"batch_source_info\" JSON";
+        String expectedSql3 = "ALTER TABLE batch_metadata ADD COLUMN \"batch_statistics\" JSON";
+        Assertions.assertEquals(3, schemaEvolutionSql.size());
+        Assertions.assertEquals(expectedSql1, schemaEvolutionSql.get(0));
+        Assertions.assertEquals(expectedSql2, schemaEvolutionSql.get(1));
+        Assertions.assertEquals(expectedSql3, schemaEvolutionSql.get(2));
 
         // Perform Schema Evolution again - nothing should happen now
         schemaEvolutionSql = performSchemaEvolutionOfMetadataDataset(datasets, ingestor);
