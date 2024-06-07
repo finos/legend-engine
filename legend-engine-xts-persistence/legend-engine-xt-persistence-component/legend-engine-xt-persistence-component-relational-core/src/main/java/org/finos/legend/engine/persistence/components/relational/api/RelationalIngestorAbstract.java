@@ -58,7 +58,6 @@ import org.immutables.value.Value.Style;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.LocalDateTime;
