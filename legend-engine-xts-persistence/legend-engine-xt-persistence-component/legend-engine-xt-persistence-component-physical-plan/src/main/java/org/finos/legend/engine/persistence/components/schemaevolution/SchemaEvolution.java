@@ -182,9 +182,9 @@ public class SchemaEvolution
                         // If the datatype is a non-breaking change, we alter the datatype.
                         // We also alter the length if required (pick the maximum length)
                         else if (sink.capabilities().contains(Capability.EXPLICIT_DATA_TYPE_CONVERSION)
-                                && sink.supportsExplicitMapping(matchedMainField.type().dataType(), stagingFieldType.dataType()))
+                                && schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_CONVERSION))
                         {
-                            if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_CONVERSION))
+                            if (sink.supportsExplicitMapping(matchedMainField.type().dataType(), stagingFieldType.dataType()))
                             {
                                 //Modify the column in main table
                                 Field newField = sink.evolveFieldLength(matchedMainField, stagingField);
@@ -192,14 +192,13 @@ public class SchemaEvolution
                             }
                             else
                             {
-                                throw new IncompatibleSchemaChangeException(String.format("Explicit data type conversion from \"%s\" to \"%s\" couldn't be performed since user capability does not allow it", matchedMainField.type().dataType(), stagingFieldType.dataType()));
+                                throw new IncompatibleSchemaChangeException(String.format("Breaking schema change from datatype \"%s\" to \"%s\"", matchedMainField.type().dataType(), stagingFieldType.dataType()));
                             }
                         }
-
-                        //Else, it is a breaking change. We throw an exception
+                        //Else, no operations is allowed, we throw an exception
                         else
                         {
-                            throw new IncompatibleSchemaChangeException(String.format("Breaking schema change from datatype \"%s\" to \"%s\"", matchedMainField.type().dataType(), stagingFieldType.dataType()));
+                            throw new IncompatibleSchemaChangeException(String.format("Explicit data type conversion from \"%s\" to \"%s\" couldn't be performed since sink/user capability does not allow it", matchedMainField.type().dataType(), stagingFieldType.dataType()));
                         }
                     }
                     //If data types are same, we check if length requires any evolution
@@ -228,22 +227,22 @@ public class SchemaEvolution
     {
         if (!mainDataField.equals(newField))
         {
-            // If there are any data type length changes, make sure user capability allows it before creating the alter statement
+            // If there are any data type length changes, make sure sink/user capability allows it before creating the alter statement
             if (!Objects.equals(mainDataField.type().length(), newField.type().length()))
             {
                 if (!sink.capabilities().contains(Capability.DATA_TYPE_LENGTH_CHANGE)
                         || (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE)))
                 {
-                    throw new IncompatibleSchemaChangeException(String.format("Data type length changes couldn't be performed on column \"%s\" since user capability does not allow it", newField.name()));
+                    throw new IncompatibleSchemaChangeException(String.format("Data type length changes couldn't be performed on column \"%s\" since sink/user capability does not allow it", newField.name()));
                 }
             }
-            // If there are any data type scale changes, make sure user capability allows it before creating the alter statement
+            // If there are any data type scale changes, make sure sink/user capability allows it before creating the alter statement
             if (!Objects.equals(mainDataField.type().scale(), newField.type().scale()))
             {
                 if (!sink.capabilities().contains(Capability.DATA_TYPE_SCALE_CHANGE)
                         || (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE)))
                 {
-                    throw new IncompatibleSchemaChangeException(String.format("Data type scale changes couldn't be performed on column \"%s\" since user capability does not allow it", newField.name()));
+                    throw new IncompatibleSchemaChangeException(String.format("Data type scale changes couldn't be performed on column \"%s\" since sink/user capability does not allow it", newField.name()));
                 }
             }
             // Create the alter statement for changing the data type and sizing as required

@@ -290,7 +290,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Data type length changes couldn't be performed on column \"description\" since user capability does not allow it", e.getMessage());
+            Assertions.assertEquals("Data type length changes couldn't be performed on column \"description\" since sink/user capability does not allow it", e.getMessage());
         }
     }
 
@@ -350,7 +350,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Data type scale changes couldn't be performed on column \"decimal_col\" since user capability does not allow it", e.getMessage());
+            Assertions.assertEquals("Data type scale changes couldn't be performed on column \"decimal_col\" since sink/user capability does not allow it", e.getMessage());
         }
     }
 
@@ -529,7 +529,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Explicit data type conversion from \"FLOAT\" to \"DOUBLE\" couldn't be performed since user capability does not allow it", e.getMessage());
+            Assertions.assertEquals("Explicit data type conversion from \"FLOAT\" to \"DOUBLE\" couldn't be performed since sink/user capability does not allow it", e.getMessage());
         }
     }
 
@@ -565,7 +565,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Data type length changes couldn't be performed on column \"amount\" since user capability does not allow it", e.getMessage());
+            Assertions.assertEquals("Data type length changes couldn't be performed on column \"amount\" since sink/user capability does not allow it", e.getMessage());
         }
     }
 
@@ -621,7 +621,9 @@ public class SchemaEvolutionTest extends IngestModeTest
                 .build();
 
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
-        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, Collections.emptySet(), false);
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_CONVERSION);
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet, false);
 
         try
         {
