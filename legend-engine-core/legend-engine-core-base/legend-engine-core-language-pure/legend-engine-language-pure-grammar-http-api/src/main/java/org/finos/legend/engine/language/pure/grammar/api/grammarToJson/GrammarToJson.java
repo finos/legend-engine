@@ -24,8 +24,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
 import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
-import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
-import org.finos.legend.engine.shared.core.operational.prometheus.Prometheus;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
@@ -36,10 +34,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import java.util.Map;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
@@ -53,20 +49,14 @@ public class GrammarToJson extends GrammarAPI
     @ApiOperation(value = "Generates Pure protocol JSON from Pure language text")
     @Consumes({MediaType.TEXT_PLAIN, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    @Prometheus(name = "GrammarToJson model", doc = "Grammar to Json duration summary")
     public Response model(String text,
                           @DefaultValue("") @ApiParam("The source ID to be used by the parser") @QueryParam("sourceId") String sourceId,
                           @DefaultValue("0") @ApiParam("The line number the parser will offset by") @QueryParam("lineOffset") int lineOffset,
                           @DefaultValue("true") @QueryParam("returnSourceInformation") boolean returnSourceInformation,
-                          @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm,
-                          @Context UriInfo uriInfo)
+                          @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        long start = System.currentTimeMillis();
         PureGrammarParserExtensions.logExtensionList();
-        Response response = grammarToJson(text, (a) -> PureGrammarParser.newInstance().parseModel(a, sourceId, lineOffset, 0, returnSourceInformation), pm, "Grammar to Json : Model");
-        long end = System.currentTimeMillis();
-        MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, end);
-        return response;
+        return grammarToJson(text, (a) -> PureGrammarParser.newInstance().parseModel(a, sourceId, lineOffset, 0, returnSourceInformation), pm, "Grammar to Json : Model");
     }
 
     @POST

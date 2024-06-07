@@ -53,7 +53,7 @@ public class MetricsHandler
 
     private static final Histogram SUCCESSFUL_REQUEST_LATENCY = Histogram.build().name("legend_engine_successful_request_latency")
             .help("Measure legend engine's http request latency")
-            .buckets(.1, .2, .5, 1, 2, 5, 10, 30, 100, 300, 600, 1200)
+            .buckets(.1, .2, .5, 1, 2, 5, 10, 30, 100, 300)
             .labelNames("uri")
             .register(getMetricsRegistry());
 
