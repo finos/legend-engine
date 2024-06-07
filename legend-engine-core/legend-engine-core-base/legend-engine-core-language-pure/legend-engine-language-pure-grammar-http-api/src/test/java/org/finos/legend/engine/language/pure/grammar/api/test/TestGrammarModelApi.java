@@ -68,13 +68,13 @@ public class TestGrammarModelApi extends TestGrammar<PureModelContextData>
     @Override
     public Function5<String, String, Integer, Integer, Boolean, Response> grammarToJson()
     {
-        return (a, b, c, d, e) -> grammarToJson.model(a, b, c, e, null);
+        return (a, b, c, d, e) -> grammarToJson.model(a, b, c, e, null, null);
     }
 
     @Override
     public Function2<PureModelContextData, RenderStyle, Response> jsonToGrammar()
     {
-        return (a, b) -> jsonToGrammar.model(a, b, null);
+        return (a, b) -> jsonToGrammar.model(a, b, null, null);
     }
 
     @Override
