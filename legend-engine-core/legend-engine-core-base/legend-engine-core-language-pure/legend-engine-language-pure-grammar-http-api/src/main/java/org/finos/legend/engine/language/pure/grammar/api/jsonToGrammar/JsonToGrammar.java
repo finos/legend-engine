@@ -27,6 +27,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
 import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
+import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
+import org.finos.legend.engine.shared.core.operational.prometheus.Prometheus;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
@@ -37,8 +39,10 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.util.Map;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
@@ -53,12 +57,18 @@ public class JsonToGrammar extends GrammarAPI
     @ApiOperation(value = "Generates Pure language text from Pure protocol Pure Model Context Data")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.TEXT_PLAIN)
+    @Prometheus(name = "GrammarToJson model", doc = "Grammar to Json duration summary")
     public Response model(PureModelContextData pureModelContext,
                           @QueryParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle,
-                          @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+                          @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm,
+                          @Context UriInfo uriInfo)
     {
+        long start = System.currentTimeMillis();
         PureGrammarComposerExtensionLoader.logExtensionList();
-        return jsonToGrammar(pureModelContext, renderStyle, (value, renderStyle1) -> PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().withRenderStyle(renderStyle1).build()).renderPureModelContextData(value), pm, "Json to Grammar : Model");
+        Response response = jsonToGrammar(pureModelContext, renderStyle, (value, renderStyle1) -> PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().withRenderStyle(renderStyle1).build()).renderPureModelContextData(value), pm, "Json to Grammar : Model");
+        long end = System.currentTimeMillis();
+        MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, end);
+        return response;
     }
 
     @POST

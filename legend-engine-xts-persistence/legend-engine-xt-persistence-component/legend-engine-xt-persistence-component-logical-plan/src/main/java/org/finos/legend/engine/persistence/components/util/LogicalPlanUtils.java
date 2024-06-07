@@ -72,7 +72,6 @@ import static org.finos.legend.engine.persistence.components.logicalplan.dataset
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INT;
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INTEGER;
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.VARCHAR;
-import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_BULK_LOAD_EVENT_ID;
 import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_FILE_PATHS;
 import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_FILE_PATTERNS;
 import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_STAGING_FILTERS;
@@ -294,7 +293,7 @@ public class LogicalPlanUtils
         return batchSourceInfoMap;
     }
 
-    public static Map<String, Object> jsonifyBulkLoadSourceInfo(StagedFilesDatasetProperties stagedFilesDatasetProperties, Optional<String> bulkLoadEventIdValue)
+    public static Map<String, Object> jsonifyBulkLoadSourceInfo(StagedFilesDatasetProperties stagedFilesDatasetProperties)
     {
         Map<String, Object> batchSourceInfoMap = new HashMap<>();
 
@@ -308,8 +307,6 @@ public class LogicalPlanUtils
         {
             batchSourceInfoMap.put(BATCH_SOURCE_INFO_FILE_PATTERNS, filePatterns);
         }
-
-        bulkLoadEventIdValue.ifPresent(s -> batchSourceInfoMap.put(BATCH_SOURCE_INFO_BULK_LOAD_EVENT_ID, s));
 
         return batchSourceInfoMap;
     }

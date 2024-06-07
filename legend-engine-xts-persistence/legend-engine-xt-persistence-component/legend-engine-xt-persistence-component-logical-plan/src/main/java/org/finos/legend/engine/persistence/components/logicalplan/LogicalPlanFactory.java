@@ -15,6 +15,8 @@
 package org.finos.legend.engine.persistence.components.logicalplan;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.CsvExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -36,6 +38,7 @@ import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class LogicalPlanFactory
@@ -96,6 +99,27 @@ public class LogicalPlanFactory
         MetadataDataset metadataDataset = datasets.metadataDataset().orElse(MetadataDataset.builder().build());
         MetadataUtils metadataUtils = new MetadataUtils(metadataDataset);
         Selection selection = metadataUtils.getBatchId(mainTable).selection();
+        return LogicalPlan.builder().addOps(selection).build();
+    }
+
+    /*
+        SELECT * FROM batch_metadata as batch_metadata WHERE
+        (batch_metadata."ingest_request_id" = '<ingestRequestId>')
+        AND (batch_metadata."table_name" = '<mainDatasetName>')";
+     */
+    public static LogicalPlan getLogicalPlanForBatchMetaRowsWithExistingIngestRequestId(MetadataDataset metadataDataset, String ingestRequestId, String mainDatasetName)
+    {
+        Dataset dataset = metadataDataset.get();
+        FieldValue ingestRequestField = FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(metadataDataset.ingestRequestIdField()).build();
+        FieldValue tableNameField = FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(metadataDataset.tableNameField()).build();
+        List<Condition> conditions = new ArrayList<>();
+        conditions.add(Equals.of(ingestRequestField, StringValue.of(ingestRequestId)));
+        conditions.add(Equals.of(tableNameField, StringValue.of(mainDatasetName)));
+        Selection selection = Selection.builder()
+                .source(dataset)
+                .addFields(All.INSTANCE)
+                .condition(And.of(conditions))
+                .build();
         return LogicalPlan.builder().addOps(selection).build();
     }
 

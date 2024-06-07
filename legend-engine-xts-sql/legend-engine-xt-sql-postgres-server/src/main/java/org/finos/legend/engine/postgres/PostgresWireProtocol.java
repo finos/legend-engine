@@ -30,6 +30,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
@@ -43,6 +44,7 @@ import org.finos.legend.engine.postgres.types.PGTypes;
 import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
+import org.finos.legend.engine.shared.core.operational.Assert;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
@@ -325,7 +327,7 @@ public class PostgresWireProtocol
         @Override
         public void channelRead0(ChannelHandlerContext ctx, ByteBuf buffer) throws Exception
         {
-            assert channel != null : "Channel must be initialized";
+            Assert.assertTrue(channel != null, () -> "Channel must be initialized");
             try
             {
                 dispatchState(buffer, channel);
@@ -541,7 +543,7 @@ public class PostgresWireProtocol
 
     private void finishAuthentication(Channel channel)
     {
-        assert authContext != null : "finishAuthentication() requires an authContext instance";
+        Assert.assertTrue(authContext != null, () -> "finishAuthentication() requires an authContext instance");
         try
         {
             Identity authenticatedUser = authContext.authenticate();
@@ -561,7 +563,7 @@ public class PostgresWireProtocol
 
     private void finishAuthentication(Channel channel, Subject delegSubject)
     {
-        assert authContext != null : "finishAuthentication() requires an authContext instance";
+        Assert.assertTrue(authContext != null, () -> "finishAuthentication() requires an authContext instance");
         try
         {
             Identity authenticatedUser = KerberosIdentityProvider.getIdentityForSubject(delegSubject);
@@ -846,6 +848,7 @@ public class PostgresWireProtocol
         }
         catch (Exception e)
         {
+            span.setStatus(StatusCode.ERROR, "Failed to handle describe message");
             span.recordException(e);
             OpenTelemetryUtil.TOTAL_FAILURE_METADATA.add(1);
             throw e;
@@ -932,6 +935,7 @@ public class PostgresWireProtocol
         }
         catch (Exception e)
         {
+            span.setStatus(StatusCode.ERROR, "Failed to execute");
             span.recordException(e);
             throw PostgresServerException.wrapException(e);
         }
@@ -1017,7 +1021,7 @@ public class PostgresWireProtocol
         try (Scope scope = span.makeCurrent())
         {
             String queryString = readCString(buffer);
-            assert queryString != null : "query must not be nulL";
+            Assert.assertTrue(queryString != null, () -> "query must not be nulL");
             span.setAttribute("query", queryString);
 
             if (queryString.isEmpty() || ";".equals(queryString))
@@ -1037,6 +1041,7 @@ public class PostgresWireProtocol
         }
         catch (Exception e)
         {
+            span.setStatus(StatusCode.ERROR, "Failed to handle simple query");
             span.recordException(e);
             throw e;
         }

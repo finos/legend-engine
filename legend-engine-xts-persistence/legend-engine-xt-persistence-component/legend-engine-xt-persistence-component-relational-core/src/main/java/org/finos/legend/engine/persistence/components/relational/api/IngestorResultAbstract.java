@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components.relational.api;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
+import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Style;
 
@@ -48,4 +49,10 @@ public abstract class IngestorResultAbstract
     public abstract Optional<String> message();
 
     public abstract String ingestionTimestampUTC();
+
+    @Value.Default
+    public boolean previouslyProcessed()
+    {
+        return false;
+    }
 }

@@ -22,6 +22,8 @@
 package org.finos.legend.engine.postgres.types;
 
 import io.netty.buffer.ByteBuf;
+import org.finos.legend.engine.shared.core.operational.Assert;
+
 import java.nio.charset.StandardCharsets;
 
 class VarCharType extends PGType<Object>
@@ -69,7 +71,7 @@ class VarCharType extends PGType<Object>
     @Override
     public int writeAsBinary(ByteBuf buffer, Object value)
     {
-        assert value instanceof String : "value must be string, got: " + value;
+        Assert.assertTrue(value instanceof String, () -> "value must be string, got: " + value);
         String string = (String) value;
         int writerIndex = buffer.writerIndex();
         buffer.writeInt(0);
@@ -87,7 +89,7 @@ class VarCharType extends PGType<Object>
     @Override
     protected byte[] encodeAsUTF8Text(Object value)
     {
-        assert value instanceof String : "value must be string, got: " + value;
+        Assert.assertTrue(value instanceof String, () -> "value must be string, got: " + value);
         String string = (String) value;
         return string.getBytes(StandardCharsets.UTF_8);
     }
