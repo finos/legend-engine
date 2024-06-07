@@ -24,6 +24,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.api.input.FunctionActivatorInput;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
+import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorLoader;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
@@ -41,6 +42,8 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
+import org.finos.legend.engine.shared.core.operational.prometheus.Prometheus;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_FunctionActivator;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.pac4j.core.profile.CommonProfile;
@@ -48,8 +51,10 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import java.util.List;
 
@@ -99,21 +104,27 @@ public class FunctionActivatorAPI
     @ApiOperation(value = "Validate that the functions can be properly activated by the activator.")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response validate(FunctionActivatorInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    @Prometheus(name = "FunctionActivator validate", doc = "Function Activator validate duration histogram")
+    public Response validate(FunctionActivatorInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
         try
         {
+            long start = System.currentTimeMillis();
             String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;
             PureModel pureModel = modelManager.loadModel(input.model, clientVersion, identity, null);
             Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
             FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = getActivatorService(activator, pureModel);
-            return Response.ok(objectMapper.writeValueAsString(service.validate(Identity.makeIdentity(profiles), pureModel, activator, input.model, routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
+            MutableList<? extends FunctionActivatorError> validate = service.validate(Identity.makeIdentity(profiles), pureModel, activator, input.model, routerExtensions);
+            long end = System.currentTimeMillis();
+            MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, end);
+            return Response.ok(objectMapper.writeValueAsString(validate)).type(MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
         {
             ex.printStackTrace();
+            MetricsHandler.observeError(LoggingEventType.FUNCTION_ACTIVATOR_VALIDATE_ERROR, ex, null);
             return ExceptionTool.exceptionManager(ex, LoggingEventType.CATCH_ALL, identity.getName());
         }
     }
@@ -123,21 +134,27 @@ public class FunctionActivatorAPI
     @ApiOperation(value = "Public the activator to a sandbox environment. Production deployment will occur using the SDLC pipeline.")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response publishToSandbox(FunctionActivatorInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    @Prometheus(name = "FunctionActivator publishToSandbox", doc = "Function Activator publishToSandbox duration histogram")
+    public Response publishToSandbox(FunctionActivatorInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
         try
         {
+            long start = System.currentTimeMillis();
             String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;
             PureModel pureModel = modelManager.loadModel(input.model, clientVersion, identity, null);
             Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
             FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = getActivatorService(activator,pureModel);
-            return Response.ok(objectMapper.writeValueAsString(service.publishToSandbox(Identity.makeIdentity(profiles), pureModel, activator, input.model, service.selectConfig(this.runtimeDeploymentConfig),  routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
+            DeploymentResult deploymentResult = service.publishToSandbox(Identity.makeIdentity(profiles), pureModel, activator, input.model, service.selectConfig(this.runtimeDeploymentConfig), routerExtensions);
+            long end = System.currentTimeMillis();
+            MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, end);
+            return Response.ok(objectMapper.writeValueAsString(deploymentResult)).type(MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
         {
             ex.printStackTrace();
+            MetricsHandler.observeError(LoggingEventType.FUNCTION_ACTIVATOR_PUBLISHTOSANDBOX_ERROR, ex, null);
             return ExceptionTool.exceptionManager(ex, LoggingEventType.CATCH_ALL, identity.getName());
         }
     }
