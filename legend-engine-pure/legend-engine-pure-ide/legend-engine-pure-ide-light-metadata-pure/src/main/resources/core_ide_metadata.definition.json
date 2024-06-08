@@ -3,7 +3,6 @@
   "pattern": "(meta::alloy|meta::protocols)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
     "core",
     "core_relational",
     "core_servicestore"

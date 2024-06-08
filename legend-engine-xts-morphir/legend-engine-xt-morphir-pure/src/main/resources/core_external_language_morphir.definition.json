@@ -3,7 +3,6 @@
   "pattern": "(meta::external::language::morphir)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
     "platform_functions_json",
     "core",
     "core_generation"

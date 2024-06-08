@@ -3,7 +3,6 @@
   "pattern": "(meta::external::language::daml)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
     "core",
     "core_generation",
     "core_external_language_haskell"

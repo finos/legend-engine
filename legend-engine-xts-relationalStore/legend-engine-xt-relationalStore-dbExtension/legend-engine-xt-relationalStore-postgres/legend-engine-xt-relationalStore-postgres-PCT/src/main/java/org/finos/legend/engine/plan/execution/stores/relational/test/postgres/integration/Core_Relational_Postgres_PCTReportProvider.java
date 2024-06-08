@@ -41,7 +41,7 @@ public class Core_Relational_Postgres_PCTReportProvider implements PCTReportProv
                                 AdapterReport.class
                         ),
                         JsonMapper.builder().build().readValue(
-                                Core_Relational_Postgres_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_basic_compiled_Postgres.json"),
+                                Core_Relational_Postgres_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_essential_compiled_Postgres.json"),
                                 AdapterReport.class
                         ),
                         JsonMapper.builder().build().readValue(

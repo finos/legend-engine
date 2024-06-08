@@ -37,7 +37,7 @@
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
                         <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_BaseFunction_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_BasicFunction_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_EssentialFunction_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_GrammarFunction_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_RelationFunction_PCT</PCTTestSuite>
                     </PCTTestSuites>

@@ -40,7 +40,7 @@ public class Core_Relational_Snowflake_PCTReportProvider implements PCTReportPro
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
-                            Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_basic_compiled_Snowflake.json"),
+                            Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_essential_compiled_Snowflake.json"),
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
