@@ -62,7 +62,7 @@
                                     org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_BaseFunctions_PCT
                                 </PCTTestSuite>
                                 <PCTTestSuite>
-                                    org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_BasicFunctions_PCT
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_EssentialFunctions_PCT
                                 </PCTTestSuite>
                                 <PCTTestSuite>
                                     org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_GrammarFunctions_PCT

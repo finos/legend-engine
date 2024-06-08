@@ -48,7 +48,7 @@
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_BaseFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_BasicFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_EssentialFunctions_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_GrammarFunctions_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_RelationFunctions_PCT</PCTTestSuite>
                     </PCTTestSuites>

@@ -407,7 +407,7 @@ public class TestServiceRunner
         this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeCustomPattern__String_1_", "{\"birthDate\":\"12/27/2014 at 03:01PM GMT\"}");
 
         RuntimeException e1 = Assert.assertThrows(RuntimeException.class, () -> new SimpleM2MServiceRunnerForDateTimeSerialization("test::serializeInvalidDateTimeFormat__String_1_"));
-        Assert.assertEquals("Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"yyyy-MM-dd\"T\"HH:mmm:ss.SSSZ is not a valid dateTime format in SerializationConfig\"", e1.getMessage());
+        Assert.assertEquals("Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:26 column:5), \"yyyy-MM-dd\"T\"HH:mmm:ss.SSSZ is not a valid dateTime format in SerializationConfig\"", e1.getMessage());
     }
 
     private static class SimpleM2MServiceRunnerForVarConflict extends AbstractServicePlanExecutor

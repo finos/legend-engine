@@ -3,7 +3,6 @@
   "pattern": "(meta::analytics::search|meta::pure::search)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
     "platform_dsl_store",
     "platform_dsl_mapping",
     "platform_functions_json",

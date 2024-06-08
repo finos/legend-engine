@@ -3,7 +3,6 @@
   "pattern": "(meta::pure::generation|meta::protocols)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
     "core_functions"
   ]
 }

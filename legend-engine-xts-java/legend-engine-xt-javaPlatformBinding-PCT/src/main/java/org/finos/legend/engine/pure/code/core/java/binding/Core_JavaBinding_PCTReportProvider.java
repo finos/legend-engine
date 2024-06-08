@@ -40,7 +40,7 @@ public class Core_JavaBinding_PCTReportProvider implements PCTReportProvider
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
-                            Core_JavaBinding_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_basic_compiled_Java.json"),
+                            Core_JavaBinding_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_essential_compiled_Java.json"),
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(
