@@ -31,6 +31,7 @@ public interface JdbcPropertiesToLogicalDataTypeMapping extends TypeMapping
     String NUMERIC = "NUMERIC";
     String DOUBLE = "DOUBLE";
     String REAL = "REAL";
+    String FLOAT = "FLOAT";
     String FLOAT4 = "FLOAT4";
     String FLOAT8 = "FLOAT8";
     String CHAR = "CHAR";
@@ -42,6 +43,7 @@ public interface JdbcPropertiesToLogicalDataTypeMapping extends TypeMapping
     String VARBINARY = "VARBINARY";
     String BYTEA = "BYTEA";
     String BIT = "BIT";
+    String BLOB = "BLOB";
     String BOOL = "BOOL";
     String BOOLEAN = "BOOLEAN";
     String DATE = "DATE";

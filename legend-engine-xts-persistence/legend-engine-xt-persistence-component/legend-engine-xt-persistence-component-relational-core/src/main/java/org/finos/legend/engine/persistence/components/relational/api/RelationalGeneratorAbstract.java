@@ -39,6 +39,7 @@ import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.MetadataUtils;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.finos.legend.engine.persistence.components.util.ValidationCategory;
+import org.immutables.value.Value;
 import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
@@ -192,6 +193,15 @@ public abstract class RelationalGeneratorAbstract
         relationalSink().optimizerForCaseConversion(caseConversion()).ifPresent(builder::addOptimizers);
 
         return builder.build();
+    }
+
+    @Value.Check
+    public void validate()
+    {
+        if (!relationalSink().isIngestModeSupported(ingestMode()))
+        {
+            throw new UnsupportedOperationException("Unsupported ingest mode");
+        }
     }
 
     // ---------- API ----------

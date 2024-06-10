@@ -33,11 +33,11 @@ public class CastFunctionVisitor implements LogicalPlanVisitor<CastFunction>
     {
         DataType dataType = new SnowflakeDataTypeMapping().getDataType(current.type());
 
-        org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.values.CastFunction castFunction =
-            new org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.values.CastFunction(dataType, context.quoteIdentifier());
+        org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.CastFunction castFunction =
+            new org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.CastFunction(dataType, context.quoteIdentifier());
         for (Optimizer optimizer : context.optimizers())
         {
-            castFunction = (org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.values.CastFunction) optimizer.optimize(castFunction);
+            castFunction = (org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.CastFunction) optimizer.optimize(castFunction);
         }
         prev.push(castFunction);
 

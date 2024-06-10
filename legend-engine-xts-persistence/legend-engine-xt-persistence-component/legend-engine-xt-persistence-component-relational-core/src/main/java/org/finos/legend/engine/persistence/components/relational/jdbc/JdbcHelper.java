@@ -52,7 +52,7 @@ public class JdbcHelper implements RelationalExecutionHelper
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(JdbcHelper.class);
 
-    private final Connection connection;
+    protected final Connection connection;
     private JdbcTransactionManager transactionManager;
 
     public static final String TYPE_NAME = "TYPE_NAME";
@@ -70,7 +70,7 @@ public class JdbcHelper implements RelationalExecutionHelper
         return new JdbcHelper(connection);
     }
 
-    private JdbcHelper(Connection connection)
+    protected JdbcHelper(Connection connection)
     {
         this.connection = connection;
     }
@@ -319,10 +319,10 @@ public class JdbcHelper implements RelationalExecutionHelper
             for (String indexName : indexMap.keySet())
             {
                 Index index = Index.builder()
-                        .indexName(indexName)
-                        .addAllColumns(indexMap.get(indexName))
-                        .unique(!indexNonUniqueMap.get(indexName))
-                        .build();
+                    .indexName(indexName)
+                    .addAllColumns(indexMap.get(indexName))
+                    .unique(!indexNonUniqueMap.get(indexName))
+                    .build();
                 indices.add(index);
             }
 

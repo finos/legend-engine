@@ -58,7 +58,6 @@ import org.immutables.value.Value.Style;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -206,6 +205,11 @@ public abstract class RelationalIngestorAbstract
         if (enableIdempotencyCheck() && (!enableConcurrentSafety() || !ingestRequestId().isPresent()))
         {
             throw new IllegalStateException("If IdempotencyCheck is enabled, concurrentSafety must be enabled and IngestRequestId must be present");
+        }
+
+        if (!relationalSink().isIngestModeSupported(ingestMode()))
+        {
+            throw new UnsupportedOperationException("Unsupported ingest mode");
         }
     }
 
@@ -979,19 +983,15 @@ public abstract class RelationalIngestorAbstract
             {
                 Object lowerBound = optimizationFilters.get().get(filter).getOne();
                 Object upperBound = optimizationFilters.get().get(filter).getTwo();
-                if (lowerBound instanceof Date)
-                {
-                    placeHolderKeyValues.put(filter.lowerBoundPattern(), PlaceholderValue.of(lowerBound.toString(), true));
-                    placeHolderKeyValues.put(filter.upperBoundPattern(), PlaceholderValue.of(upperBound.toString(), true));
-                }
-                else if (lowerBound instanceof Number)
+                if (lowerBound instanceof Number)
                 {
                     placeHolderKeyValues.put(SINGLE_QUOTE + filter.lowerBoundPattern() + SINGLE_QUOTE, PlaceholderValue.of(lowerBound.toString(), true));
                     placeHolderKeyValues.put(SINGLE_QUOTE + filter.upperBoundPattern() + SINGLE_QUOTE, PlaceholderValue.of(upperBound.toString(), true));
                 }
                 else
                 {
-                    throw new IllegalStateException("Unexpected data type for optimization filter");
+                    placeHolderKeyValues.put(filter.lowerBoundPattern(), PlaceholderValue.of(lowerBound.toString(), true));
+                    placeHolderKeyValues.put(filter.upperBoundPattern(), PlaceholderValue.of(upperBound.toString(), true));
                 }
             }
         }
