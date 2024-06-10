@@ -3,12 +3,10 @@
   "authenticationMethod": "GSS",
   "identityType": "KERBEROS",
   "handler": {
+    "className": "org.finos.legend.engine.postgres.config.LegendHandlerConfig",
     "protocol": "http",
     "host": "localhost",
-    "port": "123",
-    "projectId": "project",
-    "sessionCookie": "cookie",
-    "type": "LEGEND"
+    "port": "123"
   },
   "gss": {
     "kerberosConfigFile": "/etc/krb5.conf",

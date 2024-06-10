@@ -312,7 +312,8 @@ public class RelationalExecutor
         try
         {
             sqlComment = sqlComment != null ? FreeMarkerExecutor.process(sqlComment, executionState, databaseTypeName, databaseTimeZone) : null;
-            sqlQuery = FreeMarkerExecutor.process(sqlQuery, executionState, databaseTypeName, databaseTimeZone);
+            RelationalStoreExecutionState relationalStoreExecutionState = (RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational);
+            sqlQuery = relationalStoreExecutionState.ignoreFreeMarkerProcessing() ? sqlQuery : FreeMarkerExecutor.process(sqlQuery, executionState, databaseTypeName, databaseTimeZone);
             Span span = GlobalTracer.get().activeSpan();
             if (span != null && shouldLogSQL && executionState.logSQLWithParamValues())
             {

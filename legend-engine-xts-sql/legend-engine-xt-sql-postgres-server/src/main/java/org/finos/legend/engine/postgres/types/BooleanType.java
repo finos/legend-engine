@@ -23,6 +23,8 @@ package org.finos.legend.engine.postgres.types;
 
 import com.google.common.collect.ImmutableList;
 import io.netty.buffer.ByteBuf;
+import org.finos.legend.engine.shared.core.operational.Assert;
+
 import java.nio.ByteBuffer;
 import java.util.Collection;
 
@@ -87,8 +89,8 @@ class BooleanType extends PGType<Boolean>
     @Override
     public Boolean readBinaryValue(ByteBuf buffer, int valueLength)
     {
-        assert valueLength == TYPE_LEN : "length should be " + TYPE_LEN +
-                " because boolean is just a byte. Actual length: " + valueLength;
+        Assert.assertTrue(valueLength == TYPE_LEN, () -> "length should be " + TYPE_LEN +
+                " because boolean is just a byte. Actual length: " + valueLength);
         byte value = buffer.readByte();
         switch (value)
         {

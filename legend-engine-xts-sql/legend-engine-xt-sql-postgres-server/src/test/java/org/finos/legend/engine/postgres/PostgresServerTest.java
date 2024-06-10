@@ -65,7 +65,7 @@ public class PostgresServerTest
 
         testPostgresServer = new TestPostgresServer(serverConfig, legendSessionFactory,
                 (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()),
-                new Messages((exception) -> exception.getMessage()));
+                new Messages(Throwable::getMessage));
         testPostgresServer.startUp();
     }
 
@@ -107,10 +107,11 @@ public class PostgresServerTest
         }
     }
 
-    @Test
     /**
      * Verify that schema created as part of the metadata H2 DB creation exits
+     * @throws SQLException on errors
      */
+    @Test
     public void testInitSchemaCreation() throws SQLException
     {
         try (

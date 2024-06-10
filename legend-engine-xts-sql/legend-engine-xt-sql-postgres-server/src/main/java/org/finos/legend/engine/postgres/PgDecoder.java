@@ -26,6 +26,8 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.ssl.SslContext;
+import org.finos.legend.engine.shared.core.operational.Assert;
+
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -169,8 +171,8 @@ public class PgDecoder extends ByteToMessageDecoder
 
     public void startupDone()
     {
-        assert state == State.STARTUP_PARAMETERS
-                : "Must only call startupDone if state == STARTUP_PARAMETERS";
+        Assert.assertTrue(state == State.STARTUP_PARAMETERS,
+                () -> "Must only call startupDone if state == STARTUP_PARAMETERS");
         state = State.MSG;
     }
 

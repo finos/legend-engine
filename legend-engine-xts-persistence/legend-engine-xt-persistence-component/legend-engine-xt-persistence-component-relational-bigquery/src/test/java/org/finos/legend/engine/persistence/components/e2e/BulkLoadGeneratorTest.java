@@ -110,7 +110,7 @@ public class BulkLoadGeneratorTest extends BigQueryEndToEndTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadEventIdValue(EVENT_ID)
+            .ingestRequestId(EVENT_ID)
             .bulkLoadBatchStatusPattern("{STATUS}")
             .build();
 
@@ -210,7 +210,7 @@ public class BulkLoadGeneratorTest extends BigQueryEndToEndTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadEventIdValue(EVENT_ID)
+            .ingestRequestId(EVENT_ID)
             .bulkLoadBatchStatusPattern("{STATUS}")
             .build();
 

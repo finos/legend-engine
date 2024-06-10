@@ -141,7 +141,7 @@ public class BulkLoadTest
                 .relationalSink(SnowflakeSink.get())
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
-                .bulkLoadEventIdValue("task123")
+                .ingestRequestId("task123")
                 .batchIdPattern("{NEXT_BATCH_ID}")
                 .ingestRunId(ingestRunId)
                 .build();
@@ -167,8 +167,8 @@ public class BulkLoadTest
                 "FILE_FORMAT = (FIELD_DELIMITER = ',', TYPE = 'CSV')" +
                 " ON_ERROR = 'ABORT_STATEMENT'";
 
-        String expectedMetadataIngestSql = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\") " +
-                "(SELECT 'my_name',{NEXT_BATCH_ID},'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"event_id\":\"task123\",\"file_patterns\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
+        String expectedMetadataIngestSql = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"ingest_request_id\", \"batch_source_info\") " +
+                "(SELECT 'my_name',{NEXT_BATCH_ID},'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}','task123',PARSE_JSON('{\"file_patterns\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
         String expectedDryRunPreActionsSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name_validation_lp_yosulf\"" +
                 "(\"col_int\" INTEGER,\"col_integer\" INTEGER)";
@@ -222,7 +222,7 @@ public class BulkLoadTest
                 .ingestMode(bulkLoad)
                 .relationalSink(SnowflakeSink.get())
                 .collectStatistics(true)
-                .bulkLoadEventIdValue("task123")
+                .ingestRequestId("task123")
                 .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
                 .batchSuccessStatusValue("SUCCEEDED")
                 .executionTimestampClock(fixedClock_2000_01_01)
@@ -245,11 +245,11 @@ public class BulkLoadTest
                 "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') " +
                 "FILE_FORMAT = (TYPE = 'AVRO') " +
                 "ON_ERROR = 'ABORT_STATEMENT'";
-        String expectedMetaIngestSql = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\", \"additional_metadata\") " +
+        String expectedMetaIngestSql = "INSERT INTO batch_metadata " +
+                "(\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"ingest_request_id\", \"batch_source_info\", \"additional_metadata\") " +
                 "(SELECT 'my_name',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME')," +
-                "'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}'," +
-                "PARSE_JSON('{\"event_id\":\"task123\",\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}')," +
-                "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
+                "'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}','task123'," +
+                "PARSE_JSON('{\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'),PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
@@ -460,7 +460,7 @@ public class BulkLoadTest
                     .relationalSink(SnowflakeSink.get())
                     .collectStatistics(true)
                     .executionTimestampClock(fixedClock_2000_01_01)
-                    .bulkLoadEventIdValue("task123")
+                    .ingestRequestId("task123")
                     .ingestRunId(ingestRunId)
                     .build();
 
@@ -501,7 +501,7 @@ public class BulkLoadTest
                 .relationalSink(SnowflakeSink.get())
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
-                .bulkLoadEventIdValue("task123")
+                .ingestRequestId("task123")
                 .ingestRunId(ingestRunId)
                 .build();
 
@@ -568,7 +568,7 @@ public class BulkLoadTest
             .relationalSink(SnowflakeSink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadEventIdValue("task123")
+            .ingestRequestId("task123")
             .ingestRunId(ingestRunId)
             .build();
 
@@ -700,7 +700,7 @@ public class BulkLoadTest
             .relationalSink(SnowflakeSink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadEventIdValue("task123")
+            .ingestRequestId("task123")
             .ingestRunId(ingestRunId)
             .build();
 
@@ -765,7 +765,7 @@ public class BulkLoadTest
             .relationalSink(SnowflakeSink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadEventIdValue("task123")
+            .ingestRequestId("task123")
             .ingestRunId(ingestRunId)
             .build();
 

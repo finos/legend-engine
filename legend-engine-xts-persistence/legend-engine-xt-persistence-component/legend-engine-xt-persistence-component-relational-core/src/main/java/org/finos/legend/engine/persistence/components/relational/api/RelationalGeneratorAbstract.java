@@ -66,7 +66,6 @@ public abstract class RelationalGeneratorAbstract
 {
 
     public static final String BULK_LOAD_BATCH_STATUS_PATTERN = "{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}";
-
     //---------- FLAGS ----------
 
     @Default
@@ -77,6 +76,12 @@ public abstract class RelationalGeneratorAbstract
 
     @Default
     public boolean collectStatistics()
+    {
+        return false;
+    }
+
+    @Default
+    public boolean writeStatistics()
     {
         return false;
     }
@@ -123,7 +128,7 @@ public abstract class RelationalGeneratorAbstract
 
     public abstract Map<String, Object> additionalMetadata();
 
-    public abstract Optional<String> bulkLoadEventIdValue();
+    public abstract Optional<String> ingestRequestId();
 
     @Default
     public String bulkLoadBatchStatusPattern()
@@ -161,11 +166,12 @@ public abstract class RelationalGeneratorAbstract
         return PlannerOptions.builder()
             .cleanupStagingData(cleanupStagingData())
             .collectStatistics(collectStatistics())
+            .writeStatistics(writeStatistics())
             .enableSchemaEvolution(enableSchemaEvolution())
             .skipMainAndMetadataDatasetCreation(skipMainAndMetadataDatasetCreation())
             .enableConcurrentSafety(enableConcurrentSafety())
             .putAllAdditionalMetadata(additionalMetadata())
-            .bulkLoadEventIdValue(bulkLoadEventIdValue())
+            .ingestRequestId(ingestRequestId())
             .batchSuccessStatusValue(batchSuccessStatusValue())
             .sampleRowCount(sampleRowCount())
             .ingestRunId(ingestRunId())

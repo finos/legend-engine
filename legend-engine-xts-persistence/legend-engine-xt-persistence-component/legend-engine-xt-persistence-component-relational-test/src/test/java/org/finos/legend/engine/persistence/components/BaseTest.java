@@ -65,6 +65,7 @@ public class BaseTest
     protected String mainTableName = "main";
     protected String mainTableAlias = "sink";
     protected String ingestRunId = "075605e3-bada-47d7-9ae9-7138f392fe22";
+    protected String ingestRequestId = "123456789";
 
     protected String stagingDbName = "mydb";
     protected String stagingTableName = "staging";
