@@ -53,6 +53,7 @@ import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapabi
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -88,6 +89,7 @@ public class SchemaEvolution
     private final Sink sink;
     private final IngestMode ingestMode;
     private final Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet;
+    private final boolean ignoreCase;
 
     /*
         1. Validate that nothing has changed with the primary keys of the main table.
@@ -96,11 +98,12 @@ public class SchemaEvolution
         4. Generate the logical operation and modify the schema of the main dataset object.
      */
 
-    public SchemaEvolution(Sink sink, IngestMode ingestMode, Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet)
+    public SchemaEvolution(Sink sink, IngestMode ingestMode, Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet, boolean ignoreCase)
     {
         this.sink = sink;
         this.ingestMode = ingestMode;
         this.schemaEvolutionCapabilitySet = schemaEvolutionCapabilitySet;
+        this.ignoreCase = ignoreCase;
     }
 
     public SchemaEvolutionResult buildLogicalPlanForSchemaEvolution(Dataset mainDataset, SchemaDefinition stagingDataset)
@@ -118,11 +121,11 @@ public class SchemaEvolution
 
     private void validatePrimaryKeys(Dataset mainDataset, SchemaDefinition stagingDataset)
     {
-        List<Field> stagingFilteredFields = stagingDataset.fields().stream().filter(field -> !(ingestMode.accept(STAGING_TABLE_FIELDS_TO_IGNORE).contains(field.name()))).collect(Collectors.toList());
+        List<Field> stagingFilteredFields = stagingDataset.fields().stream().filter(field -> !collectionContainsElement(ingestMode.accept(STAGING_TABLE_FIELDS_TO_IGNORE), field.name())).collect(Collectors.toList());
         Set<String> stagingPkNames = stagingFilteredFields.stream().filter(Field::primaryKey).map(Field::name).collect(Collectors.toSet());
-        List<Field> mainFilteredFields = mainDataset.schema().fields().stream().filter(field -> !(ingestMode.accept(MAIN_TABLE_FIELDS_TO_IGNORE).contains(field.name()))).collect(Collectors.toList());
+        List<Field> mainFilteredFields = mainDataset.schema().fields().stream().filter(field -> !collectionContainsElement(ingestMode.accept(MAIN_TABLE_FIELDS_TO_IGNORE), field.name())).collect(Collectors.toList());
         Set<String> mainPkNames = mainFilteredFields.stream().filter(Field::primaryKey).map(Field::name).collect(Collectors.toSet());
-        if (!Objects.equals(stagingPkNames, mainPkNames))
+        if (!areEqual(stagingPkNames, mainPkNames))
         {
             throw new IncompatibleSchemaChangeException("Primary keys for main table has changed which is not allowed");
         }
@@ -134,11 +137,11 @@ public class SchemaEvolution
         List<Operation> operations = new ArrayList<>();
         List<Field> mainFields = mainDataset.schema().fields();
         List<Field> stagingFields = stagingDataset.fields();
-        List<Field> filteredFields = stagingFields.stream().filter(field -> !fieldsToIgnore.contains(field.name())).collect(Collectors.toList());
+        List<Field> filteredFields = stagingFields.stream().filter(field -> !collectionContainsElement(fieldsToIgnore, field.name())).collect(Collectors.toList());
         for (Field stagingField : filteredFields)
         {
             String stagingFieldName = stagingField.name();
-            Field matchedMainField = mainFields.stream().filter(mainField -> mainField.name().equals(stagingFieldName)).findFirst().orElse(null);
+            Field matchedMainField = mainFields.stream().filter(mainField -> areEqual(mainField.name(), stagingFieldName)).findFirst().orElse(null);
             if (matchedMainField == null)
             {
                 // Add the new column in the main table if database supports ADD_COLUMN capability and
@@ -179,9 +182,9 @@ public class SchemaEvolution
                         // If the datatype is a non-breaking change, we alter the datatype.
                         // We also alter the length if required (pick the maximum length)
                         else if (sink.capabilities().contains(Capability.EXPLICIT_DATA_TYPE_CONVERSION)
-                                && sink.supportsExplicitMapping(matchedMainField.type().dataType(), stagingFieldType.dataType()))
+                                && schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_CONVERSION))
                         {
-                            if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_CONVERSION))
+                            if (sink.supportsExplicitMapping(matchedMainField.type().dataType(), stagingFieldType.dataType()))
                             {
                                 //Modify the column in main table
                                 Field newField = sink.evolveFieldLength(matchedMainField, stagingField);
@@ -189,14 +192,13 @@ public class SchemaEvolution
                             }
                             else
                             {
-                                throw new IncompatibleSchemaChangeException(String.format("Explicit data type conversion from \"%s\" to \"%s\" couldn't be performed since user capability does not allow it", matchedMainField.type().dataType(), stagingFieldType.dataType()));
+                                throw new IncompatibleSchemaChangeException(String.format("Breaking schema change from datatype \"%s\" to \"%s\"", matchedMainField.type().dataType(), stagingFieldType.dataType()));
                             }
                         }
-
-                        //Else, it is a breaking change. We throw an exception
+                        //Else, no operations is allowed, we throw an exception
                         else
                         {
-                            throw new IncompatibleSchemaChangeException(String.format("Breaking schema change from datatype \"%s\" to \"%s\"", matchedMainField.type().dataType(), stagingFieldType.dataType()));
+                            throw new IncompatibleSchemaChangeException(String.format("Explicit data type conversion from \"%s\" to \"%s\" couldn't be performed since sink/user capability does not allow it", matchedMainField.type().dataType(), stagingFieldType.dataType()));
                         }
                     }
                     //If data types are same, we check if length requires any evolution
@@ -225,22 +227,22 @@ public class SchemaEvolution
     {
         if (!mainDataField.equals(newField))
         {
-            // If there are any data type length changes, make sure user capability allows it before creating the alter statement
+            // If there are any data type length changes, make sure sink/user capability allows it before creating the alter statement
             if (!Objects.equals(mainDataField.type().length(), newField.type().length()))
             {
                 if (!sink.capabilities().contains(Capability.DATA_TYPE_LENGTH_CHANGE)
                         || (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE)))
                 {
-                    throw new IncompatibleSchemaChangeException(String.format("Data type length changes couldn't be performed on column \"%s\" since user capability does not allow it", newField.name()));
+                    throw new IncompatibleSchemaChangeException(String.format("Data type length changes couldn't be performed on column \"%s\" since sink/user capability does not allow it", newField.name()));
                 }
             }
-            // If there are any data type scale changes, make sure user capability allows it before creating the alter statement
+            // If there are any data type scale changes, make sure sink/user capability allows it before creating the alter statement
             if (!Objects.equals(mainDataField.type().scale(), newField.type().scale()))
             {
                 if (!sink.capabilities().contains(Capability.DATA_TYPE_SCALE_CHANGE)
                         || (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE)))
                 {
-                    throw new IncompatibleSchemaChangeException(String.format("Data type scale changes couldn't be performed on column \"%s\" since user capability does not allow it", newField.name()));
+                    throw new IncompatibleSchemaChangeException(String.format("Data type scale changes couldn't be performed on column \"%s\" since sink/user capability does not allow it", newField.name()));
                 }
             }
             // Create the alter statement for changing the data type and sizing as required
@@ -279,10 +281,10 @@ public class SchemaEvolution
         List<Operation> operations = new ArrayList<>();
         List<Field> mainFields = mainDataset.schema().fields();
         Set<String> stagingFieldNames = stagingDataset.fields().stream().map(Field::name).collect(Collectors.toSet());
-        for (Field mainField : mainFields.stream().filter(field -> !fieldsToIgnore.contains(field.name())).collect(Collectors.toList()))
+        for (Field mainField : mainFields.stream().filter(field -> !collectionContainsElement(fieldsToIgnore, field.name())).collect(Collectors.toList()))
         {
             String mainFieldName = mainField.name();
-            if (!stagingFieldNames.contains(mainFieldName))
+            if (!collectionContainsElement(stagingFieldNames, mainFieldName))
             {
                 //Modify the column to nullable in main table
                 if (!mainField.nullable())
@@ -301,12 +303,36 @@ public class SchemaEvolution
 
         List<Field> evolvedFields = schema.fields()
                 .stream()
-                .filter(f -> !modifiedFieldNames.contains(f.name()))
+                .filter(f -> !collectionContainsElement(modifiedFieldNames, f.name()))
                 .collect(Collectors.toList());
 
         evolvedFields.addAll(modifiedFields);
 
         return schema.withFields(evolvedFields);
+    }
+
+    private boolean areEqual(String str1, String str2)
+    {
+        return ignoreCase ? str1.equalsIgnoreCase(str2) : str1.equals(str2);
+    }
+
+    private boolean areEqual(Set<String> set1, Set<String> set2)
+    {
+        if (ignoreCase)
+        {
+            Set<String> upperCasedSet1 = set1.stream().map(String::toUpperCase).collect(Collectors.toSet());
+            Set<String> upperCasedSet2 = set2.stream().map(String::toUpperCase).collect(Collectors.toSet());
+            return Objects.equals(upperCasedSet1, upperCasedSet2);
+        }
+        else
+        {
+            return Objects.equals(set1, set2);
+        }
+    }
+
+    private boolean collectionContainsElement(Collection<String> collection, String target)
+    {
+        return ignoreCase ? collection.stream().anyMatch(element -> element.equalsIgnoreCase(target)) : collection.contains(target);
     }
 
     // ingest mode visitors
