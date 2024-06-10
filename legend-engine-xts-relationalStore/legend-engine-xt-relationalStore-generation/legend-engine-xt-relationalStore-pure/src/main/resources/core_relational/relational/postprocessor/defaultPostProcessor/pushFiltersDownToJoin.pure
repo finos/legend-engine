@@ -92,30 +92,68 @@ function <<access.private>> meta::relational::postProcessor::filterPushDown::try
 
 function <<access.private>> meta::relational::postProcessor::filterPushDown::tryAddingFiltersToSubQuery(subSelect: SelectSQLQuery[1], filteringPairs: List<Pair<TableAliasColumn, RelationalOperationElement>>[1], extensions:Extension[*]): SelectSQLQuery[1]
 {
-   let groupByExists = $subSelect.groupBy->isNotEmpty();
-   let opToUpdate = $groupByExists->if(|$subSelect.havingOperation, |$subSelect.filteringOperation);
-   if ($opToUpdate->size() > 1,
+   if ($filteringPairs.values->isEmpty(),
        | $subSelect,
-       | let newFilters = $filteringPairs.values->map({fp |
-            let selectCol = $subSelect.columns->filter(x | $x->match([
-               a:Alias[1] | ($a.name == $fp.first.column.name) && ($a.relationalElement->instanceOf(TableAliasColumn)), 
-               a:Any[*]   | false
-            ]));
-            if ($selectCol->size() == 1,
-                | let toReplaceWith = $selectCol->toOne()->cast(@Alias).relationalElement->cast(@TableAliasColumn);
-                  let transformFunc = {rel: RelationalOperationElement[1] | if($rel == $fp.first, | $toReplaceWith, | $rel)};
-                  $fp.second->transformNonCached($transformFunc);,
-                | []
-            );
-         });
-         let combinedNewFilter = $newFilters->reverse()->andFilters($extensions);
-
-         if ($combinedNewFilter->isEmpty(),
+       | let elementsInSubSelect = $subSelect->extractRelationalElements(false);
+         let subSelectHasUnknownElementsOrWindowColumns = (!$elementsInSubSelect.noUnknownElement) || $elementsInSubSelect.elements->exists(x | $x->instanceOf(WindowColumn));
+         let subSelectHasFromOrToRow = $subSelect.fromRow->isNotEmpty() || $subSelect.toRow->isNotEmpty();
+         let cannotPushFiltersIntoSubQuery = $subSelectHasUnknownElementsOrWindowColumns || $subSelectHasFromOrToRow || ($subSelect.filteringOperation->size() > 1) || ($subSelect.havingOperation->size() > 1);
+         if ($cannotPushFiltersIntoSubQuery,
              | $subSelect,
-             | let updatedOp = if($opToUpdate->size() == 1, | [$combinedNewFilter->toOne(), $opToUpdate->toOne()]->andFilters($extensions), | $combinedNewFilter);
-               $groupByExists->if(|^$subSelect(havingOperation = $updatedOp), | ^$subSelect(filteringOperation = $updatedOp));
+             | $filteringPairs.values->fold({fp, aggSelect | $aggSelect->tryAddingSingleFilterToSubQuery($fp, $extensions)}, $subSelect);
          );
    );
+}
+
+function <<access.private>> meta::relational::postProcessor::filterPushDown::tryAddingSingleFilterToSubQuery(subSelect: SelectSQLQuery[1], filteringPair: Pair<TableAliasColumn, RelationalOperationElement>[1], extensions:Extension[*]): SelectSQLQuery[1]
+{
+   let groupByExists = $subSelect.groupBy->isNotEmpty();
+
+   let selectCol = $subSelect.columns->filter(x | $x->match([
+      a:Alias[1] | ($a.name == $filteringPair.first.column.name) && $a.relationalElement->resolveIfSingleTableAliasColumnGroup()->instanceOf(TableAliasColumn), 
+      a:Any[*]   | false
+   ]));
+
+   let groupByNames = $subSelect.groupBy->map(column| $column->match([a:Alias[1]|$a.name, c:ColumnName[1]|$c.name, a:Any[*]|[]]));
+   let isGroupingColumn = $groupByNames->contains($filteringPair.first.column.name) || 
+                          (
+                            ($selectCol->size() == 1) && 
+                            $subSelect.groupBy->map(g | $g->resolveIfSingleTableAliasColumnGroup())->exists({x |
+                               let selectTAC = $selectCol->toOne()->cast(@Alias).relationalElement->resolveIfSingleTableAliasColumnGroup()->cast(@TableAliasColumn);
+                               $x->instanceOf(TableAliasColumn) && ($x->cast(@TableAliasColumn).alias.name == $selectTAC.alias.name) && ($x->cast(@TableAliasColumn).column.name == $selectTAC.column.name);
+                            })
+                          );
+   let opToUpdate = if ($groupByExists && (!$isGroupingColumn), 
+                        | $subSelect.havingOperation,
+                        | $subSelect.filteringOperation
+                    );
+
+   let newFilter = if ($selectCol->size() == 1,
+                       | let toReplaceWith = $selectCol->toOne()->cast(@Alias).relationalElement->resolveIfSingleTableAliasColumnGroup();
+                         let transformFunc = {rel: RelationalOperationElement[1] | if($rel == $filteringPair.first, | $toReplaceWith, | $rel)};
+                         $filteringPair.second->transformNonCached($transformFunc);,
+                       | []
+                   );
+
+   if ($newFilter->isEmpty(),
+       | $subSelect,
+       | let updatedOp = if($opToUpdate->size() == 1, | [$newFilter->toOne(), $opToUpdate->toOne()]->andFilters($extensions), | $newFilter);
+         if ($groupByExists && (!$isGroupingColumn), 
+             | ^$subSelect(havingOperation = $updatedOp),
+             | ^$subSelect(filteringOperation = $updatedOp)
+         );
+   );
+}
+
+function <<access.private>> meta::relational::postProcessor::filterPushDown::resolveIfSingleTableAliasColumnGroup(relOp: RelationalOperationElement[1]): RelationalOperationElement[1]
+{
+   $relOp->match([
+      d: DynaFunction[1] | if(($d.name == 'group') && ($d.parameters->size() == 1) && $d.parameters->at(0)->instanceOf(TableAliasColumn),
+                              | $d.parameters->at(0),
+                              | $relOp
+                           ),
+      a: Any[*] | $relOp
+   ])
 }
 
 function <<access.private>> meta::relational::postProcessor::filterPushDown::addFilterToJoinoperation(filteringPairs : Pair<TableAliasColumn, RelationalOperationElement>[*], left: TableAliasColumn[1], right: TableAliasColumn[1], operation: RelationalOperationElement[1], joinTableAlias: TableAlias[1], extensions:Extension[*]):Pair<RelationalOperationElement, List<Pair<TableAliasColumn, RelationalOperationElement>>>[1]
@@ -178,4 +216,85 @@ function <<access.private>> meta::relational::postProcessor::filterPushDown::get
                                                  | [])));,
           column: TableAliasColumn[1]  | pair($column, $column),
           rel: RelationalOperationElement[1] | [] ]) );
+}
+
+Class <<access.private>> meta::relational::postProcessor::filterPushDown::RelationalElementCollection
+{
+  noUnknownElement: Boolean[1];
+  elements: RelationalOperationElement[*];
+}
+
+function <<access.private>> meta::relational::postProcessor::filterPushDown::collection(noUnknownElement: Boolean[1], elements: RelationalOperationElement[*]): RelationalElementCollection[1]
+{
+  ^RelationalElementCollection(noUnknownElement = $noUnknownElement, elements = $elements)
+}
+
+function <<access.private>> meta::relational::postProcessor::filterPushDown::extractRelationalElements(elements: RelationalOperationElement[*], recurseSubQueries: Boolean[1]): RelationalElementCollection[1]
+{
+  let results = $elements->map(el | $el->extractRelationalElements($recurseSubQueries));
+  collection($results.noUnknownElement->and(), $results.elements);
+}
+
+function <<access.private>> meta::relational::postProcessor::filterPushDown::extractRelationalElements(el: RelationalOperationElement[1], recurseSubQueries: Boolean[1]): RelationalElementCollection[1]
+{
+  let results = $el->match([
+    {s: SelectSQLQuery[1] |
+      let fromData = if($s.data->isNotEmpty(), | $s.data->toOne()->extractRelationalElements($recurseSubQueries), | []);
+      let fromOtherElements = $s.columns
+        ->concatenate($s.filteringOperation)
+        ->concatenate($s.groupBy)
+        ->concatenate($s.havingOperation)
+        ->concatenate($s.orderBy.column)
+        ->concatenate($s.fromRow)
+        ->concatenate($s.toRow)
+        ->concatenate($s->match([c:SelectSQLQueryWithCommonTableExpressions[1]|$c.commonTableExpressions, a:Any[*]|[]]))
+        ->extractRelationalElements($recurseSubQueries);
+        $fromData->concatenate($fromOtherElements);
+    },
+    {v: ViewSelectSQLQuery[1] | collection(true, [])},
+    {u: Union[1] | collection(true, [])},
+    {a: TableAlias[1] | collection(true, [])}, // Not recursing on relational element, as it will happen from data
+    {a: Alias[1] | $a.relationalElement->extractRelationalElements($recurseSubQueries)},
+    {t: Table[1] | collection(true, [])},
+    {c: CommonTableExpression[1] | $c.sqlQuery->extractRelationalElements($recurseSubQueries)},
+    {t: CommonTableExpressionReference[1] | collection(true, [])},
+    {t: TableAliasColumn[1] | $t.column->extractRelationalElements($recurseSubQueries)}, // Not recursing on alias, as it will happen from data
+    {a: TableAliasColumnName[1] | collection(true, [])}, // Not recursing on alias, as it will happen from data
+    {u: UnaryOperation[1] | $u.nested->extractRelationalElements($recurseSubQueries)},
+    {b: BinaryOperation[1] | $b.left->concatenate($b.right)->extractRelationalElements($recurseSubQueries)},
+    {va: VariableArityOperation[1] |$va.args->extractRelationalElements($recurseSubQueries)},
+    {d: DynaFunction[1] | $d.parameters->extractRelationalElements($recurseSubQueries)},
+    {f: FreeMarkerOperationHolder[1] | $f.parameters->extractRelationalElements($recurseSubQueries)},
+    {wc: Column[1] | collection(true, [])},
+    {wc: ColumnName[1] | collection(true, [])},
+    {wc: WindowColumn[1] | $wc.window->concatenate($wc.func)->extractRelationalElements($recurseSubQueries)},
+    {wc: Literal[1] | collection(true, [])},
+    {wc: LiteralList[1] | collection(true, [])},
+    {wc: VarPlaceHolder[1] | collection(true, [])},
+    {w: meta::relational::metamodel::Window[1] | $w.partition->concatenate($w.sortBy)->extractRelationalElements($recurseSubQueries)},
+    {js: JoinStrings[1] | $js.strings->concatenate($js.prefix)->concatenate($js.separator)->concatenate($js.suffix)->extractRelationalElements($recurseSubQueries)},
+    {s: SemiStructuredPropertyAccess[1] | $s.operand->concatenate($s.property)->concatenate($s.index)->extractRelationalElements($recurseSubQueries)},
+    {s: SemiStructuredArrayElementAccess[1] | $s.operand->concatenate($s.index)->extractRelationalElements($recurseSubQueries)},
+    {s: SemiStructuredArrayFlatten[1] | $s.navigation->extractRelationalElements($recurseSubQueries)},
+    {s: SemiStructuredArrayFlattenOutput[1] | $s.tableAliasColumn->extractRelationalElements($recurseSubQueries)},
+    {a: Any[*] | /*println('Encountered unknown element of type: ' +  $el->type()->elementToPath());*/ collection(false, []);}
+  ]);
+  collection($results.noUnknownElement->and(), $el->concatenate($results.elements));
+}
+
+function <<access.private>> meta::relational::postProcessor::filterPushDown::extractRelationalElements(rn: RelationalTreeNode[1], recurseSubQueries: Boolean[1]): RelationalElementCollection[1]
+{
+  let aliasResults = $rn.alias->extractRelationalElements($recurseSubQueries);
+  let relElementResults = $rn.alias.relationalElement->match([
+    u: Union[1] | collection(true, $u)->concatenate(if($recurseSubQueries, | $u.queries->extractRelationalElements($recurseSubQueries), | [])),
+    v: ViewSelectSQLQuery[1] | collection(true, $v)->concatenate(if($recurseSubQueries, | $v.selectSQLQuery->extractRelationalElements($recurseSubQueries), | [])),
+    s: SelectSQLQuery[1] | collection(true, $s)->concatenate(if($recurseSubQueries, | $s->extractRelationalElements($recurseSubQueries), | [])),
+    t: Table[1] | collection(true, $t),
+    ss: SemiStructuredArrayFlatten[1] | $ss->extractRelationalElements($recurseSubQueries),
+    a: Any[*] | /*println('Encountered unknown element of type: ' +  $a->type()->elementToPath());*/ collection(false, $rn.alias.relationalElement);
+  ]);
+  let joinResults = $rn->match([jtn: JoinTreeNode[1] | $jtn.join.operation->extractRelationalElements($recurseSubQueries), a: Any[*] | []]);
+  let childrenResults = $rn.childrenData->cast(@RelationalTreeNode)->map(c | $c->extractRelationalElements($recurseSubQueries));
+  let results = $aliasResults->concatenate($relElementResults)->concatenate($joinResults)->concatenate($childrenResults);
+  collection($results.noUnknownElement->and(), $results.elements);
 }
