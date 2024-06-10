@@ -56,7 +56,6 @@ class NontemporalSnapshotTest extends BaseTest
     Scenarios:
     1. No Auditing
     2. With Auditing
-    3. No Auditing & import external JSON dataset
     4. No Auditing & import external CSV dataset
     5. Staging has lesser columns than main dataset
     6. Staging data cleanup

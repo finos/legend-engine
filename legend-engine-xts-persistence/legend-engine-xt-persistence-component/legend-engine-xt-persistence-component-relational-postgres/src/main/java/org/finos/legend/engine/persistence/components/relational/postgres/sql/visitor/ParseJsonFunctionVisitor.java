@@ -27,7 +27,7 @@ public class ParseJsonFunctionVisitor implements LogicalPlanVisitor<ParseJsonFun
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, ParseJsonFunction current, VisitorContext context)
     {
-        ToJsonFunction toJsonFunction = new ToJsonFunction("text", context.quoteIdentifier());
+        ToJsonFunction toJsonFunction = new ToJsonFunction("json", context.quoteIdentifier());
         prev.push(toJsonFunction);
         return new VisitorResult(toJsonFunction, Collections.singletonList(current.jsonString()));
     }
