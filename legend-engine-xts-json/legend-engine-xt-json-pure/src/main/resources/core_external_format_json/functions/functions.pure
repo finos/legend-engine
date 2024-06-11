@@ -25,7 +25,22 @@ function <<functionType.NormalizeRequiredFunction>> meta::external::format::json
   internalize($class, 'application/json', $data)
 }
 
+function <<functionType.NormalizeRequiredFunction>> meta::external::format::json::functions::fromJson<T>(class:Class<T>[1], data:String[1], config:meta::external::format::json::metamodel::internalize::JsonSchemaInternalizeConfig[1]): T[*]
+{
+  internalize($class, 'application/json', $data, $config)
+}
+
+function <<functionType.NormalizeRequiredFunction>> meta::external::format::json::functions::fromJson<T>(class:Class<T>[1], data:Byte[*], config:meta::external::format::json::metamodel::internalize::JsonSchemaInternalizeConfig[1]): T[*]
+{
+  internalize($class, 'application/json', $data, $config)
+}
+
 function <<functionType.NormalizeRequiredFunction>> meta::external::format::json::functions::toJson<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1]): String[1]
 {
   externalize($collection, 'application/json', $graphFetchTree)
+}
+
+function <<functionType.NormalizeRequiredFunction>> meta::external::format::json::functions::toJson<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1], config:meta::external::format::json::metamodel::externalize::JsonSchemaExternalizeConfig[1]): String[1]
+{
+  externalize($collection, 'application/json', $graphFetchTree, $config)
 }

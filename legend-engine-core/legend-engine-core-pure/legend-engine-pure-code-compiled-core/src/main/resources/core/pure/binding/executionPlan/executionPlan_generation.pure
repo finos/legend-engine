@@ -106,6 +106,15 @@ function <<access.private>> meta::external::format::shared::executionPlan::exter
 
    let inScopeVars     = $state.inScopeVars;
 
+   let config          = if($parameters->size() == 4, 
+                            | $parameters->at(3)->byPassValueSpecificationWrapper()->match([
+                                v:VariableExpression[1] | $inScopeVars->get($v.name).values->cast(@meta::external::format::shared::ExternalFormatExternalizeConfig)->toOne(),
+                                i:InstanceValue[1]      | $i.values->cast(@meta::external::format::shared::ExternalFormatExternalizeConfig)->toOne(),
+                                a:Any[*]                | [] // TODO: default config or error?
+                            ]),
+                            | []);
+
+
    let tree            = $parameters->at(2)->byPassValueSpecificationWrapper()->match([
                               v:VariableExpression[1]       | $inScopeVars->get($v.name).values->cast(@RootGraphFetchTree<Any>)->toOne(),
                               i:InstanceValue[1]            | $i.values->cast(@RootGraphFetchTree<Any>)->toOne(),
@@ -138,7 +147,8 @@ function <<access.private>> meta::external::format::shared::executionPlan::exter
       checked         = $checked,
       binding         = $binding,
       tree            = $tree,
-      executionNodes  = $children
+      executionNodes  = $children,
+      config          = $config
    );
 }
 
@@ -170,6 +180,13 @@ function <<access.private>> meta::external::format::shared::executionPlan::inter
    let enableConstraints  = $state.exeCtx.enableConstraints->isEmpty() || $state.exeCtx.enableConstraints->toOne();
    let bindingArg         = $fe.parametersValues->at(1);
    let inScopeVars        = $state.inScopeVars;
+   let config             = if($fe.parametersValues->size()==4, 
+                              | $fe.parametersValues->at(3)->byPassValueSpecificationWrapper()->match([
+                                v:VariableExpression[1] | $inScopeVars->get($v.name).values->cast(@meta::external::format::shared::ExternalFormatInternalizeConfig)->toOne(),
+                                i:InstanceValue[1]      | $i.values->cast(@meta::external::format::shared::ExternalFormatInternalizeConfig)->toOne(),
+                                a:Any[*]                | [] // TODO: default config or error?                              
+                              ]), 
+                              | []);
 
    let classArg           = $fe.parametersValues->at(0);
    assert($classArg->instanceOf(InstanceValue), 'Only literal class is supported');
@@ -184,6 +201,7 @@ function <<access.private>> meta::external::format::shared::executionPlan::inter
    ^ExternalFormatInternalizeExecutionNode
    (
       resultType        = ^ClassResultType(type=$class),
+      config            = $config,
       resultSizeRange   = ZeroMany,
       binding           = $binding,
       enableConstraints = $enableConstraints,
@@ -262,7 +280,12 @@ function <<access.private>> meta::external::format::shared::executionPlan::getFu
         ^PureFunctionToProcessFunctionPair(first = meta::external::format::shared::functions::internalize_Class_1__Binding_1__String_1__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::external::format::shared::functions::internalize_Class_1__Binding_1__Byte_MANY__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::external::format::shared::functions::internalize_Class_1__String_1__String_1__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
-        ^PureFunctionToProcessFunctionPair(first = meta::external::format::shared::functions::internalize_Class_1__String_1__Byte_MANY__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_)
+        ^PureFunctionToProcessFunctionPair(first = meta::external::format::shared::functions::internalize_Class_1__String_1__Byte_MANY__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+
+        ^PureFunctionToProcessFunctionPair(first = meta::external::format::shared::functions::internalize_Class_1__Binding_1__String_1__ExternalFormatInternalizeConfig_1__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::external::format::shared::functions::internalize_Class_1__Binding_1__Byte_MANY__ExternalFormatInternalizeConfig_1__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::external::format::shared::functions::internalize_Class_1__String_1__String_1__ExternalFormatInternalizeConfig_1__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::external::format::shared::functions::internalize_Class_1__String_1__Byte_MANY__ExternalFormatInternalizeConfig_1__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_)
       ];
 }
 
@@ -271,6 +294,8 @@ function <<access.private>> meta::external::format::shared::executionPlan::getFu
      [
                 ^PureFunctionToProcessFunctionPair(first = meta::external::format::shared::functions::externalize_T_MANY__Binding_1__RootGraphFetchTree_1__String_1_, second = externalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
                 ^PureFunctionToProcessFunctionPair(first = meta::external::format::shared::functions::externalize_T_MANY__String_1__RootGraphFetchTree_1__String_1_, second = externalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+                ^PureFunctionToProcessFunctionPair(first = meta::external::format::shared::functions::externalize_T_MANY__Binding_1__RootGraphFetchTree_1__ExternalFormatExternalizeConfig_1__String_1_, second = externalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+                ^PureFunctionToProcessFunctionPair(first = meta::external::format::shared::functions::externalize_T_MANY__String_1__RootGraphFetchTree_1__ExternalFormatExternalizeConfig_1__String_1_, second = externalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
                 ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
                 ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
                 ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
