@@ -768,7 +768,7 @@ public class TestDedupAndVersioning extends BaseTest
         ingestor.initDatasets(datasets);
         ingestor.create();
         ingestor.dedupAndVersion();
-        return ingestor.getIngestRunId();
+        return ingestor.getRunId();
     }
 
     private void verifyResults(String expectedDataPath, String [] schema, String ingestRunId, String orderByClause) throws IOException
