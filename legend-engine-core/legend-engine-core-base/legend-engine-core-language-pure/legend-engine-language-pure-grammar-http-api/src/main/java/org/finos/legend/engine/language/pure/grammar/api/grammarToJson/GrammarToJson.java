@@ -62,16 +62,17 @@ public class GrammarToJson extends GrammarAPI
                           @Context UriInfo uriInfo)
     {
         long start = System.currentTimeMillis();
-        Response response = model(text, sourceId, lineOffset, returnSourceInformation, pm);
+        PureGrammarParserExtensions.logExtensionList();
+        Response response = grammarToJson(text, (a) -> PureGrammarParser.newInstance().parseModel(a, sourceId, lineOffset, 0, returnSourceInformation), pm, "Grammar to Json : Model");
         long end = System.currentTimeMillis();
         MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, end);
         return response;
     }
 
+    @Deprecated
     public Response model(String text, String sourceId, int lineOffset, boolean returnSourceInformation, ProfileManager<CommonProfile> pm)
     {
-        PureGrammarParserExtensions.logExtensionList();
-        return grammarToJson(text, (a) -> PureGrammarParser.newInstance().parseModel(a, sourceId, lineOffset, 0, returnSourceInformation), pm, "Grammar to Json : Model");
+        return model(text, sourceId, lineOffset, returnSourceInformation, pm, null);
     }
 
 
