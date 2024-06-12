@@ -39,7 +39,7 @@ function  meta::external::function::activator::snowflakeApp::generation::generat
                       ) ->joinStrings(',');
 }
 
-function  <<access.private>> meta::external::function::activator::snowflakeApp::generation::generateInputParamsStub(f:Function<Any>[1]):String[1]
+function  meta::external::function::activator::snowflakeApp::generation::generateInputParamsStub(f:Function<Any>[1]):String[1]
 {  
   let params = $f->functionType().parameters->evaluateAndDeactivate();   
   assertEmpty($params->filter(p | $p.multiplicity != PureOne), 'not implemented, only multiplicity PureOne for snowflake app params is supported: ' + $params->filter(p | $p.multiplicity != PureOne)->map(p|$p.name)->joinStrings(', '));
