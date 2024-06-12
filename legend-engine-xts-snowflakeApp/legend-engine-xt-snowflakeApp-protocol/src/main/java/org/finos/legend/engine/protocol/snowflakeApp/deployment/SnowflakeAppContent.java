@@ -57,5 +57,10 @@ public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
         return format.format(date);
     }
 
+    public void addGrantStatement(String grant)
+    {
+        this.sqlExpressions.add(grant);
+    }
+
 }
 
