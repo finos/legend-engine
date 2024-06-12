@@ -98,7 +98,7 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
 
     public MutableList<? extends FunctionActivatorError> validate(SnowflakeAppArtifact artifact)
     {
-        int size = ((SnowflakeAppContent)artifact.content).sqlExpressions.select(e -> !e.toLowerCase().startsWith("grant")).size();
+        int size = ((SnowflakeAppContent)artifact.content).sqlExpressions.select(e -> !e.toLowerCase().endsWith("to role public;")).size();
         return size != 1 ?
                 Lists.mutable.with(new SnowflakeAppError("SnowflakeApp can't be used with a plan containing '" + size + "' SQL expressions", ((SnowflakeAppContent)artifact.content).sqlExpressions)) :
                 Lists.mutable.empty();
