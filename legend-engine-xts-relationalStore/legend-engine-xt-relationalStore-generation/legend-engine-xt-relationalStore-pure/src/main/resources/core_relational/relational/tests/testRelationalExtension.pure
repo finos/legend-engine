@@ -24,6 +24,7 @@ import meta::relational::tests::csv::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::metamodel::*;
 import meta::pure::mapping::*;
+import meta::relational::functions::asserts::*;
 
 function  meta::relational::metamodel::execute::tests::runRelationalRouterExtensionConnectionEquality(c1: RelationalDatabaseConnection[1],
     c2: RelationalDatabaseConnection[1]) : Boolean[1]
@@ -135,7 +136,7 @@ function <<test.Test>> meta::relational::metamodel::execute::tests::testExecuteI
 
    assertEquals(1, $result.rows->at(0).get('Count'));
 
-   assertEquals('Count\n1\n', $result->toCSV());
+   assertTdsFromCsv('Count\n1\n', $result);
 
    true;
 }

@@ -23,6 +23,7 @@ import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::relational::functions::sqlstring::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::query::function::postgres::testPaginatedByVendor():Boolean[1]
 {
@@ -31,6 +32,6 @@ function <<test.Test>> meta::relational::tests::query::function::postgres::testP
    let f1 = {|Person.all()->sortBy(#/Person/firstName!fn#)->paginated(1,4);};
 
    let s3 = toSQLString($f1, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME offset ${((1?number - 1?number)?number * 4?number)} limit ${4?number}', $s3);
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME offset ${((1?number - 1?number)?number * 4?number)} limit ${4?number}', $s3);
 }
 

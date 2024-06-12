@@ -23,6 +23,7 @@ import meta::pure::profiles::*;
 import meta::core::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::tests::mapping::propertyfunc::model::store::*;
+import meta::relational::functions::asserts::*;
 
 
 function <<test.Test>> meta::relational::tests::mapping::propertyfunc::simple::testSimplePropertyFuncProject():Boolean[1]
@@ -36,7 +37,7 @@ function <<test.Test>> meta::relational::tests::mapping::propertyfunc::simple::t
    assertEquals(['Fabrice', 'Roberts', 'Roberts, Fabrice'], $tds.rows->at(3).values);
    assertEquals(['Oliver', 'Hill', 'Hill, Oliver'], $tds.rows->at(4).values);
    assertEquals(['David', 'Hugues', 'Hugues, David'], $tds.rows->at(5).values);
-   assertEquals('select substring("root".FULLNAME, 0, position(\',\', "root".FULLNAME)-1) as "firstName", substring("root".FULLNAME, (position(\',\', "root".FULLNAME) + 2)) as "lastName", concat(substring("root".FULLNAME, (position(\',\', "root".FULLNAME) + 2)), \', \', substring("root".FULLNAME, 0, position(\',\', "root".FULLNAME)-1)) as "fullName" from personTable as "root"', $result->sqlRemoveFormatting());
+   assertSameSQL('select substring("root".FULLNAME, 0, position(\',\', "root".FULLNAME)-1) as "firstName", substring("root".FULLNAME, (position(\',\', "root".FULLNAME) + 2)) as "lastName", concat(substring("root".FULLNAME, (position(\',\', "root".FULLNAME) + 2)), \', \', substring("root".FULLNAME, 0, position(\',\', "root".FULLNAME)-1)) as "fullName" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::propertyfunc::simple::testSimplePropertyFuncQuery():Boolean[1]
@@ -58,7 +59,7 @@ function <<test.Test>> meta::relational::tests::mapping::propertyfunc::simple::t
    assertEquals(['Fabrice', 'Roberts'], [$res->at(3).firstName, $res->at(3).lastName]);
    assertEquals(['Oliver', 'Hill'], [$res->at(4).firstName, $res->at(4).lastName]);
    assertEquals(['David', 'Hugues'], [$res->at(5).firstName, $res->at(5).lastName]);
-   assertEquals('select "root".ID as "pk_0", substring("root".FULLNAME, 0, position(\',\', "root".FULLNAME)-1) as "firstName", "root".FULLNAME as "displayName", substring("root".FULLNAME, (position(\',\', "root".FULLNAME) + 2)) as "lastName" from personTable as "root"', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".ID as "pk_0", substring("root".FULLNAME, 0, position(\',\', "root".FULLNAME)-1) as "firstName", "root".FULLNAME as "displayName", substring("root".FULLNAME, (position(\',\', "root".FULLNAME) + 2)) as "lastName" from personTable as "root"', $result);
 }
 
 
@@ -73,7 +74,7 @@ function <<test.Test>> meta::relational::tests::mapping::propertyfunc::withjoin:
    assertEquals(['Fabrice', 'Roberts_p4', 'Roberts_p4, Fabrice'], $tds.rows->at(3).values);
    assertEquals(['Oliver', 'Hill_p5', 'Hill_p5, Oliver'], $tds.rows->at(4).values);
    assertEquals(['David', 'Hugues_p6', 'Hugues_p6, David'], $tds.rows->at(5).values);
-   assertEquals('select substring("root".FULLNAME, 0, position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2))-1) as "firstName", substring(concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2), (position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2)) + 2)) as "lastName", concat(substring(concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2), (position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2)) + 2)), \', \', substring("root".FULLNAME, 0, position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2))-1)) as "fullName" from personTable as "root" left outer join personTableExtension as "persontableextension_0" on ("root".ID = "persontableextension_0".ID)', $result->sqlRemoveFormatting());
+   assertSameSQL('select substring("root".FULLNAME, 0, position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2))-1) as "firstName", substring(concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2), (position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2)) + 2)) as "lastName", concat(substring(concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2), (position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2)) + 2)), \', \', substring("root".FULLNAME, 0, position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2))-1)) as "fullName" from personTable as "root" left outer join personTableExtension as "persontableextension_0" on ("root".ID = "persontableextension_0".ID)', $result);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::propertyfunc::withjoin::testSimplePropertyFuncQueryWithJoin():Boolean[1]
@@ -81,7 +82,7 @@ function <<test.Test>> meta::relational::tests::mapping::propertyfunc::withjoin:
    let result = execute(|Person.all()->filter(p|$p.lastName == 'Roberts_p4'), meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMappingWithJoin, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    let res = $result.values;
    assertEquals(['Fabrice', 'Roberts_p4', 'Roberts_p4, Fabrice'], [$res->at(0).firstName, $res->at(0).lastName, $res->at(0).fullName]);
-   assertEquals('select "root".ID as "pk_0", substring("root".FULLNAME, 0, position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2))-1) as "firstName", "root".FULLNAME as "displayName", substring(concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2), (position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2)) + 2)) as "lastName" from personTable as "root" left outer join personTableExtension as "persontableextension_0" on ("root".ID = "persontableextension_0".ID) where substring(concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2), (position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2)) + 2)) = \'Roberts_p4\'', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".ID as "pk_0", substring("root".FULLNAME, 0, position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2))-1) as "firstName", "root".FULLNAME as "displayName", substring(concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2), (position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2)) + 2)) as "lastName" from personTable as "root" left outer join personTableExtension as "persontableextension_0" on ("root".ID = "persontableextension_0".ID) where substring(concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2), (position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2)) + 2)) = \'Roberts_p4\'', $result);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::propertyfunc::withjoin::testSimplePropertyFuncGetAllWithJoin():Boolean[1]

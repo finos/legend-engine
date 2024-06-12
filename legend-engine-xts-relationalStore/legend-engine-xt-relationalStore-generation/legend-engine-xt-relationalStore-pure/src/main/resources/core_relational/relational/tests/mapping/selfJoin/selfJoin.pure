@@ -22,6 +22,7 @@ import meta::pure::profiles::*;
 import meta::core::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::mapping::*;
+import meta::relational::functions::asserts::*;
 
 
 function <<test.Test>> meta::relational::tests::mapping::selfJoin::testSelfJoinPropertyMapping():Boolean[1]
@@ -58,7 +59,7 @@ function <<test.Test>> meta::relational::tests::mapping::selfJoin::testSelfJoinP
    assertEquals(['Banking_c1', 'Banking', 'Firm X'], $result.values.rows->at(6).values);
    assertEquals(['Banking_c2', 'Banking', 'Firm X'], $result.values.rows->at(7).values);
    assertEquals(['Banking_c1_c1', 'Banking_c1', 'Banking'], $result.values.rows->at(8).values);
-   assertEquals('select "root".name as "name", "orgtable_1".name as "p_name", "orgtable_2".name as "p_p_name" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id) left outer join orgTable as "orgtable_2" on ("orgtable_1".parentId = "orgtable_2".id)', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".name as "name", "orgtable_1".name as "p_name", "orgtable_2".name as "p_p_name" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id) left outer join orgTable as "orgtable_2" on ("orgtable_1".parentId = "orgtable_2".id)', $result);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::selfJoin::testSelfJoinPropertyMappingWithDynaFunction():Boolean[1]
@@ -73,7 +74,7 @@ function <<test.Test>> meta::relational::tests::mapping::selfJoin::testSelfJoinP
                                              'dyna operation']), meta::relational::tests::mapping::selfJoin::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions(), debug());
    let tds = $result.values->at(0);
 
-   assertEquals('select "root".name as "orgName", "orgtable_3".name as "3rd parent", "orgtable_4".name as "4th parent", ("orgtable_4".name is null and "orgtable_3".name is null) as "dyna operation" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id) left outer join orgTable as "orgtable_2" on ("orgtable_1".parentId = "orgtable_2".id) left outer join orgTable as "orgtable_3" on ("orgtable_2".parentId = "orgtable_3".id) left outer join orgTable as "orgtable_4" on ("orgtable_3".parentId = "orgtable_4".id)', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".name as "orgName", "orgtable_3".name as "3rd parent", "orgtable_4".name as "4th parent", ("orgtable_4".name is null and "orgtable_3".name is null) as "dyna operation" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id) left outer join orgTable as "orgtable_2" on ("orgtable_1".parentId = "orgtable_2".id) left outer join orgTable as "orgtable_3" on ("orgtable_2".parentId = "orgtable_3".id) left outer join orgTable as "orgtable_4" on ("orgtable_3".parentId = "orgtable_4".id)', $result);
    assertSameElements(['orgName', '3rd parent', '4th parent', 'dyna operation'], $tds.columns.name);
    assertEquals(9, $tds.rows->size());
    assertEquals(['ROOT', ^TDSNull(),^TDSNull(), true], $result.values.rows->at(0).values);

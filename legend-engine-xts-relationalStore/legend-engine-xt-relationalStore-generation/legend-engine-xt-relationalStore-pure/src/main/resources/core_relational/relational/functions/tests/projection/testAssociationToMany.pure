@@ -25,7 +25,7 @@ function <<test.Test>> meta::relational::tests::projection::association::toMany:
    let result = execute(|Person.all()->project(col(p|$p.firstName, 'firstName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
-   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root"', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "firstName" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::projection::association::toMany::testAssociationToManyColumnProtocol():Boolean[1]
@@ -33,7 +33,7 @@ function <<test.Test>> meta::relational::tests::projection::association::toMany:
    let result = execute(|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.locations.place, 'place')]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 13);
    assertEquals('Anthony,Anthony,David,Fabrice,Fabrice,Hampton,Hoboken,Hong Kong,Jersey City,Jersey City,John,John,John,John,London,New York,New York,New York,New York,New York,Oliver,Oliver,Paris,Peter,Peter,San Fransisco', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
-   assertEquals('select "root".FIRSTNAME as "firstName", "locationtable_0".PLACE as "place" from personTable as "root" left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID)', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "firstName", "locationtable_0".PLACE as "place" from personTable as "root" left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID)', $result);
 }
 
 function <<test.Test>> meta::relational::tests::projection::association::toMany::testAssociationToManyColumnProtocolWithDoc():Boolean[1]
@@ -42,7 +42,7 @@ function <<test.Test>> meta::relational::tests::projection::association::toMany:
    assertEquals(['Spec1', 'Spec2'], $result.values->at(0).columns.documentation);
    assertSize($result.values.rows, 13);
    assertEquals('Anthony,Anthony,David,Fabrice,Fabrice,Hampton,Hoboken,Hong Kong,Jersey City,Jersey City,John,John,John,John,London,New York,New York,New York,New York,New York,Oliver,Oliver,Paris,Peter,Peter,San Fransisco', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
-   assertEquals('select "root".FIRSTNAME as "firstName", "locationtable_0".PLACE as "place" from personTable as "root" left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID)', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "firstName", "locationtable_0".PLACE as "place" from personTable as "root" left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID)', $result);
 }
 
 function <<test.Test>> meta::relational::tests::projection::association::toMany::testQualifiedPropertyUsingColumnProtocol():Boolean[1]
@@ -50,7 +50,7 @@ function <<test.Test>> meta::relational::tests::projection::association::toMany:
    let firmAge = 30;
    let result = execute(|Person.all()->filter(p|$p.name=='Peter Smith')->project([col(p|$p.name, 'personName'), col(p|$p.firm->toOne().employeesByAge($firmAge)->count(), '#30YrOldCoWorkers')]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['Peter Smith,4'], $result.values.rows->map(r|$r.values->makeString(',')));
-   assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "personName", "persontable_1".aggCol as "#30YrOldCoWorkers" from personTable as "root" left outer join (select "persontable_2".ID as ID, count(*) as aggCol from personTable as "persontable_2" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "persontable_2".FIRMID) left outer join personTable as "persontable_3" on ("firmtable_0".ID = "persontable_3".FIRMID) where "persontable_3".AGE < 30 group by "persontable_2".ID) as "persontable_1" on ("root".ID = "persontable_1".ID) where concat("root".FIRSTNAME, \' \', "root".LASTNAME) = \'Peter Smith\'', $result->sqlRemoveFormatting());
+   assertSameSQL('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "personName", "persontable_1".aggCol as "#30YrOldCoWorkers" from personTable as "root" left outer join (select "persontable_2".ID as ID, count(*) as aggCol from personTable as "persontable_2" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "persontable_2".FIRMID) left outer join personTable as "persontable_3" on ("firmtable_0".ID = "persontable_3".FIRMID) where "persontable_3".AGE < 30 group by "persontable_2".ID) as "persontable_1" on ("root".ID = "persontable_1".ID) where concat("root".FIRSTNAME, \' \', "root".LASTNAME) = \'Peter Smith\'', $result);
 }
 
 function <<test.Test>> meta::relational::tests::projection::association::toMany::testAssociationToMany():Boolean[1]
@@ -58,7 +58,7 @@ function <<test.Test>> meta::relational::tests::projection::association::toMany:
    let result = execute(|Person.all()->project([#/Person/firstName#, #/Person/locations/place#]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 13);
    assertEquals('Anthony,Anthony,David,Fabrice,Fabrice,Hampton,Hoboken,Hong Kong,Jersey City,Jersey City,John,John,John,John,London,New York,New York,New York,New York,New York,Oliver,Oliver,Paris,Peter,Peter,San Fransisco', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
-   assertEquals('select "root".FIRSTNAME as "firstName", "locationtable_0".PLACE as "place" from personTable as "root" left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID)', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "firstName", "locationtable_0".PLACE as "place" from personTable as "root" left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID)', $result);
 }
 
 function <<test.Test>> meta::relational::tests::projection::association::toMany::testAssociationToManyWithQuery():Boolean[1]
@@ -78,5 +78,5 @@ function <<test.Test>> meta::relational::tests::projection::association::toMany:
                                               #/Firm/employees/address/name!n2#]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertEquals('Allen,Anthony,David,Fabrice,Firm A,Firm B,Firm C,Firm X,Firm X,Firm X,Firm X,Harris,Hill,Hill,Hoboken,Hoboken,Hong Kong,Hong Kong,John,John,Johnson,New York,New York,New York,New York,New York,New York,New York,New York,Oliver,Peter,Roberts,San Fransisco,San Fransisco,Smith', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
-   assertEquals('select "root".LEGALNAME as "legalName", "persontable_0".FIRSTNAME as "firstName", "persontable_0".LASTNAME as "lastName", "addresstable_0".NAME as "name", "addresstable_0".NAME as "n2" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_0".ADDRESSID)', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".LEGALNAME as "legalName", "persontable_0".FIRSTNAME as "firstName", "persontable_0".LASTNAME as "lastName", "addresstable_0".NAME as "name", "addresstable_0".NAME as "n2" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_0".ADDRESSID)', $result);
 }

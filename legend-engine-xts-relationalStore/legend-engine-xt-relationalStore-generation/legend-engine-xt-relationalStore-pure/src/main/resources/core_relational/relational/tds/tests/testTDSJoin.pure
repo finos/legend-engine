@@ -225,6 +225,7 @@ import meta::pure::profiles::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::tds::tdsJoin::*;
 import meta::relational::metamodel::join::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::tds::tdsJoin::testInnerJoinSimple():Boolean[1]
 {
@@ -944,7 +945,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsJoin::testTableToTDSWith
 
    let expected = 'select "tablewithquotedcolumns_0"."FIRST NAME" as "FIRST NAME", "tablewithquotedcolumns_0"."LAST NAME" as "LAST NAME", "tablewithquotedcolumns_0"."FIRST NAME_2" as "FIRST NAME_2", "tablewithquotedcolumns_0"."LAST NAME_2" as "LAST NAME_2" from (select "tablewithquotedcolumns_1"."FIRST NAME" as "FIRST NAME", "tablewithquotedcolumns_1"."LAST NAME" as "LAST NAME", "tablewithquotedcolumns_3"."FIRST NAME_2" as "FIRST NAME_2", "tablewithquotedcolumns_3"."LAST NAME_2" as "LAST NAME_2" from (select "root"."FIRST NAME" as "FIRST NAME", "root"."LAST NAME" as "LAST NAME" from tableWithQuotedColumns as "root") as "tablewithquotedcolumns_1" left outer join (select "root"."FIRST NAME" as "FIRST NAME_2", "root"."LAST NAME" as "LAST NAME_2" from tableWithQuotedColumns as "root") as "tablewithquotedcolumns_3" on ("tablewithquotedcolumns_1"."FIRST NAME" = "tablewithquotedcolumns_3"."FIRST NAME_2")) as "tablewithquotedcolumns_0"';
 
-   assertEquals($expected, $resWithoutQuotes->sqlRemoveFormatting());
+   assertSameSQL($expected, $resWithoutQuotes);
 
    let queryWithQuotes = {|tableToTDS(meta::relational::functions::database::tableReference(meta::relational::tests::db, 'default', 'tableWithQuotedColumns'))
                             ->project([
@@ -966,7 +967,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsJoin::testTableToTDSWith
                                  )};
    let resWithQuotes = execute($queryWithQuotes, $mapping, $runtime, meta::relational::extension::relationalExtensions());
 
-   assertEquals($expected, $resWithQuotes->sqlRemoveFormatting());
+   assertSameSQL($expected, $resWithQuotes);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsJoin::testJoinByColAfterQueryWithConcatenate():Boolean[1]

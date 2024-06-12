@@ -21,6 +21,7 @@ import meta::external::store::relational::tests::*;
 import meta::pure::metamodel::tds::*;
 import meta::pure::profiles::*;
 import meta::relational::tests::model::simple::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testFilterOnDatesSybase():Boolean[1]
 {
@@ -28,19 +29,19 @@ function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testFilterOnDates
    let dt = %2015-01-01T00:00:00.000;
    let sql = toSQLString(|Trade.all()->project(t | $t.settlementDateTime, 'settlementDateTime')->filter(r | $r.getDateTime('settlementDateTime') < $dt),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where "root".settlementDateTime < convert(DATETIME, \'2015-01-01 00:00:00.000\', 121)', $sql);
+   assertSameSQL('select "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where "root".settlementDateTime < convert(DATETIME, \'2015-01-01 00:00:00.000\', 121)', $sql);
 }
 
 function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testFirstNotNullFunction():Boolean[1]
 {
    let sql =toSQLString(|Person.all()->project(p|$p.firstName,'firstName')->filter(p | meta::pure::tds::extensions::firstNotNull([$p.getString('firstName')->in(['John','Peter','Anthony']), false]) != false),
       simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" where (coalesce(case when "root".FIRSTNAME in (\'John\', \'Peter\', \'Anthony\') then \'true\' else \'false\' end, \'false\') <> \'false\' OR coalesce(case when "root".FIRSTNAME in (\'John\', \'Peter\', \'Anthony\') then \'true\' else \'false\' end, \'false\') is null)', $sql);
+   assertSameSQL('select "root".FIRSTNAME as "firstName" from personTable as "root" where (coalesce(case when "root".FIRSTNAME in (\'John\', \'Peter\', \'Anthony\') then \'true\' else \'false\' end, \'false\') <> \'false\' OR coalesce(case when "root".FIRSTNAME in (\'John\', \'Peter\', \'Anthony\') then \'true\' else \'false\' end, \'false\') is null)', $sql);
 }
 
 function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testFirstNotNullFunctionWithinWhenClause():Boolean[1]
 {
    let sql =toSQLString(|Person.all()->project(p|$p.firstName,'firstName')->filter(p | 
     if(meta::pure::tds::extensions::firstNotNull([$p.getString('firstName')->in(['John','Peter','Anthony']),false ])->toOne(), | true,| false)), simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" where case when coalesce(case when "root".FIRSTNAME in (\'John\', \'Peter\', \'Anthony\') then \'true\' else \'false\' end, \'false\') = \'true\' then \'true\' else \'false\' end = \'true\'', $sql);
+   assertSameSQL('select "root".FIRSTNAME as "firstName" from personTable as "root" where case when coalesce(case when "root".FIRSTNAME in (\'John\', \'Peter\', \'Anthony\') then \'true\' else \'false\' end, \'false\') = \'true\' then \'true\' else \'false\' end = \'true\'', $sql);
 }

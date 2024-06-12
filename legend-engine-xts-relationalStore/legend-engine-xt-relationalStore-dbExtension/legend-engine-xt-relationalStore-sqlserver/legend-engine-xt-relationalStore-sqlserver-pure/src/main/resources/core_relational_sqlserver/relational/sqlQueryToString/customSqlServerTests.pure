@@ -38,13 +38,13 @@ function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringConcat
                                     meta::relational::tests::simpleRelationalMapping,
                                     meta::relational::runtime::DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select "root".FIRSTNAME+\' \'+"root".LASTNAME as "fullName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $s);
+   assertSameSQL('select "root".FIRSTNAME+\' \'+"root".LASTNAME as "fullName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $s);
 }
 
 function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringSQLServer():Boolean[1]
 {
    let s = toSQLString(|Person.all()->filter(p|$p.firstName == 'John'), meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $s);
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $s);
 }
 
 function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringTodaySQLServer():Boolean[1]
@@ -60,7 +60,7 @@ function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringTodayS
 function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringWithLengthSqlServer():Boolean[1]
 {
    let mssql = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
-   assertEquals('select len("root".FIRSTNAME) as "nameLength" from personTable as "root"', $mssql);
+   assertSameSQL('select len("root".FIRSTNAME) as "nameLength" from personTable as "root"', $mssql);
 }
 
 function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringWithPositionSqlServer():Boolean[1]
@@ -69,7 +69,7 @@ function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringWithPo
               |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
                meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select substring("root".FULLNAME, 0, charindex(\',\', "root".FULLNAME)-1) as "firstName" from personTable as "root"', $mssql);
+   assertSameSQL('select substring("root".FULLNAME, 0, charindex(\',\', "root".FULLNAME)-1) as "firstName" from personTable as "root"', $mssql);
 }
 
 function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringWithStdDevPopulationSqlServer():Boolean[1]
@@ -78,7 +78,7 @@ function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringWithSt
            |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevPopulation, 'stdDevPopulation'),
             meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select stdevp("root".int1) as "stdDevPopulation" from dataTable as "root"', $s2);
+   assertSameSQL('select stdevp("root".int1) as "stdDevPopulation" from dataTable as "root"', $s2);
 }
 
 function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringWithStdDevSampleSqlServer():Boolean[1]
@@ -87,7 +87,7 @@ function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringWithSt
            |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevSample, 'stdDevSample'),
             meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select stdev("root".int1) as "stdDevSample" from dataTable as "root"', $s2);
+   assertSameSQL('select stdev("root".int1) as "stdDevSample" from dataTable as "root"', $s2);
 }
 
 function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringWithVariancePopulationSqlServer():Boolean[1]
@@ -96,7 +96,7 @@ function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringWithVa
            |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1VariancePopulation, 'variancePopulation'),
             meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select varp("root".int1) as "variancePopulation" from dataTable as "root"', $s2);
+   assertSameSQL('select varp("root".int1) as "variancePopulation" from dataTable as "root"', $s2);
 }
 
 function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringWithVarianceSampleSqlServer():Boolean[1]
@@ -105,7 +105,7 @@ function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringWithVa
            |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1VarianceSample, 'varianceSample'),
             meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select var("root".int1) as "varianceSample" from dataTable as "root"', $s2);
+   assertSameSQL('select var("root".int1) as "varianceSample" from dataTable as "root"', $s2);
 }
 
 function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringParseIntegerinSqlServer():Boolean[1]
@@ -113,7 +113,7 @@ function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringParseI
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$s);
+   assertSameSQL('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$s);
 }
 
 function <<test.Test>> meta::relational::sqlServer::tests::testTriminSqlServer():Boolean[1]
@@ -122,13 +122,13 @@ function <<test.Test>> meta::relational::sqlServer::tests::testTriminSqlServer()
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sSqlServer);
+   assertSameSQL('select trim("root".string2) as "trim" from dataTable as "root"',$sSqlServer);
 }
 
 function <<test.Test>> meta::relational::sqlServer::tests::testSortQuotesSqlServer():Boolean[1]
 {
    let query = toSQLString(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(desc('address'))->sort('name');, simpleRelationalMapping, DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "name", "addressTable_d#3_1_d#3_m2".NAME as "address" from personTable as "root" left outer join addressTable as "addressTable_d#3_1_d#3_m2" on ("addressTable_d#3_1_d#3_m2".ID = "root".ADDRESSID) order by "name","address" desc', $query);
+   assertSameSQL('select "root".FIRSTNAME as "name", "addressTable_d#3_1_d#3_m2".NAME as "address" from personTable as "root" left outer join addressTable as "addressTable_d#3_1_d#3_m2" on ("addressTable_d#3_1_d#3_m2".ID = "root".ADDRESSID) order by "name","address" desc', $query);
 }
 
 function <<test.Test>> meta::relational::sqlServer::tests::testFilterEqualsWithOptionalParameter_SqlServer():Boolean[1]
