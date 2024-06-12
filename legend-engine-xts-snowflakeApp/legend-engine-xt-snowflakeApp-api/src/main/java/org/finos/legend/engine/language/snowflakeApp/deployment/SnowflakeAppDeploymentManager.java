@@ -153,6 +153,10 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
     {
         MutableList<String> statements = Lists.mutable.empty();
         statements.add(String.format("CREATE OR REPLACE SECURE FUNCTION %S.%S.%s", catalogName, deploymentSchema, content.sqlExpressions.getFirst()));
+        if (content.sqlExpressions.size() > 1)
+        {
+            statements.add(String.format("GRANT USAGE ON FUNCTION %S.%S.%S", catalogName, deploymentSchema, content.sqlExpressions.get(1)));
+        }
         return statements;
     }
 
