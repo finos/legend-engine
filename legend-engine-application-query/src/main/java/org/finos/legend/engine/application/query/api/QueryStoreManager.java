@@ -23,6 +23,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Field;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.Sorts;
 import org.bson.Document;
@@ -311,7 +312,10 @@ public class QueryStoreManager
         }
         Query query = matchingQueries.get(0);
         query.lastOpenAt = Instant.now().toEpochMilli();
-        this.getQueryCollection().findOneAndReplace(Filters.eq("id", queryId), queryToDocument(query));
+        this.getQueryCollection().updateOne(
+                Filters.eq("id", queryId),
+                Updates.set("lastOpenAt", Instant.now().toEpochMilli())
+        );
         return query;
     }
 
