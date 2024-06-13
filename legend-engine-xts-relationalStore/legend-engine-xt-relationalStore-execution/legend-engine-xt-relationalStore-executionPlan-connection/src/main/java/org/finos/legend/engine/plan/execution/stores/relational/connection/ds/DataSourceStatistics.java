@@ -24,7 +24,7 @@ public class DataSourceStatistics
 {
     private final AtomicInteger builtConnections;
     private final AtomicInteger requestedConnections;
-    private final AtomicInteger connectionErrors = new AtomicInteger();
+    private final AtomicInteger connectionErrors;
     private final AtomicLong firstConnectionRequest;
     private AtomicLong lastConnectionRequest;
 
@@ -34,19 +34,22 @@ public class DataSourceStatistics
         this.builtConnections = new AtomicInteger(0);
         this.lastConnectionRequest = new AtomicLong(getCurrentTimeInInMillis());
         this.requestedConnections = new AtomicInteger(0);
+        this.connectionErrors = new AtomicInteger(0);
     }
 
-    private DataSourceStatistics(int builtConnections, long firstConnectionRequest, long lastConnectionRequest, int requestedConnections)
+    private DataSourceStatistics(int builtConnections, long firstConnectionRequest, long lastConnectionRequest, int requestedConnections, int connectionErrors)
     {
         this.builtConnections = new AtomicInteger(builtConnections);
         this.firstConnectionRequest = new AtomicLong(firstConnectionRequest);
         this.lastConnectionRequest = new AtomicLong(lastConnectionRequest);
         this.requestedConnections = new AtomicInteger(requestedConnections);
+        this.connectionErrors = new AtomicInteger(connectionErrors);
     }
 
     public static DataSourceStatistics clone(DataSourceStatistics statistics)
     {
-        return new DataSourceStatistics(statistics.builtConnections.get(), statistics.firstConnectionRequest.get(), statistics.lastConnectionRequest.get(), statistics.requestedConnections.get());
+        return new DataSourceStatistics(statistics.builtConnections.get(), statistics.firstConnectionRequest.get(),
+                statistics.lastConnectionRequest.get(), statistics.requestedConnections.get(), statistics.connectionErrors.get());
     }
 
     public int getRequestedConnections()
