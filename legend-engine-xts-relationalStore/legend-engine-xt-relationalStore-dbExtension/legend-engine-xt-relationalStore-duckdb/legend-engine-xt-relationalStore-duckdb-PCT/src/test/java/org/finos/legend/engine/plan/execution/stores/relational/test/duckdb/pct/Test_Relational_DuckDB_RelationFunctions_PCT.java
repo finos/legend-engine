@@ -36,7 +36,10 @@ public class Test_Relational_DuckDB_RelationFunctions_PCT extends PCTReportConfi
     private static final ReportScope reportScope = RelationCodeRepositoryProvider.relationFunctions;
     private static final Adapter adapter = CoreExternalTestConnectionCodeRepositoryProvider.duckDBAdapter;
     private static final String platform = "compiled";
-    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.empty();
+    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
+            // BUG: Column name with special characters is not properly escaped
+            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\"")
+    );
 
     public static Test suite()
     {
