@@ -79,10 +79,10 @@ public class Test_JAVA_RelationFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::relation::tests::sort::testSimpleSortShared_Function_1__Boolean_1_", "\"meta::pure::functions::relation::sort_Relation_1__SortInfo_MANY__Relation_1_ is not supported yet!\""),
 
             // Composition
-            one("meta::pure::functions::relation::tests::composition::testFilterPostProject_Function_1__Boolean_1_", "\"meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_ is not supported yet!\"")
+            one("meta::pure::functions::relation::tests::composition::testFilterPostProject_Function_1__Boolean_1_", "\"meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_ is not supported yet!\""),
 
-
-
+            // BUG: Column name with special characters is not properly escaped
+            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "\"meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_ is not supported yet!\"")
     );
 
     public static Test suite()
