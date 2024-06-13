@@ -430,7 +430,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                         "    include model::relational::tests::dbInc\n" +
                         "    Table personTable (ID INT PRIMARY KEY, MANAGERID INT)\n" +
                         ")",
-                "COMPILATION error at [2:1-6:1]: Can't find database 'model::relational::tests::dbInc'"
+                "COMPILATION error at [4:5-43]: Can't find database 'model::relational::tests::dbInc'"
         );
 
         test("###Relational\n" +
@@ -900,7 +900,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "      placeOfInterest: [dbInc]@location_PlaceOfInterest\n" +
                 "    )\n" +
                 "  }\n\n" +
-                ")", "COMPILATION error at [4:3-11:3]: Can't find association 'MissingAssociation'"
+                ")", "COMPILATION error at [4:3-20]: Can't find association 'MissingAssociation'"
         );
 
         // missing association property
@@ -2221,6 +2221,6 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "      connection_1: relational::graphFetch::OneMappingConnection\n" +
                 "    ]\n" +
                 "  ];\n" +
-                "}\n","COMPILATION error at [86:1-104:1]: Found 2 connections against store [dbInc] under a single runtime.");
+                "}\n", "COMPILATION error at [86:1-104:1]: Found 2 connections against store [dbInc] under a single runtime.");
     }
 }

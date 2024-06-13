@@ -190,7 +190,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = HelperRelationalBuilder.getDatabase(context.pureModel.buildPackageString(srcDatabase._package, srcDatabase.name), srcDatabase.sourceInformation, context);
                     if (!srcDatabase.includedStores.isEmpty())
                     {
-                        database._includes(ListIterate.collect(srcDatabase.includedStores, include -> HelperRelationalBuilder.resolveDatabase(context.pureModel.addPrefixToTypeReference(include), srcDatabase.sourceInformation, context)));
+                        database._includes(ListIterate.collect(srcDatabase.includedStores, include -> HelperRelationalBuilder.resolveDatabase(context.pureModel.addPrefixToTypeReference(include.path), include.sourceInformation, context)));
                     }
                     database._schemas(ListIterate.collect(srcDatabase.schemas, _schema -> HelperRelationalBuilder.processDatabaseSchema(_schema, context, database)));
                 },
@@ -408,7 +408,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     {
                         RelationalAssociationMapping relationalAssociationImplementation = (RelationalAssociationMapping) associationMapping;
                         RelationalAssociationImplementation base = new Root_meta_relational_mapping_RelationalAssociationImplementation_Impl("", SourceInformationHelper.toM3SourceInformation(associationMapping.sourceInformation), context.pureModel.getClass("meta::relational::mapping::RelationalAssociationImplementation"));
-                        final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association pureAssociation = context.resolveAssociation(relationalAssociationImplementation.association, associationMapping.sourceInformation);
+                        final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association pureAssociation = context.resolveAssociation(relationalAssociationImplementation.association.path, relationalAssociationImplementation.association.sourceInformation);
                         MutableList<EmbeddedRelationalInstanceSetImplementation> embeddedRelationalPropertyMappings = Lists.mutable.empty();
                         MutableList<Store> stores = ListIterate.collect(relationalAssociationImplementation.stores, context::resolveStore);
                         // NOTE: we set the association before processing the property mappings, so we can resolve the correct property in the association

@@ -66,7 +66,7 @@ public class HelperMappingGrammarComposer
     public static String renderEnumerationMapping(EnumerationMapping enumerationMapping)
     {
         StringBuilder builder = new StringBuilder();
-        builder.append(PureGrammarComposerUtility.convertPath(enumerationMapping.enumeration)).append(": EnumerationMapping").append(enumerationMapping.id != null ? (" " + PureGrammarComposerUtility.convertIdentifier(enumerationMapping.id)) : "").append("\n").append(getTabString()).append("{\n");
+        builder.append(PureGrammarComposerUtility.convertPath(enumerationMapping.enumeration.path)).append(": EnumerationMapping").append(enumerationMapping.id != null ? (" " + PureGrammarComposerUtility.convertIdentifier(enumerationMapping.id)) : "").append("\n").append(getTabString()).append("{\n");
         if (!enumerationMapping.enumValueMappings.isEmpty())
         {
             builder.append(LazyIterate.collect(enumerationMapping.enumValueMappings, enumValueMapping -> getTabString(2) + renderEnumValueMapping(enumValueMapping)).makeString(",\n"));
@@ -114,7 +114,7 @@ public class HelperMappingGrammarComposer
 
     private static String renderXStoreAssociationMapping(XStoreAssociationMapping xStoreAssociationMapping, PureGrammarComposerContext context)
     {
-        return xStoreAssociationMapping.association + renderMappingId(xStoreAssociationMapping.id) + ": " + "XStore\n" +
+        return xStoreAssociationMapping.association.path + renderMappingId(xStoreAssociationMapping.id) + ": " + "XStore\n" +
                 getTabString() + "{\n" +
                 LazyIterate.collect(xStoreAssociationMapping.propertyMappings, p -> getTabString(2) + HelperMappingGrammarComposer.renderXStorePropertyMapping((XStorePropertyMapping) p, context)).makeString(",\n") + (xStoreAssociationMapping.propertyMappings.isEmpty() ? "" : "\n") +
                 getTabString() + "}";

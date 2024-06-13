@@ -51,6 +51,8 @@ import org.finos.legend.engine.language.pure.grammar.from.test.assertion.EqualTo
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.EqualToJsonGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.*;
@@ -188,7 +190,8 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         SourceCodeParserInfo parserInfo = getEnumerationMappingParserInfo(mappingElementSourceCode);
         EnumerationMappingParseTreeWalker walker = new EnumerationMappingParseTreeWalker(parserInfo.walkerSourceInformation);
         EnumerationMapping enumerationMapping = new EnumerationMapping();
-        enumerationMapping.enumeration = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+        String path = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+        enumerationMapping.enumeration = new PackageableElementPointer(PackageableElementType.ENUMERATION, path, mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(ctx.qualifiedName()));
         enumerationMapping.id = ctx.mappingElementName() != null ? ctx.mappingElementName().getText() : null;
         enumerationMapping.sourceInformation = parserInfo.sourceInformation;
         walker.visitEnumerationMapping((EnumerationMappingParserGrammar.EnumerationMappingContext) parserInfo.rootContext, enumerationMapping);
@@ -250,7 +253,8 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         XStoreAssociationMappingParseTreeWalker walker = new XStoreAssociationMappingParseTreeWalker(parserInfo.walkerSourceInformation, parserInfo.input, parserContext);
         XStoreAssociationMapping xStoreAssociationMapping = new XStoreAssociationMapping();
         xStoreAssociationMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null;
-        xStoreAssociationMapping.association = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+        String path = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+        xStoreAssociationMapping.association = new PackageableElementPointer(PackageableElementType.ASSOCIATION, path, mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(ctx.qualifiedName()));
         xStoreAssociationMapping.sourceInformation = parserInfo.sourceInformation;
         walker.visitXStoreAssociationMapping((XStoreAssociationMappingParserGrammar.XStoreAssociationMappingContext) parserInfo.rootContext, xStoreAssociationMapping);
         return xStoreAssociationMapping;
