@@ -183,7 +183,7 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
                 RelationalGrammarComposerContext ctx = RelationalGrammarComposerContext.Builder.newInstance(context).build();
                 RelationalAssociationMapping relationalAssociationMapping = (RelationalAssociationMapping) associationMapping;
                 StringBuilder associationMappingBuilder = new StringBuilder();
-                associationMappingBuilder.append(relationalAssociationMapping.association).append(": ").append("Relational\n");
+                associationMappingBuilder.append(relationalAssociationMapping.association.path).append(": ").append("Relational\n");
                 associationMappingBuilder.append(PureGrammarComposerUtility.getTabString()).append("{\n");
                 associationMappingBuilder.append(getTabString(2)).append("AssociationMapping").append("\n");
                 associationMappingBuilder.append(PureGrammarComposerUtility.getTabString(2)).append("(").append("\n");
@@ -264,7 +264,7 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
         boolean nonEmpty = false;
         if (!database.includedStores.isEmpty())
         {
-            builder.append(LazyIterate.collect(database.includedStores, include -> getTabString(1) + "include " + PureGrammarComposerUtility.convertPath(include)).makeString("\n"));
+            builder.append(LazyIterate.collect(database.includedStores, include -> getTabString(1) + "include " + PureGrammarComposerUtility.convertPath(include.path)).makeString("\n"));
             builder.append("\n");
             nonEmpty = true;
         }

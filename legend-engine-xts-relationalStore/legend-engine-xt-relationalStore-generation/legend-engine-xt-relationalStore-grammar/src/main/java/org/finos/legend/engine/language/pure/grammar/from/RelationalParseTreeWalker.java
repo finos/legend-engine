@@ -27,6 +27,8 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.RelationalParse
 import org.finos.legend.engine.language.pure.grammar.from.milestoning.MilestoningSpecificationSourceCode;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
@@ -118,7 +120,11 @@ public class RelationalParseTreeWalker
         database._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         database.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         ScopeInfo scopeInfo = ScopeInfo.Builder.newInstance().withDatabase(PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier())).build();
-        database.includedStores = ListIterate.collect(ctx.include(), includeContext -> PureGrammarParserUtility.fromQualifiedName(includeContext.qualifiedName().packagePath() == null ? Collections.emptyList() : includeContext.qualifiedName().packagePath().identifier(), includeContext.qualifiedName().identifier()));
+        database.includedStores = ListIterate.collect(ctx.include(), includeContext ->
+                {
+                    String path = PureGrammarParserUtility.fromQualifiedName(includeContext.qualifiedName().packagePath() == null ? Collections.emptyList() : includeContext.qualifiedName().packagePath().identifier(), includeContext.qualifiedName().identifier());
+                    return new PackageableElementPointer(PackageableElementType.STORE, path, this.walkerSourceInformation.getSourceInformation(includeContext));
+                });
         database.schemas = ListIterate.collect(ctx.schema(), schemaCtx -> this.visitSchema(schemaCtx, scopeInfo));
         database.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
         // NOTE: if tables and views are defined without a schema, create a default schema to hold these

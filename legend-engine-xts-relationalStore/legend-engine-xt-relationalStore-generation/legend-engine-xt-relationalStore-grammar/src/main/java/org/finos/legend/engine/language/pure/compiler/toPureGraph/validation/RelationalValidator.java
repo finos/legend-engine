@@ -368,7 +368,7 @@ public class RelationalValidator
             }
             else if (propertyOwner instanceof RelationalAssociationImplementation)
             {
-                List<AssociationMapping> protocolAM = protocolMap.associationMappings.stream().filter(a -> a.association.equals(HelperModelBuilder.getElementFullPath(((RelationalAssociationImplementation) propertyMapping._owner())._association(), pureModel.getExecutionSupport()))).collect(Collectors.toList());
+                List<AssociationMapping> protocolAM = protocolMap.associationMappings.stream().filter(a -> a.association.path.equals(HelperModelBuilder.getElementFullPath(((RelationalAssociationImplementation) propertyMapping._owner())._association(), pureModel.getExecutionSupport()))).collect(Collectors.toList());
                 if (protocolAM.size() == 1 && protocolAM.get(0) instanceof RelationalAssociationMapping)
                 {
                     List<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping> protocolProperty = ((RelationalAssociationMapping) protocolAM.get(0)).propertyMappings.stream().filter(pm -> pm.property.property.equals(propertyMapping._property()._name()) && pm.target == null ||
