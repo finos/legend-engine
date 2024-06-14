@@ -871,7 +871,7 @@ function <<access.private>> meta::pure::router::preeval::isSimpleType(c : Class<
 {
    let types = $c.properties->map(p|$p->functionReturnType().rawType)
                             ->distinct()
-                            ->removeAll([String, Integer, Date, DateTime, StrictDate, LatestDate,Float])
+                            ->removeAll([Boolean, Date, DateTime, Decimal, Float, Integer, LatestDate, StrictDate, String])
                             ->removeAll($visitedClasses)
                             ->filter(x|!$x->instanceOf(Enumeration));
 
