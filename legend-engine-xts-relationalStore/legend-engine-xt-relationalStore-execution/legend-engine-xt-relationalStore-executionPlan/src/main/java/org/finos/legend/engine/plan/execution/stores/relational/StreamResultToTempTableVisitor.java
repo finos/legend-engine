@@ -29,6 +29,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.IngestionMethod;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.duckdb.DuckDBCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Commands;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
@@ -80,6 +81,10 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
         if (databaseCommands instanceof H2Commands)
         {
             return visitH2((H2Commands) databaseCommands);
+        }
+        else if (databaseCommands instanceof DuckDBCommands)
+        {
+            throw new UnsupportedOperationException("not yet implemented");
         }
         for (RelationalConnectionExtension extension: ServiceLoader.load(RelationalConnectionExtension.class))
         {

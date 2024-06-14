@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.ds.specifications;
+package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
-import org.finos.legend.engine.plan.execution.stores.relational.ds.specifications.keys.DuckDBDataSourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.DuckDBDataSourceSpecificationKey;
 
 import java.util.Properties;
 

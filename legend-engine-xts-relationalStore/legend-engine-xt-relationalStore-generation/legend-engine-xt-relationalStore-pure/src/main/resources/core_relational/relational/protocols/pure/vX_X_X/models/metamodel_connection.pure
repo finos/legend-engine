@@ -84,6 +84,11 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::a
    databaseName: String[1];
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DuckDBDatasourceSpecification extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
+{
+    path:String[0..1];
+}
+
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::TestDatabaseConnection extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::DatabaseConnection
 {
    testDataSetupCsv : String[0..1];

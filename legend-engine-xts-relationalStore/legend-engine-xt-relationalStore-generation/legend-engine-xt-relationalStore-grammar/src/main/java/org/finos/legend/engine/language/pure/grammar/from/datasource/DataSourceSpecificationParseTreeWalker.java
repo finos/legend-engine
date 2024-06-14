@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.from.datasource;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.datasource.DataSourceSpecificationParserGrammar;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DuckDBDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
@@ -71,6 +72,17 @@ public class DataSourceSpecificationParseTreeWalker
         // database name
         DataSourceSpecificationParserGrammar.DbNameContext nameCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.dbName(), "name", dsSpec.sourceInformation);
         dsSpec.databaseName = PureGrammarParserUtility.fromGrammarString(nameCtx.STRING().getText(), true);
+        return dsSpec;
+    }
+
+    public DuckDBDatasourceSpecification visitDuckDBDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.DuckDBDatasourceSpecificationContext dbSpecCtx)
+    {
+        DuckDBDatasourceSpecification dsSpec = new DuckDBDatasourceSpecification();
+        dsSpec.sourceInformation = code.getSourceInformation();
+
+        DataSourceSpecificationParserGrammar.PathContext pathCtx = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.path(), "path", dsSpec.sourceInformation);
+        dsSpec.path = pathCtx != null ? PureGrammarParserUtility.fromGrammarString(pathCtx.STRING().getText(), true) : null;
+
         return dsSpec;
     }
 }
