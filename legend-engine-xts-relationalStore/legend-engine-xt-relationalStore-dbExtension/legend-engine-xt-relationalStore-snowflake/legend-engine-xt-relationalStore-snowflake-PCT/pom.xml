@@ -99,7 +99,7 @@
                             </dependency>
                             <dependency>
                                 <groupId>org.finos.legend.engine</groupId>
-                                <artifactId>legend-engine-pure-platform-functions-relation-java</artifactId>
+                                <artifactId>legend-pure-runtime-java-extension-compiled-functions-relation</artifactId>
                                 <version>${project.version}</version>
                             </dependency>
                             <dependency>
@@ -161,8 +161,8 @@
             <artifactId>legend-pure-m2-functions-base-pure</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-functions-relation-pure</artifactId>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
         </dependency>
 
         <dependency>
@@ -228,7 +228,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-platform-functions-relation-java</artifactId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

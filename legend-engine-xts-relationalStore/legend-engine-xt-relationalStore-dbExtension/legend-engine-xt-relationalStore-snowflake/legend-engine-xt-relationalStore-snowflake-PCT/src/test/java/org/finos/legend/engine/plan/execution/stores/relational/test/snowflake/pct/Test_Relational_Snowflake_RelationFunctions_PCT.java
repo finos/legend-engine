@@ -36,9 +36,8 @@ public class Test_Relational_Snowflake_RelationFunctions_PCT extends PCTReportCo
     private static final Adapter adapter = CoreExternalTestConnectionCodeRepositoryProvider.snowflakeAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            // BUG: Column name with special characters is not properly escaped
             one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\"")
-    );
+            );
 
     public static Test suite()
     {
