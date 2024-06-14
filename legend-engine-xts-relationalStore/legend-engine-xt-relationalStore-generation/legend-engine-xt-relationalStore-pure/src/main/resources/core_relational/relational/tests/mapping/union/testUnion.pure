@@ -180,7 +180,7 @@ function <<test.Test>> meta::relational::tests::mapping::union::testSimpleQueryF
 {
    let result1 = execute(|Person.all()->project([p|$p.lastName],['Lastname']), unionMappingWithFilter, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['Scott', 'Anand', 'Taylor', 'Wright'], $result1.values->at(0).rows.values);
-   assertEquals('select "unionBase"."PersonSet1lastName_s1_PersonSet2lastName_s2" as "Lastname" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".lastName_s1 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet1 as "root" where "root".FirmID = 1 UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", "root".lastName_s2 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet2 as "root" where "root".FirmID = 1) as "unionBase"', $result1->sqlRemoveFormatting());
+   assertSameSQL('select "unionBase"."PersonSet1lastName_s1_PersonSet2lastName_s2" as "Lastname" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".lastName_s1 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet1 as "root" where "root".FirmID = 1 UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", "root".lastName_s2 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet2 as "root" where "root".FirmID = 1) as "unionBase"', $result1);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::union::testSimpleProjectionFromWithEmbeddedInMapping():Boolean[1]

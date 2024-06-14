@@ -51,7 +51,7 @@ meta::relational::tests::mapping::in::testFilterMappingWithPrefixInClause():Bool
 {
    let result = execute(|Firm.all(), filterMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    // assertSameElements(['ROOT', 'Firm X', 'Firm A', 'Securities', 'Banking', 'Federation'], $result.values.name);
-   assertEquals('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" where "root".LEGALNAME in (\'Firm C\', \'Firm A\')', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" where "root".LEGALNAME in (\'Firm C\', \'Firm A\')', $result);
 }
 
 function <<test.BeforePackage>>

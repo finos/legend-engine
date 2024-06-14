@@ -19,6 +19,7 @@ import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRestrictDistinct_JoinCutDown_ProjectFunctions():Boolean[1]
 {
@@ -31,7 +32,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
 
    assertSize($res1.values.columns, 1);
    assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res1.values.rows.values->sort()->makeString(','));
-   assertEquals('select distinct "root".FIRSTNAME as "firstName" from personTable as "root"', $res1->sqlRemoveFormatting());
+   assertSameSQL('select distinct "root".FIRSTNAME as "firstName" from personTable as "root"', $res1);
 
    let res2 = execute(
       |Person.all()
@@ -43,7 +44,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
 
    assertSize($res2.values.columns, 1);
    assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res2.values.rows.values->sort()->makeString(','));
-   assertEquals('select distinct "root".FIRSTNAME as "firstName" from personTable as "root"', $res2->sqlRemoveFormatting());
+   assertSameSQL('select distinct "root".FIRSTNAME as "firstName" from personTable as "root"', $res2);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRestrictDistinct_JoinCutDown_ColumnSpecs():Boolean[1]
@@ -57,7 +58,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
 
    assertSize($res1.values.columns, 1);
    assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res1.values.rows.values->sort()->makeString(','));
-   assertEquals('select distinct "root".FIRSTNAME as "firstName" from personTable as "root"', $res1->sqlRemoveFormatting());
+   assertSameSQL('select distinct "root".FIRSTNAME as "firstName" from personTable as "root"', $res1);
 
    let res2 = execute(
       |Person.all()
@@ -69,7 +70,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
 
    assertSize($res2.values.columns, 1);
    assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res2.values.rows.values->sort()->makeString(','));
-   assertEquals('select distinct "root".FIRSTNAME as "firstName" from personTable as "root"', $res2->sqlRemoveFormatting());
+   assertSameSQL('select distinct "root".FIRSTNAME as "firstName" from personTable as "root"', $res2);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRestrictDistinct_NoOptimization_NotAfterProject():Boolean[1]
@@ -84,7 +85,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
 
    assertSize($res1.values.columns, 1);
    assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res1.values.rows.values->sort()->makeString(','));
-   assertEquals('select distinct "firstName" as "firstName" from (select top 1000 "root".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "firmName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)) as "subselect"', $res1->sqlRemoveFormatting());
+   assertSameSQL('select distinct "firstName" as "firstName" from (select top 1000 "root".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "firmName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)) as "subselect"', $res1);
 
    let res2 = execute(
       |Person.all()
@@ -97,7 +98,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
 
    assertSize($res2.values.columns, 1);
    assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res2.values.rows.values->sort()->makeString(','));
-   assertEquals('select distinct "root".FIRSTNAME as "firstName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) order by "firstName"', $res2->sqlRemoveFormatting());
+   assertSameSQL('select distinct "root".FIRSTNAME as "firstName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) order by "firstName"', $res2);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRestrictDistinct_NoOptimization_NotRestrictFollowedByDistinct():Boolean[1]
@@ -113,7 +114,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
 
    assertSize($res1.values.columns, 1);
    assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res1.values.rows.values->sort()->makeString(','));
-   assertEquals('select distinct "root".FIRSTNAME as "firstName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) order by "firstName"', $res1->sqlRemoveFormatting());
+   assertSameSQL('select distinct "root".FIRSTNAME as "firstName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) order by "firstName"', $res1);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRestrictDistinct_JoinCutDown_PostTdsOperations():Boolean[1]
@@ -130,7 +131,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
 
    assertSize($res1.values.columns, 1);
    assertEquals('6', $res1.values.rows.values->sort()->makeString(','));
-   assertEquals('select count(*) as "cnt" from (select "firstName" as "firstName" from (select top 1000 distinct "root".FIRSTNAME as "firstName" from personTable as "root") as "subselect" order by "firstName") as "persontable_0"', $res1->sqlRemoveFormatting());
+   assertSameSQL('select count(*) as "cnt" from (select "firstName" as "firstName" from (select top 1000 distinct "root".FIRSTNAME as "firstName" from personTable as "root") as "subselect" order by "firstName") as "persontable_0"', $res1);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRestrictDistinct_NoJoinCutDown():Boolean[1]
@@ -144,7 +145,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
 
    assertSize($res1.values.columns, 2);
    assertEquals('Firm A|Roberts,Firm B|Hill,Firm C|Harris,Firm X|Allen,Firm X|Hill,Firm X|Johnson,Firm X|Smith', $res1.values.rows->map(x|$x.values->makeString('|'))->sort()->makeString(','));
-   assertEquals('select distinct "firmtable_0".LEGALNAME as "firmName", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)', $res1->sqlRemoveFormatting());
+   assertSameSQL('select distinct "firmtable_0".LEGALNAME as "firmName", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)', $res1);
 
    let res2 = execute(
       |Person.all()
@@ -156,7 +157,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
 
    assertSize($res2.values.columns, 2);
    assertEquals('Firm A|Roberts,Firm B|Hill,Firm C|Harris,Firm X|Allen,Firm X|Hill,Firm X|Johnson,Firm X|Smith', $res2.values.rows->map(x|$x.values->makeString('|'))->sort()->makeString(','));
-   assertEquals('select distinct "firmtable_0".LEGALNAME as "firmName", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)', $res2->sqlRemoveFormatting());
+   assertSameSQL('select distinct "firmtable_0".LEGALNAME as "firmName", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)', $res2);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRestrictDistinct_ColumnOrdering():Boolean[1]
@@ -170,7 +171,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
 
    assertSize($res1.values.columns, 2);
    assertEquals('Allen|Anthony,Harris|David,Hill|John,Hill|Oliver,Johnson|John,Roberts|Fabrice,Smith|Peter', $res1.values.rows->map(x|$x.values->makeString('|'))->sort()->makeString(','));
-   assertEquals('select distinct "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName" from personTable as "root"', $res1->sqlRemoveFormatting());
+   assertSameSQL('select distinct "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName" from personTable as "root"', $res1);
 
    let res2 = execute(
       |Person.all()
@@ -182,7 +183,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
 
    assertSize($res2.values.columns, 2);
    assertEquals('Allen|Anthony,Harris|David,Hill|John,Hill|Oliver,Johnson|John,Roberts|Fabrice,Smith|Peter', $res2.values.rows->map(x|$x.values->makeString('|'))->sort()->makeString(','));
-   assertEquals('select distinct "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName" from personTable as "root"', $res2->sqlRemoveFormatting());
+   assertSameSQL('select distinct "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName" from personTable as "root"', $res2);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRestrictDistinct_NoOptimization_WindowColumns():Boolean[1]
@@ -201,7 +202,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
       simpleRelationalMapping,
       DatabaseType.H2, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select distinct "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName", sum("root".AGE) OVER (Partition By "root".FIRSTNAME ) as "sumAge", max("root".AGE) OVER (Partition By "root".FIRSTNAME ) as "maxAge" from personTable as "root" left outer join firmTable as "firmTable_d#6_d#3_m3" on ("firmTable_d#6_d#3_m3".ID = "root".FIRMID)', $res1);
+   assertSameSQL('select distinct "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName", sum("root".AGE) OVER (Partition By "root".FIRSTNAME ) as "sumAge", max("root".AGE) OVER (Partition By "root".FIRSTNAME ) as "maxAge" from personTable as "root" left outer join firmTable as "firmTable_d#6_d#3_m3" on ("firmTable_d#6_d#3_m3".ID = "root".FIRMID)', $res1);
 
    let res2 = meta::relational::functions::sqlstring::toSQLString(
       |Person.all()
@@ -217,7 +218,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
       simpleRelationalMapping,
       DatabaseType.H2, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select distinct "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName", sum("root".AGE) OVER (Partition By "root".FIRSTNAME ) as "sumAge", max("root".AGE) OVER (Partition By "root".FIRSTNAME ) as "maxAge" from personTable as "root" left outer join firmTable as "firmTable_d#6_d#3_m3" on ("firmTable_d#6_d#3_m3".ID = "root".FIRMID)', $res2);
+   assertSameSQL('select distinct "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName", sum("root".AGE) OVER (Partition By "root".FIRSTNAME ) as "sumAge", max("root".AGE) OVER (Partition By "root".FIRSTNAME ) as "maxAge" from personTable as "root" left outer join firmTable as "firmTable_d#6_d#3_m3" on ("firmTable_d#6_d#3_m3".ID = "root".FIRMID)', $res2);
 
    let res3 = meta::relational::functions::sqlstring::toSQLString(
       |Person.all()
@@ -233,5 +234,5 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
       simpleRelationalMapping,
       DatabaseType.H2, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select distinct "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName", sum("root".AGE) OVER (Partition By "firmTable_d#6_d#3_m3".LEGALNAME ) as "sumAge", max("root".AGE) OVER (Partition By "root".FIRSTNAME ) as "maxAge" from personTable as "root" left outer join firmTable as "firmTable_d#6_d#3_m3" on ("firmTable_d#6_d#3_m3".ID = "root".FIRMID)', $res3);
+   assertSameSQL('select distinct "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName", sum("root".AGE) OVER (Partition By "firmTable_d#6_d#3_m3".LEGALNAME ) as "sumAge", max("root".AGE) OVER (Partition By "root".FIRSTNAME ) as "maxAge" from personTable as "root" left outer join firmTable as "firmTable_d#6_d#3_m3" on ("firmTable_d#6_d#3_m3".ID = "root".FIRMID)', $res3);
 }

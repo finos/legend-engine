@@ -23,6 +23,7 @@ import meta::pure::mapping::*;
 import meta::relational::metamodel::execute::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::association::inheritence::setUp():Boolean[1]
 {
@@ -48,7 +49,7 @@ function <<test.Test>> meta::relational::tests::mapping::association::inheritenc
    let result = execute(|Person.all()->groupBy([p|$p.name], [agg(p|$p.ownedVehiclesWithEmptyDescription()->subType(@Car).wheelCount, s|$s->sum())],['name', 'wheelCountSum']), assocMapping2, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    println($result);
    assertEquals(2, $result.values.rows->size());
-   assertEquals('select "root".name as "name", sum("car_0".db_car_wheelCount) as "wheelCountSum" from Person as "root" left outer join Car as "car_0" on ("root".ID = "car_0".c_PersonID and "car_0".c_Description = \'\') group by "name"', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".name as "name", sum("car_0".db_car_wheelCount) as "wheelCountSum" from Person as "root" left outer join Car as "car_0" on ("root".ID = "car_0".c_PersonID and "car_0".c_Description = \'\') group by "name"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::association::inheritence::testQuery():Boolean[1]

@@ -23,6 +23,7 @@ import meta::relational::metamodel::execute::*;
 import meta::core::runtime::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::csv::*;
+import meta::relational::functions::asserts::*;
 
 // Alloy exclusion reason: 15. Variables types should be inferred Encoding doesn't currently support generics (issue if the variable if of type Path for example)
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::datePeriods::testGroupBy():Boolean[1]
@@ -55,10 +56,10 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
    let result = execute($fn,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values;
 
-   assertEquals('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' +
+   assertTdsFromCsv('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' +
                        'OrgName2,1002,100000.0,100000.0\n' +
                        'OrgName2,1001,300000.0,0.0\n' +
-                       'OrgName1,1002,200000.0,0.0\n', $tds->toCSV());
+                       'OrgName1,1002,200000.0,0.0\n', $tds);
 
    assertEqualsH2Compatible(
     'select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = \'2015-02-25\'',
@@ -106,10 +107,10 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
    let result = execute($fn,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values;
 
-   assertEquals('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' +
+   assertTdsFromCsv('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' +
                        'OrgName2,1002,100000.0,100000.0\n' +
                        'OrgName2,1001,300000.0,0.0\n' +
-                       'OrgName1,1002,200000.0,0.0\n', $tds->toCSV());
+                       'OrgName1,1002,200000.0,0.0\n', $tds);
 
    assertEqualsH2Compatible(
     'select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = \'2015-02-25\'',
@@ -156,10 +157,10 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::groupBy::datePer
    let result = execute($fn,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values;
 
-   assertEquals('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' +
+   assertTdsFromCsv('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' +
                        'OrgName2,1002,100000.0,100000.0\n' +
                        'OrgName2,1001,300000.0,0.0\n' +
-                       'OrgName1,1002,200000.0,0.0\n', $tds->toCSV());
+                       'OrgName1,1002,200000.0,0.0\n', $tds);
 
    assertEqualsH2Compatible(
     'select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = \'2015-02-25\'',
@@ -208,10 +209,10 @@ function <<test.Test>> meta::relational::tests::groupBy::datePeriods::testGroupB
    let result = execute($fn,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values;
 
-   assertEquals('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' +
+   assertTdsFromCsv('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' +
                        'OrgName2,1002,100000.0,100000.0\n' +
                        'OrgName2,1001,300000.0,0.0\n' +
-                       'OrgName1,1002,200000.0,0.0\n', $tds->toCSV());
+                       'OrgName1,1002,200000.0,0.0\n', $tds);
 
    assertEqualsH2Compatible(
     'select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = \'2015-02-25\'',
@@ -263,10 +264,10 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
    let result = execute($fn,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values;
 
-   assertEquals('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' +
+   assertTdsFromCsv('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' +
                        'OrgName2,1002,100000.0,100000.0\n' +
                        'OrgName2,1001,300000.0,0.0\n' +
-                       'OrgName1,1002,200000.0,0.0\n', $tds->toCSV());
+                       'OrgName1,1002,200000.0,0.0\n', $tds);
 
    assertEqualsH2Compatible(
     'select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = \'2015-02-25\'',
@@ -472,10 +473,10 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
                          ,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values;
 
-   assertEquals('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' +
+   assertTdsFromCsv('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' +
                        'OrgName2,1002,100000.0,100000.0\n' +
                        'OrgName2,1001,300000.0,0.0\n' +
-                       'OrgName1,1002,200000.0,0.0\n', $tds->toCSV());
+                       'OrgName1,1002,200000.0,0.0\n', $tds);
 
    assertEqualsH2Compatible(
     'select "org_chart_entity_0".name as "Sales Division", "income_function_0".code as "Income Function", sum((case when "calendar_0"."fiscal day" <= 37 then 1.0 else 0.0 end * "root".credits)) as "YTD Gross Credits", sum((case when (week("calendar_0"."date") = week(\'2015-02-25\') and DAY_OF_WEEK("calendar_0"."date") <= DAY_OF_WEEK(\'2015-02-25\')) then 1.0 else 0.0 end * "root".credits)) as "WTD Gross Credits" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join INCOME_FUNCTION as "income_function_0" on ("root".if_code = "income_function_0".code) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") where ("calendar_0"."date" > \'2015-02-01\' and "calendar_0"."date" <= \'2015-02-25\') group by "Sales Division","Income Function" order by "Sales Division" desc,"Income Function" desc',

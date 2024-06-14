@@ -526,17 +526,17 @@ function <<test.ToFix>> meta::relational::tests::query::filter::exists::testMult
       |Firm.all()->filter(f|$f.employees->exists(e|$e.firstName == 'Peter'))->project(col(x|$x.legalName, 'name')),
       simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()
    );
-   assertEquals('name\nFirm X\n', $result1.values->meta::relational::tests::csv::toCSV());
+   assertTdsFromCsv('name\nFirm X\n', $result1.values);
 
    let result2 = execute(
       |Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Harris'))->project(col(x|$x.legalName, 'name')),
       simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()
    );
-   assertEquals('name\nFirm C\n', $result2.values->meta::relational::tests::csv::toCSV());
+   assertTdsFromCsv('name\nFirm C\n', $result2.values);
 
    let result3 = execute(
       |Firm.all()->filter(f|$f.employees->exists(e|$e.firstName == 'Peter') || $f.employees->exists(e|$e.lastName == 'Harris'))->project(col(x|$x.legalName, 'name')),
       simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()
    );
-   assertEquals('name\nFirm X\nFirm C\n', $result3.values->meta::relational::tests::csv::toCSV());
+   assertTdsFromCsv('name\nFirm X\nFirm C\n', $result3.values);
 }

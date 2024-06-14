@@ -411,7 +411,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::testSqlRealiasVie
 {
    let result = execute(|AccountPnl.all(), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['Account 1,100.0', 'Account 2,350.0'], $result.values->map(p|[$p.account->toOne().name, $p.pnl]->makeString(',')));
-   assertEquals('select "root".accountId as "pk_0", "root".orderPnl as "pnl" from (select "root".accountID as accountId, sum("orderpnltable_0".pnl) as orderPnl from orderTable as "root" left outer join orderPnlTable as "orderpnltable_0" on ("orderpnltable_0".ORDER_ID = "root".ID) group by "root".accountID) as "root"', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".accountId as "pk_0", "root".orderPnl as "pnl" from (select "root".accountID as accountId, sum("orderpnltable_0".pnl) as orderPnl from orderTable as "root" left outer join orderPnlTable as "orderpnltable_0" on ("orderpnltable_0".ORDER_ID = "root".ID) group by "root".accountID) as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::postProcessor::testSqlRealiasFreeMarker():Boolean[1]
@@ -426,7 +426,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::testSqlRealiasFre
 function <<test.Test>> meta::relational::tests::postProcessor::testSQLRealiasCaseSensitiveTableNames():Boolean[1]
 {
   let result = execute(|Firm.all()->project([f|$f.employees.firstName, f|$f.employees.age],['firstName', 'age']), caseSentitiveMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-  assertEquals('select "personset_0".firstName as "firstName", "personset_1".age as "age" from schemaA.firmSet as "root" left outer join schemaA.personset as "personset_0" on ("root".ID = "personset_0".FirmID) left outer join schemaB.PERSONSET as "personset_1" on ("personset_0".ID = "personset_1".ID)',$result->sqlRemoveFormatting());
+  assertSameSQL('select "personset_0".firstName as "firstName", "personset_1".age as "age" from schemaA.firmSet as "root" left outer join schemaA.personset as "personset_0" on ("root".ID = "personset_0".FirmID) left outer join schemaB.PERSONSET as "personset_1" on ("personset_0".ID = "personset_1".ID)',$result);
 }
 
 function <<test.Test>> meta::relational::tests::postProcessor::testDb2ColumnRename():Boolean[1]

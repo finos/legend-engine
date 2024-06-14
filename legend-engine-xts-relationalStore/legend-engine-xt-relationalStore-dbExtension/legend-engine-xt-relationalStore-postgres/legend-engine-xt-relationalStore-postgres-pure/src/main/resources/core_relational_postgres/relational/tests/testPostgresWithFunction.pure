@@ -27,7 +27,7 @@ function <<test.Test>> meta::relational::tests::query::function::postgres::testS
 let result = toSQLString(|Person.all()
       ->filter({row| $row.firstName->trim() != ''})
       ->project([#/Person/firstName#, #/Person/firm/legalName#]), simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
- assertEquals('select "root".FIRSTNAME as "firstName", "firmTable_d_1_d_m2".LEGALNAME as "legalName" from personTable as "root" left outer join firmTable as "firmTable_d_1_d_m2" on ("firmTable_d_1_d_m2".ID = "root".FIRMID) where (trim("root".FIRSTNAME) <> Text\'\' OR trim("root".FIRSTNAME) is null)', $result);
+ assertSameSQL('select "root".FIRSTNAME as "firstName", "firmTable_d_1_d_m2".LEGALNAME as "legalName" from personTable as "root" left outer join firmTable as "firmTable_d_1_d_m2" on ("firmTable_d_1_d_m2".ID = "root".FIRMID) where (trim("root".FIRSTNAME) <> Text\'\' OR trim("root".FIRSTNAME) is null)', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::postgres::testSupportForLTrimFunction():Boolean[1]
@@ -35,7 +35,7 @@ function <<test.Test>> meta::relational::tests::query::function::postgres::testS
 let result = toSQLString(|Person.all()
       ->filter({row| $row.firstName->ltrim() != ''})
       ->project([#/Person/firstName#, #/Person/firm/legalName#]), simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
- assertEquals('select "root".FIRSTNAME as "firstName", "firmTable_d_1_d_m2".LEGALNAME as "legalName" from personTable as "root" left outer join firmTable as "firmTable_d_1_d_m2" on ("firmTable_d_1_d_m2".ID = "root".FIRMID) where (ltrim("root".FIRSTNAME) <> Text\'\' OR ltrim("root".FIRSTNAME) is null)', $result);
+ assertSameSQL('select "root".FIRSTNAME as "firstName", "firmTable_d_1_d_m2".LEGALNAME as "legalName" from personTable as "root" left outer join firmTable as "firmTable_d_1_d_m2" on ("firmTable_d_1_d_m2".ID = "root".FIRMID) where (ltrim("root".FIRSTNAME) <> Text\'\' OR ltrim("root".FIRSTNAME) is null)', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::postgres::testSupportForRTrimFunction():Boolean[1]
@@ -43,5 +43,5 @@ function <<test.Test>> meta::relational::tests::query::function::postgres::testS
 let result = toSQLString(|Person.all()
       ->filter({row| $row.firstName->rtrim() != ''})
       ->project([#/Person/firstName#, #/Person/firm/legalName#]), simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
- assertEquals('select "root".FIRSTNAME as "firstName", "firmTable_d_1_d_m2".LEGALNAME as "legalName" from personTable as "root" left outer join firmTable as "firmTable_d_1_d_m2" on ("firmTable_d_1_d_m2".ID = "root".FIRMID) where (rtrim("root".FIRSTNAME) <> Text\'\' OR rtrim("root".FIRSTNAME) is null)', $result);
+ assertSameSQL('select "root".FIRSTNAME as "firstName", "firmTable_d_1_d_m2".LEGALNAME as "legalName" from personTable as "root" left outer join firmTable as "firmTable_d_1_d_m2" on ("firmTable_d_1_d_m2".ID = "root".FIRMID) where (rtrim("root".FIRSTNAME) <> Text\'\' OR rtrim("root".FIRSTNAME) is null)', $result);
 }

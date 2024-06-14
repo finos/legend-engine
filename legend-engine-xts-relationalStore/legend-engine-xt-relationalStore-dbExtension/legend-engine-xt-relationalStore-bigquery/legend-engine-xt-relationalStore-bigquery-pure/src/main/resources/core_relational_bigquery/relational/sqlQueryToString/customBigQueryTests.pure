@@ -99,7 +99,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::tableAndColumnNamesAre
     meta::relational::bigQuery::tests::mapping::simpleRelationalMappingPersonForBQ,
     meta::relational::runtime::DatabaseType.BigQuery,
     meta::relational::extension::relationalExtensions());
-   assertEquals('select `person_table_d#2_d_m1`.key as `KEY` from `person table` as `root` left outer join `person table` as `person_table_d#2_d_m1` on (`root`.key = `person_table_d#2_d_m1`.key)', $result);
+   assertSameSQL('select `person_table_d#2_d_m1`.key as `KEY` from `person table` as `root` left outer join `person table` as `person_table_d#2_d_m1` on (`root`.key = `person_table_d#2_d_m1`.key)', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::tableWithSchema():Boolean[1]
@@ -109,7 +109,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::tableWithSchema():Bool
     meta::relational::bigQuery::tests::mapping::simpleRelationalMappingPersonForBQ,
     meta::relational::runtime::DatabaseType.BigQuery,
     meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.ID as `ID` from dataset1.`thing table` as `root`', $result);
+   assertSameSQL('select `root`.ID as `ID` from dataset1.`thing table` as `root`', $result);
 }
 
 
@@ -125,7 +125,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::windowFunction():Boole
      meta::relational::tests::simpleRelationalMappingInc,
      DatabaseType.BigQuery,
      meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.LASTNAME as `lastName`, avg(1.0 * `root`.AGE) OVER (Partition By `root`.FIRSTNAME Order By `root`.LASTNAME ASC) as `ageAverageWindow` from personTable as `root`', $result);
+   assertSameSQL('select `root`.LASTNAME as `lastName`, avg(1.0 * `root`.AGE) OVER (Partition By `root`.FIRSTNAME Order By `root`.LASTNAME ASC) as `ageAverageWindow` from personTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::testParseDateTime():Boolean[1]
@@ -136,7 +136,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::testParseDateTime():Bo
     meta::relational::tests::simpleRelationalMapping,
     DatabaseType.BigQuery,
     meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.settlementDateTime as `settlementDateTime` from tradeTable as `root` where `root`.settlementDateTime < PARSE_DATETIME(\'%Y-%m-%d %H:%M:%E6S\', \'2015-01-01 00:00:00.000\')', $result);
+   assertSameSQL('select `root`.settlementDateTime as `settlementDateTime` from tradeTable as `root` where `root`.settlementDateTime < PARSE_DATETIME(\'%Y-%m-%d %H:%M:%E6S\', \'2015-01-01 00:00:00.000\')', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::testParseDate():Boolean[1]
@@ -147,7 +147,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::testParseDate():Boolea
     meta::relational::tests::simpleRelationalMapping,
      DatabaseType.BigQuery,
      meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate < PARSE_DATETIME(\'%Y-%m-%d %H:%M:%E6S\', \'2015-01-01 00:00:00.000\')', $result);
+   assertSameSQL('select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate < PARSE_DATETIME(\'%Y-%m-%d %H:%M:%E6S\', \'2015-01-01 00:00:00.000\')', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::testParseDateOnQueryVariable():Boolean[1]
@@ -213,7 +213,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::testGroupByAlias():Boo
       meta::relational::tests::simpleRelationalMapping,
       DatabaseType.BigQuery,
       meta::relational::extension::relationalExtensions());
-    assertEquals('select `root`.FIRSTNAME as `name`, sum(`root`.AGE) as `age` from personTable as `root` group by `name`', $result);
+    assertSameSQL('select `root`.FIRSTNAME as `name`, sum(`root`.AGE) as `age` from personTable as `root` group by `name`', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::testSimpleJoinStrings():Boolean[1]
@@ -264,7 +264,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::hour():Boolean[1]
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select extract(hour from `root`.dateTime) as `hour` from dataTable as `root`', $result);
+    assertSameSQL('select extract(hour from `root`.dateTime) as `hour` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::weekofyear():Boolean[1]
@@ -274,7 +274,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::weekofyear():Boolean[1
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select extract(week from `root`.dateTime) as `weekofyear` from dataTable as `root`', $result);
+    assertSameSQL('select extract(week from `root`.dateTime) as `weekofyear` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::cast():Boolean[1]
@@ -284,7 +284,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::cast():Boolean[1]
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select cast(`root`.string3 as int64) as `string3Integer` from dataTable as `root`', $result);
+    assertSameSQL('select cast(`root`.string3 as int64) as `string3Integer` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::toString():Boolean[1]
@@ -294,7 +294,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::toString():Boolean[1]
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select cast(`root`.int1 as string) as `int1String` from dataTable as `root`', $result);
+    assertSameSQL('select cast(`root`.int1 as string) as `int1String` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::today():Boolean[1]
@@ -304,7 +304,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::today():Boolean[1]
         meta::relational::tests::simpleRelationalMapping,
         meta::relational::runtime::DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate = CURRENT_DATE()', $result);
+    assertSameSQL('select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate = CURRENT_DATE()', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::stddev_samp():Boolean[1]
@@ -314,7 +314,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::stddev_samp():Boolean[
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select stddev_samp(`root`.int1) as `stdDevSample` from dataTable as `root`', $result);
+    assertSameSQL('select stddev_samp(`root`.int1) as `stdDevSample` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::stddev_pop():Boolean[1]
@@ -324,7 +324,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::stddev_pop():Boolean[1
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select stddev_pop(`root`.int1) as `float1StdDevPopulation` from dataTable as `root`', $result);
+    assertSameSQL('select stddev_pop(`root`.int1) as `float1StdDevPopulation` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::substring():Boolean[1]
@@ -334,7 +334,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::substring():Boolean[1]
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.AGE as `age`, `root`.LASTNAME as `lastName` from personTable as `root` where substring(`root`.FIRSTNAME, 1, 5) = \'John\'', $result);
+    assertSameSQL('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.AGE as `age`, `root`.LASTNAME as `lastName` from personTable as `root` where substring(`root`.FIRSTNAME, 1, 5) = \'John\'', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::second():Boolean[1]
@@ -344,7 +344,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::second():Boolean[1]
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select extract( second from `root`.settlementDateTime) as `second` from tradeTable as `root`', $result);
+    assertSameSQL('select extract( second from `root`.settlementDateTime) as `second` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::rtrim():Boolean[1]
@@ -354,7 +354,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::rtrim():Boolean[1]
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select rtrim(`root`.string2) as `rtrim` from dataTable as `root`', $result);
+    assertSameSQL('select rtrim(`root`.string2) as `rtrim` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::round():Boolean[1]
@@ -364,7 +364,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::round():Boolean[1]
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select round(`root`.float1, 0) as `round` from dataTable as `root`', $result);
+    assertSameSQL('select round(`root`.float1, 0) as `round` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::right():Boolean[1]
@@ -374,7 +374,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::right():Boolean[1]
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select right(`root`.string1,2) as `right` from dataTable as `root`', $result);
+    assertSameSQL('select right(`root`.string1,2) as `right` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::rem():Boolean[1]
@@ -384,7 +384,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::rem():Boolean[1]
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select mod(`root`.quantity,`root`.ID) as `rem` from tradeTable as `root`', $result);
+    assertSameSQL('select mod(`root`.quantity,`root`.ID) as `rem` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::position():Boolean[1]
@@ -394,7 +394,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::position():Boolean[1]
         meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping,
         DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select substring(`root`.FULLNAME, 0, strpos(\',\', `root`.FULLNAME)-1) as `firstName` from personTable as `root`', $result);
+    assertSameSQL('select substring(`root`.FULLNAME, 0, strpos(\',\', `root`.FULLNAME)-1) as `firstName` from personTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::parseInteger():Boolean[1]
@@ -404,7 +404,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::parseInteger():Boolean
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select cast(`root`.string2Integer as int64) as `parseInteger` from dataTable as `root`', $result);
+    assertSameSQL('select cast(`root`.string2Integer as int64) as `parseInteger` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::parseFloat():Boolean[1]
@@ -414,7 +414,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::parseFloat():Boolean[1
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select cast(`root`.string2float as float64) as `string2Float` from dataTable as `root`', $result);
+    assertSameSQL('select cast(`root`.string2float as float64) as `string2Float` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::parseDecimal():Boolean[1]
@@ -424,7 +424,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::parseDecimal():Boolean
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select cast(`root`.string2Decimal as decimal) as `string2Decimal` from dataTable as `root`', $result);
+    assertSameSQL('select cast(`root`.string2Decimal as decimal) as `string2Decimal` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::now():Boolean[1]
@@ -434,7 +434,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::now():Boolean[1]
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate = current_timestamp()', $result);
+    assertSameSQL('select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate = current_timestamp()', $result);
 }
 
 // month same as month number
@@ -445,7 +445,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::monthNumber():Boolean[
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select extract(month from `root`.settlementDateTime) as `settlementMonthNumber` from tradeTable as `root`', $result);
+    assertSameSQL('select extract(month from `root`.settlementDateTime) as `settlementMonthNumber` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::mod():Boolean[1]
@@ -455,7 +455,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::mod():Boolean[1]
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select mod(`root`.int1,2) as `mod` from dataTable as `root`', $result);
+    assertSameSQL('select mod(`root`.int1,2) as `mod` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::minute():Boolean[1]
@@ -465,7 +465,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::minute():Boolean[1]
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
-    assertEquals('select extract(minute from `root`.settlementDateTime) as `settlementDateTimeMinute` from tradeTable as `root`', $result);
+    assertSameSQL('select extract(minute from `root`.settlementDateTime) as `settlementDateTimeMinute` from tradeTable as `root`', $result);
 }
 
 
@@ -481,7 +481,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::testProcessLiteral():B
                                                    ],
                                                    ['a','b','c','d', 'e', 'f'])->take(0),
                               simpleRelationalMapping, DatabaseType.BigQuery, meta::relational::extension::relationalExtensions());
-  assertEquals('select \'String\' as `a`, PARSE_DATE(\'%Y-%m-%d\', \'2016-03-01\') as `b`, PARSE_DATETIME(\'%Y-%m-%d %H:%M:%E6S\', \'2016-03-01 10:18:18.976\') as `c`, 1 as `d`, 1.1 as `e`, \'false\' as `f` from personTable as `root` limit 0', $result);
+  assertSameSQL('select \'String\' as `a`, PARSE_DATE(\'%Y-%m-%d\', \'2016-03-01\') as `b`, PARSE_DATETIME(\'%Y-%m-%d %H:%M:%E6S\', \'2016-03-01 10:18:18.976\') as `c`, 1 as `d`, 1.1 as `e`, \'false\' as `f` from personTable as `root` limit 0', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::testDynaConcat():Boolean[1]

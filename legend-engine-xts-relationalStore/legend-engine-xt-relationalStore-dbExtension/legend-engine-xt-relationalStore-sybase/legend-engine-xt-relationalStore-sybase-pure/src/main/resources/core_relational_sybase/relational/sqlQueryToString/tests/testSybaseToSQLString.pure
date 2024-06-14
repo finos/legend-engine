@@ -36,14 +36,14 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybase::te
                                                    ['a','b','c','d', 'e'])->take(0),
                               simpleRelationalMapping, DatabaseType.Sybase, meta::relational::extension::relationalExtensions());
    print($result);
-   assertEquals('select top 0 \'String\' as "a", convert(DATE, \'2016-03-01\', 101) as "b", convert(DATETIME, \'2016-03-01 10:18:18.976\', 101) as "c", 1 as "d", 1.1 as "e" from personTable as "root"', $result);
+   assertSameSQL('select top 0 \'String\' as "a", convert(DATE, \'2016-03-01\', 101) as "b", convert(DATETIME, \'2016-03-01 10:18:18.976\', 101) as "c", 1 as "d", 1.1 as "e" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybase::testToSQLStringWithLength():Boolean[1]
 {
    [DatabaseType.Sybase]->map(db|
       let s = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, $db, meta::relational::extension::relationalExtensions());
-      assertEquals('select char_length("root".FIRSTNAME) as "nameLength" from personTable as "root"', $s);
+      assertSameSQL('select char_length("root".FIRSTNAME) as "nameLength" from personTable as "root"', $s);
    );
 }
 
@@ -54,7 +54,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybase::te
               |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
                meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, $db, meta::relational::extension::relationalExtensions());
 
-      assertEquals('select substring("root".FULLNAME, 0, charindex(\',\', "root".FULLNAME)-1) as "firstName" from personTable as "root"', $s);
+      assertSameSQL('select substring("root".FULLNAME, 0, charindex(\',\', "root".FULLNAME)-1) as "firstName" from personTable as "root"', $s);
    );
 }
 
@@ -89,7 +89,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybase::te
                                                    ],
                                                    ['a']),
                               simpleRelationalMappingInc, DatabaseType.Sybase, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast("root"."DATE" as date) as "a" from locationTable as "root"', $result);
+   assertSameSQL('select cast("root"."DATE" as date) as "a" from locationTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybase::testToSqlGenerationFirstDayOfMonth():Boolean[1]

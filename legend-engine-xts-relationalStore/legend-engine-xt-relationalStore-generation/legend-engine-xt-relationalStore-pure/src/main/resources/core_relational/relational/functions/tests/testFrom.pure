@@ -15,6 +15,7 @@
 import meta::pure::mapping::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.BeforePackage>> meta::relational::tests::fromMapping::setUp():Boolean[1]{
   meta::relational::tests::query::setUp()
@@ -28,7 +29,7 @@ function <<test.Test>> meta::relational::tests::fromMapping::testMappingFromQuer
                          }, ^Mapping(name = ''), ^meta::core::runtime::Runtime(), meta::relational::extension::relationalExtensions());
 
   assertSameElements(['Anthony', 'Don', 'Firm X', 'John', 'John', 'New', 'Peter'], $result.values.rows.values);
-  assertEquals('select "unionalias_0"."Name" as "Name" from (select "firmtable_0".LEGALNAME as "Name" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "root".FIRSTNAME = \'Peter\' UNION ALL select "persontable_1".FIRSTNAME as "Name" from firmTable as "root" left outer join personTable as "persontable_1" on ("root".ID = "persontable_1".FIRMID) where "root".LEGALNAME = \'Firm X\') as "unionalias_0"', $result->sqlRemoveFormatting());
+  assertSameSQL('select "unionalias_0"."Name" as "Name" from (select "firmtable_0".LEGALNAME as "Name" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "root".FIRSTNAME = \'Peter\' UNION ALL select "persontable_1".FIRSTNAME as "Name" from firmTable as "root" left outer join personTable as "persontable_1" on ("root".ID = "persontable_1".FIRMID) where "root".LEGALNAME = \'Firm X\') as "unionalias_0"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::fromMapping::testClassMappingsAreCorrectlyIsolated():Boolean[1]
@@ -45,7 +46,7 @@ function <<test.Test>> meta::relational::tests::fromMapping::testClassMappingsAr
 
 
   assertSameElements(['Don', 'Peter'], $result.values.rows.values);
-  assertEquals('select "unionalias_0"."FirstName" as "FirstName" from (select "root".FIRSTNAME as "FirstName" from personTable as "root" where "root".FIRSTNAME = \'Peter\' UNION ALL select "root".FIRSTNAME as "FirstName" from personTable as "root" where "root".FIRSTNAME = \'Don\') as "unionalias_0"', $result->sqlRemoveFormatting());
+  assertSameSQL('select "unionalias_0"."FirstName" as "FirstName" from (select "root".FIRSTNAME as "FirstName" from personTable as "root" where "root".FIRSTNAME = \'Peter\' UNION ALL select "root".FIRSTNAME as "FirstName" from personTable as "root" where "root".FIRSTNAME = \'Don\') as "unionalias_0"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::fromMapping::testClassMappingsWithUnions():Boolean[1]
@@ -56,7 +57,7 @@ function <<test.Test>> meta::relational::tests::fromMapping::testClassMappingsWi
   let result =  execute({|Person.all()->project(p|$p.firstName,'FirstName')->from(meta::relational::tests::simpleRelationalMappingWithChainedUnions, $runtime)}, ^Mapping(name = ''), ^meta::core::runtime::Runtime(), meta::relational::extension::relationalExtensions());
 
   assertSameElements(['Anthony', 'Anthony', 'David', 'David', 'Don', 'Don', 'Elena', 'Elena', 'Fabrice', 'Fabrice', 'John', 'John', 'John', 'John', 'New', 'New', 'No address', 'No address', 'No firm', 'No firm', 'Oliver', 'Oliver', 'Peter', 'Peter'], $result.values.rows.values);
-  assertEquals('select "unionBase"."personTableFIRSTNAME_personTableFIRSTNAME" as "FirstName" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".FIRSTNAME as "personTableFIRSTNAME_personTableFIRSTNAME" from personTable as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", "root".FIRSTNAME as "personTableFIRSTNAME_personTableFIRSTNAME" from personTable as "root") as "unionBase"', $result->sqlRemoveFormatting());
+  assertSameSQL('select "unionBase"."personTableFIRSTNAME_personTableFIRSTNAME" as "FirstName" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".FIRSTNAME as "personTableFIRSTNAME_personTableFIRSTNAME" from personTable as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", "root".FIRSTNAME as "personTableFIRSTNAME_personTableFIRSTNAME" from personTable as "root") as "unionBase"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::fromMapping::testEnumProjection():Boolean[1]

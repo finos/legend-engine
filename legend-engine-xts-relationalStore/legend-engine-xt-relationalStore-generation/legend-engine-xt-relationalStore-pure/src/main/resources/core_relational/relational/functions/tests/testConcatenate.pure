@@ -86,12 +86,12 @@ function <<test.Test>> meta::relational::tests::projection::function::concatenat
                                                ),
                                                simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 4);
-   assertEquals('a,b\n'+
+   assertTdsFromCsv('a,b\n'+
                 'Firm X,Firm X\n'+
                 'Firm A,\n'+
                 'Firm C,Firm C\n'+
                 'Firm D,\n'
-                ,$result.values->toCSV());
+                ,$result.values);
    assertSameSQL('select "root".NAME as "a", "unionalias_0"."name" as "b" from productSchema.productTable as "root" left outer join (select "producttable_1".NAME as "name", "producttable_1".ID as ID from productSchema.productTable as "producttable_1" where "producttable_1".NAME like \'Firm X%\' UNION ALL select "producttable_1".NAME as "name", "producttable_1".ID as ID from productSchema.productTable as "producttable_1" where "producttable_1".NAME like \'Firm C%\') as "unionalias_0" on ("root".ID = "unionalias_0".ID)', $result);
 }
 

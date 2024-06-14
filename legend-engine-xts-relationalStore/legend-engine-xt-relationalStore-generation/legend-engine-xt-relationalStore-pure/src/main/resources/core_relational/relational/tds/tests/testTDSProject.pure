@@ -20,6 +20,7 @@ import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectStringLiteral():Boolean[1]
 {
@@ -35,8 +36,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectStri
    assertEquals('Peter|Hello,John|Hello,John|Hello,Anthony|Hello,Fabrice|Hello,Oliver|Hello,David|Hello',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "firstName", \'Hello\' as "hello" from personTable as "root"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "firstName", \'Hello\' as "hello" from personTable as "root"',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectFunctionOnStringLiteral():Boolean[1]
@@ -53,8 +54,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectFunc
    assertEquals('Peter|5,John|5,John|5,Anthony|5,Fabrice|5,Oliver|5,David|5',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "first_name", char_length(\'Hello\') as "hello_length" from personTable as "root"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "first_name", char_length(\'Hello\') as "hello_length" from personTable as "root"',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectStringColumn():Boolean[1]
@@ -71,8 +72,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectStri
    assertEquals('Peter|Peter,John|John,John|John,Anthony|Anthony,Fabrice|Fabrice,Oliver|Oliver,David|David',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "first_name", "root".FIRSTNAME as "name_again" from personTable as "root"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "first_name", "root".FIRSTNAME as "name_again" from personTable as "root"',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectFunctionOnStringColumn():Boolean[1]
@@ -89,8 +90,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectFunc
    assertEquals('Peter|5,John|4,John|4,Anthony|7,Fabrice|7,Oliver|6,David|5',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "first_name", char_length("root".FIRSTNAME) as "name_length" from personTable as "root"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "first_name", char_length("root".FIRSTNAME) as "name_length" from personTable as "root"',
+      $result);
 }
 
 function <<test.ToFix>> meta::relational::tests::tds::tdsProject::testProjectFunctionOnEnumColumn():Boolean[1]
@@ -107,8 +108,8 @@ function <<test.ToFix>> meta::relational::tests::tds::tdsProject::testProjectFun
    assertEquals('Hoboken|CITY|1,New York|CITY|1,New York|CITY|1,New York|CITY|1,San Fransisco|CITY|1,Hong Kong|CITY|1,New York|CITY|1,New York|CITY|1,Cupertino|CITY|1,Tokyo|CITY|1,Mountain View|CITY|1',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".NAME as "name", "root".TYPE as "type" from addressTable as "root" where "root".TYPE = 1',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".NAME as "name", "root".TYPE as "type" from addressTable as "root" where "root".TYPE = 1',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectMultipleFunctions():Boolean[1]
@@ -127,8 +128,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectMult
    assertEquals('Peter|Hello|5,John|Hello|4,John|Hello|4,Anthony|Hello|7,Fabrice|Hello|7,Oliver|Hello|6,David|Hello|5',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "first_name", \'Hello\' as "const", char_length("root".FIRSTNAME) as "name_length" from personTable as "root"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "first_name", \'Hello\' as "const", char_length("root".FIRSTNAME) as "name_length" from personTable as "root"',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectAndProjectAgain():Boolean[1]
@@ -148,8 +149,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectAndP
    assertEquals('Peter|5|10,John|4|8,John|4|8,Anthony|7|14,Fabrice|7|14,Oliver|6|12,David|5|10',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "first_name", char_length("root".FIRSTNAME) as "name_length", (char_length("root".FIRSTNAME) * 2) as "double_name_length" from personTable as "root"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "first_name", char_length("root".FIRSTNAME) as "name_length", (char_length("root".FIRSTNAME) * 2) as "double_name_length" from personTable as "root"',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectOnDynaFunctionColumn():Boolean[1]
@@ -168,8 +169,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectOnDy
    assertEquals('Peter|SMITH|5,John|JOHNSON|7,John|HILL|4,Anthony|ALLEN|5,Fabrice|ROBERTS|7,Oliver|HILL|4,David|HARRIS|6',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "first", upper("root".LASTNAME) as "LAST", char_length(upper("root".LASTNAME)) as "name_length" from personTable as "root"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "first", upper("root".LASTNAME) as "LAST", char_length(upper("root".LASTNAME)) as "name_length" from personTable as "root"',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectOnMultiple():Boolean[1]
@@ -188,8 +189,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectOnMu
    assertEquals('Peter|Smith|10,John|Johnson|11,John|Hill|8,Anthony|Allen|12,Fabrice|Roberts|14,Oliver|Hill|10,David|Harris|11',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "first_name", "root".LASTNAME as "last_name", (char_length("root".FIRSTNAME) + char_length("root".LASTNAME)) as "combined_length" from personTable as "root"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "first_name", "root".LASTNAME as "last_name", (char_length("root".FIRSTNAME) + char_length("root".LASTNAME)) as "combined_length" from personTable as "root"',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testDateLiteral():Boolean[1]
@@ -238,8 +239,8 @@ function <<test.Test, test.ExcludeAlloy>> {test.excludePlatform = 'Java compiled
    assertEquals('Peter|Smith|5,John|Johnson|4,John|Hill|4,Anthony|Allen|7,Fabrice|Roberts|7,Oliver|Hill|6,David|Harris|5',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "first_name", "root".LASTNAME as "last_name", char_length("root".FIRSTNAME) as "first_name_length" from personTable as "root"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "first_name", "root".LASTNAME as "last_name", char_length("root".FIRSTNAME) as "first_name_length" from personTable as "root"',
+      $result);
 }
 
 function <<test.ToFix>> meta::relational::tests::tds::tdsProject::testProjectWithVariables2():Boolean[1]
@@ -262,8 +263,8 @@ function <<test.ToFix>> meta::relational::tests::tds::tdsProject::testProjectWit
    assertEquals('Peter|Smith|6,John|Johnson|4,John|Hill|4,Anthony|Allen|7,Fabrice|Roberts|7,Oliver|Hill|7,David|Harris|5',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "first_name", "root".LASTNAME as "last_name", char_length("root".FIRSTNAME) as "first_name_length" from personTable as "root"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "first_name", "root".LASTNAME as "last_name", char_length("root".FIRSTNAME) as "first_name_length" from personTable as "root"',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectReduceColumns():Boolean[1]
@@ -280,8 +281,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectRedu
    assertEquals('Peter,John,John,Anthony,Fabrice,Oliver,David',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "first" from personTable as "root"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "first" from personTable as "root"',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testHourFunction():Boolean[1]
@@ -328,8 +329,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectEnum
    assertEquals('Peter|true,John|true,John|true,Anthony|true,Fabrice|true,Oliver|true,David|true',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "firstName", dateadd(DAY, 1, current_timestamp()) > current_timestamp() as "tomorrowGreaterThanToday" from personTable as "root"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "firstName", dateadd(DAY, 1, current_timestamp()) > current_timestamp() as "tomorrowGreaterThanToday" from personTable as "root"',
+      $result);
 }
 
 
@@ -354,8 +355,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectWith
    assertEquals('Peter|true,John|true,John|true,Anthony|true,Fabrice|true,Oliver|true,David|true',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "firstName", dateadd(DAY, 1, current_timestamp()) > current_timestamp() as "tomorrowGreaterThanToday" from personTable as "root"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "firstName", dateadd(DAY, 1, current_timestamp()) > current_timestamp() as "tomorrowGreaterThanToday" from personTable as "root"',
+      $result);
 }
 
 
@@ -376,8 +377,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testFilterAfter
    assertEquals('',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "age" as "age" from (select top 3 "root".AGE as "age" from personTable as "root" order by "age") as "subselect" where "age" > 25',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "age" as "age" from (select top 3 "root".AGE as "age" from personTable as "root" order by "age") as "subselect" where "age" > 25',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testFilterAfterLimit2():Boolean[1]
@@ -396,8 +397,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testFilterAfter
 
    //We can't assert the expected result values because they are undefined (because there is no sort before the limit)
 
-   assertEquals('select "age" as "age" from (select top 3 "root".AGE as "age" from personTable as "root") as "subselect" where "age" > 25 order by "age"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "age" as "age" from (select top 3 "root".AGE as "age" from personTable as "root") as "subselect" where "age" > 25 order by "age"',
+      $result);
 }
 
 
@@ -420,8 +421,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testSortAfterLi
    assertEquals('22,22,12',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "age" as "age" from (select top 3 "age" as "age" from (select top 3 "root".AGE as "age" from personTable as "root" order by "age") as "subselect" order by "age" desc) as "subselect" order by "age" desc',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "age" as "age" from (select top 3 "age" as "age" from (select top 3 "root".AGE as "age" from personTable as "root" order by "age") as "subselect" order by "age" desc) as "subselect" order by "age" desc',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testLimitAfterLimit():Boolean[1]
@@ -439,8 +440,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testLimitAfterL
 
    assertEquals(2,$result.values.rows->size());
 
-   assertEquals('select top 5 "age" as "age" from (select top 2 "root".AGE as "age" from personTable as "root") as "subselect"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select top 5 "age" as "age" from (select top 2 "root".AGE as "age" from personTable as "root") as "subselect"',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testSliceAfterLimit():Boolean[1]
@@ -460,8 +461,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testSliceAfterL
    assertEquals('',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "age" as "age" from (select top 2 "root".AGE as "age" from personTable as "root" order by "age") as "subselect" offset 2 rows fetch next 98 rows only',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "age" as "age" from (select top 2 "root".AGE as "age" from personTable as "root" order by "age") as "subselect" offset 2 rows fetch next 98 rows only',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testLimitAfterSlice():Boolean[1]
@@ -481,8 +482,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testLimitAfterS
    assertEquals('22,22',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select top 100 "age" as "age" from (select "root".AGE as "age" from personTable as "root" order by "age" offset 1 rows fetch next 2 rows only) as "subselect"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select top 100 "age" as "age" from (select "root".AGE as "age" from personTable as "root" order by "age" offset 1 rows fetch next 2 rows only) as "subselect"',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testDropAfterLimit():Boolean[1]
@@ -502,8 +503,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testDropAfterLi
    assertEquals('22,23,32',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "age" as "age" from (select top 5 "root".AGE as "age" from personTable as "root" order by "age") as "subselect" offset 2 rows',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "age" as "age" from (select top 5 "root".AGE as "age" from personTable as "root" order by "age") as "subselect" offset 2 rows',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testLimitAfterDrop():Boolean[1]
@@ -523,8 +524,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testLimitAfterD
    assertEquals('22,23,32,34,35',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select top 5 "age" as "age" from (select "root".AGE as "age" from personTable as "root" order by "age" offset 2 rows) as "subselect"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select top 5 "age" as "age" from (select "root".AGE as "age" from personTable as "root" order by "age" offset 2 rows) as "subselect"',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testTakeAfterLimit():Boolean[1]
@@ -544,8 +545,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testTakeAfterLi
    assertEquals('12,22',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select top 5 "age" as "age" from (select top 2 "root".AGE as "age" from personTable as "root" order by "age") as "subselect"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select top 5 "age" as "age" from (select top 2 "root".AGE as "age" from personTable as "root" order by "age") as "subselect"',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testLimitAfterTake():Boolean[1]
@@ -565,8 +566,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testLimitAfterT
    assertEquals('12,22',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select top 5 "age" as "age" from (select top 2 "root".AGE as "age" from personTable as "root" order by "age") as "subselect"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select top 5 "age" as "age" from (select top 2 "root".AGE as "age" from personTable as "root" order by "age") as "subselect"',
+      $result);
 }
 
 
@@ -586,8 +587,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testOptionalLim
    assertEquals('12,22,22,23,32,34,35',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".AGE as "age" from personTable as "root" order by "age"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".AGE as "age" from personTable as "root" order by "age"',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testOptionalLimit_WithValue():Boolean[1]
@@ -606,8 +607,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testOptionalLim
    assertEquals('12',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select top 1 "root".AGE as "age" from personTable as "root" order by "age"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select top 1 "root".AGE as "age" from personTable as "root" order by "age"',
+      $result);
 }
 
 
@@ -627,7 +628,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectWith
              , meta::external::store::relational::tests::testRuntime()
          , meta::relational::extension::relationalExtensions());
    assertEquals( 'David|35' ,   $result.values.rows->map(r|$r.values->makeString('|'))->makeString(',') );
-   assertEquals ( 'select "root".FIRSTNAME as "first_name", "root".AGE as "age" from personTable as "root" where "root".FIRSTNAME = \'David\'' , $result->sqlRemoveFormatting());
+   assertSameSQL ( 'select "root".FIRSTNAME as "first_name", "root".AGE as "age" from personTable as "root" where "root".FIRSTNAME = \'David\'' , $result);
    assertEquals( 'first_name,age' ,  $result.values.columns->map(r|$r.name->makeString('|'))->makeString(',') );
 
 }
@@ -645,7 +646,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectWith
              , meta::external::store::relational::tests::testRuntime()
          , meta::relational::extension::relationalExtensions());
    assertEquals( 'David|35' ,   $result.values.rows->map(r|$r.values->makeString('|'))->makeString(',') );
-   assertEquals ( 'select "root".FIRSTNAME as "first_name", "root".AGE as "age" from personTable as "root" where "root".FIRSTNAME = \'David\'' , $result->sqlRemoveFormatting());
+   assertSameSQL ( 'select "root".FIRSTNAME as "first_name", "root".AGE as "age" from personTable as "root" where "root".FIRSTNAME = \'David\'' , $result);
    assertEquals( 'first_name,age' ,  $result.values.columns->map(r|$r.name->makeString('|'))->makeString(',') );
 
 }
@@ -671,7 +672,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectWith
              , meta::external::store::relational::tests::testRuntime()
          , meta::relational::extension::relationalExtensions());
    // Base test Case -> Only one table in the SQL since we asked for First Name & Age
-   assertEquals ( 'select "root".FIRSTNAME as "first_name", "root".AGE as "age" from personTable as "root" where "root".FIRSTNAME = \'David\'' , $result1->sqlRemoveFormatting());
+   assertSameSQL ( 'select "root".FIRSTNAME as "first_name", "root".AGE as "age" from personTable as "root" where "root".FIRSTNAME = \'David\'' , $result1);
    assertEquals( 'first_name,age' ,  $result1.values.columns->map(r|$r.name->makeString('|'))->makeString(',') );
 
 
@@ -697,8 +698,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectWith
 
     // Test Case -> Two tables in the SQL since we asked for Firm Legal Name with First Name & Age from Test Case 1
     // Assert a Firm got added into the union as we added 'Firm Legal Name' in the attributes to be selected
-    assertEquals ( 'select "root".FIRSTNAME as "first_name", "root".AGE as "age", "firmtable_0".LEGALNAME as "Firm Legal Name" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "root".FIRSTNAME = \'David\''
-                  , $result2->sqlRemoveFormatting());
+    assertSameSQL ( 'select "root".FIRSTNAME as "first_name", "root".AGE as "age", "firmtable_0".LEGALNAME as "Firm Legal Name" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "root".FIRSTNAME = \'David\''
+                  , $result2);
 
 
    let result3 = execute(
@@ -722,7 +723,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectWith
 
     // Test Case -> Three tables in the SQL since we asked for Location
     // Assert a Location Table got added into the union as we added 'Location Place' in the attributes to be selected
-    assertEquals ( 'select "root".FIRSTNAME as "first_name", "root".AGE as "age", "firmtable_0".LEGALNAME as "Firm Legal Name", "locationtable_0".PLACE as "Location Place" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID) where "root".FIRSTNAME = \'David\'', $result3->sqlRemoveFormatting());
+    assertSameSQL ( 'select "root".FIRSTNAME as "first_name", "root".AGE as "age", "firmtable_0".LEGALNAME as "Firm Legal Name", "locationtable_0".PLACE as "Location Place" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID) where "root".FIRSTNAME = \'David\'', $result3);
 
    // Asserting a basic project SQL for a complete TDS
    let result4 = execute(
@@ -747,7 +748,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectWith
 
 
 
-   assertEquals ('select "root".FIRSTNAME as "first_name", "root".LASTNAME as "last_name", "root".AGE as "age", "addresstable_0".NAME as "Employee Address.Name", "addresstable_0".STREET as "Employee Address.Street", "addresstable_0".TYPE as "Employee Address.type", "addresstable_1".NAME as "Firm Address Name", "addresstable_1".STREET as "Firm Address.Street", "addresstable_1".TYPE as "Firm Address.type", "firmtable_0".LEGALNAME as "Firm Legal Name", "locationtable_0".PLACE as "Location Place" from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_1" on ("addresstable_1".ID = "firmtable_0".ADDRESSID) left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID) where "root".FIRSTNAME = \'David\'', $result4->sqlRemoveFormatting() ) ;
+   assertSameSQL ('select "root".FIRSTNAME as "first_name", "root".LASTNAME as "last_name", "root".AGE as "age", "addresstable_0".NAME as "Employee Address.Name", "addresstable_0".STREET as "Employee Address.Street", "addresstable_0".TYPE as "Employee Address.type", "addresstable_1".NAME as "Firm Address Name", "addresstable_1".STREET as "Firm Address.Street", "addresstable_1".TYPE as "Firm Address.type", "firmtable_0".LEGALNAME as "Firm Legal Name", "locationtable_0".PLACE as "Location Place" from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_1" on ("addresstable_1".ID = "firmtable_0".ADDRESSID) left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID) where "root".FIRSTNAME = \'David\'', $result4 ) ;
    // Test case to demostrate the different between project SQL & projectWithColumnSubset SQL are different
    assertFalse ( $result3->sqlRemoveFormatting() == $result4->sqlRemoveFormatting() ) ;
 
@@ -770,8 +771,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testGetNumber()
    assertEquals('32,34,35',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".AGE as "age" from personTable as "root" where "root".AGE > 25 order by "age"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".AGE as "age" from personTable as "root" where "root".AGE > 25 order by "age"',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectWithQuotedColumnFromTableToTDS():Boolean[1]
@@ -790,7 +791,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectWith
 
    let expectedSql = 'select "root"."FIRST NAME" as "firstName", "root"."1columnStartsWithNumber" as "somecol" from tableWithQuotedColumns as "root"';
 
-   assertEquals($expectedSql, $resultWithoutQuotes->sqlRemoveFormatting());
+   assertSameSQL($expectedSql, $resultWithoutQuotes);
 
    let queryWithQuotes   = {|tableToTDS(meta::relational::functions::database::tableReference(meta::relational::tests::db,'default','tableWithQuotedColumns'))
                                      ->project([
@@ -802,5 +803,5 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectWith
 
    let resultWithQuotes = execute($queryWithQuotes, $mapping, $runtime, meta::relational::extension::relationalExtensions());
 
-   assertEquals($expectedSql, $resultWithQuotes->sqlRemoveFormatting());
+   assertSameSQL($expectedSql, $resultWithQuotes);
 }
