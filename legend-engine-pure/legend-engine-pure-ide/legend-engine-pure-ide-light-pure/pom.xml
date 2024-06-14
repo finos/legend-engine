@@ -146,14 +146,14 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-functions-relation-pure</artifactId>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-compiled-functions-relation</artifactId>
-            <version>${legend.pure.version}</version>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
+            <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
 

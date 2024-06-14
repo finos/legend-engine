@@ -39,6 +39,5 @@
         <module>legend-engine-pure-platform-functions-json-java</module>
         <module>legend-engine-pure-platform-java</module>
         <module>legend-engine-pure-platform-store-relational-java</module>
-        <module>legend-engine-pure-platform-functions-relation-java</module>
     </modules>
 </project>

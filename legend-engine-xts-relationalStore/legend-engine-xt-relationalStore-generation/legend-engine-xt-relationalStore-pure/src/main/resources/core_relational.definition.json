@@ -10,7 +10,7 @@
     "platform_dsl_path",
     "platform_dsl_tds",
     "platform_functions_json",
-    "platform_functions_relation",
+    "core_functions_relation",
     "platform_store_relational",
     "core_functions",
     "core_service",

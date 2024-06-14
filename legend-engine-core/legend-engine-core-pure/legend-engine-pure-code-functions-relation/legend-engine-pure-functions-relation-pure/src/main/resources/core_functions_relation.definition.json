@@ -1,0 +1,9 @@
+{
+  "name": "core_functions_relation",
+  "pattern": "(meta::pure::functions::relation)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_dsl_tds"
+  ]
+}

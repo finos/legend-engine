@@ -200,8 +200,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-interpreted-functions-relation</artifactId>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-relation</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
