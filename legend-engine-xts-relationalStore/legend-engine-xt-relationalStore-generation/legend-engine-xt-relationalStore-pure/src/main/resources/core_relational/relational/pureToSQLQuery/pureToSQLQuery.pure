@@ -4597,12 +4597,39 @@ Class <<access.private>> meta::relational::functions::pureToSqlQuery::AggContain
   reduce:meta::pure::metamodel::function::Function<Any>[1];
 }
 
+// NOTE: in aggregations such as groupBy() or pivot(), the role of the map function is to extract data
+// from the inner select/table; whereas the role of the reduce function is to aggregate the extracted data
+// as such, when processing the map function, the column aliases lookup table we provide must refer to the
+// column of the inner select/table directly, not the relation element that column alias carries
+//
+// e.g. ->groupBy(~[country], ~[total: x|$x.treePlanted : x|$x->sum()])->groupBy(~[country], ~[total2: x|$x.total : x|$x->average()])
+// if we don't reprocess the column aliases to table alias, but leave them as the relation element they carried from the previous select
+// the SQL we produce will contain `average(sum("something".treePlanted))`. This nested aggregate function is invalid in many SQL dialect
+// what we should produce is `average("something".total)
+function meta::relational::functions::pureToSqlQuery::collectColumnAliasesForAggMapFn(select:TdsSelectSqlQuery[1], noSubSelect:Boolean[1], subSelectAliasName:String[1]): Alias[*]
+{
+  if($noSubSelect, | $select.columns->filter(c|!$c->instanceOf(WindowColumn))->cast(@Alias),
+                   | $select.columns->filter(c|!$c->instanceOf(WindowColumn))->cast(@Alias)->map(a|^Alias(name = $a.name,
+                            relationalElement = ^TableAliasColumn
+                                                (
+                                                    alias = ^TableAlias(name = $subSelectAliasName, relationalElement=$select),
+                                                    column = ^Column
+                                                            (
+                                                                name = $a.name,
+                                                                type = ^meta::relational::metamodel::datatype::Integer() // this type here does not mean much so we set it arbitrarily to Integer
+                                                            )
+                                                )
+                      ));
+    );
+}
+
 function meta::relational::functions::pureToSqlQuery::processGroupBy(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
    let nestedQuery = processValueSpecification($expression.parametersValues->at(0), [], $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
    let select = $nestedQuery.select->pushExtraFilteringOperation($extensions)->cast(@TdsSelectSqlQuery);
    let groupByColumns = findAliasOrFail($expression, $select,  $vars, $state);
-   let noSubSelect = $select.groupBy->isEmpty() && ($select.distinct->isEmpty() || !$select.distinct->toOne()) && $select.orderBy.column->removeAll($groupByColumns)->isEmpty();
+   let noSubSelect = $select.groupBy->isEmpty() && $select.pivot->isEmpty() && ($select.distinct->isEmpty() || !$select.distinct->toOne()) && $select.orderBy.column->removeAll($groupByColumns)->isEmpty();
+   let subSelectAliasName = 'aggreg';
    $groupByColumns->map(gc| assert(!$gc.relationalElement->instanceOf(WindowColumn),'Group by columns cannot include window columns'););
    let aggVS = $expression.parametersValues->at(2)->reprocessVS()->reactivate($state.inScopeVars)->evaluateAndDeactivate()->match([    
                       avs:meta::pure::tds::AggregateValue<Any,Any>[*]|$avs->map(a|^AggContainer(name=$a.name,map=$a.mapFn,reduce=$a.aggregateFn));,
@@ -4612,7 +4639,7 @@ function meta::relational::functions::pureToSqlQuery::processGroupBy(expression:
    let newColumns= $aggVS->map(a|let aggFn = $a.reduce->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->evaluateAndDeactivate();
                                  let params = if($a.map->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->instanceOf(FunctionExpression) || $a.map->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->instanceOf(InstanceValue),
                                                  |let inScopeVarsWithPlaceholdersState = $a.map->cast(@FunctionDefinition<Any>)->addPlaceHoldersForLambdaOpenVariables($vars, $state);
-                                                  processTdsLambda($a.map->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->evaluateAndDeactivate(), $select.columns->filter(c|!$c->instanceOf(WindowColumn))->cast(@Alias),!$noSubSelect, $vars, $inScopeVarsWithPlaceholdersState, $currentPropertyMapping, $select.paths, $context);,
+                                                  processTdsLambda($a.map->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->evaluateAndDeactivate(), collectColumnAliasesForAggMapFn($select, $noSubSelect, $subSelectAliasName),!$noSubSelect, $vars, $inScopeVarsWithPlaceholdersState, $currentPropertyMapping, $select.paths, $context);,
                                                  |[]
                                               );
                                  ^Alias(name='"'+$a.name+'"', relationalElement=$aggFn->processAggFn($params)->at(0));
@@ -4634,7 +4661,7 @@ function meta::relational::functions::pureToSqlQuery::processGroupBy(expression:
                  paths = $pathInfos
         )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($nestedQuery, $state, $extensions);
       ,|
-        let alias = ^TableAlias(name = 'aggreg', relationalElement=$select);
+        let alias = ^TableAlias(name = $subSelectAliasName, relationalElement=$select);
         let newData = ^RootJoinTreeNode(alias = $alias);
         let groupByAliases = $groupByColumns->map(c|let src = $c->cast(@Alias);
                                                                      ^Alias(name = $src.name,
@@ -4665,6 +4692,7 @@ function meta::relational::functions::pureToSqlQuery::processPivot(expression:Fu
   let mainQuery = processValueSpecification($expression.parametersValues->at(0), [], $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
   let select = $mainQuery.select->cast(@TdsSelectSqlQuery);
   let pivotColumns = findAliasOrFail($expression, $select,  $vars, $state)->map(x|$x.relationalElement);
+  let subSelectAliasName = 'pivot_' + $nodeId;
   let aggVS = $expression.parametersValues->at(2)->reprocessVS()->reactivate($state.inScopeVars)->evaluateAndDeactivate()->match([    
                       avs:meta::pure::tds::AggregateValue<Any,Any>[*]|$avs->map(a|^AggContainer(name=$a.name,map=$a.mapFn,reduce=$a.aggregateFn));,
                       x:meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1]|^AggContainer(name=$x.name,map=$x.map,reduce=$x.reduce);,
@@ -4673,7 +4701,7 @@ function meta::relational::functions::pureToSqlQuery::processPivot(expression:Fu
   let aggColumns= $aggVS->map(a|let aggFn = $a.reduce->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->evaluateAndDeactivate();
                                 let params = if($a.map->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->instanceOf(FunctionExpression) || $a.map->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->instanceOf(InstanceValue),
                                                 |let inScopeVarsWithPlaceholdersState = $a.map->cast(@FunctionDefinition<Any>)->addPlaceHoldersForLambdaOpenVariables($vars, $state);
-                                                processTdsLambda($a.map->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->evaluateAndDeactivate(), $select.columns->cast(@Alias), false, $vars, $inScopeVarsWithPlaceholdersState, $currentPropertyMapping, $select.paths, $context);,
+                                                processTdsLambda($a.map->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->evaluateAndDeactivate(), collectColumnAliasesForAggMapFn($select, false, $subSelectAliasName), false, $vars, $inScopeVarsWithPlaceholdersState, $currentPropertyMapping, $select.paths, $context);,
                                                 |[]
                                             );
                                 ^Alias(name='"'+$a.name+'"', relationalElement=$aggFn->processAggFn($params)->at(0));
@@ -4689,14 +4717,11 @@ function meta::relational::functions::pureToSqlQuery::processPivot(expression:Fu
                   ->concatenate($aggVS->map(a|  let pureType = $a.reduce->functionReturnType().rawType->toOne();
                                                 pair($a.name, ^PathInformation(type=$pureType, relationalType= meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureType)));));
 
-  let newAlias = ^TableAlias(name = 'pivot_' + $nodeId, relationalElement=$select);
-  let newData = ^RootJoinTreeNode(alias = $newAlias);
-
-  ^$select(
-    // we don't know which columns will present in the result, new columns based off the unique values of pivoted columns will be present
+  ^TdsSelectSqlQuery(
+    // since we don't know which columns will present in the result, new columns based off the unique values of pivoted columns will be present
     // so we specify no columns in order to force a `select *`
     columns = [],
-    data = $newData,
+    data = ^RootJoinTreeNode(alias = ^TableAlias(name = $subSelectAliasName, relationalElement=$select)),
     pivot = ^Pivot(
       pivotColumns = $pivotColumns,
       aggColumns = $aggColumns
