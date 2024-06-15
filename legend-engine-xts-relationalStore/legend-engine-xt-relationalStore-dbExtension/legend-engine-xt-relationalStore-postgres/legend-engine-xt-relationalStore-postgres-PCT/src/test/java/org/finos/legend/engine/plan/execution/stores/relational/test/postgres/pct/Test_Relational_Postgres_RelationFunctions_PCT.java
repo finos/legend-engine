@@ -36,8 +36,11 @@ public class Test_Relational_Postgres_RelationFunctions_PCT extends PCTReportCon
     private static final Adapter adapter = CoreExternalTestConnectionCodeRepositoryProvider.postgresAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            // BUG: Column name with special characters is not properly escaped
-            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\"")
+            one("meta::pure::functions::relation::tests::pivot::testSimplePivotByMultipleMultiple_Function_1__Boolean_1_", "\"pivot is not supported\""),
+            one("meta::pure::functions::relation::tests::pivot::testSimplePivotByMultipleSingle_Function_1__Boolean_1_", "\"pivot is not supported\""),
+            one("meta::pure::functions::relation::tests::pivot::testSimplePivotBySingleMultiple_Function_1__Boolean_1_", "\"pivot is not supported\""),
+            one("meta::pure::functions::relation::tests::pivot::testSimplePivotBySingleSingle_Function_1__Boolean_1_", "\"pivot is not supported\""),
+            one("meta::pure::functions::relation::tests::pivot::testSimplePivotChained_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\"")
     );
 
     public static Test suite()

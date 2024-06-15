@@ -531,6 +531,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
   extensions:Extension[*]
 ): String[1]
 {
+  assertEmpty($s.pivot, 'pivot is not supported');
   if($s.data.childrenData->match([jtn:JoinTreeNode[1]|$jtn.joinType == JoinType.FULL_OUTER, a:Any[*]|false]) ,
     |
         // H2 doesn't support FULL_OUTER join, so we need to convert/emulate it so people can write unit tests...
