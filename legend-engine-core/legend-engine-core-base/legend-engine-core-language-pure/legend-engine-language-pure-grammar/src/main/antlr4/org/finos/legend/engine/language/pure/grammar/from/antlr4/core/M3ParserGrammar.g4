@@ -111,7 +111,7 @@ columnBuilders: TILDE (oneColSpec | colSpecArray)
 ;
 oneColSpec: identifier ((COLON (type | lambdaParam lambdaPipe) extraFunction? ))?
 ;
-colSpecArray: (BRACKET_OPEN oneColSpec(COMMA oneColSpec)* BRACKET_CLOSE)
+colSpecArray: (BRACKET_OPEN (oneColSpec(COMMA oneColSpec)*)? BRACKET_CLOSE)
 ;
 extraFunction: (COLON lambdaParam lambdaPipe)
 ;
