@@ -469,9 +469,10 @@ function meta::relational::functions::sqlQueryToString::processUpsertSQLQuery(u:
 
 function meta::relational::functions::sqlQueryToString::processColumnName(name:String[1], dbConfig:DbConfig[1]):String[1]
 {
-   // NOTE: pivot column contains this special sequence of characters and would need to be quoted, 
-   // but generally, we should properly quote column name with invalid characters
-   let doubleQuote = if($name->contains(meta::relational::functions::sqlQueryToString::default::pivotColumnDelimeter()), |'"', |'');
+   // NOTE: column names with special characters such as pivot column name with special sequence of
+   // delimeter __|__ or with spaces need to be properly escaped, but generally, we should consider
+   // a more generic strategy to quote column names which are invalid identifier in the corresponding SQL dialects
+   let doubleQuote = if(!$name->startsWith('"') && ($name->meta::relational::functions::sqlQueryToString::default::hasSpecialChars() || $name->contains(meta::relational::functions::sqlQueryToString::default::pivotColumnDelimeter())), |'"', |'');
    $doubleQuote+$dbConfig.identifierProcessor($dbConfig.columnNameToIdentifier($name))+$doubleQuote;
 }
 
