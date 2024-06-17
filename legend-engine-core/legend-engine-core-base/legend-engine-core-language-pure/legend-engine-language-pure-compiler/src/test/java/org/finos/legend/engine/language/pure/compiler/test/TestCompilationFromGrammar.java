@@ -21,10 +21,12 @@ import java.util.stream.Collectors;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -69,6 +71,21 @@ public class TestCompilationFromGrammar
                 String json = objectMapper.writeValueAsString(modelData);
                 modelData = objectMapper.readValue(json, PureModelContextData.class);
                 PureModel pureModel = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+                modelData.getElements().parallelStream().forEach(element ->
+                {
+                    String fullPath;
+                    if (element instanceof Function)
+                    {
+                        Function function = (Function) element;
+                        String functionSignature = HelperModelBuilder.getSignature(function);
+                        fullPath = pureModel.buildPackageString(function._package, functionSignature);
+                    }
+                    else
+                    {
+                        fullPath = element.getPath();
+                    }
+                    pureModel.getPackageableElement(fullPath, element.sourceInformation);
+                });
                 if (expectedErrorMsg != null)
                 {
                     Assert.fail("Expected compilation error with message: " + expectedErrorMsg + "; but no error occurred");

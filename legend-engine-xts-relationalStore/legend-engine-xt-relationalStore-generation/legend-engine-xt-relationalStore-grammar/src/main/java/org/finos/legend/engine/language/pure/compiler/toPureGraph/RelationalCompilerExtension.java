@@ -30,6 +30,7 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.set.SetIterable;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -163,7 +164,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "-Core");
     }
 
-    static final MutableMap<String, Root_meta_relational_metamodel_RelationalMapper> relationalMappersIndex = Maps.mutable.empty();
+    static final ConcurrentHashMap<String, Root_meta_relational_metamodel_RelationalMapper> relationalMappersIndex = new ConcurrentHashMap<>();
 
     @Override
     public CompilerExtension build()

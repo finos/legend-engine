@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
@@ -38,32 +39,22 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
-import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
-import org.finos.legend.pure.generated.Root_meta_core_runtime_EngineRuntime_Impl;
-import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElementReference;
 import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_relationship_Generalization_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Generalization;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
 public class PackageableElementSecondPassBuilder implements PackageableElementVisitor<PackageableElement>
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PackageableElementSecondPassBuilder.class);
-
     private final CompileContext context;
 
     public PackageableElementSecondPassBuilder(CompileContext context)
@@ -119,7 +110,10 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
                 {
                     throw new EngineException("Invalid supertype: '" + srcClass.name + "' cannot extend '" + superType + "' as it is not a class.", srcClass.sourceInformation, EngineErrorType.COMPILATION);
                 }
-                superTypeClass._specializationsAdd(g);
+                synchronized (superTypeClass)
+                {
+                    superTypeClass._specializationsAdd(g);
+                }
             }
             return g;
         });
@@ -137,6 +131,13 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
                 ._generalizations(generalization)
                 ._qualifiedProperties(qualifiedProperties)
                 ._properties(withMilestoningProperties);
+        if (_class._generalizations().isEmpty())
+        {
+            Generalization g = new Root_meta_pure_metamodel_relationship_Generalization_Impl("", null, this.context.pureModel.getClass("meta::pure::metamodel::relationship::Generalization"))
+                    ._general(this.context.pureModel.getGenericType("meta::pure::metamodel::type::Any"))
+                    ._specific(_class);
+            _class._generalizationsAdd(g);
+        }
         ctx.flushVariable("this");
         return _class;
     }
@@ -144,61 +145,61 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
     @Override
     public PackageableElement visit(Association srcAssociation)
     {
-        String property0Ref = this.context.pureModel.addPrefixToTypeReference(srcAssociation.properties.get(0).type);
-        String property1Ref = this.context.pureModel.addPrefixToTypeReference(srcAssociation.properties.get(1).type);
+        String packageString = this.context.pureModel.buildPackageString(srcAssociation._package, srcAssociation.name);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = this.context.pureModel.getAssociation(packageString, srcAssociation.sourceInformation);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class source = this.context.resolveClass(srcAssociation.properties.get(0).type, srcAssociation.properties.get(0).sourceInformation);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class target = this.context.resolveClass(srcAssociation.properties.get(1).type, srcAssociation.properties.get(1).sourceInformation);
 
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = this.context.pureModel.getAssociation(this.context.pureModel.buildPackageString(srcAssociation._package, srcAssociation.name), srcAssociation.sourceInformation);
+        String property0Ref = this.context.pureModel.addPrefixToTypeReference(HelperModelBuilder.getElementFullPath(source, this.context.pureModel.getExecutionSupport()));
+        String property1Ref = this.context.pureModel.addPrefixToTypeReference(HelperModelBuilder.getElementFullPath(target, this.context.pureModel.getExecutionSupport()));
 
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> class1 = this.context.resolveClass(property0Ref, srcAssociation.properties.get(0).sourceInformation);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> class2 = this.context.resolveClass(property1Ref, srcAssociation.properties.get(1).sourceInformation);
-
-        MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>> properties = association._properties().toList();
-        MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>> originalMilestonedProperties = association._originalMilestonedProperties().toList();
-        MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty<?>> qualifiedProperties = association._qualifiedProperties().toList();
-
-        boolean sourceIsTemporal = Milestoning.temporalStereotypes(class1._stereotypes()) != null;
-        boolean targetIsTemporal = Milestoning.temporalStereotypes(class2._stereotypes()) != null;
-
-        if (sourceIsTemporal)
+        // TODO generalize this validation to all platform/core types
+        if ("meta::pure::metamodel::type::Any".equals(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(source)) ||
+                "meta::pure::metamodel::type::Any".equals(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(target)))
         {
-            Milestoning.applyMilestoningPropertyTransformations(association, class1, class2, properties, qualifiedProperties, originalMilestonedProperties);
+            throw new EngineException("Associations to Any are not allowed. Found in '" + packageString + "'", srcAssociation.sourceInformation, EngineErrorType.COMPILATION);
         }
 
-        if (targetIsTemporal)
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<Object, Object> property1 = HelperModelBuilder.processProperty(this.context, this.context.pureModel.getGenericTypeFromIndex(property1Ref), association).valueOf(srcAssociation.properties.get(0));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<Object, Object> property2 = HelperModelBuilder.processProperty(this.context, this.context.pureModel.getGenericTypeFromIndex(property0Ref), association).valueOf(srcAssociation.properties.get(1));
+
+        synchronized (source)
         {
-            Milestoning.applyMilestoningPropertyTransformations(association, class2, class1, properties, qualifiedProperties, originalMilestonedProperties);
+            source._propertiesFromAssociationsAdd(property2);
+        }
+        synchronized (target)
+        {
+            target._propertiesFromAssociationsAdd(property1);
         }
 
-        assert properties.size() >= association._properties().size();
-        assert qualifiedProperties.size() >= association._qualifiedProperties().size();
-        assert originalMilestonedProperties.size() >= association._originalMilestonedProperties().size();
+        ProcessingContext ctx = new ProcessingContext("Association " + packageString + " (second pass)");
 
-        return association._properties(properties)._qualifiedProperties(qualifiedProperties)._originalMilestonedProperties(originalMilestonedProperties);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification thisVariable = HelperModelBuilder.createThisVariableForClass(this.context, property1Ref);
+        ctx.addInferredVariables("this", thisVariable);
+
+        ListIterable<QualifiedProperty<Object>> qualifiedProperties = ListIterate.collect(srcAssociation.qualifiedProperties, p ->
+        {
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class cl = this.context.resolveGenericType(p.returnType, p.sourceInformation)._rawType() == source ? target : source;
+            return HelperModelBuilder.processQualifiedPropertyFirstPass(this.context, association, org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(cl), ctx).valueOf(p);
+        });
+        qualifiedProperties.forEach(q ->
+        {
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class _class = q._genericType()._rawType() == source ? target : source;
+            synchronized (_class)
+            {
+                _class._qualifiedPropertiesFromAssociationsAdd(q);
+            }
+        });
+        ctx.flushVariable("this");
+        return association._originalMilestonedProperties(ListIterate.collect(srcAssociation.originalMilestonedProperties, HelperModelBuilder.processProperty(this.context, this.context.pureModel.getGenericTypeFromIndex(srcAssociation.properties.get(0).type), association)))
+                ._properties(Lists.mutable.with(property1, property2))
+                ._qualifiedProperties(qualifiedProperties);
     }
 
     @Override
     public PackageableElement visit(Function function)
     {
-        String packageString = this.context.pureModel.buildPackageString(function._package, HelperModelBuilder.getSignature(function));
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc = this.context.pureModel.getConcreteFunctionDefinition(packageString, function.sourceInformation);
-        ProcessingContext ctx = new ProcessingContext("Function '" + packageString + "' Second Pass");
-        MutableList<ValueSpecification> body;
-        try
-        {
-            function.parameters.forEach(p -> p.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), ctx)));
-            body = ListIterate.collect(function.body, expression -> expression.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), ctx)));
-        }
-        catch (Exception e)
-        {
-            LOGGER.warn(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.GRAPH_EXPRESSION_ERROR, "Can't build function '" + packageString + "' - stack: " + ctx.getStack()).toString());
-            throw e;
-        }
-        FunctionType fType = ((FunctionType) targetFunc._classifierGenericType()._typeArguments().getFirst()._rawType());
-        HelperModelBuilder.checkCompatibility(this.context, body.getLast()._genericType()._rawType(), body.getLast()._multiplicity(), fType._returnType()._rawType(), fType._returnMultiplicity(), "Error in function '" + packageString + "'", function.body.get(function.body.size() - 1).sourceInformation);
-        ctx.pop();
-        targetFunc._expressionSequence(body);
-        HelperFunctionBuilder.processFunctionSuites(function, targetFunc, this.context, ctx);
-        return targetFunc;
+        return null;
     }
 
     @Override
@@ -251,12 +252,7 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
     @Override
     public PackageableElement visit(PackageableRuntime packageableRuntime)
     {
-        String fullPath = this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name);
-        Root_meta_pure_runtime_PackageableRuntime metamodel = this.context.pureModel.getPackageableRuntime(fullPath, packageableRuntime.sourceInformation);
-        Root_meta_core_runtime_Runtime runtime = this.context.pureModel.getRuntime(fullPath);
-        HelperRuntimeBuilder.buildEngineRuntime(packageableRuntime.runtimeValue, runtime, this.context);
-        metamodel._runtimeValue(new Root_meta_core_runtime_EngineRuntime_Impl("", SourceInformationHelper.toM3SourceInformation(packageableRuntime.sourceInformation), context.pureModel.getClass("meta::core::runtime::EngineRuntime"))._mappings(ListIterate.collect(packageableRuntime.runtimeValue.mappings, mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation)))._connectionStores(runtime._connectionStores()));
-        return metamodel;
+        return null;
     }
 
     @Override

@@ -14,8 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
-import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
@@ -39,8 +38,8 @@ import java.util.Map;
 public class BindingCompiler
 {
     private final Map<String, ExternalFormatExtension<?>> externalFormatExtensions;
-    private final MutableMap<String, Root_meta_external_format_shared_binding_Binding> bindingIndex = Maps.mutable.empty();
-    private final MutableMap<String, ExternalFormatSchemaSet> srcSchemaIndex = Maps.mutable.empty();
+    private final ConcurrentHashMap<String, Root_meta_external_format_shared_binding_Binding> bindingIndex = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, ExternalFormatSchemaSet> srcSchemaIndex = new ConcurrentHashMap<>();
 
     public BindingCompiler(Map<String, ExternalFormatExtension<?>> externalFormatExtensions)
     {
