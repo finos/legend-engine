@@ -157,19 +157,6 @@
         </dependency>
         <!-- Relational -->
 
-        <!-- DuckDB -->
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-duckdb-execution</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-duckdb-grammar</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <!-- DuckDB -->
-
         <!-- TODO -> Itemize... Only using ErrorManagement import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException; -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

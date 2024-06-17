@@ -202,6 +202,8 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
                     return parseDataSourceSpecification(code, p -> walker.visitStaticDatasourceSpecification(code, p.staticDatasourceSpecification()));
                 case "EmbeddedH2":
                     return parseDataSourceSpecification(code, p -> walker.visitEmbeddedH2DatasourceSpecification(code, p.embeddedH2DatasourceSpecification()));
+                case "DuckDB":
+                    return parseDataSourceSpecification(code, p -> walker.visitDuckDBDatasourceSpecification(code, p.duckDBDatasourceSpecification()));
                 default:
                     return null;
             }

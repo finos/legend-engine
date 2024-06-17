@@ -36,3 +36,8 @@ Class meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpe
     <<equality.Key>> testDataSetupCsv:String[0..1];
     <<equality.Key>> testDataSetupSqls:String[*];
 }
+
+Class meta::pure::alloy::connections::alloy::specification::DuckDBDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
+{
+    <<equality.Key>> path:String[0..1];
+}

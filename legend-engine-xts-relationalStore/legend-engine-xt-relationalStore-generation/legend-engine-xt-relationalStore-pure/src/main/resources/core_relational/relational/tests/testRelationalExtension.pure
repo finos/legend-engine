@@ -129,6 +129,26 @@ function <<test.Test>> meta::relational::metamodel::execute::tests::testConnecti
 
 }
 
+function <<test.Test>> meta::relational::tests::connEquality::testConnectionEqualityAllSameDuckDB() : Boolean[1]
+{
+  let c1 = ^RelationalDatabaseConnection(
+
+    type = DatabaseType.DuckDB,
+    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::DuckDBDatasourceSpecification(path='/tst'),
+    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
+  );
+
+  let c2 = ^RelationalDatabaseConnection(
+
+    type = DatabaseType.DuckDB,
+    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::DuckDBDatasourceSpecification(path='/tst'),
+    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
+  );
+
+  assert(runRelationalRouterExtensionConnectionEquality($c1, $c2));
+
+}
+
 function <<test.Test>> meta::relational::metamodel::execute::tests::testExecuteInDbToTDS() : Boolean[1]
 {
    let result = meta::relational::metamodel::execute::executeInDbToTDS('select 1 as "Count"', {|createTestDatabaseConnection()});

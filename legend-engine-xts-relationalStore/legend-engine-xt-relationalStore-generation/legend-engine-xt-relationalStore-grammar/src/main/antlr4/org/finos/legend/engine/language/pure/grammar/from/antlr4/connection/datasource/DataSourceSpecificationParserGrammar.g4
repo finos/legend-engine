@@ -12,6 +12,17 @@ identifier:                      VALID_STRING
 
 // ----------------------------- RELATIONAL DATABASE CONNECTION DATASOURCE SPEC -----------------------------
 
+duckDBDatasourceSpecification:          DUCKDB
+                                                BRACE_OPEN
+                                                    (
+                                                        path
+                                                    )*
+                                                BRACE_CLOSE
+;
+
+path:                                       PATH COLON STRING SEMI_COLON
+;
+
 localH2DatasourceSpecification:             LOCAL_H2_DSP
                                                 BRACE_OPEN
                                                     (

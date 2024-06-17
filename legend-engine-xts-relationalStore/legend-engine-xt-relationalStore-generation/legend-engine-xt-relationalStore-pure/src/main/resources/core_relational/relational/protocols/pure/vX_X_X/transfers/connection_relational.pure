@@ -187,7 +187,12 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connectio
              _type = 'h2Local',
              testDataSetupCsv = $l.testDataSetupCsv,
              testDataSetupSqls = $l.testDataSetupSqls
-         )
+         ),
+      d:meta::pure::alloy::connections::alloy::specification::DuckDBDatasourceSpecification[1] |
+                     ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DuckDBDatasourceSpecification(
+                         _type = 'duckDB',
+                         path = $d.path
+                    )
    ])->toOneMany())
 }
 

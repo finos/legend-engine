@@ -17,3 +17,6 @@ BRACKET_CLOSE:                              ']';
 
 REGION:                                     'region';
 
+DUCKDB:                                 'DuckDB';
+PATH:                                   'path';
+

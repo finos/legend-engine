@@ -183,6 +183,12 @@
         </dependency>
         <!-- H2 -->
 
+        <dependency>
+            <groupId>org.duckdb</groupId>
+            <artifactId>duckdb_jdbc</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- OPEN TRACING -->
         <dependency>
             <groupId>io.opentracing</groupId>

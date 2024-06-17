@@ -249,4 +249,19 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "  auth: DefaultH2;\n" +
                 "}\n");
     }
+
+    public void testDuckDBDatabaseConnection()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection simple::DuckDBConnection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: DuckDB;\n" +
+                "  specification: DuckDB\n" +
+                "  {\n" +
+                "    path: '/test';\n" +
+                "  };\n" +
+                "  auth: Test;\n" +
+                "}\n");
+    }
 }
