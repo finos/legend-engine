@@ -150,7 +150,7 @@
         <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
         <antlr.version>4.8-1</antlr.version>
         <arrow.version>13.0.0</arrow.version>
-        <bouncycastle.version>1.67</bouncycastle.version>
+        <bouncycastle.version>1.70</bouncycastle.version>
         <byte-buddy.version>1.11.20</byte-buddy.version>
         <commons-codec.version>1.15</commons-codec.version>
         <commons-compress.version>1.21</commons-compress.version>
