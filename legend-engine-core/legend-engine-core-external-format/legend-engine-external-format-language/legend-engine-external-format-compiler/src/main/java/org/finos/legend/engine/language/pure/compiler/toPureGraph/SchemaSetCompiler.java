@@ -14,10 +14,9 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
-import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
-import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalFormatSchemaException;
@@ -39,7 +38,7 @@ import java.util.Set;
 
 public class SchemaSetCompiler
 {
-    private final MutableMap<String, Root_meta_external_format_shared_metamodel_SchemaSet> schemaSetIndex = Maps.mutable.empty();
+    private final ConcurrentHashMap<String, Root_meta_external_format_shared_metamodel_SchemaSet> schemaSetIndex = new ConcurrentHashMap<>();
     private final Map<String, ExternalFormatExtension<?>> externalFormatExtensions;
 
     public SchemaSetCompiler(Map<String, ExternalFormatExtension<?>> externalFormatExtensions)

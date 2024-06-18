@@ -25,6 +25,7 @@ import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::core::runtime::*;
+import meta::json::*;
 function <<test.BeforePackage>> meta::relational::graphFetch::tests::subType::setup(): Boolean[1]
 {
    let runtime =  ^Runtime(connectionStores= [^ConnectionStore(element=meta::relational::graphFetch::tests::subType::db,connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2))]);
@@ -240,13 +241,15 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
 
   let query = {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetch($tree)->serialize($tree)};
   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
-  assertJsonStringsEqual('[{"name":"City1","Id":4,"landmark":{"lmName":"lm4"}},' +
-                         '{"name":"City2","Id":5,"landmark":{"lmName":"lm5"}},' +
-                         '{"name":"City3","Id":6,"landmark":{"lmName":"lm6"}},' +
-                         '{"coordinate":{"latitude":"38.8951","longitude":" -77.0364"},"street":"str1","Id":1,"landmark":{"lmName":"lm1"}},' +
-                         '{"coordinate":{"latitude":"32.8951","longitude":" -75.0364"},"street":"str2","Id":2,"landmark":{"lmName":"lm2"}},' +
-                         '{"coordinate":{"latitude":"37.8951","longitude":" -72.0364"},"street":"str3","Id":3,"landmark":{"lmName":"lm3"}}]',
-                         $result);
+  let expected = '[{"coordinate":{"latitude":"38.8951","longitude":" -77.0364"},"street":"str1","Id":1,"landmark":{"lmName":"lm1"}},' +
+                 '{"coordinate":{"latitude":"32.8951","longitude":" -75.0364"},"street":"str2","Id":2,"landmark":{"lmName":"lm2"}},' +
+                 '{"coordinate":{"latitude":"37.8951","longitude":" -72.0364"},"street":"str3","Id":3,"landmark":{"lmName":"lm3"}}' +
+                 '{"name":"City1","Id":4,"landmark":{"lmName":"lm4"}},' +
+                 '{"name":"City2","Id":5,"landmark":{"lmName":"lm5"}},' +
+                 '{"name":"City3","Id":6,"landmark":{"lmName":"lm6"}}]';
+  let resultJson = $result->toOne()->parseJSON()->cast(@JSONArray);
+  let actual = ^JSONArray(values = $resultJson.values->sortBy(v | $v->cast(@JSONObject)->getValue('Id')->toOne()));
+  assertJsonStringsEqual($expected->parseJSON()->toPrettyJSONString(), $actual->toPrettyJSONString());
 }
 
 function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::subType::testSubTypeAtRootLevelWithAlloySerializationConfig(): Boolean[1]
@@ -409,13 +412,15 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
 
   let query = {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetch($tree)->serialize($tree)};
   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
-  assertJsonStringsEqual('[{"Id":4,"landmark":{"lmName":"lm4"}},' +
-                         '{"Id":5,"landmark":{"lmName":"lm5"}},' +
-                         '{"Id":6,"landmark":{"lmName":"lm6"}},' +
-                         '{"Id":1,"landmark":{"lmName":"lm1"}},' +
-                         '{"Id":2,"landmark":{"lmName":"lm2"}},' +
-                         '{"Id":3,"landmark":{"lmName":"lm3"}}]',
-                         $result);
+  let expected = '[{"Id":1,"landmark":{"lmName":"lm1"}},' +
+                 '{"Id":2,"landmark":{"lmName":"lm2"}},' +
+                 '{"Id":3,"landmark":{"lmName":"lm3"}},' +
+                 '{"Id":4,"landmark":{"lmName":"lm4"}},' +
+                 '{"Id":5,"landmark":{"lmName":"lm5"}},' +
+                 '{"Id":6,"landmark":{"lmName":"lm6"}}]';
+  let resultJson = $result->toOne()->parseJSON()->cast(@JSONArray);
+  let actual = ^JSONArray(values = $resultJson.values->sortBy(v | $v->cast(@JSONObject)->getValue('Id')->toOne()));
+  assertJsonStringsEqual($expected->parseJSON()->toPrettyJSONString(), $actual->toPrettyJSONString());
 }
 
 function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::subType::testUnionMappingWithoutSubType(): Boolean[1]

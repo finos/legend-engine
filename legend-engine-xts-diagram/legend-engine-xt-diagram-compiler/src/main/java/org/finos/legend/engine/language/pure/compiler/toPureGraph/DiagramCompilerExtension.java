@@ -14,13 +14,15 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
-import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_Diagram;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_Diagram_Impl;
 
@@ -28,7 +30,7 @@ import java.util.Collections;
 
 public class DiagramCompilerExtension implements CompilerExtension
 {
-    protected final MutableMap<String, Root_meta_pure_metamodel_diagram_Diagram> diagramsIndex = Maps.mutable.empty();
+    protected final ConcurrentHashMap<String, Root_meta_pure_metamodel_diagram_Diagram> diagramsIndex = new ConcurrentHashMap<>();
 
     @Override
     public MutableList<String> group()
@@ -40,6 +42,7 @@ public class DiagramCompilerExtension implements CompilerExtension
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
         return Collections.singletonList(Processor.newProcessor(Diagram.class,
+                Lists.fixedSize.with(Class.class, Association.class),
                 (diagram, context) ->
                 {
                     Root_meta_pure_metamodel_diagram_Diagram metamodel = new Root_meta_pure_metamodel_diagram_Diagram_Impl(diagram.name, null, context.pureModel.getClass("meta::pure::metamodel::diagram::Diagram"))._name(diagram.name);
