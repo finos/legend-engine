@@ -34,9 +34,6 @@
                     <sourceDirectory>src/main/resources</sourceDirectory>
                     <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
                     <repositories>
-                        <repository>platform</repository>
-                        <repository>platform_functions</repository>
-                        <repository>core</repository>
                         <repository>core_external_format_arrow</repository>
                     </repositories>
                     <extraRepositories>

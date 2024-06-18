@@ -36,20 +36,7 @@
                     <sourceDirectory>src/main/resources</sourceDirectory>
                     <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
                     <repositories>
-                        <repository>platform</repository>
-                        <repository>platform_functions</repository>
-                        <repository>platform_dsl_mapping</repository>
-                        <repository>platform_functions_json</repository>
-                        <repository>platform_store_relational</repository>
-                        <repository>core</repository>
-                        <repository>core_relational</repository>
-                        <repository>core_data_space_metamodel</repository>
-                        <repository>core_diagram</repository>
-                        <repository>core_diagram_metamodel</repository>
-                        <repository>core_analytics_lineage</repository>
-                        <repository>core_analytics_mapping</repository>
                         <repository>core_analytics_search</repository>
-                        <repository>core_external_compiler</repository>
                     </repositories>
                     <extraRepositories>
                         <extraRepository>${project.basedir}/src/main/resources/core_analytics_search.definition.json</extraRepository>

@@ -1,0 +1,51 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+native function meta::pure::functions::meta::functionDescriptorToId(functionDescriptor:String[1]):String[1];
+
+function <<test.Test>> meta::pure::functions::meta::tests::functionDescriptorToId::testFunctionDescriptorToId():Boolean[1]
+{
+    assertEquals(
+        'meta::pure::functions::meta::tests::functionDescriptorToId::testFunctionDescriptorToId__Boolean_1_',
+        'meta::pure::functions::meta::tests::functionDescriptorToId::testFunctionDescriptorToId():Boolean[1]'->functionDescriptorToId());
+    assertEquals(
+        'meta::pure::functions::meta::tests::functionDescriptorToId::testFunctionDescriptorToId__Boolean_1_',
+        'meta::pure::functions::meta::tests::functionDescriptorToId::testFunctionDescriptorToId(   ) : Boolean[1..1]'->functionDescriptorToId());
+    assertEquals(
+        'meta::pure::functions::meta::pathToElement_String_1__PackageableElement_1_',
+        'meta::pure::functions::meta::pathToElement(String[1]):PackageableElement[1]'->functionDescriptorToId());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::functionDescriptorToId::testFunctionDescriptorToIdWithTypeArguments():Boolean[1]
+{
+    assertEquals(
+        'meta::pure::functions::collection::removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_',
+        'meta::pure::functions::collection::removeDuplicates(T[*], Function<{T[1]->V[1]}>[0..1], Function<{V[1], V[1]->Boolean[1]}>[0..1]):T[*]'->functionDescriptorToId());
+    assertEquals(
+        'meta::pure::functions::collection::removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_',
+        'meta::pure::functions::collection::removeDuplicates(T[*],Function<{T[1..1] -> V[1]}>[0..1],Function<{V[1], V[1] -> Boolean[1]}>[0..1]) : T[0..*]'->functionDescriptorToId());
+    assertEquals(
+        'meta::pure::functions::collection::removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_',
+        'meta::pure::functions::collection::removeDuplicates(T[*],Function[0..1],Function[0..1]):T[*]'->functionDescriptorToId());
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::functionDescriptorToId::testFunctionDescriptorToIdWithUnits():Boolean[1]
+{
+    assertEquals(
+        'my::test::testUnits_Mass~Kilogram_1__Mass~Kilogram_1_',
+        'my::test::testUnits(Mass~Kilogram[1]):Mass~Kilogram[1]'->functionDescriptorToId());
+    assertEquals(
+        'my::test::testUnits_Mass~Kilogram_1__Mass~Kilogram_1_',
+        'my::test::testUnits( Mass ~ Kilogram [1..1] ) : Mass~Kilogram[1]'->functionDescriptorToId());
+}

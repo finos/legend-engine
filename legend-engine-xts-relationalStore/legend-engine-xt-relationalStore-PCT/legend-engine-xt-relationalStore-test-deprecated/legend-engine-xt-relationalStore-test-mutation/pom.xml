@@ -251,8 +251,8 @@
 
         <!-- TEST -->
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-functions-json-pure</artifactId>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-json-pure</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

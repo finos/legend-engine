@@ -1,0 +1,78 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+native function meta::pure::functions::meta::newEnumeration(name:String[1], values:String[*]):Enumeration<Any>[1];
+
+
+
+
+function <<test.Test>> meta::pure::functions::meta::tests::newEnumeration::testNewEnumeration():Boolean[1]
+{
+    let myEnumeration = newEnumeration('pkg1::pkg2::pkg3::MyEnumeration', ['val1', 'val2']);
+    assertInstanceOf($myEnumeration, Enumeration);
+    assertEquals('MyEnumeration', $myEnumeration->cast(@ModelElement).name);
+
+    let pkg3 = $myEnumeration->cast(@PackageableElement).package->toOne();
+    assertInstanceOf($pkg3, Package);
+    assertEquals('pkg3', $pkg3.name);
+    assertFalse($pkg3.children->contains($myEnumeration));
+
+    let pkg2 = $pkg3.package->toOne();
+    assertInstanceOf($pkg2, Package);
+    assertEquals('pkg2', $pkg2.name);
+
+    let pkg1 = $pkg2.package->toOne();
+    assertInstanceOf($pkg1, Package);
+    assertEquals('pkg1', $pkg1.name);
+
+    let rootPkg = $pkg1.package->toOne();
+    assertInstanceOf($rootPkg, Package);
+    assertEquals('Root', $rootPkg.name);
+
+    let noPackage = newEnumeration('EnumerationWithNoPackage', ['val3']);
+    let noPackagePkg = $noPackage->cast(@PackageableElement).package->toOne();
+    assertInstanceOf($noPackage, Enumeration);
+    assertEquals('EnumerationWithNoPackage', $noPackage->cast(@ModelElement).name);
+    assertEquals('Root', $noPackagePkg.name);
+    assertFalse($noPackagePkg.children->contains($noPackage));
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::newEnumeration::testNewEnumerationElementToPath():Boolean[1]
+{
+    let myEnumeration = newEnumeration('test::pkg::MyEnumeration', ['val1', 'val2']);
+    assertEquals('test::pkg::MyEnumeration', $myEnumeration->elementToPath());
+    assertEquals('Root::test::pkg::MyEnumeration', $myEnumeration->elementToPath(true));
+
+    let otherEnumeration = newEnumeration('pkg1::pkg2::pkg3::OtherEnumeration', ['val3', 'val4']);
+    assertEquals('pkg1::pkg2::pkg3::OtherEnumeration', $otherEnumeration->elementToPath());
+    assertEquals('Root::pkg1::pkg2::pkg3::OtherEnumeration', $otherEnumeration->elementToPath(true));
+
+    let noPackage = newEnumeration('EnumerationWithNoPackage', ['val5']);
+    assertEquals('EnumerationWithNoPackage', $noPackage->elementToPath());
+    assertEquals('Root::EnumerationWithNoPackage', $noPackage->elementToPath(true));
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::newEnumeration::testNewEnumerationElementPath():Boolean[1]
+{
+    let myEnumeration = newEnumeration('pkg1::pkg2::pkg3::MyEnumeration', ['val1', 'val2']);
+    let pkg3 = $myEnumeration->cast(@PackageableElement).package->toOne();
+    let pkg2 = $pkg3.package->toOne();
+    let pkg1 = $pkg2.package->toOne();
+    let rootPkg = $pkg1.package->toOne();
+    assertEquals([$rootPkg, $pkg1, $pkg2, $pkg3, $myEnumeration], $myEnumeration->elementPath());
+
+    let noPackage = newEnumeration('EnumerationWithNoPackage', ['val3']);
+    let noPackagePkg = $noPackage->cast(@PackageableElement).package->toOne();
+    assertEquals([$noPackagePkg, $noPackage], $noPackage->elementPath());
+}

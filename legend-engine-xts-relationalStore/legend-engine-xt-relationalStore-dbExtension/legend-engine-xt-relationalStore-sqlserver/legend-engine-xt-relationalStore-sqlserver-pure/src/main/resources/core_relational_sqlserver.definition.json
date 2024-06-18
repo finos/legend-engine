@@ -3,7 +3,7 @@
   "pattern": "(meta::relational::functions::sqlQueryToString::sqlServer|meta::relational::tests::sqlQueryToString::sqlServer|meta::relational::sqlServer::tests)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
+    "core_functions_unclassified",
     "platform_store_relational",
     "core_functions",
     "core",

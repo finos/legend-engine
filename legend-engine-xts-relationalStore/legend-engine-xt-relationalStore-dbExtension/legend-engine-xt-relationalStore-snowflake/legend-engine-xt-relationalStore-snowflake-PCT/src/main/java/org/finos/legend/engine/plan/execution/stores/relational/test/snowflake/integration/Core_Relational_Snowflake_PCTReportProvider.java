@@ -34,24 +34,31 @@ public class Core_Relational_Snowflake_PCTReportProvider implements PCTReportPro
     {
         try
         {
-            return Lists.mutable.with(
-                    JsonMapper.builder().build().readValue(
-                            Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_base_compiled_Snowflake.json"),
-                            AdapterReport.class
-                    ),
-                    JsonMapper.builder().build().readValue(
-                            Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_essential_compiled_Snowflake.json"),
-                            AdapterReport.class
-                    ),
-                    JsonMapper.builder().build().readValue(
-                            Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_grammar_compiled_Snowflake.json"),
-                            AdapterReport.class
-                    ),
-                    JsonMapper.builder().build().readValue(
-                            Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_relation_compiled_Snowflake.json"),
-                            AdapterReport.class
-                    )
-            );
+            if (Core_Relational_Snowflake_PCTReportProvider.class.getResource("/pct-reports/ADAPTER_base_compiled_Snowflake.json") != null)
+            {
+                return Lists.mutable.with(
+                        JsonMapper.builder().build().readValue(
+                                Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_base_compiled_Snowflake.json"),
+                                AdapterReport.class
+                        ),
+                        JsonMapper.builder().build().readValue(
+                                Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_essential_compiled_Snowflake.json"),
+                                AdapterReport.class
+                        ),
+                        JsonMapper.builder().build().readValue(
+                                Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_grammar_compiled_Snowflake.json"),
+                                AdapterReport.class
+                        ),
+                        JsonMapper.builder().build().readValue(
+                                Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_relation_compiled_Snowflake.json"),
+                                AdapterReport.class
+                        )
+                );
+            }
+            else
+            {
+                return Lists.mutable.empty();
+            }
         }
         catch (Exception e)
         {

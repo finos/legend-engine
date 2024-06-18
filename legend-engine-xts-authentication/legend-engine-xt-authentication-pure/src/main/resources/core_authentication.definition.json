@@ -3,7 +3,7 @@
   "pattern": "(meta::pure::runtime::connection::authentication|meta::protocols::pure)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
+    "core_functions_unclassified",
     "core"
   ]
 }

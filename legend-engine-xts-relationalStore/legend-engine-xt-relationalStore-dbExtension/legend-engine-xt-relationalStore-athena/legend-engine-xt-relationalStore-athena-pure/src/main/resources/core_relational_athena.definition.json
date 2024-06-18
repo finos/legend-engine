@@ -3,7 +3,7 @@
   "pattern": "(meta::relational::functions::sqlQueryToString::athena|meta::relational::tests::sqlQueryToString::athena|meta::pure::alloy::connections|meta::external::store::relational::runtime|meta::protocols::pure|meta::relational::tests::connEquality)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
+    "core_functions_unclassified",
     "platform_store_relational",
     "core_functions",
     "core",

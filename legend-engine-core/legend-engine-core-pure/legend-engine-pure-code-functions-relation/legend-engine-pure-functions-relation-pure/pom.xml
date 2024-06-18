@@ -77,9 +77,9 @@
                         <version>${legend.pure.version}</version>
                     </dependency>
                     <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-functions-base-pure</artifactId>
-                        <version>${legend.pure.version}</version>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
+                        <version>${project.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -105,9 +105,9 @@
                         <version>${legend.pure.version}</version>
                     </dependency>
                     <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-functions-base-pure</artifactId>
-                        <version>${legend.pure.version}</version>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
+                        <version>${project.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -125,8 +125,8 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-functions-base-pure</artifactId>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
 

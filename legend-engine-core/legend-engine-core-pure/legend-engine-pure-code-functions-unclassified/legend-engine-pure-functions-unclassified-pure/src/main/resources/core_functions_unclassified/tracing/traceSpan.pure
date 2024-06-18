@@ -1,0 +1,24 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Executes the given function inside a trace span
+native function meta::pure::functions::tracing::traceSpan<V|m>(func:Function<{->V[m]}>[1], name:String[1]):V[m];
+
+// Executes the given function inside a trace span, and also adds the tags to the span
+// Will cascade if there any errors while evaluating the lambda to retrieve tags
+native function meta::pure::functions::tracing::traceSpan<V|m>(func:Function<{->V[m]}>[1], name:String[1], tagsFunc:Function<{->Map<String, String>[1]}>[1]):V[m];
+
+// Executes the given function inside a trace span, and also adds the tags to the span.
+// when 'tagsCritical' flag is set to true then errors will be cascaded if not it will be absorbed
+native function meta::pure::functions::tracing::traceSpan<V|m>(func:Function<{->V[m]}>[1], name:String[1], tagsFunc:Function<{->Map<String, String>[1]}>[1], tagsCritical:Boolean[1]):V[m];

@@ -3,7 +3,7 @@
   "pattern": "(meta::pure::extension::configuration)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
+    "core_functions_unclassified",
     "core",
     "core_service",
     "core_external_language_java",

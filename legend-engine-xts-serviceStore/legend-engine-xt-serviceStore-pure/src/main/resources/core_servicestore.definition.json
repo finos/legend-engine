@@ -3,7 +3,7 @@
   "pattern": "(meta::external::store::service|meta::protocols::pure)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
+    "core_functions_unclassified",
     "platform_dsl_graph",
     "platform_dsl_path",
     "platform_dsl_mapping",

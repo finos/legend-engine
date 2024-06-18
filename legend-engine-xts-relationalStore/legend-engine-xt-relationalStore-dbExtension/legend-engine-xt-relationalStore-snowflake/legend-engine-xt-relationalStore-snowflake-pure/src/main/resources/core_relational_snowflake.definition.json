@@ -1,5 +1,5 @@
 {
   "name" : "core_relational_snowflake",
   "pattern" : "(meta::relational::functions::sqlQueryToString::snowflake|meta::relational::tests::connEquality|meta::relational::tests::sqlQueryToString::snowflake|meta::relational::tests::sqlToString::snowflake|meta::pure::executionPlan::tests::snowflake|meta::relational::tests::projection::snowflake|meta::relational::tests::query::snowflake|meta::relational::tests::tds::snowflake|meta::relational::tests::mapping::function::snowflake|meta::relational::tests::postProcessor::snowflake|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
-  "dependencies" : ["platform", "platform_functions", "platform_store_relational", "platform_dsl_mapping", "core_functions", "core", "core_relational"]
+  "dependencies" : ["platform", "core_functions_unclassified", "platform_store_relational", "platform_dsl_mapping", "core_functions", "core", "core_relational"]
 }

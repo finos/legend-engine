@@ -26,8 +26,6 @@
     <packaging>pom</packaging>
     <name>Legend Engine - Pure - Platform - Modular - Generation - JAVA</name>
 
-
-
     <modules>
         <module>legend-engine-pure-platform-dsl-diagram-java</module>
         <module>legend-engine-pure-platform-dsl-graph-java</module>
@@ -35,8 +33,6 @@
         <module>legend-engine-pure-platform-dsl-store-java</module>
         <module>legend-engine-pure-platform-dsl-path-java</module>
         <module>legend-engine-pure-platform-dsl-tds-java</module>
-        <module>legend-engine-pure-platform-functions-java</module>
-        <module>legend-engine-pure-platform-functions-json-java</module>
         <module>legend-engine-pure-platform-java</module>
         <module>legend-engine-pure-platform-store-relational-java</module>
     </modules>

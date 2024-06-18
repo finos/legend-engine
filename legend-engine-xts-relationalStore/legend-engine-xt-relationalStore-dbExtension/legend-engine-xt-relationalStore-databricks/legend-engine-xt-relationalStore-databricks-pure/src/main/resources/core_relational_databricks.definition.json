@@ -3,7 +3,7 @@
   "pattern": "(meta::relational::functions::sqlQueryToString::databricks|meta::relational::tests::sqlQueryToString::databricks|meta::relational::tests::connEquality|meta::relational::databricks::tests|meta::relational::tests::functions::sqlstring::databricks|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
+    "core_functions_unclassified",
     "platform_store_relational",
     "platform_dsl_store",
     "core_functions",

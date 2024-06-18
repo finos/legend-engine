@@ -3,7 +3,7 @@
   "pattern": "(meta::relational::functions::sqlQueryToString::duckDB|meta::relational::tests::sqlQueryToString::duckDB|meta::pure::alloy::connections|meta::external::store::relational::runtime|meta::protocols::pure|meta::relational::tests::connEquality)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
+    "core_functions_unclassified",
     "platform_store_relational",
     "core",
     "core_functions",
