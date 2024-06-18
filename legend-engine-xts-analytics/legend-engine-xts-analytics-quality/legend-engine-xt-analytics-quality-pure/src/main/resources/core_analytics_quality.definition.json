@@ -3,12 +3,11 @@
   "pattern": "(meta::analytics::quality|meta::pure::quality)(::.*)?",
   "dependencies": [
     "platform",
-    "core_functions_unclassified",
     "platform_dsl_store",
     "platform_dsl_mapping",
     "platform_store_relational",
     "core_functions_json",
-    "core_functions",
+    "core_functions_unclassified",
     "core",
     "core_external_compiler",
     "core_data_space_metamodel"

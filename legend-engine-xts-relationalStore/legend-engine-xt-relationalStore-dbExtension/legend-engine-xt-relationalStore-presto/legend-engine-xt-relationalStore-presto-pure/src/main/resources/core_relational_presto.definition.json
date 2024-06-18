@@ -1,5 +1,11 @@
 {
-  "name" : "core_relational_presto",
-  "pattern" : "(meta::relational::functions::sqlQueryToString::presto|meta::relational::tests::sqlQueryToString::presto|meta::pure::executionPlan::tests::presto|meta::relational::tests::query::function::presto|meta::relational::tests::projection::presto|meta::relational::tests::tds::presto|meta::relational::tests::mapping::sqlFunction::presto|meta::relational::tests::functions::sqlstring::presto|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
-  "dependencies" : ["platform", "core_functions_unclassified", "platform_store_relational", "core_functions", "core", "core_relational"]
+  "name": "core_relational_presto",
+  "pattern": "(meta::relational::functions::sqlQueryToString::presto|meta::relational::tests::sqlQueryToString::presto|meta::pure::executionPlan::tests::presto|meta::relational::tests::query::function::presto|meta::relational::tests::projection::presto|meta::relational::tests::tds::presto|meta::relational::tests::mapping::sqlFunction::presto|meta::relational::tests::functions::sqlstring::presto|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_store_relational",
+    "core_functions_unclassified",
+    "core",
+    "core_relational"
+  ]
 }

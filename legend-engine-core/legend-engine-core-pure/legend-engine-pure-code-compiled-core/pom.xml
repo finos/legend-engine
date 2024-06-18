@@ -111,11 +111,6 @@
                         <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-compiled-functions</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
                 </dependencies>
             </plugin>
             <plugin>
@@ -139,7 +134,6 @@
                     </execution>
                 </executions>
                 <dependencies>
-
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
@@ -203,11 +197,6 @@
                         <version>${project.version}</version>
                     </dependency>
 
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-compiled-functions</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
                 </dependencies>
             </plugin>
         </plugins>
@@ -223,10 +212,6 @@
             <artifactId>legend-pure-m3-core</artifactId>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m2-dsl-store-pure</artifactId>
@@ -260,11 +245,6 @@
 <!--            <groupId>org.finos.legend.pure</groupId>-->
 <!--            <artifactId>legend-pure-runtime-java-extension-shared-functions-conversion</artifactId>-->
 <!--        </dependency>-->
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-code-compiled-functions</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

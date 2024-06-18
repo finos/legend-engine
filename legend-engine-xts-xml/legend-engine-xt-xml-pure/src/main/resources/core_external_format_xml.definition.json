@@ -4,7 +4,6 @@
   "dependencies": [
     "platform",
     "core_functions_unclassified",
-    "core_functions",
     "core"
   ]
 }

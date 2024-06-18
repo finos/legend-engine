@@ -29,7 +29,7 @@ import static org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBui
 
 public class Test_Compiled_BaseFunctions_PCT extends PCTReportConfiguration
 {
-    private static final ReportScope reportScope = FunctionsCodeRepositoryProvider.baseFunctions;
+    private static final ReportScope reportScope = FunctionsCodeRepositoryProvider.unclassifiedFunctions;
     private static final Adapter adapter = PlatformCodeRepositoryProvider.nativeAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.empty();

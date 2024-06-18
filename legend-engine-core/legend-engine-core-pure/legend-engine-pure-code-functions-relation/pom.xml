@@ -24,7 +24,7 @@
 
     <artifactId>legend-engine-pure-code-functions-relation</artifactId>
     <packaging>pom</packaging>
-    <name>Legend - Pure - Functions - Relation</name>
+    <name>Legend Engine - Pure - Code - Core - Functions - Relation</name>
 
     <modules>
         <module>legend-engine-pure-functions-relation-pure</module>

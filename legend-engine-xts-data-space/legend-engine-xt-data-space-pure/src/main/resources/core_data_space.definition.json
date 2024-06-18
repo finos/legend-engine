@@ -4,7 +4,7 @@
   "dependencies": [
     "platform",
     "platform_dsl_mapping",
-    "core_functions",
+    "core_functions_unclassified",
     "core",
     "core_diagram_metamodel",
     "core_diagram",

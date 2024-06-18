@@ -3,9 +3,8 @@
   "pattern": "(meta::relational::functions::sqlQueryToString::trino|meta::relational::tests::sqlQueryToString::trino|meta::pure::alloy::connections|meta::external::store::relational::runtime|meta::protocols::pure)(::.*)?",
   "dependencies": [
     "platform",
-    "core_functions_unclassified",
     "platform_store_relational",
-    "core_functions",
+    "core_functions_unclassified",
     "core",
     "core_relational"
   ]

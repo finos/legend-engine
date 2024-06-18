@@ -3,12 +3,11 @@
   "pattern": "(meta::analytics::mapping)(::.*)?",
   "dependencies": [
     "platform",
-    "core_functions_unclassified",
     "platform_dsl_mapping",
     "platform_store_relational",
-    "core_analytics_class",
     "core_functions_json",
-    "core_functions",
+    "core_functions_unclassified",
+    "core_analytics_class",
     "core_relational",
     "core_external_compiler",
     "core"

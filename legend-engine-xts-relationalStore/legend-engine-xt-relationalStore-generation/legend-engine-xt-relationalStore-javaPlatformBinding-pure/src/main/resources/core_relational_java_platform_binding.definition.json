@@ -3,11 +3,10 @@
   "pattern": "(meta::relational::executionPlan::platformBinding::legendJava)(::.*)?",
   "dependencies": [
     "platform",
-    "core_functions_unclassified",
     "platform_dsl_graph",
     "platform_dsl_mapping",
     "platform_store_relational",
-    "core_functions",
+    "core_functions_unclassified",
     "core",
     "core_relational",
     "core_external_language_java",

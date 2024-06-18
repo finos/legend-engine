@@ -24,7 +24,7 @@ public class TestPCRReport
     public void canFindPCTReport()
     {
         Assert.assertEquals(4, PCTReportProviderLoader.gatherFunctions().size());
-        Assert.assertEquals("base, essential, grammar, relation", PCTReportProviderLoader.gatherFunctions().collect(c -> c.reportScope.module).distinct().sortThis().makeString(", "));
+        Assert.assertEquals("essential, grammar, relation, unclassified", PCTReportProviderLoader.gatherFunctions().collect(c -> c.reportScope.module).distinct().sortThis().makeString(", "));
         Assert.assertEquals(0, PCTReportProviderLoader.gatherReports().size());
         Assert.assertEquals("", PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey.adapter).distinct().sortThis().makeString(", "));
     }

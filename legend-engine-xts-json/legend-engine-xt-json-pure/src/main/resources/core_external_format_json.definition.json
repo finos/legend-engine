@@ -3,12 +3,11 @@
   "pattern": "(meta::external::format::json|meta::json)(::.*)?",
   "dependencies": [
     "platform",
-    "core_functions_unclassified",
-    "core_functions_json",
     "platform_dsl_mapping",
     "platform_dsl_path",
     "platform_dsl_graph",
-    "core_functions",
+    "core_functions_json",
+    "core_functions_unclassified",
     "core",
     "core_generation"
   ]

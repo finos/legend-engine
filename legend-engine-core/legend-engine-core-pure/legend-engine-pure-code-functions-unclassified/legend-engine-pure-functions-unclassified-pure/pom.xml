@@ -84,7 +84,7 @@
                 </executions>
                 <configuration>
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
-                    <scopeProviderMethod>org.finos.legend.pure.code.core.FunctionsCodeRepositoryProvider.baseFunctions</scopeProviderMethod>
+                    <scopeProviderMethod>org.finos.legend.pure.code.core.FunctionsCodeRepositoryProvider.unclassifiedFunctions</scopeProviderMethod>
                 </configuration>
             </plugin>
         </plugins>

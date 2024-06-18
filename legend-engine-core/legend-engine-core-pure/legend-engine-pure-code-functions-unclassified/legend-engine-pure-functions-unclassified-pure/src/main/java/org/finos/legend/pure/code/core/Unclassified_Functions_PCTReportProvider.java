@@ -21,7 +21,7 @@ import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProvider;
 import org.finos.legend.pure.m3.pct.reports.model.AdapterReport;
 import org.finos.legend.pure.m3.pct.functions.model.Functions;
 
-public class Base_Functions_PCTReportProvider implements PCTReportProvider
+public class Unclassified_Functions_PCTReportProvider implements PCTReportProvider
 {
     @Override
     public MutableList<Functions> getFunctions()
@@ -30,7 +30,7 @@ public class Base_Functions_PCTReportProvider implements PCTReportProvider
         {
             return org.eclipse.collections.api.factory.Lists.mutable.with(
                     JsonMapper.builder().build().readValue(
-                            Base_Functions_PCTReportProvider.class.getResourceAsStream("/pct-reports/FUNCTIONS_base.json"),
+                            Unclassified_Functions_PCTReportProvider.class.getResourceAsStream("/pct-reports/FUNCTIONS_unclassified.json"),
                             Functions.class
                     )
             );

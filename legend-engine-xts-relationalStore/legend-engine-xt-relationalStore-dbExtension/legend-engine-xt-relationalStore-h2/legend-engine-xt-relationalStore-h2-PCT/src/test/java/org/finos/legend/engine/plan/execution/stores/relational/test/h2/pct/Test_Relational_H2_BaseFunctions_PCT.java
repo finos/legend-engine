@@ -32,7 +32,7 @@ import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramew
 
 public class Test_Relational_H2_BaseFunctions_PCT extends PCTReportConfiguration
 {
-    private static final ReportScope reportScope = FunctionsCodeRepositoryProvider.baseFunctions;
+    private static final ReportScope reportScope = FunctionsCodeRepositoryProvider.unclassifiedFunctions;
     private static final Adapter adapter = CoreExternalTestConnectionCodeRepositoryProvider.H2Adapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(

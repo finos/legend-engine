@@ -3,10 +3,9 @@
   "pattern": "(meta::relational::functions::sqlQueryToString::sybaseIQ|meta::relational::tests::sqlQueryToString::sybaseIQ|meta::relational::tests::sqlToString::sybaseIQ|meta::pure::executionPlan::tests::sybaseIQ|meta::relational::tests::mapping::sqlFunction::sybaseIQ|meta::relational::tests::postProcessor::sybaseIQ|meta::relational::tests::query::function::sybaseIQ|meta::relational::tests::functions::sqlstring::sybaseIQ|meta::relational::tests::tds::sybaseIQ|meta::relational::tests::projection::sybaseIQ|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
   "dependencies": [
     "platform",
-    "core_functions_unclassified",
     "platform_store_relational",
     "platform_dsl_store",
-    "core_functions",
+    "core_functions_unclassified",
     "core",
     "core_relational"
   ]

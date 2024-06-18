@@ -34,11 +34,11 @@ public class Core_Relational_Snowflake_PCTReportProvider implements PCTReportPro
     {
         try
         {
-            if (Core_Relational_Snowflake_PCTReportProvider.class.getResource("/pct-reports/ADAPTER_base_compiled_Snowflake.json") != null)
+            if (Core_Relational_Snowflake_PCTReportProvider.class.getResource("/pct-reports/ADAPTER_unclassified_compiled_Snowflake.json") != null)
             {
                 return Lists.mutable.with(
                         JsonMapper.builder().build().readValue(
-                                Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_base_compiled_Snowflake.json"),
+                                Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_unclassified_compiled_Snowflake.json"),
                                 AdapterReport.class
                         ),
                         JsonMapper.builder().build().readValue(

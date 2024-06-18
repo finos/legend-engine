@@ -3,7 +3,6 @@
   "pattern": "(meta::pure::testConnection|meta::relational::relation|meta::relational::tests::pct)(::.*)?",
   "dependencies": [
     "platform",
-    "core_functions_unclassified",
     "platform_dsl_mapping",
     "platform_dsl_store",
     "platform_dsl_tds",
@@ -11,7 +10,7 @@
     "core_functions_relation",
     "core_functions_json",
     "core",
-    "core_functions",
+    "core_functions_unclassified",
     "core_relational"
   ]
 }

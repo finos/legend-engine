@@ -24,7 +24,7 @@
 
     <artifactId>legend-engine-pure-code-functions-unclassified</artifactId>
     <packaging>pom</packaging>
-    <name>Legend - Pure - Functions - Base</name>
+    <name>Legend Engine - Pure - Code - Core - Functions - Unclassified</name>
 
     <modules>
         <module>legend-engine-pure-functions-unclassified-pure</module>

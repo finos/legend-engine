@@ -3,9 +3,8 @@
   "pattern": "(meta::relational::functions::sqlQueryToString::memsql|meta::pure::alloy::connections|meta::protocols::pure|meta::relational::tests::sqlQueryToString::memsql|meta::relational::memsql::tests)(::.*)?",
   "dependencies": [
     "platform",
-    "core_functions_unclassified",
     "platform_store_relational",
-    "core_functions",
+    "core_functions_unclassified",
     "core",
     "core_relational"
   ]

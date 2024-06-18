@@ -25,9 +25,9 @@
         <version>4.50.2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>legend-engine-pure-code-compiled-functions</artifactId>
+    <artifactId>legend-engine-pure-code-functions-standard</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - Pure - Code - Core - Functions - PAR/JAVA</name>
+    <name>Legend Engine - Pure - Code - Core - Functions - Standard</name>
 
     <build>
         <plugins>
@@ -38,7 +38,7 @@
                     <sourceDirectory>src/main/resources</sourceDirectory>
                     <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
                     <extraRepositories>
-                        <extraRepository>${project.basedir}/src/main/resources/core_functions.definition.json</extraRepository>
+                        <extraRepository>${project.basedir}/src/main/resources/core_functions_standard.definition.json</extraRepository>
                     </extraRepositories>
                 </configuration>
                 <executions>
@@ -72,7 +72,7 @@
                             <generationType>modular</generationType>
                             <useSingleDir>true</useSingleDir>
                             <repositories>
-                                <repository>core_functions</repository>
+                                <repository>core_functions_standard</repository>
                             </repositories>
                         </configuration>
                     </execution>
@@ -112,16 +112,17 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-java</artifactId>
+            <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.eclipse.collections</groupId>-->
+<!--            <artifactId>eclipse-collections-api</artifactId>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.eclipse.collections</groupId>-->
+<!--            <artifactId>eclipse-collections</artifactId>-->
+<!--        </dependency>-->
 
 
         <!-- TEST -->
@@ -129,12 +130,12 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m3-core</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.pure</groupId>-->
+<!--            <artifactId>legend-pure-m3-core</artifactId>-->
+<!--            <type>test-jar</type>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
         <!-- TEST -->
     </dependencies>
 </project>
