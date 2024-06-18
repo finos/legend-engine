@@ -1,5 +1,5 @@
 {
   "name" : "core_relational_hive",
   "pattern" : "(meta::relational::functions::sqlQueryToString::hive|meta::relational::tests::sqlQueryToString::hive|meta::pure::executionPlan::tests::hive|meta::relational::tests::mapping::sqlFunction::hive|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
-  "dependencies" : ["platform", "platform_functions", "platform_store_relational", "core_functions", "core", "core_relational"]
+  "dependencies" : ["platform", "core_functions_unclassified", "platform_store_relational", "core_functions", "core", "core_relational"]
 }

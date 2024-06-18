@@ -3,7 +3,7 @@
   "pattern": "(meta::external::query::graphQL)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
+    "core_functions_unclassified",
     "platform_dsl_graph",
     "platform_dsl_mapping",
     "platform_dsl_store",

@@ -3,7 +3,7 @@
   "pattern": "(meta::relational::functions::sqlQueryToString::spanner|meta::relational::tests::sqlQueryToString::spanner|meta::pure::alloy::connections|meta::external::store::relational::runtime|meta::protocols::pure)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
+    "core_functions_unclassified",
     "platform_store_relational",
     "core_functions",
     "core",

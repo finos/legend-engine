@@ -3,7 +3,7 @@
   "pattern": "(meta::protocols::generation::java)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
+    "core_functions_unclassified",
     "platform_dsl_store",
     "platform_dsl_mapping",
     "core_functions",

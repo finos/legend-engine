@@ -29,7 +29,9 @@
     <modules>
         <module>legend-engine-pure-code-compiled-core</module>
         <module>legend-engine-pure-code-compiled-functions</module>
+        <module>legend-engine-pure-code-functions-json</module>
         <module>legend-engine-pure-code-functions-relation</module>
+        <module>legend-engine-pure-code-functions-unclassified</module>
         <module>legend-engine-pure-code-core-extension</module>
         <module>legend-engine-pure-platform-modular-generation</module>
     </modules>

@@ -3,9 +3,9 @@
   "pattern": "(meta::analytics::binding)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
+    "core_functions_unclassified",
     "core",
     "core_functions",
-    "platform_functions_json"
+    "core_functions_json"
   ]
 }

@@ -3,8 +3,8 @@
   "pattern": "(meta::external::store::elasticsearch::executionTest)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
-    "platform_functions_json",
+    "core_functions_unclassified",
+    "core_functions_json",
     "platform_dsl_mapping",
     "core_functions",
     "core",

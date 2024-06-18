@@ -3,8 +3,8 @@
   "pattern" : "(meta::external::store::elasticsearch::specification::metamodel)(::.*)?",
   "dependencies" : [
     "platform",
-    "platform_functions",
-    "platform_functions_json",
+    "core_functions_unclassified",
+    "core_functions_json",
     "core_functions",
     "core",
     "core_external_language_java",

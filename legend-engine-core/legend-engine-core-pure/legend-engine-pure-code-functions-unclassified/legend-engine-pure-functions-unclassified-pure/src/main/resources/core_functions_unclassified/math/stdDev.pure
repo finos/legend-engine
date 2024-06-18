@@ -1,0 +1,49 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+
+native function <<PCT.function>> meta::pure::functions::math::stdDev(numbers:Number[1..*], isBiasCorrected: Boolean[1]):Number[1];
+
+function <<PCT.test>> meta::pure::functions::math::tests::stdDev::testIntStdDev<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+   assertEq(1.0, $f->eval(|stdDev([1,2,3], true)));
+   assertEq(2.0, $f->eval(|stdDev([2,4,6], true)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::stdDev::testFloatStdDev<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+   assertEq(1.0, $f->eval(|stdDev([1.0,2.0,3.0], true)));
+   assertEq(1.0, $f->eval(|stdDev([1.5,2.5,3.5], true)));
+   assertEq(3.14, $f->eval(|stdDev([3.14,6.28,9.42], true)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::stdDev::testMixedStdDev<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+   assertEq(1.0, $f->eval(|stdDev([1.0,2,3.0], true)));
+   assertEq(0.5, $f->eval(|stdDev([1,1.5,2], true)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::stdDev::testNegativeNumberStdDev<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+   assertEq(2.0, $f->eval(|stdDev([-2,-4,-6], true)));
+   assertEq(5.0, $f->eval(|stdDev([-5,0,5], true)));
+   assertEq(5.0, $f->eval(|stdDev([-5.0,0.0,5.0], true)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::stdDev::testPopulationStandardDeviation<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+   assertEq(0.5, $f->eval(|stdDev([1,2], false)));
+   assertEq(1.0, $f->eval(|stdDev([2,4], false)));
+}
