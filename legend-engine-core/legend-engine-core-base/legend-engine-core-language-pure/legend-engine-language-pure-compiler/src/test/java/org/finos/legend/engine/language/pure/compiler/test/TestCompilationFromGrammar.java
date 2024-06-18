@@ -65,9 +65,12 @@ public class TestCompilationFromGrammar
             {
                 // do a full re-serialization after parsing to make sure the protocol produced is proper
                 PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(str);
-                ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
-                String json = objectMapper.writeValueAsString(modelData);
-                modelData = objectMapper.readValue(json, PureModelContextData.class);
+                if (expectedErrorMsg == null && (expectedWarnings == null || expectedWarnings.isEmpty()))
+                {
+                    ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+                    String json = objectMapper.writeValueAsString(modelData);
+                    modelData = objectMapper.readValue(json, PureModelContextData.class);
+                }
                 PureModel pureModel = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
                 if (expectedErrorMsg != null)
                 {

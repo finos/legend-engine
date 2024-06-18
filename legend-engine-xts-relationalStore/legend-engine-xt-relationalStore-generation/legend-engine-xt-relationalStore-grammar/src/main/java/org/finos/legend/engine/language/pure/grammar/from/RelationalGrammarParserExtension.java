@@ -54,6 +54,8 @@ import org.finos.legend.engine.language.pure.grammar.from.postProcessors.PostPro
 import org.finos.legend.engine.language.pure.grammar.from.postProcessors.PostProcessorSpecificationSourceCode;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
@@ -160,7 +162,8 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
                     if (parserInfo.rootContext instanceof RelationalParserGrammar.AssociationMappingContext)
                     {
                         RelationalAssociationMapping associationMapping = new RelationalAssociationMapping();
-                        associationMapping.association = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+                        String path = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+                        associationMapping.association = new PackageableElementPointer(PackageableElementType.ASSOCIATION, path, mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(ctx.qualifiedName()));
                         associationMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null;
                         associationMapping.sourceInformation = parserInfo.sourceInformation;
                         walker.visitRelationalAssociationMapping((RelationalParserGrammar.AssociationMappingContext) parserInfo.rootContext, associationMapping);

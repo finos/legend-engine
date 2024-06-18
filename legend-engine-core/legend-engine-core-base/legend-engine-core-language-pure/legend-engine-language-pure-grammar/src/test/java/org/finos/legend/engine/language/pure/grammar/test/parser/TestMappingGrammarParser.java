@@ -24,15 +24,21 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.operati
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.pureInstanceClassMapping.PureInstanceClassMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.xStoreAssociationMapping.XStoreAssociationMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParserTestSuite
 {
@@ -171,6 +177,58 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "      a : ['a']\n" +
                 "  }\n" +
                 ")\n");
+    }
+
+    @Test
+    public void testEnumerationMappingSourceInformation()
+    {
+        PureModelContextData pureModelContextData = test("###Mapping\n" +
+                "Mapping ui::meta::something::tests::mapping::enumeration::model::mapping::employeeTestMapping\n" +
+                "(\n" +
+                "  demo::EnumWithSpace: EnumerationMapping\n" +
+                "  {\n" +
+                "    'ENUM VALUE WITH SPACE': ['Dummy Value']\n" +
+                "  }\n" +
+                ")\n");
+
+        Map<String, PackageableElement> elementMap = pureModelContextData.getElements().stream().collect(Collectors.toMap(x -> x.getPath(), Function.identity()));
+
+        Mapping mapping = (Mapping) elementMap.get("ui::meta::something::tests::mapping::enumeration::model::mapping::employeeTestMapping");
+
+        org.junit.Assert.assertEquals(1, mapping.enumerationMappings.size());
+
+        org.junit.Assert.assertNotNull(mapping.enumerationMappings.get(0).sourceInformation);
+
+        org.junit.Assert.assertEquals(4, mapping.enumerationMappings.get(0).sourceInformation.startLine);
+        org.junit.Assert.assertEquals(7, mapping.enumerationMappings.get(0).sourceInformation.endLine);
+        org.junit.Assert.assertEquals(3, mapping.enumerationMappings.get(0).sourceInformation.endColumn);
+    }
+
+    @Test
+    public void testEnumerationMappingEnumeration()
+    {
+        PureModelContextData pureModelContextData = test("###Mapping\n" +
+                "Mapping ui::meta::something::tests::mapping::enumeration::model::mapping::employeeTestMapping\n" +
+                "(\n" +
+                "  demo::EnumWithSpace: EnumerationMapping\n" +
+                "  {\n" +
+                "    'ENUM VALUE WITH SPACE': ['Dummy Value']\n" +
+                "  }\n" +
+                ")\n");
+
+        Map<String, PackageableElement> elementMap = pureModelContextData.getElements().stream().collect(Collectors.toMap(x -> x.getPath(), Function.identity()));
+
+        Mapping mapping = (Mapping) elementMap.get("ui::meta::something::tests::mapping::enumeration::model::mapping::employeeTestMapping");
+
+        org.junit.Assert.assertEquals(1, mapping.enumerationMappings.size());
+
+        org.junit.Assert.assertEquals(PackageableElementType.ENUMERATION, mapping.enumerationMappings.get(0).enumeration.type);
+        org.junit.Assert.assertEquals("demo::EnumWithSpace", PackageableElementType.ENUMERATION, mapping.enumerationMappings.get(0).enumeration.type);
+        org.junit.Assert.assertNotNull(mapping.enumerationMappings.get(0).enumeration.sourceInformation);
+
+        org.junit.Assert.assertEquals(4, mapping.enumerationMappings.get(0).enumeration.sourceInformation.startLine);
+        org.junit.Assert.assertEquals(4, mapping.enumerationMappings.get(0).enumeration.sourceInformation.endLine);
+        org.junit.Assert.assertEquals(21, mapping.enumerationMappings.get(0).enumeration.sourceInformation.endColumn);
     }
 
     @Test
@@ -697,6 +755,107 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    p1[x2, y2]: false\n" +
                 "  }\n" +
                 ")");
+    }
+
+    @Test
+    public void testCrossStoreAssociationMappingSourceInformation()
+    {
+        PureModelContextData pureModelContextData = test("###Mapping\n" +
+                "Mapping test::crossPropertyMappingWithLocalProperties\n" +
+                "(\n" +
+                "  test::Person[p]: Pure\n" +
+                "  {\n" +
+                "    ~src test::Person\n" +
+                "    +firmId: Integer[1]: 1,\n" +
+                "    name: $src.name\n" +
+                "  }\n" +
+                "  test::Firm[f]: Pure\n" +
+                "  {\n" +
+                "    ~src test::Firm\n" +
+                "    id: $src.id,\n" +
+                "    legalName: $src.legalName\n" +
+                "  }\n" +
+                "\n" +
+                "  test::Firm_Person: XStore\n" +
+                "  {\n" +
+                "    employer[p, f]: $this.firmId == $that.id,\n" +
+                "    employer: $this.firmId == $that.id\n" +
+                "  }\n" +
+                "  test::Firm_Person[p1]: XStore\n" +
+                "  {\n" +
+                "    employer[p, f]: $this.firmId == $that.id,\n" +
+                "    employer: $this.firmId == $that.id\n" +
+                "  }\n" +
+                ")\n");
+
+        Map<String, PackageableElement> elementMap = pureModelContextData.getElements().stream().collect(Collectors.toMap(x -> x.getPath(), Function.identity()));
+
+        Mapping mapping = (Mapping) elementMap.get("test::crossPropertyMappingWithLocalProperties");
+
+        org.junit.Assert.assertEquals(2, mapping.associationMappings.size());
+
+        org.junit.Assert.assertNotNull(mapping.associationMappings.get(0).sourceInformation);
+        org.junit.Assert.assertNotNull(mapping.associationMappings.get(1).sourceInformation);
+
+        org.junit.Assert.assertEquals(17, mapping.associationMappings.get(0).sourceInformation.startLine);
+        org.junit.Assert.assertEquals(21, mapping.associationMappings.get(0).sourceInformation.endLine);
+        org.junit.Assert.assertEquals(3, mapping.associationMappings.get(0).sourceInformation.endColumn);
+
+        org.junit.Assert.assertEquals(22, mapping.associationMappings.get(1).sourceInformation.startLine);
+        org.junit.Assert.assertEquals(26, mapping.associationMappings.get(1).sourceInformation.endLine);
+        org.junit.Assert.assertEquals(3, mapping.associationMappings.get(1).sourceInformation.endColumn);
+    }
+
+    @Test
+    public void testCrossStoreMappingAssociation()
+    {
+        PureModelContextData pureModelContextData = test("###Mapping\n" +
+                "Mapping test::crossPropertyMappingWithLocalProperties\n" +
+                "(\n" +
+                "  test::Person[p]: Pure\n" +
+                "  {\n" +
+                "    ~src test::Person\n" +
+                "    +firmId: Integer[1]: 1,\n" +
+                "    name: $src.name\n" +
+                "  }\n" +
+                "  test::Firm[f]: Pure\n" +
+                "  {\n" +
+                "    ~src test::Firm\n" +
+                "    id: $src.id,\n" +
+                "    legalName: $src.legalName\n" +
+                "  }\n" +
+                "\n" +
+                "  test::Firm_Person: XStore\n" +
+                "  {\n" +
+                "    employer[p, f]: $this.firmId == $that.id,\n" +
+                "    employer: $this.firmId == $that.id\n" +
+                "  }\n" +
+                "  test::Firm_Person[p1]: XStore\n" +
+                "  {\n" +
+                "    employer[p, f]: $this.firmId == $that.id,\n" +
+                "    employer: $this.firmId == $that.id\n" +
+                "  }\n" +
+                ")\n");
+
+        Map<String, PackageableElement> elementMap = pureModelContextData.getElements().stream().collect(Collectors.toMap(x -> x.getPath(), Function.identity()));
+
+        Mapping mapping = (Mapping) elementMap.get("test::crossPropertyMappingWithLocalProperties");
+
+        org.junit.Assert.assertEquals(2, mapping.associationMappings.size());
+
+        org.junit.Assert.assertEquals(PackageableElementType.ASSOCIATION, mapping.associationMappings.get(0).association.type);
+        org.junit.Assert.assertEquals(PackageableElementType.ASSOCIATION, mapping.associationMappings.get(1).association.type);
+        org.junit.Assert.assertEquals("test::Firm_Person", mapping.associationMappings.get(0).association.path);
+        org.junit.Assert.assertNotNull(mapping.associationMappings.get(0).association.sourceInformation);
+        org.junit.Assert.assertNotNull(mapping.associationMappings.get(1).association.sourceInformation);
+
+        org.junit.Assert.assertEquals(17, mapping.associationMappings.get(0).association.sourceInformation.startLine);
+        org.junit.Assert.assertEquals(17, mapping.associationMappings.get(0).association.sourceInformation.endLine);
+        org.junit.Assert.assertEquals(19, mapping.associationMappings.get(0).association.sourceInformation.endColumn);
+
+        org.junit.Assert.assertEquals(22, mapping.associationMappings.get(1).association.sourceInformation.startLine);
+        org.junit.Assert.assertEquals(22, mapping.associationMappings.get(1).association.sourceInformation.endLine);
+        org.junit.Assert.assertEquals(19, mapping.associationMappings.get(1).association.sourceInformation.endColumn);
     }
 
     @Test

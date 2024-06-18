@@ -337,7 +337,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "COMPILATION error at [67:1-83:1]: Error in 'model::dataSpace2': Dataspace model::dataSpace does not have test data in its default execution context.");
+                "}\n", "COMPILATION error at [76:9-79:10]: Dataspace model::dataSpace does not have test data in its default execution context.");
     }
 
     @Test
@@ -414,7 +414,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "COMPILATION error at [54:1-70:1]: Error in 'model::dataSpace': Dataspace model::nonexistantDataspace cannot be found.");
+                "}\n", "COMPILATION error at [63:9-66:10]: Dataspace model::nonexistantDataspace cannot be found.");
     }
 
     @Test

@@ -163,9 +163,9 @@ public class HelperMappingBuilder
                 ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::mapping::EnumerationMapping"))._typeArguments(FastList.newListWith(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::type::Any")))))
                 ._name(id)
                 ._parent(pureMapping)
-                ._enumeration(context.resolveEnumeration(em.enumeration, em.sourceInformation))
+                ._enumeration(context.resolveEnumeration(em.enumeration.path, em.enumeration.sourceInformation))
                 ._enumValueMappings(ListIterate.collect(em.enumValueMappings, v -> new Root_meta_pure_mapping_EnumValueMapping_Impl(null, SourceInformationHelper.toM3SourceInformation(v.sourceInformation), null)
-                        ._enum(context.resolveEnumValue(em.enumeration, v.enumValue))
+                        ._enum(context.resolveEnumValue(em.enumeration.path, v.enumValue))
                         ._sourceValues(convertSourceValues(em, v.sourceValues, context))
                 ));
     }
@@ -284,7 +284,7 @@ public class HelperMappingBuilder
 
     public static String getEnumerationMappingId(EnumerationMapping em)
     {
-        return em.id != null ? em.id : em.enumeration.replaceAll("::", "_");
+        return em.id != null ? em.id : em.enumeration.path.replaceAll("::", "_");
     }
 
     public static String getClassMappingId(ClassMapping cm, CompileContext context)
@@ -352,7 +352,7 @@ public class HelperMappingBuilder
         {
             XStoreAssociationMapping xStoreAssociationMapping = (XStoreAssociationMapping) associationMapping;
             XStoreAssociationImplementation base = new Root_meta_pure_mapping_xStore_XStoreAssociationImplementation_Impl("", SourceInformationHelper.toM3SourceInformation(associationMapping.sourceInformation), context.pureModel.getClass("meta::pure::mapping::xStore::XStoreAssociationImplementation"));
-            final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association pureAssociation = context.resolveAssociation(xStoreAssociationMapping.association);
+            final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association pureAssociation = context.resolveAssociation(xStoreAssociationMapping.association.path, xStoreAssociationMapping.association.sourceInformation);
             MutableList<Store> stores = ListIterate.collect(xStoreAssociationMapping.stores, context::resolveStore);
             base._association(pureAssociation)._stores(stores)._parent(parentMapping)._propertyMappings(ListIterate.collect(xStoreAssociationMapping.propertyMappings, propertyMapping -> propertyMapping.accept(new PropertyMappingBuilder(context, parentMapping, base, HelperMappingBuilder.getAllClassMappings(parentMapping)))));
             return base;

@@ -45,7 +45,7 @@ public class XStoreAssociationMappingParseTreeWalker
 
     public void visitXStoreAssociationMapping(XStoreAssociationMappingParserGrammar.XStoreAssociationMappingContext ctx, XStoreAssociationMapping xStoreAssociationMapping)
     {
-        xStoreAssociationMapping.propertyMappings = ListIterate.collect(ctx.xStorePropertyMapping(), x -> this.visitXStorePropertyMapping(x, xStoreAssociationMapping.association));
+        xStoreAssociationMapping.propertyMappings = ListIterate.collect(ctx.xStorePropertyMapping(), x -> this.visitXStorePropertyMapping(x, xStoreAssociationMapping.association.path));
     }
 
     private XStorePropertyMapping visitXStorePropertyMapping(XStoreAssociationMappingParserGrammar.XStorePropertyMappingContext ctx, String association)
