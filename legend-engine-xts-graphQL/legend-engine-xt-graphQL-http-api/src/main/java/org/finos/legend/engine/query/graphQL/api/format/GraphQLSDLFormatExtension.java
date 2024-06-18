@@ -30,7 +30,7 @@ public class GraphQLSDLFormatExtension implements ExternalFormatSchemaGeneration
 
     private static final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_query_graphQL_metamodel_sdl_GraphQLSDLContainer> contract =
         (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_query_graphQL_metamodel_sdl_GraphQLSDLContainer>) core_external_query_graphql_contract.Root_meta_external_query_graphQL_contract_graphQLSdlContract__ExternalFormatContract_1_(
-            PureModel.getCorePureModel().getExecutionSupport());
+            PureModel.CORE_PURE_MODEL.getExecutionSupport());
     public static final String TYPE = contract._id();
 
     @Override

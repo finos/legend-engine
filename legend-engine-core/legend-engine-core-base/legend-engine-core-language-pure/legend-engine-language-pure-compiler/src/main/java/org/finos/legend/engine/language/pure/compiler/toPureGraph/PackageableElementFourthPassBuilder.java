@@ -16,7 +16,6 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestBuilderHelper;
@@ -40,12 +39,11 @@ import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_relationship_Generalization_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Generalization;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.slf4j.Logger;
+
 
 public class PackageableElementFourthPassBuilder implements PackageableElementVisitor<PackageableElement>
 {
@@ -124,32 +122,21 @@ public class PackageableElementFourthPassBuilder implements PackageableElementVi
 
         HelperModelBuilder.processClassConstraints(srcClass, this.context, targetClass, ctx, thisVariable);
 
+        if (targetClass._generalizations().isEmpty())
+        {
+            Generalization g = new Root_meta_pure_metamodel_relationship_Generalization_Impl("", null, this.context.pureModel.getClass("meta::pure::metamodel::relationship::Generalization"))
+                                ._general(this.context.pureModel.getGenericType("meta::pure::metamodel::type::Any"))
+                                ._specific(targetClass);
+            targetClass._generalizationsAdd(g);
+        }
+
         return targetClass;
     }
 
     @Override
     public PackageableElement visit(Association srcAssociation)
     {
-        String property0Ref = this.context.pureModel.addPrefixToTypeReference(srcAssociation.properties.get(0).type);
-        String property1Ref = this.context.pureModel.addPrefixToTypeReference(srcAssociation.properties.get(1).type);
-
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = this.context.pureModel.getAssociation(this.context.pureModel.buildPackageString(srcAssociation._package, srcAssociation.name), srcAssociation.sourceInformation);
-        ProcessingContext ctx = new ProcessingContext("Association " + this.context.pureModel.buildPackageString(srcAssociation._package, srcAssociation.name) + " (fourth pass)");
-
-        ListIterate.collect(srcAssociation.qualifiedProperties, property ->
-        {
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification thisVariable = HelperModelBuilder.createThisVariableForClass(this.context, srcAssociation.properties.get(0).type.equals(property.returnType) ? property1Ref : property0Ref);
-            ctx.addInferredVariables("this", thisVariable);
-            ctx.push("Qualified Property " + property.name);
-            ListIterate.collect(property.parameters, expression -> expression.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), ctx)));
-            MutableList<ValueSpecification> body = ListIterate.collect(property.body, expression -> expression.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), ctx)));
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty<?> prop = association._qualifiedProperties().detect(o -> o._name().equals(property.name));
-            ctx.pop();
-            ctx.flushVariable("this");
-            return prop._expressionSequence(body);
-        });
-
-        return association;
+        return null;
     }
 
     @Override
@@ -168,10 +155,14 @@ public class PackageableElementFourthPassBuilder implements PackageableElementVi
     public PackageableElement visit(Mapping mapping)
     {
         final org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping pureMapping = this.context.pureModel.getMapping(this.context.pureModel.buildPackageString(mapping._package, mapping.name), mapping.sourceInformation);
-        if (mapping.classMappings != null && pureMapping._classMappings().isEmpty())
+        if (mapping.associationMappings != null)
         {
-            RichIterable<Pair<SetImplementation, RichIterable<EmbeddedSetImplementation>>> setImplementations = ListIterate.collect(mapping.classMappings, cm -> cm.accept(new ClassMappingFirstPassBuilder(this.context, pureMapping)));
-            pureMapping._classMappingsAddAll(setImplementations.flatCollect(p -> Lists.mutable.with(p.getOne()).withAll(p.getTwo())));
+            RichIterable<AssociationImplementation> associationImplementations = ListIterate.collect(mapping.associationMappings, cm -> HelperMappingBuilder.processAssociationImplementation(cm, this.context, pureMapping));
+            pureMapping._associationMappings(associationImplementations);
+        }
+        if (mapping.classMappings != null)
+        {
+            mapping.classMappings.forEach(cm -> cm.accept(new ClassMappingSecondPassBuilder(this.context, pureMapping)));
         }
         if (!mapping.tests.isEmpty())
         {

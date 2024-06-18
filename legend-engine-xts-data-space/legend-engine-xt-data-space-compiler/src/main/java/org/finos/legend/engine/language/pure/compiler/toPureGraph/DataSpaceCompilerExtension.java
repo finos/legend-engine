@@ -25,7 +25,6 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.list.mutable.FastList;
-import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
@@ -97,7 +96,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
         return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "DataSpace");
     }
 
-    static final ConcurrentHashMap<String, Root_meta_pure_metamodel_dataSpace_DataSpace> dataSpacesIndex = new ConcurrentHashMap<>();
+    static final MutableMap<String, Root_meta_pure_metamodel_dataSpace_DataSpace> dataSpacesIndex = Maps.mutable.empty();
 
     @Override
     public CompilerExtension build()
@@ -130,11 +129,13 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                         {
                             Root_meta_pure_runtime_PackageableRuntime runtime = context.resolvePackageableRuntime(executionContext.defaultRuntime.path, executionContext.defaultRuntime.sourceInformation);
                             Mapping mapping = context.resolveMapping(executionContext.mapping.path, executionContext.mapping.sourceInformation);
+                            Root_meta_pure_data_EmbeddedData data = Objects.isNull(executionContext.testData) ? null : executionContext.testData.accept(new EmbeddedDataFirstPassBuilder(context, new ProcessingContext("Dataspace '" + metamodel._name() + "' First Pass")));
                             return new Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceExecutionContext"))
                                     ._name(executionContext.name)
                                     ._title(executionContext.title)
                                     ._description(executionContext.description)
                                     ._mapping(mapping)
+                                    ._testData(data)
                                     ._defaultRuntime(runtime);
                         }
                         else
@@ -149,29 +150,11 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                         throw new EngineException("Default execution context '" + dataSpace.defaultExecutionContext + "' does not match any existing execution contexts", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                     }
                     metamodel._defaultExecutionContext(defaultExecutionContext);
+
                     metamodel._title(dataSpace.title);
                     metamodel._description(dataSpace.description);
 
                     return metamodel;
-                },
-                (dataSpace, context) ->
-                {
-                    Root_meta_pure_metamodel_dataSpace_DataSpace metamodel = dataSpacesIndex.get(context.pureModel.buildPackageString(dataSpace._package, dataSpace.name));
-                    MutableMap<String, Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext> dataSpaceExecutionContextIndex = Maps.mutable.empty();
-                    metamodel._executionContexts().forEach(dataSpaceExecutionContext -> dataSpaceExecutionContextIndex.put(dataSpaceExecutionContext._name(), dataSpaceExecutionContext));
-                    dataSpace.executionContexts.forEach(executionContext ->
-                    {
-                        Root_meta_pure_data_EmbeddedData data = Objects.isNull(executionContext.testData) ? null : executionContext.testData.accept(new EmbeddedDataFirstPassBuilder(context, new ProcessingContext("Dataspace '" + metamodel._name() + "' Second Pass")));
-                        dataSpaceExecutionContextIndex.get(executionContext.name)._testData(data);
-                    });
-                },
-                (dataSpace, context) ->
-                {
-
-                },
-                (dataSpace, context) ->
-                {
-
                 },
                 (dataSpace, context) ->
                 {

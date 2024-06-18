@@ -22,7 +22,6 @@ import meta::external::format::shared::transformation::fromPure::*;
 import meta::pure::generation::metamodel::*;
 
 import meta::pure::model::unit::*;
-import meta::pure::functions::lang::*;
 
 // ========================================================================================================================================================
 // Descriptor
@@ -203,7 +202,7 @@ function meta::external::format::protobuf::transformation::fromPure::classToMess
             //Collect any abstract base classes
             let oneOfs = $c->filter(c | ($c->allProperties()->isEmpty() || $c->isAbstract()) && $c->allSpecializations()->isNotEmpty())
                                       ->removeDuplicates()
-                                      ->map(c | let subClasses = $c->allSpecializations()->filter(sc | $sc != $c)->sort({x, y | $x.name->toOne()->compare($y.name->toOne())});
+                                      ->map(c | let subClasses = $c->allSpecializations()->filter(sc | $sc != $c);
                                                 ^OneOf(
                                                   name=$c.name->toOne()->toLower(),
                                                   field=$subClasses->map(s | ^Field(name=$s.name->toOne()->meta::pure::functions::string::splitOnCamelCase()->joinStrings('_')->toLower(), 

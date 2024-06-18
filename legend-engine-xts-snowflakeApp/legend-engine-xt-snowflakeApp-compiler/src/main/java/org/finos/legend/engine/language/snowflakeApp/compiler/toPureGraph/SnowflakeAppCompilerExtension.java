@@ -23,7 +23,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeApp;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeAppDeploymentConfiguration;
 import org.finos.legend.pure.generated.*;
@@ -53,7 +52,7 @@ public class SnowflakeAppCompilerExtension implements CompilerExtension
         return Lists.fixedSize.of(
                 Processor.newProcessor(
                         SnowflakeApp.class,
-                        org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableConnection.class, Function.class),
+                        org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableConnection.class),
                         this::buildSnowflakeApp
                 )
         );

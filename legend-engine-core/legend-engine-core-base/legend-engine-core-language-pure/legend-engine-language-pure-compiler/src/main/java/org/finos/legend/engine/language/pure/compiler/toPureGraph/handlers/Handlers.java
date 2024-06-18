@@ -1693,7 +1693,7 @@ public class Handlers
         register(handlers);
     }
 
-    public synchronized void register(UserDefinedFunctionHandler handler)
+    public void register(UserDefinedFunctionHandler handler)
     {
         String functionName = handler.getFunctionName();
         boolean functionRegisteredByName = isFunctionRegisteredByName(handler);

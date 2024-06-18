@@ -23,8 +23,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Proc
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunction;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionDeploymentConfiguration;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
 import org.finos.legend.pure.m3.navigation.function.FunctionDescriptor;
@@ -52,12 +50,11 @@ public class BigQueryFunctionCompilerExtension implements CompilerExtension
         return Lists.fixedSize.of(
                 Processor.newProcessor(
                         BigQueryFunction.class,
-                        Lists.fixedSize.with(BigQueryFunctionDeploymentConfiguration.class, Function.class),
+                        Lists.fixedSize.with(BigQueryFunctionDeploymentConfiguration.class),
                         this::buildBigQueryFunction
                 ),
                 Processor.newProcessor(
                         BigQueryFunctionDeploymentConfiguration.class,
-                        Lists.fixedSize.with(PackageableConnection.class),
                         this::buildDeploymentConfig
                 )
         );

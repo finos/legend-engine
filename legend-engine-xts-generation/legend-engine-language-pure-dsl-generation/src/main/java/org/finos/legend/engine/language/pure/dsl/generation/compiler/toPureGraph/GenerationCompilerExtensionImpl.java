@@ -14,9 +14,10 @@
 
 package org.finos.legend.engine.language.pure.dsl.generation.compiler.toPureGraph;
 
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
@@ -28,10 +29,12 @@ import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_Gener
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_PackageableElement_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
+import java.util.Collections;
+
 public class GenerationCompilerExtensionImpl implements GenerationCompilerExtension
 {
-    final ConcurrentHashMap<String, Root_meta_pure_generation_metamodel_GenerationSpecification> generationSpecificationsIndex = new ConcurrentHashMap<>();
-    final ConcurrentHashMap<String, Root_meta_pure_generation_metamodel_GenerationConfiguration> fileConfigurationsIndex = new ConcurrentHashMap<>();
+    final MutableMap<String, Root_meta_pure_generation_metamodel_GenerationSpecification> generationSpecificationsIndex = Maps.mutable.empty();
+    final MutableMap<String, Root_meta_pure_generation_metamodel_GenerationConfiguration> fileConfigurationsIndex = Maps.mutable.empty();
 
     @Override
     public MutableList<String> group()
@@ -61,14 +64,14 @@ public class GenerationCompilerExtensionImpl implements GenerationCompilerExtens
                         }),
                 Processor.newProcessor(
                         GenerationSpecification.class,
-                        Lists.fixedSize.with(FileGenerationSpecification.class, AbstractGenerationSpecification.class),
+                        Collections.singletonList(AbstractGenerationSpecification.class),
                         (generationSpecification, context) ->
                         {
                             Root_meta_pure_generation_metamodel_GenerationSpecification genTree = new Root_meta_pure_generation_metamodel_GenerationSpecification_Impl(generationSpecification.name, null, context.pureModel.getClass("meta::pure::generation::metamodel::GenerationSpecification"))._name(generationSpecification.name);
+                            HelperGenerationSpecificationBuilder.processGenerationSpecification(generationSpecification, context);
                             this.generationSpecificationsIndex.put(context.pureModel.buildPackageString(generationSpecification._package, generationSpecification.name), genTree);
                             return genTree;
-                        },
-                        HelperGenerationSpecificationBuilder::processGenerationSpecification)
+                        })
         );
     }
 }

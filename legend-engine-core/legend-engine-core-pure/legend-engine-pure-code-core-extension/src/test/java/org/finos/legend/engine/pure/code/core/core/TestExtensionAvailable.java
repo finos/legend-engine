@@ -29,7 +29,7 @@ public class TestExtensionAvailable
     public void testServiceAvailable()
     {
         MutableList<LegendPureCoreExtension> extensions =  PureCoreExtensionLoader.extensions();
-        Assert.assertEquals(2, extensions.selectInstancesOf(CoreLegendPureCoreExtension.class).get(0).extraPureCoreExtensions(PureModel.getCorePureModel().getExecutionSupport()).size());
-        Assert.assertEquals("defaultExtensions,externalFormat", extensions.get(0).extraPureCoreExtensions(PureModel.getCorePureModel().getExecutionSupport()).collect(v -> v._type()).toSortedList().makeString(","));
+        Assert.assertEquals(2, extensions.selectInstancesOf(CoreLegendPureCoreExtension.class).get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).size());
+        Assert.assertEquals("defaultExtensions,externalFormat", extensions.get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).collect(v -> v._type()).toSortedList().makeString(","));
     }
 }

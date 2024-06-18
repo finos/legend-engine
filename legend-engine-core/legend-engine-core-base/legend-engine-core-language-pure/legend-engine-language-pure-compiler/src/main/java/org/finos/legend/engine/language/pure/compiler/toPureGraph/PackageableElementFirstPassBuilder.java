@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.UserDefinedFunctionHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.TypeAndMultiplicity;
@@ -64,13 +65,13 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Tag;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.TaggedValue;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 
 import java.util.List;
-import java.util.Objects;
 
 public class PackageableElementFirstPassBuilder implements PackageableElementVisitor<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement>
 {
@@ -159,7 +160,42 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
             throw new EngineException("Expected 2 properties for an association '" + packageString + "'", srcAssociation.sourceInformation, EngineErrorType.COMPILATION);
         }
         setNameAndPackage(association, srcAssociation);
-        return association._stereotypes(ListIterate.collect(srcAssociation.stereotypes, this::resolveStereotype))
+
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class source = this.context.resolveClass(srcAssociation.properties.get(0).type, srcAssociation.properties.get(0).sourceInformation);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class target = this.context.resolveClass(srcAssociation.properties.get(1).type, srcAssociation.properties.get(1).sourceInformation);
+
+        String property0Ref = this.context.pureModel.addPrefixToTypeReference(HelperModelBuilder.getElementFullPath(source, this.context.pureModel.getExecutionSupport()));
+        String property1Ref = this.context.pureModel.addPrefixToTypeReference(HelperModelBuilder.getElementFullPath(target, this.context.pureModel.getExecutionSupport()));
+
+        // TODO generalize this validation to all platform/core types
+        if ("meta::pure::metamodel::type::Any".equals(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(source)) ||
+                "meta::pure::metamodel::type::Any".equals(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(target)))
+        {
+            throw new EngineException("Associations to Any are not allowed. Found in '" + packageString + "'", srcAssociation.sourceInformation, EngineErrorType.COMPILATION);
+        }
+
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<Object, Object> property1 = HelperModelBuilder.processProperty(this.context, this.context.pureModel.getGenericTypeFromIndex(property1Ref), association).valueOf(srcAssociation.properties.get(0));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<Object, Object> property2 = HelperModelBuilder.processProperty(this.context, this.context.pureModel.getGenericTypeFromIndex(property0Ref), association).valueOf(srcAssociation.properties.get(1));
+
+        source._propertiesFromAssociationsAdd(property2);
+        target._propertiesFromAssociationsAdd(property1);
+
+        ProcessingContext ctx = new ProcessingContext("Association " + packageString + " (second pass)");
+
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification thisVariable = HelperModelBuilder.createThisVariableForClass(this.context, property1Ref);
+        ctx.addInferredVariables("this", thisVariable);
+
+        ListIterable<QualifiedProperty<Object>> qualifiedProperties = ListIterate.collect(srcAssociation.qualifiedProperties, p ->
+        {
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class cl = this.context.resolveGenericType(p.returnType, p.sourceInformation)._rawType() == source ? target : source;
+            return HelperModelBuilder.processQualifiedPropertyFirstPass(this.context, association, org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(cl), ctx).valueOf(p);
+        });
+        qualifiedProperties.forEach(q -> (q._genericType()._rawType() == source ? target : source)._qualifiedPropertiesFromAssociationsAdd(q));
+        ctx.flushVariable("this");
+        return association._originalMilestonedProperties(ListIterate.collect(srcAssociation.originalMilestonedProperties, HelperModelBuilder.processProperty(this.context, this.context.pureModel.getGenericTypeFromIndex(srcAssociation.properties.get(0).type), association)))
+                ._properties(Lists.mutable.with(property1, property2))
+                ._qualifiedProperties(qualifiedProperties)
+                ._stereotypes(ListIterate.collect(srcAssociation.stereotypes, this::resolveStereotype))
                 ._taggedValues(ListIterate.collect(srcAssociation.taggedValues, this::newTaggedValue));
     }
 
@@ -330,18 +366,15 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         }
         pureElement._name(name);
 
-        synchronized (this.context.pureModel)
+        // Validate and set package
+        Package pack = this.context.pureModel.getOrCreatePackage(packagePath);
+        if (pack._children().anySatisfy(c -> name.equals(c._name())))
         {
-            // Validate and set package
-            Package pack = this.context.pureModel.getOrCreatePackage(packagePath);
-            if (pack._children().anySatisfy(c -> name.equals(c._name())))
-            {
-                throw new EngineException("An element named '" + name + "' already exists in the package '" + packagePath + "'", sourceInformation, EngineErrorType.COMPILATION);
-            }
-            pureElement._package(pack);
-            pureElement.setSourceInformation(SourceInformationHelper.toM3SourceInformation(sourceInformation));
-            pack._childrenAdd(pureElement);
+            throw new EngineException("An element named '" + name + "' already exists in the package '" + packagePath + "'", sourceInformation, EngineErrorType.COMPILATION);
         }
+        pureElement._package(pack);
+        pureElement.setSourceInformation(SourceInformationHelper.toM3SourceInformation(sourceInformation));
+        pack._childrenAdd(pureElement);
         return pureElement;
     }
 }
