@@ -124,10 +124,6 @@
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-code-compiled-functions</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m2-dsl-diagram-pure</artifactId>
         </dependency>

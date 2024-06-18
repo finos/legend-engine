@@ -36,7 +36,7 @@ public class Core_JavaBinding_PCTReportProvider implements PCTReportProvider
         {
             return Lists.mutable.with(
                     JsonMapper.builder().build().readValue(
-                            Core_JavaBinding_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_base_compiled_Java.json"),
+                            Core_JavaBinding_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_unclassified_compiled_Java.json"),
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(

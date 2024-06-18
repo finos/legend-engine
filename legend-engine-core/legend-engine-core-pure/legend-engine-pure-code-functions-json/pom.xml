@@ -24,7 +24,7 @@
 
     <artifactId>legend-engine-pure-code-functions-json</artifactId>
     <packaging>pom</packaging>
-    <name>Legend - Pure - Functions - JSON</name>
+    <name>Legend Engine - Pure - Code - Core - Functions - JSON</name>
 
     <modules>
         <module>legend-engine-pure-functions-json-pure</module>

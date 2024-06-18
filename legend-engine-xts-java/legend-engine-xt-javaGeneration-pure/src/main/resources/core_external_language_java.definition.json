@@ -4,11 +4,10 @@
     "dependencies" :
     [
         "platform",
-        "core_functions_unclassified",
         "platform_dsl_mapping",
         "core_functions_json",
         "platform_dsl_graph",
-        "core_functions",
+        "core_functions_unclassified",
         "core"
     ]
 }

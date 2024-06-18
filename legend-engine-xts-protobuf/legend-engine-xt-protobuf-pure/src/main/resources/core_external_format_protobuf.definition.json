@@ -3,10 +3,9 @@
   "pattern": "(meta::external::format::protobuf|meta::protocols::pure)(::.*)?",
   "dependencies": [
     "platform",
-    "core_functions_unclassified",
-    "core_functions_json",
     "platform_dsl_diagram",
-    "core_functions",
+    "core_functions_json",
+    "core_functions_unclassified",
     "core",
     "core_generation"
   ]

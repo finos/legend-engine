@@ -21,8 +21,8 @@ import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeR
 
 public class FunctionsCodeRepositoryProvider implements CodeRepositoryProvider
 {
-    public static final ReportScope baseFunctions = new ReportScope(
-            "base",
+    public static final ReportScope unclassifiedFunctions = new ReportScope(
+            "unclassified",
             "meta::pure::functions",
             "/core_functions_unclassified/"
     );

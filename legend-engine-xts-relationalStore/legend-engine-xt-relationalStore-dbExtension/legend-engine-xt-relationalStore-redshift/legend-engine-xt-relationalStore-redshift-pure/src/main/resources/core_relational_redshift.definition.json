@@ -3,10 +3,9 @@
   "pattern": "(meta::relational::functions::sqlQueryToString::redshift|meta::relational::tests::sqlQueryToString::redshift|meta::relational::functions::sqlQueryToString::tests::redshift|meta::pure::executionPlan::tests::redshift|meta::pure::legend::connections::legend::specification|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
   "dependencies": [
     "platform",
-    "core_functions_unclassified",
     "platform_store_relational",
     "platform_dsl_store",
-    "core_functions",
+    "core_functions_unclassified",
     "core",
     "core_relational"
   ]

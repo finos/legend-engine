@@ -3,13 +3,12 @@
   "pattern": "(meta::analytics::lineage|meta::pure::lineage)(::.*)?",
   "dependencies": [
     "platform",
-    "core_functions_unclassified",
     "platform_dsl_store",
     "platform_dsl_mapping",
     "platform_store_relational",
     "core_functions_json",
-    "core_functions",
-    "core",
-    "core_relational"
+    "core_functions_unclassified",
+    "core_relational",
+    "core"
   ]
 }

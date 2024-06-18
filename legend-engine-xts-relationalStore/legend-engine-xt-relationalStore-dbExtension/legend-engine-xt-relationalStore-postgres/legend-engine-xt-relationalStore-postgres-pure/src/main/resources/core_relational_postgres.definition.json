@@ -1,5 +1,11 @@
 {
-  "name" : "core_relational_postgres",
-  "pattern" : "(meta::relational::functions::sqlQueryToString::postgres|meta::relational::tests::sqlQueryToString::postgres|meta::relational::tests::query::function::postgres|meta::relational::functions::sqlToString::postgres|meta::relational::tests::mapping::function::postgres|meta::relational::tests::tds::postgres|meta::pure::executionPlan::tests::postgres|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
-  "dependencies" : ["platform", "core_functions_unclassified", "platform_store_relational", "core_functions", "core", "core_relational"]
+  "name": "core_relational_postgres",
+  "pattern": "(meta::relational::functions::sqlQueryToString::postgres|meta::relational::tests::sqlQueryToString::postgres|meta::relational::tests::query::function::postgres|meta::relational::functions::sqlToString::postgres|meta::relational::tests::mapping::function::postgres|meta::relational::tests::tds::postgres|meta::pure::executionPlan::tests::postgres|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_store_relational",
+    "core_functions_unclassified",
+    "core",
+    "core_relational"
+  ]
 }

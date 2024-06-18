@@ -36,7 +36,7 @@ public class Base_Compiled_PCTReportProvider implements PCTReportProvider
         {
             return Lists.mutable.with(
                     JsonMapper.builder().build().readValue(
-                            Base_Compiled_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_base_compiled_Native.json"),
+                            Base_Compiled_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_unclassified_compiled_Native.json"),
                             AdapterReport.class
                     )
             );

@@ -3,7 +3,7 @@
   "pattern": "(meta::external::format::rosetta|meta::protocols::pure)(::.*)?",
   "dependencies": [
     "platform",
-    "core_functions",
+    "core_functions_unclassified",
     "core_generation"
   ]
 }

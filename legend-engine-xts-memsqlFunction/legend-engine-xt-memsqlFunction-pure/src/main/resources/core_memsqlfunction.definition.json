@@ -8,9 +8,9 @@
     "platform_dsl_mapping",
     "platform_store_relational",
     "core_functions_json",
+    "core_functions_unclassified",
     "core_relational",
     "core_function_activator",
-    "core_functions",
     "core_relational",
     "core_analytics_lineage"
   ]

@@ -3,10 +3,9 @@
   "pattern": "(meta::external::language::java::generation::featureBased)(::.*)?",
   "dependencies": [
     "platform",
-    "core_functions_unclassified",
     "platform_dsl_diagram",
     "platform_dsl_mapping",
-    "core_functions",
+    "core_functions_unclassified",
     "core",
     "core_generation",
     "core_external_language_java"

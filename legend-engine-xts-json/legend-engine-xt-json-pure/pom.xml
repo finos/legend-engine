@@ -77,11 +77,6 @@
 
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-compiled-functions</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-code-compiled-core</artifactId>
                         <version>${project.version}</version>
                     </dependency>
@@ -135,7 +130,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-compiled-functions</artifactId>
+                        <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -194,10 +189,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-core-extension</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-code-compiled-functions</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

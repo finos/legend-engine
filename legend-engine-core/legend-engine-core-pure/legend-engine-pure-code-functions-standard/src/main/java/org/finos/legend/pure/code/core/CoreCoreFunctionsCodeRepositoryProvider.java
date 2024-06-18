@@ -14,15 +14,22 @@
 
 package org.finos.legend.pure.code.core;
 
+import org.finos.legend.pure.m3.pct.shared.model.ReportScope;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 
 public class CoreCoreFunctionsCodeRepositoryProvider implements CodeRepositoryProvider
 {
+    public static final ReportScope standardFunctions = new ReportScope(
+            "standard",
+            "meta::pure::functions",
+            "/core_functions_standard/"
+    );
+
     @Override
     public CodeRepository repository()
     {
-        return GenericCodeRepository.build("core_functions.definition.json");
+        return GenericCodeRepository.build("core_functions_standard.definition.json");
     }
 }

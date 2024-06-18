@@ -3,10 +3,9 @@
     "pattern" : "(meta::pure::executionPlan::platformBinding::legendJava|meta::external::format::shared::executionPlan::platformBinding::legendJava)(::.*)?",
     "dependencies": [
         "platform",
-        "core_functions_unclassified",
         "platform_dsl_mapping",
         "platform_dsl_graph",
-        "core_functions",
+        "core_functions_unclassified",
         "core",
         "core_external_language_java",
         "core_java_platform_binding"
