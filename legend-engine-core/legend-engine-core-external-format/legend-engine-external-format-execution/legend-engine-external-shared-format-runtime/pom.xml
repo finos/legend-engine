@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-external-format-execution</artifactId>
-        <version>4.47.4-SNAPSHOT</version>
+        <version>4.48.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
