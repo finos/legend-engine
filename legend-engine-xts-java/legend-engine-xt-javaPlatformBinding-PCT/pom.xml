@@ -36,7 +36,7 @@
                     <mode>Compiled</mode>
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
-                        <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_BaseFunction_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_StandardFunction_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_EssentialFunction_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_GrammarFunction_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_RelationFunction_PCT</PCTTestSuite>
@@ -64,7 +64,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
+                        <artifactId>legend-engine-pure-code-functions-standard</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -91,7 +91,7 @@
         <!-- TEST -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
+            <artifactId>legend-engine-pure-code-functions-standard</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

@@ -217,24 +217,6 @@ public class FunctionsHelper
     // DATE-TIME --------------------------------------------------------------
 
 
-    // MATH --------------------------------------------------------------------
-    public static Number stdDev(RichIterable<? extends Number> list, boolean isBiasCorrected, SourceInformation sourceInformation)
-    {
-        if (list == null || list.isEmpty())
-        {
-            throw new PureExecutionException(sourceInformation, "Unable to process empty list");
-        }
-        MutableList<Number> javaNumbers = Lists.mutable.withAll(list);
-        double[] values = new double[javaNumbers.size()];
-        for (int i = 0; i < javaNumbers.size(); i++)
-        {
-            values[i] = javaNumbers.get(i).doubleValue();
-        }
-        return StatisticsUtil.standardDeviation(values, isBiasCorrected);
-    }
-    // MATH --------------------------------------------------------------------
-
-
     // COLLECTION ---------------------------------------------------------------
 
     /**

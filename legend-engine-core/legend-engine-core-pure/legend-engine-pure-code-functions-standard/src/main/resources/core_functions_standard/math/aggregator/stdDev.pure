@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,7 +14,10 @@
 
 import meta::pure::test::pct::*;
 
-native function <<PCT.function>> meta::pure::functions::math::stdDev(numbers:Number[1..*], isBiasCorrected: Boolean[1]):Number[1];
+function <<PCT.function>> meta::pure::functions::math::stdDev(numbers:Number[1..*], isBiasCorrected: Boolean[1]):Number[1]
+{
+    sqrt(variance($numbers, $isBiasCorrected));
+}
 
 function <<PCT.test>> meta::pure::functions::math::tests::stdDev::testIntStdDev<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {

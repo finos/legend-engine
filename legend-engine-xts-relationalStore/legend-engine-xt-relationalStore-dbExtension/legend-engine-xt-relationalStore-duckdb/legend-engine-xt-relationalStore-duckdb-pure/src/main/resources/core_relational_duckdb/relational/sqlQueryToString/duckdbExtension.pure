@@ -148,7 +148,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
     dynaFnToSql('jaroWinklerSimilarity',  $allStates,            ^ToSql(format='jaro_winkler_similarity(%s, %s)')),
-    dynaFnToSql('levenshteinDistance',    $allStates,            ^ToSql(format='levenshtein(%s, %s)'))
+    dynaFnToSql('levenshteinDistance',    $allStates,            ^ToSql(format='levenshtein(%s, %s)')),
+    dynaFnToSql('variance',               $allStates,            ^ToSql(format='var_pop(%s)', transform={p:String[4] | 'array_value' + $p->init()->joinStrings('(',',',')'); }))
   ];
 }
 

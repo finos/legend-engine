@@ -34,7 +34,6 @@ import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.h
 import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.io.ReadFile;
 import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.io.http.Http;
 import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.lang.MutateAdd;
-import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.math.StdDev;
 import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.meta.CompileValueSpecification;
 import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.meta.FunctionDescriptorToId;
 import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.meta.IsSourceReadOnly;
@@ -291,9 +290,6 @@ public class FunctionsExtensionCompiled implements CompiledExtension
 
                 //Lang
                 new MutateAdd(),
-
-                //Math
-                new StdDev(),
 
                 // Meta
                 new CompileValueSpecification(),

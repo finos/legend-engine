@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::profiles::*;
+import meta::pure::test::pct::*;
 
-function <<test.Test>> {test.excludePlatform = 'Java compiled'} meta::pure::functions::math::tests::variance::testVariance():Boolean[1]
+function <<PCT.function>> meta::pure::functions::math::variance(numbers:Number[*], isBiasCorrected: Boolean[1]):Number[1]
 {
-  assertEq(1.0, varianceSample([1.0,2.0,3.0]));
-  assertEq(4.0, varianceSample([2,4,6]));
-
-   assertEq(0.25, variancePopulation([1,2]));
-   assertEq(1.0, variancePopulation([2,4]));
+    let avg = $numbers->average();
+    let val = $numbers->fold({val,acc|$acc + pow($val - $avg, 2);}, 0.0->cast(@Number));
+    $val / ($numbers->size() - if ($isBiasCorrected, |1.0, |0.0));
 }

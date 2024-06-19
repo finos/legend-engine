@@ -36,7 +36,7 @@ public class Core_Relational_DuckDB_PCTReportProvider implements PCTReportProvid
         {
             return Lists.mutable.with(
                     JsonMapper.builder().build().readValue(
-                            Core_Relational_DuckDB_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_unclassified_compiled_DuckDB.json"),
+                            Core_Relational_DuckDB_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_standard_compiled_DuckDB.json"),
                             AdapterReport.class
                     ),
                     JsonMapper.builder().build().readValue(

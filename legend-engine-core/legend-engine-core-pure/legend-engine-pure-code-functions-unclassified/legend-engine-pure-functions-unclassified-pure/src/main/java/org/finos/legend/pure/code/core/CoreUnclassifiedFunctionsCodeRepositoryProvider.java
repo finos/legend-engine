@@ -19,7 +19,7 @@ import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeReposito
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 
-public class FunctionsCodeRepositoryProvider implements CodeRepositoryProvider
+public class CoreUnclassifiedFunctionsCodeRepositoryProvider implements CodeRepositoryProvider
 {
     public static final ReportScope unclassifiedFunctions = new ReportScope(
             "unclassified",
