@@ -6949,9 +6949,16 @@ function meta::relational::functions::pureToSqlQuery::possiblyMergeUnions(common
                                                                                         ^$merged(filteringOperation = $merged.filteringOperation->removeDuplicatesBy(f|$f->buildUniqueName(true, $extensions)));
                                                                );
 
-         let merged = ^$union(queries = $newQueries,
-                              currentTreeNodes = $newQueries.data
-                      );
+         let merged = ^$union(queries = $newQueries
+                              ,currentTreeNodes = $union.queries->zip($union.currentTreeNodes)
+                                                                ->zip($newQueries.data)
+                                                                ->map(x|let oldSelect = $x.first.first;
+                                                                        let oldNode = $x.first.second;
+                                                                        let newData = $x.second->toOne();
+                                                                        let newNode = if($oldNode->isEmpty(), | $oldNode, | $oldNode->toOne()->findNode($oldSelect.data->toOne(), $newData));
+                                                                        if($newNode->isEmpty(), |$newData, |$newNode);
+                                                                      )
+                        );
 
          let newAlias = ^$alias(relationalElement = $merged);
 
@@ -7802,6 +7809,11 @@ function meta::relational::functions::pureToSqlQuery::getJoinTreeNode(relational
 function meta::relational::functions::pureToSqlQuery::getSourceRelationFromTargetRelation(joinTreeNode:JoinTreeNode[1], targetRelation:Relation[1]):Relation[1]
 {
    $joinTreeNode->extractLine()->reverse()->fold({x,a | $x.join->otherTable($a->cast(@NamedRelation)).relationalElement->cast(@Relation)->toOne()}, $targetRelation);
+}
+
+function meta::relational::functions::pureToSqlQuery::getTargetRelationFromSourceRelation(joinTreeNode:JoinTreeNode[1], sourceRelation:Relation[1]):Relation[1]
+{
+   $joinTreeNode->extractLine()->fold({x,a | $x.join->otherTable($a->cast(@NamedRelation)).relationalElement->cast(@Relation)->toOne()}, $sourceRelation);
 }
 
 function meta::relational::functions::pureToSqlQuery::replaceJoinTreeNodeWithLeafNode(relationalPropertyMapping:RelationalPropertyMapping[1]):RelationalPropertyMapping[1]
