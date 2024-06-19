@@ -350,6 +350,21 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::updateI
    newProject()->addClasses($implClass->addMethods([$classSizeMethod, $instanceSizeMethod]));
 }
 
+function meta::pure::executionPlan::platformBinding::legendJava::shared::addClassMethodsCache(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+{
+  let classMethodsCache  = javaHashMap(javaString(), javaReflectMethod());
+  let cacheEntryForEachMethod   =  j_for(
+                                        j_parameter(javaReflectMethod(), 'method'),
+                                        j_invoke(j_variable($classMethodsCache,    + $class.simpleName + '.class'), 'getDeclaredMethods',[] , $classMethodsCache),
+                                        j_invoke(j_variable($classMethodsCache, 'methodMap'), 'put', [j_invoke(j_variable(javaReflectMethod(), 'method'), 'getName',[],javaString()), j_variable(javaReflectMethod(), 'method')])
+                                      );
+
+  let methodsCacheBuilderCode =  j_block(j_variable($classMethodsCache, 'methodMap')->j_declare( $classMethodsCache->j_new([]))->concatenate($cacheEntryForEachMethod)->concatenate(j_variable($classMethodsCache, 'methodMap')->j_return()));
+
+  $class->addField(javaField(['private', 'static', 'final'], $classMethodsCache, 'classMethodsCache', 'buildClassMethodsCache()'))
+        ->addMethod(javaMethod(['private', 'static'], $classMethodsCache, 'buildClassMethodsCache', [], $methodsCacheBuilderCode));
+}
+
 function meta::pure::executionPlan::platformBinding::legendJava::shared::typeNameMethod():String[1]
 {
    'typeName$'

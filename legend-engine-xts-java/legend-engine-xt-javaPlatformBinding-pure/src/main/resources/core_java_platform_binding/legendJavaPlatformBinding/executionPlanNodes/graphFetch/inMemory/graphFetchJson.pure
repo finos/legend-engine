@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::factory::project::*;
 import meta::external::language::java::metamodel::*;
@@ -84,6 +85,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
    let unitTypes   = $context.typeInfos->allUnitInfos()->map(uti | $uti.unit());
 
    $proto
+      ->addClassMethodsCache()
       ->addField(javaField('private', javaBoolean(), 'finishedReading', 'false'))
       ->addField(javaField('private', javaStack(javaObject()), 'stack', javaStack(javaObject())->j_new([])->codeToString($proto)))
       ->addField(javaField('private', jsonParser(), 'parser'))
@@ -573,12 +575,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let methodName = j_parameter(javaString(), 'name');
 
    $class->addMethod(javaMethod('private', javaBoolean(), 'readMethodExists', $methodName,
-
-      'Method[] methods = this.getClass().getDeclaredMethods();\n' +
-      'for (int i = 0; i < methods.length; i++) {\n' +
-      '   if (methods[i].getName().equals(name)) return true;\n' +
-      '};\n' +
-      'return false;'
+      'return classMethodsCache.get(name) != null;'
    ));
 }
 
@@ -588,11 +585,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let jsonNode   = j_parameter(jsonNode(), 'node');
 
    $class->addMethod(javaMethod('private', javaObject(), 'readMethodInvoke', [$methodName, $jsonNode],
-      'Method m = null;\n' +
-      'try{\n' +
-      '   m = this.getClass().getMethod(name, JsonNode.class);\n' +
-      '}\n' +
-      'catch (NoSuchMethodException e){throw new RuntimeException(e.getMessage());}\n' +
+      'Method m = classMethodsCache.get(name);\n' +
       'try{\n' +
       '   return m.invoke(this, node);\n' +
       '}\n' +
