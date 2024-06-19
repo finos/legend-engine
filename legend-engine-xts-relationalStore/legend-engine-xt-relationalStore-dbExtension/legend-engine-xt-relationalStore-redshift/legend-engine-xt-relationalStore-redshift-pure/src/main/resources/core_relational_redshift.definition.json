@@ -6,6 +6,7 @@
     "platform_store_relational",
     "platform_dsl_store",
     "core_functions_unclassified",
+    "core_functions_standard",
     "core",
     "core_relational"
   ]

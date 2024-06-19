@@ -90,6 +90,11 @@
                         <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-functions-standard</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                 </dependencies>
             </plugin>
             <plugin>
@@ -172,6 +177,11 @@
                         <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</artifactId>
                         <version>${project.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-functions-standard</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                 </dependencies>
             </plugin>
         </plugins>
@@ -188,6 +198,10 @@
             <artifactId>legend-pure-m3-core</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-functions-standard</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>

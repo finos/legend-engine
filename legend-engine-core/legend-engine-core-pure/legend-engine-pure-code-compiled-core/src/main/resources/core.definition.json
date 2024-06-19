@@ -9,6 +9,7 @@
     "platform_dsl_graph",
     "platform_dsl_diagram",
     "platform_store_relational",
+    "core_functions_standard",
     "core_functions_unclassified",
     "core_functions_json"
   ]

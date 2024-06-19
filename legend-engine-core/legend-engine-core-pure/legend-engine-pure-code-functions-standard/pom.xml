@@ -90,6 +90,23 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-generation-pct</artifactId>
+                <executions>
+                    <execution>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>generate-pct-functions</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
+                    <scopeProviderMethod>org.finos.legend.pure.code.core.CoreStandardFunctionsCodeRepositoryProvider.standardFunctions</scopeProviderMethod>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 
@@ -112,17 +129,16 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-java</artifactId>
-            <scope>test</scope>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.eclipse.collections</groupId>-->
-<!--            <artifactId>eclipse-collections-api</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.eclipse.collections</groupId>-->
-<!--            <artifactId>eclipse-collections</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
+        </dependency>
 
 
         <!-- TEST -->

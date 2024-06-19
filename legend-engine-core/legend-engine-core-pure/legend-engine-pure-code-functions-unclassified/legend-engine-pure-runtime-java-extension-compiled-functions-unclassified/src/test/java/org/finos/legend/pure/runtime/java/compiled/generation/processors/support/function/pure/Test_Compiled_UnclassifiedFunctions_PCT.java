@@ -1,4 +1,4 @@
-// Copyright 2024 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,26 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.pure.code.core.java.binding;
+package org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.pure;
 
 import junit.framework.Test;
-import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.pure.code.core.CoreJavaPlatformBindingCodeRepositoryProvider;
-import org.finos.legend.pure.code.core.FunctionsCodeRepositoryProvider;
+import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.pure.code.core.CoreUnclassifiedFunctionsCodeRepositoryProvider;
+import org.finos.legend.pure.m3.PlatformCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.pct.shared.model.ReportScope;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 
-public class Test_JAVA_BaseFunction_PCT extends PCTReportConfiguration
+import static org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled.getClassLoaderExecutionSupport;
+
+public class Test_Compiled_UnclassifiedFunctions_PCT extends PCTReportConfiguration
 {
-    private static final ReportScope reportScope = FunctionsCodeRepositoryProvider.unclassifiedFunctions;
-    private static final Adapter adapter = CoreJavaPlatformBindingCodeRepositoryProvider.javaAdapter;
+    private static final ReportScope reportScope = CoreUnclassifiedFunctionsCodeRepositoryProvider.unclassifiedFunctions;
+    private static final Adapter adapter = PlatformCodeRepositoryProvider.nativeAdapter;
     private static final String platform = "compiled";
-    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-    );
+    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.empty();
 
     public static Test suite()
     {
@@ -39,15 +40,15 @@ public class Test_JAVA_BaseFunction_PCT extends PCTReportConfiguration
     }
 
     @Override
-    public MutableList<ExclusionSpecification> expectedFailures()
-    {
-        return expectedFailures;
-    }
-
-    @Override
     public ReportScope getReportScope()
     {
         return reportScope;
+    }
+
+    @Override
+    public MutableList<ExclusionSpecification> expectedFailures()
+    {
+        return expectedFailures;
     }
 
     @Override

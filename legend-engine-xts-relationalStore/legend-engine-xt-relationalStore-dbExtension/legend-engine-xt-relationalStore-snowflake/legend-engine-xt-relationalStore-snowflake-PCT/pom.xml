@@ -59,7 +59,7 @@
                             <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                             <PCTTestSuites>
                                 <PCTTestSuite>
-                                    org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_BaseFunctions_PCT
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_StandardFunctions_PCT
                                 </PCTTestSuite>
                                 <PCTTestSuite>
                                     org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_EssentialFunctions_PCT
@@ -89,7 +89,7 @@
                             </dependency>
                             <dependency>
                                 <groupId>org.finos.legend.engine</groupId>
-                                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
+                                <artifactId>legend-engine-pure-code-functions-standard</artifactId>
                                 <version>${project.version}</version>
                             </dependency>
                             <dependency>
@@ -158,7 +158,7 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
+            <artifactId>legend-engine-pure-code-functions-standard</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

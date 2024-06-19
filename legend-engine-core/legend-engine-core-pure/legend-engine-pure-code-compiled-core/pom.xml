@@ -73,6 +73,11 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-functions-standard</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-functions-json-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
@@ -139,7 +144,11 @@
                         <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-functions-standard</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
                         <artifactId>legend-pure-m2-dsl-path-grammar</artifactId>
@@ -249,6 +258,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-functions-standard</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

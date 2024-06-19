@@ -31,7 +31,6 @@ import org.finos.legend.pure.runtime.java.extension.functions.interpreted.native
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.io.ReadFile;
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.io.http.Http;
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.lang.MutateAdd;
-import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.math.StdDev;
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.meta.CompileValueSpecification;
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.meta.FunctionDescriptorToId;
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.meta.IsSourceReadOnly;
@@ -88,9 +87,6 @@ public class FunctionExtensionInterpreted extends BaseInterpretedExtension
 
                 //Lang
                 Tuples.pair("mutateAdd_T_1__String_1__Any_MANY__T_1_", MutateAdd::new),
-
-                //Math
-                Tuples.pair("stdDev_Number_$1_MANY$__Boolean_1__Number_1_", StdDev::new),
 
                 //Meta
                 Tuples.pair("compileValueSpecification_String_m__CompilationResult_m_", CompileValueSpecification::new),

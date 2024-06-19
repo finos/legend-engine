@@ -19,7 +19,7 @@ import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeReposito
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 
-public class CoreCoreFunctionsCodeRepositoryProvider implements CodeRepositoryProvider
+public class CoreStandardFunctionsCodeRepositoryProvider implements CodeRepositoryProvider
 {
     public static final ReportScope standardFunctions = new ReportScope(
             "standard",

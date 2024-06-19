@@ -47,7 +47,7 @@
                     <mode>Compiled</mode>
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.postgres.pct.Test_Relational_Postgres_BaseFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.postgres.pct.Test_Relational_Postgres_StandardFunctions_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.postgres.pct.Test_Relational_Postgres_EssentialFunctions_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.postgres.pct.Test_Relational_Postgres_GrammarFunctions_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.postgres.pct.Test_Relational_Postgres_RelationFunctions_PCT</PCTTestSuite>
@@ -70,7 +70,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
+                        <artifactId>legend-engine-pure-code-functions-standard</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -147,8 +147,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
-            <scope>runtime</scope>
+            <artifactId>legend-engine-pure-code-functions-standard</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

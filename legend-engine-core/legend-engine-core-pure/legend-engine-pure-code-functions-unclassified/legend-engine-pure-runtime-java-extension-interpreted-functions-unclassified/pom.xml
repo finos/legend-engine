@@ -49,7 +49,7 @@
                     <mode>Interpreted</mode>
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
-                        <PCTTestSuite>org.finos.legend.pure.runtime.java.interpreted.function.pure.Test_Interpreted_BaseFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.pure.runtime.java.interpreted.function.pure.Test_Interpreted_UnclassifiedFunctions_PCT</PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
                 <executions>

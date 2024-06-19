@@ -66,7 +66,7 @@
                     <mode>Compiled</mode>
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
-                        <PCTTestSuite>org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.pure.Test_Compiled_BaseFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.pure.Test_Compiled_UnclassifiedFunctions_PCT</PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
                 <executions>
