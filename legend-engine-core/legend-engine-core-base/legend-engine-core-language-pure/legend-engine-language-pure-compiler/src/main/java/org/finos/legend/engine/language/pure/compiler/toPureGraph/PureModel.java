@@ -21,6 +21,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.ImmutableSet;
@@ -111,6 +112,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.function.Consumer;
@@ -149,7 +151,8 @@ public class PureModel implements IPureModel
     final ConcurrentHashMap<String, Root_meta_core_runtime_Connection> connectionsIndex = new ConcurrentHashMap<>();
     final ConcurrentHashMap<String, Root_meta_pure_runtime_PackageableRuntime> packageableRuntimesIndex = new ConcurrentHashMap<>();
     final ConcurrentHashMap<String, Root_meta_core_runtime_Runtime> runtimesIndex = new ConcurrentHashMap<>();
-    private final ForkJoinPool defaultForkJoinPool;
+    private final ConcurrentLinkedQueue<EngineException> engineExceptions = new ConcurrentLinkedQueue<>();
+    private final ForkJoinPool forkJoinPool;
 
     public PureModel(PureModelContextData pure, String user, DeploymentMode deploymentMode)
     {
@@ -181,15 +184,14 @@ public class PureModel implements IPureModel
             classLoader = Thread.currentThread().getContextClassLoader();
         }
 
-        ClassLoader finalClassLoader = classLoader;
-        defaultForkJoinPool = new ForkJoinPool(1, x ->
+        if (pureModelProcessParameter.getForkJoinPool() == null)
         {
-            ForkJoinWorkerThread forkJoinWorkerThread = new ForkJoinWorkerThread(x)
-            {
-            };
-            forkJoinWorkerThread.setContextClassLoader(finalClassLoader);
-            return forkJoinWorkerThread;
-        }, null,  false);
+            forkJoinPool = createForkJoinPool(classLoader);
+        }
+        else
+        {
+            forkJoinPool = pureModelProcessParameter.getForkJoinPool();
+        }
 
         this.extensions = extensions;
         this.deploymentMode = deploymentMode;
@@ -265,7 +267,7 @@ public class PureModel implements IPureModel
             {
                 Stream.concat(classToElements.removeAll(SectionIndex.class).stream(), classToElements.removeAll(Profile.class).stream())
                         .parallel()
-                        .forEach(this::processFirstPass);
+                        .forEach(handleEngineExceptions(this::processFirstPass));
 
                 MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, Collection<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>>> dependencyGraph = Maps.mutable.empty();
                 dependencyGraph.put(Class.class, Lists.fixedSize.with(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure.class));
@@ -282,14 +284,14 @@ public class PureModel implements IPureModel
                 MutableSet<MutableSet<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>>> disjointDependencyGraphs = dependencyManagement.getDisjointDependencyGraphs();
                 disjointDependencyGraphs.parallelStream().forEach(disjointDependencyGraph ->
                 {
-                    processPass(classToElements, dependentToDependencies, this::processElementFirstPass, disjointDependencyGraph);
-                    processPass(classToElements, dependentToDependencies, this::processSecondPass, disjointDependencyGraph);
-                    processPass(classToElements, dependentToDependencies, this::processThirdPass, disjointDependencyGraph);
-                    processPass(classToElements, dependentToDependencies, this::processFourthPass, disjointDependencyGraph);
-                    processPass(classToElements, dependentToDependencies, this::processFifthPass, disjointDependencyGraph);
-                    processPass(classToElements, dependentToDependencies, this::processSixthPass, disjointDependencyGraph);
+                    processPass(classToElements, dependentToDependencies, handleEngineExceptions(this::processElementFirstPass), disjointDependencyGraph);
+                    processPass(classToElements, dependentToDependencies, handleEngineExceptions(this::processSecondPass), disjointDependencyGraph);
+                    processPass(classToElements, dependentToDependencies, handleEngineExceptions(this::processThirdPass), disjointDependencyGraph);
+                    processPass(classToElements, dependentToDependencies, handleEngineExceptions(this::processFourthPass), disjointDependencyGraph);
+                    processPass(classToElements, dependentToDependencies, handleEngineExceptions(this::processFifthPass), disjointDependencyGraph);
+                    processPass(classToElements, dependentToDependencies, handleEngineExceptions(this::processSixthPass), disjointDependencyGraph);
                 });
-            }, defaultForkJoinPool);
+            }, forkJoinPool);
             try
             {
                 pureModelCompilationFuture.join();
@@ -313,13 +315,21 @@ public class PureModel implements IPureModel
 
             // Post Validation
             long postValidationStart = System.nanoTime();
-            new ProfileValidator().validate(this, pureModelContextData);
-            new EnumerationValidator().validate(this, pureModelContextData);
-            new ClassValidator().validate(this, pureModelContextData);
-            new AssociationValidator().validate(this, pureModelContextData);
-            new FunctionValidator().validate(getContext(), pureModelContextData);
-            new org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidator().validate(this, pureModelContextData, extensions);
-            this.extensions.getExtraPostValidators().forEach(validator -> validator.value(this, pureModelContextData));
+            try
+            {
+                processPostValidation(pureModelContextData, extensions);
+            }
+            catch (EngineException e)
+            {
+                if (this.pureModelProcessParameter.getEnablePartialCompilation())
+                {
+                    engineExceptions.add(e);
+                }
+                else
+                {
+                    throw e;
+                }
+            }
             long postValidationEnd = System.nanoTime();
             LOGGER.info("{}", new LogInfo(user, "GRAPH_POST_VALIDATION_COMPLETED", nanosDurationToMillis(postValidationStart, postValidationEnd)));
             span.log("GRAPH_POST_VALIDATION_COMPLETED");
@@ -339,8 +349,31 @@ public class PureModel implements IPureModel
         finally
         {
             span.finish();
-            defaultForkJoinPool.shutdown();
+            forkJoinPool.shutdown();
         }
+    }
+
+    private ForkJoinPool createForkJoinPool(ClassLoader classLoader)
+    {
+        return new ForkJoinPool(1, x ->
+        {
+            ForkJoinWorkerThread forkJoinWorkerThread = new ForkJoinWorkerThread(x)
+            {
+            };
+            forkJoinWorkerThread.setContextClassLoader(classLoader);
+            return forkJoinWorkerThread;
+        }, null,  false);
+    }
+
+    private void processPostValidation(PureModelContextData pureModelContextData, CompilerExtensions extensions)
+    {
+        new ProfileValidator().validate(this, pureModelContextData);
+        new EnumerationValidator().validate(this, pureModelContextData);
+        new ClassValidator().validate(this, pureModelContextData);
+        new AssociationValidator().validate(this, pureModelContextData);
+        new FunctionValidator().validate(getContext(), pureModelContextData);
+        new org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidator().validate(this, pureModelContextData, extensions);
+        this.extensions.getExtraPostValidators().forEach(validator -> validator.value(this, pureModelContextData));
     }
 
     public static PureModel getCorePureModel()
@@ -447,6 +480,25 @@ public class PureModel implements IPureModel
 
     // ------------------------------------------ LOADER -----------------------------------------
 
+    private Consumer<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> handleEngineExceptions(Consumer<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> passConsumer)
+    {
+        if (this.pureModelProcessParameter.getEnablePartialCompilation())
+        {
+            return x ->
+            {
+                try
+                {
+                    passConsumer.accept(x);
+                }
+                catch (EngineException e)
+                {
+                    engineExceptions.add(e);
+                }
+            };
+        }
+        return passConsumer;
+    }
+
     private void processPass(FastListMultimap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> classToElements, MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, Collection<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>>> dependentToDependencies, Consumer<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> passConsumer, MutableSet<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>> disjointDependencyGraph)
     {
         MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, CompletableFuture<Void>> tracker = Maps.mutable.empty();
@@ -468,7 +520,7 @@ public class PureModel implements IPureModel
                 {
                     tracker.get(dependent).completeExceptionally(e);
                 }
-            }, defaultForkJoinPool)
+            }, forkJoinPool)
             .exceptionally(e ->
             {
                 tracker.get(dependent).completeExceptionally(e);
@@ -571,7 +623,6 @@ public class PureModel implements IPureModel
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement getPackageableElement(String fullPath)
     {
         return getPackageableElement(fullPath, SourceInformation.getUnknownSourceInformation());
-
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement getPackageableElement(String fullPath, SourceInformation sourceInformation)
@@ -1013,6 +1064,14 @@ public class PureModel implements IPureModel
         return this.connectionsIndex.get(packagePrefix(fullPath));
     }
 
+    public ImmutableList<EngineException> getEngineExceptions()
+    {
+        if (this.pureModelProcessParameter.getEnablePartialCompilation())
+        {
+            return Lists.immutable.withAll(this.engineExceptions);
+        }
+        return Lists.immutable.empty();
+    }
 
     // ------------------------------------------ SUB-ELEMENT GETTER -----------------------------------------
 
@@ -1264,26 +1323,26 @@ public class PureModel implements IPureModel
 
     protected String buildNameForAppliedFunction(String functionName)
     {
-        if (pureModelProcessParameter.packagePrefix != null
+        if (pureModelProcessParameter.getPackagePrefix() != null
                 && !isImmutable(functionName)
                 && !functionName.startsWith("meta::")
-                && !functionName.startsWith(pureModelProcessParameter.packagePrefix)
+                && !functionName.startsWith(pureModelProcessParameter.getPackagePrefix())
                 && functionName.contains("::"))
         {
-            return pureModelProcessParameter.packagePrefix + functionName;
+            return pureModelProcessParameter.getPackagePrefix() + functionName;
         }
         return functionName;
     }
 
     private String packagePrefix(String packageName)
     {
-        if (pureModelProcessParameter.packagePrefix != null
+        if (pureModelProcessParameter.getPackagePrefix() != null
                 && !isImmutable(packageName)
                 && !packageName.startsWith("meta::")
-                && !packageName.startsWith(pureModelProcessParameter.packagePrefix)
+                && !packageName.startsWith(pureModelProcessParameter.getPackagePrefix())
         )
         {
-            return pureModelProcessParameter.packagePrefix + packageName;
+            return pureModelProcessParameter.getPackagePrefix() + packageName;
         }
         return packageName;
     }

@@ -64,6 +64,18 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
+    public void testPartialCompilationDuplicatedElement()
+    {
+        partialCompilationTest("Class anything::class {}\n" +
+                "###Mapping\n" +
+                "Mapping anything::somethingelse ()\n" +
+                "###Pure\n" +
+                "Class anything::somethingelse\n" +
+                "{\n" +
+                "}\n", Arrays.asList("COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'"));
+    }
+
+    @Test
     public void testDuplicatedDomainElements()
     {
         String initialGraph = "Class anything::class\n" +
@@ -294,6 +306,26 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   ok : String[1];\n" +
                 "   other: String[1];\n" +
                 "}\n", null, Arrays.asList("COMPILATION error at [3:4-28]: Found duplicated property 'property' in class 'test::A'", "COMPILATION error at [5:4-21]: Found duplicated property 'other' in class 'test::A'"));
+    }
+
+    @Test
+    public void testPartialCompilationDuplicateAssociationPropertyWarningAndDuplicateClassPropertyWarning()
+    {
+        partialCompilationTest("Class test::A {}\n" +
+                "Class test::B {}\n" +
+                "Association test::C\n" +
+                "{\n" +
+                "   property1: test::A[0..1];\n" +
+                "   property1: test::B[1];\n" +
+                "}\n" +
+                "Class test::D\n" +
+                "{\n" +
+                "   property : Integer[0..1];\n" +
+                "   property : String[1];\n" +
+                "   other : String[1];\n" +
+                "   ok : String[1];\n" +
+                "   other: String[1];\n" +
+                "}\n", null, Arrays.asList("COMPILATION error at [5:4-28]: Found duplicated property 'property1' in association 'test::C'", "COMPILATION error at [10:4-28]: Found duplicated property 'property' in class 'test::D'", "COMPILATION error at [12:4-21]: Found duplicated property 'other' in class 'test::D'"));
     }
 
     @Test
@@ -571,6 +603,24 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
+    public void testPartialCompilationComplexConstraint()
+    {
+        partialCompilationTest("Class test::A\n" +
+                "[\n" +
+                "  constraint1\n" +
+                "  (" +
+                "    ~externalId: 'ext ID'\n" +
+                "    ~function: if($this.ok == 'ok', |true, |false)\n" +
+                "    ~enforcementLevel: Warn\n" +
+                "    ~message: $this.ok + ' is not ok'\n" +
+                "  )\n" +
+                "]\n" +
+                "{\n" +
+                "  ok: Integer[1..2];\n" +
+                "}\n");
+    }
+
+    @Test
     public void testFunctionWithExpressionInParameter()
     {
         test("Class test::A\n" +
@@ -794,7 +844,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testFailedToFindQuailifiedProperty()
+    public void testFailedToFindQualifiedProperty()
     {
         test("Class test::Dog\n" +
                 "{\n" +
@@ -821,6 +871,31 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   xza(s: String[1]){$src}:String[1];\n" +
                 "}\n", "COMPILATION error at [7:22-25]: Can't find variable class for variable 'src' in the graph");
+    }
+
+    @Test
+    public void testPartialCompilationFailedToFindQualifiedPropertyAndMissingVariableName()
+    {
+        partialCompilationTest("Class test::Dog\n" +
+                "{\n" +
+                "    funcDog(){'my Name is Bobby';}:String[1];\n" +
+                "}\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "    funcB(s: test::Dog[1]){$s.WhoopsfuncDog()}:String[1];\n" +
+                "}\n" +
+                "Class test::C\n" +
+                "{\n" +
+                "   test(s: test::B[1], d: test::Dog[1]){$s.funcB($d) + '!'}:String[1];\n" +
+                "}\n" +
+                "Enum test::A\n" +
+                "{\n" +
+                "   A, a \n" +
+                "}\n" +
+                "Class test::D\n" +
+                "{\n" +
+                "   xza(s: String[1]){$src}:String[1];\n" +
+                "}\n", Arrays.asList("COMPILATION error at [7:31-43]: Can't find property 'WhoopsfuncDog' in class 'test::Dog'", "COMPILATION error at [19:22-25]: Can't find variable class for variable 'src' in the graph"));
     }
 
     @Test
@@ -907,6 +982,32 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{" +
                 "   z(){test::A.all()->sortBy(a|$a.nam)}:test::A[*];" +
                 "}", "COMPILATION error at [1:84-86]: Can't find property 'nam' in class 'test::A'");
+    }
+
+    @Test
+    public void testPartialCompilationPackageableElementMismatchWithGetAllAndSortByLambdaInferenceWithClass()
+    {
+        partialCompilationTest("###Pure\n" +
+                "Class test::A" +
+                "{ prop : String[1];" +
+                "}" +
+                "Class test::B" +
+                "{" +
+                "   z(){test::MyMapping.all()->map(a|$a.nam)}:String[*];" +
+                "}\n" +
+                "Class test::C" +
+                "{" +
+                "   name : String[1];" +
+                "}" +
+                "" +
+                "Class test::D" +
+                "{" +
+                "   z(){test::C.all()->sortBy(a|$a.nam)}:test::C[*];" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping test::MyMapping\n" +
+                "(\n" +
+                ")\n", Arrays.asList("COMPILATION error at [2:70-75]: Can't find a match for function 'getAll(Mapping[1])'", "COMPILATION error at [3:84-86]: Can't find property 'nam' in class 'test::C'"));
     }
 
     @Test
@@ -1123,6 +1224,50 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{" +
                 "   j(){test::A.all()->projectWithColumnSubset(a|$a.xname, 'a' , ['a','b'])}:meta::pure::tds::TabularDataSet[1];" +
                 "}", "COMPILATION error at [1:101-105]: Can't find property 'xname' in class 'test::A'");
+    }
+
+    @Test
+    public void testPartialCompilationProjectColInferenceWithClassAndProjectWithSubsetColInferenceWithClass()
+    {
+        partialCompilationTest("Class test::A" +
+                "{" +
+                "   name : String[1];" +
+                "}" +
+                "" +
+                "Class test::B" +
+                "{" +
+                "   z(){test::A.all()->project([col(a|$a.name, 'a')])}:meta::pure::tds::TabularDataSet[1];" +
+                "   y(){test::A.all()->project(col(a|$a.name, 'a'))}:meta::pure::tds::TabularDataSet[1];" +
+                "}", null);
+
+        partialCompilationTest("Class test::C" +
+                "{" +
+                "   name : String[1];" +
+                "}" +
+                "" +
+                "Class test::D" +
+                "{" +
+                "   z(){test::C.all()->project([col(c|$c.naxme, 'c')])}:meta::pure::tds::TabularDataSet[1];" +
+                "}\n" +
+                "Class test::A" +
+                "{" +
+                "   name : String[1];" +
+                "}" +
+                "" +
+                "Class test::B" +
+                "{" +
+                "   z(){test::A.all()->projectWithColumnSubset([col(a|$a.xname, 'a')], ['a','b'])}:meta::pure::tds::TabularDataSet[1];" +
+                "}", Arrays.asList("COMPILATION error at [1:90-94]: Can't find property 'naxme' in class 'test::C'", "COMPILATION error at [2:106-110]: Can't find property 'xname' in class 'test::A'"));
+
+        partialCompilationTest("Class test::A" +
+                "{" +
+                "   name : String[1];" +
+                "}" +
+                "" +
+                "Class test::B" +
+                "{" +
+                "   z(){test::A.all()->project(col(a|$a.naxme, 'a'))}:meta::pure::tds::TabularDataSet[1];" +
+                "}", Arrays.asList("COMPILATION error at [1:89-93]: Can't find property 'naxme' in class 'test::A'"));
     }
 
     @Test
@@ -1401,6 +1546,35 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   names : String[*];\n" +
                 "}", "COMPILATION error at [2:18-19]: Constraint must be of type 'Boolean'");
+    }
+
+    @Test
+    public void testPartialCompilationMultiplicityErrorInCollectionAndConstraint()
+    {
+        partialCompilationTest("Class test::A\n" +
+                "{\n" +
+                "   names : String[*];\n" +
+                "   prop() {$this.names->at(0) + 'ok'} : String[1];\n" +
+                "}");
+
+        partialCompilationTest("Class test::A\n" +
+                "{\n" +
+                "   names : String[*];\n" +
+                "   prop() {$this.names + 'ok'} : String[1];\n" +
+                "}", Arrays.asList("COMPILATION error at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Fourth Pass, Qualified Property prop, Applying plus], multiplicity:[*]"));
+
+        partialCompilationTest("Class test::A\n" +
+                "{\n" +
+                "   names : String[0..1];\n" +
+                "   prop() {$this.names + 'ok'} : String[1];\n" +
+                "}\n" +
+                "Class test::B\n" +
+                "[" +
+                "   $this.names->at(0)" +
+                "]" +
+                "{\n" +
+                "   names : String[*];\n" +
+                "}", Arrays.asList("COMPILATION error at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Fourth Pass, Qualified Property prop, Applying plus], multiplicity:[0..1]", "COMPILATION error at [7:18-19]: Constraint must be of type 'Boolean'"));
     }
 
     @Test
@@ -1701,6 +1875,43 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "       test::Person{\n" +
                 "                first}}#);true;}:Boolean[1];\n" +
                 "}\n", "COMPILATION error at [14:17-21]: Can't find property 'first' in [Person, Any]");
+    }
+
+    @Test
+    public void testPartialCompilationDeepfetchPropertyErrorAndMissingProperty()
+    {
+        partialCompilationTest("import anything::*;\n" +
+                "import test::*;\n" +
+                "Class test::trial {\n" +
+                "   name: ritual[*];\n" +
+                "   anotherOne(){$this.name->toOne()}: ritual[1];\n" +
+                "   \n" +
+                "}\n" +
+                "Class test::trial2 {\n" +
+                "   name: trial[*];\n" +
+                "   anotherOne(){$this.name->toOne().name2}: ritual[1];\n" +
+                "   \n" +
+                "}\n" +
+                "\n" +
+                "Enum anything::ritual {\n" +
+                "   theGoodOne   \n" +
+                "}\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "   firstName:String[1];\n" +
+                "   lastName:String[1];\n" +
+                "}\n" +
+                "Class test::Firm\n" +
+                "{\n" +
+                "   employees:test::Person[*];\n" +
+                "}\n" +
+                "Class test::Test\n" +
+                "{\n" +
+                // intentionally mess up the spacing in the deep fetch to see if we send the full string (with whitespaces) to the graph fetch tree parser
+                "   x(){test::Person.all()->graphFetch(#{\n" +
+                "       test::Person{\n" +
+                "                first}}#);true;}:Boolean[1];\n" +
+                "}\n", Arrays.asList("COMPILATION error at [10:37-41]: Can't find property 'name2' in class 'test::trial'", "COMPILATION error at [30:17-21]: Can't find property 'first' in [Person, Any]"));
     }
 
     @Test
