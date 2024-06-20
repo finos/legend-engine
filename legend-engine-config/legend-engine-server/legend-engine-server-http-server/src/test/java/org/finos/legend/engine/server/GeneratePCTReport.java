@@ -17,6 +17,7 @@ package org.finos.legend.engine.server;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.multimap.MutableMultimap;
 import org.eclipse.collections.api.multimap.list.MutableListMultimap;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
@@ -44,13 +45,13 @@ public class GeneratePCTReport
         moduleURLs.put("base", "https://github.com/finos/legend-pure/tree/master/legend-pure-functions/legend-pure-functions-base/legend-pure-m2-functions-base-pure/src/main/resources/");
         moduleURLs.put("relation", "https://github.com/finos/legend-pure/tree/master/legend-pure-functions/legend-pure-functions-relation/legend-pure-m2-functions-relation-pure/src/main/resources");
 
-        Map<String, FunctionDocumentation> f = DocumentationGeneration.buildDocumentation().documentationByName;
+        MutableMultimap<String, FunctionDocumentation> f = DocumentationGeneration.buildDocumentation().documentationByName;
 
         System.out.println("Functions: (" + f.keySet().size() + ") " + f.keySet());
 
         System.out.println("");
 
-        MutableListMultimap<String, FunctionDocumentation> ordered = Lists.mutable.withAll(DocumentationGeneration.buildDocumentation().documentationByName.values()).groupBy(x -> x.functionDefinition._package);
+        MutableListMultimap<String, FunctionDocumentation> ordered = Lists.mutable.withAll(f.valuesView()).groupBy(x -> x.functionDefinition._package);
 
         MutableList<AdapterKey> adapterKeys = PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey).distinct();
 
