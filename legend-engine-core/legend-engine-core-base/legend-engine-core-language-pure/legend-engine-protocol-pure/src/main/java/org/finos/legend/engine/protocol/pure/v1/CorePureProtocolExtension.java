@@ -70,6 +70,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.Equa
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestDebug;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionPlanDebug;
 
 import java.util.List;
 import java.util.Map;
@@ -129,6 +131,10 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 ProtocolSubTypeInfo.newBuilder(TestResult.class)
                         .withSubtype(TestError.class, "testError")
                         .withSubtype(TestExecuted.class, "testExecuted")
+                        .build(),
+                // Test Debug
+                ProtocolSubTypeInfo.newBuilder(TestDebug.class)
+                        .withSubtype(TestExecutionPlanDebug.class, "testExecutionPlanDebug")
                         .build(),
                 // Assertion Status
                 ProtocolSubTypeInfo.newBuilder(AssertionStatus.class)

@@ -22,12 +22,13 @@ import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionStatus;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.*;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.*;
+import org.finos.legend.engine.testable.extension.TestRunner;
+import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.test.TestAccessor;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -612,6 +613,33 @@ public class TestMappingTestRunner
         Assert.assertEquals("test::modelToModelMapping", mappingTestResults.get(0).testable);
         Assert.assertEquals("testSuite1", mappingTestResults.get(0).testSuiteId);
         Assert.assertEquals("test1", mappingTestResults.get(0).atomicTestId);
+    }
+
+    @Test
+    public void testDebugMappingTestSuiteForM2MUsecase()
+    {
+        MappingTestableRunnerExtension mappingTestableRunnerExtension = new MappingTestableRunnerExtension();
+        mappingTestableRunnerExtension.setPureVersion(PureClientVersions.production);
+
+        PureModelContextData modelDataWithReferenceData = PureGrammarParser.newInstance().parseModel(TEST_SUITE_1);
+        PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mappingToTest = (org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping) pureModelWithReferenceData.getPackageableElement("test::modelToModelMapping");
+        TestRunner runner =  mappingTestableRunnerExtension.getTestRunner(mappingToTest);
+        List<TestDebug> debugLists = mappingToTest._tests().flatCollect(testSuite ->
+        {
+            List<String> atomicTestIds = ((Root_meta_pure_test_TestSuite) testSuite)._tests().collect(TestAccessor::_id).toList();
+            return runner.debugTestSuite((Root_meta_pure_test_TestSuite) testSuite, atomicTestIds, pureModelWithReferenceData, modelDataWithReferenceData);
+        }).toList();
+        Assert.assertEquals(1, debugLists.size());
+        Assert.assertEquals("test::modelToModelMapping", debugLists.get(0).testable);
+        Assert.assertEquals("testSuite1", debugLists.get(0).testSuiteId);
+        Assert.assertEquals("test1", debugLists.get(0).atomicTestId);
+        TestDebug testDebug = debugLists.get(0);
+        Assert.assertTrue(testDebug instanceof TestExecutionPlanDebug);
+        TestExecutionPlanDebug testExecutionPlanDebug = (TestExecutionPlanDebug) testDebug;
+        Assert.assertNotNull(testExecutionPlanDebug.executionPlan);
+        Assert.assertNull(testExecutionPlanDebug.error);
+        Assert.assertFalse(testExecutionPlanDebug.debug.isEmpty());
     }
 
     @Test
