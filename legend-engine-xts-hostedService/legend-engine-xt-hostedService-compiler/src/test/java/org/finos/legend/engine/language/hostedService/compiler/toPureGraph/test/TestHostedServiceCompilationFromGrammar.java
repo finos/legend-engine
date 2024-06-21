@@ -16,6 +16,7 @@
 package org.finos.legend.engine.language.hostedService.compiler.toPureGraph.test;
 
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
+import org.junit.Test;
 
 public class TestHostedServiceCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
@@ -40,5 +41,24 @@ public class TestHostedServiceCompilationFromGrammar extends TestCompilationFrom
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
         return "COMPILATION error at [5:1-7:108]: Duplicated element 'anything::Name'";
+    }
+
+    @Test
+    public void testHostedServiceGrammar()
+    {
+        test("###HostedService\n" +
+                "HostedService model::NewActivator\n" +
+                "{\n" +
+                "   pattern : '/pattern';\n" +
+                "   ownership : Deployment { identifier: '' };\n" +
+                "   function : model::Firm_QueryFunction():Integer[1];\n" +
+                "   documentation : '';\n" +
+                "   autoActivateUpdates : true;\n" +
+                "}\n" +
+                "###Pure\n" +
+                "function model::Firm_QueryFunction(): Integer[1]\n" +
+                "{\n" +
+                "  1 + 1;\n" +
+                "}");
     }
 }
