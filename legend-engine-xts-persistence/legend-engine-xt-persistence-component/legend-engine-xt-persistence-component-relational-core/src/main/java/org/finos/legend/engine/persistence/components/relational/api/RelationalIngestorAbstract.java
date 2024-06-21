@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.persistence.components.common.*;
+import org.finos.legend.engine.persistence.components.exception.JsonReadOrWriteException;
 import org.finos.legend.engine.persistence.components.executor.DigestInfo;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.importer.Importer;
@@ -927,7 +928,7 @@ public abstract class RelationalIngestorAbstract
         }
         catch (JsonProcessingException e)
         {
-            throw new RuntimeException(e);
+            throw new JsonReadOrWriteException(e.getMessage(), e);
         }
     }
 
@@ -939,7 +940,7 @@ public abstract class RelationalIngestorAbstract
         }
         catch (JsonProcessingException e)
         {
-            throw new RuntimeException(e);
+            throw new JsonReadOrWriteException(e.getMessage(), e);
         }
     }
 
@@ -1019,7 +1020,7 @@ public abstract class RelationalIngestorAbstract
         }
         catch (JsonProcessingException e)
         {
-            throw new IllegalStateException("Unable to parse additional metadata");
+            throw new JsonReadOrWriteException("Unable to parse additional metadata", e);
         }
 
         // Handle batch timestamp
