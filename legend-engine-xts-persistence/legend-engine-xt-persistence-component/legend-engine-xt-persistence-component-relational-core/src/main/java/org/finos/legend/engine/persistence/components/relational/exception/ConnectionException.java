@@ -21,9 +21,9 @@ public class ConnectionException extends SqlExecutionException
     SQL STATE: 08***
     */
 
-    public ConnectionException(String message, String SQLState, int vendorCode)
+    public ConnectionException(String message, Throwable cause, String SQLState, int vendorCode)
     {
-        super(message, SQLState, vendorCode);
+        super(message, cause, SQLState, vendorCode);
     }
 
     @Override

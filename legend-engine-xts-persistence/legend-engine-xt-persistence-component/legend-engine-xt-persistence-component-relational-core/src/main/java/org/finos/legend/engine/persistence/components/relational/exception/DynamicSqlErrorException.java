@@ -21,9 +21,9 @@ public class DynamicSqlErrorException extends SqlExecutionException
     SQL STATE: 07***
     */
 
-    public DynamicSqlErrorException(String message, String SQLState, int vendorCode)
+    public DynamicSqlErrorException(String message, Throwable cause, String SQLState, int vendorCode)
     {
-        super(message, SQLState, vendorCode);
+        super(message, cause, SQLState, vendorCode);
     }
 
     @Override

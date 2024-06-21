@@ -19,6 +19,11 @@ public abstract class PersistenceException extends RuntimeException
 
     public abstract boolean isRecoverable();
 
+    public PersistenceException(String message, Throwable cause)
+    {
+        super(message, cause);
+    }
+
     public PersistenceException(String message)
     {
         super(message);

@@ -21,9 +21,9 @@ public class TransactionRollbackException extends SqlExecutionException
     SQL STATE: 40***
     */
 
-    public TransactionRollbackException(String message, String SQLState, int vendorCode)
+    public TransactionRollbackException(String message, Throwable cause, String SQLState, int vendorCode)
     {
-        super(message, SQLState, vendorCode);
+        super(message, cause, SQLState, vendorCode);
     }
 
     @Override

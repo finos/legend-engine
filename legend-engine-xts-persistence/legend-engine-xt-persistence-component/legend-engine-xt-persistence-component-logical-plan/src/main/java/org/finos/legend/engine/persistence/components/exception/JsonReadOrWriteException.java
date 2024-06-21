@@ -12,35 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.relational.exception;
+package org.finos.legend.engine.persistence.components.exception;
 
-import org.finos.legend.engine.persistence.components.exception.PersistenceException;
-
-public class SqlExecutionException extends PersistenceException
+public class JsonReadOrWriteException extends PersistenceException
 {
-    private String SQLState;
-    private int errorCode;
-
-    public SqlExecutionException(String message, Throwable cause, String SQLState, int errorCode)
+    public JsonReadOrWriteException(String message, Throwable cause)
     {
         super(message, cause);
-        this.SQLState = SQLState;
-        this.errorCode = errorCode;
     }
 
     @Override
     public boolean isRecoverable()
     {
         return false;
-    }
-
-    public String getSQLState()
-    {
-        return SQLState;
-    }
-
-    public int getErrorCode()
-    {
-        return errorCode;
     }
 }

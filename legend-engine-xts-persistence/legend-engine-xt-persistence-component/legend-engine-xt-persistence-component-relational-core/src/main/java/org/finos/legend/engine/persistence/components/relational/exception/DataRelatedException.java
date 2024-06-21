@@ -21,9 +21,9 @@ public class DataRelatedException extends SqlExecutionException
     SQL STATE: 20***, 21***, 22***
     */
 
-    public DataRelatedException(String message, String SQLState, int vendorCode)
+    public DataRelatedException(String message, Throwable cause, String SQLState, int vendorCode)
     {
-        super(message, SQLState, vendorCode);
+        super(message, cause, SQLState, vendorCode);
     }
 
     @Override

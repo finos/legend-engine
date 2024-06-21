@@ -21,9 +21,9 @@ public class SqlSyntaxErrorOrAccessRuleViolationException extends SqlExecutionEx
     SQL STATE: 42***
     */
 
-    public SqlSyntaxErrorOrAccessRuleViolationException(String message, String SQLState, int vendorCode)
+    public SqlSyntaxErrorOrAccessRuleViolationException(String message,Throwable cause, String SQLState, int vendorCode)
     {
-        super(message, SQLState, vendorCode);
+        super(message, cause, SQLState, vendorCode);
     }
 
     @Override

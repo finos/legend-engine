@@ -21,9 +21,9 @@ public class ConstraintViolationException extends SqlExecutionException
     SQL STATE: 23***
     */
 
-    public ConstraintViolationException(String message, String SQLState, int vendorCode)
+    public ConstraintViolationException(String message, Throwable cause, String SQLState, int vendorCode)
     {
-        super(message, SQLState, vendorCode);
+        super(message, cause, SQLState, vendorCode);
     }
 
     @Override

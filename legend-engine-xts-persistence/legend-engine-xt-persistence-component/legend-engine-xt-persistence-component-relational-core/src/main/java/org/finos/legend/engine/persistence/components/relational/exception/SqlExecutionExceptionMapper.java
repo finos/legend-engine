@@ -26,15 +26,15 @@ public class SqlExecutionExceptionMapper
 
         switch (classCode)
         {
-            case "07" : return new DynamicSqlErrorException(sqlException.getMessage(), SQLState, errorCode);
-            case "08" : return new ConnectionException(sqlException.getMessage(), SQLState, errorCode);
+            case "07" : return new DynamicSqlErrorException(sqlException.getMessage(), sqlException, SQLState, errorCode);
+            case "08" : return new ConnectionException(sqlException.getMessage(), sqlException, SQLState, errorCode);
             case "20" :
             case "21" :
-            case "22" : return new DataRelatedException(sqlException.getMessage(), SQLState, errorCode);
-            case "23" : return new ConstraintViolationException(sqlException.getMessage(), SQLState, errorCode);
-            case "40" : return new TransactionRollbackException(sqlException.getMessage(), SQLState, errorCode);
-            case "42" : return new SqlSyntaxErrorOrAccessRuleViolationException(sqlException.getMessage(), SQLState, errorCode);
-            default: return new SqlExecutionException(sqlException.getMessage(), SQLState, errorCode);
+            case "22" : return new DataRelatedException(sqlException.getMessage(), sqlException, SQLState, errorCode);
+            case "23" : return new ConstraintViolationException(sqlException.getMessage(), sqlException, SQLState, errorCode);
+            case "40" : return new TransactionRollbackException(sqlException.getMessage(), sqlException, SQLState, errorCode);
+            case "42" : return new SqlSyntaxErrorOrAccessRuleViolationException(sqlException.getMessage(), sqlException, SQLState, errorCode);
+            default: return new SqlExecutionException(sqlException.getMessage(), sqlException, SQLState, errorCode);
         }
     }
 
@@ -47,7 +47,7 @@ public class SqlExecutionExceptionMapper
         }
         catch (Exception e)
         {
-            throw new SqlExecutionException(sqlException.getMessage(), sqlException.getSQLState(), sqlException.getErrorCode());
+            throw new SqlExecutionException(sqlException.getMessage(), sqlException, sqlException.getSQLState(), sqlException.getErrorCode());
         }
     }
 }
