@@ -14,29 +14,21 @@
 
 package org.finos.legend.engine.persistence.components.relational.exception;
 
-import org.finos.legend.engine.persistence.components.exception.PersistenceException;
-import org.finos.legend.engine.persistence.components.relational.api.DataError;
-
-import java.util.List;
-
-public class DataQualityException extends PersistenceException
+public class TransactionRollbackException extends SqlExecutionException
 {
-    private List<DataError> dataErrors;
 
-    public List<DataError> getDataErrors()
-    {
-        return dataErrors;
-    }
+    /*
+    SQL STATE: 40***
+    */
 
-    public DataQualityException(String message, List<DataError> dataErrors)
+    public TransactionRollbackException(String message, String SQLState, int vendorCode)
     {
-        super(message);
-        this.dataErrors = dataErrors;
+        super(message, SQLState, vendorCode);
     }
 
     @Override
     public boolean isRecoverable()
     {
-        return false;
+        return true;
     }
 }

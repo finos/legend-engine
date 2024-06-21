@@ -653,7 +653,7 @@ public abstract class RelationalIngestorAbstract
         }
         else
         {
-            throw new RuntimeException("Dry Run not supported for this ingest Mode : " + enrichedIngestMode.getClass().getSimpleName());
+            throw new UnsupportedOperationException("Dry Run not supported for this ingest Mode : " + enrichedIngestMode.getClass().getSimpleName());
         }
     }
 

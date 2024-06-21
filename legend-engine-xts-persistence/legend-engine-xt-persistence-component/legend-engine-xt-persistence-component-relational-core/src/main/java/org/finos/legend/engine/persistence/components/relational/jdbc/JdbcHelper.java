@@ -22,6 +22,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Index;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.executor.RelationalExecutionHelper;
+import org.finos.legend.engine.persistence.components.relational.exception.SqlExecutionExceptionMapper;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sql.JdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
@@ -90,7 +91,7 @@ public class JdbcHelper implements RelationalExecutionHelper
         }
         catch (SQLException e)
         {
-            throw new RuntimeException(e);
+            throw SqlExecutionExceptionMapper.from(e);
         }
     }
 
@@ -105,7 +106,7 @@ public class JdbcHelper implements RelationalExecutionHelper
             }
             catch (SQLException e)
             {
-                throw new RuntimeException(e);
+                throw SqlExecutionExceptionMapper.from(e);
             }
         }
     }
@@ -121,7 +122,7 @@ public class JdbcHelper implements RelationalExecutionHelper
             }
             catch (SQLException e)
             {
-                throw new RuntimeException(e);
+                throw SqlExecutionExceptionMapper.from(e);
             }
         }
     }
@@ -137,7 +138,7 @@ public class JdbcHelper implements RelationalExecutionHelper
             }
             catch (SQLException e)
             {
-                throw new RuntimeException(e);
+                throw SqlExecutionExceptionMapper.from(e);
             }
             finally
             {
@@ -159,7 +160,7 @@ public class JdbcHelper implements RelationalExecutionHelper
         }
         catch (SQLException e)
         {
-            throw new RuntimeException(e);
+            throw SqlExecutionExceptionMapper.from(e);
         }
     }
 
@@ -254,7 +255,7 @@ public class JdbcHelper implements RelationalExecutionHelper
         }
         catch (SQLException e)
         {
-            throw new RuntimeException(e);
+            throw SqlExecutionExceptionMapper.from(e);
         }
     }
 
@@ -359,7 +360,7 @@ public class JdbcHelper implements RelationalExecutionHelper
         catch (SQLException e)
         {
             LOGGER.error("Exception in Constructing dataset Schema from Database", e);
-            throw new RuntimeException(e);
+            throw SqlExecutionExceptionMapper.from(e);
         }
     }
 
@@ -428,7 +429,7 @@ public class JdbcHelper implements RelationalExecutionHelper
             }
             catch (SQLException e)
             {
-                throw new RuntimeException(e);
+                throw SqlExecutionExceptionMapper.from(e);
             }
         }
         else
@@ -444,20 +445,16 @@ public class JdbcHelper implements RelationalExecutionHelper
                 }
                 txManager.commitTransaction();
             }
+            catch (SQLException e)
+            {
+                LOGGER.error("SQLException executing SQL statements: " + sqls, e);
+                revertTransaction(txManager);
+                throw SqlExecutionExceptionMapper.from(e);
+            }
             catch (Exception e)
             {
-                LOGGER.error("Error executing SQL statements: " + sqls, e);
-                if (txManager != null)
-                {
-                    try
-                    {
-                        txManager.revertTransaction();
-                    }
-                    catch (SQLException e2)
-                    {
-                        throw new RuntimeException(e2);
-                    }
-                }
+                LOGGER.error("Exception executing SQL statements: " + sqls, e);
+                revertTransaction(txManager);
                 throw new RuntimeException(e);
             }
             finally
@@ -477,12 +474,34 @@ public class JdbcHelper implements RelationalExecutionHelper
         }
     }
 
+    private void revertTransaction(JdbcTransactionManager txManager)
+    {
+        if (txManager != null)
+        {
+            try
+            {
+                txManager.revertTransaction();
+            }
+            catch (SQLException e2)
+            {
+                throw SqlExecutionExceptionMapper.from(e2);
+            }
+        }
+    }
+
     @Override
     public List<Map<String, Object>> executeQuery(String sql, int rows)
     {
         if (this.transactionManager != null)
         {
-            return this.transactionManager.convertResultSetToList(sql, rows);
+            try
+            {
+                return this.transactionManager.convertResultSetToList(sql, rows);
+            }
+            catch (SQLException e)
+            {
+                throw SqlExecutionExceptionMapper.from(e);
+            }
         }
         else
         {
@@ -492,9 +511,9 @@ public class JdbcHelper implements RelationalExecutionHelper
                 txManager = new JdbcTransactionManager(connection);
                 return txManager.convertResultSetToList(sql, rows);
             }
-            catch (Exception e)
+            catch (SQLException e)
             {
-                throw new RuntimeException("Error executing SQL query: " + sql, e);
+                throw SqlExecutionExceptionMapper.from(e);
             }
             finally
             {
@@ -518,7 +537,14 @@ public class JdbcHelper implements RelationalExecutionHelper
     {
         if (this.transactionManager != null)
         {
-            return this.transactionManager.convertResultSetToList(sql);
+            try
+            {
+                return this.transactionManager.convertResultSetToList(sql);
+            }
+            catch (SQLException e)
+            {
+                throw SqlExecutionExceptionMapper.from(e);
+            }
         }
         else
         {
@@ -528,9 +554,9 @@ public class JdbcHelper implements RelationalExecutionHelper
                 txManager = new JdbcTransactionManager(connection);
                 return txManager.convertResultSetToList(sql);
             }
-            catch (Exception e)
+            catch (SQLException e)
             {
-                throw new RuntimeException("Error executing SQL query: " + sql, e);
+                throw SqlExecutionExceptionMapper.from(e);
             }
             finally
             {

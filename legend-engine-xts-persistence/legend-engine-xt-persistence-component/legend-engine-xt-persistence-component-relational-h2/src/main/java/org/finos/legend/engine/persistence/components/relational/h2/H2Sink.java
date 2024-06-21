@@ -299,7 +299,7 @@ public class H2Sink extends AnsiSqlSink
             }
             catch (RuntimeException e)
             {
-                Optional<String> problematicValue = extractProblematicValueFromErrorMessage(e.getCause().getMessage());
+                Optional<String> problematicValue = extractProblematicValueFromErrorMessage(e.getMessage());
                 if (problematicValue.isPresent())
                 {
                     // This loop will only be executed once as there is always only one element in the set
