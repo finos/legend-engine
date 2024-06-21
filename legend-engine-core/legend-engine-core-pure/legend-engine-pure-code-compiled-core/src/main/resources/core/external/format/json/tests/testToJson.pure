@@ -452,3 +452,21 @@ function <<test.Test>> meta::json::tests::testSerializeWithTreeAndConfig():Boole
    let expected = '{"@type":"meta::json::tests::TestLevel1","a":"A","l2":[{"@type":"meta::json::tests::TestLevel2_A","ba":"BA","b":"BA","l3a":[{"@type":"meta::json::tests::TestLevel3_A","ca":"CA"}]}]}';
    assertEq($expected, $plainJson);
 }
+
+Class meta::json::tests::TestClassWithConstraints
+[
+  $this.a != $this.b,
+  aA: $this.a->startsWith('A'),
+  bNotB( ~owner: Bee ~externalId: 'Bees b not B' ~function: !$this.b->startsWith('B') ~enforcementLevel: Warn ~message: 'Look out for the B!')
+]
+{
+  a: String[1];
+  b: String[1];
+}
+
+function <<test.Test>> meta::json::tests::testToJsonHandlesConstraints():Boolean[1]
+{
+  let actual = meta::json::tests::TestClassWithConstraints.constraints->toJSON();
+  let expected = '[{"name":"0"},{"name":"aA"},{"name":"bNotB","owner":"Bee","externalId":"Bees b not B","enforcementLevel":"Warn"}]';
+  assertEq($expected, $actual);
+}
