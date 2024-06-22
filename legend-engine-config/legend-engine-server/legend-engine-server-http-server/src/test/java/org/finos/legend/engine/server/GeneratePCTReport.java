@@ -39,10 +39,10 @@ public class GeneratePCTReport
 
     public static void main(String[] args) throws Exception
     {
-        moduleURLs.put("basic", "https://github.com/finos/legend-pure/tree/master/legend-pure-core/legend-pure-m3-core/src/main/resources");
         moduleURLs.put("grammar", "https://github.com/finos/legend-pure/tree/master/legend-pure-core/legend-pure-m3-core/src/main/resources");
-        moduleURLs.put("base", "https://github.com/finos/legend-pure/tree/master/legend-pure-functions/legend-pure-functions-base/legend-engine-pure-functions-unclassified-pure/src/main/resources/");
-        moduleURLs.put("relation", "https://github.com/finos/legend-pure/tree/master/legend-pure-functions/legend-engine-pure-runtime-java-extension-compiled-functions-relation/legend-engine-pure-functions-relation-pure/src/main/resources");
+        moduleURLs.put("essential", "https://github.com/finos/legend-pure/tree/master/legend-pure-core/legend-pure-m3-core/src/main/resources");
+        moduleURLs.put("standard", "https://github.com/finos/legend-engine/tree/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-base/legend-engine-pure-functions-standard/src/main/resources/");
+        moduleURLs.put("relation", "https://github.com/finos/legend-engine/tree/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-functions-relation-pure/src/main/resources");
 
         Map<String, FunctionDocumentation> f = DocumentationGeneration.buildDocumentation().documentationByName;
 
