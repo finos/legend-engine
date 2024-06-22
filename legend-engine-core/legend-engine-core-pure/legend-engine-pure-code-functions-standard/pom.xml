@@ -52,7 +52,7 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
+                        <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -80,12 +80,12 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
+                        <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -105,8 +105,14 @@
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <scopeProviderMethod>org.finos.legend.pure.code.core.CoreStandardFunctionsCodeRepositoryProvider.standardFunctions</scopeProviderMethod>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
-
         </plugins>
     </build>
 
@@ -129,6 +135,14 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-tds-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
         </dependency>
 
         <dependency>

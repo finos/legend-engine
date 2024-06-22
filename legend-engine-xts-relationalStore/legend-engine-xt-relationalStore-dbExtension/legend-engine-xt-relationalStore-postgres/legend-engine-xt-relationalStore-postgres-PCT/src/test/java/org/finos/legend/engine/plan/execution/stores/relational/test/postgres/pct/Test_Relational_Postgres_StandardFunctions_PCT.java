@@ -37,15 +37,17 @@ public class Test_Relational_Postgres_StandardFunctions_PCT extends PCTReportCon
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             // StD Dev
-            one("meta::pure::functions::math::tests::stdDev::testFloatStdDev_Function_1__Boolean_1_", "\"Functions with more than one functionExpression are not supported yet! The function 'variance_Number_MANY__Boolean_1__Number_1_' has 3 expressions.\""),
-            one("meta::pure::functions::math::tests::stdDev::testIntStdDev_Function_1__Boolean_1_", "\"Functions with more than one functionExpression are not supported yet! The function 'variance_Number_MANY__Boolean_1__Number_1_' has 3 expressions.\""),
-            one("meta::pure::functions::math::tests::stdDev::testMixedStdDev_Function_1__Boolean_1_", "\"Functions with more than one functionExpression are not supported yet! The function 'variance_Number_MANY__Boolean_1__Number_1_' has 3 expressions.\""),
-            one("meta::pure::functions::math::tests::stdDev::testNegativeNumberStdDev_Function_1__Boolean_1_", "\"Functions with more than one functionExpression are not supported yet! The function 'variance_Number_MANY__Boolean_1__Number_1_' has 3 expressions.\""),
-            one("meta::pure::functions::math::tests::stdDev::testPopulationStandardDeviation_Function_1__Boolean_1_", "\"Functions with more than one functionExpression are not supported yet! The function 'variance_Number_MANY__Boolean_1__Number_1_' has 3 expressions.\""),
+            one("meta::pure::functions::math::tests::stdDev::testFloatStdDev_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
+            one("meta::pure::functions::math::tests::stdDev::testIntStdDev_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
+            one("meta::pure::functions::math::tests::stdDev::testMixedStdDev_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
+            one("meta::pure::functions::math::tests::stdDev::testNegativeNumberStdDev_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
+            one("meta::pure::functions::math::tests::stdDev::testPopulationStandardDeviation_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
 
             // Variance
-            one("meta::pure::functions::math::tests::variance::testVariancePopulation_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"var_pop(%s)\"\""),
-            one("meta::pure::functions::math::tests::variance::testVarianceSample_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"var_samp(%s)\"\"")
+            one("meta::pure::functions::math::tests::variance::testVariancePopulation_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
+            one("meta::pure::functions::math::tests::variance::testVarianceSample_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
+            one("meta::pure::functions::math::tests::variance::testVariance_Population_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
+            one("meta::pure::functions::math::tests::variance::testVariance_Sample_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\"")
     );
 
     public static Test suite()

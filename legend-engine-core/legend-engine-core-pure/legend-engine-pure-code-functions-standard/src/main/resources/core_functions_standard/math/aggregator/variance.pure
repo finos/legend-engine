@@ -17,6 +17,19 @@ import meta::pure::test::pct::*;
 function <<PCT.function>> meta::pure::functions::math::variance(numbers:Number[*], isBiasCorrected: Boolean[1]):Number[1]
 {
     let avg = $numbers->average();
-    let val = $numbers->fold({val,acc|$acc + pow($val - $avg, 2);}, 0.0->cast(@Number));
-    $val / ($numbers->size() - if ($isBiasCorrected, |1.0, |0.0));
+    let accVal = $numbers->fold({val,acc|$acc + pow($val - $avg, 2);}, 0.0->cast(@Number));
+    $accVal / ($numbers->size() - if ($isBiasCorrected, |1.0, |0.0));
+}
+
+
+function <<PCT.test>> meta::pure::functions::math::tests::variance::testVariance_Population<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+   assertEq(0.25, $f->eval(|variance([1,2], false)));
+   assertEq(1.0, $f->eval(|variance([2,4], false)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::variance::testVariance_Sample<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEq(1.0, $f->eval(|variance([1.0,2.0,3.0], true)));
+  assertEq(4.0, $f->eval(|variance([2,4,6], true)));
 }

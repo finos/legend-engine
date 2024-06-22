@@ -255,7 +255,7 @@ public class Handlers
             RelationType<?> relType =
                     _RelationType.build(
                             types.flatCollect(RelationTypeAccessor::_columns)
-                                    .collect(c -> _Column.getColumnInstance(c._name(), false, null, _Column.getColumnType(c), null, processorSupport)),
+                                    .collect(c -> _Column.getColumnInstance(c._name(), false, _Column.getColumnType(c), null, processorSupport)),
                             null,
                             processorSupport
                     );
@@ -295,7 +295,7 @@ public class Handlers
                     Lists.mutable
                             .withAll((RichIterable<Column<?, ?>>) ((RelationType<?>) ps.get(0)._genericType()._typeArguments().getFirst()._rawType())._columns())
                             .withAll((RichIterable<Column<?, ?>>) ((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType())._columns())
-                            .collect(c -> (CoreInstance) _Column.getColumnInstance(c._name(), false, null, _Column.getColumnType(c), null, processorSupport)),
+                            .collect(c -> (CoreInstance) _Column.getColumnInstance(c._name(), false, _Column.getColumnType(c), null, processorSupport)),
                     null,
                     processorSupport
             );
@@ -394,7 +394,7 @@ public class Handlers
         GenericType firstGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                 ._rawType(
                         _RelationType.build(
-                                Lists.mutable.with(_Column.getColumnInstance(name, false, null, colType, null, ps)),
+                                Lists.mutable.with(_Column.getColumnInstance(name, false, colType, null, ps)),
                                 null,
                                 ps
                         )
@@ -1106,11 +1106,11 @@ public class Handlers
                     {
                         if (c._name().equals(firstCol._name()))
                         {
-                            return (CoreInstance) _Column.getColumnInstance(secondCol._name(), false, null, _Column.getColumnType(c), null, processorSupport);
+                            return (CoreInstance) _Column.getColumnInstance(secondCol._name(), false, _Column.getColumnType(c), null, processorSupport);
                         }
                         else
                         {
-                            return (CoreInstance) _Column.getColumnInstance(c._name(), false, null, _Column.getColumnType(c), null, processorSupport);
+                            return (CoreInstance) _Column.getColumnInstance(c._name(), false, _Column.getColumnType(c), null, processorSupport);
                         }
                     }).toList(),
                     null,

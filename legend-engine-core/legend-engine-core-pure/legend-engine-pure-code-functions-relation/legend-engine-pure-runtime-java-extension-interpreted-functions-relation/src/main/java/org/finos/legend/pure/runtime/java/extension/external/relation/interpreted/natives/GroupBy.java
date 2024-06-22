@@ -121,21 +121,23 @@ public class GroupBy extends Shared
             resType = DataType.STRING;
             _finalRes = finalRes;
         }
-
-        if (type == _Package.getByUserPath("Integer", processorSupport))
+        else if (type == _Package.getByUserPath("Integer", processorSupport))
         {
             int[] finalRes = new int[size];
             performAggregation(res, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).intValue(), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionToUseInStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, size, parameters, mapFVarContext, reduceFVarContext);
             resType = DataType.INT;
             _finalRes = finalRes;
         }
-
-        if (type == _Package.getByUserPath("Float", processorSupport))
+        else if (type == _Package.getByUserPath("Float", processorSupport) || type == _Package.getByUserPath("Number", processorSupport))
         {
             double[] finalRes = new double[size];
             performAggregation(res, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue(), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionToUseInStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, size, parameters, mapFVarContext, reduceFVarContext);
             resType = DataType.FLOAT;
             _finalRes = finalRes;
+        }
+        else
+        {
+            throw new RuntimeException("The type " + type._name() + " is not supported yet!");
         }
         return existing == null ? res.getOne()._distinct(res.getTwo()).addColumn(name, resType, _finalRes) : existing.addColumn(name, resType, _finalRes);
     }

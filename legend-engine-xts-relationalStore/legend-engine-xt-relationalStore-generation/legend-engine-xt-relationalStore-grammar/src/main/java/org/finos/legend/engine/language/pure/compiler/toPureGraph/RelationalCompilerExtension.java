@@ -792,7 +792,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     {
                         name = name.substring(1, name.length() - 1);
                     }
-                    return (CoreInstance) _Column.getColumnInstance(name, false, null, convertTypes(col._type(), processorSupport), sourceInformation, processorSupport);
+                    return (CoreInstance) _Column.getColumnInstance(name, false, convertTypes(col._type(), processorSupport), sourceInformation, processorSupport);
                 }).toList(), sourceInformation, processorSupport);
 
                 GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))

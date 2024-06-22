@@ -23,3 +23,30 @@ function <<PCT.function>> meta::pure::functions::math::stdDevPopulation(numbers:
 {
     meta::pure::functions::math::stdDev($numbers, false);
 }
+
+function <<PCT.test>> meta::pure::functions::math::tests::stdDev::testPopulationStandardDeviation<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+   assertEq(0.5, $f->eval(|stdDevPopulation([1,2])));
+   assertEq(1.0, $f->eval(|stdDevPopulation([2,4])));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::stdDev::testSimpleGroupByStandardDeviationPopulation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  id, val
+                  1, 1
+                  1, 2
+                  2, 2
+                  2, 4
+                #->groupBy(~[id], ~[newCol : x | $x.val : y | $y->meta::pure::functions::math::stdDevPopulation()])
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,newCol\n'+
+                  '   1,0.5\n'+
+                  '   2,1.0\n'+
+                  '#', $res->sort(~id->ascending())->toString());
+}
