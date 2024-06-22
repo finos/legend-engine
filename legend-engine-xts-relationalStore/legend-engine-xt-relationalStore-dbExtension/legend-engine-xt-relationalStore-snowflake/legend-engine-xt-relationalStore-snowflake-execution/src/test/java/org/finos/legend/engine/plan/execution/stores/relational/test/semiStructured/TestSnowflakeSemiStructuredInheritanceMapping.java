@@ -49,7 +49,7 @@ public class TestSnowflakeSemiStructuredInheritanceMapping extends AbstractTestS
                 "    (\n" +
                 "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, BIGINT, \"\")]\n" +
                 "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address 0 Line No\", \"\")]\n" +
-                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['address']['lines'][0]['lineno'] as \"Firm Address 0 Line No\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
+                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['address']['lines'][0]['lineno']::number as \"Firm Address 0 Line No\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
         String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, BIGINT, \"\")]\n";
@@ -66,7 +66,7 @@ public class TestSnowflakeSemiStructuredInheritanceMapping extends AbstractTestS
                 "    (\n" +
                 "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, BIGINT, \"\"), (Firm Address Street, String, VARCHAR(8192), \"\"), (Firm Address City, String, VARCHAR(8192), \"\"), (Firm Address State, String, VARCHAR(8192), \"\")]\n" +
                 "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address 0 Line No\", \"\"), (\"Firm Address Street\", \"\"), (\"Firm Address City\", \"\"), (\"Firm Address State\", \"\")]\n" +
-                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['address']['lines'][0]['lineno'] as \"Firm Address 0 Line No\", \"root\".FIRM_DETAILS['address']['lines'][0]['street']::varchar as \"Firm Address Street\", \"root\".FIRM_DETAILS['address']['lines'][1]['city']::varchar as \"Firm Address City\", \"root\".FIRM_DETAILS['address']['lines'][2]['state']::varchar as \"Firm Address State\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
+                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['address']['lines'][0]['lineno']::number as \"Firm Address 0 Line No\", \"root\".FIRM_DETAILS['address']['lines'][0]['street']::varchar as \"Firm Address Street\", \"root\".FIRM_DETAILS['address']['lines'][1]['city']::varchar as \"Firm Address City\", \"root\".FIRM_DETAILS['address']['lines'][2]['state']::varchar as \"Firm Address State\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
         String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, BIGINT, \"\"), (Firm Address Street, String, VARCHAR(8192), \"\"), (Firm Address City, String, VARCHAR(8192), \"\"), (Firm Address State, String, VARCHAR(8192), \"\")]\n";
@@ -83,7 +83,7 @@ public class TestSnowflakeSemiStructuredInheritanceMapping extends AbstractTestS
                 "    (\n" +
                 "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, BIGINT, \"\"), (Firm Address Street, String, VARCHAR(8192), \"\"), (Firm Address City, String, VARCHAR(8192), \"\"), (Firm Address State, String, VARCHAR(8192), \"\")]\n" +
                 "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address 0 Line No\", \"\"), (\"Firm Address Street\", \"\"), (\"Firm Address City\", \"\"), (\"Firm Address State\", \"\")]\n" +
-                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['address']['lines'][0]['lineno'] as \"Firm Address 0 Line No\", \"root\".FIRM_DETAILS['address']['lines'][0]['street']::varchar as \"Firm Address Street\", \"root\".FIRM_DETAILS['address']['lines'][1]['city']::varchar as \"Firm Address City\", \"root\".FIRM_DETAILS['address']['lines'][2]['state']::varchar as \"Firm Address State\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
+                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['address']['lines'][0]['lineno']::number as \"Firm Address 0 Line No\", \"root\".FIRM_DETAILS['address']['lines'][0]['street']::varchar as \"Firm Address Street\", \"root\".FIRM_DETAILS['address']['lines'][1]['city']::varchar as \"Firm Address City\", \"root\".FIRM_DETAILS['address']['lines'][2]['state']::varchar as \"Firm Address State\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
         String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, BIGINT, \"\"), (Firm Address Street, String, VARCHAR(8192), \"\"), (Firm Address City, String, VARCHAR(8192), \"\"), (Firm Address State, String, VARCHAR(8192), \"\")]\n";
