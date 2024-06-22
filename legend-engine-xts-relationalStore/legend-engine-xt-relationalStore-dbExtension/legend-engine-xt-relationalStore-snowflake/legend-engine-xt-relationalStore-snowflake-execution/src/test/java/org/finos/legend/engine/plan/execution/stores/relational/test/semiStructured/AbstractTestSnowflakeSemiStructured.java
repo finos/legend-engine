@@ -63,6 +63,7 @@ public abstract class AbstractTestSnowflakeSemiStructured
     protected String buildExecutionPlanString(String function, String mapping, String runtime)
     {
         MutableList<Root_meta_pure_extension_Extension> extensions = getExtensions();
+
         Function functionObject = Objects.requireNonNull(contextData.getElementsOfType(Function.class).stream().filter(x -> function.equals(x._package + "::" + x.name)).findFirst().orElse(null));
 
         Root_meta_pure_executionPlan_ExecutionPlan executionPlan = PlanGenerator.generateExecutionPlanAsPure(
