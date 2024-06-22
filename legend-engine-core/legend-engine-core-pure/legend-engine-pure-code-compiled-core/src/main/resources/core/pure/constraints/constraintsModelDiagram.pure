@@ -51,18 +51,6 @@ Diagram meta::pure::metamodel::constraint::ConstraintModelDiagram(width=875.2690
         width=80.00000,
         height=36.00000)
 
-    TypeView PackageableElement_$_3(
-        type=meta::pure::metamodel::PackageableElement,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0,
-        position=(1115.00000, 190.00000),
-        width=139.39648,
-        height=36.00000)
-
     TypeView Type_$_4(
         type=meta::pure::metamodel::type::Type,
         stereotypesVisible=true,
@@ -74,18 +62,6 @@ Diagram meta::pure::metamodel::constraint::ConstraintModelDiagram(width=875.2690
         position=(1346.00000, 367.00000),
         width=47.11719,
         height=36.00000)
-
-    TypeView ModelElement_$_5(
-        type=meta::pure::metamodel::ModelElement,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0,
-        position=(1127.00000, 88.00000),
-        width=112.93604,
-        height=48.00000)
 
     TypeView ValidationResult_$_6(
         type=meta::pure::metamodel::constraint::ValidationResult,
@@ -192,22 +168,4 @@ Diagram meta::pure::metamodel::constraint::ConstraintModelDiagram(width=875.2690
        label='',
        source=Class_$_0,
        target=Type_$_4)
-
-
-   GeneralizationView gview_16(color=#000000,
-       lineWidth=-1.0,
-       lineStyle=SIMPLE,
-       points=[(1184.69824,208.00000),(800.00000,388.00000)],
-       label='',
-       source=Constraint_$_2,
-       target=PackageableElement_$_3)
-
-   GeneralizationView gview_17(color=#000000,
-       lineWidth=-1.0,
-       lineStyle=SIMPLE,
-       points=[(1183.46802,112.00000),(1184.69824,208.00000)],
-       label='',
-       source=PackageableElement_$_3,
-       target=ModelElement_$_5)
-
 }
