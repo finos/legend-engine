@@ -142,6 +142,7 @@ public class TestTDS
                     this.isNullByColumn.put(p.getOne(), array);
                     break;
                 }
+                case FLOAT:
                 case DOUBLE:
                 {
                     this.dataByColumnName.put(p.getOne(), new double[(int) this.rowCount]);
@@ -151,7 +152,7 @@ public class TestTDS
                     break;
                 }
                 default:
-                    throw new RuntimeException("ERROR " + columnType.get(p.getOne()) + " not supported in copy!");
+                    throw new RuntimeException("ERROR " + columnType.get(p.getOne()) + " not supported yet!");
             }
         });
     }
@@ -174,12 +175,16 @@ public class TestTDS
                     res.dataByColumnName.put(c.getOne(), new char[1]);
                     res.isNullByColumn.put(c.getOne(), array);
                     break;
+                case FLOAT:
                 case DOUBLE:
                     res.dataByColumnName.put(c.getOne(), new double[1]);
                     res.isNullByColumn.put(c.getOne(), array);
                     break;
                 case STRING:
                     res.dataByColumnName.put(c.getOne(), new String[1]);
+                    break;
+                default:
+                    throw new RuntimeException("ERROR " + columnType.get(c.getTwo()) + " not supported yet!");
             }
         });
         return res;
@@ -264,6 +269,7 @@ public class TestTDS
                 ((String[]) dataAsObject)[row] = ((String[]) srcTDS.dataByColumnName.get(columnName))[srcRow];
                 break;
             }
+            case FLOAT:
             case DOUBLE:
             {
                 ((double[]) dataAsObject)[row] = ((double[]) srcTDS.dataByColumnName.get(columnName))[srcRow];
@@ -271,7 +277,7 @@ public class TestTDS
                 break;
             }
             default:
-                throw new RuntimeException("ERROR " + columnType.get(columnName) + " not supported in copy!");
+                throw new RuntimeException("ERROR " + columnType.get(columnName) + " not supported yet!");
         }
     }
 
@@ -307,6 +313,7 @@ public class TestTDS
                     copy = Arrays.copyOf((String[]) dataAsObject, (int) rowCount);
                     break;
                 }
+                case FLOAT:
                 case DOUBLE:
                 {
                     copy = Arrays.copyOf((double[]) dataAsObject, (int) rowCount);
@@ -314,7 +321,7 @@ public class TestTDS
                     break;
                 }
                 default:
-                    throw new RuntimeException("ERROR " + columnType.get(columnName) + " not supported in copy!");
+                    throw new RuntimeException("ERROR " + columnType.get(columnName) + " not supported yet!");
             }
             result.dataByColumnName.put(columnName, copy);
             if (copyIsNull != null)
@@ -385,6 +392,7 @@ public class TestTDS
                     copy.dataByColumnName.put(columnName, target);
                     break;
                 }
+                case FLOAT:
                 case DOUBLE:
                 {
                     double[] src = (double[]) dataAsObject;
@@ -453,6 +461,7 @@ public class TestTDS
                     copy = _copy;
                     break;
                 }
+                case FLOAT:
                 case DOUBLE:
                 {
                     double[] _copy = Arrays.copyOf((double[]) dataAsObject1, (int) result.rowCount);
@@ -462,7 +471,7 @@ public class TestTDS
                     break;
                 }
                 default:
-                    throw new RuntimeException("ERROR " + columnType.get(columnName) + " not supported in copy!");
+                    throw new RuntimeException("ERROR " + columnType.get(columnName) + " not supported yet!");
             }
             result.dataByColumnName.put(columnName, copy);
             if (newIsNull != null)
@@ -498,6 +507,7 @@ public class TestTDS
         {
             case INT:
             case CHAR:
+            case FLOAT:
             case DOUBLE:
                 boolean[] array = new boolean[(int) this.rowCount];
                 Arrays.fill(array, Boolean.FALSE);
@@ -566,6 +576,7 @@ public class TestTDS
                     copy.dataByColumnName.put(columnName, Arrays.copyOfRange((String[]) dataAsObject, from, to));
                     break;
                 }
+                case FLOAT:
                 case DOUBLE:
                 {
                     copy.dataByColumnName.put(columnName, Arrays.copyOfRange((double[]) dataAsObject, from, to));
@@ -573,7 +584,7 @@ public class TestTDS
                     break;
                 }
                 default:
-                    throw new RuntimeException("ERROR " + copy.columnType.get(columnName) + " not supported in drop!");
+                    throw new RuntimeException("ERROR " + copy.columnType.get(columnName) + " not supported yet!");
             }
         });
         copy.rowCount = (long) to - from;
@@ -697,6 +708,7 @@ public class TestTDS
                     }
                     break;
                 }
+                case FLOAT:
                 case DOUBLE:
                 {
                     double[] src = (double[]) dataAsObject;
@@ -787,6 +799,7 @@ public class TestTDS
                 this.reorder(copy, list.collect(Pair::getOne), start, end);
                 break;
             }
+            case FLOAT:
             case DOUBLE:
             {
                 double[] src = (double[]) dataAsObject;
@@ -855,6 +868,7 @@ public class TestTDS
                     System.arraycopy(result, 0, src, start, end - start);
                     break;
                 }
+                case FLOAT:
                 case DOUBLE:
                 {
                     double[] src = (double[]) dataAsObject;
@@ -902,6 +916,7 @@ public class TestTDS
                         String res = ((String[]) dataAsObject)[finalI];
                         return res == null ? "NULL" : res;
                     }
+                    case FLOAT:
                     case DOUBLE:
                     {
                         return isNull[finalI] ? "NULL" : ((double[]) dataAsObject)[finalI];
@@ -982,6 +997,7 @@ public class TestTDS
                     valid = valid && Objects.equals(((String[]) firstDataAsObject)[rowFirst], (((String[]) secondDataAsObject)[rowSecond]));
                     break;
                 }
+                case FLOAT:
                 case DOUBLE:
                 {
                     valid = valid && ((double[]) firstDataAsObject)[rowFirst] == ((double[]) secondDataAsObject)[rowSecond];

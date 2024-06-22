@@ -42,6 +42,6 @@ public class RelationTypeHelper
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?> convert(RelationType src, ProcessorSupport processorSupport, SourceInformation sourceInformation)
     {
-        return _RelationType.build(ListIterate.collect(src.columns, c -> (CoreInstance) _Column.getColumnInstance(c.name, false, null, (GenericType) processorSupport.type_wrapGenericType(_Package.getByUserPath(c.type, processorSupport)), sourceInformation, processorSupport)).toList(), sourceInformation, processorSupport);
+        return _RelationType.build(ListIterate.collect(src.columns, c -> (CoreInstance) _Column.getColumnInstance(c.name, false, (GenericType) processorSupport.type_wrapGenericType(_Package.getByUserPath(c.type, processorSupport)), sourceInformation, processorSupport)).toList(), sourceInformation, processorSupport);
     }
 }

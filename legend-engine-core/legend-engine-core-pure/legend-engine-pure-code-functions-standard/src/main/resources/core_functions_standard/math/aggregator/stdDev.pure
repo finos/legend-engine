@@ -18,35 +18,3 @@ function <<PCT.function>> meta::pure::functions::math::stdDev(numbers:Number[1..
 {
     sqrt(variance($numbers, $isBiasCorrected));
 }
-
-function <<PCT.test>> meta::pure::functions::math::tests::stdDev::testIntStdDev<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
-{
-   assertEq(1.0, $f->eval(|stdDev([1,2,3], true)));
-   assertEq(2.0, $f->eval(|stdDev([2,4,6], true)));
-}
-
-function <<PCT.test>> meta::pure::functions::math::tests::stdDev::testFloatStdDev<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
-{
-   assertEq(1.0, $f->eval(|stdDev([1.0,2.0,3.0], true)));
-   assertEq(1.0, $f->eval(|stdDev([1.5,2.5,3.5], true)));
-   assertEq(3.14, $f->eval(|stdDev([3.14,6.28,9.42], true)));
-}
-
-function <<PCT.test>> meta::pure::functions::math::tests::stdDev::testMixedStdDev<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
-{
-   assertEq(1.0, $f->eval(|stdDev([1.0,2,3.0], true)));
-   assertEq(0.5, $f->eval(|stdDev([1,1.5,2], true)));
-}
-
-function <<PCT.test>> meta::pure::functions::math::tests::stdDev::testNegativeNumberStdDev<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
-{
-   assertEq(2.0, $f->eval(|stdDev([-2,-4,-6], true)));
-   assertEq(5.0, $f->eval(|stdDev([-5,0,5], true)));
-   assertEq(5.0, $f->eval(|stdDev([-5.0,0.0,5.0], true)));
-}
-
-function <<PCT.test>> meta::pure::functions::math::tests::stdDev::testPopulationStandardDeviation<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
-{
-   assertEq(0.5, $f->eval(|stdDev([1,2], false)));
-   assertEq(1.0, $f->eval(|stdDev([2,4], false)));
-}

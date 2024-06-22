@@ -108,6 +108,7 @@ public class TestTDSInterpreted extends TestTDS
                 result = value != null ? newStringLiteral(modelRepository, value, processorSupport) : ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.String, processorSupport), processorSupport), true, processorSupport);
                 break;
             }
+            case FLOAT:
             case DOUBLE:
             {
                 double[] data = (double[]) dataAsObject;

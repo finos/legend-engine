@@ -93,6 +93,7 @@ public class TestTDSCompiled extends TestTDS
                 result = data[rowNum];
                 break;
             }
+            case FLOAT:
             case DOUBLE:
             {
                 double[] data = (double[]) dataAsObject;
@@ -136,7 +137,7 @@ public class TestTDSCompiled extends TestTDS
         Class<?> relationDatabaseAccessorType = (Class<?>) processorSupport.package_getByUserPath(M2TDSPaths.TDS);
         GenericType genericType = (GenericType) processorSupport.type_wrapGenericType(relationDatabaseAccessorType);
         GenericType typeParam = (GenericType) processorSupport.newGenericType(null, relationDatabaseAccessorType, false);
-        MutableList<CoreInstance> columns = columnsOrdered.collect(c -> (CoreInstance) _Column.getColumnInstance(c,false, typeParam, (GenericType) processorSupport.type_wrapGenericType(_Package.getByUserPath(convert(columnType.get(c)), processorSupport)), null, processorSupport)).toList();
+        MutableList<CoreInstance> columns = columnsOrdered.collect(c -> (CoreInstance) _Column.getColumnInstance(c,false, (GenericType) processorSupport.type_wrapGenericType(_Package.getByUserPath(convert(columnType.get(c)), processorSupport)), null, processorSupport)).toList();
         typeParam._rawType(_RelationType.build(columns, null, processorSupport));
         genericType._typeArguments(Lists.mutable.with(typeParam));
         this.classifierGenericType = genericType;
@@ -152,6 +153,7 @@ public class TestTDSCompiled extends TestTDS
             case STRING:
             case CHAR:
                 return "String";
+            case FLOAT:
             case DOUBLE:
                 return "Float";
         }

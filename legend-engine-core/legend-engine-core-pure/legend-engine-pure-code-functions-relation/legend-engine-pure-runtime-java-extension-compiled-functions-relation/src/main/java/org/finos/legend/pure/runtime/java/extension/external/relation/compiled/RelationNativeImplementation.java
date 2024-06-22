@@ -178,6 +178,7 @@ public class RelationNativeImplementation
                     resultInt[i] = (int) (long) colFuncSpecTrans.func.value(new RowContainer(tds, i), es);
                 }
                 return (TestTDSCompiled) tds.addColumn(colFuncSpecTrans.newColName, DataType.INT, resultInt);
+            case "Double":
             case "Float":
                 double[] resultDouble = new double[(int) tds.getRowCount()];
                 for (int i = 0; i < tds.getRowCount(); i++)
@@ -275,11 +276,15 @@ public class RelationNativeImplementation
                     performMapReduce(aggColSpecTrans.map, aggColSpecTrans.reduce, es, size, sortRes, (o, j) -> finalResInt[j] = (int) (long) o);
                     finalTDS.addColumn(aggColSpecTrans.newColName, DataType.INT, finalResInt);
                     break;
+                case "Double":
                 case "Float":
+                case "Number":
                     double[] finalResDouble = new double[size];
                     performMapReduce(aggColSpecTrans.map, aggColSpecTrans.reduce, es, size, sortRes, (o, j) -> finalResDouble[j] = (double) o);
                     finalTDS.addColumn(aggColSpecTrans.newColName, DataType.FLOAT, finalResDouble);
                     break;
+                default:
+                    throw new RuntimeException(aggColSpecTrans.reduceType + " is not supported yet!");
             }
         }
 
@@ -322,9 +327,13 @@ public class RelationNativeImplementation
                     case "Integer":
                         one.addColumn(namesL.get(i), DataType.INT, toInt(li));
                         break;
+                    case "Double":
                     case "Float":
+                    case "Number":
                         one.addColumn(namesL.get(i), DataType.DOUBLE, toDouble(li));
                         break;
+                    default:
+                        throw new RuntimeException(typesL.get(i) + " is not supported yet!");
                 }
                 if (li.isEmpty())
                 {
