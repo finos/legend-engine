@@ -43,6 +43,11 @@ public class SnowflakeAppGenerator
 
     public static SnowflakeAppArtifact generateArtifact(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
+        return generateArtifact(pureModel, activator, inputModel, false, routerExtensions);
+    }
+
+    public static SnowflakeAppArtifact generateArtifact(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, boolean createStatementOnly, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    {
         String sqlFunctionExpression = core_snowflakeapp_generation_generation.Root_meta_external_function_activator_snowflakeApp_generation_generateArtifact_SnowflakeApp_1__Extension_MANY__String_1_(activator, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
         String inputParamStub = core_snowflakeapp_generation_generation.Root_meta_external_function_activator_snowflakeApp_generation_generateInputParamsStub_Function_1__String_1_(activator._function(), pureModel.getExecutionSupport());
         RelationalDatabaseConnection connection;
@@ -67,7 +72,10 @@ public class SnowflakeAppGenerator
             SnowflakeDatasourceSpecification ds = (SnowflakeDatasourceSpecification)connection.datasourceSpecification;
             String deployedLocation = String.format("https://app.%s.privatelink.snowflakecomputing.com/%s/%s/data/databases/%S", ds.region, ds.region, ds.accountName, ds.databaseName);
             String generatedGrantStatement = generateGrantStatement(activator._applicationName(), inputParamStub);
-            content.addGrantStatement(generatedGrantStatement);
+            if (!createStatementOnly)
+            {
+                content.addGrantStatement(generatedGrantStatement);
+            }
             return new SnowflakeAppArtifact(content, new SnowflakeAppDeploymentConfiguration(connection), deployedLocation, sdlc);
         }
         return new SnowflakeAppArtifact(content, sdlc);
