@@ -482,9 +482,9 @@ public class JdbcHelper implements RelationalExecutionHelper
             {
                 txManager.revertTransaction();
             }
-            catch (SQLException e2)
+            catch (SQLException e)
             {
-                throw SqlExecutionExceptionMapper.from(e2);
+                throw SqlExecutionExceptionMapper.from(e);
             }
         }
     }
