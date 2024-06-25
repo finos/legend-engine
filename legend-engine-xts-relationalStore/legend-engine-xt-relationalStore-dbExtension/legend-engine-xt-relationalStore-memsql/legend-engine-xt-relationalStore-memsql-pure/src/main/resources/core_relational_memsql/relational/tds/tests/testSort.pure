@@ -18,9 +18,10 @@ import meta::relational::tests::model::simple::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::functions::sqlstring::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::memsql::tests::tds::sort::testSortQuotes_MemSQL():Boolean[1]
 {
   let query = toSQLString(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(desc('address'))->sort('name');, simpleRelationalMapping, DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-  assertEquals('select `root`.FIRSTNAME as `name`, `addressTable_d#3_1_d#3_m2`.NAME as `address` from personTable as `root` left outer join addressTable as `addressTable_d#3_1_d#3_m2` on (`addressTable_d#3_1_d#3_m2`.ID = `root`.ADDRESSID) order by `name`,`address` desc', $query);
+  assertSameSQL('select `root`.FIRSTNAME as `name`, `addressTable_d#3_1_d#3_m2`.NAME as `address` from personTable as `root` left outer join addressTable as `addressTable_d#3_1_d#3_m2` on (`addressTable_d#3_1_d#3_m2`.ID = `root`.ADDRESSID) order by `name`,`address` desc', $query);
 }

@@ -25,6 +25,7 @@ import meta::relational::runtime::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::*;
+import meta::relational::functions::asserts::*;
 
 
 function <<test.Test>> meta::relational::tests::tds::tabletds::testProjectStringColumn():Boolean[1]
@@ -40,8 +41,8 @@ function <<test.Test>> meta::relational::tests::tds::tabletds::testProjectString
    assertEquals('Peter|Peter,John|John,John|John,Anthony|Anthony,Fabrice|Fabrice,Oliver|Oliver,David|David',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "first_name", "root".FIRSTNAME as "name_again" from personTable as "root"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "first_name", "root".FIRSTNAME as "name_again" from personTable as "root"',
+      $result);
 }
 
 function <<test.Test,test.ExcludeAlloy>> meta::relational::tests::tds::tabletds::testView():Boolean[1]
@@ -57,8 +58,8 @@ function <<test.Test,test.ExcludeAlloy>> meta::relational::tests::tds::tabletds:
    assertEquals('Anthony|Anthony,David|David,Fabrice|Fabrice,John|John,Oliver|Oliver,Peter|Peter',
       $result.values.rows->map(r|$r.values->makeString('|'))->sort()->makeString(','));
 
-   assertEquals('select "root".firstName as "first_name", "root".firstName as "name_again" from (select distinct "root".FIRSTNAME as firstName, "addresstable_0".NAME as address from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID)) as "root"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".firstName as "first_name", "root".firstName as "name_again" from (select distinct "root".FIRSTNAME as firstName, "addresstable_0".NAME as address from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID)) as "root"',
+      $result);
 }
 
 function <<test.Test,test.ExcludeAlloy>> meta::relational::tests::tds::tabletds::testProjectAllColumns_Single():Boolean[1]
@@ -75,8 +76,8 @@ function <<test.Test,test.ExcludeAlloy>> meta::relational::tests::tds::tabletds:
    assertEquals('Peter,John,John,Anthony,Fabrice,Oliver,David',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "FIRSTNAME" from personTable as "root"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "FIRSTNAME" from personTable as "root"',
+      $result);
 }
 
 
@@ -96,8 +97,8 @@ function <<test.Test,test.ExcludeAlloy>> meta::relational::tests::tds::tabletds:
    assertEquals('John,Peter',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "FIRST NAME" as "FIRST NAME" from (select top 2 "root"."FIRST NAME" as "FIRST NAME" from tableWithQuotedColumns as "root") as "subselect" order by "FIRST NAME"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "FIRST NAME" as "FIRST NAME" from (select top 2 "root"."FIRST NAME" as "FIRST NAME" from tableWithQuotedColumns as "root") as "subselect" order by "FIRST NAME"',
+      $result);
 }
 
 
@@ -125,7 +126,7 @@ function <<test.Test>> meta::relational::tests::tds::tabletds::testSimpleFilter(
 {
    let result = execute(|tableToTDS(tableReference(meta::relational::tests::db,'default','personTable'))
                         ->project([col(r:TDSRow[1]|$r.getString('FIRSTNAME'), 'name')])->filter({r | $r.getString('name') == 'John'}), EmptyMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" where "root".FIRSTNAME = \'John\'', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "name" from personTable as "root" where "root".FIRSTNAME = \'John\'', $result);
    assertSize($result.values.rows, 2 );
    assertEquals(['John','John'], $result.values.rows->map(r|$r.values));
 
@@ -144,8 +145,8 @@ function <<test.Test>> meta::relational::tests::tds::tabletds::testExtendStringL
    assertEquals('Peter|Hello,John|Hello,John|Hello,Anthony|Hello,Fabrice|Hello,Oliver|Hello,David|Hello',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "firstName", \'Hello\' as "hello" from personTable as "root"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "firstName", \'Hello\' as "hello" from personTable as "root"',
+      $result);
 }
 
 
@@ -167,8 +168,8 @@ function <<test.ToFix>> meta::relational::tests::tds::tabletds::testSimpleConcat
    assertEquals('Allen,Allen,Hill,Hill,Smith,Smith,Johnson,Johnson,Harris,Harris,Roberts,Roberts,Hill,Hill',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tabletds::testSimpleConcatenate():Boolean[1]
@@ -188,8 +189,8 @@ function <<test.Test>> meta::relational::tests::tds::tabletds::testSimpleConcate
    assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
-      $result->sqlRemoveFormatting());
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
+      $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tabletds::testSimpleSortAsc():Boolean[1]
@@ -198,7 +199,7 @@ function <<test.Test>> meta::relational::tests::tds::tabletds::testSimpleSortAsc
                         ->project([col(r:TDSRow[1]|$r.getString('FIRSTNAME'), 'name')])->sort('name'), EmptyMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter', $result.values.rows->map(r|$r.values)->makeString(','));
-   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" order by "name"', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "name" from personTable as "root" order by "name"', $result);
 }
 
 

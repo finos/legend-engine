@@ -21,17 +21,18 @@ import meta::external::store::relational::tests::*;
 import meta::pure::metamodel::tds::*;
 import meta::pure::profiles::*;
 import meta::relational::tests::model::simple::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::tds::sybase::testFilterAfterGroupByWithSameColForGroupByAggAndFilterOnRootClassSybase():Boolean[1]
 {
    let f = {|Person.all()->groupBy([p|$p.firstName->length()],agg(x|$x.firstName,y|$y->joinStrings(',')),['firstNameLength', 'firstNamesWithSameLength'])->filter({l|$l.getInteger('firstNameLength') == 7})};
    let sql = toSQLString($f,simpleRelationalMapping,DatabaseType.Sybase, meta::relational::extension::relationalExtensions());
-   assertEquals('select char_length("root".FIRSTNAME) as "firstNameLength", list("root".FIRSTNAME,\',\') as "firstNamesWithSameLength" from personTable as "root" group by char_length("root".FIRSTNAME) having char_length("root".FIRSTNAME) = 7', $sql);
+   assertSameSQL('select char_length("root".FIRSTNAME) as "firstNameLength", list("root".FIRSTNAME,\',\') as "firstNamesWithSameLength" from personTable as "root" group by char_length("root".FIRSTNAME) having char_length("root".FIRSTNAME) = 7', $sql);
 }
 
 function <<test.Test>> meta::relational::tests::tds::sybase::testFilterAfterGroupByWithFilterOnAllProjectColumnsSybase():Boolean[1]
 {
    let f = {|Person.all()->groupBy([p|$p.firstName->length()],agg(x|$x.firstName,y|$y->joinStrings(',')),['firstNameLength', 'firstNamesWithSameLength'])->filter({l|$l.getInteger('firstNameLength') == 7 || $l.getString('firstNamesWithSameLength')->contains('David')})};
    let sql = toSQLString($f,simpleRelationalMapping,DatabaseType.Sybase, meta::relational::extension::relationalExtensions());
-   assertEquals('select char_length("root".FIRSTNAME) as "firstNameLength", list("root".FIRSTNAME,\',\') as "firstNamesWithSameLength" from personTable as "root" group by char_length("root".FIRSTNAME) having (char_length("root".FIRSTNAME) = 7 or list("root".FIRSTNAME,\',\') like \'%David%\')', $sql);
+   assertSameSQL('select char_length("root".FIRSTNAME) as "firstNameLength", list("root".FIRSTNAME,\',\') as "firstNamesWithSameLength" from personTable as "root" group by char_length("root".FIRSTNAME) having (char_length("root".FIRSTNAME) = 7 or list("root".FIRSTNAME,\',\') like \'%David%\')', $sql);
 }

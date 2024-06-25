@@ -35,6 +35,7 @@ import meta::core::runtime::*;
 import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::authentication::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::hive::testTriminNotSybaseASE():Boolean[1]{
 
@@ -42,5 +43,5 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::hive::test
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Hive, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sHive);
+   assertSameSQL('select trim("root".string2) as "trim" from dataTable as "root"',$sHive);
 }

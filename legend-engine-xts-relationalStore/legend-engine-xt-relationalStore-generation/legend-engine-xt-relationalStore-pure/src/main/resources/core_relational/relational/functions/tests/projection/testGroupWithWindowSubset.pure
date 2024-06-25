@@ -17,6 +17,7 @@ import meta::relational::tests::csv::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::advanced::contractmoneyscenario::*;
 import meta::relational::tests::model::simple::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::projection::testGroupByWithWindowSubset():Any[*]
 {
@@ -39,7 +40,7 @@ function <<test.Test>> meta::relational::tests::projection::testGroupByWithWindo
                                                  ,[ 'Amount-Sum' ]                                                                  
                                                  ) , ContractMoney, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
       
-   assertEquals( 'select "root".price as "Amount", sum("root".price) as "Amount-Sum" from Contract as "root" group by "Amount"' , $results->sqlRemoveFormatting() ) ;
+   assertSameSQL( 'select "root".price as "Amount", sum("root".price) as "Amount-Sum" from Contract as "root" group by "Amount"' , $results ) ;
    assertEquals( $results.values.rows->filter ( x| $x.getFloat('Amount-Sum') == 10.0 )->size() , 1 );
    assertEquals( $results.values.rows->filter ( x| $x.getFloat('Amount-Sum') == 5.75 )->size() , 1 );
       

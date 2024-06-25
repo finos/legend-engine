@@ -35,17 +35,18 @@ import meta::core::runtime::*;
 import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::authentication::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::parseDate::testToSQLStringWithParseDateInQueryForPresto():Boolean[1]
 {
   let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2TimestampStr->parseDate()], ['timestamp']), testMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-  assertEquals('select date_parse("root".string2date,\'%Y-%m-%d %H:%i:%s\') as "timestamp" from dataTable as "root"',$prestoSql->sqlRemoveFormatting());
+  assertSameSQL('select date_parse("root".string2date,\'%Y-%m-%d %H:%i:%s\') as "timestamp" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::parseDate::testToSQLStringParseDateForPresto():Boolean[1]
 {
   let prestoSQL = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2TimestampFormat], ['timestamp']), testMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-  assertEquals('select date_parse("root".stringDateTimeFormat,\'%Y-%m-%d %H:%i:%s\') as "timestamp" from dataTable as "root"',$prestoSQL->sqlRemoveFormatting());
+  assertSameSQL('select date_parse("root".stringDateTimeFormat,\'%Y-%m-%d %H:%i:%s\') as "timestamp" from dataTable as "root"',$prestoSQL);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::concat::testToSQLStringConcatPresto():Boolean[1]
@@ -53,7 +54,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::co
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.concatResult], ['concat']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select concat("root".string1, "root".string2) as "concat" from dataTable as "root"',$prestoSql);
+   assertSameSQL('select concat("root".string1, "root".string2) as "concat" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::rtrim::testToSQLStringRtrimPresto():Boolean[1]
@@ -61,7 +62,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::rt
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.rtrimResult], ['rtrim']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select rtrim("root".string2) as "rtrim" from dataTable as "root"',$prestoSql);
+   assertSameSQL('select rtrim("root".string2) as "rtrim" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::ltrim::testToSQLStringLtrimPresto():Boolean[1]
@@ -69,7 +70,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::lt
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.ltrimResult], ['ltrim']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select ltrim("root".string2) as "ltrim" from dataTable as "root"',$prestoSql);
+   assertSameSQL('select ltrim("root".string2) as "ltrim" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::trim::testTriminNotSybaseASE():Boolean[1]{
@@ -78,7 +79,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::tr
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sPresto);
+   assertSameSQL('select trim("root".string2) as "trim" from dataTable as "root"',$sPresto);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::left::testToSQLStringLeftPresto():Boolean[1]
@@ -86,7 +87,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::le
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string1Left], ['left']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select substr("root".string1,1,2) as "left" from dataTable as "root"',$prestoSql);
+   assertSameSQL('select substr("root".string1,1,2) as "left" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::right::testToSQLStringRightPresto():Boolean[1]
@@ -94,7 +95,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::ri
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string1Right], ['right']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select substr("root".string1,-1,2) as "right" from dataTable as "root"',$prestoSql);
+   assertSameSQL('select substr("root".string1,-1,2) as "right" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::round::testToSQLStringRoundPresto():Boolean[1]
@@ -102,7 +103,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::ro
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.float1Round], ['round']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select round("root".float1, 0) as "round" from dataTable as "root"',$prestoSql);
+   assertSameSQL('select round("root".float1, 0) as "round" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::stddev::sample::testToSQLStringStdDevSamplePresto():Boolean[1]
@@ -110,7 +111,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::st
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.float1StdDevSample], ['stdDevSample']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select stddev_samp("root".int1) as "stdDevSample" from dataTable as "root"',$prestoSql);
+   assertSameSQL('select stddev_samp("root".int1) as "stdDevSample" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::atan2::testToSQLStringAtan2Presto():Boolean[1]
@@ -118,7 +119,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::at
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.floatATan2Result], ['atan2']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select atan2("root".float1,"root".int1) as "atan2" from dataTable as "root"',$prestoSql);
+   assertSameSQL('select atan2("root".float1,"root".int1) as "atan2" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::mod::testToSQLStringModPresto():Boolean[1]
@@ -126,7 +127,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::mo
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.floatModResult], ['mod']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select mod("root".int1,2) as "mod" from dataTable as "root"',$prestoSql);
+   assertSameSQL('select mod("root".int1,2) as "mod" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::stddev::population::testToSQLStringStdDevPopPresto():Boolean[1]
@@ -134,7 +135,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::st
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.float1StdDevPopulation], ['stdDevPopulation']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select stddev_pop("root".int1) as "stdDevPopulation" from dataTable as "root"',$prestoSql);
+   assertSameSQL('select stddev_pop("root".int1) as "stdDevPopulation" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::stringToFloat::testToSQLStringStringToFloatPresto():Boolean[1]
@@ -142,7 +143,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::st
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Float], ['string2Float']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast("root".string2float as double) as "string2Float" from dataTable as "root"',$prestoSql);
+   assertSameSQL('select cast("root".string2float as double) as "string2Float" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::toString::testToSQLStringToStringPresto():Boolean[1]
@@ -150,7 +151,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::to
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.int1String], ['toString']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast("root".int1 as varchar) as "toString" from dataTable as "root"',$prestoSql);
+   assertSameSQL('select cast("root".int1 as varchar) as "toString" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::parseInteger::testToSQLStringParseIntegerinPresto():Boolean[1]
@@ -158,7 +159,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::pa
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$prestoSql);
+   assertSameSQL('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::parseInteger::testToSQLStringDateDiffInPresto():Boolean[1]
@@ -169,7 +170,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::pa
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | dateDiff($da, $db, DurationUnit.DAYS)], ['dateDiff']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select date_diff(\'day\',Date(\'2017-03-01\'),Date(\'2017-04-01\')) as "dateDiff" from dataTable as "root"',$s);
+   assertSameSQL('select date_diff(\'day\',Date(\'2017-03-01\'),Date(\'2017-04-01\')) as "dateDiff" from dataTable as "root"',$s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::parseInteger::testToSQLStringConvertVarchar128InPrestoSQL():Boolean[1]
@@ -177,7 +178,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::pa
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertVarchar128], ['convertVarchar128']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast("root".int1 as VARCHAR(128)) as "convertVarchar128" from dataTable as "root"',$s);
+   assertSameSQL('select cast("root".int1 as VARCHAR(128)) as "convertVarchar128" from dataTable as "root"',$s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::stringToDate::testToSQLStringconvertToDateinPresto():Boolean[1]
@@ -187,7 +188,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::st
                                                        testMapping,
                                                        meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select date( date_parse("root".stringDateFormat,\'%Y-%m-%d\') ) as "convertToDate" from dataTable as "root"', $s);
+   assertSameSQL('select date( date_parse("root".stringDateFormat,\'%Y-%m-%d\') ) as "convertToDate" from dataTable as "root"', $s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::stringToDate::testToSQLStringconvertToDateinPrestoUserDefinedFormat():Boolean[1]
@@ -196,7 +197,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::st
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateUserDefinedFormat1], ['convertToDateUserDefinedFormat']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select date( date_parse("root".stringUserDefinedDateFormat,\'MMMYYYY\') ) as "convertToDateUserDefinedFormat" from dataTable as "root"', $s);
+   assertSameSQL('select date( date_parse("root".stringUserDefinedDateFormat,\'MMMYYYY\') ) as "convertToDateUserDefinedFormat" from dataTable as "root"', $s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::stringToDate::testToSQLStringconvertToDateTimeinPresto():Boolean[1]
@@ -204,7 +205,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::st
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateTime], ['convertToDateTime']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select date_parse("root".stringDateTimeFormat,\'yyyy-MM-dd hh:mm:ss.mmm\') as "convertToDateTime" from dataTable as "root"',$s);
+   assertSameSQL('select date_parse("root".stringDateTimeFormat,\'yyyy-MM-dd hh:mm:ss.mmm\') as "convertToDateTime" from dataTable as "root"',$s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::indexOf::testToSQLStringIndexOfinPresto():Boolean[1]
@@ -212,7 +213,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::in
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.indexOfResult], ['indexOf']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-    assertEquals('select strpos(\'String Random\', \'o\') as "indexOf" from dataTable as "root"',$s);
+    assertSameSQL('select strpos(\'String Random\', \'o\') as "indexOf" from dataTable as "root"',$s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::hour::testToSQLStringHourinPresto():Boolean[1]
@@ -220,7 +221,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::ho
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.hour], ['hour']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-    assertEquals('select hour("root".dateTime) as "hour" from dataTable as "root"',$s);
+    assertSameSQL('select hour("root".dateTime) as "hour" from dataTable as "root"',$s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::month::testToSQLStringMonthNumberinPresto():Boolean[1]
@@ -228,7 +229,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::mo
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.month], ['month']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-    assertEquals('select month("root".dateTime) as "month" from dataTable as "root"',$s);
+    assertSameSQL('select month("root".dateTime) as "month" from dataTable as "root"',$s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::week::testToSQLStringWeekOfYearinPresto():Boolean[1]
@@ -236,7 +237,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::we
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.week], ['week']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-    assertEquals('select week("root".dateTime) as "week" from dataTable as "root"',$s);
+    assertSameSQL('select week("root".dateTime) as "week" from dataTable as "root"',$s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::date::testToSQLStringDatePartinPresto():Boolean[1]
@@ -244,7 +245,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::da
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.date], ['date']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-    assertEquals('select Date("root".dateTime) as "date" from dataTable as "root"',$s);
+    assertSameSQL('select Date("root".dateTime) as "date" from dataTable as "root"',$s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::testAdjustDateTranslationInMappingAndQuery():Boolean[1]

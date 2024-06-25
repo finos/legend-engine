@@ -23,6 +23,7 @@ import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::relational::functions::sqlstring::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::query::snowflake::testPaginatedByVendor():Boolean[1]
 {
@@ -31,19 +32,19 @@ function <<test.Test>> meta::relational::tests::query::snowflake::testPaginatedB
    let f1 = {|Person.all()->sortBy(#/Person/firstName!fn#)->paginated(1,4);};
 
    let snowflake1 = toSQLString($f1, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME limit ${4?number} offset ${((1?number - 1?number)?number * 4?number)}', $snowflake1);
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME limit ${4?number} offset ${((1?number - 1?number)?number * 4?number)}', $snowflake1);
 
    // Second type of function - tds sort
 
    let f2 = {|Person.all()->project(p|$p.firstName, 'firstName')->sort(asc('firstName'))->paginated(3, 5);};
 
    let snowflake2 = toSQLString($f2, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" order by "firstName" limit ${5?number} offset ${((3?number - 1?number)?number * 5?number)}', $snowflake2);
+   assertSameSQL('select "root".FIRSTNAME as "firstName" from personTable as "root" order by "firstName" limit ${5?number} offset ${((3?number - 1?number)?number * 5?number)}', $snowflake2);
 
    // Third type of function - subQuery
 
    let f3 = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])->slice(0,50)->restrict('firstName')->sort(asc('firstName'))->paginated(2, 3);};
 
    let snowflake3 = toSQLString($f3, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "firstName" as "firstName" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" limit 50) as "subselect" order by "firstName" limit ${3?number} offset ${((2?number - 1?number)?number * 3?number)}', $snowflake3);
+   assertSameSQL('select "firstName" as "firstName" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" limit 50) as "subselect" order by "firstName" limit ${3?number} offset ${((2?number - 1?number)?number * 3?number)}', $snowflake3);
 }

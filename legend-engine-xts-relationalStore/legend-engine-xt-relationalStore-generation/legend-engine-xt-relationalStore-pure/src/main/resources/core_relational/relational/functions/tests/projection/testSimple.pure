@@ -19,6 +19,7 @@ import meta::external::store::relational::tests::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::path::*;
 import meta::relational::tests::projection::simple::*;
+import meta::relational::functions::asserts::*;
 
 function <<test.BeforePackage>> meta::relational::tests::projection::setUp():Boolean[1]
 {
@@ -31,7 +32,7 @@ function <<test.Test>> meta::relational::tests::projection::simple::testAllOneSi
    let result = execute(|Person.all()->project(p|$p.firstName, 'firstName'), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
-   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root"', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "firstName" from personTable as "root"', $result);
 }
 
 function meta::relational::tests::projection::simple::getCols():ColumnSpecification<Person>[*]
@@ -47,7 +48,7 @@ function <<test.Test>> meta::relational::tests::projection::simple::testAllOneSi
    let result = execute(|Person.all()->project(meta::relational::tests::projection::simple::getCols()), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Allen,Anthony,David,Fabrice,Harris,Hill,Hill,John,John,Johnson,Oliver,Peter,Roberts,Smith', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
-   assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root"', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::projection::simple::testAllOneSimplePropertyUsingVariable():Boolean[1]
@@ -56,7 +57,7 @@ function <<test.Test>> meta::relational::tests::projection::simple::testAllOneSi
    let result = execute(|Person.all()->project($p), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
-   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root"', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "firstName" from personTable as "root"', $result);
 }
 
 
@@ -67,7 +68,7 @@ function <<test.Test>> meta::relational::tests::projection::simple::testAllOneSi
    let result = execute(|Person.all()->project($p, $n), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
-   assertEquals('select "root".FIRSTNAME as "First Name" from personTable as "root"', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "First Name" from personTable as "root"', $result);
 }
 
 // Alloy exclusion reason: 10. Tricky usage of variables
@@ -81,7 +82,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::projection::s
          }, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
-   assertEquals('select "root".FIRSTNAME as "First Name" from personTable as "root"', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "First Name" from personTable as "root"', $result);
 }
 
 function <<test.ToFix>> meta::relational::tests::projection::simple::testAllOneSimplePropertyUsingVariables3():Boolean[1]
@@ -93,7 +94,7 @@ function <<test.ToFix>> meta::relational::tests::projection::simple::testAllOneS
          }, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
-   assertEquals('select "root".FIRSTNAME as "First Name" from personTable as "root"', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "First Name" from personTable as "root"', $result);
 }
 
 
@@ -105,7 +106,7 @@ function <<test.Test>> meta::relational::tests::projection::simple::testAllOneSi
    let result = runQuery($p);
    assertSize($result.values.rows, 7 );
    assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
-   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root"', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "firstName" from personTable as "root"', $result);
 }
 
 function meta::relational::tests::projection::simple::runQuery(path:Path<Person, String|1>[1]):Result<TabularDataSet|1>[1]
@@ -118,7 +119,7 @@ function <<test.Test>> meta::relational::tests::projection::simple::testAllTwoSi
    let result = execute(|Person.all()->project([p|$p.firstName, p|$p.lastName], ['firstName', 'lastName']), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertEquals('Allen,Anthony,David,Fabrice,Harris,Hill,Hill,John,John,Johnson,Oliver,Peter,Roberts,Smith', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
-   assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root"', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root"', $result);
 }
 
 
