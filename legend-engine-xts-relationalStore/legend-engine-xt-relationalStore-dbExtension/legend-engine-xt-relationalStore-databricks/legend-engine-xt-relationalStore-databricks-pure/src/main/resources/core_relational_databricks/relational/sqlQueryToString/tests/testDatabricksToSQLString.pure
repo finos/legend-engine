@@ -27,11 +27,11 @@ import meta::external::store::relational::runtime::*;
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringDatabricksSchemaNameShouldContainCatalogName():Boolean[1]
 {
    let s = toSQLString(|Person.all(), meta::relational::tests::simpleRelationalMappingPersonForDatabricksCatalog, meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.LASTNAME as `lastName`, `root`.AGE as `age` from catalog.schema.personTable as `root`', $s);
+   assertEquals('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.LASTNAME as `lastName`, `root`.AGE as `age` from catalog.schema.personTable as `root`', $s);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringDatabricksSchemaNameShouldNotContainCatalogName():Boolean[1]
 {
    let s = toSQLString(|Person.all(), meta::relational::tests::simpleRelationalMappingPersonForDatabricks, meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.LASTNAME as `lastName`, `root`.AGE as `age` from schema.personTable as `root`', $s);
+   assertEquals('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.LASTNAME as `lastName`, `root`.AGE as `age` from schema.personTable as `root`', $s);
 }

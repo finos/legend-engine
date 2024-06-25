@@ -18,24 +18,23 @@ import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::relational::functions::sqlstring::*;
-import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::query::function::presto::testSliceByVendor():Boolean[1]
 {
    let f1 = {|Person.all()->slice(3, 5);};
 
    let s7 = toSQLString($f1, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 3 rows fetch next 2 rows only', $s7);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 3 rows fetch next 2 rows only', $s7);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::presto::testTakeByVendor():Boolean[1]
 {
    let s5 = toSQLString(|Person.all()->take(10);, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" limit 10', $s5);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" limit 10', $s5);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::presto::testDropByVendor():Boolean[1]
 {
    let s = toSQLString(|Person.all()->drop(10);, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 10', $s);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 10', $s);
 }

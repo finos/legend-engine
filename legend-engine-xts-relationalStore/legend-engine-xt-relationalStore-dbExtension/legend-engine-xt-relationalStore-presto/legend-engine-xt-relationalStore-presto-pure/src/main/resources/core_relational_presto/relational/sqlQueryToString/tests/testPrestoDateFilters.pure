@@ -17,14 +17,13 @@ import meta::relational::mapping::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
 import meta::relational::functions::sqlstring::*;
-import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::projection::presto::filter::dates::today::testToday():Boolean[1]
 {
    let query = {|Trade.all()->filter(d | $d.date == today())->project(x | $x.date, 'date')};
 
    let prestoSql = toSQLString($query, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = current_date', $prestoSql);
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = current_date', $prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::projection::presto::filter::dates::now::testNow():Boolean[1]
@@ -32,7 +31,7 @@ function <<test.Test>> meta::relational::tests::projection::presto::filter::date
    let query = {|Trade.all()->filter(d | $d.date == now())->project(x | $x.date, 'date')};
 
    let prestoSql = toSQLString($query, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = current_timestamp', $prestoSql);
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = current_timestamp', $prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::projection::presto::filter::dates::recent::testMostRecentDayOfWeek():Boolean[1]
@@ -40,5 +39,5 @@ function <<test.Test>> meta::relational::tests::projection::presto::filter::date
    let query = {|Trade.all()->filter(d | $d.date == mostRecentDayOfWeek(DayOfWeek.Monday))->project(x | $x.date, 'date')};
 
    let prestoSql = toSQLString($query, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = date_add(\'day\', case when 1 - day_of_week(current_date) > 0 then 1 - day_of_week(current_date) - 7 else 1 - day_of_week(current_date) end, current_date)', $prestoSql);
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = date_add(\'day\', case when 1 - day_of_week(current_date) > 0 then 1 - day_of_week(current_date) - 7 else 1 - day_of_week(current_date) end, current_date)', $prestoSql);
 }

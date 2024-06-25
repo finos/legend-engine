@@ -19,14 +19,13 @@ import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::pure::executionPlan::toString::*;
-import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::query::sort::testSortSimple():Boolean[1]
 {
    let result = execute(|Person.all()->sortBy(#/Person/lastName#), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 12);
    assertEquals(['Allen', 'Firm B', 'Harris', 'Hill', 'Hill', 'Johnson', 'New York', 'Roberts', 'Smith', 'Smith', 'York', 'no Firm'], $result.values.lastName);
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".LASTNAME as "o_lastName" from personTable as "root" order by "root".LASTNAME', $result);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".LASTNAME as "o_lastName" from personTable as "root" order by "root".LASTNAME', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaSimple():Boolean[1]
@@ -34,7 +33,7 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaSim
    let result = execute(|Person.all()->sortBy(p | $p.lastName), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 12);
    assertEquals(['Allen', 'Firm B', 'Harris', 'Hill', 'Hill', 'Johnson', 'New York', 'Roberts', 'Smith', 'Smith', 'York', 'no Firm'], $result.values.lastName);
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" order by "root".LASTNAME', $result);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" order by "root".LASTNAME', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaMultiple():Boolean[1]
@@ -42,7 +41,7 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaMul
    let result = execute(|Person.all()->sortBy(p | $p.lastName)->sortBy(p | $p.firstName), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 12);
    assertEquals(['Anthony', 'David', 'Don', 'Elena', 'Fabrice', 'John', 'John', 'New', 'No address', 'No firm', 'Oliver', 'Peter'], $result.values.firstName);
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" order by "root".FIRSTNAME', $result);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" order by "root".FIRSTNAME', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaColumnAddition():Boolean[1]
@@ -50,7 +49,7 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaCol
    let result = execute(|Person.all()->sortBy(p | $p.lastName + '|' + $p.firstName), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 12);
    assertEquals(['Allen|Anthony', 'Firm B|Elena', 'Harris|David', 'Hill|John', 'Hill|Oliver', 'Johnson|John', 'New York|Don', 'Roberts|Fabrice', 'Smith|No address', 'Smith|Peter', 'York|New', 'no Firm|No firm'], zip($result.values.lastName, $result.values.firstName)->map(pair | $pair.first + '|' + $pair.second));
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" order by concat("root".LASTNAME, \'|\', "root".FIRSTNAME)', $result);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" order by concat("root".LASTNAME, \'|\', "root".FIRSTNAME)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaWithIfElseValue():Boolean[1]
@@ -59,7 +58,7 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaWit
    assertSize($result.values, 3);
    assertEquals(['John Hill', 'Oliver Hill', 'John Johnson'], zip($result.values.firstName, $result.values.lastName)->map(p| $p.first + ' ' + $p.second));
    assertEquals([0, 10, 20], zip($result.values.firstName, $result.values.lastName)->map(pair | if($pair.first == 'John' && $pair.second == 'Hill', |0, |if($pair.second == 'Hill', |10, |if($pair.first == 'John', |20, |30))) ));
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where ("root".LASTNAME = \'Hill\' or "root".FIRSTNAME = \'John\') order by case when ("root".LASTNAME = \'Hill\' and "root".FIRSTNAME = \'John\') then 0 else case when "root".LASTNAME = \'Hill\' then 10 else case when "root".FIRSTNAME = \'John\' then 20 else 30 end end end', $result);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where ("root".LASTNAME = \'Hill\' or "root".FIRSTNAME = \'John\') order by case when ("root".LASTNAME = \'Hill\' and "root".FIRSTNAME = \'John\') then 0 else case when "root".LASTNAME = \'Hill\' then 10 else case when "root".FIRSTNAME = \'John\' then 20 else 30 end end end', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaWIthIfElseColumn():Boolean[1]
@@ -67,7 +66,7 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaWIt
    let result = execute(|Person.all()->filter(p|$p.lastName == 'Hill' || $p.firstName == 'John')->sortBy(p | if($p.lastName == 'Hill', |$p.firstName, |$p.lastName)), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 3);
    assertEquals(['John', 'Johnson', 'Oliver'], zip($result.values.firstName, $result.values.lastName)->map(pair | if($pair.second == 'Hill', | $pair.first, |$pair.second)));
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where ("root".LASTNAME = \'Hill\' or "root".FIRSTNAME = \'John\') order by case when "root".LASTNAME = \'Hill\' then "root".FIRSTNAME else "root".LASTNAME end', $result);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where ("root".LASTNAME = \'Hill\' or "root".FIRSTNAME = \'John\') order by case when "root".LASTNAME = \'Hill\' then "root".FIRSTNAME else "root".LASTNAME end', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaWithComplexExpr():Boolean[1]
@@ -76,7 +75,7 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaWit
    assertSize($result.values, 7);
    assertEquals([7, 8, 10, 11, 12, 14, 15], zip($result.values.firstName, $result.values.lastName)->map(pair | $pair.first->length() + $pair.second->length()));
    assertEquals(['York', 'John', 'Smith', 'Johnson', 'Allen', 'Roberts', 'Smith'], zip($result.values.firstName, $result.values.lastName)->map(pair | if($pair.second == 'Hill', | $pair.first, |$pair.second)));
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where (concat("root".FIRSTNAME, \' \', "root".LASTNAME) not in (\'Oliver Hill\', \'David Harris\', \'Elena Firm B\', \'Don New York\', \'No firm no Firm\') OR concat("root".FIRSTNAME, \' \', "root".LASTNAME) is null) order by (char_length("root".FIRSTNAME) + char_length("root".LASTNAME))', $result);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where (concat("root".FIRSTNAME, \' \', "root".LASTNAME) not in (\'Oliver Hill\', \'David Harris\', \'Elena Firm B\', \'Don New York\', \'No firm no Firm\') OR concat("root".FIRSTNAME, \' \', "root".LASTNAME) is null) order by (char_length("root".FIRSTNAME) + char_length("root".LASTNAME))', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaDeepOptional():Boolean[1]
@@ -84,7 +83,7 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaDee
    let result = execute(|Person.all()->sortBy(p | $p.address->toOne().name + '|' + $p.firstName + '|' + $p.lastName), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 12);
    assertEquals(['Hoboken|Peter|Smith', 'Hong Kong|Oliver|Hill', 'New York|Anthony|Allen', 'New York|David|Harris', 'New York|Don|New York', 'New York|Elena|Firm B', 'New York|John|Hill', 'New York|John|Johnson', 'New York|New|York', 'New York|No firm|no Firm', 'San Fransisco|Fabrice|Roberts'], zip($result.values.address.name, zip($result.values.firstName, $result.values.lastName))->map(pair | $pair.first + '|' + $pair.second.first + '|' + $pair.second.second));
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) order by concat("addresstable_0".NAME, \'|\', "root".FIRSTNAME, \'|\', "root".LASTNAME)', $result);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) order by concat("addresstable_0".NAME, \'|\', "root".FIRSTNAME, \'|\', "root".LASTNAME)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test, test.AlloyOnly>> {meta::pure::executionPlan::profiles::serverVersion.start='vX_X_X'} meta::relational::tests::query::sort::testSortByLambdaAndGraphFetchDeep():Boolean[1]

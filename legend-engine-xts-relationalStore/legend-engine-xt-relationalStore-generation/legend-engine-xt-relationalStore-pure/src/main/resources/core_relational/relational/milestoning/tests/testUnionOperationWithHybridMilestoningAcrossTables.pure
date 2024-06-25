@@ -95,13 +95,13 @@ function <<access.private>> meta::relational::tests::milestoning::union::testHyb
 function <<test.Test>> meta::relational::tests::milestoning::union::testMilestoningWithUnionOnView():Boolean[1]
 {
   let result = execute(|BiTemporalProduct.all(%2015-8-25, %2018-8-26)->project(p|$p.classification.type, 'classification type'), meta::relational::tests::milestoning::UnionOnViewWithMilestoningMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-  assertTdsFromCsv('classification type\nSTOCK\n\n', $result.values->cast(@TabularDataSet));
+  assertEquals('classification type\nSTOCK\n\n', $result.values->cast(@TabularDataSet)->meta::relational::tests::csv::toCSV());
 }
 
 function <<test.Test>> meta::relational::tests::milestoning::union::testMilestoningWithUnionOnViewWithAllVersions():Boolean[1]
 {
   let result = execute(|BiTemporalProduct.all(%2015-8-25, %2018-8-26)->project(p|$p.classificationAllVersions.type, 'classification type'), meta::relational::tests::milestoning::UnionOnViewWithMilestoningMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-  assertTdsFromCsv('classification type\nSTOCK\nSTOCK\nSTOCK\nSTOCK\nOPTION\n', $result.values->cast(@TabularDataSet));
+  assertEquals('classification type\nSTOCK\nSTOCK\nSTOCK\nSTOCK\nOPTION\n', $result.values->cast(@TabularDataSet)->meta::relational::tests::csv::toCSV());
 }
 
 function <<test.BeforePackage>> meta::relational::tests::milestoning::union::setUp():Runtime[1]

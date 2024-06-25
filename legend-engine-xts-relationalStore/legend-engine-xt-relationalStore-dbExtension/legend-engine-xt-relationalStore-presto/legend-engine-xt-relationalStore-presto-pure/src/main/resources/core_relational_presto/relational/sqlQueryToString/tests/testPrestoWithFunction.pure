@@ -28,5 +28,5 @@ function <<test.Test>> meta::relational::tests::query::function::presto::testFil
    let fn = {|Person.all()->filter(p | $p.firm->toOne().legalName->matches('[A-Za-z0-9]*'))};
 
    let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmTable_d#2_dy0_d#3_d_m1" on ("firmTable_d#2_dy0_d#3_d_m1".ID = "root".FIRMID) where REGEXP_LIKE("firmTable_d#2_dy0_d#3_d_m1".LEGALNAME, \'^[A-Za-z0-9]*$\')',$s);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmTable_d#2_dy0_d#3_d_m1" on ("firmTable_d#2_dy0_d#3_d_m1".ID = "root".FIRMID) where REGEXP_LIKE("firmTable_d#2_dy0_d#3_d_m1".LEGALNAME, \'^[A-Za-z0-9]*$\')',$s);
 }

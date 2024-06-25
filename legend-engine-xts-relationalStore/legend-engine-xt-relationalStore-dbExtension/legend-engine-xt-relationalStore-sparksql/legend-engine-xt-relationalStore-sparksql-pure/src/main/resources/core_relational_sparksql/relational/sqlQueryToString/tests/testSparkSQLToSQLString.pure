@@ -33,13 +33,13 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sparkSQL::
                                                   ],
                                                   ['a','b','c','d', 'e'])->take(0),
                              simpleRelationalMapping, DatabaseType.SparkSQL, meta::relational::extension::relationalExtensions());
-  assertSameSQL('select top 0 \'String\' as "a", convert(DATE, \'2016-03-01\', 121) as "b", convert(DATETIME, \'2016-03-01 10:18:18.976\', 121) as "c", 1 as "d", 1.1 as "e" from personTable as "root"', $result);
+  assertEquals('select top 0 \'String\' as "a", convert(DATE, \'2016-03-01\', 121) as "b", convert(DATETIME, \'2016-03-01 10:18:18.976\', 121) as "c", 1 as "d", 1.1 as "e" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sparkSQL::testToSQLStringWithLength():Boolean[1]
 {
   [DatabaseType.SparkSQL]->map(db|
      let s = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, $db, meta::relational::extension::relationalExtensions());
-     assertSameSQL('select char_length("root".FIRSTNAME) as "nameLength" from personTable as "root"', $s);
+     assertEquals('select char_length("root".FIRSTNAME) as "nameLength" from personTable as "root"', $s);
   );
 }

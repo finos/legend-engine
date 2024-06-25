@@ -21,7 +21,6 @@ import meta::relational::functions::sqlstring::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
-import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::projection::snowflake::testProjectWindowColumnSnowflake():Boolean[1]
 {
@@ -33,5 +32,5 @@ function <<test.Test>> meta::relational::tests::projection::snowflake::testProje
          ])
    };
    let result = toSQLString($func, simpleRelationalMappingInc, DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".LASTNAME as "lastName", avg(1.0 * "root".AGE) OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "ageAverageWindow" from personTable as "root"', $result);
+   assertEquals('select "root".LASTNAME as "lastName", avg(1.0 * "root".AGE) OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "ageAverageWindow" from personTable as "root"', $result);
 }

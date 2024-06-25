@@ -16,18 +16,17 @@ import meta::relational::mapping::*;
 import meta::relational::functions::sqlstring::*;
 import meta::relational::tests::mapping::sqlFunction::model::domain::*;
 import meta::relational::tests::mapping::sqlFunction::model::mapping::*;
-import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::parseDate::testToSQLStringWithParseDateInQuery_MemSQL():Boolean[1]
 {
   let memSQLSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2TimestampStr->parseDate()], ['timestamp']), testMapping, meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-  assertSameSQL('select to_timestamp(`root`.string2date,\'YYYY-MM-DD HH24:MI:SS\') as `timestamp` from dataTable as `root`',$memSQLSql);
+  assertEquals('select to_timestamp(`root`.string2date,\'YYYY-MM-DD HH24:MI:SS\') as `timestamp` from dataTable as `root`',$memSQLSql->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::parseDate::testToSQLStringParseDate_MemSQL():Boolean[1]
 {
   let trialSQL = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2TimestampFormat], ['timestamp']), testMapping, meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-  assertSameSQL('select to_timestamp(`root`.stringDateTimeFormat,\'YYYY-MM-DD HH24:MI:SS\') as `timestamp` from dataTable as `root`',$trialSQL);
+  assertEquals('select to_timestamp(`root`.stringDateTimeFormat,\'YYYY-MM-DD HH24:MI:SS\') as `timestamp` from dataTable as `root`',$trialSQL->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::rtrim::testToSQLStringRtrim_MemSQL():Boolean[1]
@@ -35,7 +34,7 @@ function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::rt
    let memSQLSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.rtrimResult], ['rtrim']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select rtrim(`root`.string2) as `rtrim` from dataTable as `root`',$memSQLSql);
+   assertEquals('select rtrim(`root`.string2) as `rtrim` from dataTable as `root`',$memSQLSql);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::trim::testTrim_MemSQL():Boolean[1]
@@ -44,7 +43,7 @@ function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::tr
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
 
-   assertSameSQL('select trim(`root`.string2) as `trim` from dataTable as `root`',$sMemsql);
+   assertEquals('select trim(`root`.string2) as `trim` from dataTable as `root`',$sMemsql);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::stringToFloat::testToSQLStringStringToFloat_MemSQL():Boolean[1]
@@ -52,7 +51,7 @@ function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::st
    let memSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Float], ['string2Float']),
                          testMapping,
                          meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select cast(`root`.string2float as decimal) as `string2Float` from dataTable as `root`',$memSql);
+   assertEquals('select cast(`root`.string2float as decimal) as `string2Float` from dataTable as `root`',$memSql);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::toString::testToSQLStringToString_MemSQL():Boolean[1]
@@ -60,7 +59,7 @@ function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::to
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.int1String], ['toString']),
                                                  testMapping,
                                                  meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-    assertSameSQL('select cast(`root`.int1 as char) as `toString` from dataTable as `root`',$s);
+    assertEquals('select cast(`root`.int1 as char) as `toString` from dataTable as `root`',$s);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::parseInteger::testToSQLStringParseInteger_MemSQL():Boolean[1]
@@ -68,7 +67,7 @@ function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::pa
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select cast(`root`.string2Integer as signed integer) as `parseInteger` from dataTable as `root`',$s);
+   assertEquals('select cast(`root`.string2Integer as signed integer) as `parseInteger` from dataTable as `root`',$s);
 
 }
 
@@ -80,7 +79,7 @@ function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::pa
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | dateDiff($da, $db, DurationUnit.DAYS)], ['dateDiff']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select (timestampdiff(DAY, \'2017-03-01\' , \'2017-04-01\')) as `dateDiff` from dataTable as `root`',$s);
+   assertEquals('select (timestampdiff(DAY, \'2017-03-01\' , \'2017-04-01\')) as `dateDiff` from dataTable as `root`',$s);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::parseInteger::testToSQLStringDateDiffInSeconds_MemSQL():Boolean[1]
@@ -91,7 +90,7 @@ function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::pa
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.MemSQL,
                                                 meta::relational::extension::relationalExtensions());
-   assertSameSQL('select (timestampdiff(SECOND, \'2017-03-01 19:09:20\' , \'2017-03-01 20:08:08\')) as `dateDiff` from dataTable as `root`',$s);
+   assertEquals('select (timestampdiff(SECOND, \'2017-03-01 19:09:20\' , \'2017-03-01 20:08:08\')) as `dateDiff` from dataTable as `root`',$s);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::parseInteger::testToSQLStringConvertVarchar128_MemSQL():Boolean[1]
@@ -101,7 +100,7 @@ function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::pa
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertVarchar128], ['convertVarchar128']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select convert(`root`.int1, CHAR) as `convertVarchar128` from dataTable as `root`',$s);
+   assertEquals('select convert(`root`.int1, CHAR) as `convertVarchar128` from dataTable as `root`',$s);
 
 }
 
@@ -112,7 +111,7 @@ function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::st
                                                        testMapping,
                                                        meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
 
-   assertSameSQL('select cast( to_date(`root`.stringDateFormat,\'YYYY-MM-DD\') as date) as `convertToDate` from dataTable as `root`', $s);
+   assertEquals('select cast( to_date(`root`.stringDateFormat,\'YYYY-MM-DD\') as date) as `convertToDate` from dataTable as `root`', $s);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::stringToDate::testToSQLStringconvertToDateUserDefinedFormat_MemSQL():Boolean[1]
@@ -121,7 +120,7 @@ function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::st
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateUserDefinedFormat1], ['convertToDateUserDefinedFormat']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select cast( to_date(`root`.stringUserDefinedDateFormat,\'MMMYYYY\') as date) as `convertToDateUserDefinedFormat` from dataTable as `root`', $s);
+   assertEquals('select cast( to_date(`root`.stringUserDefinedDateFormat,\'MMMYYYY\') as date) as `convertToDateUserDefinedFormat` from dataTable as `root`', $s);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::indexOf::testToSQLStringIndexOf_MemSQL():Boolean[1]
@@ -129,7 +128,7 @@ function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::in
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.indexOfResult], ['indexOf']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-    assertSameSQL('select LOCATE(\'o\', \'String Random\') as `indexOf` from dataTable as `root`',$s);
+    assertEquals('select LOCATE(\'o\', \'String Random\') as `indexOf` from dataTable as `root`',$s);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::position::testToSQLStringPosition_MemSQL():Boolean[1]
@@ -137,7 +136,7 @@ function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::po
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.indexOfResult], ['position']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-    assertSameSQL('select LOCATE(\'o\', \'String Random\') as `position` from dataTable as `root`',$s);
+    assertEquals('select LOCATE(\'o\', \'String Random\') as `position` from dataTable as `root`',$s);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::base64::testBase64_MemSQL():Boolean[1]
@@ -146,5 +145,5 @@ function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::ba
       |SqlFunctionDemo.all()->project([s | $s.encodeBase64Result, s | $s.decodeBase64Result], ['res1', 'res2']),
       testMapping,
       meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-    assertSameSQL('select cast(to_base64(`root`.alphaNumericString) as char) as `res1`, cast(from_base64(cast(to_base64(`root`.alphaNumericString) as char)) as char) as `res2` from dataTable as `root`', $s);
+    assertEquals('select cast(to_base64(`root`.alphaNumericString) as char) as `res1`, cast(from_base64(cast(to_base64(`root`.alphaNumericString) as char)) as char) as `res2` from dataTable as `root`', $s);
 }
