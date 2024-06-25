@@ -63,6 +63,7 @@ import org.finos.legend.engine.external.shared.format.generations.loaders.Schema
 import org.finos.legend.engine.external.shared.format.model.api.ExternalFormats;
 import org.finos.legend.engine.functionActivator.api.FunctionActivatorAPI;
 import org.finos.legend.engine.generation.artifact.api.ArtifactGenerationExtensionApi;
+import org.finos.legend.engine.language.dataquality.api.DataQualityExecute;
 import org.finos.legend.engine.language.hostedService.api.HostedServiceService;
 import org.finos.legend.engine.language.memsql.api.MemSqlFunctionService;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
@@ -415,6 +416,10 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new DataSpaceAnalytics(modelManager, generatorExtensions, entitlementServiceExtensions));
         environment.jersey().register(new LineageAnalytics(modelManager));
         environment.jersey().register(new StoreEntitlementAnalytics(modelManager, entitlementServiceExtensions));
+
+        // DataQuality
+        environment.jersey().register(new DataQualityExecute(modelManager, planExecutor, routerExtensions, generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), serverConfiguration.metadataserver, null));
+
 
         // Testable
         environment.jersey().register(new TestableApi(modelManager));

@@ -87,6 +87,7 @@
         <module>legend-engine-xts-data-space</module>
         <module>legend-engine-xts-changetoken</module>
         <module>legend-engine-xts-generation</module>
+        <module>legend-engine-xts-dataquality</module>
 
         <!-- Translator -->
         <module>legend-engine-xts-openapi</module>

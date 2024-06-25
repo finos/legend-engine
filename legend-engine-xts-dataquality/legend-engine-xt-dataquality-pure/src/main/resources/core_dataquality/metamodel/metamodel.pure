@@ -1,0 +1,48 @@
+import meta::pure::metamodel::dataSpace::*;
+import meta::pure::graphFetch::*;
+import meta::pure::metamodel::constraint::*;
+import meta::core::runtime::*;
+
+
+
+Class meta::external::dataquality::DataQualityRootGraphFetchTree<T> extends RootGraphFetchTree<T>
+{
+   constraints: Constraint[*]; 
+   
+}
+
+Class meta::external::dataquality::DataQualityPropertyGraphFetchTree extends PropertyGraphFetchTree
+{
+  constraints: Constraint[*];
+}
+
+Class meta::external::dataquality::DataQuality<T> extends PackageableElement
+{
+  context: meta::external::dataquality::DataQualityExecutionContext[1];
+  validationTree: meta::external::dataquality::DataQualityRootGraphFetchTree<T>[1];
+  filter : LambdaFunction<{T[1]->Boolean[1]}>[0..1]; //typed params
+}
+
+Class meta::external::dataquality::DataQualityExecutionContext
+{
+}
+
+Class meta::external::dataquality::MappingAndRuntimeDataQualityExecutionContext extends meta::external::dataquality::DataQualityExecutionContext
+{
+  mapping: meta::pure::mapping::Mapping[1];
+  runtime: meta::core::runtime::Runtime[1];
+}
+
+Class meta::external::dataquality::DataSpaceDataQualityExecutionContext extends meta::external::dataquality::DataQualityExecutionContext
+{
+  dataSpace: DataSpace[1];
+  contextName: String[1];
+}
+
+Class meta::external::dataquality::DataQualityRule
+{
+  constraintName: String[1];
+  constraintType : String[1];
+  constraintGrammar: String[1];
+  propertyPath: String[1];
+}
