@@ -49,7 +49,7 @@ public class SnowflakeAppGenerator
     public static SnowflakeAppArtifact generateArtifact(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, boolean createStatementOnly, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         String sqlFunctionExpression = core_snowflakeapp_generation_generation.Root_meta_external_function_activator_snowflakeApp_generation_generateArtifact_SnowflakeApp_1__Extension_MANY__String_1_(activator, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
-        String inputParamStub = core_snowflakeapp_generation_generation.Root_meta_external_function_activator_snowflakeApp_generation_generateInputParamsStub_Function_1__String_1_(activator._function(), pureModel.getExecutionSupport());
+        String inputParamStub = core_snowflakeapp_generation_generation.Root_meta_external_function_activator_snowflakeApp_generation_generateInputParamsStub_Function_1__Boolean_1__String_1_(activator._function(), false, pureModel.getExecutionSupport());
         RelationalDatabaseConnection connection;
         AlloySDLC sdlc = null;
         if (((PureModelContextData)inputModel).getOrigin() != null)

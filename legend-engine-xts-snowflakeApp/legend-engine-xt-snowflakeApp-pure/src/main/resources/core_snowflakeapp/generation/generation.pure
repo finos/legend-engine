@@ -16,7 +16,7 @@ function meta::external::function::activator::snowflakeApp::generation::generate
 
 function  meta::external::function::activator::snowflakeApp::generation::generateArtifact(s: meta::external::function::activator::snowflakeApp::SnowflakeApp[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
-  let inputParamsStub = generateInputParamsStub($s.function);
+  let inputParamsStub = generateInputParamsStub($s.function, true);
 
   let context = ^meta::external::function::activator::snowflakeApp::SnowFlakeAppExecutionContext(postProcessor = meta::relational::postProcessor::ReplaceFreeMarkerWithTableFunctionParamHolder_SQLQuery_1__PostProcessorResult_1_);
   let contextWithEnumPushDown = $context->meta::pure::executionPlan::featureFlag::addFlagToContext(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM);  
@@ -39,13 +39,13 @@ function  meta::external::function::activator::snowflakeApp::generation::generat
                       ) ->joinStrings(',');
 }
 
-function  meta::external::function::activator::snowflakeApp::generation::generateInputParamsStub(f:Function<Any>[1]):String[1]
+function  meta::external::function::activator::snowflakeApp::generation::generateInputParamsStub(f:Function<Any>[1], includeParamName:Boolean[1]):String[1]
 {  
   let params = $f->functionType().parameters->evaluateAndDeactivate();   
   assertEmpty($params->filter(p | $p.multiplicity != PureOne), 'not implemented, only multiplicity PureOne for snowflake app params is supported: ' + $params->filter(p | $p.multiplicity != PureOne)->map(p|$p.name)->joinStrings(', '));
   let typeMap = PureTypeToSnowflakeTypeMap();
   
-  '(' + $params->map(p|'"' + $p.name + '" ' + if($p.genericType.rawType->toOne()->instanceOf(Enumeration), | 'VARCHAR', | $typeMap->get($p.genericType.rawType->toOne())->toOne('Relational type missing for type: ' + $p.genericType.rawType->toOne()->toString()))
+  '(' + $params->map(p|if($includeParamName,|'"' + $p.name + '" ',|'') + if($p.genericType.rawType->toOne()->instanceOf(Enumeration), | 'VARCHAR', | $typeMap->get($p.genericType.rawType->toOne())->toOne('Relational type missing for type: ' + $p.genericType.rawType->toOne()->toString()))
 )->joinStrings(',') + ')';    
 }
 
