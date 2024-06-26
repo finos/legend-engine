@@ -223,7 +223,7 @@ public class TestSnowflakeExplodeSemiStructured extends AbstractTestSnowflakeSem
                 "    (\n" +
                 "      type = TDS[(Id, String, VARCHAR(100), \"\"), (Account, String, VARCHAR(100), \"\"), (quantity, Integer, INT, \"\")]\n" +
                 "      resultColumns = [(\"Id\", VARCHAR(100)), (\"Account\", VARCHAR(100)), (\"quantity\", \"\")]\n" +
-                "      sql = select \"root\".ID as \"Id\", \"root\".ACCOUNT as \"Account\", sum(\"blocks_1\".TRADESUMMARY['execQuantity']) as \"quantity\" from Semistructured.Blocks as \"root\" left outer join (select \"trades_0\".ID, \"trades_0\".STATUS, \"trades_0\".TRADESUMMARY, \"blocks_2\".leftJoinKey_0 as leftJoinKey_0 from (select \"ss_flatten_0\".VALUE as flattened_prop, \"root\".ID as leftJoinKey_0 from Semistructured.Blocks as \"root\" inner join lateral flatten(input => \"root\".BLOCKDATA['relatedEntities']['trades'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\") as \"blocks_2\" inner join Semistructured.Trades as \"trades_0\" on (to_varchar(get_path(\"blocks_2\".flattened_prop, 'tag')) = 'trade' and to_varchar(get_path(\"blocks_2\".flattened_prop, 'tagId')) = \"trades_0\".ID)) as \"blocks_1\" on (\"root\".ID = \"blocks_1\".leftJoinKey_0) group by \"Id\",\"Account\"\n" +
+                "      sql = select \"root\".ID as \"Id\", \"root\".ACCOUNT as \"Account\", sum(\"blocks_1\".TRADESUMMARY['execQuantity']::number) as \"quantity\" from Semistructured.Blocks as \"root\" left outer join (select \"trades_0\".ID, \"trades_0\".STATUS, \"trades_0\".TRADESUMMARY, \"blocks_2\".leftJoinKey_0 as leftJoinKey_0 from (select \"ss_flatten_0\".VALUE as flattened_prop, \"root\".ID as leftJoinKey_0 from Semistructured.Blocks as \"root\" inner join lateral flatten(input => \"root\".BLOCKDATA['relatedEntities']['trades'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\") as \"blocks_2\" inner join Semistructured.Trades as \"trades_0\" on (to_varchar(get_path(\"blocks_2\".flattened_prop, 'tag')) = 'trade' and to_varchar(get_path(\"blocks_2\".flattened_prop, 'tagId')) = \"trades_0\".ID)) as \"blocks_1\" on (\"root\".ID = \"blocks_1\".leftJoinKey_0) group by \"Id\",\"Account\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
         String TDSType = "  type = TDS[(Id, String, VARCHAR(100), \"\"), (Account, String, VARCHAR(100), \"\"), (quantity, Integer, INT, \"\")]\n";
@@ -311,6 +311,23 @@ public class TestSnowflakeExplodeSemiStructured extends AbstractTestSnowflakeSem
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpectedView), snowflakePlanView);
+    }
+
+    @Test
+    public void testSemiStructuredQueryWithMultipleFieldTypes()
+    {
+        String queryFunction = "simple::query::semiStructuredWithDifferentJsonTypes__TabularDataSet_1_";
+        String snowflakePlan = this.buildExecutionPlanString(queryFunction, mapping, runtime);
+        String snowflakeExpected =
+                "    Relational\n" +
+                        "    (\n" +
+                        "      type = TDS[(Manufacturer Id, Integer, INT, \"\"), (Is Tax Exempt, Boolean, BIT, \"\"), (Date Foudned, StrictDate, DATE, \"\"), (Name, String, VARCHAR(8192), \"\"), (Annual Tax Rate, Float, FLOAT, \"\"), (Hourly Rate, Decimal, \"\", \"\")]\n" +
+                        "      resultColumns = [(\"Manufacturer Id\", INT), (\"Is Tax Exempt\", \"\"), (\"Date Foudned\", \"\"), (\"Name\", \"\"), (\"Annual Tax Rate\", \"\"), (\"Hourly Rate\", \"\")]\n" +
+                        "      sql = select \"root\".MANUFACTURER_ID as \"Manufacturer Id\", \"root\".MANUFACTURER_DETAILS['isTaxExempt']::boolean as \"Is Tax Exempt\", \"root\".MANUFACTURER_DETAILS['dateFounded']::date as \"Date Foudned\", \"root\".MANUFACTURER_DETAILS['name']::varchar as \"Name\", \"root\".MANUFACTURER_DETAILS['annualTaxRate']::float as \"Annual Tax Rate\", \"root\".MANUFACTURER_DETAILS['hourlyRate'] as \"Hourly Rate\" from Semistructured.Manufacturers as \"root\" where \"root\".MANUFACTURER_DETAILS['isTaxExempt']::boolean\n" +
+                        "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                        "    )\n";
+        String TDSType = "  type = TDS[(Manufacturer Id, Integer, INT, \"\"), (Is Tax Exempt, Boolean, BIT, \"\"), (Date Foudned, StrictDate, DATE, \"\"), (Name, String, VARCHAR(8192), \"\"), (Annual Tax Rate, Float, FLOAT, \"\"), (Hourly Rate, Decimal, \"\", \"\")]\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
     @Override

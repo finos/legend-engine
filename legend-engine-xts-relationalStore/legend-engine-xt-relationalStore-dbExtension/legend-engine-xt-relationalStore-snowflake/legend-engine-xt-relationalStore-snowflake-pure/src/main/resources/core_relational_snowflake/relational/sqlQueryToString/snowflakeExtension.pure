@@ -329,9 +329,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 {
    if($type == String, | '::varchar', |
    if($type == StrictDate, | '::date', |
+   if($type == Integer, | '::number', |
+   if($type == Float, | '::float', |
+   if($type == Boolean, | '::boolean', |
    if($type->isNotEmpty() && $type->toOne()->_subTypeOf(Date), | '::timestamp', |
    if($type->isNotEmpty() && $type->toOne()->instanceOf(Enumeration), | '::varchar', |
-   ''))));
+   '')))))));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processJoinStringsOperationForSnowflake(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
