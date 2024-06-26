@@ -14,6 +14,7 @@
     "core_functions",
     "core_service",
     "core",
-    "core_data_space_metamodel"
+    "core_data_space_metamodel",
+    "core_analytics_lineage"
   ]
 }

@@ -10,6 +10,7 @@
     "platform_functions",
     "platform_functions_json",
     "core_relational",
+    "core_analytics_lineage",
     "core_function_activator",
     "core_functions",
     "core_relational"

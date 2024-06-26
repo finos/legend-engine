@@ -57,6 +57,11 @@ public class MemSqlFunctionGenerator
         return new MemSqlFunctionArtifact(activator._functionName(), Lists.mutable.of(sqlExpressions));
     }
 
+    public static String generateLineage(PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    {
+        return core_memsqlfunction_generation_generation.Root_meta_external_function_activator_memSqlFunction_generation_computeLineage_MemSqlFunction_1__Extension_MANY__String_1_(activator, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
+    }
+
     private static Pair<Root_meta_pure_alloy_connections_alloy_specification_StaticDatasourceSpecification_Impl, RichIterable<String>> extractArtifactDetails(PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         PackageableFunction<?> function = activator._function();

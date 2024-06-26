@@ -53,7 +53,6 @@ public class MemSqlFunctionGenerator
                 sdlc = (AlloySDLC) sdlcInfo;
             }
         }
-        //, activator._description(), ((Root_meta_external_function_activator_DeploymentOwnership)activator._ownership())._id(), sdlc
         MemSqlFunctionContent content = new MemSqlFunctionContent(activator._functionName(), Lists.mutable.of(sqlFunctionExpression));
         if (activator._activationConfiguration() != null)
         {
@@ -69,6 +68,11 @@ public class MemSqlFunctionGenerator
         }
 
         return new MemSqlFunctionArtifact(content.functionName, Lists.mutable.of(sqlFunctionExpression));
+    }
+
+    public static String generateLineage(PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    {
+        return core_memsqlfunction_generation_generation.Root_meta_external_function_activator_memSqlFunction_generation_computeLineage_MemSqlFunction_1__Extension_MANY__String_1_(activator, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
     }
 
     private static RichIterable<String> extractSQLExpressions(Root_meta_pure_executionPlan_ExecutionPlan executionPlan)

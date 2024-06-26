@@ -183,6 +183,30 @@ public class FunctionActivatorAPI
         }
     }
 
+    @POST
+    @Path("generateLineage")
+    @ApiOperation(value = "generated activator lineage")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response generateLineage(FunctionActivatorInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = Identity.makeIdentity(profiles);
+        try
+        {
+            String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;
+            PureModel pureModel = modelManager.loadModel(input.model, clientVersion, identity, null);
+            Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
+            FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = getActivatorService(activator, pureModel);
+            return Response.ok(objectMapper.writeValueAsString(service.generateLineage(pureModel, activator, input.model, clientVersion,routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.CATCH_ALL, identity.getName());
+        }
+    }
+
     public FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> getActivatorService(Root_meta_external_function_activator_FunctionActivator activator, PureModel pureModel)
     {
         FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = (FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult>)this.availableActivatorServices.select(c -> c.supports(activator)).getFirst();

@@ -37,6 +37,7 @@
                     <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
                     <repositories>
                         <repository>core_snowflakeapp</repository>
+                        <repository>core_analytics_lineage</repository>
                     </repositories>
                     <extraRepositories>
                         <extraRepository>${project.basedir}/src/main/resources/core_snowflakeapp.definition.json</extraRepository>
@@ -51,6 +52,11 @@
                     </execution>
                 </executions>
                 <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-analytics-lineage-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-code-compiled-functions</artifactId>
@@ -147,6 +153,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-store-relational-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-analytics-lineage-pure</artifactId>
         </dependency>
 
         <dependency>

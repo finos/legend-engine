@@ -3,6 +3,7 @@ import meta::relational::runtime::*;
 import meta::external::function::activator::snowflakeApp::generation::*;
 import meta::relational::mapping::*;
 import meta::pure::executionPlan::*;
+import meta::analytics::lineage::*;
 
 Class meta::external::function::activator::snowflakeApp::SnowFlakeAppExecutionContext extends FunctionActivatorExecutionContext 
 {
@@ -16,40 +17,37 @@ function meta::external::function::activator::snowflakeApp::generation::generate
 
 function  meta::external::function::activator::snowflakeApp::generation::generateArtifact(s: meta::external::function::activator::snowflakeApp::SnowflakeApp[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
-  let inputParamsStub = generateInputParamsStub($s.function);
+
+  let inputParamsStub = generateInputParamsStub($s.function, true);
 
   let context = ^meta::external::function::activator::snowflakeApp::SnowFlakeAppExecutionContext(postProcessor = meta::relational::postProcessor::ReplaceFreeMarkerWithTableFunctionParamHolder_SQLQuery_1__PostProcessorResult_1_);
   let contextWithEnumPushDown = $context->meta::pure::executionPlan::featureFlag::addFlagToContext(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM);  
 
   let plan =  meta::pure::executionPlan::executionPlan($s.function->cast(@ConcreteFunctionDefinition<Any>), $contextWithEnumPushDown, $extensions, noDebug());
   let resultStub = generateResultTypeStub($plan.rootExecutionNode.resultType->cast(@TDSResultType), $extensions);
-  let generatedQuery = $plan.rootExecutionNode->allNodes($extensions)->filter(n|$n->instanceOf(SQLExecutionNode))->last()->cast(@SQLExecutionNode).sqlQuery->toOne('candidate query not found');
+  let generatedQuery = $plan.rootExecutionNode->allNodes($extensions)->filter(n|$n->instanceOf(SQLExecutionNode))->cast(@SQLExecutionNode)->filter(node|$node.sqlQuery->toLower()->startsWith('select'))->last().sqlQuery->toOne('candidate query not found');
   
   $s.applicationName->toUpper() + $inputParamsStub + ' RETURNS TABLE ('+ $resultStub+ ') LANGUAGE SQL AS $$ '+ $generatedQuery +' $$;';
 }
 
 function  meta::external::function::activator::snowflakeApp::generation::generateResultTypeStub(r: TDSResultType[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
-  let tdsTypeToRelationalTypeMap = PureTypeToSnowflakeTypeMap();
   $r.tdsColumns->map(c|'"'+ $c.name->toUpper() + '" '+ 
-                        if($c.sourceDataType->isNotEmpty() && !$c.sourceDataType->toOne()->instanceOf(meta::relational::metamodel::datatype::Varchar),
-                          | $c.sourceDataType->toOne()->cast(@meta::relational::metamodel::datatype::DataType)->meta::relational::metamodel::datatype::dataTypeToSqlText(),
-                          | $tdsTypeToRelationalTypeMap->get($c.type->toOne('Column type missing for column: '+$c.name))->toOne('Relational type missing for type: '+ $c.type->toOne()->toString())
-                          )
-                      ) ->joinStrings(',');
+                        pureTypeToSnowflakeTypeMatcher($c)) ->joinStrings(',');
 }
 
-function  meta::external::function::activator::snowflakeApp::generation::generateInputParamsStub(f:Function<Any>[1]):String[1]
+function  meta::external::function::activator::snowflakeApp::generation::generateInputParamsStub(f:Function<Any>[1], includeParamName:Boolean[1]):String[1]
 {  
   let params = $f->functionType().parameters->evaluateAndDeactivate();   
   assertEmpty($params->filter(p | $p.multiplicity != PureOne), 'not implemented, only multiplicity PureOne for snowflake app params is supported: ' + $params->filter(p | $p.multiplicity != PureOne)->map(p|$p.name)->joinStrings(', '));
-  let typeMap = PureTypeToSnowflakeTypeMap();
+  let typeMap = pureTypeToSnowflakeTypeMap();
   
-  '(' + $params->map(p|'"' + $p.name + '" ' + if($p.genericType.rawType->toOne()->instanceOf(Enumeration), | 'VARCHAR', | $typeMap->get($p.genericType.rawType->toOne())->toOne('Relational type missing for type: ' + $p.genericType.rawType->toOne()->toString()))
-)->joinStrings(',') + ')';    
+  '(' + $params->map(p|if($includeParamName,|'"' + $p.name + '" ',|'') + if($p.genericType.rawType->toOne()->instanceOf(Enumeration), | 'VARCHAR', | $typeMap->get($p.genericType.rawType->toOne())->toOne('Relational type missing for type: ' + $p.genericType.rawType->toOne()->toString()))
+  )->joinStrings(',') + ')';    
 }
 
-function <<access.private>>  meta::external::function::activator::snowflakeApp::generation::PureTypeToSnowflakeTypeMap():Map<PrimitiveType, String>[1]
+
+function <<access.private>>  meta::external::function::activator::snowflakeApp::generation::pureTypeToSnowflakeTypeMap():Map<PrimitiveType, String>[1]
 {
   [
   pair(Integer, 'number'),
@@ -61,4 +59,24 @@ function <<access.private>>  meta::external::function::activator::snowflakeApp::
   pair(StrictDate, 'date'),
   pair(Boolean, 'boolean')
   ]->newMap()
+}
+
+function <<access.private>>  meta::external::function::activator::snowflakeApp::generation::pureTypeToSnowflakeTypeMatcher(c:meta::pure::tds::TDSColumn[1]):String[1]
+{
+  let tdsTypeToRelationalTypeMap = pureTypeToSnowflakeTypeMap();
+  if($c.sourceDataType->isNotEmpty(),
+    |$c.sourceDataType->toOne()->match(
+        [
+          v:meta::relational::metamodel::datatype::Varchar[1] | 'VARCHAR',
+          b:meta::relational::metamodel::datatype::Bit[1]|'BOOLEAN',
+          all:meta::relational::metamodel::datatype::DataType[1]| $all->meta::relational::metamodel::datatype::dataTypeToSqlText()
+        ]),
+    | $tdsTypeToRelationalTypeMap->get($c.type->toOne('Column type missing for column: '+$c.name))->toOne('Relational type missing for type: '+ $c.type->toOne()->toString())
+  );
+}
+
+function meta::external::function::activator::snowflakeApp::generation::computeLineage(s: meta::external::function::activator::snowflakeApp::SnowflakeApp[1], extensions:meta::pure::extension::Extension[*]): String[1]
+{
+  let fullAnalytics  = meta::external::function::activator::lineage::computeLineage($s.function, $extensions);
+  meta::alloy::metadataServer::alloyToJSON($fullAnalytics);
 }

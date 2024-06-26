@@ -233,7 +233,7 @@
         <google.maven.download.plugin.version>1.8.1</google.maven.download.plugin.version>
 
         <!--NPM registry -->
-        <npm.registry.url>https://registry.npmjs.org</npm.registry.url>
+        <npm.registry.url>http://npmscopes.site.gs.com/repository/npm/</npm.registry.url>
     </properties>
 
     <scm>
