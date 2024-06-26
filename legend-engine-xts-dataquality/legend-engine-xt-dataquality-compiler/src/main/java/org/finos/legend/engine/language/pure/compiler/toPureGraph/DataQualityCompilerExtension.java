@@ -233,7 +233,8 @@ public class DataQualityCompilerExtension implements CompilerExtension
         for (CoreInstance c_type : _Class.computeConstraintsInHierarchy(_class, context.pureModel.getExecutionSupport().getProcessorSupport()))
         {
             Root_meta_pure_metamodel_constraint_Constraint_Impl constraint = (Root_meta_pure_metamodel_constraint_Constraint_Impl) c_type;
-            if (treeConstraintNames.contains(constraint._name)) {
+            if (treeConstraintNames.contains(constraint._name))
+            {
                 constraints.add(constraint);
             }
         }
