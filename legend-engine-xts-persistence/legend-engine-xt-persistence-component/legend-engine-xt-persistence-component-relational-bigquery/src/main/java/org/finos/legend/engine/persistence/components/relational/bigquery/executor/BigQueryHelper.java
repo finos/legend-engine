@@ -18,6 +18,7 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.TableId;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
+import org.finos.legend.engine.persistence.components.executor.RelationalTransactionManager;
 import org.finos.legend.engine.persistence.components.executor.TypeMapping;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;

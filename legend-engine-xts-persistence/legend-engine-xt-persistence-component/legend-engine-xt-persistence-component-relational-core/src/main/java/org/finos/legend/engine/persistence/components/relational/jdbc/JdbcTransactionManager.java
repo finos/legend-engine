@@ -119,7 +119,7 @@ public class JdbcTransactionManager
         }
     }
 
-    private static void extractResults(List<Map<String, Object>> resultList, ResultSet resultSet) throws SQLException
+    protected static void extractResults(List<Map<String, Object>> resultList, ResultSet resultSet) throws SQLException
     {
         ResultSetMetaData metaData = resultSet.getMetaData();
         int columnCount = resultSet.getMetaData().getColumnCount();
