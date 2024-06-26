@@ -17,6 +17,7 @@ package org.finos.legend.engine.persistence.components.relational.ansi;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
+import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Exists;
@@ -154,7 +155,6 @@ import org.finos.legend.engine.persistence.components.relational.api.ApiUtils;
 import org.finos.legend.engine.persistence.components.relational.api.ErrorCategory;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
-import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
@@ -389,7 +389,7 @@ public class AnsiSqlSink extends RelationalSink
             List<TabularData> results = executor.executePhysicalPlanAndGetResults(pair.getTwo());
             if (!results.isEmpty())
             {
-                List<Map<String, Object>> resultSets = results.get(0).getData();
+                List<Map<String, Object>> resultSets = results.get(0).data();
                 for (Map<String, Object> row : resultSets)
                 {
                     for (String column : pair.getOne().stream().map(FieldValue::fieldName).collect(Collectors.toSet()))

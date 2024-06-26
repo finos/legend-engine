@@ -16,12 +16,12 @@ package org.finos.legend.engine.persistence.components.logicalplan.operations;
 
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.TestUtils;
+import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
-import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -43,8 +43,8 @@ public class ShowTest extends BaseTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<TabularData> result = executor.executePhysicalPlanAndGetResults(physicalPlan);
 
-        Assertions.assertEquals(1, result.get(0).getData().size());
-        Assertions.assertEquals("staging", result.get(0).getData().get(0).get("TABLE_NAME"));
+        Assertions.assertEquals(1, result.get(0).data().size());
+        Assertions.assertEquals("staging", result.get(0).data().get(0).get("TABLE_NAME"));
 
         h2Sink.executeStatement("DROP TABLE TEST_DB.TEST.staging");
 

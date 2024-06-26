@@ -21,6 +21,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.persistence.components.common.*;
 import org.finos.legend.engine.persistence.components.executor.DigestInfo;
 import org.finos.legend.engine.persistence.components.executor.Executor;
+import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.importer.Importer;
 import org.finos.legend.engine.persistence.components.importer.Importers;
 import org.finos.legend.engine.persistence.components.ingestmode.*;
@@ -37,7 +38,6 @@ import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.exception.DataQualityException;
-import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvolution;
@@ -508,7 +508,7 @@ public abstract class RelationalIngestorAbstract
                     TabularData duplicateRows = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(DUPLICATE_ROWS)).get(0);
                     String errorMessage = "Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy";
                     LOGGER.error(errorMessage);
-                    List<DataError> dataErrors = ApiUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), duplicateRows.getData(),
+                    List<DataError> dataErrors = ApiUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), duplicateRows.data(),
                             ErrorCategory.DUPLICATES, caseConversion(), DatasetDeduplicationHandler.COUNT, NUM_DUPLICATES);
                     throw new DataQualityException(errorMessage, dataErrors);
                 }
@@ -526,7 +526,7 @@ public abstract class RelationalIngestorAbstract
                     TabularData duplicatePkRows = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(PK_DUPLICATE_ROWS)).get(0);
                     String errorMessage = "Encountered multiple rows with duplicate primary keys, Failing the batch as Fail on Duplicate Primary Keys is selected";
                     LOGGER.error(errorMessage);
-                    List<DataError> dataErrors = ApiUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), duplicatePkRows.getData(),
+                    List<DataError> dataErrors = ApiUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), duplicatePkRows.data(),
                         ErrorCategory.DUPLICATE_PRIMARY_KEYS, caseConversion(), DeriveDuplicatePkRowsLogicalPlan.DUPLICATE_PK_COUNT, NUM_PK_DUPLICATES);
                     throw new DataQualityException(errorMessage, dataErrors);
                 }
@@ -544,7 +544,7 @@ public abstract class RelationalIngestorAbstract
                     TabularData errors = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(DATA_ERROR_ROWS)).get(0);
                     String errorMessage = "Encountered Data errors (same PK, same version but different data), hence failing the batch";
                     LOGGER.error(errorMessage);
-                    List<DataError> dataErrors = ApiUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), errors.getData(),
+                    List<DataError> dataErrors = ApiUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), errors.data(),
                             ErrorCategory.DATA_VERSION_ERROR, caseConversion(), DeriveDataErrorRowsLogicalPlan.DATA_VERSION_ERROR_COUNT, NUM_DATA_VERSION_ERRORS);
                     throw new DataQualityException(errorMessage, dataErrors);
                 }
@@ -597,7 +597,7 @@ public abstract class RelationalIngestorAbstract
             MetadataDataset metadataDataset = enrichedDatasets.metadataDataset().get();
             if (!tabularDataList.isEmpty())
             {
-                List<Map<String, Object>> metadataResults = tabularDataList.get(0).getData();
+                List<Map<String, Object>> metadataResults = tabularDataList.get(0).data();
                 for (Map<String, Object> metadata: metadataResults)
                 {
                     Timestamp ingestionTimestampUTC = (Timestamp) metadata.get(metadataDataset.batchStartTimeField());

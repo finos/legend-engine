@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.postgres;
 
 import org.finos.legend.engine.persistence.components.executor.Executor;
+import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.ingestmode.AppendOnlyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.BitemporalDeltaAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.BitemporalSnapshotAbstract;
@@ -41,7 +42,6 @@ import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper
 import org.finos.legend.engine.persistence.components.relational.postgres.sql.PostgresDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.postgres.sql.PostgresJdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.postgres.sql.visitor.*;
-import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;

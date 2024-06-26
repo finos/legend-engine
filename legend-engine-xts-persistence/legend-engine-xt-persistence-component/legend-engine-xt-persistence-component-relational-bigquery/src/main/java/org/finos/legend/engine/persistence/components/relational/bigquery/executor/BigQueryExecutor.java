@@ -17,10 +17,10 @@ package org.finos.legend.engine.persistence.components.relational.bigquery.execu
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.executor.RelationalExecutionHelper;
+import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.bigquery.BigQuerySink;
-import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.DDLStatement;
 import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
@@ -110,7 +110,7 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
             List<Map<String, Object>> queryResult = bigQueryHelper.executeQuery(enrichedSql);
             if (!queryResult.isEmpty())
             {
-                resultSetList.add(new TabularData(queryResult));
+                resultSetList.add(TabularData.builder().addAllData(queryResult).build());
             }
         }
         return resultSetList;

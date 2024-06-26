@@ -16,10 +16,10 @@ package org.finos.legend.engine.persistence.components.relational.executor;
 
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.executor.RelationalExecutionHelper;
+import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
-import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
 import org.finos.legend.engine.persistence.components.util.SqlLogging;
@@ -72,10 +72,10 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
         for (String sql : physicalPlan.getSqlList())
         {
             SqlUtils.logSql(LOGGER, sqlLogging, sql);
-            List<Map<String, Object>> queryResult = relationalExecutionHelper.executeQuery(sql);
-            if (!queryResult.isEmpty())
+            TabularData queryResultData = relationalExecutionHelper.executeQueryAsTabularData(sql);
+            if (!queryResultData.data().isEmpty())
             {
-                resultSetList.add(new TabularData(queryResult));
+                resultSetList.add(queryResultData);
             }
         }
         return resultSetList;
@@ -88,10 +88,10 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
         for (String sql : physicalPlan.getSqlList())
         {
             SqlUtils.logSql(LOGGER, sqlLogging, sql);
-            List<Map<String, Object>> queryResult = relationalExecutionHelper.executeQuery(sql, rows);
-            if (!queryResult.isEmpty())
+            TabularData queryResultData = relationalExecutionHelper.executeQueryAsTabularData(sql, rows);
+            if (!queryResultData.data().isEmpty())
             {
-                resultSetList.add(new TabularData(queryResult));
+                resultSetList.add(queryResultData);
             }
         }
         return resultSetList;
@@ -105,10 +105,10 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
         {
             String enrichedSql = SqlUtils.getEnrichedSql(placeholderKeyValues, sql);
             SqlUtils.logSql(LOGGER, sqlLogging, sql, enrichedSql, placeholderKeyValues);
-            List<Map<String, Object>> queryResult = relationalExecutionHelper.executeQuery(enrichedSql);
-            if (!queryResult.isEmpty())
+            TabularData queryResultData = relationalExecutionHelper.executeQueryAsTabularData(enrichedSql);
+            if (!queryResultData.data().isEmpty())
             {
-                resultSetList.add(new TabularData(queryResult));
+                resultSetList.add(queryResultData);
             }
         }
         return resultSetList;

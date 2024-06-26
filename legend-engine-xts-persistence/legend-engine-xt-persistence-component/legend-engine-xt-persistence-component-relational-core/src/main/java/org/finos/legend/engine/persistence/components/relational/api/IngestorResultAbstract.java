@@ -50,6 +50,8 @@ public abstract class IngestorResultAbstract
 
     public abstract String ingestionTimestampUTC();
 
+    public abstract Optional<String> queryId();
+
     @Value.Default
     public boolean previouslyProcessed()
     {

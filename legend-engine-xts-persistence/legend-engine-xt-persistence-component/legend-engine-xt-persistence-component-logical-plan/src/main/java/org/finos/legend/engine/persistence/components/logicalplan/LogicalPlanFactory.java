@@ -20,6 +20,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Con
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.CsvExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReferenceImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
@@ -48,6 +49,7 @@ public class LogicalPlanFactory
     public static final String TABLE_ALIAS = "X";
     public static final String MAX_OF_FIELD = "MAX";
     public static final String MIN_OF_FIELD = "MIN";
+    public static final String QUERY_OPERATOR_STATS_QUERY_ID = "TABLE(GET_QUERY_OPERATOR_STATS({QUERY_ID}))";
 
     public static LogicalPlan getLogicalPlanForIsDatasetEmpty(Dataset dataset)
     {
@@ -88,8 +90,23 @@ public class LogicalPlanFactory
 
     public static LogicalPlan getLogicalPlanForConstantStats(String stats, Long value)
     {
-        return LogicalPlan.builder().addOps(
-            Selection.builder().addFields(NumericalValue.builder().value(value).alias(stats).build()).build())
+        return LogicalPlan.builder()
+            .addOps(Selection.builder()
+                .addFields(NumericalValue.builder().value(value).alias(stats).build())
+                .build())
+            .build();
+    }
+
+    public static LogicalPlan getLogicalPlanForQueryOperatorStats()
+    {
+        return LogicalPlan.builder()
+            .addOps(Selection.builder()
+                .addFields(All.INSTANCE)
+                .source(DatasetReferenceImpl
+                    .builder()
+                    .name(QUERY_OPERATOR_STATS_QUERY_ID)
+                    .build())
+                .build())
             .build();
     }
 

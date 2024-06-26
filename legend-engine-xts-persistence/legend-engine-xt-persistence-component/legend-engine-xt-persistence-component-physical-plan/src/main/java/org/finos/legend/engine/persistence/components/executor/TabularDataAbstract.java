@@ -12,26 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.relational.sql;
-
-import org.finos.legend.engine.persistence.components.executor.ResultData;
+package org.finos.legend.engine.persistence.components.executor;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-public class TabularData implements ResultData
+import static org.immutables.value.Value.Immutable;
+import static org.immutables.value.Value.Style;
+
+@Immutable
+@Style(
+        typeAbstract = "*Abstract",
+        typeImmutable = "*",
+        jdkOnly = true,
+        optionalAcceptNullable = true,
+        strictBuilder = true
+)
+public interface TabularDataAbstract extends ResultData
 {
-    private final List<Map<String, Object>> data;
+    Optional<String> queryId();
 
-    public TabularData(List<Map<String, Object>> data)
-    {
-        this.data = data;
-    }
-
-    public List<Map<String, Object>> getData()
-    {
-        return data;
-    }
-
-    // todo: Add a field for schema
+    List<Map<String, Object>> data();
 }

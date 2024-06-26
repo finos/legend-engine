@@ -24,6 +24,7 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.FilterType;
 import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
 import org.finos.legend.engine.persistence.components.executor.Executor;
+import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.ingestmode.*;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
@@ -38,7 +39,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.FieldVa
 import org.finos.legend.engine.persistence.components.planner.Planner;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
-import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
@@ -227,7 +227,7 @@ public class ApiUtils
         List<TabularData> results = executor.executePhysicalPlanAndGetResults(physicalPlan);
         Optional<String> stagingFilters = results.stream()
                 .findFirst()
-                .map(TabularData::getData)
+                .map(TabularData::data)
                 .flatMap(t -> t.stream().findFirst())
                 .map(stringObjectMap -> String.valueOf(stringObjectMap.get(metadataDataset.batchSourceInfoField())));
 
@@ -284,7 +284,7 @@ public class ApiUtils
     {
         Map<String, Object> resultMap = tabularData.stream()
                 .findFirst()
-                .map(TabularData::getData)
+                .map(TabularData::data)
                 .flatMap(t -> t.stream().findFirst())
                 .orElse(Collections.emptyMap());
         return resultMap;
