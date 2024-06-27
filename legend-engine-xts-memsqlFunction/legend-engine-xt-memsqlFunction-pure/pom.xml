@@ -37,6 +37,7 @@
                     <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
                     <repositories>
                         <repository>core_memsqlfunction</repository>
+                        <repository>core_analytics_lineage</repository>
                     </repositories>
                     <extraRepositories>
                         <extraRepository>${project.basedir}/src/main/resources/core_memsqlfunction.definition.json</extraRepository>
@@ -51,6 +52,11 @@
                     </execution>
                 </executions>
                 <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-analytics-lineage-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-code-compiled-functions</artifactId>
@@ -121,16 +127,16 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-analytics-lineage-pure</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m4</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>

@@ -98,6 +98,12 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
     }
 
     @Override
+    public String generateLineage(PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    {
+        return this.hostedServiceArtifactgenerator.generateLineage(pureModel, activator, inputModel, routerExtensions);
+    }
+
+    @Override
     public List<HostedServiceDeploymentConfiguration> selectConfig(List<FunctionActivatorDeploymentConfiguration> configurations)
     {
         return Lists.mutable.withAll(configurations).select(e -> e instanceof HostedServiceDeploymentConfiguration).collect(e -> (HostedServiceDeploymentConfiguration)e);

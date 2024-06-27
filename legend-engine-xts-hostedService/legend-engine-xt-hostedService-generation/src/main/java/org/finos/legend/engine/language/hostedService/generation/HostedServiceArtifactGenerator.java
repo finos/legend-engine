@@ -83,6 +83,12 @@ public class HostedServiceArtifactGenerator
         }
     }
 
+    public static String generateLineage(PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    {
+        //TODO fix multiEnv
+        return core_hostedservice_generation_generation.Root_meta_external_function_activator_hostedService_generation_computeLineage_HostedService_1__Extension_MANY__String_1_(activator, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
+    }
+
     public boolean validateOwner(Identity identity, PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         HostedServiceOwnerValidator<Root_meta_external_function_activator_Ownership> service = getOwnerValidatorService(activator,pureModel);

@@ -93,6 +93,12 @@ public class BigQueryFunctionService implements FunctionActivatorService<Root_me
     }
 
     @Override
+    public String generateLineage(PureModel pureModel, Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction functionActivator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    {
+        return "not implemented";
+    }
+
+    @Override
     public List<BigQueryFunctionDeploymentConfiguration> selectConfig(List<FunctionActivatorDeploymentConfiguration> configurations)
     {
         return Lists.mutable.withAll(configurations).select(e -> e instanceof BigQueryFunctionDeploymentConfiguration).collect(e -> (BigQueryFunctionDeploymentConfiguration) e);

@@ -1,0 +1,44 @@
+import meta::external::function::activator::lineage::*;
+import meta::pure::extension::*;
+import meta::pure::extension::*;
+import meta::analytics::lineage::*;
+import meta::pure::mapping::*;
+import meta::core::runtime::*;
+
+function meta::external::function::activator::lineage::computeLineage(function: PackageableFunction<Any>[1], e:meta::pure::extension::Extension[*]):FunctionAnalytics[1]
+{
+   assert($function->instanceOf(ConcreteFunctionDefinition), 'Unexpected function type used in activator. Type: '+ $function->class()->toString());
+   println($function->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().func->toOne()->elementToPath());
+   let anchorFunc = $function->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().func->toOne();
+   assert($anchorFunc->in(supportedFunctions()), 'Unexpected function used in activator. Function: '+ $anchorFunc->elementToPath());
+   let processingMap = meta::external::function::activator::lineage::processors();
+   let paramValues = $function->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().parametersValues;
+   $processingMap->get($anchorFunc)->toOne()->cast(@Function<{GenericType[1], ValueSpecification[*], Extension[*]->FunctionAnalytics[1]}>)-> meta::pure::functions::lang::eval($function.classifierGenericType, $paramValues, $e);
+
+}
+
+
+function meta::external::function::activator::lineage::supportedFunctions(): Function<Any>[*]
+{
+  [
+    from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_,
+    from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_,
+    from_T_m__Mapping_1__Runtime_1__T_m_ 
+  ] 
+}
+
+function meta::external::function::activator::lineage::process(g:GenericType[1], params:ValueSpecification[*], e : meta::pure::extension::Extension[*]): FunctionAnalytics[1]
+{
+  let newf = ^LambdaFunction<Any>( expressionSequence=$params->at(0)->cast(@SimpleFunctionExpression)->evaluateAndDeactivate()); //todo cant assign generic type here.
+  meta::analytics::lineage::computeLineage_FunctionDefinition_1__Mapping_1__Runtime_$0_1$__Extension_MANY__FunctionAnalytics_1_
+  ->eval(^$newf(classifierGenericType = $g), $params->at(1)->cast(@InstanceValue).values->at(0), [], $e ); 
+}
+
+function meta::external::function::activator::lineage::processors():Map<Function<Any>, Function<Any>>[1]
+{
+ [
+  pair(from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_, meta::external::function::activator::lineage::process_GenericType_1__ValueSpecification_MANY__Extension_MANY__FunctionAnalytics_1_),
+  pair(from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_, meta::external::function::activator::lineage::process_GenericType_1__ValueSpecification_MANY__Extension_MANY__FunctionAnalytics_1_) 
+ ]
+  ->newMap();
+}
