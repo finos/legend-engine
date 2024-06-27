@@ -14,11 +14,14 @@
 
 package org.finos.legend.engine.extensions.collection.generation;
 
+import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
+import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.utility.Iterate;
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.entitlement.services.EntitlementServiceExtension;
 import org.finos.legend.engine.entitlement.services.EntitlementServiceExtensionLoader;
 import org.finos.legend.engine.entitlement.services.RelationalDatabaseEntitlementServiceExtension;
@@ -89,8 +92,9 @@ import org.finos.legend.engine.language.stores.elasticsearch.v7.from.Elasticsear
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionProtocolExtension;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceProtocolExtension;
 import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.code.core.ElasticsearchLegendPureCoreExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.to.ElasticsearchGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
@@ -112,6 +116,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.ServiceLoader;
 
 public class TestExtensions
@@ -205,6 +210,25 @@ public class TestExtensions
         Assert.assertEquals(
                 Lists.fixedSize.empty(),
                 expectedClassifiers.reject(cl -> deserializer.hasInstance("meta::pure::metamodel::type::Class", "Root::" + cl), Lists.mutable.empty()));
+    }
+
+    @Test
+    public void testPackageableElementProtocolDefineClassifier()
+    {
+        List<PureProtocolExtension> extensions = PureProtocolExtensionLoader.extensions();
+
+        MutableSet<? extends Class<?>> packageableElementProtocolClasses = Iterate.flatCollect(extensions, extension ->
+                LazyIterate.flatCollect(extension.getExtraProtocolSubTypeInfoCollectors(), Function0::value)
+                        .select(info -> info.getSuperType().equals(PackageableElement.class))
+                        .flatCollect(ProtocolSubTypeInfo::getSubTypes)
+                        .collect(Pair::getOne), Sets.mutable.empty());
+
+        MutableSet<Class<? extends PackageableElement>> classesWithClassifiers = Iterate.flatCollect(extensions, ext -> ext.getExtraProtocolToClassifierPathMap().keySet(), Sets.mutable.empty());
+
+        for (Class<?> packageableElementProtocolClass : packageableElementProtocolClasses)
+        {
+            Assert.assertTrue(packageableElementProtocolClass.getName() + " does not have entry on protocolToClassifierPathMap", classesWithClassifiers.remove(packageableElementProtocolClass));
+        }
     }
 
     @Test
