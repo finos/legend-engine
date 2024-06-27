@@ -1,0 +1,17 @@
+{
+  "name": "core_dataquality",
+  "pattern": "(meta::external::dataquality|meta::protocols)(::.*)?",
+  "dependencies": [
+    "core",
+    "core_relational",
+    "core_functions",
+    "core_relational",
+    "core_data_space_metamodel",
+    "platform",
+    "platform_dsl_store",
+    "platform_dsl_graph",
+    "platform_dsl_mapping",
+    "platform_store_relational",
+    "platform_functions"
+  ]
+}

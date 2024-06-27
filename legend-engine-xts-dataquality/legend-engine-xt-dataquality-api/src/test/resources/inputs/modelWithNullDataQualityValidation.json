@@ -1,0 +1,1500 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "connection",
+      "connectionValue": {
+        "_type": "RelationalDatabaseConnection",
+        "authenticationStrategy": {
+          "_type": "h2Default",
+          "sourceInformation": {
+            "endColumn": 18,
+            "endLine": 10,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 10
+          }
+        },
+        "databaseType": "H2",
+        "datasourceSpecification": {
+          "_type": "h2Local",
+          "sourceInformation": {
+            "endColumn": 4,
+            "endLine": 9,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 6
+          },
+          "testDataSetupSqls": []
+        },
+        "element": "meta::dataquality::db",
+        "elementSourceInformation": {
+          "endColumn": 30,
+          "endLine": 4,
+          "sourceId": "",
+          "startColumn": 10,
+          "startLine": 4
+        },
+        "postProcessorWithParameter": [],
+        "sourceInformation": {
+          "endColumn": 1,
+          "endLine": 11,
+          "sourceId": "",
+          "startColumn": 1,
+          "startLine": 2
+        },
+        "type": "H2"
+      },
+      "name": "H2",
+      "package": "meta::dataquality",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 11,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 2
+      }
+    },
+    {
+      "_type": "relational",
+      "filters": [],
+      "includedStores": [],
+      "joins": [
+        {
+          "name": "Address_Person",
+          "operation": {
+            "_type": "dynaFunc",
+            "funcName": "equal",
+            "parameters": [
+              {
+                "_type": "column",
+                "column": "ID",
+                "sourceInformation": {
+                  "endColumn": 62,
+                  "endLine": 20,
+                  "sourceId": "",
+                  "startColumn": 24,
+                  "startLine": 20
+                },
+                "table": {
+                  "_type": "Table",
+                  "database": "meta::dataquality::db",
+                  "mainTableDb": "meta::dataquality::db",
+                  "schema": "default",
+                  "sourceInformation": {
+                    "endColumn": 35,
+                    "endLine": 20,
+                    "sourceId": "",
+                    "startColumn": 24,
+                    "startLine": 20
+                  },
+                  "table": "addressTable"
+                },
+                "tableAlias": "addressTable"
+              },
+              {
+                "_type": "column",
+                "column": "ADDRESSID",
+                "sourceInformation": {
+                  "endColumn": 62,
+                  "endLine": 20,
+                  "sourceId": "",
+                  "startColumn": 42,
+                  "startLine": 20
+                },
+                "table": {
+                  "_type": "Table",
+                  "database": "meta::dataquality::db",
+                  "mainTableDb": "meta::dataquality::db",
+                  "schema": "default",
+                  "sourceInformation": {
+                    "endColumn": 52,
+                    "endLine": 20,
+                    "sourceId": "",
+                    "startColumn": 42,
+                    "startLine": 20
+                  },
+                  "table": "personTable"
+                },
+                "tableAlias": "personTable"
+              }
+            ],
+            "sourceInformation": {
+              "endColumn": 62,
+              "endLine": 20,
+              "sourceId": "",
+              "startColumn": 40,
+              "startLine": 20
+            }
+          },
+          "sourceInformation": {
+            "endColumn": 63,
+            "endLine": 20,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 20
+          }
+        },
+        {
+          "name": "Address_Location",
+          "operation": {
+            "_type": "dynaFunc",
+            "funcName": "equal",
+            "parameters": [
+              {
+                "_type": "column",
+                "column": "LOCATIONID",
+                "sourceInformation": {
+                  "endColumn": 67,
+                  "endLine": 21,
+                  "sourceId": "",
+                  "startColumn": 26,
+                  "startLine": 21
+                },
+                "table": {
+                  "_type": "Table",
+                  "database": "meta::dataquality::db",
+                  "mainTableDb": "meta::dataquality::db",
+                  "schema": "default",
+                  "sourceInformation": {
+                    "endColumn": 37,
+                    "endLine": 21,
+                    "sourceId": "",
+                    "startColumn": 26,
+                    "startLine": 21
+                  },
+                  "table": "addressTable"
+                },
+                "tableAlias": "addressTable"
+              },
+              {
+                "_type": "column",
+                "column": "ID",
+                "sourceInformation": {
+                  "endColumn": 67,
+                  "endLine": 21,
+                  "sourceId": "",
+                  "startColumn": 52,
+                  "startLine": 21
+                },
+                "table": {
+                  "_type": "Table",
+                  "database": "meta::dataquality::db",
+                  "mainTableDb": "meta::dataquality::db",
+                  "schema": "default",
+                  "sourceInformation": {
+                    "endColumn": 64,
+                    "endLine": 21,
+                    "sourceId": "",
+                    "startColumn": 52,
+                    "startLine": 21
+                  },
+                  "table": "locationTable"
+                },
+                "tableAlias": "locationTable"
+              }
+            ],
+            "sourceInformation": {
+              "endColumn": 67,
+              "endLine": 21,
+              "sourceId": "",
+              "startColumn": 50,
+              "startLine": 21
+            }
+          },
+          "sourceInformation": {
+            "endColumn": 68,
+            "endLine": 21,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 21
+          }
+        }
+      ],
+      "name": "db",
+      "package": "meta::dataquality",
+      "schemas": [
+        {
+          "name": "default",
+          "sourceInformation": {
+            "endColumn": 1,
+            "endLine": 22,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 14
+          },
+          "tables": [
+            {
+              "columns": [
+                {
+                  "name": "ID",
+                  "nullable": false,
+                  "sourceInformation": {
+                    "endColumn": 40,
+                    "endLine": 16,
+                    "sourceId": "",
+                    "startColumn": 23,
+                    "startLine": 16
+                  },
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "FIRSTNAME",
+                  "nullable": true,
+                  "sourceInformation": {
+                    "endColumn": 64,
+                    "endLine": 16,
+                    "sourceId": "",
+                    "startColumn": 43,
+                    "startLine": 16
+                  },
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 200
+                  }
+                },
+                {
+                  "name": "LASTNAME",
+                  "nullable": true,
+                  "sourceInformation": {
+                    "endColumn": 87,
+                    "endLine": 16,
+                    "sourceId": "",
+                    "startColumn": 67,
+                    "startLine": 16
+                  },
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 200
+                  }
+                },
+                {
+                  "name": "AGE",
+                  "nullable": true,
+                  "sourceInformation": {
+                    "endColumn": 96,
+                    "endLine": 16,
+                    "sourceId": "",
+                    "startColumn": 90,
+                    "startLine": 16
+                  },
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "ADDRESSID",
+                  "nullable": true,
+                  "sourceInformation": {
+                    "endColumn": 111,
+                    "endLine": 16,
+                    "sourceId": "",
+                    "startColumn": 99,
+                    "startLine": 16
+                  },
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "FIRMID",
+                  "nullable": true,
+                  "sourceInformation": {
+                    "endColumn": 123,
+                    "endLine": 16,
+                    "sourceId": "",
+                    "startColumn": 114,
+                    "startLine": 16
+                  },
+                  "type": {
+                    "_type": "Integer"
+                  }
+                }
+              ],
+              "milestoning": [],
+              "name": "personTable",
+              "primaryKey": [
+                "ID"
+              ],
+              "sourceInformation": {
+                "endColumn": 124,
+                "endLine": 16,
+                "sourceId": "",
+                "startColumn": 4,
+                "startLine": 16
+              }
+            },
+            {
+              "columns": [
+                {
+                  "name": "ID",
+                  "nullable": false,
+                  "sourceInformation": {
+                    "endColumn": 41,
+                    "endLine": 17,
+                    "sourceId": "",
+                    "startColumn": 24,
+                    "startLine": 17
+                  },
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "LOCATIONID",
+                  "nullable": true,
+                  "sourceInformation": {
+                    "endColumn": 57,
+                    "endLine": 17,
+                    "sourceId": "",
+                    "startColumn": 44,
+                    "startLine": 17
+                  },
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "TYPE",
+                  "nullable": true,
+                  "sourceInformation": {
+                    "endColumn": 67,
+                    "endLine": 17,
+                    "sourceId": "",
+                    "startColumn": 60,
+                    "startLine": 17
+                  },
+                  "type": {
+                    "_type": "Integer"
+                  }
+                }
+              ],
+              "milestoning": [],
+              "name": "addressTable",
+              "primaryKey": [
+                "ID"
+              ],
+              "sourceInformation": {
+                "endColumn": 68,
+                "endLine": 17,
+                "sourceId": "",
+                "startColumn": 4,
+                "startLine": 17
+              }
+            },
+            {
+              "columns": [
+                {
+                  "name": "ID",
+                  "nullable": false,
+                  "sourceInformation": {
+                    "endColumn": 42,
+                    "endLine": 18,
+                    "sourceId": "",
+                    "startColumn": 25,
+                    "startLine": 18
+                  },
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "STREET",
+                  "nullable": true,
+                  "sourceInformation": {
+                    "endColumn": 63,
+                    "endLine": 18,
+                    "sourceId": "",
+                    "startColumn": 45,
+                    "startLine": 18
+                  },
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 200
+                  }
+                },
+                {
+                  "name": "LOCALITY",
+                  "nullable": true,
+                  "sourceInformation": {
+                    "endColumn": 86,
+                    "endLine": 18,
+                    "sourceId": "",
+                    "startColumn": 66,
+                    "startLine": 18
+                  },
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 200
+                  }
+                }
+              ],
+              "milestoning": [],
+              "name": "locationTable",
+              "primaryKey": [
+                "ID"
+              ],
+              "sourceInformation": {
+                "endColumn": 87,
+                "endLine": 18,
+                "sourceId": "",
+                "startColumn": 4,
+                "startLine": 18
+              }
+            }
+          ],
+          "views": []
+        }
+      ],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 22,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 14
+      },
+      "stereotypes": []
+    },
+    {
+      "_type": "mapping",
+      "associationMappings": [],
+      "classMappings": [
+        {
+          "_type": "relational",
+          "class": "meta::dataquality::Person",
+          "classSourceInformation": {
+            "endColumn": 28,
+            "endLine": 29,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 29
+          },
+          "distinct": false,
+          "groupBy": [],
+          "primaryKey": [],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "meta::dataquality::Person",
+                "property": "name",
+                "sourceInformation": {
+                  "endColumn": 10,
+                  "endLine": 31,
+                  "sourceId": "",
+                  "startColumn": 7,
+                  "startLine": 31
+                }
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "FIRSTNAME",
+                "sourceInformation": {
+                  "endColumn": 57,
+                  "endLine": 31,
+                  "sourceId": "",
+                  "startColumn": 14,
+                  "startLine": 31
+                },
+                "table": {
+                  "_type": "Table",
+                  "database": "meta::dataquality::db",
+                  "mainTableDb": "meta::dataquality::db",
+                  "schema": "default",
+                  "sourceInformation": {
+                    "endColumn": 47,
+                    "endLine": 31,
+                    "sourceId": "",
+                    "startColumn": 37,
+                    "startLine": 31
+                  },
+                  "table": "personTable"
+                },
+                "tableAlias": "personTable"
+              },
+              "sourceInformation": {
+                "endColumn": 57,
+                "endLine": 31,
+                "sourceId": "",
+                "startColumn": 12,
+                "startLine": 31
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "meta::dataquality::Person",
+                "property": "age",
+                "sourceInformation": {
+                  "endColumn": 9,
+                  "endLine": 32,
+                  "sourceId": "",
+                  "startColumn": 7,
+                  "startLine": 32
+                }
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "AGE",
+                "sourceInformation": {
+                  "endColumn": 50,
+                  "endLine": 32,
+                  "sourceId": "",
+                  "startColumn": 13,
+                  "startLine": 32
+                },
+                "table": {
+                  "_type": "Table",
+                  "database": "meta::dataquality::db",
+                  "mainTableDb": "meta::dataquality::db",
+                  "schema": "default",
+                  "sourceInformation": {
+                    "endColumn": 46,
+                    "endLine": 32,
+                    "sourceId": "",
+                    "startColumn": 36,
+                    "startLine": 32
+                  },
+                  "table": "personTable"
+                },
+                "tableAlias": "personTable"
+              },
+              "sourceInformation": {
+                "endColumn": 50,
+                "endLine": 32,
+                "sourceId": "",
+                "startColumn": 11,
+                "startLine": 32
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "meta::dataquality::Person",
+                "property": "addresses",
+                "sourceInformation": {
+                  "endColumn": 15,
+                  "endLine": 33,
+                  "sourceId": "",
+                  "startColumn": 7,
+                  "startLine": 33
+                }
+              },
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "meta::dataquality::db",
+                    "name": "Address_Person",
+                    "sourceInformation": {
+                      "endColumn": 56,
+                      "endLine": 33,
+                      "sourceId": "",
+                      "startColumn": 42,
+                      "startLine": 33
+                    }
+                  }
+                ],
+                "sourceInformation": {
+                  "endColumn": 56,
+                  "endLine": 33,
+                  "sourceId": "",
+                  "startColumn": 19,
+                  "startLine": 33
+                }
+              },
+              "sourceInformation": {
+                "endColumn": 56,
+                "endLine": 33,
+                "sourceId": "",
+                "startColumn": 17,
+                "startLine": 33
+              }
+            }
+          ],
+          "root": false,
+          "sourceInformation": {
+            "endColumn": 4,
+            "endLine": 34,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 29
+          }
+        },
+        {
+          "_type": "relational",
+          "class": "meta::dataquality::Address",
+          "classSourceInformation": {
+            "endColumn": 29,
+            "endLine": 36,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 36
+          },
+          "distinct": false,
+          "groupBy": [],
+          "primaryKey": [],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "meta::dataquality::Address",
+                "property": "addressId",
+                "sourceInformation": {
+                  "endColumn": 15,
+                  "endLine": 38,
+                  "sourceId": "",
+                  "startColumn": 7,
+                  "startLine": 38
+                }
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "ID",
+                "sourceInformation": {
+                  "endColumn": 56,
+                  "endLine": 38,
+                  "sourceId": "",
+                  "startColumn": 19,
+                  "startLine": 38
+                },
+                "table": {
+                  "_type": "Table",
+                  "database": "meta::dataquality::db",
+                  "mainTableDb": "meta::dataquality::db",
+                  "schema": "default",
+                  "sourceInformation": {
+                    "endColumn": 53,
+                    "endLine": 38,
+                    "sourceId": "",
+                    "startColumn": 42,
+                    "startLine": 38
+                  },
+                  "table": "addressTable"
+                },
+                "tableAlias": "addressTable"
+              },
+              "sourceInformation": {
+                "endColumn": 56,
+                "endLine": 38,
+                "sourceId": "",
+                "startColumn": 17,
+                "startLine": 38
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "meta::dataquality::Address",
+                "property": "location",
+                "sourceInformation": {
+                  "endColumn": 14,
+                  "endLine": 39,
+                  "sourceId": "",
+                  "startColumn": 7,
+                  "startLine": 39
+                }
+              },
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "meta::dataquality::db",
+                    "name": "Address_Location",
+                    "sourceInformation": {
+                      "endColumn": 57,
+                      "endLine": 39,
+                      "sourceId": "",
+                      "startColumn": 41,
+                      "startLine": 39
+                    }
+                  }
+                ],
+                "sourceInformation": {
+                  "endColumn": 57,
+                  "endLine": 39,
+                  "sourceId": "",
+                  "startColumn": 18,
+                  "startLine": 39
+                }
+              },
+              "sourceInformation": {
+                "endColumn": 57,
+                "endLine": 39,
+                "sourceId": "",
+                "startColumn": 16,
+                "startLine": 39
+              }
+            }
+          ],
+          "root": false,
+          "sourceInformation": {
+            "endColumn": 4,
+            "endLine": 40,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 36
+          }
+        },
+        {
+          "_type": "relational",
+          "class": "meta::dataquality::Location",
+          "classSourceInformation": {
+            "endColumn": 30,
+            "endLine": 42,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 42
+          },
+          "distinct": false,
+          "groupBy": [],
+          "primaryKey": [],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "meta::dataquality::Location",
+                "property": "street",
+                "sourceInformation": {
+                  "endColumn": 12,
+                  "endLine": 44,
+                  "sourceId": "",
+                  "startColumn": 7,
+                  "startLine": 44
+                }
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "STREET",
+                "sourceInformation": {
+                  "endColumn": 58,
+                  "endLine": 44,
+                  "sourceId": "",
+                  "startColumn": 16,
+                  "startLine": 44
+                },
+                "table": {
+                  "_type": "Table",
+                  "database": "meta::dataquality::db",
+                  "mainTableDb": "meta::dataquality::db",
+                  "schema": "default",
+                  "sourceInformation": {
+                    "endColumn": 51,
+                    "endLine": 44,
+                    "sourceId": "",
+                    "startColumn": 39,
+                    "startLine": 44
+                  },
+                  "table": "locationTable"
+                },
+                "tableAlias": "locationTable"
+              },
+              "sourceInformation": {
+                "endColumn": 58,
+                "endLine": 44,
+                "sourceId": "",
+                "startColumn": 14,
+                "startLine": 44
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "meta::dataquality::Location",
+                "property": "locality",
+                "sourceInformation": {
+                  "endColumn": 14,
+                  "endLine": 45,
+                  "sourceId": "",
+                  "startColumn": 7,
+                  "startLine": 45
+                }
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "LOCALITY",
+                "sourceInformation": {
+                  "endColumn": 62,
+                  "endLine": 45,
+                  "sourceId": "",
+                  "startColumn": 18,
+                  "startLine": 45
+                },
+                "table": {
+                  "_type": "Table",
+                  "database": "meta::dataquality::db",
+                  "mainTableDb": "meta::dataquality::db",
+                  "schema": "default",
+                  "sourceInformation": {
+                    "endColumn": 53,
+                    "endLine": 45,
+                    "sourceId": "",
+                    "startColumn": 41,
+                    "startLine": 45
+                  },
+                  "table": "locationTable"
+                },
+                "tableAlias": "locationTable"
+              },
+              "sourceInformation": {
+                "endColumn": 62,
+                "endLine": 45,
+                "sourceId": "",
+                "startColumn": 16,
+                "startLine": 45
+              }
+            }
+          ],
+          "root": false,
+          "sourceInformation": {
+            "endColumn": 4,
+            "endLine": 46,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 42
+          }
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "dataqualitymappings",
+      "package": "meta::dataquality",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 47,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 26
+      },
+      "tests": []
+    },
+    {
+      "_type": "runtime",
+      "name": "DataQualityRuntime",
+      "package": "meta::dataquality",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connectionStores": [],
+        "connections": [
+          {
+            "sourceInformation": {
+              "endColumn": 5,
+              "endLine": 61,
+              "sourceId": "",
+              "startColumn": 5,
+              "startLine": 58
+            },
+            "store": {
+              "path": "meta::dataquality::db",
+              "sourceInformation": {
+                "endColumn": 25,
+                "endLine": 58,
+                "sourceId": "",
+                "startColumn": 5,
+                "startLine": 58
+              },
+              "type": "STORE"
+            },
+            "storeConnections": [
+              {
+                "connection": {
+                  "_type": "connectionPointer",
+                  "connection": "meta::dataquality::H2",
+                  "sourceInformation": {
+                    "endColumn": 41,
+                    "endLine": 60,
+                    "sourceId": "",
+                    "startColumn": 21,
+                    "startLine": 60
+                  }
+                },
+                "id": "connection_1",
+                "sourceInformation": {
+                  "endColumn": 41,
+                  "endLine": 60,
+                  "sourceId": "",
+                  "startColumn": 7,
+                  "startLine": 60
+                }
+              }
+            ]
+          }
+        ],
+        "mappings": [
+          {
+            "path": "meta::dataquality::dataqualitymappings",
+            "sourceInformation": {
+              "endColumn": 42,
+              "endLine": 54,
+              "sourceId": "",
+              "startColumn": 5,
+              "startLine": 54
+            },
+            "type": "MAPPING"
+          }
+        ],
+        "sourceInformation": {
+          "endColumn": 1,
+          "endLine": 63,
+          "sourceId": "",
+          "startColumn": 1,
+          "startLine": 50
+        }
+      },
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 63,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 50
+      }
+    },
+    {
+      "_type": "class",
+      "constraints": [
+        {
+          "functionDefinition": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "function": "greaterThanEqual",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "this",
+                        "sourceInformation": {
+                          "endColumn": 25,
+                          "endLine": 70,
+                          "sourceId": "",
+                          "startColumn": 21,
+                          "startLine": 70
+                        }
+                      }
+                    ],
+                    "property": "age",
+                    "sourceInformation": {
+                      "endColumn": 29,
+                      "endLine": 70,
+                      "sourceId": "",
+                      "startColumn": 27,
+                      "startLine": 70
+                    }
+                  },
+                  {
+                    "_type": "integer",
+                    "sourceInformation": {
+                      "endColumn": 35,
+                      "endLine": 70,
+                      "sourceId": "",
+                      "startColumn": 34,
+                      "startLine": 70
+                    },
+                    "value": 18
+                  }
+                ],
+                "sourceInformation": {
+                  "endColumn": 35,
+                  "endLine": 70,
+                  "sourceId": "",
+                  "startColumn": 31,
+                  "startLine": 70
+                }
+              }
+            ],
+            "parameters": []
+          },
+          "name": "mustBeOfLegalAge",
+          "sourceInformation": {
+            "endColumn": 35,
+            "endLine": 70,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 70
+          }
+        }
+      ],
+      "name": "Person",
+      "originalMilestonedProperties": [],
+      "package": "meta::dataquality",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "propertyTypeSourceInformation": {
+            "endColumn": 16,
+            "endLine": 73,
+            "sourceId": "",
+            "startColumn": 11,
+            "startLine": 73
+          },
+          "sourceInformation": {
+            "endColumn": 20,
+            "endLine": 73,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 73
+          },
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "age",
+          "propertyTypeSourceInformation": {
+            "endColumn": 16,
+            "endLine": 74,
+            "sourceId": "",
+            "startColumn": 10,
+            "startLine": 74
+          },
+          "sourceInformation": {
+            "endColumn": 20,
+            "endLine": 74,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 74
+          },
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0
+          },
+          "name": "addresses",
+          "propertyTypeSourceInformation": {
+            "endColumn": 41,
+            "endLine": 75,
+            "sourceId": "",
+            "startColumn": 16,
+            "startLine": 75
+          },
+          "sourceInformation": {
+            "endColumn": 45,
+            "endLine": 75,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 75
+          },
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "meta::dataquality::Address"
+        }
+      ],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 76,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 68
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "Address",
+      "originalMilestonedProperties": [],
+      "package": "meta::dataquality",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "location",
+          "propertyTypeSourceInformation": {
+            "endColumn": 40,
+            "endLine": 80,
+            "sourceId": "",
+            "startColumn": 14,
+            "startLine": 80
+          },
+          "sourceInformation": {
+            "endColumn": 44,
+            "endLine": 80,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 80
+          },
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "meta::dataquality::Location"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "locationStreet",
+          "propertyTypeSourceInformation": {
+            "endColumn": 25,
+            "endLine": 81,
+            "sourceId": "",
+            "startColumn": 20,
+            "startLine": 81
+          },
+          "sourceInformation": {
+            "endColumn": 29,
+            "endLine": 81,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 81
+          },
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "addressId",
+          "propertyTypeSourceInformation": {
+            "endColumn": 20,
+            "endLine": 82,
+            "sourceId": "",
+            "startColumn": 15,
+            "startLine": 82
+          },
+          "sourceInformation": {
+            "endColumn": 24,
+            "endLine": 82,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 82
+          },
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "String"
+        }
+      ],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 83,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 78
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "Location",
+      "originalMilestonedProperties": [],
+      "package": "meta::dataquality",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "street",
+          "propertyTypeSourceInformation": {
+            "endColumn": 17,
+            "endLine": 87,
+            "sourceId": "",
+            "startColumn": 12,
+            "startLine": 87
+          },
+          "sourceInformation": {
+            "endColumn": 21,
+            "endLine": 87,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 87
+          },
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "locality",
+          "propertyTypeSourceInformation": {
+            "endColumn": 19,
+            "endLine": 88,
+            "sourceId": "",
+            "startColumn": 14,
+            "startLine": 88
+          },
+          "sourceInformation": {
+            "endColumn": 23,
+            "endLine": 88,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 88
+          },
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "String"
+        }
+      ],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 89,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 85
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "dataQualityValidation",
+      "context": {
+        "_type": "mappingAndRuntimeDataQualityExecutionContext",
+        "_type": "mappingAndRuntimeDataQualityExecutionContext",
+        "mapping": {
+          "path": "meta::dataquality::dataqualitymappings",
+          "sourceInformation": {
+            "endColumn": 73,
+            "endLine": 94,
+            "sourceId": "",
+            "startColumn": 36,
+            "startLine": 94
+          },
+          "type": "MAPPING"
+        },
+        "runtime": {
+          "path": "meta::dataquality::DataQualityRuntime",
+          "sourceInformation": {
+            "endColumn": 112,
+            "endLine": 94,
+            "sourceId": "",
+            "startColumn": 76,
+            "startLine": 94
+          },
+          "type": "RUNTIME"
+        }
+      },
+      "dataQualityRootGraphFetchTree": null,
+      "filter": {
+        "_type": "lambda",
+        "body": [
+          {
+            "_type": "func",
+            "function": "equal",
+            "parameters": [
+              {
+                "_type": "property",
+                "parameters": [
+                  {
+                    "_type": "var",
+                    "name": "p",
+                    "sourceInformation": {
+                      "endColumn": 47,
+                      "endLine": 95,
+                      "sourceId": "",
+                      "startColumn": 46,
+                      "startLine": 95
+                    }
+                  }
+                ],
+                "property": "name",
+                "sourceInformation": {
+                  "endColumn": 52,
+                  "endLine": 95,
+                  "sourceId": "",
+                  "startColumn": 49,
+                  "startLine": 95
+                }
+              },
+              {
+                "_type": "string",
+                "sourceInformation": {
+                  "endColumn": 60,
+                  "endLine": 95,
+                  "sourceId": "",
+                  "startColumn": 55,
+                  "startLine": 95
+                },
+                "value": "John"
+              }
+            ],
+            "sourceInformation": {
+              "endColumn": 54,
+              "endLine": 95,
+              "sourceId": "",
+              "startColumn": 53,
+              "startLine": 95
+            }
+          }
+        ],
+        "parameters": [
+          {
+            "_type": "var",
+            "class": "meta::dataquality::Person",
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "p",
+            "sourceInformation": {
+              "endColumn": 39,
+              "endLine": 95,
+              "sourceId": "",
+              "startColumn": 15,
+              "startLine": 95
+            }
+          }
+        ],
+        "sourceInformation": {
+          "endColumn": 60,
+          "endLine": 95,
+          "sourceId": "",
+          "startColumn": 44,
+          "startLine": 95
+        }
+      },
+      "name": "PersonDataQualityValidation",
+      "package": "meta::dataquality",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 101,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 92
+      },
+      "stereotypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 8,
+            "endLine": 1,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        },
+        {
+          "_type": "importAware",
+          "elements": [
+            "meta::dataquality::H2"
+          ],
+          "imports": [],
+          "parserName": "Connection",
+          "sourceInformation": {
+            "endColumn": 2,
+            "endLine": 13,
+            "sourceId": "",
+            "startColumn": 8,
+            "startLine": 2
+          }
+        },
+        {
+          "_type": "default",
+          "elements": [
+            "meta::dataquality::db"
+          ],
+          "parserName": "Relational",
+          "sourceInformation": {
+            "endColumn": 1,
+            "endLine": 25,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 14
+          }
+        },
+        {
+          "_type": "importAware",
+          "elements": [
+            "meta::dataquality::dataqualitymappings"
+          ],
+          "imports": [],
+          "parserName": "Mapping",
+          "sourceInformation": {
+            "endColumn": 2,
+            "endLine": 49,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 26
+          }
+        },
+        {
+          "_type": "importAware",
+          "elements": [
+            "meta::dataquality::DataQualityRuntime"
+          ],
+          "imports": [],
+          "parserName": "Runtime",
+          "sourceInformation": {
+            "endColumn": 1,
+            "endLine": 67,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 50
+          }
+        },
+        {
+          "_type": "importAware",
+          "elements": [
+            "meta::dataquality::Person",
+            "meta::dataquality::Address",
+            "meta::dataquality::Location"
+          ],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 2,
+            "endLine": 91,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 68
+          }
+        },
+        {
+          "_type": "default",
+          "elements": [
+            "meta::dataquality::PersonDataQualityValidation"
+          ],
+          "parserName": "DataQualityValidation",
+          "sourceInformation": {
+            "endColumn": 1,
+            "endLine": 103,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 92
+          }
+        }
+      ]
+    }
+  ]
+}
