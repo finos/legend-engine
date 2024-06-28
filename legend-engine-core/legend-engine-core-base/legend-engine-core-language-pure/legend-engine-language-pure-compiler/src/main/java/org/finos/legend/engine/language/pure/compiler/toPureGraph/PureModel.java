@@ -349,7 +349,10 @@ public class PureModel implements IPureModel
         finally
         {
             span.finish();
-            forkJoinPool.shutdown();
+            if (this.pureModelProcessParameter.getForkJoinPool() == null)
+            {
+                forkJoinPool.shutdown();
+            }
         }
     }
 
