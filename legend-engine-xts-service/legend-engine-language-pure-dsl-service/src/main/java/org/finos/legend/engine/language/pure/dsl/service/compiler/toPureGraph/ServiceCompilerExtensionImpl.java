@@ -85,6 +85,18 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                         (service, context) -> processserviceFirstPass(service, context),
                         (service, context) ->
                         {
+
+                        },
+                        (service, context) ->
+                        {
+
+                        },
+                        (service, context) ->
+                        {
+
+                        },
+                        (service, context) ->
+                        {
                             Root_meta_legend_service_metamodel_Service pureService = (Root_meta_legend_service_metamodel_Service) context.pureModel.getOrCreatePackage(service._package)._children().detect(c -> service.name.equals(c._name()));
 
                             pureService._execution(HelperServiceBuilder.processServiceExecution(service.execution, context));
