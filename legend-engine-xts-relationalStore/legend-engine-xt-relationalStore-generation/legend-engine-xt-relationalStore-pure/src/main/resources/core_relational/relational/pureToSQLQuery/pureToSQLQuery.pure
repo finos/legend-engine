@@ -5356,11 +5356,11 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::getEnum
 {
   let name = $f->instanceValueAtParameter(1)->cast(@String);
   let matchedPath = $paths->filter(p|$p.first->toLower() == $name->toLower());
-  if($matchedPath->isEmpty(), 
+  if($matchedPath->isEmpty(),
     | [],
     | let pm = $matchedPath->toOne().second;
       $pm.propertyMapping->cast(@RelationalPropertyMapping);
-  ); 
+  );
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::isFunctionWithName(r: ValueSpecification[1], functionName: String[1]):Boolean[1]
@@ -5415,7 +5415,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                               if($params.first.values->isNotEmpty(),
                                                 | let enumVarParam = $params.first.values->toOne()->evaluateAndDeactivate()->cast(@FunctionExpression);
                                                   let otherParam = $params.second.values->toOne()->evaluateAndDeactivate();
-                                                  
+
                                                   let enumVarProcessedParam = $enumVarParam->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne();
                                                   let otherProcessedParam = $otherParam->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne();
                                                   let enumPropertyMapping = getEnumExprPropertyMapping($enumVarParam, $paths);
@@ -5429,10 +5429,10 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                                           newDynaFunction('equal', [$enumVarProcessedParam, $newParam]);
                                                       ),
                                                     | newDynaFunction('equal', [$enumVarProcessedParam, $otherProcessedParam]);
-                                                  );, 
+                                                  );,
                                                 | newDynaFunction('equal', $f.parametersValues->map(p| $p->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne()));
                                               );
-                                            }), 
+                                            }),
                                             ^PureFunctionTDSToRelationalFunctionPair(first = extractEnumValue_Enumeration_1__String_1__T_1_, second = {|
                                               ^Literal(value=extractEnumValue($f, $currentPropertyMapping, $context))
                                             }),
@@ -5442,10 +5442,10 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                             ^PureFunctionTDSToRelationalFunctionPair(first = in_Any_1__Any_MANY__Boolean_1_, second = {|
                                               let valueParam = $f.parametersValues->at(0);
                                               let valueArg = $valueParam->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne();
-                                              
+
                                               let collectionArg = $f.parametersValues->at(1)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context);
                                               let mergedCollectionArg = $collectionArg->match([l:Literal[*] | ^LiteralList(values = $l), ll:LiteralList[1] | $ll]);
-                                              
+
                                               if($valueParam->isFunctionWithName('getEnum'),
                                                 | let enumPropertyMapping = getEnumExprPropertyMapping($valueParam->cast(@FunctionExpression), $paths);
                                                   let mappedEnumValues = $mergedCollectionArg.values->map(a|$a.value->match([
@@ -5496,7 +5496,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                                         ]->map(func|
                                                           ^PureFunctionTDSToRelationalFunctionPair(first = $func, second = {|
                                                             ^DynaFunction(
-                                                              name = 'concat',
+                                                              name = 'concat_ws',
                                                               parameters =$f.parametersValues->map(p|$p->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
                                                               )
                                                           })
