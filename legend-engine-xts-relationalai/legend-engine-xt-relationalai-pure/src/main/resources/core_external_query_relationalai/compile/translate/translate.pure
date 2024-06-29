@@ -15,7 +15,7 @@
 
 import meta::external::store::rel::compile::*;
 import meta::external::store::rel::compile::ir::*;
-import meta::external::store::rel::compile::ir::tds::*;
+import meta::external::store::rel::compile::ir::tabular::*;
 import meta::external::store::rel::compile::ir::utils::*;
 import meta::external::store::rel::compile::substitution::*;
 import meta::external::store::rel::compile::utils::*;
@@ -75,8 +75,8 @@ function meta::external::store::rel::compile::compile(
     s: PExprCompilationStep[1] | $s.logic->eval($substitution, $rewrite, $state),
     e: PExprIfThenElse[1]      | $e->compile($substitution, $rewrite, $state, $newTrace),
     e: PExprIn[1]              | $e->compile($substitution, $rewrite, $state, $newTrace),
-    j: PExprTDSJoin[1]         | $j->meta::external::store::rel::compile::tds::compile($substitution, $rewrite, $state, $newTrace),
-    f: PExprTDSFilter[1]       | $f->meta::external::store::rel::compile::tds::compile($substitution, $rewrite, $state, $newTrace)
+    j: PExprTabularJoin[1]     | $j->meta::external::store::rel::compile::tabular::compile($substitution, $rewrite, $state, $newTrace),
+    f: PExprTabularFilter[1]   | $f->meta::external::store::rel::compile::tabular::compile($substitution, $rewrite, $state, $newTrace)
   ]);
 }
 
@@ -114,7 +114,7 @@ function meta::external::store::rel::compile::compile(
   trace: Trace[1]
 ): Result<CompilationState|0..1>[1] {
   $all.set.classExpr
-    ->okOr(|
+    ->okOrError(|
         errorTrace('Mappings with empty class expressions not yet supported. No class expression found ' +
           'for class ' + $all.set.class.name->else(| '<<unknown>>')->quote())
     )
@@ -142,7 +142,7 @@ function meta::external::store::rel::compile::compile(
    * def output = (Karenbury(Wrapper:Guerrerofurt[x1]) from x1 in Wrapper)
    */
   $cast.set.classExpr
-    ->okOr(|
+    ->okOrError(|
       errorTrace('Mappings with empty class expressions not yet supported. No class expression found ' +
         'for class ' + $cast.set.class.name->else(| '<<unknown>>')->quote(), $newTrace)
     )
@@ -376,7 +376,7 @@ function meta::external::store::rel::compile::compile(
     ->step(parent: RelExpr[1] |
       let propertyMapping = $access.propertyMapping;
       $propertyMapping.property.genericType.rawType
-        ->okOr(| errorTrace('Could not determine type of property ' + $propertyMapping.property.name->orElse('[NO NAME]'), $newTrace))
+        ->okOrError(| errorTrace('Could not determine type of property ' + $propertyMapping.property.name->orElse('[NO NAME]'), $newTrace))
         ->then(type: Type[1] |
           $propertyMapping.target->appl($parent)
         );

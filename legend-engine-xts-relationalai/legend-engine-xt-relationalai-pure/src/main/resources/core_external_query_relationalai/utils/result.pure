@@ -36,7 +36,13 @@ function meta::external::store::rel::utils::okOrElse<T|m>(value: T[m], else: Fun
   )
 }
 
-function meta::external::store::rel::utils::okOr<T|m>(value: T[m], error: FunctionDefinition<{->QueryRewriteError[1]}>[1]): Result<T|m>[1] {
+function meta::external::store::rel::utils::orError<T|m>(value: Result<T|m>[1], error: FunctionDefinition<{->QueryRewriteError[1]}>[1]): Result<T|m>[1] {
+  $value->else(|
+    ^Result<T|m>(errors=[$error->eval()])
+  )
+}
+
+function meta::external::store::rel::utils::okOrError<T|m>(value: T[m], error: FunctionDefinition<{->QueryRewriteError[1]}>[1]): Result<T|m>[1] {
   $value->okOrElse(|
     ^Result<T|m>(errors=[$error->eval()])
   )

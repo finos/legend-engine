@@ -51,13 +51,36 @@ function meta::external::store::rel::mapping::describe(set: RelSetImplementation
   /*
    * Print sets in some order for readability of output.
    */
-  let propertyMappings =
+  let sortedPropertyMappings =
     $set.propertyMappings
       ->map(m | $m->cast(@RelPropertyMapping))
-      ->sortBy(m: RelPropertyMapping[1] | $m.property.name->toOne())
-      ->map(m: RelPropertyMapping[1] | $m->describe())
-      ->concatenateCollection();
-  format('Set[id: %s, superSetImplementationId: %s, properties: %s]', [$id, $superSetImplementationId, $propertyMappings]);
+      ->sortBy(m: RelPropertyMapping[1] | $m.property.name->toOne());
+
+  let sameOwnerPropertyMappings =
+    $sortedPropertyMappings
+      ->filter(propMapping: PropertyMapping[1] | $propMapping.owner.id == $set.id);
+
+  let differentOwnerPropertyMappings =
+    $sortedPropertyMappings
+      ->filter(propMapping: PropertyMapping[1] | $propMapping.owner.id != $set.id);
+
+  let sameOwnerPropertyMappingsString =
+    if ( $sameOwnerPropertyMappings->isEmpty(),
+       | '(none)',
+       | $sameOwnerPropertyMappings
+           ->map(m: RelPropertyMapping[1] | $m.property->toString())
+           ->concatenateCollection()
+       );
+
+  let differentOwnerPropertyMappingsString =
+    if ( $differentOwnerPropertyMappings->isEmpty(),
+       | '(none)',
+       | $differentOwnerPropertyMappings
+           ->map(m: RelPropertyMapping[1] | $m->describe())
+           ->concatenateCollection()
+       );
+      
+  format('Set[id: %s, superSetImplementationId: %s, properties (different owner): %s, properties (same owner): %s]', [$id, $superSetImplementationId, $differentOwnerPropertyMappingsString, $sameOwnerPropertyMappingsString]);
 }
 
 function meta::external::store::rel::mapping::describe(set: RelSetImplementation[0..1]): String[1] {

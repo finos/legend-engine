@@ -57,7 +57,7 @@ function <<access.private>> meta::external::store::rel::mapping::execution(
       $debug->debug(| 'Column names:');
       $debug->debug(| $state.cols.names);
       $state.current
-        ->okOr(| errorTrace('No current expression.', $newTrace))
+        ->okOrError(| errorTrace('No current expression.', $newTrace))
         ->andThen({expr: RelExpr[1] |
           let type = $query.genericType.rawType;
 
@@ -72,8 +72,8 @@ function <<access.private>> meta::external::store::rel::mapping::execution(
            * 2. The type of the query is of type Any because it is the union of
            *    multiple class types that belong to the mapping. This can happen
            *    because, e.g., different result types in the branches of an `if`.
-           * 3. The type of the query is a `TabularDataSet`, in which case we
-           *    interpret the query results as a table.
+           * 3. The type of the query is a `TabularDataSet` or a `Relation`, in
+           *    which case we interpret the query results as a table.
            * 4. The type of the query is a class belonging to our mapping (i.e.,
            *    a type more specific than Any). In this case we also output the
            *    primitive-valued properties.
@@ -102,7 +102,7 @@ function <<access.private>> meta::external::store::rel::mapping::execution(
                   )
                   ->ok()
                 }),
-                case($class == TabularDataSet, {|
+                case($class == TabularDataSet || $class == meta::pure::metamodel::relation::Relation, {|
                   /*
                    * Handles case 3.
                    */
@@ -135,7 +135,7 @@ function <<access.private>> meta::external::store::rel::mapping::execution(
                  */
                 $mapping
                   ->meta::pure::mapping::_classMappingByClass($class)
-                  ->okOr(| errorTrace(format('No class mapping found for `%s`', $class.name), $newTrace))
+                  ->okOrError(| errorTrace(format('RAI transpiler: No class mapping found for `%s`', $class.name), $newTrace))
                   ->tryCastm(@RelSetImplementation, $newTrace)
                   ->them(sets: RelSetImplementation[*] | $sets->first()->toOne() )
                   ->andThen(set: RelSetImplementation[1] |

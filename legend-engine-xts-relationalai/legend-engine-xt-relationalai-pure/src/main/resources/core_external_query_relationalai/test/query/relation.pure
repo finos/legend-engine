@@ -1,0 +1,292 @@
+import meta::external::store::rel::test::query::*;
+import meta::external::store::rel::test::query::util::*;
+import meta::external::store::rel::mapping::*;
+import meta::external::store::rel::mapping::schema::*;
+import meta::external::store::rel::metamodel::store::*;
+import meta::external::store::rel::runtime::*;
+import meta::external::store::rel::test::query::models::relation::*;
+import meta::external::store::rel::utils::assert::*;
+
+
+function <<test.Test>> meta::external::store::rel::test::query::relation::testRelationProject(): Any[*] {
+  let schema =
+    RAITestSchema()
+      ->includeSingleClass(RootClass2);
+
+  let rai = $schema->TestConnection();
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        RootClass2.all()->meta::pure::functions::relation::project(
+          ~[
+            Gac  : x | $x.Gac,
+            Sloe : x | $x.Sloe
+          ]
+        )
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def tbl1[:base] = x from x in RootClass2',
+      'def tbl1[:Gac, x] = tbl1(:base, x), RootClass2:Gac[x]',
+      'def tbl1[:Sloe, x] = tbl1(:base, x), RootClass2:Sloe[x]',
+      'def output = tbl1[:Gac, i], tbl1[:Sloe, i] from i'
+    ],
+    $transpiledQuery
+  );
+}
+
+
+function <<test.Test>> meta::external::store::rel::test::query::relation::testRelationGroupBy(): Any[*] {
+  let schema =
+    RAITestSchema()
+      ->includeSingleClass(RootClass2);
+
+  let rai = $schema->TestConnection();
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        RootClass2.all()->meta::pure::functions::relation::project(
+          ~[
+            Gac  : x | $x.Gac,
+            Sloe : x | $x.Sloe
+          ]
+        )->meta::pure::functions::relation::groupBy(
+          ~[Gac], ~[Sloe : row | $row.Sloe : y | $y->toOneMany()->max() ]
+        )
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def tbl1[:base] = x from x in RootClass2',
+      'def tbl1[:Gac, x] = tbl1(:base, x), RootClass2:Gac[x]',
+      'def tbl1[:Sloe, x] = tbl1(:base, x), RootClass2:Sloe[x]',
+      'def tbl2[:group, :"0"] = tbl1[:Gac]',
+      'def tbl2[:Gac] = tbl2[:groups, i][x] for i, x',
+      'def tbl2[:groups] = sort[(tbl2[:group, :"0", j] from j)]',
+      'def tbl2[:Sloe] = i, max[tbl1[:Sloe, j] for j where tbl2(:group, :"0", j, x1)] from i, x1 where tbl2[:Gac][i, x1]',
+      'def output = tbl2[:Gac, i], tbl2[:Sloe, i] from i'
+    ],
+    $transpiledQuery
+  );
+}
+
+function <<test.Test>> meta::external::store::rel::test::query::relation::testRelationFilter(): Any[*] {
+  let schema =
+    RAITestSchema()
+      ->includeSingleClass(RootClass2)
+      ->includeSingleClass(Papaya)
+      ->includeSingleClass(JuniperBerry)
+      ->includeSingleClass(Soursop)
+      ->includeSingleClass(Cucumber);
+
+  let rai = $schema->TestConnection();
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        RootClass2.all()->meta::pure::functions::relation::project(
+          ~[
+            Gac          : x | $x.Gac,
+            Aratiles     : x | $x.Pomelo.Aratiles,
+            Sloe         : x | $x.Sloe,
+            GojiBerry    : x | $x.GojiBerry,
+            Lemon        : x | $x.Lemon,
+            Passionfruit : x | $x.Pomelo.Passionfruit,
+            CornKernel   : x | $x.Pomelo.BellPepper.CornKernel,
+            Tomato       : x | $x.Pomelo.Lulo.Tomato,
+            Pawpaw       : x | $x.Pomelo.StarApple.JapanesePlum.Pawpaw
+          ]
+        )->meta::pure::functions::relation::filter(
+          row | $row.Aratiles != 'Melon'
+        )
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def tbl1[:base] = x from x in RootClass2',
+      'def tbl1[:Gac, x] = tbl1(:base, x), RootClass2:Gac[x]',
+      'def tbl1[:Aratiles, x] = tbl1(:base, x), Soursop:Aratiles[RootClass2:Pomelo[x]]',
+      'def tbl1[:Sloe, x] = tbl1(:base, x), RootClass2:Sloe[x]',
+      'def tbl1[:GojiBerry, x] = tbl1(:base, x), RootClass2:GojiBerry[x]',
+      'def tbl1[:Lemon, x] = tbl1(:base, x), RootClass2:Lemon[x]',
+      'def tbl1[:Passionfruit, x] = tbl1(:base, x), Soursop:Passionfruit[RootClass2:Pomelo[x]]',
+      'def tbl1[:CornKernel, x] = tbl1(:base, x), Cucumber:CornKernel[Papaya:BellPepper[RootClass2:Pomelo[x]]]',
+      'def tbl1[:Tomato, x] = tbl1(:base, x), JuniperBerry:Tomato[Papaya:Lulo[RootClass2:Pomelo[x]]]',
+      'def tbl1[:Pawpaw, x] = tbl1(:base, x), Cucumber:Pawpaw[JuniperBerry:JapanesePlum[Papaya:StarApple[RootClass2:Pomelo[x]]]]',
+      'def tbl2[c, x] = tbl1[c, x], not tbl1[:Aratiles, x] = "Melon"',
+      'def output = tbl2[:Gac, i], tbl2[:Aratiles, i], tbl2[:Sloe, i], tbl2[:GojiBerry, i], tbl2[:Lemon, i], tbl2[:Passionfruit, i], tbl2[:CornKernel, i], tbl2[:Tomato, i], tbl2[:Pawpaw, i] from i'
+    ],
+    $transpiledQuery
+  );
+}
+
+function <<test.Test>> meta::external::store::rel::test::query::relation::testRelationJoin(): Any[*] {
+  let schema =
+    RAITestSchema()
+      ->includeSingleClass(RootClass2)
+      ->includeSingleClass(Cucumber)
+      ->includeSingleClass(Soursop)
+      ->includeSingleClass(Papaya)
+      ->includeSingleClass(JuniperBerry);
+
+  let rai = $schema->TestConnection();
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        RootClass2.all()->meta::pure::functions::relation::project(
+          ~[
+            Gac  : x | $x.Gac,
+            Sloe : x | $x.Sloe
+          ]
+        )
+        ->meta::pure::functions::relation::join(
+          RootClass2.all()->meta::pure::functions::relation::project(
+            ~[
+              CaviarLime  : x | $x.Gac,
+              Zucchini    : x | $x.Pomelo.Aratiles,
+              Yuzu        : x | $x.Sloe,
+              Lime        : x | $x.GojiBerry,
+              Loganberry  : x | $x.Lemon,
+              SalalBerry  : x | $x.Pomelo.Passionfruit,
+              MameySapote : x | $x.Pomelo.BellPepper.CornKernel,
+              Plumcot     : x | $x.Pomelo.Lulo.Tomato,
+              Santol      : x | $x.Pomelo.StarApple.JapanesePlum.Pawpaw
+            ]
+          ),
+          meta::pure::functions::relation::JoinKind.INNER,
+          {
+            row1, row2 |
+              $row1.Gac == $row2.CaviarLime && $row1.Sloe == $row2.Yuzu
+          }
+        )
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def tbl1[:base] = x from x in RootClass2',
+      'def tbl1[:Gac, x] = tbl1(:base, x), RootClass2:Gac[x]',
+      'def tbl1[:Sloe, x] = tbl1(:base, x), RootClass2:Sloe[x]',
+      'def tbl2[:base] = x from x in RootClass2',
+      'def tbl2[:CaviarLime, x] = tbl2(:base, x), RootClass2:Gac[x]',
+      'def tbl2[:Zucchini, x] = tbl2(:base, x), Soursop:Aratiles[RootClass2:Pomelo[x]]',
+      'def tbl2[:Yuzu, x] = tbl2(:base, x), RootClass2:Sloe[x]',
+      'def tbl2[:Lime, x] = tbl2(:base, x), RootClass2:GojiBerry[x]',
+      'def tbl2[:Loganberry, x] = tbl2(:base, x), RootClass2:Lemon[x]',
+      'def tbl2[:SalalBerry, x] = tbl2(:base, x), Soursop:Passionfruit[RootClass2:Pomelo[x]]',
+      'def tbl2[:MameySapote, x] = tbl2(:base, x), Cucumber:CornKernel[Papaya:BellPepper[RootClass2:Pomelo[x]]]',
+      'def tbl2[:Plumcot, x] = tbl2(:base, x), JuniperBerry:Tomato[Papaya:Lulo[RootClass2:Pomelo[x]]]',
+      'def tbl2[:Santol, x] = tbl2(:base, x), Cucumber:Pawpaw[JuniperBerry:JapanesePlum[Papaya:StarApple[RootClass2:Pomelo[x]]]]',
+      'def tbl3[:base] = sort[(tbl1[:Gac, i] = tbl2[:CaviarLime, j]) and (tbl1[:Sloe, i] = tbl2[:Yuzu, j]) for i, j]',
+      'def tbl3[:Gac] = k, tbl1[:Gac, i], tbl3[:base, k, i, _] from i, k',
+      'def tbl3[:Sloe] = k, tbl1[:Sloe, i], tbl3[:base, k, i, _] from i, k',
+      'def tbl3[:CaviarLime] = k, tbl2[:CaviarLime, i], tbl3[:base, k, _, i] from i, k',
+      'def tbl3[:Zucchini] = k, tbl2[:Zucchini, i], tbl3[:base, k, _, i] from i, k',
+      'def tbl3[:Yuzu] = k, tbl2[:Yuzu, i], tbl3[:base, k, _, i] from i, k',
+      'def tbl3[:Lime] = k, tbl2[:Lime, i], tbl3[:base, k, _, i] from i, k',
+      'def tbl3[:Loganberry] = k, tbl2[:Loganberry, i], tbl3[:base, k, _, i] from i, k',
+      'def tbl3[:SalalBerry] = k, tbl2[:SalalBerry, i], tbl3[:base, k, _, i] from i, k',
+      'def tbl3[:MameySapote] = k, tbl2[:MameySapote, i], tbl3[:base, k, _, i] from i, k',
+      'def tbl3[:Plumcot] = k, tbl2[:Plumcot, i], tbl3[:base, k, _, i] from i, k',
+      'def tbl3[:Santol] = k, tbl2[:Santol, i], tbl3[:base, k, _, i] from i, k',
+      'def output = tbl3[:Gac, i], tbl3[:Sloe, i], tbl3[:CaviarLime, i], tbl3[:Zucchini, i], tbl3[:Yuzu, i], tbl3[:Lime, i], tbl3[:Loganberry, i], tbl3[:SalalBerry, i], tbl3[:MameySapote, i], tbl3[:Plumcot, i], tbl3[:Santol, i] from i'
+    ],
+    $transpiledQuery
+  );
+}
+
+function <<test.Test>> meta::external::store::rel::test::query::relation::testRelationSelect(): Any[*] {
+  let schema =
+    RAITestSchema()
+      ->includeSingleClass(RootClass2)
+      ->includeSingleClass(Cucumber)
+      ->includeSingleClass(Papaya)
+      ->includeSingleClass(JuniperBerry)
+      ->includeSingleClass(Soursop);
+
+  let rai = $schema->TestConnection();
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        RootClass2.all()->meta::pure::functions::relation::project(
+          ~[
+            Gac          : x | $x.Gac,
+            Aratiles     : x | $x.Pomelo.Aratiles,
+            Sloe         : x | $x.Sloe,
+            GojiBerry    : x | $x.GojiBerry,
+            Lemon        : x | $x.Lemon,
+            Passionfruit : x | $x.Pomelo.Passionfruit,
+            CornKernel   : x | $x.Pomelo.BellPepper.CornKernel,
+            Tomato       : x | $x.Pomelo.Lulo.Tomato,
+            Pawpaw       : x | $x.Pomelo.StarApple.JapanesePlum.Pawpaw
+          ]
+        )
+        ->meta::pure::functions::relation::select(
+          ~[
+            Gac,
+            Lemon,
+            Pawpaw
+          ]
+        )
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def tbl1[:base] = x from x in RootClass2',
+      'def tbl1[:Gac, x] = tbl1(:base, x), RootClass2:Gac[x]',
+      'def tbl1[:Lemon, x] = tbl1(:base, x), RootClass2:Lemon[x]',
+      'def tbl1[:Pawpaw, x] = tbl1(:base, x), Cucumber:Pawpaw[JuniperBerry:JapanesePlum[Papaya:StarApple[RootClass2:Pomelo[x]]]]',
+      'def output = tbl1[:Gac, i], tbl1[:Lemon, i], tbl1[:Pawpaw, i] from i'
+    ],
+    $transpiledQuery
+  );
+}
+
+function <<test.Test>> meta::external::store::rel::test::query::relation::testRelationProjectMatch(): Any[*] {
+  let schema =
+    RAITestSchema()
+      ->includeSingleClass(RootClass1)
+      ->includeSingleClass(Boysenberry)
+      ->includeSingleClass(Pineberry)
+      ->includeSingleClass(Prune)
+      ->includeSingleClass(Kiwano)
+      ->includeSingleClass(CactusPear)
+      ->includeSingleClass(Thimbleberry);
+
+  let rai = $schema->TestConnection();
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        RootClass1.all()->meta::pure::functions::relation::project(
+          ~[
+            Marionberry : x | $x.Marionberry,
+            Pomegranate : x |
+              $x.Pear.Sapodilla.KaffirLime.Lanzones->at(0)->match([
+                Cloudberry: CactusPear[1] | $Cloudberry.Satsuma,
+                Blueberry: Boysenberry[1] | $Blueberry.Tamarind.Akebi->toOne()
+              ])
+          ]
+        )
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def tbl1[:base] = x from x in RootClass1',
+      'def tbl1[:Marionberry, x] = tbl1(:base, x), RootClass1:Marionberry[x]',
+      'def tbl1[:Pomegranate, x] = tbl1(:base, x), exists(x1: x1 = Kiwano:Lanzones[Pineberry:KaffirLime[Thimbleberry:Sapodilla[RootClass1:Pear[x]]]][0] and (if CactusPear(x1) then CactusPear:Satsuma[x1] else if Boysenberry(x1) then Prune:Akebi[x2] from x2 in Boysenberry:Tamarind[x1] else false end end))',
+      'def output = tbl1[:Marionberry, i], tbl1[:Pomegranate, i] from i'
+    ],
+    $transpiledQuery
+  );
+}
