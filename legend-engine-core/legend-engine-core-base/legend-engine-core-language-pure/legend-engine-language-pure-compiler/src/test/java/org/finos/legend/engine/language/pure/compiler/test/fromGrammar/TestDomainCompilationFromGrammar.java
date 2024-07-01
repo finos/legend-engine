@@ -2857,7 +2857,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "      }\n" +
                 "    }\n" +
                 "  }#\n" +
-                "}\n", "COMPILATION error at [16:7-18:7]: The type Street is not a subtype of Address"
+                "}\n", "COMPILATION error at [16:18-29]: The type Street is not a subtype of Address"
         );
 
         test("Class test::Address\n" +
