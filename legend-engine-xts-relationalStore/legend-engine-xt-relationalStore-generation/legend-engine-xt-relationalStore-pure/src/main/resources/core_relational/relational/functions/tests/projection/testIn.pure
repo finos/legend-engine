@@ -17,7 +17,6 @@ import meta::relational::tests::model::simple::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
-import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::projection::filter::in::testIn():Boolean[1]
 {
@@ -27,7 +26,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testIn()
                         meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements(['Johnson', 'Hill', 'Smith'], $result.values.rows->map(r | $r.values->at(0)));
-   assertSameSQL('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result);
+   assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::in::testContains():Boolean[1]
@@ -38,7 +37,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testCont
                         meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements(['Johnson', 'Hill', 'Smith'], $result.values.rows->map(r | $r.values->at(0)));
-   assertSameSQL('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result);
+   assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::in::testDeepIn():Boolean[1]
@@ -49,7 +48,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testDeep
                         meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 5);
    assertSameElements(['Allen', 'Hill', 'Smith', 'Johnson', 'Hill'], $result.values.rows->map(r | $r.values->at(0)));
-   assertSameSQL('select "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "addresstable_0".NAME in (\'New York\', \'Tokyo\')', $result);
+   assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "addresstable_0".NAME in (\'New York\', \'Tokyo\')', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::in::testDeepInWithMultipleProject():Boolean[1]
@@ -60,7 +59,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testDeep
                         meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 5);
    assertSameElements(['Anthony Allen', 'Oliver Hill', 'Peter Smith', 'John Johnson', 'John Hill'], $result.values.rows->map(r | $r.getString('firstName') + ' ' + $r.getString('lastName')));
-   assertSameSQL('select "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "addresstable_0".NAME in (\'New York\', \'Tokyo\')', $result);
+   assertEquals('select "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "addresstable_0".NAME in (\'New York\', \'Tokyo\')', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::in::testDeepContains():Boolean[1]
@@ -71,7 +70,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testDeep
                         meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 5);
    assertSameElements(['Allen', 'Hill', 'Smith', 'Johnson', 'Hill'], $result.values.rows->map(r | $r.values->at(0)));
-   assertSameSQL('select "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "addresstable_0".NAME in (\'New York\', \'Tokyo\')', $result);
+   assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "addresstable_0".NAME in (\'New York\', \'Tokyo\')', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::in::testDeepContainsWithMultipleProject():Boolean[1]
@@ -82,7 +81,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testDeep
                         meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 5);
    assertSameElements(['Anthony Allen', 'Oliver Hill', 'Peter Smith', 'John Johnson', 'John Hill'], $result.values.rows->map(r | $r.getString('firstName') + ' ' + $r.getString('lastName')));
-   assertSameSQL('select "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "addresstable_0".NAME in (\'New York\', \'Tokyo\')', $result);
+   assertEquals('select "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "addresstable_0".NAME in (\'New York\', \'Tokyo\')', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::in::testInWithOneValue():Boolean[1]
@@ -94,7 +93,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testInWi
                         meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 2);
    assertSameElements(['Johnson', 'Hill'], $result.values.rows->map(r | $r.values->at(0)));
-   assertSameSQL('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $result);
+   assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $result->sqlRemoveFormatting());
 }
 
 // Alloy exclusion reason: 7. Primitive type casting
@@ -107,7 +106,7 @@ function <<test.Test, test.ExcludeAlloy>>  meta::relational::tests::projection::
                         meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 2);
    assertSameElements(['Johnson', 'Hill'], $result.values.rows->map(r | $r.values->at(0)));
-   assertSameSQL('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $result);
+   assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::in::testInWithVariables():Boolean[1]
@@ -119,7 +118,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testInWi
                         meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements(['Johnson', 'Hill', 'Smith'], $result.values.rows->map(r | $r.values->at(0)));
-   assertSameSQL('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result);
+   assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::in::testContainsWithVariables():Boolean[1]
@@ -131,7 +130,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testCont
                         meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements(['Johnson', 'Hill', 'Smith'], $result.values.rows->map(r | $r.values->at(0)));
-   assertSameSQL('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result);
+   assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::in::testInWithListVariable():Boolean[1]
@@ -143,7 +142,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testInWi
                         meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements(['Johnson', 'Hill', 'Smith'], $result.values.rows->map(r | $r.values->at(0)));
-   assertSameSQL('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result);
+   assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::in::testContainsWithListVariable():Boolean[1]
@@ -155,7 +154,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testCont
                         meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements(['Johnson', 'Hill', 'Smith'], $result.values.rows->map(r | $r.values->at(0)));
-   assertSameSQL('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result);
+   assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::in::testNotIn():Boolean[1]
@@ -166,7 +165,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testNotI
                         meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 4);
    assertSameElements(['Allen', 'Roberts', 'Harris', 'Hill'], $result.values.rows->map(r | $r.values->at(0)));
-   assertSameSQL('select "root".LASTNAME as "lastName" from personTable as "root" where ("root".FIRSTNAME not in (\'John\', \'Peter\') OR "root".FIRSTNAME is null)', $result);
+   assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where ("root".FIRSTNAME not in (\'John\', \'Peter\') OR "root".FIRSTNAME is null)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::in::testNotContains():Boolean[1]
@@ -177,7 +176,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testNotC
                         meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 4);
    assertSameElements(['Allen', 'Roberts', 'Harris', 'Hill'], $result.values.rows->map(r | $r.values->at(0)));
-   assertSameSQL('select "root".LASTNAME as "lastName" from personTable as "root" where ("root".FIRSTNAME not in (\'John\', \'Peter\') OR "root".FIRSTNAME is null)', $result);
+   assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where ("root".FIRSTNAME not in (\'John\', \'Peter\') OR "root".FIRSTNAME is null)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::in::testInWithDynaFunction():Boolean[1]
@@ -203,6 +202,6 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testQual
                         meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 2);
    assertSameElements(['A', 'Account 2', 'B', ^TDSNull()], $result.values.rows.values);
-   assertSameSQL('select "accounttable_0".name as "name", case when "accounttable_0".name in (\'Account 1\', \'Account 2\') then \'A\' else \'B\' end as "cat" from tradeTable as "root" left outer join accountTable as "accounttable_0" on ("root".accountID = "accounttable_0".ID) where ("root".ID = 10 or "root".ID = 11)', $result);
+   assertEquals('select "accounttable_0".name as "name", case when "accounttable_0".name in (\'Account 1\', \'Account 2\') then \'A\' else \'B\' end as "cat" from tradeTable as "root" left outer join accountTable as "accounttable_0" on ("root".accountID = "accounttable_0".ID) where ("root".ID = 10 or "root".ID = 11)', $result->sqlRemoveFormatting());
 
 }

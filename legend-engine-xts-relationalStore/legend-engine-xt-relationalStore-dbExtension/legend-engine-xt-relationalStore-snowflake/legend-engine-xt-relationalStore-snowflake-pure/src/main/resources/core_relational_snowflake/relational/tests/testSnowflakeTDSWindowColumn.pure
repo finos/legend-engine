@@ -19,7 +19,6 @@ import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
 import meta::pure::functions::math::olap::*;
 import meta::relational::tests::model::simple::*;
-import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::tds::snowflake::testOLAPGroupBySnowflake():Boolean[1]
 {
@@ -31,5 +30,5 @@ function <<test.Test>> meta::relational::tests::tds::snowflake::testOLAPGroupByS
          ->filter(r|$r.getInteger('rowNumber') > 10)
    };
    let result = toSQLString($func, simpleRelationalMappingIncWithStoreFilter, DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "firstName" as "firstName", "lastName" as "lastName", "ageSum" as "ageSum", "rowNumber" as "rowNumber" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", sum("root".AGE) as "ageSum", row_number() OVER (Order By "root".FIRSTNAME ASC) as "rowNumber" from (select "root".ID as ID, "root".FIRSTNAME as FIRSTNAME, "root".LASTNAME as LASTNAME, "root".AGE as AGE from personTable as "root" where "root".AGE > 110) as "root" where "root".AGE < 200 and startswith("root".LASTNAME,\'David\') group by "firstName","lastName") as "subselect" where "rowNumber" > 10', $result);
+   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "ageSum" as "ageSum", "rowNumber" as "rowNumber" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", sum("root".AGE) as "ageSum", row_number() OVER (Order By "root".FIRSTNAME ASC) as "rowNumber" from (select "root".ID as ID, "root".FIRSTNAME as FIRSTNAME, "root".LASTNAME as LASTNAME, "root".AGE as AGE from personTable as "root" where "root".AGE > 110) as "root" where "root".AGE < 200 and startswith("root".LASTNAME,\'David\') group by "firstName","lastName") as "subselect" where "rowNumber" > 10', $result);
 }

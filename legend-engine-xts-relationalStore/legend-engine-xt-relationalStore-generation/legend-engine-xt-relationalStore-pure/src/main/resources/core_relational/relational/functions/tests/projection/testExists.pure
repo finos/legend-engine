@@ -19,7 +19,6 @@ import meta::core::runtime::*;
 import meta::relational::tests::projection::exists::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
-import meta::relational::functions::asserts::*;
 
 Class meta::relational::tests::projection::exists::MyClass
 {
@@ -46,7 +45,7 @@ function <<test.Test>> meta::relational::tests::projection::exists::testSimpleEx
                         testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertSameElements(['Anthony Allen true', 'David Harris false', 'Fabrice Roberts false','John Johnson true','John Hill true','Oliver Hill false','Peter Smith true'], $result.values.rows->map(r | $r.values->at(0)->toString()+' '+$r.values->at(1)->toString()));
-   assertSameSQL('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "a", exists(select 1 from (select "addresstable_0".ID as ID, null as ADDRESSID, "addresstable_0".NAME as "addressTableNAME" from addressTable as "addresstable_0" UNION ALL select "firmtable_0".ID as ID, "firmtable_0".ADDRESSID as ADDRESSID, "addresstable_1".NAME as "addressTableNAME" from firmTable as "firmtable_0" left outer join addressTable as "addresstable_1" on ("addresstable_1".ID = "firmtable_0".ADDRESSID)) as "unionalias_0" where ("unionalias_0".ID = "root".FIRMID or "unionalias_0".ID = "root".ADDRESSID) and "unionalias_0"."addressTableNAME" = \'Hoboken\') as "prop" from personTable as "root"', $result);
+   assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "a", exists(select 1 from (select "addresstable_0".ID as ID, null as ADDRESSID, "addresstable_0".NAME as "addressTableNAME" from addressTable as "addresstable_0" UNION ALL select "firmtable_0".ID as ID, "firmtable_0".ADDRESSID as ADDRESSID, "addresstable_1".NAME as "addressTableNAME" from firmTable as "firmtable_0" left outer join addressTable as "addresstable_1" on ("addresstable_1".ID = "firmtable_0".ADDRESSID)) as "unionalias_0" where ("unionalias_0".ID = "root".FIRMID or "unionalias_0".ID = "root".ADDRESSID) and "unionalias_0"."addressTableNAME" = \'Hoboken\') as "prop" from personTable as "root"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::exists::testExistsAsQualifier():Boolean[1]
@@ -56,7 +55,7 @@ function <<test.Test>> meta::relational::tests::projection::exists::testExistsAs
                         testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements([false, true, true], $result.values.rows->map(r | $r.values->at(0)));
-   assertSameSQL('select "dep_0".mainId is not null as "prop" from main as "root" left outer join (select distinct "dep_1".mainId from dep as "dep_1" where "dep_1".name = \'name2\') as "dep_0" on ("root".id = "dep_0".mainId)', $result);
+   assertEquals('select "dep_0".mainId is not null as "prop" from main as "root" left outer join (select distinct "dep_1".mainId from dep as "dep_1" where "dep_1".name = \'name2\') as "dep_0" on ("root".id = "dep_0".mainId)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::exists::testExistsEmbeddedOnSameTable():Boolean[1]
@@ -66,7 +65,7 @@ function <<test.Test>> meta::relational::tests::projection::exists::testExistsEm
                         testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements([true, false, true], $result.values.rows->map(r | $r.values->at(0)));
-   assertSameSQL('select "root".depName = \'name2\' as "prop" from mainDenorm as "root"', $result);
+   assertEquals('select "root".depName = \'name2\' as "prop" from mainDenorm as "root"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::exists::testExistsAsQualifierWithFilter():Boolean[1]
@@ -76,7 +75,7 @@ function <<test.Test>> meta::relational::tests::projection::exists::testExistsAs
                         testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 1);
    assertSameElements(true, $result.values.rows->map(r | $r.values->at(0)));
-   assertSameSQL('select "dep_0".mainId is not null as "prop" from main as "root" left outer join (select distinct "dep_1".mainId from dep as "dep_1" where "dep_1".otherFilter = 2 and "dep_1".name = \'name2\') as "dep_0" on ("root".id = "dep_0".mainId) where "root".name = \'name3\'', $result);
+   assertEquals('select "dep_0".mainId is not null as "prop" from main as "root" left outer join (select distinct "dep_1".mainId from dep as "dep_1" where "dep_1".otherFilter = 2 and "dep_1".name = \'name2\') as "dep_0" on ("root".id = "dep_0".mainId) where "root".name = \'name3\'', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::exists::testExistsAsQualifierWithFilterAndWrongJoin():Boolean[1]
@@ -86,7 +85,7 @@ function <<test.Test>> meta::relational::tests::projection::exists::testExistsAs
                         testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 1);
    assertSameElements(true, $result.values.rows->map(r | $r.values->at(0)));
-   assertSameSQL('select "dep_0".otherFilter is not null and "dep_0".mainId is not null as "prop" from main as "root" left outer join (select distinct "dep_1".mainId, "dep_1".otherFilter from dep as "dep_1" where "dep_1".otherFilter = 2 and "dep_1".name = \'name2\') as "dep_0" on ("root".id = "dep_0".mainId and "root".name = \'name3\' and "dep_0".otherFilter = 2) where "root".name = \'name3\'', $result);
+   assertEquals('select "dep_0".otherFilter is not null and "dep_0".mainId is not null as "prop" from main as "root" left outer join (select distinct "dep_1".mainId, "dep_1".otherFilter from dep as "dep_1" where "dep_1".otherFilter = 2 and "dep_1".name = \'name2\') as "dep_0" on ("root".id = "dep_0".mainId and "root".name = \'name3\' and "dep_0".otherFilter = 2) where "root".name = \'name3\'', $result->sqlRemoveFormatting());
 }
 
 

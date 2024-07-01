@@ -51,13 +51,12 @@ import meta::relational::mapping::*;
 import meta::relational::tests::mapping::extend::storeSubstitution::*;
 import meta::relational::tests::mapping::extend::model::*;
 import meta::relational::tests::mapping::extend::*;
-import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::mapping::extend::storeSubstitution::testStoreSubstitutionForB():Any[*]
 {
    let result = execute(|B.all(), BMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL = 'select "root".id as "pk_0", "root".bName as "bName", "root".id as "id", "root".aName as "aName" from ABC as "root"';
-   assertSameSQL($expectedSQL, $result);
+   assertEquals($expectedSQL, $result->sqlRemoveFormatting());
    assertSameElements([1, 2, 3, 4], $result.values.id);
 }
 
@@ -65,6 +64,6 @@ function <<test.Test>> meta::relational::tests::mapping::extend::storeSubstituti
 {
    let result = execute(|C.all(), CMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL = 'select "root".id as "pk_0", "root".cName as "cName", "root".bName as "bName", "root".id as "id", "root".aName as "aName" from ABC as "root"';
-   assertSameSQL($expectedSQL, $result);
+   assertEquals($expectedSQL, $result->sqlRemoveFormatting());
    assertSameElements([1, 2, 3, 4], $result.values.id);
 }

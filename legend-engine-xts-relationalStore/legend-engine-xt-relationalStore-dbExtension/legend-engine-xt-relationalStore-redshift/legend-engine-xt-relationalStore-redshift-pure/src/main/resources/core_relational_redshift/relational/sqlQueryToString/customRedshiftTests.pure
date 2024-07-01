@@ -95,7 +95,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::mapping::simpleRelationalMappingPersonForBQ,
     meta::relational::runtime::DatabaseType.Redshift,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "person_table_d#2_d_m1".key as "KEY" from "person table" as "root" left outer join "person table" as "person_table_d#2_d_m1" on ("root".key = "person_table_d#2_d_m1".key)', $result);
+   assertEquals('select "person_table_d#2_d_m1".key as "KEY" from "person table" as "root" left outer join "person table" as "person_table_d#2_d_m1" on ("root".key = "person_table_d#2_d_m1".key)', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::tableWithSchema():Boolean[1]
@@ -105,7 +105,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::mapping::simpleRelationalMappingPersonForBQ,
     meta::relational::runtime::DatabaseType.Redshift,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "ID" from dataset1."thing table" as "root"', $result);
+   assertEquals('select "root".ID as "ID" from dataset1."thing table" as "root"', $result);
 }
 
 
@@ -121,7 +121,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
      meta::relational::tests::simpleRelationalMappingInc,
      DatabaseType.Redshift,
      meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".LASTNAME as "lastName", avg(1.0 * "root".AGE) OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "ageAverageWindow" from personTable as "root"', $result);
+   assertEquals('select "root".LASTNAME as "lastName", avg(1.0 * "root".AGE) OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "ageAverageWindow" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::testParseDateTime():Boolean[1]
@@ -132,7 +132,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     meta::relational::tests::simpleRelationalMapping,
     DatabaseType.Redshift,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where "root".settlementDateTime < Timestamp\'2015-01-01 00:00:00.000\'', $result);
+   assertEquals('select "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where "root".settlementDateTime < Timestamp\'2015-01-01 00:00:00.000\'', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::testParseDate():Boolean[1]
@@ -143,7 +143,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     meta::relational::tests::simpleRelationalMapping,
      DatabaseType.Redshift,
      meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate < Timestamp\'2015-01-01 00:00:00.000\'', $result);
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate < Timestamp\'2015-01-01 00:00:00.000\'', $result);
 }
 
 
@@ -196,7 +196,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select date_part(hour, "root".dateTime) as "hour" from dataTable as "root"', $result);
+    assertEquals('select date_part(hour, "root".dateTime) as "hour" from dataTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::weekofyear():Boolean[1]
@@ -206,7 +206,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select extract(week from "root".dateTime) as "weekofyear" from dataTable as "root"', $result);
+    assertEquals('select extract(week from "root".dateTime) as "weekofyear" from dataTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::cast():Boolean[1]
@@ -216,7 +216,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select cast("root".string3 as integer) as "string3Integer" from dataTable as "root"', $result);
+    assertEquals('select cast("root".string3 as integer) as "string3Integer" from dataTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::toString():Boolean[1]
@@ -226,7 +226,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select cast("root".int1 as varchar) as "int1String" from dataTable as "root"', $result);
+    assertEquals('select cast("root".int1 as varchar) as "int1String" from dataTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::today():Boolean[1]
@@ -236,7 +236,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::simpleRelationalMapping,
         meta::relational::runtime::DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = current_date', $result);
+    assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = current_date', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::stddev_samp():Boolean[1]
@@ -246,7 +246,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select stddev_samp("root".int1) as "stdDevSample" from dataTable as "root"', $result);
+    assertEquals('select stddev_samp("root".int1) as "stdDevSample" from dataTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::stddev_pop():Boolean[1]
@@ -257,7 +257,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         meta::relational::runtime::DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select stddev_pop("root".int1) as "float1StdDevPopulation" from dataTable as "root"', $result);
+    assertEquals('select stddev_pop("root".int1) as "float1StdDevPopulation" from dataTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::substring():Boolean[1]
@@ -267,7 +267,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where substring("root".FIRSTNAME, 1, 5) = \'John\'', $result);
+    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where substring("root".FIRSTNAME, 1, 5) = \'John\'', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::second():Boolean[1]
@@ -277,7 +277,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select extract( second from "root".settlementDateTime) as "second" from tradeTable as "root"', $result);
+    assertEquals('select extract( second from "root".settlementDateTime) as "second" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::rtrim():Boolean[1]
@@ -287,7 +287,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select rtrim("root".string2) as "rtrim" from dataTable as "root"', $result);
+    assertEquals('select rtrim("root".string2) as "rtrim" from dataTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::round():Boolean[1]
@@ -297,7 +297,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select round("root".float1, 0) as "round" from dataTable as "root"', $result);
+    assertEquals('select round("root".float1, 0) as "round" from dataTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::right():Boolean[1]
@@ -307,7 +307,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select right("root".string1,2) as "right" from dataTable as "root"', $result);
+    assertEquals('select right("root".string1,2) as "right" from dataTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::rem():Boolean[1]
@@ -317,7 +317,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select mod("root".quantity,"root".ID) as "rem" from tradeTable as "root"', $result);
+    assertEquals('select mod("root".quantity,"root".ID) as "rem" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::position():Boolean[1]
@@ -327,7 +327,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping,
         DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select substring("root".FULLNAME, 0, position(\',\' in "root".FULLNAME)-1) as "firstName" from personTable as "root"', $result);
+    assertEquals('select substring("root".FULLNAME, 0, position(\',\' in "root".FULLNAME)-1) as "firstName" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::parseInteger():Boolean[1]
@@ -337,7 +337,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"', $result);
+    assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::parseFloat():Boolean[1]
@@ -347,7 +347,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select cast("root".string2float as float) as "string2Float" from dataTable as "root"', $result);
+    assertEquals('select cast("root".string2float as float) as "string2Float" from dataTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::parseDecimal():Boolean[1]
@@ -357,7 +357,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select cast("root".string2Decimal as decimal) as "string2Decimal" from dataTable as "root"', $result);
+    assertEquals('select cast("root".string2Decimal as decimal) as "string2Decimal" from dataTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::now():Boolean[1]
@@ -367,7 +367,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = now()', $result);
+    assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = now()', $result);
 }
 
 // month same as month number
@@ -378,7 +378,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select extract(month from "root".settlementDateTime) as "settlementMonthNumber" from tradeTable as "root"', $result);
+    assertEquals('select extract(month from "root".settlementDateTime) as "settlementMonthNumber" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::mod():Boolean[1]
@@ -388,7 +388,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select mod("root".int1,2) as "mod" from dataTable as "root"', $result);
+    assertEquals('select mod("root".int1,2) as "mod" from dataTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::minute():Boolean[1]
@@ -398,5 +398,5 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.Redshift,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select extract(minute from "root".settlementDateTime) as "settlementDateTimeMinute" from tradeTable as "root"', $result);
+    assertEquals('select extract(minute from "root".settlementDateTime) as "settlementDateTimeMinute" from tradeTable as "root"', $result);
 }

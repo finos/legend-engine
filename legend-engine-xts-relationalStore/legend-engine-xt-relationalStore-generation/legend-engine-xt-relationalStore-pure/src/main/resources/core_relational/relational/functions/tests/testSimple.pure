@@ -19,7 +19,6 @@ import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
-import meta::relational::functions::asserts::*;
 
 function <<test.BeforePackage>> meta::relational::tests::query::setUp():Boolean[1]
 {
@@ -46,7 +45,7 @@ function <<test.Test>> meta::relational::tests::query::simple::testAll():Boolean
 {
    let result = execute(|Person.all(), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 12);
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $result);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> {meta::pure::executionPlan::profiles::serverVersion.start='v1_32_0'} meta::relational::tests::query::simple::testSQLComments():Boolean[1]

@@ -42,13 +42,12 @@ import meta::relational::tests::mapping::extend::distinct::*;
 import meta::relational::tests::mapping::extend::model::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::mapping::extend::*;
-import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::mapping::extend::distinct::testDistinctForB():Any[*]
 {
    let result = execute(|B.all(), testMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL = 'select distinct "root".bName as "bName", "root".id as "id", "root".aName as "aName" from ABC as "root"';
-   assertSameSQL($expectedSQL, $result);
+   assertEquals($expectedSQL, $result->sqlRemoveFormatting());
    assertSameElements([1, 2, 3, 4], $result.values.id);
 }
 
@@ -56,6 +55,6 @@ function <<test.Test>> meta::relational::tests::mapping::extend::distinct::testD
 {
    let result = execute(|C.all(), testMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedSQL = 'select distinct "root".cName as "cName", "root".bName as "bName", "root".id as "id", "root".aName as "aName" from ABC as "root"';
-   assertSameSQL($expectedSQL, $result);
+   assertEquals($expectedSQL, $result->sqlRemoveFormatting());
    assertSameElements([1, 2, 3, 4], $result.values.id);
 }

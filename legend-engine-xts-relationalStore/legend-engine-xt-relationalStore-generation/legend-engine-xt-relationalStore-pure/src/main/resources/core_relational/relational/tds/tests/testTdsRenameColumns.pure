@@ -19,7 +19,6 @@ import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
-import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColumns():Boolean[1]
 {
@@ -37,8 +36,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
    assertEquals('Peter|Hello,John|Hello,John|Hello,Anthony|Hello,Fabrice|Hello,Oliver|Hello,David|Hello',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertSameSQL('select "persontable_0"."firstName" as "First Name", "persontable_0"."hello" as "Other" from (select "root".FIRSTNAME as "firstName", \'Hello\' as "hello" from personTable as "root") as "persontable_0"',
-      $result);
+   assertEquals('select "persontable_0"."firstName" as "First Name", "persontable_0"."hello" as "Other" from (select "root".FIRSTNAME as "firstName", \'Hello\' as "hello" from personTable as "root") as "persontable_0"',
+      $result->sqlRemoveFormatting());
 }
 
 
@@ -62,8 +61,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
    assertEquals('Anthony|1,David|1,Fabrice|1,John|2,Oliver|1,Peter|1',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertSameSQL('select "persontable_0"."firstName" as "First Name", "persontable_0"."count" as "People Count" from (select "root".FIRSTNAME as "firstName", count(*) as "count" from personTable as "root" group by "firstName" order by "firstName") as "persontable_0"',
-      $result);
+   assertEquals('select "persontable_0"."firstName" as "First Name", "persontable_0"."count" as "People Count" from (select "root".FIRSTNAME as "firstName", count(*) as "count" from personTable as "root" group by "firstName" order by "firstName") as "persontable_0"',
+      $result->sqlRemoveFormatting());
 }
 
 
@@ -84,8 +83,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
    assertEquals('Anthony,Anthony,David,David,Fabrice,Fabrice,John,John,John,John,Oliver,Oliver,Peter,Peter',
       $result.values->sort(asc('First Name')).rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertSameSQL('select "unionalias_0"."firstName" as "First Name" from (select "unionalias_1"."firstName" as "firstName" from (select "root".FIRSTNAME as "firstName" from personTable as "root" UNION ALL select "root".FIRSTNAME as "firstName" from personTable as "root") as "unionalias_1") as "unionalias_0"',
-      $result);
+   assertEquals('select "unionalias_0"."firstName" as "First Name" from (select "unionalias_1"."firstName" as "firstName" from (select "root".FIRSTNAME as "firstName" from personTable as "root" UNION ALL select "root".FIRSTNAME as "firstName" from personTable as "root") as "unionalias_1") as "unionalias_0"',
+      $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColumnsWithQuotes():Boolean[1]
@@ -107,7 +106,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
 
    let expected = 'select "tablewithquotedcolumns_0"."FIRST NAME" as "firstName", "tablewithquotedcolumns_0"."LAST NAME" as "LAST NAME", "tablewithquotedcolumns_0"."1columnStartsWithNumber" as "1columnStartsWithNumber" from (select "root"."FIRST NAME" as "FIRST NAME", "root"."LAST NAME" as "LAST NAME", "root"."1columnStartsWithNumber" as "1columnStartsWithNumber" from tableWithQuotedColumns as "root") as "tablewithquotedcolumns_0"';
 
-   assertSameSQL($expected, $resWithoutQuotes);
+   assertEquals($expected, $resWithoutQuotes->sqlRemoveFormatting());
 
    let queryWithQuotes   = {|tableToTDS(meta::relational::functions::database::tableReference(meta::relational::tests::db,'default','tableWithQuotedColumns'))
        ->project([
@@ -121,6 +120,6 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
 
    let resWithQuotes = execute($queryWithQuotes, $mapping, $runtime, meta::relational::extension::relationalExtensions());
 
-   assertSameSQL($expected, $resWithQuotes);
+   assertEquals($expected, $resWithQuotes->sqlRemoveFormatting());
 }
 

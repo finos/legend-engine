@@ -16,7 +16,6 @@ import meta::relational::tests::query::function::isempty::*;
 import meta::relational::functions::toDDL::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::mapping::*;
-import meta::relational::functions::asserts::*;
 
 Class meta::relational::tests::query::function::isempty::TestClass
 {
@@ -40,7 +39,7 @@ function <<test.Test>> meta::relational::tests::query::function::isempty::testDe
    let result = execute(|TestClass.all()->filter(t|$t.isValued()), TestMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals(1, $result.values->size());
-   assertSameSQL('select "root".id as "pk_0", "root".value as "myValue" from testTable as "root" where "root".value is null', $result);
+   assertEquals('select "root".id as "pk_0", "root".value as "myValue" from testTable as "root" where "root".value is null', $result->sqlRemoveFormatting());
 }
 
 ###Relational

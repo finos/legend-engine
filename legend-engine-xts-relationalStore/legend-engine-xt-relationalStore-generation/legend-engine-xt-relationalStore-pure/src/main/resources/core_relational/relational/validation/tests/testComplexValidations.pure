@@ -234,7 +234,6 @@ import meta::relational::tests::csv::*;
 import meta::relational::validation::*;
 import meta::relational::metamodel::*;
 import meta::core::runtime::*;
-import meta::relational::functions::asserts::*;
 function <<test.BeforePackage>> meta::relational::validation::complex::createTablesInDb():Boolean[1]
 {
    let runtime    = getRuntime();
@@ -323,11 +322,11 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
                                    ^RelationalExecutionContext(),
                                    ['constraint1'], meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'constraint1,Error,,1\n'+
                 'constraint1,Error,,1\n'+
                 'constraint1,Error,,1\n'+
-                'constraint1,Error,,1\n', $validationResult.values);
+                'constraint1,Error,,1\n', $validationResult.values->toCSV());
 }
 
 function <<test.Test>> meta::relational::validation::complex::validateComplexValidation2():Boolean[1]
@@ -339,8 +338,8 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
                                    ^RelationalExecutionContext(),
                                    ['constraint2'], meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
-                'constraint2,Error,,3\n', $validationResult.values);
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+                'constraint2,Error,,3\n', $validationResult.values->toCSV());
 }
 
 function <<test.Test>> meta::relational::validation::complex::validateComplexValidation3():Boolean[1]
@@ -358,10 +357,10 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
                                    ['constraint1'],
                                    [], meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,addressId,personId\n'+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,addressId,personId\n'+
                 'constraint1,Error,,12,Peter\n'+
                 'constraint1,Error,,12,John\n'+
-                'constraint1,Error,,12,Anthony\n', $validationResult.values);
+                'constraint1,Error,,12,Anthony\n', $validationResult.values->toCSV());
 }
 
 function <<test.Test>> meta::relational::validation::complex::validateComplexValidation4():Boolean[1]
@@ -372,8 +371,8 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
                                    getRuntime(),
                                    ['constraint2'], meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
-                'constraint2,Error,,4\n', $validationResult.values);
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+                'constraint2,Error,,4\n', $validationResult.values->toCSV());
 }
 
 function <<test.Test>> meta::relational::validation::complex::validateComplexValidation5():Boolean[1]
@@ -384,8 +383,8 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
                                    getRuntime(),
                                    ['constraint3'], meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
-                'constraint3,Error,,4\n', $validationResult.values);
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+                'constraint3,Error,,4\n', $validationResult.values->toCSV());
 }
 
 function <<test.Test>> meta::relational::validation::complex::validateComplexValidation6():Boolean[1]
@@ -396,8 +395,8 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
                                    getRuntime(),
                                    ['constraint4'], meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
-                'constraint4,Error,,2\n', $validationResult.values);
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+                'constraint4,Error,,2\n', $validationResult.values->toCSV());
 }
 
 function <<test.Test>> meta::relational::validation::complex::validateComplexValidation7():Boolean[1]
@@ -408,9 +407,9 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
                                    getRuntime(),
                                    ['constraint5'], meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'constraint5,Error,,1\n'+
-                'constraint5,Error,,1\n', $validationResult.values);
+                'constraint5,Error,,1\n', $validationResult.values->toCSV());
 }
 
 function <<test.Test>> meta::relational::validation::complex::validateComplexValidation8():Boolean[1]
@@ -421,9 +420,9 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
                                    getRuntime(),
                                    ['constraint6'], meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'constraint6,Error,,3\n'+
-                'constraint6,Error,,4\n', $validationResult.values);
+                'constraint6,Error,,4\n', $validationResult.values->toCSV());
 }
 
 function <<test.Test>> meta::relational::validation::complex::validateComplexValidation9():Boolean[1]
@@ -434,10 +433,10 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
                                    getRuntime(),
                                    ['constraint7'], meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'constraint7,Error,,1\n'+
                 'constraint7,Error,,1\n'+
-                'constraint7,Error,,4\n', $validationResult.values);
+                'constraint7,Error,,4\n', $validationResult.values->toCSV());
 }
 
 function <<test.Test>> meta::relational::validation::complex::validateComplexValidation10():Boolean[1]
@@ -448,7 +447,7 @@ function <<test.Test>> meta::relational::validation::complex::validateComplexVal
                                    getRuntime(),
                                    ['constraint8'], meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'constraint8,Error,,1\n'+
-                'constraint8,Error,,1\n', $validationResult.values);
+                'constraint8,Error,,1\n', $validationResult.values->toCSV());
 }
