@@ -51,4 +51,5 @@ public class FunctionVisitor implements LogicalPlanVisitor<FunctionImpl>
         }
         return new VisitorResult(null);
     }
+
 }

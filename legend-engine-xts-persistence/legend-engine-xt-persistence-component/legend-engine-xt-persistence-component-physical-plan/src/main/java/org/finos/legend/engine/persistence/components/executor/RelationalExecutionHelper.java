@@ -46,19 +46,9 @@ public interface RelationalExecutionHelper
 
     List<Map<String, Object>> executeQuery(String sql);
 
-    default TabularData executeQueryAsTabularData(String sql)
-    {
-        return TabularData.builder()
-            .addAllData(executeQuery(sql))
-            .build();
-    }
+    TabularData executeQueryAsTabularData(String sql);
 
-    default TabularData executeQueryAsTabularData(String sql, int rows)
-    {
-        return TabularData.builder()
-                .addAllData(executeQuery(sql, rows))
-                .build();
-    }
+    TabularData executeQueryAsTabularData(String sql, int rows);
 
     void close();
 }

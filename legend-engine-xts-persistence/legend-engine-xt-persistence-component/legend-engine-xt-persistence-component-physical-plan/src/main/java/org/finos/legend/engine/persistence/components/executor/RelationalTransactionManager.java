@@ -20,15 +20,31 @@ import java.util.Map;
 
 public interface RelationalTransactionManager
 {
-    public void beginTransaction() throws SQLException, InterruptedException;
+    void close() throws SQLException;
 
-    public void commitTransaction() throws SQLException, InterruptedException;
+    void beginTransaction() throws SQLException;
 
-    public void revertTransaction() throws SQLException, InterruptedException;
+    void commitTransaction() throws SQLException;
 
-    public boolean executeInCurrentTransaction(String sql) throws SQLException, InterruptedException;
+    void revertTransaction() throws SQLException;
 
-    public List<Map<String, Object>> convertResultSetToList(String sql);
+    boolean executeInCurrentTransaction(String sql) throws SQLException;
 
-    public List<Map<String, Object>> convertResultSetToList(String sql, int rows);
+    List<Map<String, Object>> convertResultSetToList(String sql);
+
+    List<Map<String, Object>> convertResultSetToList(String sql, int rows);
+
+    default TabularData convertResultSetToTabularData(String sql)
+    {
+        return TabularData.builder()
+            .addAllData(convertResultSetToList(sql))
+            .build();
+    }
+
+    default TabularData convertResultSetToTabularData(String sql, int rows)
+    {
+        return TabularData.builder()
+            .addAllData(convertResultSetToList(sql, rows))
+            .build();
+    }
 }
