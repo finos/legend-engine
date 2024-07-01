@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.persistence.components.relational.jdbc;
 
+import java.util.function.BiFunction;
+import org.finos.legend.engine.persistence.components.executor.RelationalTransactionManager;
+import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.executor.TypeMapping;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
@@ -53,7 +56,7 @@ public class JdbcHelper implements RelationalExecutionHelper
     private static final Logger LOGGER = LoggerFactory.getLogger(JdbcHelper.class);
 
     protected final Connection connection;
-    private JdbcTransactionManager transactionManager;
+    private RelationalTransactionManager transactionManager;
 
     public static final String TYPE_NAME = "TYPE_NAME";
     public static final String DATA_TYPE = "DATA_TYPE";
@@ -80,12 +83,24 @@ public class JdbcHelper implements RelationalExecutionHelper
         return connection;
     }
 
+    protected RelationalTransactionManager intializeTransactionManager(Connection connection)
+    {
+        try
+        {
+            return new JdbcTransactionManager(connection);
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public void beginTransaction()
     {
         try
         {
-            this.transactionManager = new JdbcTransactionManager(connection);
+            this.transactionManager = intializeTransactionManager(connection);
             this.transactionManager.beginTransaction();
         }
         catch (SQLException e)
@@ -433,10 +448,10 @@ public class JdbcHelper implements RelationalExecutionHelper
         }
         else
         {
-            JdbcTransactionManager txManager = null;
+            RelationalTransactionManager txManager = null;
             try
             {
-                txManager = new JdbcTransactionManager(connection);
+                txManager = intializeTransactionManager(connection);
                 txManager.beginTransaction();
                 for (String sql : sqls)
                 {
@@ -486,30 +501,7 @@ public class JdbcHelper implements RelationalExecutionHelper
         }
         else
         {
-            JdbcTransactionManager txManager = null;
-            try
-            {
-                txManager = new JdbcTransactionManager(connection);
-                return txManager.convertResultSetToList(sql, rows);
-            }
-            catch (Exception e)
-            {
-                throw new RuntimeException("Error executing SQL query: " + sql, e);
-            }
-            finally
-            {
-                if (txManager != null)
-                {
-                    try
-                    {
-                        txManager.close();
-                    }
-                    catch (SQLException e)
-                    {
-                        LOGGER.error("Error closing transaction manager.", e);
-                    }
-                }
-            }
+            return executeWithNewTransactionManager(sql, (RelationalTransactionManager manager, String s) -> manager.convertResultSetToList(s, rows));
         }
     }
 
@@ -522,28 +514,60 @@ public class JdbcHelper implements RelationalExecutionHelper
         }
         else
         {
-            JdbcTransactionManager txManager = null;
-            try
+            return executeWithNewTransactionManager(sql, RelationalTransactionManager::convertResultSetToList);
+        }
+    }
+
+    @Override
+    public TabularData executeQueryAsTabularData(String sql)
+    {
+        if (this.transactionManager != null)
+        {
+            return this.transactionManager.convertResultSetToTabularData(sql);
+        }
+        else
+        {
+            return executeWithNewTransactionManager(sql, RelationalTransactionManager::convertResultSetToTabularData);
+        }
+    }
+
+    @Override
+    public TabularData executeQueryAsTabularData(String sql, int rows)
+    {
+        if (this.transactionManager != null)
+        {
+            return this.transactionManager.convertResultSetToTabularData(sql, rows);
+        }
+        else
+        {
+            return executeWithNewTransactionManager(sql, (RelationalTransactionManager manager, String s) ->
+                manager.convertResultSetToTabularData(s, rows));
+        }
+    }
+
+    protected  <T> T executeWithNewTransactionManager(String sql, BiFunction<RelationalTransactionManager, String, T> transactionExecutor)
+    {
+        RelationalTransactionManager txManager = null;
+        try
+        {
+            txManager = intializeTransactionManager(connection);
+            return transactionExecutor.apply(txManager, sql);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Error executing SQL query: " + sql, e);
+        }
+        finally
+        {
+            if (txManager != null)
             {
-                txManager = new JdbcTransactionManager(connection);
-                return txManager.convertResultSetToList(sql);
-            }
-            catch (Exception e)
-            {
-                throw new RuntimeException("Error executing SQL query: " + sql, e);
-            }
-            finally
-            {
-                if (txManager != null)
+                try
                 {
-                    try
-                    {
-                        txManager.close();
-                    }
-                    catch (SQLException e)
-                    {
-                        LOGGER.error("Error closing transaction manager.", e);
-                    }
+                    txManager.close();
+                }
+                catch (SQLException e)
+                {
+                    LOGGER.error("Error closing transaction manager.", e);
                 }
             }
         }
