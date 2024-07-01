@@ -30,7 +30,7 @@ function <<test.Test>> meta::relational::validation::showcase::standalone::valid
 {
    let validationResult = validate({|Trade.all()}, validationShowcaseMapping, getRuntime(), getConstraintsContextInformation(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'etiNotEmpty,Error,External Trade ID is not valid,2\n'+
                 'validLocation,Warn,Location is not known,3\n'+
                 'validLocation,Warn,Location is not known,4\n'+
@@ -41,7 +41,7 @@ function <<test.Test>> meta::relational::validation::showcase::standalone::valid
                 'isATypeAccount,Warn,Account is not Type A : ,1\n'+
                 'isATypeAccount,Warn,Account is not Type A : Account_3_B,4\n'+
                 'cusipExists,Error,Product cusip empty,3\n'+
-                'cusipExists,Error,Product cusip empty,4\n', $validationResult.values);
+                'cusipExists,Error,Product cusip empty,4\n', $validationResult.values->toCSV());
 }
 
 function <<test.Test>> meta::relational::validation::showcase::standalone::validateSingleConstraint():Boolean[1]
@@ -54,8 +54,8 @@ function <<test.Test>> meta::relational::validation::showcase::standalone::valid
                  'from tradeTable as "root" '+
                  'where not "root".ETI is not null', $validationResult);
 
-   assertTdsFromCsv('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
-                'etiNotEmpty,Error,External Trade ID is not valid,2\n', $validationResult.values);
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+                'etiNotEmpty,Error,External Trade ID is not valid,2\n', $validationResult.values->toCSV());
 }
 
 function <<test.Test>> meta::relational::validation::showcase::standalone::validateMultipleConstraints():Boolean[1]
@@ -75,10 +75,10 @@ function <<test.Test>> meta::relational::validation::showcase::standalone::valid
                     'where ("root".LOCATION not in (\'Asia\', \'EMEA\', \'Americas\') OR "root".LOCATION is null)'+
                  ') as "unionalias_0"', $validationResult);
 
-   assertTdsFromCsv('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'etiNotEmpty,Error,External Trade ID is not valid,2\n'+
                 'validLocation,Error,,3\n'+
-                'validLocation,Error,,4\n', $validationResult.values);
+                'validLocation,Error,,4\n', $validationResult.values->toCSV());
 }
 
 function <<test.Test>> meta::relational::validation::showcase::standalone::validateMultiplesConstraintWithConstraintInformation():Boolean[1]
@@ -98,20 +98,20 @@ function <<test.Test>> meta::relational::validation::showcase::standalone::valid
                     'where ("root".LOCATION not in (\'Asia\', \'EMEA\', \'Americas\') OR "root".LOCATION is null)'+
                  ') as "unionalias_0"', $validationResult);
 
-   assertTdsFromCsv('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'etiNotEmpty,Error,External Trade ID is not valid,2\n'+
                 'validLocation,Warn,Location is not known,3\n'+
-                'validLocation,Warn,Location is not known,4\n', $validationResult.values);
+                'validLocation,Warn,Location is not known,4\n', $validationResult.values->toCSV());
 }
 
 function <<test.Test>> meta::relational::validation::showcase::standalone::validateMultiplesConstraintWithAdditionalProjections():Boolean[1]
 {
    let validationResult = validate({|Trade.all()}, [col(x:Trade[1] | $x.tradeId, 'Trade ID'), col(x:Trade[1] | $x.externalTradeId, 'Ext Trade ID'), col(x:Trade[1] | $x.location, 'Location')], [], validationShowcaseMapping, getRuntime(), ^RelationalExecutionContext(), ['etiNotEmpty', 'validLocation'], getConstraintsContextInformation(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,Trade ID,Ext Trade ID,Location\n'+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,Trade ID,Ext Trade ID,Location\n'+
                 'etiNotEmpty,Error,External Trade ID is not valid,2,,Americas\n'+
                 'validLocation,Warn,Location is not known,3,102,Dummy\n'+
-                'validLocation,Warn,Location is not known,4,103,Dummy\n', $validationResult.values);
+                'validLocation,Warn,Location is not known,4,103,Dummy\n', $validationResult.values->toCSV());
 }
 
 function <<test.Test>> meta::relational::validation::showcase::standalone::validateMultiplesConstraintWithPostTDSOperation1():Boolean[1]
@@ -119,9 +119,9 @@ function <<test.Test>> meta::relational::validation::showcase::standalone::valid
    let validationResult = validate({|Trade.all()}, [col(x:Trade[1] | $x.tradeId, 'Trade ID'), col(x:Trade[1] | $x.externalTradeId, 'Ext Trade ID'), col(x:Trade[1] | $x.location, 'Location')], {t:TabularDataSet[1]|$t->groupBy(['CONSTRAINT_ID'],agg('COUNT', x|$x.getInteger('Trade ID'), y|$y->count()))},
                                     validationShowcaseMapping, getRuntime(), ^RelationalExecutionContext(), ['etiNotEmpty', 'validLocation'], getConstraintsContextInformation(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('CONSTRAINT_ID,COUNT\n'+
+   assertEquals('CONSTRAINT_ID,COUNT\n'+
                 'validLocation,2\n'+
-                'etiNotEmpty,1\n', $validationResult.values->sort([desc('COUNT')]));
+                'etiNotEmpty,1\n', $validationResult.values->sort([desc('COUNT')])->toCSV());
 }
 
 function <<test.Test>> meta::relational::validation::showcase::standalone::validateAllConstraintsWithPostTDSOperation2():Boolean[1]
@@ -129,7 +129,7 @@ function <<test.Test>> meta::relational::validation::showcase::standalone::valid
    let validationResult = validate({|Trade.all()}, [col(x:Trade[1] | $x.tradeId, 'Trade ID'), col(x:Trade[1] | $x.externalTradeId, 'Ext Trade ID'), col(x:Trade[1] | $x.location, 'Location')], {t:TabularDataSet[1]|$t->restrict(['Trade ID', 'Ext Trade ID', 'CONSTRAINT_ID', 'MESSAGE'])->sort([asc('Trade ID'),asc('CONSTRAINT_ID')])},
                                     validationShowcaseMapping, getRuntime(), ^RelationalExecutionContext(), [], getConstraintsContextInformation(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('Trade ID,Ext Trade ID,CONSTRAINT_ID,MESSAGE\n'+
+   assertEquals('Trade ID,Ext Trade ID,CONSTRAINT_ID,MESSAGE\n'+
                 '1,100,isATypeAccount,Account is not Type A : \n'+
                 '1,100,knownAccount,Account unknown\n'+
                 '2,,etiNotEmpty,External Trade ID is not valid\n'+
@@ -140,16 +140,16 @@ function <<test.Test>> meta::relational::validation::showcase::standalone::valid
                 '4,103,isATypeAccount,Account is not Type A : Account_3_B\n'+
                 '4,103,knownProduct,Product unknown\n'+
                 '4,103,validLocation,Location is not known\n'+
-                '5,104,quantityInValidRange,Quantity not in range: 1000000\n', $validationResult.values);
+                '5,104,quantityInValidRange,Quantity not in range: 1000000\n', $validationResult.values->toCSV());
 }
 
 function <<test.Test>> meta::relational::validation::showcase::standalone::validateAllConstraintsWithInnerJoinInFilter():Boolean[1]
 {
    let validationResult = validate({|Trade.all()}, validationShowcaseMappingWithInnerJoinsInFilter, getRuntime(), getConstraintsContextInformation(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
+   assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'knownAccount,Error,Account unknown,1\n'+
-                'isATypeAccount,Warn,Account is not Type A : ,1\n', $validationResult.values);
+                'isATypeAccount,Warn,Account is not Type A : ,1\n', $validationResult.values->toCSV());
 }
 
 function meta::relational::validation::showcase::standalone::getRuntime():Runtime[1]

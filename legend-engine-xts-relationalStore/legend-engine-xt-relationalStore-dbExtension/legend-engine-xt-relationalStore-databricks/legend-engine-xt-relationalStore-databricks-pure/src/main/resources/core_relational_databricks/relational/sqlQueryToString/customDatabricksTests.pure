@@ -92,7 +92,7 @@ function <<test.Test>> meta::relational::databricks::tests::tableAndColumnNamesA
     meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
     DatabaseType.Databricks,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select `root`.id as `pk_0`, `root`.firstName as `firstName`, `root`.lastName as `lastName`, `root`.age as `age`, `root`.createdAt as `createdAt`, `root`.activeDate as `activeDate`, `root`.activeDateStr as `activeDateStr` from test_schema.test_table as `root`', $result);
+   assertEquals('select `root`.id as `pk_0`, `root`.firstName as `firstName`, `root`.lastName as `lastName`, `root`.age as `age`, `root`.createdAt as `createdAt`, `root`.activeDate as `activeDate`, `root`.activeDateStr as `activeDateStr` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::windowFunction():Boolean[1]
@@ -108,7 +108,7 @@ function <<test.Test>> meta::relational::databricks::tests::windowFunction():Boo
      meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
      DatabaseType.Databricks,
      meta::relational::extension::relationalExtensions());
-   assertSameSQL('select `root`.lastName as `lastName`, avg(1.0 * `root`.age) OVER (Partition By `root`.firstName Order By `root`.lastName ASC) as `ageAverageWindow` from test_schema.test_table as `root`', $result);
+   assertEquals('select `root`.lastName as `lastName`, avg(1.0 * `root`.age) OVER (Partition By `root`.firstName Order By `root`.lastName ASC) as `ageAverageWindow` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::getDateTime():Boolean[1]
@@ -119,7 +119,7 @@ function <<test.Test>> meta::relational::databricks::tests::getDateTime():Boolea
     meta::relational::tests::simpleRelationalMapping,
     DatabaseType.Databricks,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select `root`.settlementDateTime as `settlementDateTime` from tradeTable as `root` where `root`.settlementDateTime < to_timestamp(\'2015-01-01 00:00:00.000\')', $result);
+   assertEquals('select `root`.settlementDateTime as `settlementDateTime` from tradeTable as `root` where `root`.settlementDateTime < to_timestamp(\'2015-01-01 00:00:00.000\')', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::getDate():Boolean[1]
@@ -130,7 +130,7 @@ function <<test.Test>> meta::relational::databricks::tests::getDate():Boolean[1]
     meta::relational::tests::simpleRelationalMapping,
      DatabaseType.Databricks,
      meta::relational::extension::relationalExtensions());
-   assertSameSQL('select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate < to_timestamp(\'2015-01-01 00:00:00.000\')', $result);
+   assertEquals('select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate < to_timestamp(\'2015-01-01 00:00:00.000\')', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::testSliceOffsetTake():Boolean[1]
@@ -142,7 +142,7 @@ function <<test.Test>> meta::relational::databricks::tests::testSliceOffsetTake(
                DatabaseType.Databricks,
                meta::relational::extension::relationalExtensions());
 
-   assertSameSQL('select `root`.age as `age` from test_schema.test_table as `root`', $result1);
+   assertEquals('select `root`.age as `age` from test_schema.test_table as `root`', $result1);
 
    let result2 = toSQLString(
                |meta::relational::databricks::tests::domain::Person.all()->project([col(p |$p.age,'age')])->limit(10),
@@ -150,7 +150,7 @@ function <<test.Test>> meta::relational::databricks::tests::testSliceOffsetTake(
                DatabaseType.Databricks,
                meta::relational::extension::relationalExtensions());
 
-   assertSameSQL('select `root`.age as `age` from test_schema.test_table as `root` limit 10', $result2);
+   assertEquals('select `root`.age as `age` from test_schema.test_table as `root` limit 10', $result2);
 
    let result3 = toSQLString(
                |meta::relational::databricks::tests::domain::Person.all()->project([col(p |$p.age,'age')])->drop(5),
@@ -158,7 +158,7 @@ function <<test.Test>> meta::relational::databricks::tests::testSliceOffsetTake(
                DatabaseType.Databricks,
                meta::relational::extension::relationalExtensions());
 
-   assertSameSQL('select `root`.age as `age` from test_schema.test_table as `root` offset 5', $result3);
+   assertEquals('select `root`.age as `age` from test_schema.test_table as `root` offset 5', $result3);
 
    let result4 = toSQLString(
                |meta::relational::databricks::tests::domain::Person.all()->project([col(p |$p.age,'age')])->slice(5, 11),
@@ -166,7 +166,7 @@ function <<test.Test>> meta::relational::databricks::tests::testSliceOffsetTake(
                DatabaseType.Databricks,
                meta::relational::extension::relationalExtensions());
 
-   assertSameSQL('select `root`.age as `age` from test_schema.test_table as `root` limit 6 offset 5', $result4);
+   assertEquals('select `root`.age as `age` from test_schema.test_table as `root` limit 6 offset 5', $result4);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::joinStrings():Boolean[1]
@@ -206,7 +206,7 @@ function <<test.Test>> meta::relational::databricks::tests::hour():Boolean[1]
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Databricks,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select hour(`root`.dateTime) as `hour` from dataTable as `root`', $result);
+    assertEquals('select hour(`root`.dateTime) as `hour` from dataTable as `root`', $result);
 }
 
 
@@ -217,7 +217,7 @@ function <<test.Test>> meta::relational::databricks::tests::adjust():Boolean[1]
     meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
     DatabaseType.Databricks,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select `root`.createdAt + INTERVAL 1 DAY as `Created At` from test_schema.test_table as `root`', $result);
+   assertEquals('select `root`.createdAt + INTERVAL 1 DAY as `Created At` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::dateDiffDays():Boolean[1]
@@ -227,7 +227,7 @@ function <<test.Test>> meta::relational::databricks::tests::dateDiffDays():Boole
     meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
     DatabaseType.Databricks,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select datediff(`root`.activeDate, `root`.createdAt) as `deltaDays` from test_schema.test_table as `root`', $result);
+   assertEquals('select datediff(`root`.activeDate, `root`.createdAt) as `deltaDays` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::dateDiffMonths():Boolean[1]
@@ -237,7 +237,7 @@ function <<test.Test>> meta::relational::databricks::tests::dateDiffMonths():Boo
     meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
     DatabaseType.Databricks,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select cast(round(months_between(`root`.activeDate, `root`.createdAt)) AS INT) as `deltaDays` from test_schema.test_table as `root`', $result);
+   assertEquals('select cast(round(months_between(`root`.activeDate, `root`.createdAt)) AS INT) as `deltaDays` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::dateDiffYears():Boolean[1]
@@ -247,7 +247,7 @@ function <<test.Test>> meta::relational::databricks::tests::dateDiffYears():Bool
     meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
     DatabaseType.Databricks,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select year(`root`.activeDate) - year(`root`.createdAt) as `deltaDays` from test_schema.test_table as `root`', $result);
+   assertEquals('select year(`root`.activeDate) - year(`root`.createdAt) as `deltaDays` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::avg():Boolean[1]
@@ -257,7 +257,7 @@ function <<test.Test>> meta::relational::databricks::tests::avg():Boolean[1]
     meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
     DatabaseType.Databricks,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select `root`.firstName as `First Name`, avg(1.0 * `root`.age) as `Avg Age` from test_schema.test_table as `root` group by `First Name`', $result);
+   assertEquals('select `root`.firstName as `First Name`, avg(1.0 * `root`.age) as `Avg Age` from test_schema.test_table as `root` group by `First Name`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::firstDayOfMonth():Boolean[1]
@@ -267,7 +267,7 @@ function <<test.Test>> meta::relational::databricks::tests::firstDayOfMonth():Bo
     meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
     DatabaseType.Databricks,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select trunc(`root`.createdAt, \'MONTH\') as `month` from test_schema.test_table as `root`', $result);
+   assertEquals('select trunc(`root`.createdAt, \'MONTH\') as `month` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::firstDayOfQuarter():Boolean[1]
@@ -277,7 +277,7 @@ function <<test.Test>> meta::relational::databricks::tests::firstDayOfQuarter():
     meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
     DatabaseType.Databricks,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select trunc(`root`.createdAt, \'QUARTER\') as `quarter` from test_schema.test_table as `root`', $result);
+   assertEquals('select trunc(`root`.createdAt, \'QUARTER\') as `quarter` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::firstDayOfWeek():Boolean[1]
@@ -287,7 +287,7 @@ function <<test.Test>> meta::relational::databricks::tests::firstDayOfWeek():Boo
     meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
     DatabaseType.Databricks,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select trunc(`root`.createdAt, \'WEEK\') as `week` from test_schema.test_table as `root`', $result);
+   assertEquals('select trunc(`root`.createdAt, \'WEEK\') as `week` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::previousDayOfWeek():Boolean[1]
@@ -297,7 +297,7 @@ function <<test.Test>> meta::relational::databricks::tests::previousDayOfWeek():
     meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
     DatabaseType.Databricks,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select date_sub(`root`.createdAt, case when dayofweek(`root`.createdAt) = 2 then 7 else dayofweek(`root`.createdAt) - 2 end) as `monday` from test_schema.test_table as `root`', $result);
+   assertEquals('select date_sub(`root`.createdAt, case when dayofweek(`root`.createdAt) = 2 then 7 else dayofweek(`root`.createdAt) - 2 end) as `monday` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::dayOfMonth():Boolean[1]
@@ -307,7 +307,7 @@ function <<test.Test>> meta::relational::databricks::tests::dayOfMonth():Boolean
     meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
     DatabaseType.Databricks,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select dayofmonth(`root`.createdAt) as `dayOfMonth` from test_schema.test_table as `root`', $result);
+   assertEquals('select dayofmonth(`root`.createdAt) as `dayOfMonth` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::dayOfWeekNumber():Boolean[1]
@@ -317,7 +317,7 @@ function <<test.Test>> meta::relational::databricks::tests::dayOfWeekNumber():Bo
     meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
     DatabaseType.Databricks,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select dayofweek(`root`.createdAt) as `dayOfWeekNumber` from test_schema.test_table as `root`', $result);
+   assertEquals('select dayofweek(`root`.createdAt) as `dayOfWeekNumber` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::dayOfYear():Boolean[1]
@@ -327,7 +327,7 @@ function <<test.Test>> meta::relational::databricks::tests::dayOfYear():Boolean[
     meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
     DatabaseType.Databricks,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select dayofyear(`root`.createdAt) as `dayOfYear` from test_schema.test_table as `root`', $result);
+   assertEquals('select dayofyear(`root`.createdAt) as `dayOfYear` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::monthNumber():Boolean[1]
@@ -337,7 +337,7 @@ function <<test.Test>> meta::relational::databricks::tests::monthNumber():Boolea
     meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
     DatabaseType.Databricks,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select month(`root`.createdAt) as `monthNumber` from test_schema.test_table as `root`', $result);
+   assertEquals('select month(`root`.createdAt) as `monthNumber` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::mostRecentDayOfWeek():Boolean[1]
@@ -347,7 +347,7 @@ function <<test.Test>> meta::relational::databricks::tests::mostRecentDayOfWeek(
     meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
     DatabaseType.Databricks,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select date_sub(`root`.createdAt, case when dayofweek(`root`.createdAt) = 2 then 0 else dayofweek(`root`.createdAt) - 2 end) as `monday` from test_schema.test_table as `root`', $result);
+   assertEquals('select date_sub(`root`.createdAt, case when dayofweek(`root`.createdAt) = 2 then 0 else dayofweek(`root`.createdAt) - 2 end) as `monday` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::weekOfYear():Boolean[1]
@@ -357,7 +357,7 @@ function <<test.Test>> meta::relational::databricks::tests::weekOfYear():Boolean
     meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
     DatabaseType.Databricks,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select weekofyear(`root`.createdAt) as `week` from test_schema.test_table as `root`', $result);
+   assertEquals('select weekofyear(`root`.createdAt) as `week` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::cast():Boolean[1]
@@ -367,7 +367,7 @@ function <<test.Test>> meta::relational::databricks::tests::cast():Boolean[1]
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Databricks,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select cast(`root`.string3 as int) as `string3Integer` from dataTable as `root`', $result);
+    assertEquals('select cast(`root`.string3 as int) as `string3Integer` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::today():Boolean[1]
@@ -377,7 +377,7 @@ function <<test.Test>> meta::relational::databricks::tests::today():Boolean[1]
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.Databricks,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate = current_date', $result);
+    assertEquals('select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate = current_date', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::stddev_samp():Boolean[1]
@@ -387,7 +387,7 @@ function <<test.Test>> meta::relational::databricks::tests::stddev_samp():Boolea
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Databricks,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select stddev_samp(`root`.int1) as `stdDevSample` from dataTable as `root`', $result);
+    assertEquals('select stddev_samp(`root`.int1) as `stdDevSample` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::stddev_pop():Boolean[1]
@@ -397,7 +397,7 @@ function <<test.Test>> meta::relational::databricks::tests::stddev_pop():Boolean
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Databricks,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select stddev_pop(`root`.int1) as `float1StdDevPopulation` from dataTable as `root`', $result);
+    assertEquals('select stddev_pop(`root`.int1) as `float1StdDevPopulation` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::substring():Boolean[1]
@@ -407,7 +407,7 @@ function <<test.Test>> meta::relational::databricks::tests::substring():Boolean[
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.Databricks,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.AGE as `age`, `root`.LASTNAME as `lastName` from personTable as `root` where substring(`root`.FIRSTNAME, 1, 5) = \'John\'', $result);
+    assertEquals('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.AGE as `age`, `root`.LASTNAME as `lastName` from personTable as `root` where substring(`root`.FIRSTNAME, 1, 5) = \'John\'', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::second():Boolean[1]
@@ -417,7 +417,7 @@ function <<test.Test>> meta::relational::databricks::tests::second():Boolean[1]
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.Databricks,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select second(`root`.settlementDateTime) as `second` from tradeTable as `root`', $result);
+    assertEquals('select second(`root`.settlementDateTime) as `second` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::rtrim():Boolean[1]
@@ -427,7 +427,7 @@ function <<test.Test>> meta::relational::databricks::tests::rtrim():Boolean[1]
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Databricks,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select rtrim(`root`.string2) as `rtrim` from dataTable as `root`', $result);
+    assertEquals('select rtrim(`root`.string2) as `rtrim` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::round():Boolean[1]
@@ -437,7 +437,7 @@ function <<test.Test>> meta::relational::databricks::tests::round():Boolean[1]
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Databricks,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select round(`root`.float1, 0) as `round` from dataTable as `root`', $result);
+    assertEquals('select round(`root`.float1, 0) as `round` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::right():Boolean[1]
@@ -447,7 +447,7 @@ function <<test.Test>> meta::relational::databricks::tests::right():Boolean[1]
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Databricks,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select right(`root`.string1,2) as `right` from dataTable as `root`', $result);
+    assertEquals('select right(`root`.string1,2) as `right` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::rem():Boolean[1]
@@ -457,7 +457,7 @@ function <<test.Test>> meta::relational::databricks::tests::rem():Boolean[1]
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.Databricks,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select mod(`root`.quantity,`root`.ID) as `rem` from tradeTable as `root`', $result);
+    assertEquals('select mod(`root`.quantity,`root`.ID) as `rem` from tradeTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::position():Boolean[1]
@@ -467,7 +467,7 @@ function <<test.Test>> meta::relational::databricks::tests::position():Boolean[1
         meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping,
         DatabaseType.Databricks,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select substring(`root`.FULLNAME, 0, position(\',\', `root`.FULLNAME)-1) as `firstName` from personTable as `root`', $result);
+    assertEquals('select substring(`root`.FULLNAME, 0, position(\',\', `root`.FULLNAME)-1) as `firstName` from personTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::mod():Boolean[1]
@@ -477,7 +477,7 @@ function <<test.Test>> meta::relational::databricks::tests::mod():Boolean[1]
         meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
         DatabaseType.Databricks,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select mod(`root`.int1,2) as `mod` from dataTable as `root`', $result);
+    assertEquals('select mod(`root`.int1,2) as `mod` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::minute():Boolean[1]
@@ -487,5 +487,5 @@ function <<test.Test>> meta::relational::databricks::tests::minute():Boolean[1]
         meta::relational::tests::simpleRelationalMapping,
         DatabaseType.Databricks,
         meta::relational::extension::relationalExtensions());
-    assertSameSQL('select minute(`root`.settlementDateTime) as `settlementDateTimeMinute` from tradeTable as `root`', $result);
+    assertEquals('select minute(`root`.settlementDateTime) as `settlementDateTimeMinute` from tradeTable as `root`', $result);
 }

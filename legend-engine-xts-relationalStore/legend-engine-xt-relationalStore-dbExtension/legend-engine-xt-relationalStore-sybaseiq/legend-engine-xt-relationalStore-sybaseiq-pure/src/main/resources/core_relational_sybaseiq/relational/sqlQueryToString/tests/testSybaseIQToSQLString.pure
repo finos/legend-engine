@@ -66,7 +66,7 @@ function meta::relational::tests::functions::sqlstring::sybaseIQ::runTestCaseByI
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSQLStringWithConditionalProjectSybaseIQ():Boolean[1]
 {
    let s = toSQLString(|Person.all()->project(p|$p.firstName == 'John', 'isJohn'), meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when ("root".FIRSTNAME = \'John\') then \'true\' else \'false\' end as "isJohn" from personTable as "root"', $s);
+   assertEquals('select case when ("root".FIRSTNAME = \'John\') then \'true\' else \'false\' end as "isJohn" from personTable as "root"', $s);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSQLStringJoinStrings():Boolean[1]
@@ -78,7 +78,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
 {
    let fn = {|Person.all()->project([p | $p.firstName + '_' + $p.lastName], ['firstName_lastName'])};
    let sybaseSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".FIRSTNAME+\'_\'+"root".LASTNAME as "firstName_lastName" from personTable as "root"', $sybaseSql);
+   assertEquals('select "root".FIRSTNAME+\'_\'+"root".LASTNAME as "firstName_lastName" from personTable as "root"', $sybaseSql);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testProcessLiteralForIQ():Boolean[1]
@@ -93,14 +93,14 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
                                                    ['a','b','c','d', 'e'])->take(0),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    print($result);
-   assertSameSQL('select top 0 \'String\' as "a", convert(DATE, \'2016-03-01\', 121) as "b", convert(DATETIME, \'2016-03-01 10:18:18.976\', 121) as "c", 1 as "d", 1.1 as "e" from personTable as "root"', $result);
+   assertEquals('select top 0 \'String\' as "a", convert(DATE, \'2016-03-01\', 121) as "b", convert(DATETIME, \'2016-03-01 10:18:18.976\', 121) as "c", 1 as "d", 1.1 as "e" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSQLStringWithLength():Boolean[1]
 {
    [DatabaseType.SybaseIQ]->map(db|
       let s = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, $db, meta::relational::extension::relationalExtensions());
-      assertSameSQL('select char_length("root".FIRSTNAME) as "nameLength" from personTable as "root"', $s);
+      assertEquals('select char_length("root".FIRSTNAME) as "nameLength" from personTable as "root"', $s);
    );
 }
 
@@ -111,7 +111,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
               |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
                meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, $db, meta::relational::extension::relationalExtensions());
 
-      assertSameSQL('select substring("root".FULLNAME, 0, charindex(\',\', "root".FULLNAME)-1) as "firstName" from personTable as "root"', $s);
+      assertEquals('select substring("root".FULLNAME, 0, charindex(\',\', "root".FULLNAME)-1) as "firstName" from personTable as "root"', $s);
    );
 }
 
@@ -122,7 +122,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
               |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevSample, 'stdDevSample'),
                meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, $db, meta::relational::extension::relationalExtensions());
 
-      assertSameSQL('select stddev_samp("root".int1) as "stdDevSample" from dataTable as "root"', $s);
+      assertEquals('select stddev_samp("root".int1) as "stdDevSample" from dataTable as "root"', $s);
    )->distinct() == [true];
 }
 
@@ -133,7 +133,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
               |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevPopulation, 'stdDevPopulation'),
                meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, $db, meta::relational::extension::relationalExtensions());
 
-      assertSameSQL('select stddev_pop("root".int1) as "stdDevPopulation" from dataTable as "root"', $s);
+      assertEquals('select stddev_pop("root".int1) as "stdDevPopulation" from dataTable as "root"', $s);
    )->distinct() == [true];
 }
 
@@ -144,7 +144,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
                                                   ],
                                                   ['DiffYears']),
                             simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select datediff(yy,"root".settlementDateTime,now()) as "DiffYears" from tradeTable as "root"', $result);
+   assertEquals('select datediff(yy,"root".settlementDateTime,now()) as "DiffYears" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testGenerateDateDiffExpressionForSybaseIQForDifferenceInMonths():Boolean[1]
@@ -154,7 +154,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
                                                   ],
                                                   ['DiffMonths']),
                             simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select datediff(mm,"root".settlementDateTime,now()) as "DiffMonths" from tradeTable as "root"', $result);
+   assertEquals('select datediff(mm,"root".settlementDateTime,now()) as "DiffMonths" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testGenerateDateDiffExpressionForSybaseIQForDifferenceInWeeks():Boolean[1]
@@ -164,7 +164,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
                                                   ],
                                                   ['DiffWeeks']),
                             simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select datediff(wk,"root".settlementDateTime,now()) as "DiffWeeks" from tradeTable as "root"', $result);
+   assertEquals('select datediff(wk,"root".settlementDateTime,now()) as "DiffWeeks" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSqlGenerationFirstDayOfTimePeriod():Boolean[1]
@@ -180,7 +180,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
         simpleRelationalMapping,
         DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
 
-    assertSameSQL('select datetime(date("root".tradeDate)) as "day", dateadd(hour, datepart(hour, "root".tradeDate), date("root".tradeDate)) as "hour", dateadd(minute, datepart(minute, "root".tradeDate), dateadd(hour, datepart(hour, "root".tradeDate), date("root".tradeDate))) as "minute", dateadd(microsecond, -(datepart(microsecond, "root".tradeDate)), "root".tradeDate) as "second" from tradeTable as "root"', $result);
+    assertEquals('select datetime(date("root".tradeDate)) as "day", dateadd(hour, datepart(hour, "root".tradeDate), date("root".tradeDate)) as "hour", dateadd(minute, datepart(minute, "root".tradeDate), dateadd(hour, datepart(hour, "root".tradeDate), date("root".tradeDate))) as "minute", dateadd(microsecond, -(datepart(microsecond, "root".tradeDate)), "root".tradeDate) as "second" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testGenerateDateDiffExpressionForSybaseIQForDifferenceInDays():Boolean[1]
@@ -190,7 +190,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
                                                   ],
                                                   ['DiffDays']),
                             simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select datediff(dd,"root".settlementDateTime,now()) as "DiffDays" from tradeTable as "root"', $result);
+   assertEquals('select datediff(dd,"root".settlementDateTime,now()) as "DiffDays" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testGenerateDateDiffExpressionForSybaseIQForDifferenceInHours():Boolean[1]
@@ -200,7 +200,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
                                                   ],
                                                   ['DiffHours']),
                             simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select datediff(hh,"root".settlementDateTime,now()) as "DiffHours" from tradeTable as "root"', $result);
+   assertEquals('select datediff(hh,"root".settlementDateTime,now()) as "DiffHours" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testGenerateDateDiffExpressionForSybaseIQForDifferenceInMinutes():Boolean[1]
@@ -210,7 +210,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
                                                   ],
                                                   ['DiffMinutes']),
                             simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select datediff(mi,"root".settlementDateTime,now()) as "DiffMinutes" from tradeTable as "root"', $result);
+   assertEquals('select datediff(mi,"root".settlementDateTime,now()) as "DiffMinutes" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testGenerateDateDiffExpressionForSybaseIQForDifferenceInSeconds():Boolean[1]
@@ -220,7 +220,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
                                                   ],
                                                   ['DiffSeconds']),
                             simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select datediff(ss,"root".settlementDateTime,now()) as "DiffSeconds" from tradeTable as "root"', $result);
+   assertEquals('select datediff(ss,"root".settlementDateTime,now()) as "DiffSeconds" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testGenerateDateDiffExpressionForSybaseIQForDifferenceInMilliseconds():Boolean[1]
@@ -230,7 +230,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
                                                   ],
                                                   ['DiffMilliseconds']),
                             simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select datediff(ms,"root".settlementDateTime,now()) as "DiffMilliseconds" from tradeTable as "root"', $result);
+   assertEquals('select datediff(ms,"root".settlementDateTime,now()) as "DiffMilliseconds" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testDayOfYear():Boolean[1]
@@ -312,7 +312,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
 {
    let result = toSQLString(|Interaction.all()->filter(a | $a.active)->project([i | $i.id],['id']),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" where case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\'', $result);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\'', $result);
 }
 
 
@@ -320,7 +320,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
 {
    let result = toSQLString(|Interaction.all()->filter(a | $a.id == 1 && $a.active)->project([i | $i.id],['id']),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" where ("root".ID = 1 and case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\')', $result);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where ("root".ID = 1 and case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\')', $result);
 }
 
 
@@ -328,7 +328,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
 {
    let result = toSQLString(|Interaction.all()->filter(a | $a.id == 1 && $a.active)->project([i | $i.id],['id'])->distinct(),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select distinct "root".ID as "id" from interactionTable as "root" where ("root".ID = 1 and case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\')', $result);
+   assertEquals('select distinct "root".ID as "id" from interactionTable as "root" where ("root".ID = 1 and case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\')', $result);
 }
 
 
@@ -336,21 +336,21 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
 {
    let result = toSQLString(|Interaction.all()->filter(a | $a.id->isEmpty() && $a.active)->project([i | $i.id],['id']),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" where ("root".ID is null and case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\')', $result);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where ("root".ID is null and case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\')', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSqlGenerationForBooleanInFilterWithAndNotEqual_SybaseIQ():Boolean[1]
 {
    let result = toSQLString(|Interaction.all()->filter(a | $a.id != 1 && $a.active)->project([i | $i.id],['id']),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" where (("root".ID <> 1 OR "root".ID is null) and case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\')', $result);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where (("root".ID <> 1 OR "root".ID is null) and case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\')', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSqlGenerationForConstanNumInFilterWithNotEqual_SybaseIQ():Boolean[1]
 {
    let result = toSQLString(|Synonym.all()->filter(s | $s.type != 'ISIN')->project([s | $s.name],['name']),
                               simpleRelationalMappingWithEnumConstant, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".NAME as "name" from productSchema.synonymTable as "root" where (\'CUSIP\' <> \'ISIN\')', $result);
+   assertEquals('select "root".NAME as "name" from productSchema.synonymTable as "root" where (\'CUSIP\' <> \'ISIN\')', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSqlGenerationForBooleanInProject_SybaseIQ_IsEmpty():Boolean[1]
@@ -360,7 +360,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
                                                    ],
                                                    ['a']),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when ("root".FIRSTNAME is null) then \'true\' else \'false\' end as "a" from personTable as "root"', $result);
+   assertEquals('select case when ("root".FIRSTNAME is null) then \'true\' else \'false\' end as "a" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSqlGenerationForBooleanInProject_SybaseIQ_And():Boolean[1]
@@ -370,7 +370,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
                                                    ],
                                                    ['a']),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when (("root".FIRSTNAME = \'A\' and "root".LASTNAME = \'B\')) then \'true\' else \'false\' end as "a" from personTable as "root"', $result);
+   assertEquals('select case when (("root".FIRSTNAME = \'A\' and "root".LASTNAME = \'B\')) then \'true\' else \'false\' end as "a" from personTable as "root"', $result);
 }
 
 
@@ -381,14 +381,14 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
                                                    ],
                                                    ['a']),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when "root".FIRSTNAME = \'A\' then \'true\' else \'false\' end as "a" from personTable as "root"', $result);
+   assertEquals('select case when "root".FIRSTNAME = \'A\' then \'true\' else \'false\' end as "a" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSqlGenerationForBooleanInFilter_SybaseIQ_If():Boolean[1]
 {
    let result = toSQLString(|Person.all()->filter(a | if ($a.firstName == 'A', | true, | false)),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where case when "root".FIRSTNAME = \'A\' then \'true\' else \'false\' end = \'true\'', $result);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where case when "root".FIRSTNAME = \'A\' then \'true\' else \'false\' end = \'true\'', $result);
 }
 
 function <<test.ToFix>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSqlGenerationForBooleanInProject_SybaseIQ_NestedIf():Boolean[1]
@@ -398,7 +398,7 @@ function <<test.ToFix>> meta::relational::tests::functions::sqlstring::sybaseIQ:
                                                    ],
                                                    ['a']),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when case when "root".FIRSTNAME = \'B\' then \'true\' else \'false\' end = \'true\' then \'true\' else \'false\' end as "a" from personTable as "root"', $result);
+   assertEquals('select case when case when "root".FIRSTNAME = \'B\' then \'true\' else \'false\' end = \'true\' then \'true\' else \'false\' end as "a" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSqlGenerationForBooleanInProject_SybaseIQ_Or():Boolean[1]
@@ -408,7 +408,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
                                                    ],
                                                    ['a']),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when ((\'true\' = \'true\' or \'false\' = \'true\')) then \'true\' else \'false\' end as "a" from personTable as "root"', $result);
+   assertEquals('select case when ((\'true\' = \'true\' or \'false\' = \'true\')) then \'true\' else \'false\' end as "a" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testSqlGenerationForDatePartForSybaseIQ():Boolean[1]
@@ -418,7 +418,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
                                                    ],
                                                    ['a']),
                               simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select date("root"."date") as "a" from locationTable as "root"', $result);
+   assertEquals('select date("root"."date") as "a" from locationTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSqlGenerationForProjectLambdaWithSquareBrackets_SybaseIQ():Boolean[1]
@@ -428,7 +428,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
       simpleRelationalMapping,
       DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
 
-   assertSameSQL('select case when ("root".FIRSTNAME like \'Dummy \\[With Sq Brackets]%\' escape \'\\\') then \'true\' else \'false\' end as "a" from personTable as "root"', $result);
+   assertEquals('select case when ("root".FIRSTNAME like \'Dummy \\[With Sq Brackets]%\' escape \'\\\') then \'true\' else \'false\' end as "a" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSqlGenerationForFilterWithSquareBrackets_SybaseIQ():Boolean[1]
@@ -440,7 +440,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
       simpleRelationalMapping,
       DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
 
-   assertSameSQL('select "root".FIRSTNAME as "name" from personTable as "root" where "root".FIRSTNAME like \'Dummy \\[With Sq Brackets]%\' escape \'\\\'', $result);
+   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" where "root".FIRSTNAME like \'Dummy \\[With Sq Brackets]%\' escape \'\\\'', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSqlGenerationFirstDayOfMonth():Boolean[1]
@@ -533,74 +533,74 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
 
    let result1a = toSQLString(|Interaction.all()->project(col(p|true, 'active')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select \'true\' as "active" from interactionTable as "root"', $result1a);
+   assertEquals('select \'true\' as "active" from interactionTable as "root"', $result1a);
 
    let result1b = toSQLString(|Interaction.all()->project(col(p|!true, 'active')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when (not \'true\' = \'true\') then \'true\' else \'false\' end as "active" from interactionTable as "root"', $result1b);
+   assertEquals('select case when (not \'true\' = \'true\') then \'true\' else \'false\' end as "active" from interactionTable as "root"', $result1b);
 
    let result1c = toSQLString(|Interaction.all()->project(col(p|false, 'active')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select \'false\' as "active" from interactionTable as "root"', $result1c);
+   assertEquals('select \'false\' as "active" from interactionTable as "root"', $result1c);
 
    let result1d = toSQLString(|Interaction.all()->project(col(p|!false, 'active')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when (not \'false\' = \'true\') then \'true\' else \'false\' end as "active" from interactionTable as "root"', $result1d);
+   assertEquals('select case when (not \'false\' = \'true\') then \'true\' else \'false\' end as "active" from interactionTable as "root"', $result1d);
 
    let result2 = toSQLString(|Interaction.all()->project(col(p|$p.active, 'active')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when "root"."active" = \'Y\' then \'true\' else \'false\' end as "active" from interactionTable as "root"', $result2);
+   assertEquals('select case when "root"."active" = \'Y\' then \'true\' else \'false\' end as "active" from interactionTable as "root"', $result2);
 
    let result3 = toSQLString(|Interaction.all()->project(col(p|$p.active == true, 'active')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when (case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\') then \'true\' else \'false\' end as "active" from interactionTable as "root"', $result3);
+   assertEquals('select case when (case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\') then \'true\' else \'false\' end as "active" from interactionTable as "root"', $result3);
 
    let result4 = toSQLString(|Interaction.all()->project(col(p|$p.active && true, 'active')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when ((case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\' and \'true\' = \'true\')) then \'true\' else \'false\' end as "active" from interactionTable as "root"', $result4);
+   assertEquals('select case when ((case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\' and \'true\' = \'true\')) then \'true\' else \'false\' end as "active" from interactionTable as "root"', $result4);
 
    let result5 = toSQLString(|Interaction.all()->project(col(p|if($p.active, |1, |0), 'active')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\' then 1 else 0 end as "active" from interactionTable as "root"', $result5);
+   assertEquals('select case when case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\' then 1 else 0 end as "active" from interactionTable as "root"', $result5);
 
    let result6 = toSQLString(|Interaction.all()->project(col(p|$p.active->in(true), 'active')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when (case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\') then \'true\' else \'false\' end as "active" from interactionTable as "root"', $result6);
+   assertEquals('select case when (case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\') then \'true\' else \'false\' end as "active" from interactionTable as "root"', $result6);
 
    let result7 = toSQLString(|Interaction.all()->project(col(p|$p.target.firstName->isEmpty(), 'active')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when ("personTable_d#5_d_m1".FIRSTNAME is null) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#5_d_m1" on ("root".targetId = "personTable_d#5_d_m1".ID)', $result7);
+   assertEquals('select case when ("personTable_d#5_d_m1".FIRSTNAME is null) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#5_d_m1" on ("root".targetId = "personTable_d#5_d_m1".ID)', $result7);
 
    let result10 = toSQLString(|Interaction.all()->project(col(p|!$p.target.firstName->isEmpty(), 'active')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when (not "personTable_d#6_d_m1".FIRSTNAME is null) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#6_d_m1" on ("root".targetId = "personTable_d#6_d_m1".ID)', $result10);
+   assertEquals('select case when (not "personTable_d#6_d_m1".FIRSTNAME is null) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#6_d_m1" on ("root".targetId = "personTable_d#6_d_m1".ID)', $result10);
 
    let result13 = toSQLString(|Interaction.all()->project(col(p|($p.target.firstName->isEmpty() || $p.target.firstName->isEmpty()), 'active')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when (("personTable_d#2_dy0_d#4_d_m1".FIRSTNAME is null or "personTable_d#2_dy0_d#4_d_m1".FIRSTNAME is null)) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#2_dy0_d#4_d_m1" on ("root".targetId = "personTable_d#2_dy0_d#4_d_m1".ID)', $result13);
+   assertEquals('select case when (("personTable_d#2_dy0_d#4_d_m1".FIRSTNAME is null or "personTable_d#2_dy0_d#4_d_m1".FIRSTNAME is null)) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#2_dy0_d#4_d_m1" on ("root".targetId = "personTable_d#2_dy0_d#4_d_m1".ID)', $result13);
 
    let result14 = toSQLString(|Interaction.all()->project(col(p|($p.target.firstName->isEmpty() && $p.target.firstName->isEmpty()), 'active')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when (("personTable_d#2_dy0_d#4_d_m1".FIRSTNAME is null and "personTable_d#2_dy0_d#4_d_m1".FIRSTNAME is null)) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#2_dy0_d#4_d_m1" on ("root".targetId = "personTable_d#2_dy0_d#4_d_m1".ID)', $result14);
+   assertEquals('select case when (("personTable_d#2_dy0_d#4_d_m1".FIRSTNAME is null and "personTable_d#2_dy0_d#4_d_m1".FIRSTNAME is null)) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#2_dy0_d#4_d_m1" on ("root".targetId = "personTable_d#2_dy0_d#4_d_m1".ID)', $result14);
 }
 
 function <<test.Test, test.ToFix>> meta::relational::tests::functions::sqlstring::sybaseIQ::testSqlGenerationForBooleanProject_IQ2():Boolean[1]
 {
    let result8 = toSQLString(|Interaction.all()->project(col(p|$p.target.firstName->isEmpty() == true, 'active')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when ("personTable_d#6_d_m1".FIRSTNAME is null) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#6_d_m1" on ("root".targetId = "personTable_d#6_d_m1".ID)', $result8);
+   assertEquals('select case when ("personTable_d#6_d_m1".FIRSTNAME is null) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#6_d_m1" on ("root".targetId = "personTable_d#6_d_m1".ID)', $result8);
 
    let result9 = toSQLString(|Interaction.all()->project(col(p|$p.target.firstName->isEmpty() == false, 'active')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when (not "personTable_d#6_d_m1".FIRSTNAME is null) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#6_d_m1" on ("root".targetId = "personTable_d#6_d_m1".ID)', $result9);
+   assertEquals('select case when (not "personTable_d#6_d_m1".FIRSTNAME is null) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#6_d_m1" on ("root".targetId = "personTable_d#6_d_m1".ID)', $result9);
 
    let result11 = toSQLString(|Interaction.all()->project(col(p|$p.target.firstName->isEmpty()->in(false), 'active')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when (not "personTable_d#6_d_m1".FIRSTNAME is null) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#6_d_m1" on ("root".targetId = "personTable_d#6_d_m1".ID)', $result11);
+   assertEquals('select case when (not "personTable_d#6_d_m1".FIRSTNAME is null) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#6_d_m1" on ("root".targetId = "personTable_d#6_d_m1".ID)', $result11);
 
    let result12 = toSQLString(|Interaction.all()->project(col(p|!($p.target.firstName->isEmpty()->in(false)), 'active')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select case when (("personTable_d#7_d_m1".FIRSTNAME is null)) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#7_d_m1" on ("root".targetId = "personTable_d#7_d_m1".ID)', $result12);
+   assertEquals('select case when (("personTable_d#7_d_m1".FIRSTNAME is null)) then \'true\' else \'false\' end as "active" from interactionTable as "root" left outer join personTable as "personTable_d#7_d_m1" on ("root".targetId = "personTable_d#7_d_m1".ID)', $result12);
 }
 
 
@@ -608,55 +608,55 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
 {
    let result1a = toSQLString(|Interaction.all()->filter(p|true)->project(col(p|$p.id, 'id')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" where \'true\' = \'true\'', $result1a);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where \'true\' = \'true\'', $result1a);
 
    let result1b = toSQLString(|Interaction.all()->filter(p|!true)->project(col(p|$p.id, 'id')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" where not \'true\' = \'true\'', $result1b);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where not \'true\' = \'true\'', $result1b);
 
    let result1c = toSQLString(|Interaction.all()->filter(p|false)->project(col(p|$p.id, 'id')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" where \'false\' = \'true\'', $result1c);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where \'false\' = \'true\'', $result1c);
 
    let result1d = toSQLString(|Interaction.all()->filter(p|!false)->project(col(p|$p.id, 'id')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" where not \'false\' = \'true\'', $result1d);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where not \'false\' = \'true\'', $result1d);
 
    let result2 = toSQLString(|Interaction.all()->filter(p|$p.active)->project(col(p|$p.id, 'id')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" where case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\'', $result2);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\'', $result2);
 
    let result3 = toSQLString(|Interaction.all()->filter(p|$p.active == true)->project(col(p|$p.id, 'id')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" where case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\'', $result3);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\'', $result3);
 
    let result4 = toSQLString(|Interaction.all()->filter(p|$p.active && true)->project(col(p|$p.id, 'id')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" where (case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\' and \'true\' = \'true\')', $result4);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where (case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\' and \'true\' = \'true\')', $result4);
 
    let result5 = toSQLString(|Interaction.all()->filter(p|if($p.active, |1, |0) == 1)->project(col(p|$p.id, 'id')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" where case when case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\' then 1 else 0 end = 1', $result5);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where case when case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\' then 1 else 0 end = 1', $result5);
 
    let result6 = toSQLString(|Interaction.all()->filter(p|$p.active->in(true))->project(col(p|$p.id, 'id')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" where case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\'', $result6);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\'', $result6);
 
    let result7 = toSQLString(|Interaction.all()->filter(p|$p.target.firstName->isEmpty())->project(col(p|$p.id, 'id')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#6_d#2_m1" on ("root".targetId = "personTable_d#6_d#2_m1".ID) where "personTable_d#6_d#2_m1".FIRSTNAME is null', $result7);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#6_d#2_m1" on ("root".targetId = "personTable_d#6_d#2_m1".ID) where "personTable_d#6_d#2_m1".FIRSTNAME is null', $result7);
 
    let result10 = toSQLString(|Interaction.all()->filter(p|!$p.target.firstName->isEmpty())->project(col(p|$p.id, 'id')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#7_d#2_m1" on ("root".targetId = "personTable_d#7_d#2_m1".ID) where not "personTable_d#7_d#2_m1".FIRSTNAME is null', $result10);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#7_d#2_m1" on ("root".targetId = "personTable_d#7_d#2_m1".ID) where not "personTable_d#7_d#2_m1".FIRSTNAME is null', $result10);
 
    let result13 = toSQLString(|Interaction.all()->filter(p|$p.target.firstName->isEmpty() || $p.target.firstName->isEmpty())->project(col(p|$p.id, 'id')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#3_dy0_d#4_d#2_m1" on ("root".targetId = "personTable_d#3_dy0_d#4_d#2_m1".ID) where ("personTable_d#3_dy0_d#4_d#2_m1".FIRSTNAME is null or "personTable_d#3_dy0_d#4_d#2_m1".FIRSTNAME is null)', $result13);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#3_dy0_d#4_d#2_m1" on ("root".targetId = "personTable_d#3_dy0_d#4_d#2_m1".ID) where ("personTable_d#3_dy0_d#4_d#2_m1".FIRSTNAME is null or "personTable_d#3_dy0_d#4_d#2_m1".FIRSTNAME is null)', $result13);
 
    let result14 = toSQLString(|Interaction.all()->filter(p|$p.target.firstName->isEmpty() && $p.target.firstName->isEmpty())->project(col(p|$p.id, 'id')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#3_dy0_d#4_d#2_m1" on ("root".targetId = "personTable_d#3_dy0_d#4_d#2_m1".ID) where ("personTable_d#3_dy0_d#4_d#2_m1".FIRSTNAME is null and "personTable_d#3_dy0_d#4_d#2_m1".FIRSTNAME is null)', $result14);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#3_dy0_d#4_d#2_m1" on ("root".targetId = "personTable_d#3_dy0_d#4_d#2_m1".ID) where ("personTable_d#3_dy0_d#4_d#2_m1".FIRSTNAME is null and "personTable_d#3_dy0_d#4_d#2_m1".FIRSTNAME is null)', $result14);
 }
 
 
@@ -664,23 +664,23 @@ function <<test.Test, test.ToFix>> meta::relational::tests::functions::sqlstring
 {
    let result8 = toSQLString(|Interaction.all()->filter(p|$p.target.firstName->isEmpty() == true)->project(col(p|$p.id, 'id')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#7_d#2_m1" on ("root".targetId = "personTable_d#7_d#2_m1".ID) where "personTable_d#7_d#2_m1".FIRSTNAME is null', $result8);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#7_d#2_m1" on ("root".targetId = "personTable_d#7_d#2_m1".ID) where "personTable_d#7_d#2_m1".FIRSTNAME is null', $result8);
 
    let result9 = toSQLString(|Interaction.all()->filter(p|$p.target.firstName->isEmpty() == false)->project(col(p|$p.id, 'id')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#7_d#2_m1" on ("root".targetId = "personTable_d#7_d#2_m1".ID) where not "personTable_d#7_d#2_m1".FIRSTNAME is null', $result9);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#7_d#2_m1" on ("root".targetId = "personTable_d#7_d#2_m1".ID) where not "personTable_d#7_d#2_m1".FIRSTNAME is null', $result9);
 
    let result11 = toSQLString(|Interaction.all()->filter(p|$p.target.firstName->isEmpty()->in(false))->project(col(p|$p.id, 'id')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#7_d#2_m1" on ("root".targetId = "personTable_d#7_d#2_m1".ID) where not "personTable_d#7_d#2_m1".FIRSTNAME is null', $result11);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#7_d#2_m1" on ("root".targetId = "personTable_d#7_d#2_m1".ID) where not "personTable_d#7_d#2_m1".FIRSTNAME is null', $result11);
 
    let result12 = toSQLString(|Interaction.all()->filter(p|!$p.target.firstName->isEmpty()->in(false))->project(col(p|$p.id, 'id')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#8_d#2_m1" on ("root".targetId = "personTable_d#8_d#2_m1".ID) where ("personTable_d#8_d#2_m1".FIRSTNAME is null)', $result12);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#8_d#2_m1" on ("root".targetId = "personTable_d#8_d#2_m1".ID) where ("personTable_d#8_d#2_m1".FIRSTNAME is null)', $result12);
 
    let result15 = toSQLString(|Interaction.all()->filter(p|isTrue($p.target.firstName == 'Andrew')),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#7_d#2_m1" on ("root".targetId = "personTable_d#7_d#2_m1".ID) where ("personTable_d#7_d#2_m1".FIRSTNAME is null and "personTable_d#7_d#2_m1".FIRSTNAME is null)', $result15);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" left outer join personTable as "personTable_d#7_d#2_m1" on ("root".targetId = "personTable_d#7_d#2_m1".ID) where ("personTable_d#7_d#2_m1".FIRSTNAME is null and "personTable_d#7_d#2_m1".FIRSTNAME is null)', $result15);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSqlGenerationMinuteSecond():Boolean[1]
@@ -709,7 +709,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSQLStringWithReplace():Boolean[1]
 {
     let sybaseSql = toSQLString(|Person.all()->project(p|$p.firstName->replace('A', 'a'), 'lowerA'), simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-    assertSameSQL('select replace("root".FIRSTNAME, \'A\', \'a\') as "lowerA" from personTable as "root"', $sybaseSql);
+    assertEquals('select replace("root".FIRSTNAME, \'A\', \'a\') as "lowerA" from personTable as "root"', $sybaseSql);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testSybaseKeyWordInSubSelect():Boolean[1]
@@ -759,7 +759,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
       simpleRelationalMapping,
       DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
 
-   assertSameSQL('select datepart(DAY,"root".tradeDate) as "date" from tradeTable as "root"', $result);
+   assertEquals('select datepart(DAY,"root".tradeDate) as "date" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSQLStringToNumericCasts():Boolean[1]
@@ -771,5 +771,5 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
           col(t|$t.quantity->toFloat(), 'float')
         ]), simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
 
-    assertSameSQL('select cast("root".quantity as decimal) as "decimal", cast("root".quantity as double) as "float" from tradeTable as "root"', $result);
+    assertEquals('select cast("root".quantity as decimal) as "decimal", cast("root".quantity as double) as "float" from tradeTable as "root"', $result);
 }

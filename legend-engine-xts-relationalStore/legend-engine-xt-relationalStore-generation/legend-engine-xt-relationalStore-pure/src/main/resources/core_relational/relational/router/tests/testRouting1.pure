@@ -32,7 +32,7 @@ function <<test.Test>> meta::relational::tests::query::routing::testNoRoutingWhe
    let result = execute(|Person.all()->filter(p|($p.firstName == 'John' && $p.lastName == 'Johnson') || $p.lastName == 'Allen')->mapNestedInUserFunction(e|$e.lastName), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 2);
    assertSameElements(['Allen', 'Johnson'], $result.values);
-   assertSameSQL('select "root".LASTNAME from personTable as "root" where (("root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\') or "root".LASTNAME = \'Allen\')', $result);
+   assertEquals('select "root".LASTNAME from personTable as "root" where (("root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\') or "root".LASTNAME = \'Allen\')', $result->sqlRemoveFormatting());
 }
 
 // Alloy exclusion reason: 8. Routing not supported yet
@@ -41,7 +41,7 @@ function <<test.Test, test.ExcludeAlloy>>  meta::relational::tests::query::routi
    let result = execute(|Person.all()->filter(p|($p.firstName == 'John' && $p.lastName == 'Johnson') || $p.lastName == 'Allen').lastName->makeString(', '), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('Johnson, Allen', $result.values);
-   assertSameSQL('select "root".LASTNAME from personTable as "root" where (("root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\') or "root".LASTNAME = \'Allen\')', $result);
+   assertEquals('select "root".LASTNAME from personTable as "root" where (("root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\') or "root".LASTNAME = \'Allen\')', $result->sqlRemoveFormatting());
 }
 
 // Alloy exclusion reason: 8. Routing not supported yet
@@ -201,7 +201,7 @@ function <<test.Test>> meta::relational::tests::query::routing::testRoutingOfSim
 function <<test.Test>> meta::relational::tests::projection::simple::testRoutingWithSubtypePropagation():Boolean[1]
 {
    let result = execute(|Firm.all()->project(col(x|$x.employees->subType(@meta::relational::tests::model::simple::PersonExtension).manager->subType(@meta::relational::tests::model::simple::PersonExtension).name, 'managerName')), meta::relational::tests::TestMappingOfSubtypeClass, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSameSQL('select concat("persontable_1".FIRSTNAME, \' \', "persontable_1".LASTNAME) as "managerName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join personTable as "persontable_1" on ("persontable_0".MANAGERID = "persontable_1".ID)',$result);
+   assertEquals('select concat("persontable_1".FIRSTNAME, \' \', "persontable_1".LASTNAME) as "managerName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join personTable as "persontable_1" on ("persontable_0".MANAGERID = "persontable_1".ID)',$result->sqlRemoveFormatting());
 }
 
 function <<test.ToFix>> meta::relational::tests::query::routing::testRoutingPureFunctionWithMultipleExpressions():Boolean[1]

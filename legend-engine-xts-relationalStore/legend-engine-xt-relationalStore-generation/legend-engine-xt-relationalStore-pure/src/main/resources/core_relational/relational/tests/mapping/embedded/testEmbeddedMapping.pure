@@ -35,8 +35,8 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMap
 {
    let result = execute(|Person.all()->project([#/Person/firstName#, #/Person/address/name!address#, #/Person/firm/legalName#, #/Person/firm/address/name!firmAddress#]), testMappingEmbedded, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('firstName,address,legalName,firmAddress\n' + 'Peter,1 the street,Firm X,200 west\n' + 'John,5 Park Ave,Firm X,200 west\n' + 'Fabrice,7 Palo Alto,Firm A,3 somewhere\n', $result.values->toOne());
-   assertSameSQL('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_NAME as "address", "root".FIRM_LEGALNAME as "legalName", "root".FIRM_ADDRESS_NAME as "firmAddress" from PERSON_FIRM_DENORM as "root"', $result);
+   assertEquals('firstName,address,legalName,firmAddress\n' + 'Peter,1 the street,Firm X,200 west\n' + 'John,5 Park Ave,Firm X,200 west\n' + 'Fabrice,7 Palo Alto,Firm A,3 somewhere\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_NAME as "address", "root".FIRM_LEGALNAME as "legalName", "root".FIRM_ADDRESS_NAME as "firmAddress" from PERSON_FIRM_DENORM as "root"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMappingOneToManyProject():Boolean[1]
@@ -52,8 +52,8 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMap
                                                 )
                                                 , testMappingEmbedded, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('firstName,address,legalName,firmAddress\n' + 'Peter,1 the street,Firm X,200 west\n' + 'John,5 Park Ave,Firm X,200 west\n' + 'Fabrice,7 Palo Alto,Firm A,3 somewhere\n', $result.values->toOne());
-   assertSameSQL('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_NAME as "address", "root".FIRM_LEGALNAME as "legalName", "root".FIRM_ADDRESS_NAME as "firmAddress" from PERSON_FIRM_DENORM as "root"', $result);
+   assertEquals('firstName,address,legalName,firmAddress\n' + 'Peter,1 the street,Firm X,200 west\n' + 'John,5 Park Ave,Firm X,200 west\n' + 'Fabrice,7 Palo Alto,Firm A,3 somewhere\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_NAME as "address", "root".FIRM_LEGALNAME as "legalName", "root".FIRM_ADDRESS_NAME as "firmAddress" from PERSON_FIRM_DENORM as "root"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMappingOneToManyProjectLambdaSyntaxWithMap():Boolean[1]
@@ -63,8 +63,8 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMap
                                                 , ['address']
                                                 )->sort('address'), testMappingEmbeddedWithFirmDistinct, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('address\n' + '1 the street\n' + '5 Park Ave\n' + '7 Palo Alto\n', $result.values->toOne());
-   assertSameSQL('select "person_firm_denorm_2".PERSON_ADDRESS_NAME as "address" from (select distinct "person_firm_denorm_1".FIRM_LEGALNAME as FIRM_LEGALNAME, "person_firm_denorm_1".FIRM_ID as FIRM_ID from PERSON_FIRM_DENORM as "person_firm_denorm_1") as "root" left outer join PERSON_FIRM_DENORM as "person_firm_denorm_2" on ("root".FIRM_ID = "person_firm_denorm_2".FIRM_ID) order by "address"', $result);
+   assertEquals('address\n' + '1 the street\n' + '5 Park Ave\n' + '7 Palo Alto\n', $result.values->toOne()->toCSV());
+   assertEquals('select "person_firm_denorm_2".PERSON_ADDRESS_NAME as "address" from (select distinct "person_firm_denorm_1".FIRM_LEGALNAME as FIRM_LEGALNAME, "person_firm_denorm_1".FIRM_ID as FIRM_ID from PERSON_FIRM_DENORM as "person_firm_denorm_1") as "root" left outer join PERSON_FIRM_DENORM as "person_firm_denorm_2" on ("root".FIRM_ID = "person_firm_denorm_2".FIRM_ID) order by "address"', $result->sqlRemoveFormatting());
 }
 
 
@@ -74,8 +74,8 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMap
                                      ->project([#/Person/firstName#, #/Person/address/name!address#, #/Person/firm/legalName#, #/Person/firm/address/name!firmAddress#])
                                      , testMappingEmbedded, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('firstName,address,legalName,firmAddress\n' + 'Fabrice,7 Palo Alto,Firm A,3 somewhere\n', $result.values->toOne());
-   assertSameSQL('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_NAME as "address", "root".FIRM_LEGALNAME as "legalName", "root".FIRM_ADDRESS_NAME as "firmAddress" from PERSON_FIRM_DENORM as "root" where "root".FIRM_LEGALNAME = \'Firm A\'', $result);
+   assertEquals('firstName,address,legalName,firmAddress\n' + 'Fabrice,7 Palo Alto,Firm A,3 somewhere\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_NAME as "address", "root".FIRM_LEGALNAME as "legalName", "root".FIRM_ADDRESS_NAME as "firmAddress" from PERSON_FIRM_DENORM as "root" where "root".FIRM_LEGALNAME = \'Firm A\'', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMappingOneToManyProjectWithComplexFilter():Boolean[1]
@@ -85,16 +85,16 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMap
                                      ->project([#/Person/firstName#, #/Person/address/name!address#, #/Person/firm/legalName#, #/Person/firm/address/name!firmAddress#])
                                      , testMappingEmbedded, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('firstName,address,legalName,firmAddress\n' + 'Fabrice,7 Palo Alto,Firm A,3 somewhere\n', $result.values->toOne());
-   assertSameSQL('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_NAME as "address", "root".FIRM_LEGALNAME as "legalName", "root".FIRM_ADDRESS_NAME as "firmAddress" from PERSON_FIRM_DENORM as "root" where ("root".FIRM_LEGALNAME = \'Firm A\' and ("root".PERSON_ADDRESS_NAME is not null and "root".PERSON_ADDRESS_NAME like \'%Palo Alto\'))', $result);
+   assertEquals('firstName,address,legalName,firmAddress\n' + 'Fabrice,7 Palo Alto,Firm A,3 somewhere\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_NAME as "address", "root".FIRM_LEGALNAME as "legalName", "root".FIRM_ADDRESS_NAME as "firmAddress" from PERSON_FIRM_DENORM as "root" where ("root".FIRM_LEGALNAME = \'Firm A\' and ("root".PERSON_ADDRESS_NAME is not null and "root".PERSON_ADDRESS_NAME like \'%Palo Alto\'))', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMappingOneToManyProjectWithEnum():Boolean[1]
 {
    let result = execute(|Person.all()->project([#/Person/firstName#, #/Person/address/type!address#]), testMappingEmbedded, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('firstName,address\n' + 'Peter,CITY\n' + 'John,CITY\n' + 'Fabrice,REGION\n', $result.values->toOne());
-   assertSameSQL('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_TYPE as "address" from PERSON_FIRM_DENORM as "root"', $result);
+   assertEquals('firstName,address\n' + 'Peter,CITY\n' + 'John,CITY\n' + 'Fabrice,REGION\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_TYPE as "address" from PERSON_FIRM_DENORM as "root"', $result->sqlRemoveFormatting());
 }
 
 
@@ -103,8 +103,8 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMap
    let result = execute(|Person.all()->filter(p | $p.address.type == GeographicEntityType.CITY)
                                      ->project([#/Person/firstName#, #/Person/address/type!address#]), testMappingEmbedded, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('firstName,address\n' + 'Peter,CITY\n' + 'John,CITY\n', $result.values->toOne());
-   assertSameSQL('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_TYPE as "address" from PERSON_FIRM_DENORM as "root" where "root".PERSON_ADDRESS_TYPE = 1', $result);
+   assertEquals('firstName,address\n' + 'Peter,CITY\n' + 'John,CITY\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_TYPE as "address" from PERSON_FIRM_DENORM as "root" where "root".PERSON_ADDRESS_TYPE = 1', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMappingOneToManyProjectWithFilterOnEnumRight():Boolean[1]
@@ -112,8 +112,8 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMap
    let result = execute(|Person.all()->filter(p | GeographicEntityType.CITY == $p.address.type)
                                      ->project([#/Person/firstName#, #/Person/address/type!address#]), testMappingEmbedded, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('firstName,address\n' + 'Peter,CITY\n' + 'John,CITY\n', $result.values->toOne());
-   assertSameSQL('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_TYPE as "address" from PERSON_FIRM_DENORM as "root" where "root".PERSON_ADDRESS_TYPE = 1', $result);
+   assertEquals('firstName,address\n' + 'Peter,CITY\n' + 'John,CITY\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", "root".PERSON_ADDRESS_TYPE as "address" from PERSON_FIRM_DENORM as "root" where "root".PERSON_ADDRESS_TYPE = 1', $result->sqlRemoveFormatting());
 }
 
 
@@ -132,7 +132,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::testGroupByEm
                                   ['Firm Name', 'Count']
                                   )->sort('Firm Name'), testMappingEmbedded, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('Firm Name,Count\n' + 'Firm A,0.0\n' + 'Firm X,1.0\n', $result.values->toOne());
+   assertEquals('Firm Name,Count\n' + 'Firm A,0.0\n' + 'Firm X,1.0\n', $result.values->toOne()->toCSV());
    assertEqualsH2Compatible(
     'select "root".FIRM_LEGALNAME as "Firm Name", sum(case when ("root".PERSON_ADDRESS_NAME is not null and "root".PERSON_ADDRESS_NAME like \'1%\') then 1.0 else 0.0 end) as "Count" from PERSON_FIRM_DENORM as "root" group by "Firm Name" order by "Firm Name"', 
     'select "root".FIRM_LEGALNAME as "Firm Name", sum(case when ("root".PERSON_ADDRESS_NAME is not null and "root".PERSON_ADDRESS_NAME like \'1%\') then CAST(1.0 AS FLOAT) else CAST(0.0 AS FLOAT) end) as "Count" from PERSON_FIRM_DENORM as "root" group by "Firm Name" order by "Firm Name"', 
@@ -144,10 +144,10 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::testProjectTo
 {
    let result = execute(|Firm.all()->project([#/Firm/legalName#, #/Firm/employees/address/name!address#])->sort(['legalName', 'address']), testMappingEmbeddedWithFirmDistinct, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('legalName,address\n' + 'Firm A,7 Palo Alto\n' + 'Firm X,1 the street\n' + 'Firm X,5 Park Ave\n', $result.values->toOne());
+   assertEquals('legalName,address\n' + 'Firm A,7 Palo Alto\n' + 'Firm X,1 the street\n' + 'Firm X,5 Park Ave\n', $result.values->toOne()->toCSV());
 
    //TODO - can optimize further to remove some self joins
-   assertSameSQL('select "root".FIRM_LEGALNAME as "legalName", "person_firm_denorm_2".PERSON_ADDRESS_NAME as "address" from (select distinct "person_firm_denorm_1".FIRM_LEGALNAME as FIRM_LEGALNAME, "person_firm_denorm_1".FIRM_ID as FIRM_ID from PERSON_FIRM_DENORM as "person_firm_denorm_1") as "root" left outer join PERSON_FIRM_DENORM as "person_firm_denorm_2" on ("root".FIRM_ID = "person_firm_denorm_2".FIRM_ID) order by "legalName","address"', $result);
+   assertEquals('select "root".FIRM_LEGALNAME as "legalName", "person_firm_denorm_2".PERSON_ADDRESS_NAME as "address" from (select distinct "person_firm_denorm_1".FIRM_LEGALNAME as FIRM_LEGALNAME, "person_firm_denorm_1".FIRM_ID as FIRM_ID from PERSON_FIRM_DENORM as "person_firm_denorm_1") as "root" left outer join PERSON_FIRM_DENORM as "person_firm_denorm_2" on ("root".FIRM_ID = "person_firm_denorm_2".FIRM_ID) order by "legalName","address"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMappingOneToManyProjectEmbeddedQualifier():Boolean[1]
@@ -155,8 +155,8 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMap
    let result = execute(|Person.all()->project([#/Person/firstName#, #/Person/firm/nameAndAddress#])
                                      , testMappingEmbedded, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('firstName,nameAndAddress\n' + 'Peter,"Firm X,200 west"\n' + 'John,"Firm X,200 west"\n' + 'Fabrice,"Firm A,3 somewhere"\n', $result.values->toOne());
-   assertSameSQL('select "root".PERSON_FIRSTNAME as "firstName", concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) as "nameAndAddress" from PERSON_FIRM_DENORM as "root"', $result);
+   assertEquals('firstName,nameAndAddress\n' + 'Peter,"Firm X,200 west"\n' + 'John,"Firm X,200 west"\n' + 'Fabrice,"Firm A,3 somewhere"\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) as "nameAndAddress" from PERSON_FIRM_DENORM as "root"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMappingWithQualifierWithIfAndEquals():Boolean[1]
@@ -165,8 +165,8 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMap
                                                 p | $p.firm.isFirmX], ['name', 'FirmX'])
                                      , testMappingEmbedded, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('name,FirmX\n' + 'Peter,Yes\n' + 'John,Yes\n' + 'Fabrice,No\n', $result.values->toOne());
-   assertSameSQL('select "root".PERSON_FIRSTNAME as "name", case when "root".FIRM_LEGALNAME = \'Firm X\' then \'Yes\' else \'No\' end as "FirmX" from PERSON_FIRM_DENORM as "root"', $result);
+   assertEquals('name,FirmX\n' + 'Peter,Yes\n' + 'John,Yes\n' + 'Fabrice,No\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "name", case when "root".FIRM_LEGALNAME = \'Firm X\' then \'Yes\' else \'No\' end as "FirmX" from PERSON_FIRM_DENORM as "root"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::testFilterWithEmbeddedQualifier():Boolean[1]
@@ -175,8 +175,8 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::testFilterWit
                                      ->project([#/Person/firstName#, #/Person/firm/nameAndAddress#])
                                      , testMappingEmbedded, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('firstName,nameAndAddress\n' + 'Peter,"Firm X,200 west"\n' + 'John,"Firm X,200 west"\n', $result.values->toOne());
-   assertSameSQL('select "root".PERSON_FIRSTNAME as "firstName", concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) as "nameAndAddress" from PERSON_FIRM_DENORM as "root" where (concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) is not null and concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) like \'Firm X%\')', $result);
+   assertEquals('firstName,nameAndAddress\n' + 'Peter,"Firm X,200 west"\n' + 'John,"Firm X,200 west"\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) as "nameAndAddress" from PERSON_FIRM_DENORM as "root" where (concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) is not null and concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) like \'Firm X%\')', $result->sqlRemoveFormatting());
 }
 
 
@@ -199,8 +199,8 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::testIsEmpty()
                                                 p | $p.firm.legalName], ['name', 'firm'])
                                      , testMappingEmbedded, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('name,firm\n\n', $result.values->toOne());
-   assertSameSQL('select "root".PERSON_FIRSTNAME as "name", "root".FIRM_LEGALNAME as "firm" from PERSON_FIRM_DENORM as "root" where "root".FIRM_LEGALNAME is null', $result);
+   assertEquals('name,firm\n\n', $result.values->toOne()->toCSV());
+   assertEquals('select "root".PERSON_FIRSTNAME as "name", "root".FIRM_LEGALNAME as "firm" from PERSON_FIRM_DENORM as "root" where "root".FIRM_LEGALNAME is null', $result->sqlRemoveFormatting());
 }
 
 function <<test.ToFix>> meta::relational::tests::mapping::embedded::testIsEmptyType():Boolean[1]
@@ -210,8 +210,8 @@ function <<test.ToFix>> meta::relational::tests::mapping::embedded::testIsEmptyT
                                                 p | $p.firm.legalName], ['name', 'firm'])
                                      , testMappingEmbedded, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('name,firm\n', $result.values->toOne());
-   assertSameSQL('select root.PERSON_FIRSTNAME as "name", root.FIRM_LEGALNAME as "firm" from PERSON_FIRM_DENORM as root where root.FIRM_ID is null', $result);
+   assertEquals('name,firm\n', $result.values->toOne()->toCSV());
+   assertEquals('select root.PERSON_FIRSTNAME as "name", root.FIRM_LEGALNAME as "firm" from PERSON_FIRM_DENORM as root where root.FIRM_ID is null', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::testMapEmbeddedQualifierWithIfTwoEmbeddedProperties():Boolean[1]
@@ -222,8 +222,8 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::testMapEmbedd
                                                 ], ['nameAndMaskedAddress'])
                                      , testMappingEmbedded, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('nameAndMaskedAddress\n' + '"Firm X , Top Secret"\n' + '"Firm X , Top Secret"\n', $result.values->toOne());
-   assertSameSQL('select case when "root".FIRM_LEGALNAME = \'Firm X\' then concat("root".FIRM_LEGALNAME, \' , Top Secret\') else concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) end as "nameAndMaskedAddress" from PERSON_FIRM_DENORM as "root" where (concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) is not null and concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) like \'Firm X%\')', $result);
+   assertEquals('nameAndMaskedAddress\n' + '"Firm X , Top Secret"\n' + '"Firm X , Top Secret"\n', $result.values->toOne()->toCSV());
+   assertEquals('select case when "root".FIRM_LEGALNAME = \'Firm X\' then concat("root".FIRM_LEGALNAME, \' , Top Secret\') else concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) end as "nameAndMaskedAddress" from PERSON_FIRM_DENORM as "root" where (concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) is not null and concat("root".FIRM_LEGALNAME, \',\', "root".FIRM_ADDRESS_NAME) like \'Firm X%\')', $result->sqlRemoveFormatting());
 }
 
 // Alloy exclusion reason: 3. Using getter on an instance
@@ -316,8 +316,8 @@ function <<test.Test, test.ToFix>> meta::relational::tests::mapping::embedded::t
    let result = execute(|Person.all()->project([p | if($p.address->isNotEmpty(),|$p.address.name,|'')], ['street'])
                                      , testMappingEmbedded, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertTdsFromCsv('???', $result.values->toOne());
-   assertSameSQL('???', $result);
+   assertEquals('???', $result.values->toOne()->toCSV());
+   assertEquals('???', $result->sqlRemoveFormatting());
 }
 
 

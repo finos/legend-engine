@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import meta::relational::functions::sqlstring::*;
-import meta::relational::functions::asserts::*;
 
 Class meta::relational::memsql::tests::db::A
 {
@@ -30,7 +29,7 @@ function <<test.Test>> meta::relational::memsql::tests::db::testQuoteIdentifiers
       true,
       meta::relational::extension::relationalExtensions());
 
-  assertSameSQL('select `root`.`window` as `WINDOW` from `test table` as `root`', $result);
+  assertEquals('select `root`.`window` as `WINDOW` from `test table` as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::db::testReservedKeywords() : Boolean[1]
@@ -41,7 +40,7 @@ function <<test.Test>> meta::relational::memsql::tests::db::testReservedKeywords
       meta::relational::runtime::DatabaseType.MemSQL, 
       meta::relational::extension::relationalExtensions());
 
-  assertSameSQL('select `root`.`window` as `WINDOW` from `test table` as `root`', $result);
+  assertEquals('select `root`.`window` as `WINDOW` from `test table` as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::db::testWeekOfYear() : Boolean[1]
@@ -52,7 +51,7 @@ function <<test.Test>> meta::relational::memsql::tests::db::testWeekOfYear() : B
         meta::relational::runtime::DatabaseType.MemSQL,
         meta::relational::extension::relationalExtensions());
 
-    assertSameSQL('select weekofyear(date(`root`.dateTime)) as `week` from dataTable as `root`', $result);
+    assertEquals('select weekofyear(date(`root`.dateTime)) as `week` from dataTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::db::testDayOfYear() : Boolean[1]
@@ -63,7 +62,7 @@ function <<test.Test>> meta::relational::memsql::tests::db::testDayOfYear() : Bo
         meta::relational::runtime::DatabaseType.MemSQL,
         meta::relational::extension::relationalExtensions());
 
-    assertSameSQL('select dayofyear(date(`root`.dateTime)) as `doy` from dataTable as `root`', $result);
+    assertEquals('select dayofyear(date(`root`.dateTime)) as `doy` from dataTable as `root`', $result);
 }
 
 ###Relational

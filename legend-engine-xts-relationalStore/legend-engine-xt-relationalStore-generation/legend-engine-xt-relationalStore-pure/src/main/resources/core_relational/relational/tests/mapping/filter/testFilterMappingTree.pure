@@ -22,7 +22,6 @@ import meta::pure::profiles::*;
 import meta::core::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::mapping::*;
-import meta::relational::functions::asserts::*;
 
 
 
@@ -30,21 +29,21 @@ function <<test.Test>> meta::relational::tests::mapping::filter::testFilterMappi
 {
    let result = execute(|Org.all(), meta::relational::tests::mapping::filter::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['ROOT', 'Firm X', 'Firm A', 'Securities', 'Banking', 'Federation'], $result.values.name);
-   assertSameSQL('select "root".id as "pk_0", "root".name as "name" from orgTable as "root" where "root".filterVal <= 4', $result);
+   assertEquals('select "root".id as "pk_0", "root".name as "name" from orgTable as "root" where "root".filterVal <= 4', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::filter::testFilterMappingWithJoin():Boolean[1]
 {
    let result = execute(|Org.all(), meta::relational::tests::mapping::filter::model::mapping::orgTestMappingWithJoin, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['ROOT', 'Firm X', 'Firm A', 'Securities', 'Banking', 'Federation'], $result.values.name);
-   assertSameSQL('select "root".id as "pk_0", "root".name as "name" from orgTable as "root" left outer join otherTable as "othertable_0" on ("root".id = "othertable_0".orgTableId) where "othertable_0".filterVal <= 4', $result);
+   assertEquals('select "root".id as "pk_0", "root".name as "name" from orgTable as "root" left outer join otherTable as "othertable_0" on ("root".id = "othertable_0".orgTableId) where "othertable_0".filterVal <= 4', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::filter::testFilterMappingWithProjection():Boolean[1]
 {
    let result = execute(|Org.all()->project(#/Org/name#), meta::relational::tests::mapping::filter::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['ROOT', 'Firm X', 'Firm A', 'Securities', 'Banking', 'Federation'], $result.values.rows->map(r|$r.values->at(0)));
-   assertSameSQL('select "root".name as "name" from orgTable as "root" where "root".filterVal <= 4', $result);
+   assertEquals('select "root".name as "name" from orgTable as "root" where "root".filterVal <= 4', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::filter::testFilterMappingWithProjectionOverlapp():Boolean[1]
@@ -57,7 +56,7 @@ function <<test.Test>> meta::relational::tests::mapping::filter::testFilterMappi
    assertEquals(['Securities','Firm X','ROOT'], $result.values.rows->at(3).values);
    assertEquals(['Banking','Firm X','ROOT'], $result.values.rows->at(4).values);
    assertEquals(['Federation','Firm X','ROOT'], $result.values.rows->at(5).values);
-   assertSameSQL('select "root".name as "name", "orgtable_1".name as "p_name", "orgtable_2".name as "p_p_name" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id and "orgtable_1".filterVal <= 4) left outer join (select "orgtable_3".id as id, "orgtable_3".name as name from orgTable as "orgtable_3" where "orgtable_3".filterVal <= 4) as "orgtable_2" on ("orgtable_1".parentId = "orgtable_2".id) where "root".filterVal <= 4', $result);
+   assertEquals('select "root".name as "name", "orgtable_1".name as "p_name", "orgtable_2".name as "p_p_name" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id and "orgtable_1".filterVal <= 4) left outer join (select "orgtable_3".id as id, "orgtable_3".name as name from orgTable as "orgtable_3" where "orgtable_3".filterVal <= 4) as "orgtable_2" on ("orgtable_1".parentId = "orgtable_2".id) where "root".filterVal <= 4', $result->sqlRemoveFormatting());
 }
 
 
@@ -65,14 +64,14 @@ function <<test.Test>> meta::relational::tests::mapping::filter::testFilterMappi
 {
    let result = execute(|Org.all()->project(#/Org/name#), meta::relational::tests::mapping::filter::model::mapping::orgTestMappingWithJoin, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['ROOT', 'Firm X', 'Firm A', 'Securities', 'Banking', 'Federation'], $result.values.rows->map(r|$r.values->at(0)));
-   assertSameSQL('select "root".name as "name" from orgTable as "root" left outer join otherTable as "othertable_0" on ("root".id = "othertable_0".orgTableId) where "othertable_0".filterVal <= 4', $result);
+   assertEquals('select "root".name as "name" from orgTable as "root" left outer join otherTable as "othertable_0" on ("root".id = "othertable_0".orgTableId) where "othertable_0".filterVal <= 4', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::filter::testFilterMappingQuery():Boolean[1]
 {
    let result = execute(|Org.all()->filter(o|$o.parent.name == 'Firm X'), meta::relational::tests::mapping::filter::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['Banking', 'Federation', 'Securities'], $result.values.name);
-   assertSameSQL('select "root".id as "pk_0", "root".name as "name" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id) where "orgtable_1".filterVal <= 4 and "root".filterVal <= 4 and "orgtable_1".name = \'Firm X\'', $result);
+   assertEquals('select "root".id as "pk_0", "root".name as "name" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id) where "orgtable_1".filterVal <= 4 and "root".filterVal <= 4 and "orgtable_1".name = \'Firm X\'', $result->sqlRemoveFormatting());
 }
 
 // Alloy exclusion reason: 4. Use getter relational protocol
@@ -93,14 +92,14 @@ function <<test.Test>> meta::relational::tests::mapping::filter::testFilterMappi
 {
    let result = execute(|Org.all()->filter(o|$o.parent.name == 'Firm X'), meta::relational::tests::mapping::filter::model::mapping::orgTestMappingWithJoin, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['Banking', 'Federation', 'Securities'], $result.values.name);
-   assertSameSQL('select "root".id as "pk_0", "root".name as "name" from orgTable as "root" left outer join otherTable as "othertable_0" on ("root".id = "othertable_0".orgTableId) left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id) left outer join otherTable as "othertable_1" on ("orgtable_1".id = "othertable_1".orgTableId) where "othertable_1".filterVal <= 4 and "othertable_0".filterVal <= 4 and "orgtable_1".name = \'Firm X\'', $result);
+   assertEquals('select "root".id as "pk_0", "root".name as "name" from orgTable as "root" left outer join otherTable as "othertable_0" on ("root".id = "othertable_0".orgTableId) left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id) left outer join otherTable as "othertable_1" on ("orgtable_1".id = "othertable_1".orgTableId) where "othertable_1".filterVal <= 4 and "othertable_0".filterVal <= 4 and "orgtable_1".name = \'Firm X\'', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::filter::testFilterMappingWithJoinNotEmpty():Boolean[1]
 {
    let result = execute(|Org.all()->filter(o|$o.parentName->isNotEmpty()), meta::relational::tests::mapping::filter::model::mapping::orgTestMapping2, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['Banking', 'Federation', 'Securities'], $result.values.name);
-   assertSameSQL('select "root".id as "pk_0", "root".name as "name", "orgtable_2".name as "parentName" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id) left outer join orgTable as "orgtable_2" on ("orgtable_1".parentId = "orgtable_2".id) where "root".filterVal <= 4 and "orgtable_2".name is not null', $result);
+   assertEquals('select "root".id as "pk_0", "root".name as "name", "orgtable_2".name as "parentName" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id) left outer join orgTable as "orgtable_2" on ("orgtable_1".parentId = "orgtable_2".id) where "root".filterVal <= 4 and "orgtable_2".name is not null', $result->sqlRemoveFormatting());
 }
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::filter::setUp():Boolean[1]

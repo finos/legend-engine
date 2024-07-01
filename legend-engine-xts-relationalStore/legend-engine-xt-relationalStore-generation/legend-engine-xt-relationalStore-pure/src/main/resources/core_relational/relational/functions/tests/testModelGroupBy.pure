@@ -1020,7 +1020,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testGroupByWithJoinDB2(
          ['legalName', 'employeesFirstName', 'sum']
       )};
    let sql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".LEGALNAME as "legalName", "personTable_d#4_d_m1".FIRSTNAME as "employeesFirstName", sum(1) as "sum" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "root".LEGALNAME,"personTable_d#4_d_m1".FIRSTNAME', $sql);
+   assertEquals('select "root".LEGALNAME as "legalName", "personTable_d#4_d_m1".FIRSTNAME as "employeesFirstName", sum(1) as "sum" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "root".LEGALNAME,"personTable_d#4_d_m1".FIRSTNAME', $sql);
 }
 
 function <<test.Test>> meta::relational::tests::groupBy::testObjectLevelGroupByWTDSLevelGroupByWTDSExtend():Boolean[1]
@@ -1048,7 +1048,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testReprocessGroupByAli
    let result  = execute({|meta::relational::tests::model::simple::Order.all()
                  ->groupBy([x | $x.pnlContact.lastName,x | $x.pnlContact.firm.legalName],[agg(x | $x.quantity, y | $y->sum())],['last name','legal name','quantity'])},
                  MappingWithInnerJoinAndEmbeddedMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "salespersontable_0".lastName as "last name", "salespersontable_0".firm_name as "legal name", sum("root".quantity) as "quantity" from orderTable as "root" left outer join (select "salespersontable_0".ACCOUNT_ID as ACCOUNT_ID, "personfirmview_0".lastName as lastName, "personfirmview_0".firm_name as firm_name from salesPersonTable as "salespersontable_0" inner join (select "root".ID as PERSON_ID, "root".LASTNAME as lastName, "firmtable_0".LEGALNAME as firm_name from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)) as "personfirmview_0" on ("salespersontable_0".PERSON_ID = "personfirmview_0".PERSON_ID)) as "salespersontable_0" on ("root".accountID = "salespersontable_0".ACCOUNT_ID) group by "last name","legal name"', $result);
+   assertEquals('select "salespersontable_0".lastName as "last name", "salespersontable_0".firm_name as "legal name", sum("root".quantity) as "quantity" from orderTable as "root" left outer join (select "salespersontable_0".ACCOUNT_ID as ACCOUNT_ID, "personfirmview_0".lastName as lastName, "personfirmview_0".firm_name as firm_name from salesPersonTable as "salespersontable_0" inner join (select "root".ID as PERSON_ID, "root".LASTNAME as lastName, "firmtable_0".LEGALNAME as firm_name from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)) as "personfirmview_0" on ("salespersontable_0".PERSON_ID = "personfirmview_0".PERSON_ID)) as "salespersontable_0" on ("root".accountID = "salespersontable_0".ACCOUNT_ID) group by "last name","legal name"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::groupBy::testUniqueValueOnly1():Boolean[1]

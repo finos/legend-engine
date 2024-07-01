@@ -16,14 +16,13 @@ import meta::relational::tests::model::simple::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
-import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::projection::filter::greaterThan::testGreaterThan():Boolean[1]
 {
    let result = execute(|Trade.all()->filter(t|$t.quantity > 45)->project([#/Trade/quantity#]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 1);
    assertSameElements(320.0, $result.values.rows.values);
-   assertSameSQL('select "root".quantity as "quantity" from tradeTable as "root" where "root".quantity > 45', $result);
+   assertEquals('select "root".quantity as "quantity" from tradeTable as "root" where "root".quantity > 45', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::greaterThanEqual::testGreaterThanEqual():Boolean[1]
@@ -31,7 +30,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::greaterThanE
    let result = execute(|Trade.all()->filter(t|$t.quantity >= 45)->project([#/Trade/quantity#]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 2);
    assertSameElements([45.0, 320.0], $result.values.rows.values);
-   assertSameSQL('select "root".quantity as "quantity" from tradeTable as "root" where "root".quantity >= 45', $result);
+   assertEquals('select "root".quantity as "quantity" from tradeTable as "root" where "root".quantity >= 45', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::greaterThan::testGreaterThanWithOptionalProperty():Boolean[1]
@@ -39,7 +38,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::greaterThan:
    let result = execute(|Person.all()->filter(p|$p.age > 30)->project([#/Person/firstName#, #/Person/age#]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements([32, 34, 35, 'David', 'Fabrice', 'Oliver'], $result.values.rows.values);
-   assertSameSQL('select "root".FIRSTNAME as "firstName", "root".AGE as "age" from personTable as "root" where ("root".AGE is not null and "root".AGE > 30)', $result);
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".AGE as "age" from personTable as "root" where ("root".AGE is not null and "root".AGE > 30)', $result->sqlRemoveFormatting());
 }
 
 
@@ -47,7 +46,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::isEmpty::tes
 {
    let result = execute(|Person.all()->filter(p|$p.age->isEmpty())->project([#/Person/firstName#, #/Person/age#]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 0);
-   assertSameSQL('select "root".FIRSTNAME as "firstName", "root".AGE as "age" from personTable as "root" where "root".AGE is null', $result);
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".AGE as "age" from personTable as "root" where "root".AGE is null', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::lessThan::testLessThan():Boolean[1]
@@ -55,7 +54,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::lessThan::te
    let result = execute(|Trade.all()->filter(t|$t.quantity < 45)->project([#/Trade/quantity#]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 9);
    assertEquals([25.0, 11.0, 23.0, 32.0, 27.0, 44.0, 22.0, 38.0, 5.0], $result.values.rows.values);
-   assertSameSQL('select "root".quantity as "quantity" from tradeTable as "root" where "root".quantity < 45', $result);
+   assertEquals('select "root".quantity as "quantity" from tradeTable as "root" where "root".quantity < 45', $result->sqlRemoveFormatting());
 }
 
 
@@ -65,7 +64,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::lessThan::te
    let result = execute(|Trade.all()->filter($filter)->project([#/Trade/quantity#]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 9);
    assertEquals([25.0, 11.0, 23.0, 32.0, 27.0, 44.0, 22.0, 38.0, 5.0], $result.values.rows.values);
-   assertSameSQL('select "root".quantity as "quantity" from tradeTable as "root" where "root".quantity < 45', $result);
+   assertEquals('select "root".quantity as "quantity" from tradeTable as "root" where "root".quantity < 45', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::lessThanEqual::testLessThanEqual():Boolean[1]
@@ -73,7 +72,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::lessThanEqua
    let result = execute(|Trade.all()->filter(t|$t.quantity <= 45)->project([#/Trade/quantity#]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 10);
    assertEquals([25.0, 11.0, 23.0, 32.0, 27.0, 44.0, 22.0, 45.0, 38.0, 5.0], $result.values.rows.values);
-   assertSameSQL('select "root".quantity as "quantity" from tradeTable as "root" where "root".quantity <= 45', $result);
+   assertEquals('select "root".quantity as "quantity" from tradeTable as "root" where "root".quantity <= 45', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::isolation::testIsolationOfVariableNamesAccrossDifferentPaths():Boolean[1]
@@ -81,7 +80,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::isolation::t
     let result = execute(|Firm.all()->project(e| if(false,|$e.employeeWithFirmAddressName().name,|$e.legalName),'name'), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
     let tds = $result.values->at(0);
     assertEquals(['Firm X', 'Firm A', 'Firm B', 'Firm C'],$tds.rows->map(r|$r.values->makeString(',')));
-    assertSameSQL('select case when false then concat("firmtable_1".FIRSTNAME, \' \', "firmtable_1".LASTNAME) else "root".LEGALNAME end as "name" from firmTable as "root" left outer join (select "firmtable_2".ID as ID, "persontable_0".FIRSTNAME as FIRSTNAME, "persontable_0".LASTNAME as LASTNAME from firmTable as "firmtable_2" left outer join personTable as "persontable_0" on ("firmtable_2".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_2".ADDRESSID) where concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) = "addresstable_0".NAME) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', $result);
+    assertEquals('select case when false then concat("firmtable_1".FIRSTNAME, \' \', "firmtable_1".LASTNAME) else "root".LEGALNAME end as "name" from firmTable as "root" left outer join (select "firmtable_2".ID as ID, "persontable_0".FIRSTNAME as FIRSTNAME, "persontable_0".LASTNAME as LASTNAME from firmTable as "firmtable_2" left outer join personTable as "persontable_0" on ("firmtable_2".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_2".ADDRESSID) where concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) = "addresstable_0".NAME) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::isolation::testIsolatioWhereNoConstaintsAndInnerJoin():Boolean[1]
@@ -89,7 +88,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::isolation::t
     let result = execute(|Firm.all()->project([f|$f.legalName, f|$f.address.name],['legalName','addressName']), meta::relational::tests::mapping::join::model::mapping::chainedJoinsInner, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
     let tds = $result.values->at(0);
     assertEquals(['Firm X, UK', 'Firm X, Europe', 'Firm X, Europe', 'Firm X, Europe', 'Firm A, Europe', 'Firm B, Europe', 'Firm C, Europe'],$tds.rows->map(r|$r.values->makeString(', ')));
-    assertSameSQL('select "root".LEGALNAME as "legalName", case when ("firmpersonbridgetable_0".ADDRESSID = 1 or "addresstable_0".ID = 1) then \'UK\' else \'Europe\' end as "addressName" from firmTable as "root" left outer join (select "firmpersonbridgetable_1".FIRM_ID as FIRM_ID, "persontable_0".ADDRESSID as ADDRESSID from firmPersonBridgeTable as "firmpersonbridgetable_1" inner join personTable as "persontable_0" on ("persontable_0".ID = "firmpersonbridgetable_1".PERSON_ID)) as "firmpersonbridgetable_0" on ("root".ID = "firmpersonbridgetable_0".FIRM_ID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID)', $result);
+    assertEquals('select "root".LEGALNAME as "legalName", case when ("firmpersonbridgetable_0".ADDRESSID = 1 or "addresstable_0".ID = 1) then \'UK\' else \'Europe\' end as "addressName" from firmTable as "root" left outer join (select "firmpersonbridgetable_1".FIRM_ID as FIRM_ID, "persontable_0".ADDRESSID as ADDRESSID from firmPersonBridgeTable as "firmpersonbridgetable_1" inner join personTable as "persontable_0" on ("persontable_0".ID = "firmpersonbridgetable_1".PERSON_ID)) as "firmpersonbridgetable_0" on ("root".ID = "firmpersonbridgetable_0".FIRM_ID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID)', $result->sqlRemoveFormatting());
 }
 
 // Filters having no table alias like 'Smith' = 'Smith'
@@ -101,15 +100,15 @@ function <<test.Test>> meta::relational::tests::projection::filter::isolation::t
 
   let tds1 = $result1.values->at(0);
   assertEquals(['Hoboken, Peter', 'New York, John', 'New York, John', 'New York, Anthony', 'San Fransisco, Fabrice', 'Hong Kong, Oliver', 'New York, David'], $tds1.rows->map(r|$r.values->makeString(', ')));
-  assertSameSQL('select "addresstable_0".NAME as "address", "persontable_0".FIRSTNAME as "employeeFirstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and \'Smith\' = \'Smith\') left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_0".ADDRESSID)', $result1);
+  assertEquals('select "addresstable_0".NAME as "address", "persontable_0".FIRSTNAME as "employeeFirstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and \'Smith\' = \'Smith\') left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_0".ADDRESSID)', $result1->sqlRemoveFormatting());
 
   let tds2 = $result2.values->at(0);
   assertEquals(['TDSNull, TDSNull', 'TDSNull, TDSNull', 'TDSNull, TDSNull', 'TDSNull, TDSNull'], $tds2.rows->map(r|$r.values->makeString(', ')));
-  assertSameSQL('select "addresstable_0".NAME as "address", "persontable_0".FIRSTNAME as "employeeFirstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and \'Smith\' = \'Roberts\') left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_0".ADDRESSID)', $result2);
+  assertEquals('select "addresstable_0".NAME as "address", "persontable_0".FIRSTNAME as "employeeFirstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and \'Smith\' = \'Roberts\') left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_0".ADDRESSID)', $result2->sqlRemoveFormatting());
 
   let tds3 = $result3.values->at(0);
   assertEquals(['TDSNull, Peter', 'TDSNull, John', 'TDSNull, John', 'TDSNull, Anthony', 'TDSNull, Fabrice', 'TDSNull, Oliver', 'TDSNull, David'], $tds3.rows->map(r|$r.values->makeString(', ')));
-  assertSameSQL('select "addresstable_0".NAME as "address", "persontable_1".FIRSTNAME as "employeeFirstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and \'Smith\' = \'Roberts\') left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_0".ADDRESSID) left outer join personTable as "persontable_1" on ("root".ID = "persontable_1".FIRMID and \'Smith\' = \'Smith\')', $result3);
+  assertEquals('select "addresstable_0".NAME as "address", "persontable_1".FIRSTNAME as "employeeFirstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and \'Smith\' = \'Roberts\') left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_0".ADDRESSID) left outer join personTable as "persontable_1" on ("root".ID = "persontable_1".FIRMID and \'Smith\' = \'Smith\')', $result3->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::lessThanEqual::testIsolationOfFiltersWithoutAliasWithChainedJoins():Boolean[1]
@@ -117,5 +116,5 @@ function <<test.Test>> meta::relational::tests::projection::filter::lessThanEqua
    let result = execute(|Trade.all()->project([t | $t.id, t| $t.product.synonymByType(ProductSynonymType.CUSIP).name, t| $t.product.synonymByType(ProductSynonymType.ISIN).name], ['tradeId','SynonyName1', 'SynonymName2']), meta::relational::tests::mapping::join::model::mapping::MappingWithLiteral, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(['1, CUSIP1, TDSNull', '1, ISIN1, TDSNull', '2, CUSIP1, TDSNull', '2, ISIN1, TDSNull', '3, CUSIP2, TDSNull', '3, ISIN2, TDSNull', '4, CUSIP2, TDSNull', '4, ISIN2, TDSNull', '5, CUSIP2, TDSNull', '5, ISIN2, TDSNull', '6, CUSIP3, TDSNull', '6, ISIN3, TDSNull', '7, CUSIP3, TDSNull', '7, ISIN3, TDSNull', '8, CUSIP3, TDSNull', '8, ISIN3, TDSNull', '9, CUSIP3, TDSNull', '9, ISIN3, TDSNull', '10, CUSIP3, TDSNull', '10, ISIN3, TDSNull', '11, TDSNull, TDSNull'], $tds.rows->map(r|$r.values->makeString(', ')));
-   assertSameSQL('select "root".ID as "tradeId", "synonymtable_0".NAME as "SynonyName1", "synonymtable_2".NAME as "SynonymName2" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) left outer join (select "synonymtable_1".PRODID as PRODID, "synonymtable_1".NAME as NAME from productSchema.synonymTable as "synonymtable_1" where \'CUSIP\' = \'CUSIP\') as "synonymtable_0" on ("synonymtable_0".PRODID = "producttable_0".ID) left outer join (select "synonymtable_1".PRODID as PRODID, "synonymtable_1".NAME as NAME from productSchema.synonymTable as "synonymtable_1" where \'CUSIP\' = \'ISIN\') as "synonymtable_2" on ("synonymtable_2".PRODID = "producttable_0".ID)', $result);
+   assertEquals('select "root".ID as "tradeId", "synonymtable_0".NAME as "SynonyName1", "synonymtable_2".NAME as "SynonymName2" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) left outer join (select "synonymtable_1".PRODID as PRODID, "synonymtable_1".NAME as NAME from productSchema.synonymTable as "synonymtable_1" where \'CUSIP\' = \'CUSIP\') as "synonymtable_0" on ("synonymtable_0".PRODID = "producttable_0".ID) left outer join (select "synonymtable_1".PRODID as PRODID, "synonymtable_1".NAME as NAME from productSchema.synonymTable as "synonymtable_1" where \'CUSIP\' = \'ISIN\') as "synonymtable_2" on ("synonymtable_2".PRODID = "producttable_0".ID)', $result->sqlRemoveFormatting());
 }

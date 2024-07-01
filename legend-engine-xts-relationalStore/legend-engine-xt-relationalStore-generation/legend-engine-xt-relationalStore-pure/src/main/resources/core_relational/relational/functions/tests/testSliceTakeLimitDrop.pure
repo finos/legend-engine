@@ -18,24 +18,23 @@ import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::relational::functions::sqlstring::*;
-import meta::relational::functions::asserts::*;
 
 function <<test.Test>> meta::relational::tests::query::slice::testSlice():Boolean[1]
 {
    let result = execute(|Person.all()->slice(1,4), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 1 rows fetch next 3 rows only', $result);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 1 rows fetch next 3 rows only', $result->sqlRemoveFormatting());
    assertSize($result.values, 3);
 
    let result2 = execute(|Person.all()->slice(2,4), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 2 rows fetch next 2 rows only', $result2);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 2 rows fetch next 2 rows only', $result2->sqlRemoveFormatting());
    assertSize($result2.values, 2);
 
    let result3 = execute(|Person.all()->slice(2,6), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 2 rows fetch next 4 rows only', $result3);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 2 rows fetch next 4 rows only', $result3->sqlRemoveFormatting());
    assertSize($result3.values, 4);
 
    let result4 = execute(|Person.all()->slice(0,1), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSameSQL('select top 1 "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $result4);
+   assertEquals('select top 1 "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $result4->sqlRemoveFormatting());
    assertSize($result4.values, 1);
 }
 
@@ -44,50 +43,50 @@ function <<test.Test>> meta::relational::tests::query::take::testSliceByVendor()
    let f1 = {|Person.all()->slice(3, 5);};
 
    let s = toSQLString($f1, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 3 rows fetch next 2 rows only', $s);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 3 rows fetch next 2 rows only', $s);
 }
 
 function <<test.Test>> meta::relational::tests::query::limit::testSimpleLimit():Boolean[1]
 {
    let result = execute(|Person.all()->limit(0), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSameSQL('select top 0 "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $result);
+   assertEquals('select top 0 "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $result->sqlRemoveFormatting());
    assertSize($result.values, 0 );
 
    let result2 = execute(|Person.all()->limit(1), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSameSQL('select top 1 "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $result2);
+   assertEquals('select top 1 "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $result2->sqlRemoveFormatting());
    assertSize($result2.values, 1 );
 }
 
 function <<test.Test>> meta::relational::tests::query::take::testSimpleTake():Boolean[1]
 {
    let result = execute(|Person.all()->take(0), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSameSQL('select top 0 "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $result);
+   assertEquals('select top 0 "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $result->sqlRemoveFormatting());
    assertSize($result.values, 0 );
 
    let result2 = execute(|Person.all()->take(1), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSameSQL('select top 1 "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $result2);
+   assertEquals('select top 1 "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $result2->sqlRemoveFormatting());
    assertSize($result2.values, 1 );
 }
 
 function <<test.Test>> meta::relational::tests::query::take::testLimitByVendor():Boolean[1]
 {
    let s = toSQLString(|Person.all()->limit(1);,meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select top 1 "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $s);
+   assertEquals('select top 1 "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $s);
 }
 
 function <<test.Test>> meta::relational::tests::query::take::testTakeByVendor():Boolean[1]
 {
    let s = toSQLString(|Person.all()->take(10);, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select top 10 "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $s);
+   assertEquals('select top 10 "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $s);
 }
 
 function <<test.Test>> meta::relational::tests::query::drop::testSimpleDrop():Boolean[1]
 {
    let result = execute(|Person.all()->drop(0), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 0 rows', $result);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 0 rows', $result->sqlRemoveFormatting());
    assertSize($result.values, 12 );
 
    let result2 = execute(|Person.all()->drop(1), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 1 rows', $result2);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 1 rows', $result2->sqlRemoveFormatting());
    assertSize($result2.values, 11 );
 }
