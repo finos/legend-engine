@@ -182,10 +182,13 @@ class NontemporalDeltaPlanner extends Planner
         // Add batch_id field
         keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build(), batchIdValue));
 
+        List<Pair<FieldValue, Value>> keyValuePairsForMatched = keyValuePairs.stream().collect(Collectors.toList());
+        removePrimaryKeysFromKeyValuePairs(keyValuePairsForMatched); // We do not need to update the primary keys
+
         Merge merge = Merge.builder()
             .dataset(mainDataset())
             .usingDataset(stagingDataset)
-            .addAllMatchedKeyValuePairs(keyValuePairs)
+            .addAllMatchedKeyValuePairs(keyValuePairsForMatched)
             .addAllUnmatchedKeyValuePairs(keyValuePairs)
             .onCondition(this.pkMatchCondition)
             .matchedCondition(versioningCondition)
@@ -217,6 +220,7 @@ class NontemporalDeltaPlanner extends Planner
         }
         Dataset stagingDataset = stagingDataset();
         List<Pair<FieldValue, Value>> keyValuePairs = getKeyValuePairs();
+        removePrimaryKeysFromKeyValuePairs(keyValuePairs); // We do not need to update the primary keys
 
         if (ingestMode().auditing().accept(AUDIT_ENABLED))
         {
@@ -250,6 +254,11 @@ class NontemporalDeltaPlanner extends Planner
                     FieldValue.builder().datasetRef(stagingDataset().datasetReference()).fieldName(((FieldValue) field).fieldName()).build()))
             .collect(Collectors.toList());
         return keyValuePairs;
+    }
+
+    private void removePrimaryKeysFromKeyValuePairs(List<Pair<FieldValue, Value>> keyValuePairs)
+    {
+        keyValuePairs.removeIf(pair -> primaryKeys.contains(pair.key().fieldName()));
     }
 
     /*

@@ -67,7 +67,6 @@ import static org.finos.legend.engine.persistence.components.e2e.TestUtils.start
 import static org.finos.legend.engine.persistence.components.e2e.TestUtils.testSchemaName;
 import static org.finos.legend.engine.persistence.components.e2e.TestUtils.versionName;
 
-@Disabled
 class NontemporalDeltaTest extends BaseTest
 {
     private final String basePath = "src/test/resources/data/incremental-delta-milestoning/";

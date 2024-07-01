@@ -207,7 +207,7 @@ public class DuckDBSink extends AnsiSqlSink
         @Override
         public Boolean visitNontemporalDelta(NontemporalDeltaAbstract nontemporalDelta)
         {
-            return false;
+            return true;
         }
 
         @Override
