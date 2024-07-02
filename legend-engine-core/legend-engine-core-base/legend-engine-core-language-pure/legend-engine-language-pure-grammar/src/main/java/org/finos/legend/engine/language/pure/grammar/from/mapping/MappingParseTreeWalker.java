@@ -30,6 +30,7 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarP
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
@@ -43,6 +44,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest_Legacy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.StoreTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
@@ -184,7 +186,9 @@ public class MappingParseTreeWalker
     {
         StoreTestData testData = new StoreTestData();
         testData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
-        testData.store = ctx.qualifiedName().packagePath() == null ? ctx.qualifiedName().getText() : PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());     //build store
+        String path = ctx.qualifiedName().packagePath() == null ? ctx.qualifiedName().getText() : PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());     //build store
+        testData.store = new StoreProviderPointer(PackageableElementType.STORE, path, this.walkerSourceInformation.getSourceInformation(ctx.qualifiedName()));
+        testData.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         return testData;
     }
 

@@ -253,7 +253,7 @@ public class HelperMappingGrammarComposer
     public static String renderStoreElementTestData(StoreTestData mappingStoreTestData, DEPRECATED_PureGrammarComposerCore transformer, int baseIndentation)
     {
         StringBuilder str = new StringBuilder();
-        str.append(getTabString(baseIndentation)).append(mappingStoreTestData.store).append(":\n");
+        str.append(getTabString(baseIndentation)).append(mappingStoreTestData.store.path).append(":\n");
         str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(mappingStoreTestData.data, PureGrammarComposerContext.Builder.newInstance(transformer.toContext()).withIndentationString(getTabString(baseIndentation + 1)).build()));
         return str.toString();
     }

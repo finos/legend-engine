@@ -95,8 +95,8 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         this.context.pureModel.profilesIndex.put(fullPath, targetProfile);
         setNameAndPackage(targetProfile, profile);
         return targetProfile
-                ._p_stereotypes(ListIterate.collect(profile.stereotypes, st -> newStereotype(targetProfile, st)))
-                ._p_tags(ListIterate.collect(profile.tags, t -> newTag(targetProfile, t)));
+                ._p_stereotypes(ListIterate.collect(profile.stereotypes, st -> newStereotype(targetProfile, st.value, st.sourceInformation)))
+                ._p_tags(ListIterate.collect(profile.tags, t -> newTag(targetProfile, t.value, t.sourceInformation)));
     }
 
     @Override
@@ -281,16 +281,16 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         return newGenericType(rawType)._typeArguments(typeArguments);
     }
 
-    private Stereotype newStereotype(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile, String name)
+    private Stereotype newStereotype(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile, String name, SourceInformation sourceInformation)
     {
-        return new Root_meta_pure_metamodel_extension_Stereotype_Impl(name, null, this.context.pureModel.getClass("meta::pure::metamodel::extension::Stereotype"))
+        return new Root_meta_pure_metamodel_extension_Stereotype_Impl(name, SourceInformationHelper.toM3SourceInformation(sourceInformation), this.context.pureModel.getClass("meta::pure::metamodel::extension::Stereotype"))
                 ._value(name)
                 ._profile(profile);
     }
 
-    private Tag newTag(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile, String name)
+    private Tag newTag(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile, String name, SourceInformation sourceInformation)
     {
-        return new Root_meta_pure_metamodel_extension_Tag_Impl(name, null, this.context.pureModel.getClass("meta::pure::metamodel::extension::Tag"))
+        return new Root_meta_pure_metamodel_extension_Tag_Impl(name, SourceInformationHelper.toM3SourceInformation(sourceInformation), this.context.pureModel.getClass("meta::pure::metamodel::extension::Tag"))
                 ._value(name)
                 ._profile(profile);
     }

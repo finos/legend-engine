@@ -556,13 +556,13 @@ public class HelperMappingBuilder
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElseThrow(() -> new UnsupportedOperationException("Unsupported data")));
-        if (testData.store.equals("ModelStore"))
+        if (testData.store.path.equals("ModelStore"))
         {
             mappingStoreTestData._store(new Root_meta_external_store_model_ModelStore_Impl(""));
         }
         else
         {
-            mappingStoreTestData._store(context.resolveStore(testData.store));
+            mappingStoreTestData._store(context.resolveStore(testData.store.path, testData.store.sourceInformation));
         }
         return mappingStoreTestData;
     }
