@@ -68,13 +68,33 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.optmi
 import org.finos.legend.engine.persistence.components.relational.snowflake.optmizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.SnowflakeDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.SnowflakeJdbcPropertiesToLogicalDataTypeMapping;
-import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.*;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.AlterVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.BatchEndTimestampVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.CastFunctionVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ClusterKeyVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.CopyVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DatasetAdditionalPropertiesVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DigestUdfVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.FieldVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.FunctionalDatasetVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.MetadataFileNameFieldVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.MetadataRowNumberFieldVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.SQLCreateVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.SchemaDefinitionVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ShowVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesDatasetReferenceVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesDatasetVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesFieldValueVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesSelectionVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ToArrayFunctionVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.TryCastFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.Capability;
+import org.finos.legend.engine.persistence.components.util.QueryStatsLogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
 import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 import org.slf4j.Logger;
@@ -525,26 +545,13 @@ public class SnowflakeSink extends AnsiSqlSink
 
         Map<StatisticName, Object> stats = new HashMap<>();
 
-        resultData.queryId().ifPresent(queryId ->
-        {
-            RelationalTransformer transformer = new RelationalTransformer(SnowflakeSink.get());
-            SqlPlan physicalPlanForQueryOperatorStats = transformer.generatePhysicalPlan(LogicalPlanFactory.getLogicalPlanForQueryOperatorStats());
-            HashMap<String, PlaceholderValue> queryIdPlaceHolder = new HashMap<>();
-            queryIdPlaceHolder.put("{QUERY_ID}", PlaceholderValue.builder().value(queryId).isSensitive(false).build());
-            List<TabularData> queryOperatorStats = executor.executePhysicalPlanAndGetResults(physicalPlanForQueryOperatorStats, queryIdPlaceHolder);
-            stats.put(StatisticName.QUERY_OPERATOR_STATS, queryOperatorStats.stream().map(TabularData::data).collect(Collectors.toList()));
-        });
-
         stats.put(StatisticName.ROWS_INSERTED, totalRowsLoaded);
         stats.put(StatisticName.ROWS_WITH_ERRORS, totalRowsWithError);
         stats.put(StatisticName.FILES_LOADED, totalFilesLoaded);
 
-        IngestorResult.Builder resultBuilder = IngestorResult.builder()
-            .queryId(resultData.queryId())
-            .updatedDatasets(datasets)
-            .putAllStatisticByName(stats)
-            .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN).value())
-            .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN).value()) : null));
+        resultData.queryId().ifPresent(queryId -> enhanceWithLoadStatistics(executor, stats, queryId));
+
+        IngestorResult.Builder resultBuilder = IngestorResult.builder().updatedDatasets(datasets).putAllStatisticByName(stats).ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN).value()).batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN).value()) : null));
         IngestorResult result;
 
         if (dataFilePathsWithErrors.isEmpty())
@@ -563,6 +570,35 @@ public class SnowflakeSink extends AnsiSqlSink
                 .build();
         }
         return result;
+    }
+
+    private void enhanceWithLoadStatistics(Executor<SqlGen, TabularData, SqlPlan> executor, Map<StatisticName, Object> stats, String queryId)
+    {
+        try
+        {
+            RelationalTransformer transformer = new RelationalTransformer(SnowflakeSink.get());
+            SqlPlan physicalPlanForQueryOperatorStats = transformer.generatePhysicalPlan(QueryStatsLogicalPlanUtils.getLogicalPlanForQueryOperatorStats());
+            HashMap<String, PlaceholderValue> queryIdPlaceHolder = new HashMap<>();
+            queryIdPlaceHolder.put(QueryStatsLogicalPlanUtils.QUERY_ID_PARAMETER, PlaceholderValue.builder().value(queryId).isSensitive(false).build());
+            List<TabularData> queryOperatorStats = executor.executePhysicalPlanAndGetResults(physicalPlanForQueryOperatorStats, queryIdPlaceHolder);
+            if (!queryOperatorStats.isEmpty())
+            {
+                List<Map<String, Object>> queryOperatorStatsResults = queryOperatorStats.get(0).data();
+                queryOperatorStatsResults.forEach(queryStats -> {
+                    switch ((String) queryStats.get(QueryStatsLogicalPlanUtils.OPERATOR_TYPE_ALIAS))
+                    {
+                        case QueryStatsLogicalPlanUtils.EXTERNAL_SCAN_STAGE:
+                            stats.put(StatisticName.EXTERNAL_BYTES_SCANNED, queryStats.get(QueryStatsLogicalPlanUtils.EXTERNAL_BYTES_SCANNED_ALIAS));
+                        case QueryStatsLogicalPlanUtils.INSERT_STAGE:
+                            stats.put(StatisticName.INCOMING_RECORD_COUNT, queryStats.get(QueryStatsLogicalPlanUtils.INPUT_ROWS_ALIAS));
+                    }
+                });
+            }
+        }
+        catch (Exception e)
+        {
+            LOGGER.error(String.format("Error extracting query stats for query id: [%s].", queryId), e);
+        }
     }
 
     private String getErrorMessage(Map<String, Object> row)

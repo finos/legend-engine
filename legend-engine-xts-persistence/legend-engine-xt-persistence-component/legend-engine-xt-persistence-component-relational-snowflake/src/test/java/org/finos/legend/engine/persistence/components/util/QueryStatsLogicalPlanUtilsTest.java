@@ -15,22 +15,21 @@
 package org.finos.legend.engine.persistence.components.util;
 
 import java.util.List;
-import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.snowflake.SnowflakeSink;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class LogicalPlanFactoryTest
+public class QueryStatsLogicalPlanUtilsTest
 {
     @Test
     public void testLogicalPlanForQueryOperatorStats()
     {
         RelationalTransformer transformer = new RelationalTransformer(SnowflakeSink.get());
-        SqlPlan physicalPlanForQueryOperatorStats = transformer.generatePhysicalPlan(LogicalPlanFactory.getLogicalPlanForQueryOperatorStats());
+        SqlPlan physicalPlanForQueryOperatorStats = transformer.generatePhysicalPlan(QueryStatsLogicalPlanUtils.getLogicalPlanForQueryOperatorStats());
         List<String> list = physicalPlanForQueryOperatorStats.getSqlList();
-        String expectedQuery = "SELECT * FROM TABLE(GET_QUERY_OPERATOR_STATS('{QUERY_ID}'))";
+        String expectedQuery = "SELECT \"OPERATOR_TYPE\" as \"operatorType\",JSON_EXTRACT_PATH_TEXT(\"OPERATOR_STATISTICS\",'io.external_bytes_scanned') as \"externalBytesScanned\",JSON_EXTRACT_PATH_TEXT(\"OPERATOR_STATISTICS\",'input_rows') as \"inputRows\" FROM TABLE(GET_QUERY_OPERATOR_STATS('{QUERY_ID}'))";
         Assertions.assertEquals(expectedQuery, list.get(0));
     }
 }

@@ -43,5 +43,6 @@ public enum FunctionName
     TO_VARIANT,
     TO_JSON,
     CONVERT,
+    JSON_EXTRACT_PATH_TEXT,
     STRUCT;
 }

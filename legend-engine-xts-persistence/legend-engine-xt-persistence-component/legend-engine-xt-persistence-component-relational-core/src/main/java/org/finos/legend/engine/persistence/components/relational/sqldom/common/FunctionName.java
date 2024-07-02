@@ -51,6 +51,7 @@ public enum FunctionName
     ARRAY_CONSTRUCT("ARRAY_CONSTRUCT"),
     TO_JSON("TO_JSON"),
     CONVERT("CONVERT"),
+    JSON_EXTRACT_PATH_TEXT("JSON_EXTRACT_PATH_TEXT"),
     STRUCT("STRUCT");
 
     private static final Map<String, FunctionName> BY_NAME = Arrays

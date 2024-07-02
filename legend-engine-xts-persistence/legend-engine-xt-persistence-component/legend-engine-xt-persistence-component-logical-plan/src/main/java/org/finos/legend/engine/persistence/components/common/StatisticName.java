@@ -23,7 +23,7 @@ public enum StatisticName
     ROWS_DELETED("rowsDeleted"),
     FILES_LOADED("filesLoaded"),
     ROWS_WITH_ERRORS("rowsWithErrors"),
-    QUERY_OPERATOR_STATS("queryOperatorStats");
+    EXTERNAL_BYTES_SCANNED("externalBytesScanned");
 
     String value;
 
