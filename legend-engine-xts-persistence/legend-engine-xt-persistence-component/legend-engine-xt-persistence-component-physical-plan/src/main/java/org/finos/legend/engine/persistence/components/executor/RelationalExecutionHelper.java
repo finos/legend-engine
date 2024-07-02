@@ -46,5 +46,9 @@ public interface RelationalExecutionHelper
 
     List<Map<String, Object>> executeQuery(String sql);
 
+    TabularData executeQueryAsTabularData(String sql);
+
+    TabularData executeQueryAsTabularData(String sql, int rows);
+
     void close();
 }

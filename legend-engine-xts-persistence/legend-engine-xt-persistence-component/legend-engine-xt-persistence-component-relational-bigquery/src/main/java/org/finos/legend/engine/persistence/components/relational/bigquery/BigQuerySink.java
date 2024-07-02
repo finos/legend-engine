@@ -17,6 +17,7 @@ package org.finos.legend.engine.persistence.components.relational.bigquery;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
+import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.ClusterKey;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.ExternalDataset;
@@ -70,7 +71,6 @@ import org.finos.legend.engine.persistence.components.relational.bigquery.sql.vi
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.StagedFilesSelectionVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.ToArrayFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.TruncateVisitor;
-import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;

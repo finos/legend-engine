@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.duckdb;
 
 import org.finos.legend.engine.persistence.components.executor.Executor;
+import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.ingestmode.AppendOnlyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.BitemporalDeltaAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.BitemporalSnapshotAbstract;
@@ -43,7 +44,6 @@ import org.finos.legend.engine.persistence.components.relational.executor.Relati
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.FieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.SchemaDefinitionVisitor;
-import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
