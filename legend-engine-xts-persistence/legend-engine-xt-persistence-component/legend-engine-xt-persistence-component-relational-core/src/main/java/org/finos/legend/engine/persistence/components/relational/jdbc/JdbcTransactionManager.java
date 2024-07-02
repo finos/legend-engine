@@ -77,46 +77,32 @@ public class JdbcTransactionManager
     }
 
     // todo: find a better way to return both the data and schema
-    public List<Map<String, Object>> convertResultSetToList(String sql)
+    public List<Map<String, Object>> convertResultSetToList(String sql) throws SQLException
     {
-        try
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        try (ResultSet resultSet = this.statement.executeQuery(sql))
         {
-            List<Map<String, Object>> resultList = new ArrayList<>();
-            try (ResultSet resultSet = this.statement.executeQuery(sql))
+            while (resultSet.next())
             {
-                while (resultSet.next())
-                {
-                    extractResults(resultList, resultSet);
-                }
+                extractResults(resultList, resultSet);
             }
-            return resultList;
         }
-        catch (SQLException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return resultList;
     }
 
-    public List<Map<String, Object>> convertResultSetToList(String sql, int rows)
+    public List<Map<String, Object>> convertResultSetToList(String sql, int rows) throws SQLException
     {
-        try
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        try (ResultSet resultSet = this.statement.executeQuery(sql))
         {
-            List<Map<String, Object>> resultList = new ArrayList<>();
-            try (ResultSet resultSet = this.statement.executeQuery(sql))
+            int iter = 0;
+            while (resultSet.next() && iter < rows)
             {
-                int iter = 0;
-                while (resultSet.next() && iter < rows)
-                {
-                    iter++;
-                    extractResults(resultList, resultSet);
-                }
+                iter++;
+                extractResults(resultList, resultSet);
             }
-            return resultList;
         }
-        catch (SQLException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return resultList;
     }
 
     private static void extractResults(List<Map<String, Object>> resultList, ResultSet resultSet) throws SQLException

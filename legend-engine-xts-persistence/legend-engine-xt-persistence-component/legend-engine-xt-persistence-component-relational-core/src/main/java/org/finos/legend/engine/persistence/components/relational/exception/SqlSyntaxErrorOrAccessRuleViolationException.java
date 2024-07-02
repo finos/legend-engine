@@ -14,24 +14,16 @@
 
 package org.finos.legend.engine.persistence.components.relational.exception;
 
-import org.finos.legend.engine.persistence.components.exception.PersistenceException;
-import org.finos.legend.engine.persistence.components.relational.api.DataError;
-
-import java.util.List;
-
-public class DataQualityException extends PersistenceException
+public class SqlSyntaxErrorOrAccessRuleViolationException extends SqlExecutionException
 {
-    private List<DataError> dataErrors;
 
-    public List<DataError> getDataErrors()
-    {
-        return dataErrors;
-    }
+    /*
+    SQL STATE: 42***
+    */
 
-    public DataQualityException(String message, List<DataError> dataErrors)
+    public SqlSyntaxErrorOrAccessRuleViolationException(String message,Throwable cause, String SQLState, int vendorCode)
     {
-        super(message);
-        this.dataErrors = dataErrors;
+        super(message, cause, SQLState, vendorCode);
     }
 
     @Override

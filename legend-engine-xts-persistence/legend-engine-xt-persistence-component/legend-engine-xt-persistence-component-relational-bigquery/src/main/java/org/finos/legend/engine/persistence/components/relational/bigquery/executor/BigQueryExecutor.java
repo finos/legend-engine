@@ -96,7 +96,7 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
     @Override
     public List<TabularData> executePhysicalPlanAndGetResults(SqlPlan physicalPlan, int rows)
     {
-        throw new RuntimeException("Not implemented for Big Query");
+        throw new UnsupportedOperationException("Not implemented for Big Query");
     }
 
     @Override

@@ -15,28 +15,32 @@
 package org.finos.legend.engine.persistence.components.relational.exception;
 
 import org.finos.legend.engine.persistence.components.exception.PersistenceException;
-import org.finos.legend.engine.persistence.components.relational.api.DataError;
 
-import java.util.List;
-
-public class DataQualityException extends PersistenceException
+public class SqlExecutionException extends PersistenceException
 {
-    private List<DataError> dataErrors;
+    private String SQLState;
+    private int errorCode;
 
-    public List<DataError> getDataErrors()
+    public SqlExecutionException(String message, Throwable cause, String SQLState, int errorCode)
     {
-        return dataErrors;
-    }
-
-    public DataQualityException(String message, List<DataError> dataErrors)
-    {
-        super(message);
-        this.dataErrors = dataErrors;
+        super(message, cause);
+        this.SQLState = SQLState;
+        this.errorCode = errorCode;
     }
 
     @Override
     public boolean isRecoverable()
     {
         return false;
+    }
+
+    public String getSQLState()
+    {
+        return SQLState;
+    }
+
+    public int getErrorCode()
+    {
+        return errorCode;
     }
 }

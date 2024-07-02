@@ -35,11 +35,11 @@ public interface StagedFilesDatasetProperties
     {
         if (filePatterns().size() > 0 && filePaths().size() > 0)
         {
-            throw new IllegalArgumentException("Cannot build StagedFilesDatasetProperties, Only one out of filePatterns and filePaths should be provided");
+            throw new IllegalStateException("Cannot build StagedFilesDatasetProperties, Only one out of filePatterns and filePaths should be provided");
         }
         if (filePatterns().size() == 0 && filePaths().size() == 0)
         {
-            throw new IllegalArgumentException("Cannot build StagedFilesDatasetProperties, Either one of filePatterns and filePaths must be provided");
+            throw new IllegalStateException("Cannot build StagedFilesDatasetProperties, Either one of filePatterns and filePaths must be provided");
         }
     }
 }

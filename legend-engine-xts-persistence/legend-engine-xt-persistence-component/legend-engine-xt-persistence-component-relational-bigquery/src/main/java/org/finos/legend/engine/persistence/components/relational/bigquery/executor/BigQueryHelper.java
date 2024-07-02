@@ -73,7 +73,7 @@ public class BigQueryHelper implements RelationalExecutionHelper
         {
             return new BigQueryHelper(bigQuery);
         }
-        throw new RuntimeException("Sink initialized without connection can only be used for SQL generation APIs, but used with ingestion API");
+        throw new IllegalStateException("Sink initialized without connection can only be used for SQL generation APIs, but used with ingestion API");
     }
 
     private BigQueryHelper(BigQuery bigQuery)
@@ -371,7 +371,7 @@ public class BigQueryHelper implements RelationalExecutionHelper
     @Override
     public List<Map<String, Object>> executeQuery(String sql, int rows)
     {
-        throw new RuntimeException("Not implemented for Big Query");
+        throw new UnsupportedOperationException("Not implemented for Big Query");
     }
 
     public void executeStatementsInANewTransaction(List<String> sqls)

@@ -22,6 +22,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
+import org.finos.legend.engine.persistence.components.exception.JsonReadOrWriteException;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
@@ -584,7 +585,7 @@ public class SnowflakeSink extends AnsiSqlSink
         }
         catch (JsonProcessingException e)
         {
-            throw new RuntimeException(e);
+            throw new JsonReadOrWriteException(e.getMessage(), e);
         }
     }
 }

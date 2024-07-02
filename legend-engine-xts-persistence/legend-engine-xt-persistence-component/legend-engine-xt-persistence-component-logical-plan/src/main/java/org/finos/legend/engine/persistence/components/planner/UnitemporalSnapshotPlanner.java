@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components.planner;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
+import org.finos.legend.engine.persistence.components.exception.EmptyBatchException;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetDataAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.EmptyDatasetHandlingVisitor;
@@ -277,7 +278,7 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         @Override
         public LogicalPlan visitFailEmptyBatch(FailEmptyBatchAbstract failEmptyBatchAbstract)
         {
-            throw new RuntimeException("Encountered an Empty Batch, FailEmptyBatch is enabled, so failing the batch!");
+            throw new EmptyBatchException("Encountered an Empty Batch, FailEmptyBatch is enabled, so failing the batch!");
         }
     }
 }

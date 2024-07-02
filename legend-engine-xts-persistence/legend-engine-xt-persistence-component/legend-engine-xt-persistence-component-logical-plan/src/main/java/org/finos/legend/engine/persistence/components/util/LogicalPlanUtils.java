@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
+import org.finos.legend.engine.persistence.components.exception.JsonReadOrWriteException;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.*;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.*;
@@ -322,7 +323,7 @@ public class LogicalPlanUtils
             }
             catch (JsonProcessingException e)
             {
-                throw new RuntimeException(e);
+                throw new JsonReadOrWriteException(e.getMessage(), e);
             }
         }
 

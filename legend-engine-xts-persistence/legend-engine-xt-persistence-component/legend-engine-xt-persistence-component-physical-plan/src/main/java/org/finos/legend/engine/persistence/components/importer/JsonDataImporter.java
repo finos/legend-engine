@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components.importer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.finos.legend.engine.persistence.components.exception.JsonReadOrWriteException;
 import org.finos.legend.engine.persistence.components.executor.DigestInfo;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.executor.ResultData;
@@ -73,7 +74,7 @@ class JsonDataImporter<C extends PhysicalPlanNode, P extends PhysicalPlan<C>, R 
         }
         catch (JsonProcessingException e)
         {
-            throw new RuntimeException(e);
+            throw new JsonReadOrWriteException(e.getMessage(), e);
         }
 
         for (Map<String, Object> row : rows)

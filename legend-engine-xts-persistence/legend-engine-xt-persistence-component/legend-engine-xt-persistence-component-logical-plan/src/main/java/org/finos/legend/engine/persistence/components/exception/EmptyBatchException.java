@@ -12,31 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.relational.exception;
+package org.finos.legend.engine.persistence.components.exception;
 
-import org.finos.legend.engine.persistence.components.exception.PersistenceException;
-import org.finos.legend.engine.persistence.components.relational.api.DataError;
-
-import java.util.List;
-
-public class DataQualityException extends PersistenceException
+public class EmptyBatchException extends PersistenceException
 {
-    private List<DataError> dataErrors;
-
-    public List<DataError> getDataErrors()
-    {
-        return dataErrors;
-    }
-
-    public DataQualityException(String message, List<DataError> dataErrors)
-    {
-        super(message);
-        this.dataErrors = dataErrors;
-    }
 
     @Override
     public boolean isRecoverable()
     {
         return false;
+    }
+
+    public EmptyBatchException(String message)
+    {
+        super(message);
     }
 }
