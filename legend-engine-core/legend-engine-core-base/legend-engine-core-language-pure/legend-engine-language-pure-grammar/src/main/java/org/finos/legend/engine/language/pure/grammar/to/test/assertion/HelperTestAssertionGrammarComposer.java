@@ -48,7 +48,7 @@ public class HelperTestAssertionGrammarComposer
                 + contentWithType.content + "\n"
                 + indentedString + "}#";
 
-        return context.getIndentationString() + testAssertion.id + ":\n"
+        return context.getIndentationString() + PureGrammarComposerUtility.convertIdentifier(testAssertion.id) + ":\n"
                 + assertionContent;
     }
 

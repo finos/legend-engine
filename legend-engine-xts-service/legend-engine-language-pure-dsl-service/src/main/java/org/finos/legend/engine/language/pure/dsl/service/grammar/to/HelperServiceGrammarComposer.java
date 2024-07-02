@@ -19,6 +19,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.language.pure.grammar.to.HelperRuntimeGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.test.assertion.HelperTestAssertionGrammarComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
@@ -120,7 +121,7 @@ public class HelperServiceGrammarComposer
         int baseIndentation = 2;
         StringBuilder str = new StringBuilder();
 
-        str.append(getTabString(baseIndentation)).append(serviceTestSuite.id).append(":\n");
+        str.append(getTabString(baseIndentation)).append(PureGrammarComposerUtility.convertIdentifier(serviceTestSuite.id)).append(":\n");
         str.append(getTabString(baseIndentation)).append("{\n");
 
         // testData
@@ -169,7 +170,7 @@ public class HelperServiceGrammarComposer
     {
         StringBuilder str = new StringBuilder();
 
-        str.append(getTabString(baseIndentation)).append(test.id).append(":\n");
+        str.append(getTabString(baseIndentation)).append(PureGrammarComposerUtility.convertIdentifier(test.id)).append(":\n");
         str.append(getTabString(baseIndentation)).append("{\n");
 
         // SerializationFormat

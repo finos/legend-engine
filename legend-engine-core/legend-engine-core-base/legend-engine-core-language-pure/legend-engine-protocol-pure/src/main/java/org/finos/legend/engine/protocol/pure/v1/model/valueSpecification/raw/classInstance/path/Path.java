@@ -14,21 +14,16 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.Collections;
 import java.util.List;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
+@JsonIgnoreProperties("_type")
 public class Path
 {
     public SourceInformation sourceInformation;
     public String name;
     public String startType;
     public List<PathElement> path = Collections.emptyList();
-
-//    @Override
-//    public <T> T accept(ValueSpecificationVisitor<T> visitor)
-//    {
-//        return visitor.visit(this);
-//    }
 }
