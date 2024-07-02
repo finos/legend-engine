@@ -59,6 +59,13 @@ public class Test_JAVA_RelationFunction_PCT extends PCTReportConfiguration
             // Limit
             one("meta::pure::functions::relation::tests::limit::testSimpleLimitShared_Function_1__Boolean_1_", "\"meta::pure::functions::relation::limit_Relation_1__Integer_1__Relation_1_ is not supported yet!\""),
 
+            // Pivot
+            one("meta::pure::functions::relation::tests::pivot::testSimplePivotByMultipleMultiple_Function_1__Boolean_1_", "\"meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::pivot::testSimplePivotByMultipleSingle_Function_1__Boolean_1_", "\"meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::pivot::testSimplePivotBySingleMultiple_Function_1__Boolean_1_", "\"meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::pivot::testSimplePivotBySingleSingle_Function_1__Boolean_1_", "\"meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::pivot::testSimplePivotChained_Function_1__Boolean_1_", "\"meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_ is not supported yet!\""),
+
             // Project
             pack("meta::pure::functions::relation::tests::project", "\"meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_ is not supported yet!\""),
 

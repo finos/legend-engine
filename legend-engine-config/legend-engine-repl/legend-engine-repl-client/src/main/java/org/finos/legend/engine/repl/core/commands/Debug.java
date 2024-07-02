@@ -37,6 +37,12 @@ public class Debug implements Command
     }
 
     @Override
+    public String description()
+    {
+        return "toggle debug mode";
+    }
+
+    @Override
     public boolean process(String line) throws Exception
     {
         if (line.startsWith("debug"))

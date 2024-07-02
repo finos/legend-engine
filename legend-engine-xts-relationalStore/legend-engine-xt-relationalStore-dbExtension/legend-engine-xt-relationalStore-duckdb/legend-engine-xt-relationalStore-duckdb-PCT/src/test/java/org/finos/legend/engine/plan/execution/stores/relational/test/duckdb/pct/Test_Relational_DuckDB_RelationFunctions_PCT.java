@@ -21,7 +21,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.tests
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.pure.runtime.testConnection.CoreExternalTestConnectionCodeRepositoryProvider;
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
-import org.finos.legend.pure.code.core.CoreRelationalduckdbCodeRepositoryProvider;
 import org.finos.legend.pure.code.core.RelationCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
@@ -37,8 +36,14 @@ public class Test_Relational_DuckDB_RelationFunctions_PCT extends PCTReportConfi
     private static final Adapter adapter = CoreExternalTestConnectionCodeRepositoryProvider.duckDBAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            // BUG: Column name with special characters is not properly escaped
-            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\"")
+            // TODO: DuckDB generates the row in random order, sorting is needed for the assertion
+            // but that relies on support for casting (i.e. ->cast(..)->sort(...)
+            one("meta::pure::functions::relation::tests::pivot::testSimplePivotBySingleMultiple_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   city,country,2000__|__sum,2000__|__count,2011__|__sum,2011__|__count,2012__|__sum,2012__|__count\n   LND,UK,null,null,3000,1,null,null\n   NYC,USA,15000,2,5000,1,15200,2\n   SAN,USA,2000,1,2600,2,null,null\n#'\nactual:   '#TDS\n   city,country,2000__|__sum,2000__|__count,2011__|__sum,2011__|__count,2012__|__sum,2012__|__count\n   NYC,USA,15000,2,5000,1,15200,2\n   SAN,USA,2000,1,2600,2,null,null\n   LND,UK,null,null,3000,1,null,null\n#'\""),
+            one("meta::pure::functions::relation::tests::pivot::testSimplePivotBySingleSingle_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   city,country,2000__|__newCol,2011__|__newCol,2012__|__newCol\n   LND,UK,null,3000,null\n   NYC,USA,15000,5000,15200\n   SAN,USA,2000,2600,null\n#'\nactual:   '#TDS\n   city,country,2000__|__newCol,2011__|__newCol,2012__|__newCol\n   SAN,USA,2000,2600,null\n   LND,UK,null,3000,null\n   NYC,USA,15000,5000,15200\n#'\""),
+
+            // temporarily fix, need to investigate further, there is potentially some problem with the router
+            // and cast(@Relation<(...)>), the generic type is being erased somehow, so we cannot reason about the types of relation columns
+            one("meta::pure::functions::relation::tests::pivot::testSimplePivotChained_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\"")
     );
 
     public static Test suite()

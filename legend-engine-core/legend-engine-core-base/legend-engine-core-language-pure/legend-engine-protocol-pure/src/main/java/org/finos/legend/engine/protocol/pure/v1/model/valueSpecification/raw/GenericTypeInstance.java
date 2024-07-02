@@ -21,9 +21,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
 import java.io.IOException;
+import java.util.List;
 
 public class GenericTypeInstance extends PackageableElementPtr
 {
+    public List<ValueSpecification> typeArguments;
+
     public GenericTypeInstance()
     {
     }

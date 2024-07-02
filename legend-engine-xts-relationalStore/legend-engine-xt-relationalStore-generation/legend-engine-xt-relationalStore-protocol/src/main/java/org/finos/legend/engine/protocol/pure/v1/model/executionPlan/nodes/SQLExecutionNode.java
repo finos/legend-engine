@@ -30,6 +30,7 @@ public class SQLExecutionNode extends ExecutionNode
     public String onConnectionCloseRollbackQuery;
     public DatabaseConnection connection;
     public List<SQLResultColumn> resultColumns = Collections.emptyList();
+    public Boolean isResultColumnsDynamic;
 
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)

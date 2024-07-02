@@ -24,20 +24,21 @@ import org.finos.legend.engine.repl.client.jline3.JLine3Highlighter;
 import org.finos.legend.engine.repl.client.jline3.JLine3Parser;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.core.ReplExtension;
-import org.finos.legend.engine.repl.core.commands.Debug;
-import org.finos.legend.engine.repl.core.commands.Execute;
-import org.finos.legend.engine.repl.core.commands.Ext;
-import org.finos.legend.engine.repl.core.commands.Graph;
-import org.finos.legend.engine.repl.core.commands.Help;
+import org.finos.legend.engine.repl.core.commands.*;
 import org.finos.legend.engine.repl.core.legend.LegendInterface;
 import org.finos.legend.engine.repl.core.legend.LocalLegendInterface;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.UserInterruptException;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
+
+import static org.jline.jansi.Ansi.ansi;
+import static org.jline.reader.LineReader.BLINK_MATCHING_PAREN;
 
 public class Client
 {
@@ -50,7 +51,6 @@ public class Client
     private ModelState state;
     private final PlanExecutor planExecutor;
 
-
     public static void main(String[] args) throws Exception
     {
         new Client(Lists.mutable.empty(), Lists.mutable.empty(), PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build()).loop();
@@ -61,17 +61,14 @@ public class Client
     public Client(MutableList<ReplExtension> replExtensions, MutableList<CompleterExtension> completerExtensions, PlanExecutor planExecutor) throws Exception
     {
         this.replExtensions = replExtensions;
-
         this.completerExtensions = completerExtensions;
-
         this.planExecutor = planExecutor;
-
         this.state = new ModelState(this.legendInterface, this.replExtensions);
+        this.terminal = TerminalBuilder.terminal();
 
         replExtensions.forEach(e -> e.initialize(this));
 
-        this.terminal = TerminalBuilder.terminal();
-
+        this.terminal.writer().println(ansi().fgBrightBlack().a("Welcome to the Legend REPL! Press 'Enter' or type 'help' to see the list of available commands.").reset());
         this.terminal.writer().println("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
 
         this.commands = replExtensions
@@ -89,8 +86,17 @@ public class Client
 
         this.reader = LineReaderBuilder.builder()
                 .terminal(terminal)
+                // Disable cursor jumping to opening brace when typing closing brace
+                // See https://github.com/jline/jline3/issues/216
+                .variable(BLINK_MATCHING_PAREN, false)
+                // Make sure hitting <tab> at the beginning of line will insert a tab instead of triggering a completion
+                // which will cause error since the completer doesn't handle such case
+                // See https://github.com/jline/jline3/wiki/Completion
+                .option(LineReader.Option.INSERT_TAB, true)
+                // Make sure word navigation works properly with Alt + (left/right) arrow key
+                .variable(LineReader.WORDCHARS, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-$")
                 .highlighter(new JLine3Highlighter())
-                .parser(new JLine3Parser())//new DefaultParser().quoteChars(new char[]{'"'}))
+                .parser(new JLine3Parser())
                 .completer(new JLine3Completer(this.commands))
                 .build();
 
@@ -105,16 +111,16 @@ public class Client
     {
         while (true)
         {
-            String line = this.reader.readLine("> ");
-            if (line == null || line.equalsIgnoreCase("exit"))
-            {
-                break;
-            }
-
-            this.reader.getHistory().add(line);
-
             try
             {
+                String line = this.reader.readLine("> ");
+                if (line == null || line.equalsIgnoreCase("exit"))
+                {
+                    break;
+                }
+
+                this.reader.getHistory().add(line);
+
                 this.commands.detect(new CheckedPredicate<Command>()
                 {
                     @Override
@@ -126,14 +132,34 @@ public class Client
             }
             catch (EngineException e)
             {
-                printError(e, line);
+                printError(e, this.reader.getBuffer().toString());
             }
-            catch (Exception ee)
+            // handle Ctrl + C: if the input is not empty, start a new line; otherwise, exit
+            catch (UserInterruptException e)
             {
-                this.terminal.writer().println(ee.getMessage());
+                String lineContent = this.reader.getBuffer().toString();
+                if (lineContent.isEmpty())
+                {
+                    System.exit(0);
+                    break;
+                }
+                else
+                {
+                    this.loop();
+                }
+            }
+            // handle Ctrl + D: exit
+            catch (EndOfFileException e)
+            {
+                System.exit(0);
+                break;
+            }
+            catch (Exception e)
+            {
+                this.terminal.writer().println(ansi().fgRed().a(e.getMessage()).reset());
                 if (this.debug)
                 {
-                    ee.printStackTrace();
+                    e.printStackTrace();
                 }
             }
         }
@@ -203,5 +229,10 @@ public class Client
     public MutableList<CompleterExtension> getCompleterExtensions()
     {
         return this.completerExtensions;
+    }
+
+    public Execute getExecuteCommand()
+    {
+        return (Execute) this.commands.detect(c -> c instanceof Execute);
     }
 }

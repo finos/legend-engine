@@ -4,6 +4,7 @@
   "dependencies": [
     "platform",
     "platform_functions",
+    "platform_functions_relation",
     "platform_store_relational",
     "core",
     "core_functions",

@@ -62,6 +62,10 @@ public class RelationalCompleterExtension implements CompleterExtension
     private static boolean nameMatch(PackageableElement c, String writtenPath)
     {
         String path = org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(c);
+        if (path.isEmpty()) // NOTE: handle an edge case where stub store is added to the graph
+        {
+            return false;
+        }
         if (path.length() > writtenPath.length())
         {
             return path.startsWith(writtenPath);

@@ -47,11 +47,7 @@ import org.finos.legend.engine.plan.dependencies.store.relational.IRelationalRes
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeClassResultHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodePartialClassResultHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeTDSResultHelper;
-import org.finos.legend.engine.plan.execution.result.ErrorResult;
-import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
-import org.finos.legend.engine.plan.execution.result.Result;
-import org.finos.legend.engine.plan.execution.result.ResultVisitor;
-import org.finos.legend.engine.plan.execution.result.StreamingResult;
+import org.finos.legend.engine.plan.execution.result.*;
 import org.finos.legend.engine.plan.execution.result.builder.Builder;
 import org.finos.legend.engine.plan.execution.result.builder._class.ClassBuilder;
 import org.finos.legend.engine.plan.execution.result.builder._class.ClassMappingInfo;
@@ -77,13 +73,14 @@ import org.finos.legend.engine.plan.execution.stores.relational.serialization.Re
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalInstantiationExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSColumn;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
@@ -234,6 +231,22 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         boolean isDatabaseIdentifiersCaseSensitive = databaseConnection.accept(new DatabaseIdentifiersCaseSensitiveVisitor());
         if (ExecutionNodeTDSResultHelper.isResultTDS(node))
         {
+            // dynamically update the TDS result columns
+            if (!node.executionNodes.isEmpty() && node.executionNodes.get(0) instanceof SQLExecutionNode)
+            {
+                TDSResultType tdsResultType = (TDSResultType) node.resultType;
+                SQLExecutionNode sqlExecutionNode = (SQLExecutionNode) node.executionNodes.get(0);
+                if (sqlExecutionNode.isResultColumnsDynamic != null && sqlExecutionNode.isResultColumnsDynamic)
+                {
+                    tdsResultType.tdsColumns = Lists.mutable.empty();
+                    for (int columnIndex = 1; columnIndex <= this.columnCount; columnIndex++)
+                    {
+                        TDSColumn c = new TDSColumn(this.resultColumns.get(columnIndex - 1).label, this.resultColumns.get(columnIndex - 1).labelTypePair().getTwo());
+                        tdsResultType.tdsColumns.add(c);
+                    }
+                }
+            }
+
             List<TransformerInput<Integer>> transformerInputs = Lists.mutable.empty();
             for (int columnIndex = 1; columnIndex <= this.columnCount; columnIndex++)
             {

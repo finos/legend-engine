@@ -40,6 +40,12 @@ public class Ext implements Command
     }
 
     @Override
+    public String description()
+    {
+        return "show loaded extensions";
+    }
+
+    @Override
     public boolean process(String line) throws Exception
     {
         if (line.equals("ext"))

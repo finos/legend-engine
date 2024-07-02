@@ -111,7 +111,7 @@ columnBuilders: TILDE (oneColSpec | colSpecArray)
 ;
 oneColSpec: identifier ((COLON (type | lambdaParam lambdaPipe) extraFunction? ))?
 ;
-colSpecArray: (BRACKET_OPEN oneColSpec(COMMA oneColSpec)* BRACKET_CLOSE)
+colSpecArray: (BRACKET_OPEN (oneColSpec(COMMA oneColSpec)*)? BRACKET_CLOSE)
 ;
 extraFunction: (COLON lambdaParam lambdaPipe)
 ;
@@ -208,7 +208,15 @@ type:                                           (qualifiedName (LESS_THAN typeAr
                                                     BRACE_CLOSE
                                                 )
                                                 |
+                                                (
+                                                    PAREN_OPEN
+                                                        columnType (COMMA columnType)*
+                                                    PAREN_CLOSE
+                                                )
+                                                |
                                                 unitName
+;
+columnType:                                     identifier COLON identifier
 ;
 functionTypePureType:                           type multiplicity
 ;

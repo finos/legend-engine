@@ -42,8 +42,6 @@ public interface ReplExtension extends LegendExtension
 
     MutableList<Command> getExtraCommands();
 
-//    MutableList<String> getExtraState();
-
     boolean supports(Result res);
 
     String print(Result res);

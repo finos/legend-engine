@@ -34,6 +34,11 @@ public abstract class RelationalDatabaseCommands
         throw new RuntimeException("Load not implemented for " + this.getClass().getSimpleName());
     }
 
+    public String dropTable(String tableName, String location)
+    {
+        throw new RuntimeException("Drop table not implemented for " + this.getClass().getSimpleName());
+    }
+
     public abstract IngestionMethod getDefaultIngestionMethod();
 
 //    public void buildTempTableFromResult(RelationalExecutionConfiguration config, Connection connection, StreamingResult result, String tableName)

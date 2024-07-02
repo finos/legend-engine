@@ -124,7 +124,8 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
                            sqlQuery = $rel.sqlQuery,
                            onConnectionCloseCommitQuery = $rel.onConnectionCloseCommitQuery,
                            onConnectionCloseRollbackQuery = $rel.onConnectionCloseRollbackQuery,
-                           connection = $rel.connection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)
+                           connection = $rel.connection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions),
+                           isResultColumnsDynamic = $rel.isResultColumnsDynamic
                         ),
                      rel:meta::relational::mapping::RelationalSaveNode[1]|
                         ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalSaveNode(
