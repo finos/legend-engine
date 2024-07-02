@@ -523,7 +523,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "}\n"
         );
 
-        //Test Single TestSuite with data
+        //Test Single TestSuite with data and names with spaces
         test("###Service\n" +
                 "Service meta::pure::myServiceSingle\n" +
                 "{\n" +
@@ -543,7 +543,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  }\n" +
                 "  testSuites:\n" +
                 "  [\n" +
-                "    testSuite1:\n" +
+                "    'test Suite 1':\n" +
                 "    {\n" +
                 "      data:\n" +
                 "      [\n" +
@@ -559,11 +559,11 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "      ]\n" +
                 "      tests:\n" +
                 "      [\n" +
-                "        test1:\n" +
+                "        'test 1':\n" +
                 "        {\n" +
                 "          asserts:\n" +
                 "          [\n" +
-                "            assert1:\n" +
+                "            'assert 1':\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
                 "                expected:\n" +
