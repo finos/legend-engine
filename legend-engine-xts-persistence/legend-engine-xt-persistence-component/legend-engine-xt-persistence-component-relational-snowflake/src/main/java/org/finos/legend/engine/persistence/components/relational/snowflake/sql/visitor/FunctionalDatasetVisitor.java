@@ -32,7 +32,8 @@ public class FunctionalDatasetVisitor implements LogicalPlanVisitor<FunctionalDa
             current.database().orElse(null),
             current.group().orElse(null),
             current.name().orElseThrow(IllegalStateException::new),
-            new ArrayList<>()
+            new ArrayList<>(),
+            context.quoteIdentifier()
         );
 
         prev.push(tableFunction);

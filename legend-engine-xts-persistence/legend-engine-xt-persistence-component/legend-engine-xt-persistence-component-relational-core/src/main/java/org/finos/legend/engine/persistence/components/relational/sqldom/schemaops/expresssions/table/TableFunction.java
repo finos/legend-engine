@@ -17,6 +17,7 @@ package org.finos.legend.engine.persistence.components.relational.sqldom.schemao
 import java.util.List;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Value;
+import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.StringUtils;
 
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.CLOSING_PARENTHESIS;
@@ -26,17 +27,19 @@ import static org.finos.legend.engine.persistence.components.relational.sqldom.u
 public class TableFunction extends TableLike
 {
     public static final String TABLE = "TABLE";
-    private String db;
-    private String schema;
+    private final String db;
+    private final String schema;
     private String name;
-    protected List<Value> values;
+    private final List<Value> values;
+    private final String quoteIdentifier;
 
-    public TableFunction(String db, String schema, String name, List<Value> values)
+    public TableFunction(String db, String schema, String name, List<Value> values, String quoteIdentifier)
     {
         this.db = db;
         this.schema = schema;
         this.name = name;
         this.values = values;
+        this.quoteIdentifier = quoteIdentifier;
     }
 
     @Override
@@ -51,12 +54,12 @@ public class TableFunction extends TableLike
     {
         if (StringUtils.notEmpty(db))
         {
-            builder.append(db);
+            builder.append(String.format("%s.", SqlGenUtils.getQuotedField(db, quoteIdentifier)));
         }
 
         if (StringUtils.notEmpty(schema))
         {
-            builder.append(schema);
+            builder.append(String.format("%s.", SqlGenUtils.getQuotedField(schema, quoteIdentifier)));
         }
 
         builder.append(TABLE);

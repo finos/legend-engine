@@ -83,16 +83,9 @@ public class JdbcHelper implements RelationalExecutionHelper
         return connection;
     }
 
-    protected RelationalTransactionManager intializeTransactionManager(Connection connection)
+    protected RelationalTransactionManager intializeTransactionManager(Connection connection) throws SQLException
     {
-        try
-        {
-            return new JdbcTransactionManager(connection);
-        }
-        catch (SQLException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return new JdbcTransactionManager(connection);
     }
 
     @Override
@@ -519,7 +512,7 @@ public class JdbcHelper implements RelationalExecutionHelper
     }
 
     @Override
-    public TabularData executeQueryAsTabularData(String sql)
+    public TabularData executeQueryAndGetResultsAsTabularData(String sql)
     {
         if (this.transactionManager != null)
         {
@@ -532,7 +525,7 @@ public class JdbcHelper implements RelationalExecutionHelper
     }
 
     @Override
-    public TabularData executeQueryAsTabularData(String sql, int rows)
+    public TabularData executeQueryAndGetResultsAsTabularData(String sql, int rows)
     {
         if (this.transactionManager != null)
         {

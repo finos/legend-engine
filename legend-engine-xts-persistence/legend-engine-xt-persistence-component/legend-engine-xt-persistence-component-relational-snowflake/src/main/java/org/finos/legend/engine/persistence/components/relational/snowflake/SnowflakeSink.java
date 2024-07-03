@@ -544,14 +544,17 @@ public class SnowflakeSink extends AnsiSqlSink
         }
 
         Map<StatisticName, Object> stats = new HashMap<>();
-
         stats.put(StatisticName.ROWS_INSERTED, totalRowsLoaded);
         stats.put(StatisticName.ROWS_WITH_ERRORS, totalRowsWithError);
         stats.put(StatisticName.FILES_LOADED, totalFilesLoaded);
+        resultData.queryId().ifPresent(queryId -> appendLoadQueryStats(executor, stats, queryId));
 
-        resultData.queryId().ifPresent(queryId -> enhanceWithLoadStatistics(executor, stats, queryId));
 
-        IngestorResult.Builder resultBuilder = IngestorResult.builder().updatedDatasets(datasets).putAllStatisticByName(stats).ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN).value()).batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN).value()) : null));
+        IngestorResult.Builder resultBuilder = IngestorResult.builder()
+            .updatedDatasets(datasets)
+            .putAllStatisticByName(stats)
+            .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN).value())
+            .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN).value()) : null));
         IngestorResult result;
 
         if (dataFilePathsWithErrors.isEmpty())
@@ -572,7 +575,7 @@ public class SnowflakeSink extends AnsiSqlSink
         return result;
     }
 
-    private void enhanceWithLoadStatistics(Executor<SqlGen, TabularData, SqlPlan> executor, Map<StatisticName, Object> stats, String queryId)
+    private void appendLoadQueryStats(Executor<SqlGen, TabularData, SqlPlan> executor, Map<StatisticName, Object> stats, String queryId)
     {
         try
         {
@@ -584,13 +587,16 @@ public class SnowflakeSink extends AnsiSqlSink
             if (!queryOperatorStats.isEmpty())
             {
                 List<Map<String, Object>> queryOperatorStatsResults = queryOperatorStats.get(0).data();
-                queryOperatorStatsResults.forEach(queryStats -> {
+                queryOperatorStatsResults.forEach(queryStats ->
+                {
                     switch ((String) queryStats.get(QueryStatsLogicalPlanUtils.OPERATOR_TYPE_ALIAS))
                     {
                         case QueryStatsLogicalPlanUtils.EXTERNAL_SCAN_STAGE:
-                            stats.put(StatisticName.EXTERNAL_BYTES_SCANNED, queryStats.get(QueryStatsLogicalPlanUtils.EXTERNAL_BYTES_SCANNED_ALIAS));
+                            stats.put(StatisticName.INPUT_FILES_BYTES_SCANNED, queryStats.get(QueryStatsLogicalPlanUtils.EXTERNAL_BYTES_SCANNED_ALIAS));
+                            break;
                         case QueryStatsLogicalPlanUtils.INSERT_STAGE:
                             stats.put(StatisticName.INCOMING_RECORD_COUNT, queryStats.get(QueryStatsLogicalPlanUtils.INPUT_ROWS_ALIAS));
+                            break;
                     }
                 });
             }

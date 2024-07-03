@@ -72,7 +72,7 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
         for (String sql : physicalPlan.getSqlList())
         {
             SqlUtils.logSql(LOGGER, sqlLogging, sql);
-            TabularData queryResultData = relationalExecutionHelper.executeQueryAsTabularData(sql);
+            TabularData queryResultData = relationalExecutionHelper.executeQueryAndGetResultsAsTabularData(sql);
             if (!queryResultData.data().isEmpty())
             {
                 resultSetList.add(queryResultData);
@@ -88,7 +88,7 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
         for (String sql : physicalPlan.getSqlList())
         {
             SqlUtils.logSql(LOGGER, sqlLogging, sql);
-            TabularData queryResultData = relationalExecutionHelper.executeQueryAsTabularData(sql, rows);
+            TabularData queryResultData = relationalExecutionHelper.executeQueryAndGetResultsAsTabularData(sql, rows);
             if (!queryResultData.data().isEmpty())
             {
                 resultSetList.add(queryResultData);
@@ -105,7 +105,7 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
         {
             String enrichedSql = SqlUtils.getEnrichedSql(placeholderKeyValues, sql);
             SqlUtils.logSql(LOGGER, sqlLogging, sql, enrichedSql, placeholderKeyValues);
-            TabularData queryResultData = relationalExecutionHelper.executeQueryAsTabularData(enrichedSql);
+            TabularData queryResultData = relationalExecutionHelper.executeQueryAndGetResultsAsTabularData(enrichedSql);
             if (!queryResultData.data().isEmpty())
             {
                 resultSetList.add(queryResultData);

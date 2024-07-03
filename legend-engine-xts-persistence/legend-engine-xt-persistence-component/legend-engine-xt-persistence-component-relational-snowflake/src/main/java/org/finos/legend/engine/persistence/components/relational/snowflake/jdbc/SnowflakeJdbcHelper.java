@@ -28,15 +28,8 @@ public class SnowflakeJdbcHelper extends JdbcHelper
     }
 
     @Override
-    protected RelationalTransactionManager intializeTransactionManager(Connection connection)
+    protected RelationalTransactionManager intializeTransactionManager(Connection connection) throws SQLException
     {
-        try
-        {
-            return new SnowflakeJdbcTransactionManager(connection);
-        }
-        catch (SQLException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return new SnowflakeJdbcTransactionManager(connection);
     }
 }

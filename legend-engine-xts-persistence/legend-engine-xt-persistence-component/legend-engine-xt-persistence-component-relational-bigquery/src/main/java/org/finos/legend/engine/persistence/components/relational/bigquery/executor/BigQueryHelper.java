@@ -457,7 +457,7 @@ public class BigQueryHelper implements RelationalExecutionHelper
     }
 
     @Override
-    public TabularData executeQueryAsTabularData(String sql)
+    public TabularData executeQueryAndGetResultsAsTabularData(String sql)
     {
         return TabularData.builder()
             .addAllData(executeQuery(sql))
@@ -465,7 +465,7 @@ public class BigQueryHelper implements RelationalExecutionHelper
     }
 
     @Override
-    public TabularData executeQueryAsTabularData(String sql, int rows)
+    public TabularData executeQueryAndGetResultsAsTabularData(String sql, int rows)
     {
         return TabularData.builder()
             .addAllData(executeQuery(sql, rows))
