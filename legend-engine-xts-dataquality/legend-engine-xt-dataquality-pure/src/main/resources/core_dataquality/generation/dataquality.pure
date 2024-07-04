@@ -21,7 +21,7 @@ function meta::external::dataquality::executeDataQualityValidation(dataquality:m
    let enrichedTree = $dataquality.validationTree->ensureFunctionRequirementsForDataQuality($dataquality.validationTree.constraints, $dataquality.validationTree.class, [], true)->cast(@RootGraphFetchTree<Any>);
 
    // 2. build query
-   let getAll = $dataquality.validationTree.class->createGetAll();
+   let getAll = $dataquality.validationTree.class->createGetAllParameterized();
    let getExpr = if ($dataquality.filter->isNotEmpty(), 
                             | $dataquality.validationTree.class->generateFilterQuery($getAll, $dataquality.filter->toOne());,
                             | $getAll);
