@@ -27,6 +27,11 @@ public class SnowflakeJdbcHelper extends JdbcHelper
         super(connection);
     }
 
+    public static SnowflakeJdbcHelper of(Connection connection)
+    {
+        return new SnowflakeJdbcHelper(connection);
+    }
+
     @Override
     protected RelationalTransactionManager intializeTransactionManager(Connection connection) throws SQLException
     {
