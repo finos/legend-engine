@@ -71,7 +71,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
         return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "DataQualityValidation");
     }
 
-    static final ConcurrentHashMap<String, Root_meta_external_dataquality_DataQuality> dataQualityIndex = new ConcurrentHashMap<>();
+    static final ConcurrentHashMap<String, Root_meta_external_dataquality_DataQuality<Object>> dataQualityIndex = new ConcurrentHashMap<>();
 
     @Override
     public CompilerExtension build()
@@ -106,11 +106,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
                         },
                         (dataquality, compileContext) ->
                         {
-
-                        },
-                        (dataquality, compileContext) ->
-                        {
-                            Root_meta_external_dataquality_DataQuality metamodel = dataQualityIndex.get(compileContext.pureModel.buildPackageString(dataquality._package, dataquality.name));
+                            Root_meta_external_dataquality_DataQuality<Object> metamodel = dataQualityIndex.get(compileContext.pureModel.buildPackageString(dataquality._package, dataquality.name));
                             metamodel._context(buildDataQualityExecutionContext(dataquality, compileContext))
                                     ._filter(getFilterLambda(dataquality, compileContext))
                                     ._validationTree(buildRootGraphFetchTree(dataquality.dataQualityRootGraphFetchTree, compileContext, compileContext.pureModel.getClass(dataquality.dataQualityRootGraphFetchTree._class), null, new ProcessingContext("DataQuality")));
