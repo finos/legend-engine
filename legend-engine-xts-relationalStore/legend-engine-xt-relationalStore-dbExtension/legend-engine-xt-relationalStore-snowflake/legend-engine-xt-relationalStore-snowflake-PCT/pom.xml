@@ -190,11 +190,6 @@
         </dependency>
 
 
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-
         <!-- TEST -->
         <dependency>
             <groupId>junit</groupId>

@@ -27,6 +27,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-structures</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>

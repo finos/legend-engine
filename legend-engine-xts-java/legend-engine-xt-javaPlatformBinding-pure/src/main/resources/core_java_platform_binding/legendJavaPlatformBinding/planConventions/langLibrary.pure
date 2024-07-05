@@ -95,7 +95,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
    assert($ctx.params->at(1)->instanceOf(InstanceValue), 'Only inline lambdas currently supported');
    let x          = j_parameter(javaObject(), 'x');
    let m          = j_parameter(javaObject(), 'm');
-   let predicates = $ctx.params->at(1)->cast(@InstanceValue).values->map(v|                                                       
+   let predicates = $ctx.params->at(1)->cast(@InstanceValue).values->map(pv|                                                       
+                                                        let v = $pv->match([f:Function<Any>[1]|$f, r:FunctionRoutedValueSpecification[1]|$r.originalFunction]);
                                                         let p            = $v->cast(@Function<Any>)->functionType().parameters->evaluateAndDeactivate()->toOne();
                                                         let type         = $ctx.conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity);
                                                         let elementType  = $ctx.conventions->pureTypeToJavaType($p.genericType, PureOne);
@@ -127,7 +128,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
 
    let o  = j_parameter(javaObject(), 'o');
    
-   let adapt = $ctx.params->at(1)->cast(@InstanceValue).values->map(v|                                                                                                          
+   let adapt = $ctx.params->at(1)->cast(@InstanceValue).values->map(pv|    
+                                                   let v = $pv->match([f:Function<Any>[1]|$f, r:FunctionRoutedValueSpecification[1]|$r.originalFunction]);                                                                                                      
                                                    let p       = $v->cast(@Function<Any>)->functionType().parameters->evaluateAndDeactivate()->toOne();                                                                    
                                                    let type    = $ctx.conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity);
                                                    let elementType = $ctx.conventions->pureTypeToJavaType($p.genericType, PureOne);

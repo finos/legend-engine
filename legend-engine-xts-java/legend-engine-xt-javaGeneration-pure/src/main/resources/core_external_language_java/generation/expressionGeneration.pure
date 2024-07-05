@@ -241,7 +241,7 @@ function <<access.private>> meta::external::language::java::transform::processFu
       },
       {z:Any[1] |
          print(if($debug.debug,|$debug.space+'func: \''+($fe.func.name->toOne())+'\'\n',|''));
-         assert(!$conventions->isProhibitedFunction($fe.func), |$fe.func.name->toOne()+' is prohibited!');
+         assert(!$conventions->isProhibitedFunction($fe.func), |$fe.func.name->toOne()+' is prohibited!');      
          let toEval = $conventions->getFunctionCoder($fe.func);
          assert($toEval->isNotEmpty() || $fe.func->instanceOf(ConcreteFunctionDefinition),
                 {|
@@ -250,7 +250,7 @@ function <<access.private>> meta::external::language::java::transform::processFu
                    if($p->isEmpty(), |'', |$p->toOne()->elementToPath()+'::')+$f.name->toOne()+' is not supported yet!';
                 });
          if($toEval->isNotEmpty(),
-            |$toEval->toOne()->eval($fe->cast(@FunctionExpression), $conventions, $debug),
+            |$toEval->toOne()->eval($fe->cast(@FunctionExpression), $conventions, $debug);,
             |$fe->processConcreteFunctionExpression($conventions, $debug)
          );
       }

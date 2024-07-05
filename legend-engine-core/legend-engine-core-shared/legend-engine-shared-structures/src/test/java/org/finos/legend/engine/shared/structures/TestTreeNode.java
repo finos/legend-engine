@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.shared.core.extension;
+package org.finos.legend.engine.shared.structures;
 
+import org.finos.legend.shared.stuctures.TreeNode;
 import org.junit.Assert;
 import org.junit.Test;
 

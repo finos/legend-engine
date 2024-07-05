@@ -12,24 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.shared.core.extension;
+package org.finos.legend.shared.stuctures;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 
 public class TreeNode
 {
-    private final String name;
+    private final Object value;
     private final MutableList<TreeNode> children = Lists.mutable.empty();
 
-    public TreeNode(String name)
+    public TreeNode(Object value)
     {
-        this.name = name;
+        this.value = value;
     }
 
     public TreeNode createOrReturnChild(String name)
     {
-        TreeNode node = children.detect(c -> name.equals(c.name));
+        TreeNode node = children.detect(c -> name.equals(c.value));
         return node == null ? addChild(new TreeNode(name)) : node;
     }
 
@@ -37,6 +37,16 @@ public class TreeNode
     {
         children.add(child);
         return child;
+    }
+
+    public Object getValue()
+    {
+        return value;
+    }
+
+    public MutableList<TreeNode> getChildren()
+    {
+        return children;
     }
 
     public String print()
@@ -60,6 +70,6 @@ public class TreeNode
             builder.append(last ? "└" : "├");
         }
         String prefix = builder.toString();
-        return prefix + name + (children.isEmpty() ? "" : "\n") + children.collectWithIndex((c, i) -> c.printWithDepth(depth + 1, Lists.mutable.withAll(parentLast).with(last), i == children.size() - 1)).makeString("\n");
+        return prefix + value.toString() + (children.isEmpty() ? "" : "\n") + children.collectWithIndex((c, i) -> c.printWithDepth(depth + 1, Lists.mutable.withAll(parentLast).with(last), i == children.size() - 1)).makeString("\n");
     }
 }

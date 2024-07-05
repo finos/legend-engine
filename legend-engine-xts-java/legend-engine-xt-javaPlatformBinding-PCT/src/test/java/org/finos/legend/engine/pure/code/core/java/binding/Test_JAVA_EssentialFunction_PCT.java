@@ -54,7 +54,6 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             pack("meta::pure::functions::collection::tests::find", "\"meta::pure::functions::collection::find_T_MANY__Function_1__T_$0_1$_ is not supported yet!\""),
 
             // Fold
-            one("meta::pure::functions::collection::tests::fold::testFoldEmptyListAndEmptyIdentity_Function_1__Boolean_1_", "\"Assert failed\""),
             one("meta::pure::functions::collection::tests::fold::testFoldFiltering_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::fold::FO_Person\""),
             one("meta::pure::functions::collection::tests::fold::testFoldToMany_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::fold::FO_Person\""),
             one("meta::pure::functions::collection::tests::fold::testFold_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::fold::FO_Person\""),
@@ -67,13 +66,6 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
 
             // Slice
             one("meta::pure::functions::collection::tests::slice::testSliceInList_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
-
-            // Sort
-            one("meta::pure::functions::collection::tests::sort::testMixedSortNoComparator_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
-            one("meta::pure::functions::collection::tests::sort::testSimpleSortNoComparator_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
-            one("meta::pure::functions::collection::tests::sort::testSimpleSortReversed_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
-            one("meta::pure::functions::collection::tests::sort::testSimpleSort_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
-            one("meta::pure::functions::collection::tests::sort::testSortEmptySet_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
 
             // Take
             one("meta::pure::functions::collection::tests::take::testTakeInList_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
@@ -119,16 +111,8 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::rem::testRemInEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__U_p__V_m_ is prohibited!\""),
             one("meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_", "\"\nexpected: 0.14D\nactual:   0.14\""),
 
-            // Round
-            one("meta::pure::functions::math::tests::round::testDecimalRound_Function_1__Boolean_1_", "\"\nexpected: 3.14D\nactual:   3.14\""),
-
             // Sign
             one("meta::pure::functions::math::tests::sign::testSign_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
-
-            // ToDecimal
-            one("meta::pure::functions::math::tests::toDecimal::testDecimalToDecimal_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.math.BigDecimal (java.lang.Double and java.math.BigDecimal are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::math::tests::toDecimal::testDoubleToDecimal_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.math.BigDecimal (java.lang.Double and java.math.BigDecimal are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::math::tests::toDecimal::testIntToDecimal_Function_1__Boolean_1_", "class java.lang.Long cannot be cast to class java.math.BigDecimal (java.lang.Long and java.math.BigDecimal are in module java.base of loader 'bootstrap')"),
 
             // ArcCos
             one("meta::pure::functions::math::tests::trigonometry::testArcCosineEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\""),
@@ -151,6 +135,13 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             // CubeRoot
             one("meta::pure::functions::math::tests::testCubeRootEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\""),
 
+            // String
+            one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "\"\nexpected: 3.1415900000D\nactual:   3.14159D\""),
+            one("meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_", "\"\nexpected: 0.000D\nactual:   0.0D\""),
+            one("meta::pure::functions::string::tests::reverse::testReverseString_Function_1__Boolean_1_", "\"meta::pure::functions::string::reverseString_String_1__String_1_ is not supported yet!\""),
+            one("meta::pure::functions::string::tests::trim::testLTrim_Function_1__Boolean_1_", "\"Type not found for method ltrim from String\""),
+            one("meta::pure::functions::string::tests::trim::testRTrim_Function_1__Boolean_1_", "\"Type not found for method rtrim from String\""),
+
             // Sine
             one("meta::pure::functions::math::tests::trigonometry::testSineEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\""),
 
@@ -158,7 +149,26 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::testSquareRootEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\""),
 
             // Tangent
-            one("meta::pure::functions::math::tests::trigonometry::testTangentEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"")
+            one("meta::pure::functions::math::tests::trigonometry::testTangentEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\""),
+
+            // IsNonPrimitive
+            one("meta::pure::functions::boolean::tests::testIsNonPrimitive_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::boolean::tests::equalitymodel::SideClass\""),
+
+            one("meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesPrimitiveStandardFunctionExplicit_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::metamodel::function::NativeFunction\""),
+
+            // Date
+            one("meta::pure::functions::date::tests::testAdjustReflectiveEvaluation_Function_1__Boolean_1_", "\"eval_Function_1__T_n__U_p__W_q__V_m_ is prohibited!\""),
+            one("meta::pure::functions::date::tests::testHasMonthReflect_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\""),
+            one("meta::pure::functions::date::tests::testYeaReflect_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\""),
+
+            // If
+            one("meta::pure::functions::lang::tests::if::testMultiIf_Function_1__Boolean_1_", "\"Function meta::pure::functions::lang::if_Pair_MANY__Function_1__T_m_ is not yet supported as functions with more than one expression can not be routed\""),
+
+            // Match
+            one("meta::pure::functions::lang::tests::match::testMatchWithExtraParam_Function_1__Boolean_1_", "\"meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_ is not supported yet!\""),
+            one("meta::pure::functions::lang::tests::match::testMatchWithExtraParamsAndFunctionsAsParam_Function_1__Boolean_1_", "\"meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_ is not supported yet!\""),
+            one("meta::pure::functions::lang::tests::match::testMatchWithMixedReturnType_Function_1__Boolean_1_", "\"deactivate_Any_MANY__ValueSpecification_1_ is prohibited!\""),
+            one("meta::pure::functions::lang::tests::match::testMatch_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\"")
     );
 
     public static Test suite()
@@ -189,4 +199,5 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
     {
         return platform;
     }
+
 }

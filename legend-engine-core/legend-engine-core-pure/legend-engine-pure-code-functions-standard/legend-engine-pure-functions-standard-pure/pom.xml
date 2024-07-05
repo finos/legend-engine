@@ -95,20 +95,35 @@
                 <artifactId>legend-pure-maven-generation-pct</artifactId>
                 <executions>
                     <execution>
+                        <id>functions</id>
                         <phase>process-classes</phase>
                         <goals>
                             <goal>generate-pct-functions</goal>
                         </goals>
+                        <configuration>
+                            <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
+                            <scopeProviderMethod>org.finos.legend.pure.code.core.CoreStandardFunctionsCodeRepositoryProvider.standardFunctions</scopeProviderMethod>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>generate-pct-report</goal>
+                        </goals>
+                        <configuration>
+                            <mode>Compiled</mode>
+                            <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
+                            <PCTTestSuites>
+                                <PCTTestSuite>org.finos.legend.engine.pure.code.core.functions.standard.Test_Compiled_StandardFunctions_PCT</PCTTestSuite>
+                            </PCTTestSuites>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
-                    <scopeProviderMethod>org.finos.legend.pure.code.core.CoreStandardFunctionsCodeRepositoryProvider.standardFunctions</scopeProviderMethod>
-                </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -153,12 +168,6 @@
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-
 
         <!-- TEST -->
         <dependency>

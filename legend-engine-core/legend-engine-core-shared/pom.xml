@@ -31,5 +31,6 @@
         <module>legend-engine-shared-extensions</module>
         <module>legend-engine-shared-javaCompiler</module>
         <module>legend-engine-shared-vault</module>
+        <module>legend-engine-shared-structures</module>
     </modules>
 </project>

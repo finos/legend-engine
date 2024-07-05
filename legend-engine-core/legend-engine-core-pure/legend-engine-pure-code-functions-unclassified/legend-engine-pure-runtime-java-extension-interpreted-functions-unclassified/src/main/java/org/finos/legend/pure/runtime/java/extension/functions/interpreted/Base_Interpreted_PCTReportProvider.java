@@ -14,12 +14,12 @@
 
 package org.finos.legend.pure.runtime.java.extension.functions.interpreted;
 
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProvider;
 import org.finos.legend.pure.m3.pct.reports.model.AdapterReport;
 import org.finos.legend.pure.m3.pct.functions.model.Functions;
+import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProviderTool;
 
 public class Base_Interpreted_PCTReportProvider implements PCTReportProvider
 {
@@ -32,18 +32,8 @@ public class Base_Interpreted_PCTReportProvider implements PCTReportProvider
     @Override
     public MutableList<AdapterReport> getAdapterReports()
     {
-        try
-        {
-            return Lists.mutable.with(
-                    JsonMapper.builder().build().readValue(
-                            Base_Interpreted_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_unclassified_interpreted_Native.json"),
-                            AdapterReport.class
-                    )
-            );
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
+        return PCTReportProviderTool.load(Base_Interpreted_PCTReportProvider.class.getClassLoader(), AdapterReport.class,
+                "pct-reports/ADAPTER_unclassified_interpreted_Native.json"
+        );
     }
 }

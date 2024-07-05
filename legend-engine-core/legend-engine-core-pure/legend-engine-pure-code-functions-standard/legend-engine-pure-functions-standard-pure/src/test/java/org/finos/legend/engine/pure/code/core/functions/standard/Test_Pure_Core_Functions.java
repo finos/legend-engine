@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.pure.code.core;
+package org.finos.legend.engine.pure.code.core.functions.standard;
 
 import junit.framework.TestSuite;
 import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
@@ -27,8 +27,7 @@ public class Test_Pure_Core_Functions
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
         executionSupport.getConsole().disable();
         TestSuite suite = new TestSuite();
-        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::pure::functions", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditionsModular(ci, executionSupport.getProcessorSupport())), executionSupport));
-        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::pure::milestoning", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditionsModular(ci, executionSupport.getProcessorSupport())), executionSupport));
+        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::pure::functions::relation", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditionsModular(ci, executionSupport.getProcessorSupport())), executionSupport));
         return suite;
     }
 

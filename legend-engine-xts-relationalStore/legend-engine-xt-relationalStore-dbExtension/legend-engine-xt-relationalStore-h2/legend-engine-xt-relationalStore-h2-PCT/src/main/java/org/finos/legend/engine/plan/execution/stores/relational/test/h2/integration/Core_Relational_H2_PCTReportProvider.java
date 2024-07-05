@@ -20,6 +20,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.pure.m3.pct.functions.model.Functions;
 import org.finos.legend.pure.m3.pct.reports.model.AdapterReport;
 import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProvider;
+import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProviderTool;
 
 public class Core_Relational_H2_PCTReportProvider implements PCTReportProvider
 {
@@ -32,30 +33,11 @@ public class Core_Relational_H2_PCTReportProvider implements PCTReportProvider
     @Override
     public MutableList<AdapterReport> getAdapterReports()
     {
-        try
-        {
-            return Lists.mutable.with(
-                    JsonMapper.builder().build().readValue(
-                            Core_Relational_H2_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_standard_compiled_H2.json"),
-                            AdapterReport.class
-                    ),
-                    JsonMapper.builder().build().readValue(
-                            Core_Relational_H2_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_essential_compiled_H2.json"),
-                            AdapterReport.class
-                    ),
-                    JsonMapper.builder().build().readValue(
-                            Core_Relational_H2_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_grammar_compiled_H2.json"),
-                            AdapterReport.class
-                    ),
-                    JsonMapper.builder().build().readValue(
-                            Core_Relational_H2_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_relation_compiled_H2.json"),
-                            AdapterReport.class
-                    )
-            );
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
+        return PCTReportProviderTool.load(Core_Relational_H2_PCTReportProvider.class.getClassLoader(), AdapterReport.class,
+                "pct-reports/ADAPTER_standard_compiled_H2.json",
+                "pct-reports/ADAPTER_essential_compiled_H2.json",
+                "pct-reports/ADAPTER_grammar_compiled_H2.json",
+                "pct-reports/ADAPTER_relation_compiled_H2.json"
+        );
     }
 }

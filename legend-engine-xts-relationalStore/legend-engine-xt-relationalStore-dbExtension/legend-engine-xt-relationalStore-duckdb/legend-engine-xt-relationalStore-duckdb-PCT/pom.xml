@@ -226,10 +226,6 @@
             <artifactId>legend-engine-xt-relationalStore-executionPlan</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
         <!-- TEST -->
     </dependencies>
 </project>

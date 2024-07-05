@@ -14,12 +14,12 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.integration;
 
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.pure.m3.pct.functions.model.Functions;
 import org.finos.legend.pure.m3.pct.reports.model.AdapterReport;
 import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProvider;
+import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProviderTool;
 
 public class Core_Relational_Snowflake_PCTReportProvider implements PCTReportProvider
 {
@@ -32,37 +32,11 @@ public class Core_Relational_Snowflake_PCTReportProvider implements PCTReportPro
     @Override
     public MutableList<AdapterReport> getAdapterReports()
     {
-        try
-        {
-            if (Core_Relational_Snowflake_PCTReportProvider.class.getResource("/pct-reports/ADAPTER_standard_compiled_Snowflake.json") != null)
-            {
-                return Lists.mutable.with(
-                        JsonMapper.builder().build().readValue(
-                                Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_unclassified_compiled_Snowflake.json"),
-                                AdapterReport.class
-                        ),
-                        JsonMapper.builder().build().readValue(
-                                Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_essential_compiled_Snowflake.json"),
-                                AdapterReport.class
-                        ),
-                        JsonMapper.builder().build().readValue(
-                                Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_grammar_compiled_Snowflake.json"),
-                                AdapterReport.class
-                        ),
-                        JsonMapper.builder().build().readValue(
-                                Core_Relational_Snowflake_PCTReportProvider.class.getResourceAsStream("/pct-reports/ADAPTER_relation_compiled_Snowflake.json"),
-                                AdapterReport.class
-                        )
-                );
-            }
-            else
-            {
-                return Lists.mutable.empty();
-            }
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
+        return PCTReportProviderTool.load(Core_Relational_Snowflake_PCTReportProvider.class.getClassLoader(), AdapterReport.class,
+                "pct-reports/ADAPTER_standard_compiled_Snowflake.json",
+                "pct-reports/ADAPTER_unclassified_compiled_Snowflake.json",
+                "pct-reports/ADAPTER_grammar_compiled_Snowflake.json",
+                "pct-reports/ADAPTER_relation_compiled_Snowflake.json"
+        );
     }
 }

@@ -790,6 +790,7 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     typeName_Any_1__String_1_,
     levenshteinDistance_String_1__String_1__Integer_1_,
     jaroWinklerSimilarity_String_1__String_1__Float_1_,
+
     meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_,
     meta::pure::functions::date::calendar::annualized_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,
     meta::pure::functions::date::calendar::cme_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,
@@ -846,7 +847,14 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     meta::pure::functions::math::percentile_Number_MANY__Float_1__Number_$0_1$_,
     meta::pure::functions::math::percentile_Number_MANY__Float_1__Boolean_1__Boolean_1__Number_$0_1$_,
     meta::pure::functions::collection::isDistinct_T_MANY__Boolean_1_,
-    meta::json::toJSON_T_MANY__LambdaFunction_MANY__String_1_
+    meta::json::toJSON_T_MANY__LambdaFunction_MANY__String_1_,
+    removeDuplicates_T_MANY__T_MANY_,
+    removeDuplicates_T_MANY__Function_1__T_MANY_,
+    removeDuplicatesBy_T_MANY__Function_1__T_MANY_,
+    sort_T_m__T_m_,
+    sort_T_m__Function_$0_1$__T_m_,
+    sortBy_T_m__Function_$0_1$__T_m_,
+    sort_T_m__Function_$0_1$__Function_$0_1$__T_m_
   ]->concatenate($extensions.routerExtensions().shouldStopRouting)
 }
 
