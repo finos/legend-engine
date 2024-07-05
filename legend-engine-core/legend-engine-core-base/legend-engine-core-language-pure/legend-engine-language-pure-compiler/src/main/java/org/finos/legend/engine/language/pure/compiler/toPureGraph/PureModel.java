@@ -284,12 +284,12 @@ public class PureModel implements IPureModel
                 MutableSet<MutableSet<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>>> disjointDependencyGraphs = dependencyManagement.getDisjointDependencyGraphs();
                 disjointDependencyGraphs.parallelStream().forEach(disjointDependencyGraph ->
                 {
-                    processPass(classToElements, dependentToDependencies, handleEngineExceptions(this::processElementFirstPass), disjointDependencyGraph);
-                    processPass(classToElements, dependentToDependencies, handleEngineExceptions(this::processSecondPass), disjointDependencyGraph);
-                    processPass(classToElements, dependentToDependencies, handleEngineExceptions(this::processThirdPass), disjointDependencyGraph);
-                    processPass(classToElements, dependentToDependencies, handleEngineExceptions(this::processFourthPass), disjointDependencyGraph);
-                    processPass(classToElements, dependentToDependencies, handleEngineExceptions(this::processFifthPass), disjointDependencyGraph);
-                    processPass(classToElements, dependentToDependencies, handleEngineExceptions(this::processSixthPass), disjointDependencyGraph);
+                    processPass("firstPass", classToElements, dependentToDependencies, handleEngineExceptions(this::processElementFirstPass), disjointDependencyGraph);
+                    processPass("secondPass", classToElements, dependentToDependencies, handleEngineExceptions(this::processSecondPass), disjointDependencyGraph);
+                    processPass("thirdPass", classToElements, dependentToDependencies, handleEngineExceptions(this::processThirdPass), disjointDependencyGraph);
+                    processPass("fourthPass", classToElements, dependentToDependencies, handleEngineExceptions(this::processFourthPass), disjointDependencyGraph);
+                    processPass("fifthPass", classToElements, dependentToDependencies, handleEngineExceptions(this::processFifthPass), disjointDependencyGraph);
+                    processPass("sixthPass", classToElements, dependentToDependencies, handleEngineExceptions(this::processSixthPass), disjointDependencyGraph);
                 });
             }, forkJoinPool);
             try
@@ -365,7 +365,7 @@ public class PureModel implements IPureModel
             };
             forkJoinWorkerThread.setContextClassLoader(classLoader);
             return forkJoinWorkerThread;
-        }, null,  false);
+        }, null, false);
     }
 
     private void processPostValidation(PureModelContextData pureModelContextData, CompilerExtensions extensions)
@@ -502,33 +502,38 @@ public class PureModel implements IPureModel
         return passConsumer;
     }
 
-    private void processPass(FastListMultimap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> classToElements, MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, Collection<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>>> dependentToDependencies, Consumer<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> passConsumer, MutableSet<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>> disjointDependencyGraph)
+    private void processPass(String name, FastListMultimap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> classToElements, MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, Collection<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>>> dependentToDependencies, Consumer<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> passConsumer, MutableSet<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>> disjointDependencyGraph)
     {
         MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, CompletableFuture<Void>> tracker = Maps.mutable.empty();
         disjointDependencyGraph.forEach(dependent -> tracker.put(dependent, new CompletableFuture<>()));
-        disjointDependencyGraph.forEach(dependent ->
+        disjointDependencyGraph.parallelStream().forEach(dependent ->
         {
+            MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> elementsToCompile = classToElements.get(dependent);
+
             CompletableFuture<Void> allDependencyFutures = CompletableFuture.allOf(dependentToDependencies.get(dependent)
                     .stream()
                     .map(dependency -> Objects.requireNonNull(tracker.get(dependency), "Prerequisites are defined incorrectly."))
                     .toArray(CompletableFuture[]::new));
-            allDependencyFutures.thenRunAsync(() ->
-            {
-                try
-                {
-                    classToElements.get(dependent).parallelStream().forEach(passConsumer);
-                    tracker.get(dependent).complete(null);
-                }
-                catch (Exception e)
-                {
-                    tracker.get(dependent).completeExceptionally(e);
-                }
-            }, forkJoinPool)
-            .exceptionally(e ->
-            {
-                tracker.get(dependent).completeExceptionally(e);
-                return null;
-            });
+            allDependencyFutures.thenRun(() ->
+                    {
+                        try
+                        {
+                            elementsToCompile.parallelStream().forEach(passConsumer);
+                            tracker.get(dependent).complete(null);
+                            LOGGER.debug("{} - Completed {}", name, dependent);
+                        }
+                        catch (Exception e)
+                        {
+                            tracker.get(dependent).completeExceptionally(e);
+                            LOGGER.debug("{} - Completed {}", name, dependent, e);
+                        }
+                    })
+                    .exceptionally(e ->
+                    {
+                        tracker.get(dependent).completeExceptionally(e);
+                        LOGGER.debug("{} - Completed {}", name, dependent, e);
+                        return null;
+                    });
         });
         try
         {
