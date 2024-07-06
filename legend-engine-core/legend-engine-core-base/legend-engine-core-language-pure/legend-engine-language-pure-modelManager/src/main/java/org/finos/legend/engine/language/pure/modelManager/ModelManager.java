@@ -21,6 +21,7 @@ import io.opentracing.Scope;
 import io.opentracing.Tracer;
 import io.opentracing.util.GlobalTracer;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.list.MutableList;
@@ -29,6 +30,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProcessParameter;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -57,23 +59,32 @@ public class ModelManager
     private final DeploymentMode deploymentMode;
     private final MutableList<ModelLoader> modelLoaders;
     private final Tracer tracer;
+    private final ForkJoinPool forkJoinPool;
 
     public ModelManager(DeploymentMode mode, ModelLoader... modelLoaders)
     {
-        this(mode, GlobalTracer.get(), modelLoaders);
+        this(mode, null, GlobalTracer.get(), modelLoaders);
     }
 
-    public ModelManager(DeploymentMode mode, Tracer tracer, ModelLoader... modelLoaders)
+    public ModelManager(DeploymentMode mode, ForkJoinPool forkJoinPool, ModelLoader... modelLoaders)
+    {
+        this(mode, forkJoinPool, GlobalTracer.get(), modelLoaders);
+    }
+
+    public ModelManager(DeploymentMode mode, ForkJoinPool forkJoinPool, Tracer tracer, ModelLoader... modelLoaders)
     {
         this.tracer = tracer;
         this.modelLoaders = Lists.mutable.of(modelLoaders);
         this.modelLoaders.forEach((Procedure<ModelLoader>) loader -> loader.setModelManager(this));
         this.deploymentMode = mode;
+        this.forkJoinPool = forkJoinPool;
     }
 
     // Remove clientVersion
     public PureModel loadModel(PureModelContext context, String clientVersion, Identity identity, String packageOffset)
     {
+        PureModelProcessParameter modelProcessParameter = PureModelProcessParameter.newBuilder().withPackagePrefix(packageOffset).withForkJoinPool(this.forkJoinPool).build();
+
         if (!(context instanceof PureModelContextData) && !(context instanceof PureModelContextText))
         {
             ModelLoader loader = this.modelLoaderForContext(context);
@@ -82,7 +93,7 @@ public class ModelManager
                 PureModelContext cacheKey = loader.cacheKey(context, identity);
                 try
                 {
-                    return this.pureModelCache.get(cacheKey, () -> Compiler.compile(this.loadData(cacheKey, clientVersion, identity), this.deploymentMode, identity.getName(), packageOffset));
+                    return this.pureModelCache.get(cacheKey, () -> Compiler.compile(this.loadData(cacheKey, clientVersion, identity), this.deploymentMode, identity.getName(), null, modelProcessParameter));
                 }
                 catch (ExecutionException e)
                 {
@@ -90,7 +101,7 @@ public class ModelManager
                 }
             }
         }
-        return Compiler.compile(this.loadData(context, clientVersion, identity), this.deploymentMode, identity.getName(), packageOffset);
+        return Compiler.compile(this.loadData(context, clientVersion, identity), this.deploymentMode, identity.getName(), null, modelProcessParameter);
     }
 
     // Remove clientVersion
