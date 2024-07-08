@@ -12,23 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.repl.core;
+package org.finos.legend.engine.repl.relational.server.model;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.jline.reader.Candidate;
-import org.jline.reader.LineReader;
-import org.jline.reader.ParsedLine;
+import com.fasterxml.jackson.annotation.JsonRawValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-public interface Command
+public class DataCubeQuery
 {
-    public boolean process(String cmd) throws Exception;
+    public String name;
+    public String query;
+    public String partialQuery;
+    public DataCubeQuerySource source;
 
-    public String documentation();
-
-    public default String description()
-    {
-        return "";
-    }
-
-    public MutableList<Candidate> complete(String cmd, LineReader lineReader, ParsedLine parsedLine);
+    // NOTE: we don't need to process the config, so we will leave it as raw JSON
+    @JsonRawValue
+    @JsonDeserialize(using = DataCubeQueryConfigurationDeserializer.class)
+    public String configuration;
 }

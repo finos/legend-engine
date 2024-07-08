@@ -12,23 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.repl.core;
+package org.finos.legend.engine.repl.relational.server.model;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.jline.reader.Candidate;
-import org.jline.reader.LineReader;
-import org.jline.reader.ParsedLine;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 
-public interface Command
+public class DataCubeExecutionInput
 {
-    public boolean process(String cmd) throws Exception;
-
-    public String documentation();
-
-    public default String description()
-    {
-        return "";
-    }
-
-    public MutableList<Candidate> complete(String cmd, LineReader lineReader, ParsedLine parsedLine);
+    public Lambda query;
 }

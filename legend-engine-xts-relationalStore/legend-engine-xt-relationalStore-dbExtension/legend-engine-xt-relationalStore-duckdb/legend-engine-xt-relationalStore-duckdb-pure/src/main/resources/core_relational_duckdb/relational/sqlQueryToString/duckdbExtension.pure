@@ -27,6 +27,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
       literalProcessor = $literalProcessor,
       selectSQLQueryProcessor = processSelectSQLQueryForDuckDB_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      columnNameToIdentifier = columnNameToIdentifierForDuckDB_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslator()
@@ -218,6 +219,22 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processSliceOrDropForDuckDB(s:SelectSQLQuery[1], format:Format[1],dbConfig : DbConfig[1], extensions:Extension[*], size:Any[1]):String[1]
 {
    '%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake($format, $dbConfig, $extensions)]) + if ($size == -1, | '', | ' limit %s'->format($size));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::columnNameToIdentifierForDuckDB(columnName: String[1], dbConfig: DbConfig[1]): String[1]
+{
+   if(
+    $dbConfig.isDbReservedIdentifier($columnName->toLower()) ||
+    // TODO: the way we handle quoting right now is not systematic, i.e. we allow so many way to interject custom logic
+    // as such, for duckdb, to keep it simple, we will not use the default implementation of converting column name to identifier
+    (!$columnName->startsWith('"') && (
+      $columnName->contains(' ') ||
+      $columnName->contains('/') ||
+      $columnName->contains('|')
+    )),
+    |'"' + $columnName->toLower() + '"',
+    |$columnName
+  );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::duckDBReservedWords():String[*]

@@ -843,6 +843,18 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         {
             primitiveType = "Float";
         }
+        else if (c instanceof Decimal)
+        {
+            primitiveType = "Decimal";
+        }
+        else if (c instanceof Date)
+        {
+            primitiveType = "Date";
+        }
+        else if (c instanceof Timestamp)
+        {
+            primitiveType = "DateTime";
+        }
         else
         {
             throw new RuntimeException("Implement support for '" + c.getClass().getName() + "'");

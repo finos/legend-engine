@@ -12,23 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.repl.core;
+package org.finos.legend.engine.repl.relational.server.model;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.jline.reader.Candidate;
-import org.jline.reader.LineReader;
-import org.jline.reader.ParsedLine;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.TreeNode;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 
-public interface Command
+import java.io.IOException;
+
+public class DataCubeQueryConfigurationDeserializer extends JsonDeserializer<String>
 {
-    public boolean process(String cmd) throws Exception;
-
-    public String documentation();
-
-    public default String description()
+    @Override
+    public String deserialize(JsonParser jp, DeserializationContext ctx) throws IOException
     {
-        return "";
+        TreeNode tree = jp.getCodec().readTree(jp);
+        return tree.toString();
     }
-
-    public MutableList<Candidate> complete(String cmd, LineReader lineReader, ParsedLine parsedLine);
 }
