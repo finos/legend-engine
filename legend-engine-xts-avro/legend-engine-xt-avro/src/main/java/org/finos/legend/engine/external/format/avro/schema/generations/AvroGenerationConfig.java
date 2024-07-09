@@ -58,6 +58,11 @@ public class AvroGenerationConfig extends GenerationConfiguration
     public String timestampLogicalType;
 
     /**
+     * Date logical type. Default is timestampLogicalType. Possible values: date, timestamp-micros, or any other registered types.
+     */
+    public String dateLogicalType;
+
+    /**
      * Generates properties from specified profile tags
      */
     public List<String> propertyProfile = Collections.emptyList();
@@ -95,6 +100,10 @@ public class AvroGenerationConfig extends GenerationConfiguration
         if (timestampLogicalType != null)
         {
             avroConfig._timestampLogicalType(timestampLogicalType);
+        }
+        if (dateLogicalType != null)
+        {
+            avroConfig._dateLogicalType(dateLogicalType);
         }
         if (!propertyProfile.isEmpty())
         {

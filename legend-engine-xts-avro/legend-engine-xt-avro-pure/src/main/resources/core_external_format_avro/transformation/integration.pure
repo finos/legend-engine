@@ -48,6 +48,10 @@ Class meta::external::format::avro::generation::AvroConfig extends GenerationCon
    {doc.doc = 'Generate Logical Type property for all Pure Classes'}
    generateLogicalTypes: Boolean[0..1];
    generateLogicalTypes(){if($this.generateLogicalTypes->isEmpty(), |false, |$this.generateLogicalTypes->toOne();)}:Boolean[1];
+
+   {doc.doc = 'Date logical type. Default is timestampLogicalType. Possible values: date, timestamp-micros, or any other registered types.'}
+   dateLogicalType: String[0..1];
+   dateLogicalType() {if($this.dateLogicalType->isEmpty(), |$this.timestampLogicalType(), |$this.dateLogicalType->toOne());} :String[1];
 }
 
 
