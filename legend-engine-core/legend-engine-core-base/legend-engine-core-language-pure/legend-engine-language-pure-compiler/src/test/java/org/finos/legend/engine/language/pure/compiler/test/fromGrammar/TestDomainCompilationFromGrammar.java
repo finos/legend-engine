@@ -2857,7 +2857,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "      }\n" +
                 "    }\n" +
                 "  }#\n" +
-                "}\n", "COMPILATION error at [16:7-18:7]: The type Street is not a subtype of Address"
+                "}\n", "COMPILATION error at [16:18-29]: The type Street is not a subtype of Address"
         );
 
         test("Class test::Address\n" +
@@ -2914,7 +2914,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "      }\n" +
                 "    }\n" +
                 "  }#\n" +
-                "}\n", "COMPILATION error at [19:7-21:7]: There are multiple subTypeTrees having subType test::Street, Only one is allowed"
+                "}\n", "COMPILATION error at [19:18-29]: There are multiple subTypeTrees having subType test::Street, Only one is allowed"
         );
 
         test("Class test::Address\n" +
@@ -2947,7 +2947,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "      }\n" +
                 "    }\n" +
                 "  }#\n" +
-                "}\n", "COMPILATION error at [26:7-28:7]: Property \"name\" is present at root level hence should not be specified at subType level"
+                "}\n", "COMPILATION error at [26:18-27]: Property \"name\" is present at root level hence should not be specified at subType level"
         );
 
         test("Class test::Address\n" +
@@ -2980,7 +2980,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "      }\n" +
                 "    }\n" +
                 "  }#\n" +
-                "}\n", "COMPILATION error at [26:7-28:7]: Property \"alias\" is present at root level hence should not be specified at subType level"
+                "}\n", "COMPILATION error at [26:18-27]: Property \"alias\" is present at root level hence should not be specified at subType level"
         );
 
         test("Class test::Address\n" +

@@ -63,6 +63,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ProfileStereotype;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ProfileTag;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.QualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
@@ -175,11 +177,11 @@ public class DomainParseTreeWalker
 
         // stereotypes
         DomainParserGrammar.StereotypeDefinitionsContext stereotypeDefinitionsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.stereotypeDefinitions(), "stereotypes", profile.sourceInformation);
-        profile.stereotypes = stereotypeDefinitionsContext != null ? ListIterate.collect(stereotypeDefinitionsContext.identifier(), PureGrammarParserUtility::fromIdentifier) : Lists.mutable.empty();
+        profile.stereotypes = stereotypeDefinitionsContext != null ? ListIterate.collect(stereotypeDefinitionsContext.identifier(), identifierContext -> new ProfileStereotype(PureGrammarParserUtility.fromIdentifier(identifierContext), this.walkerSourceInformation.getSourceInformation(identifierContext))) : Lists.mutable.empty();
 
         // tags
         DomainParserGrammar.TagDefinitionsContext tagDefinitionsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.tagDefinitions(), "tags", profile.sourceInformation);
-        profile.tags = tagDefinitionsContext != null ? ListIterate.collect(tagDefinitionsContext.identifier(), PureGrammarParserUtility::fromIdentifier) : Lists.mutable.empty();
+        profile.tags = tagDefinitionsContext != null ? ListIterate.collect(tagDefinitionsContext.identifier(), identifierContext -> new ProfileTag(PureGrammarParserUtility.fromIdentifier(identifierContext), this.walkerSourceInformation.getSourceInformation(identifierContext))) : Lists.mutable.empty();
 
         return profile;
     }
