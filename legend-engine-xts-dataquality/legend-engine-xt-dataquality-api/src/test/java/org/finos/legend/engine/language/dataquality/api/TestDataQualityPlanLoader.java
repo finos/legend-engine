@@ -67,7 +67,22 @@ public class TestDataQualityPlanLoader
         configureWireMockForNoRetries();
         DataQualityPlanLoader dataQualityPlanLoader = new DataQualityPlanLoader(createServerConnectionConfiguration(), null);
         DataQualityExecuteInput dataQualityParameterValue = new DataQualityExecuteInput();
-        dataQualityParameterValue.alloySDLC = null;
+        dataQualityParameterValue.sdlc = null;
+        dataQualityParameterValue.elementPath = "meta::dataquality::PersonDataQualityValidation";
+        Assert.assertEquals("DataQualityParameter info must contain Element Path and sdlc to access metadata services", Assert.assertThrows(EngineException.class, () -> dataQualityPlanLoader.fetchPlanFromSDLC(Identity.getAnonymousIdentity(), dataQualityParameterValue)).getMessage());
+    }
+
+    @Test
+    public void testFetchPlanFromSDLC_EmptyAlloyProjectCoordinates_Exception() throws IOException
+    {
+        AlloySDLC alloySDLC = new AlloySDLC();
+        alloySDLC.groupId = "com.dq.test";
+        alloySDLC.artifactId = "test-sandbox";
+        alloySDLC.version = null;
+        configureWireMockForNoRetries();
+        DataQualityPlanLoader dataQualityPlanLoader = new DataQualityPlanLoader(createServerConnectionConfiguration(), null);
+        DataQualityExecuteInput dataQualityParameterValue = new DataQualityExecuteInput();
+        dataQualityParameterValue.sdlc = alloySDLC;
         dataQualityParameterValue.elementPath = "meta::dataquality::PersonDataQualityValidation";
         Assert.assertEquals("AlloySDLC info must contain and group and artifact IDs to access metadata services", Assert.assertThrows(EngineException.class, () -> dataQualityPlanLoader.fetchPlanFromSDLC(Identity.getAnonymousIdentity(), dataQualityParameterValue)).getMessage());
     }
@@ -79,7 +94,7 @@ public class TestDataQualityPlanLoader
         alloySDLC.artifactId = "test-sandbox";
         alloySDLC.version = "master-SNAPSHOT";
         DataQualityExecuteInput dataQualityParameterValue = new DataQualityExecuteInput();
-        dataQualityParameterValue.alloySDLC = alloySDLC;
+        dataQualityParameterValue.sdlc = alloySDLC;
         dataQualityParameterValue.elementPath = "meta::dataquality::PersonDataQualityValidation";
         return dataQualityParameterValue;
     }
