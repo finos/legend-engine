@@ -1281,7 +1281,7 @@ public class PureModel implements IPureModel
         return getOrCreatePackage_int(parent, pack, insert, 0);
     }
 
-    private synchronized org.finos.legend.pure.m3.coreinstance.Package getOrCreatePackage_int(org.finos.legend.pure.m3.coreinstance.Package parent, String pack, boolean insert, int start)
+    private org.finos.legend.pure.m3.coreinstance.Package getOrCreatePackage_int(org.finos.legend.pure.m3.coreinstance.Package parent, String pack, boolean insert, int start)
     {
         int end = pack.indexOf(':', start);
         String name = (end == -1) ? pack.substring(start) : pack.substring(start, end);
@@ -1299,8 +1299,16 @@ public class PureModel implements IPureModel
             {
                 throw new EngineException("Can't create package with reserved name '" + name + "'");
             }
-            child = new Package_Impl(name, null, this.getClass("Package"))._name(name)._package(parent);
-            parent._childrenAdd(child);
+
+            synchronized (parent)
+            {
+                child = findChildPackage(parent, name);
+                if (child == null)
+                {
+                    child = new Package_Impl(name, null, this.getClass("Package"))._name(name)._package(parent);
+                    parent._childrenAdd(child);
+                }
+            }
         }
 
         return (end == -1) ? child : getOrCreatePackage_int(child, pack, insert, end + 2);
@@ -1360,14 +1368,17 @@ public class PureModel implements IPureModel
         return this.typesIndex.valuesView().reject(t -> (t == null) || (t instanceof Root_meta_pure_metamodel_type_Class_LazyImpl) || (t instanceof Root_meta_pure_metamodel_type_PrimitiveType_LazyImpl));
     }
 
-    public synchronized void loadModelFromFunctionHandler(FunctionHandler f)
+    public void loadModelFromFunctionHandler(FunctionHandler f)
     {
         if (!(f instanceof UserDefinedFunctionHandler))
         {
             String pkg = HelperModelBuilder.getElementFullPath(((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) f.getFunc())._package(), this.getExecutionSupport());
             org.finos.legend.pure.m3.coreinstance.Package n = getOrCreatePackage(root, pkg);
             org.finos.legend.pure.m3.coreinstance.Package o = getPackage((org.finos.legend.pure.m3.coreinstance.Package) METADATA_LAZY.getMetadata(M3Paths.Package, M3Paths.Root), pkg);
-            n._childrenAdd(o._children().detect(c -> f.getFunctionSignature().equals(c._name())));
+            synchronized (n)
+            {
+                n._childrenAdd(o._children().detect(c -> f.getFunctionSignature().equals(c._name())));
+            }
         }
     }
 
