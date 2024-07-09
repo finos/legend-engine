@@ -89,7 +89,7 @@ public class DataQualityExecute
     private final DataQualityPlanLoader dataQualityPlanLoader;
 
 
-    public DataQualityExecute(ModelManager modelManager, PlanExecutor planExecutor, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions, Iterable<? extends PlanTransformer> transformers, MetaDataServerConfiguration metaDataServerConfiguration, CloseableHttpClient httpClientProvider)
+    public DataQualityExecute(ModelManager modelManager, PlanExecutor planExecutor, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions, Iterable<? extends PlanTransformer> transformers, MetaDataServerConfiguration metaDataServerConfiguration, Function<Identity, CloseableHttpClient> httpClientProvider)
     {
         this.modelManager = modelManager;
         this.extensions = extensions;
