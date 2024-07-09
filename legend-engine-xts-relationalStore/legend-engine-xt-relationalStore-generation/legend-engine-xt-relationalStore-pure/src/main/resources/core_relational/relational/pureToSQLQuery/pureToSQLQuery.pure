@@ -551,6 +551,7 @@ function meta::relational::functions::pureToSqlQuery::processValue(vals:Any[*], 
 function meta::relational::functions::pureToSqlQuery::processFunctionExpression(functionExpression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):OperationWithParentPropertyMapping[*]
 {
   print(if(!$context.debug, |'', | $context.space+'>Process Function Expression: '+ $functionExpression.func.name->toOne() + '\n'));
+
   let res  = $functionExpression.func->match ([
                                     p:Property<Nil,Any|*>[1] | processPropertyFunctionExpression($functionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);,
                                     q:QualifiedProperty<Any>[1] | processQualifiedPropertyFunctionExpression($functionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);,
@@ -583,7 +584,9 @@ function meta::relational::functions::pureToSqlQuery::processColumnFunctionExpre
       let colAlias = ^TableAliasColumnName(columnName = $fColumn->cast(@Alias).name->toOne(), alias=$tAlias);
       let newSelect = $state.inFilter->if(|^$nestedSelect(filteringOperation=$colAlias),|^$nestedSelect(columns=$colAlias));
       ^$leftSide(element = ^$nestedQuery(select=$newSelect));,
-    | let colAlias = ^TableAliasColumn(alias = $tableAlias, column = $foundColumn->toOne()->cast(@Column));
+    | let colAlias = $foundColumn->toOne() -> match([
+      c:Column[1]|^TableAliasColumn(alias = $tableAlias, column = $c),
+    a:Alias[1]|^TableAliasColumnName(columnName = $a.name->toOne(), alias=$tableAlias)]);
       let newSelect = $state.inFilter->if(|^$leftSelect(filteringOperation=$colAlias),|^$leftSelect(columns=$colAlias));
       ^$leftSide(element = ^$operation(select=$newSelect));
   );
@@ -2727,7 +2730,8 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::isolate
    if ($p->size() > 1,
     | let fe = $p->at($p->size()-2);
       let ft = $fe.func->functionType();
-      if([$ft.parameters->at(0).genericType->toOne(), $ft.returnType]->forAll(x|$x.rawType->toOne()->_subTypeOf(TabularDataSet)),
+      if([$ft.parameters->at(0).genericType->toOne(), $ft.returnType]->forAll(x|$x.rawType->toOne()->_subTypeOf(TabularDataSet) ||
+      $x.rawType->toOne()->_subTypeOf(meta::pure::metamodel::relation::Relation)),
                   | isolateTdsSelect($select->cast(@TdsSelectSqlQuery), $query, $extensions);,
                   | ^$query(select=$select)
       );,

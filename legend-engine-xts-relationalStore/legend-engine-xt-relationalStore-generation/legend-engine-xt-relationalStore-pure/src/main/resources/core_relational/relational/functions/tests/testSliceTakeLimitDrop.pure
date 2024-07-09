@@ -16,6 +16,7 @@ import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
+import meta::pure::executionPlan::*;
 import meta::pure::profiles::*;
 import meta::relational::functions::sqlstring::*;
 
@@ -89,4 +90,34 @@ function <<test.Test>> meta::relational::tests::query::drop::testSimpleDrop():Bo
    let result2 = execute(|Person.all()->drop(1), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 1 rows', $result2->sqlRemoveFormatting());
    assertSize($result2.values, 11 );
+}
+
+function <<test.Test>> meta::relational::tests::query::take::testLimitFilterInSequence():Boolean[1]
+{
+   let result = execute(|Person.all()->project([x|$x.firstName,x|$x.lastName,x|$x.age],['firstName','lastName','age'])->limit(1)->filter(x | $x.getInteger('age') > 25);, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "age" as "age" from (select top 1 "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age" from personTable as "root") as "subselect" where "age" > 25', $result->sqlRemoveFormatting());
+   assertSize($result.values.rows, 1 ); 
+}
+
+function <<test.Test>> meta::relational::tests::query::take::testFilterLimitInSequence():Boolean[1]
+{
+   let result = execute(|Person.all()->project([x|$x.firstName,x|$x.lastName,x|$x.age],['firstName','lastName','age'])-> filter(x | $x.getInteger('age') > 30)->limit(2);, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEquals('select top 2 "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age" from personTable as "root" where "root".AGE > 30',  $result->sqlRemoveFormatting());
+   assertSize($result.values.rows, 2 );
+}
+
+function <<test.Test>> meta::relational::tests::query::take::testLimitFilterInSequenceForTableAccessor():Boolean[1]
+{
+   let fun = {|#>{meta::relational::tests::dbInc.personTable}#->limit(1)->filter(x | $x.AGE > 25)-> select(~[FIRSTNAME,LASTNAME])};
+   let actualPlan =  meta::pure::executionPlan::executionPlan($fun,meta::relational::tests::simpleRelationalMapping,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions())
+    ->  meta::pure::executionPlan::toString::planToStringWithoutFormatting(meta::relational::extension::relationalExtensions());
+   assertEquals('Relational(type=TDS[(FIRSTNAME,String,"",""),(LASTNAME,String,"","")]resultColumns=[("FIRSTNAME",""),("LASTNAME","")]sql=select"FIRSTNAME"as"FIRSTNAME","LASTNAME"as"LASTNAME"from(selecttop1"persontable_1".IDas"ID","persontable_1".FIRSTNAMEas"FIRSTNAME","persontable_1".LASTNAMEas"LASTNAME","persontable_1".AGEas"AGE","persontable_1".ADDRESSIDas"ADDRESSID","persontable_1".FIRMIDas"FIRMID","persontable_1".MANAGERIDas"MANAGERID"frompersonTableas"persontable_1")as"subselect"where("subselect"."AGE"isnotnulland"subselect"."AGE">25)connection=TestDatabaseConnection(type="H2"))', $actualPlan);
+}
+
+function <<test.Test>> meta::relational::tests::query::take::testFilterLimitInSequenceForTableAccessor():Boolean[1]
+{
+    let fun = {|#>{meta::relational::tests::dbInc.personTable}#->filter(x | $x.AGE > 25)->limit(1)-> select(~[FIRSTNAME,LASTNAME])};
+    let actualPlan =  meta::pure::executionPlan::executionPlan($fun,meta::relational::tests::simpleRelationalMapping,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions())
+    ->  meta::pure::executionPlan::toString::planToStringWithoutFormatting(meta::relational::extension::relationalExtensions());
+   assertEquals('Relational(type=TDS[(FIRSTNAME,String,"",""),(LASTNAME,String,"","")]resultColumns=[("FIRSTNAME",""),("LASTNAME","")]sql=select"FIRSTNAME"as"FIRSTNAME","LASTNAME"as"LASTNAME"from(selecttop1"persontable_1".IDas"ID","persontable_1".FIRSTNAMEas"FIRSTNAME","persontable_1".LASTNAMEas"LASTNAME","persontable_1".AGEas"AGE","persontable_1".ADDRESSIDas"ADDRESSID","persontable_1".FIRMIDas"FIRMID","persontable_1".MANAGERIDas"MANAGERID"frompersonTableas"persontable_1"where("persontable_1".AGEisnotnulland"persontable_1".AGE>25))as"subselect"connection=TestDatabaseConnection(type="H2"))', $actualPlan);
 }
