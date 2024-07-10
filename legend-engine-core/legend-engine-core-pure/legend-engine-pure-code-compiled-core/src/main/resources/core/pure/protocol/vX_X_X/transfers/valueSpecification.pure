@@ -83,7 +83,13 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpec
                                                       agg_FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_,
                                                       agg_String_1__FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_,
                                                       func_String_1__FunctionDefinition_1__TdsOlapAggregation_1_,
-                                                      func_FunctionDefinition_1__TdsOlapRank_1_
+                                                      func_FunctionDefinition_1__TdsOlapRank_1_,
+                                                      meta::pure::functions::relation::colSpec_String_1__T_1__ColSpec_1_,
+                                                      meta::pure::functions::relation::funcColSpec_Function_1__String_1__T_1__FuncColSpec_1_,
+                                                      meta::pure::functions::relation::aggColSpec_Function_1__Function_1__String_1__T_1__AggColSpec_1_,
+                                                      meta::pure::functions::relation::colSpecArray_String_MANY__T_1__ColSpecArray_1_,
+                                                      meta::pure::functions::relation::funcColSpecArray_FuncColSpec_MANY__P_1__FuncColSpecArray_1_,
+                                                      meta::pure::functions::relation::aggColSpecArray_AggColSpec_MANY__P_1__AggColSpecArray_1_
                                                    ];
 
                                               let isExtractEnum = $fe->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::hasExtractEnumValue();
@@ -454,6 +460,22 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                                         columnFn = $co.func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
                                     )
                           ),
+                  c:meta::pure::metamodel::relation::ColSpec<Any>[1]| 
+                    meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformToColSpecClassInstance($c.name, [], [], [], $inScope, $open, PureOne, $extensions),
+                  f:meta::pure::metamodel::relation::FuncColSpec<Any,Any>[1]| 
+                    meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformToColSpecClassInstance($f.name, [], $f.function, [], $inScope, $open, PureOne, $extensions),
+                  a:meta::pure::metamodel::relation::AggColSpec<Any,Any, Any>[1]| 
+                    meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformToColSpecClassInstance($a.name, [], $a.map, $a.reduce, $inScope, $open, PureOne, $extensions),
+                  c:meta::pure::metamodel::relation::ColSpecArray<Any>[1]|
+                    meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformToColSpecArrayClassInstance($c.names->map(name | 
+                      meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformToColSpec($name, [], [], [], $inScope, $open, PureOne, $extensions)
+                    )),
+                  f:meta::pure::metamodel::relation::FuncColSpecArray<Any, Any>[1]|
+                    meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformToColSpecArrayClassInstance(
+                      $f.funcSpecs->map(fs | meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformToColSpec($fs.name, [], $fs.function, [], $inScope, $open, PureOne, $extensions))),
+                  a:meta::pure::metamodel::relation::AggColSpecArray<Any, Any, Any>[1]|
+                    meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformToColSpecArrayClassInstance(
+                      $a.aggSpecs->map(as | meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformToColSpec($as.name, [], $as.map, $as.reduce, $inScope, $open, PureOne, $extensions))),                          
                   pair:Pair<Any,Any>[1]|
                      ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
                           (
@@ -536,6 +558,45 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                      );
                 ])->toOneMany()
               );
+}
+
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformToColSpecClassInstance(name:String[1], type:String[0..1], function1:Function<Any>[0..1], function2:Function<Any>[0..1], inScope:String[*], open:Map<String,List<Any>>[1], m:Multiplicity[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance[1]
+{
+  ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+  (
+    _type = 'classInstance',
+    type = 'colSpec',
+    value = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformToColSpec($name, $type, $function1, $function2, $inScope, $open, $m, $extensions)
+  )
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformToColSpec(name:String[1], type:String[0..1], function1:Function<Any>[0..1], function2:Function<Any>[0..1], inScope:String[*], open:Map<String,List<Any>>[1], m:Multiplicity[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::ColSpec[1]
+{
+  ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::ColSpec
+  (
+      name = $name,
+      type = $type,
+      function1 = if ($function1->isNotEmpty(),
+                    | $function1->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda),
+                    | []),
+      function2 = if ($function2->isNotEmpty(),
+                    | $function2->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda),
+                    | [])                              
+  )
+}
+
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformToColSpecArrayClassInstance(colSpecs:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::ColSpec[*]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance[1]
+{
+  ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+  (
+    _type = 'classInstance',
+    type = 'colSpecArray',
+    value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::ColSpecArray(
+      colSpecs = $colSpecs
+    )
+  )
 }
 
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::possiblyTransformNewFunction(any:Any[1], m:Multiplicity[1],fe:FunctionExpression[0..1], inScope:String[*], open:Map<String,List<Any>>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1]

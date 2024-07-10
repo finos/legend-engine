@@ -339,6 +339,19 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSColu
    columnFn: meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::ColSpec
+{
+  name: String[1];
+  type: String[0..1];
+  function1: meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[0..1];
+  function2: meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::ColSpecArray
+{
+  colSpecs: meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::ColSpec[*];
+}
+
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AggregateValue
 {
    mapFn : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
