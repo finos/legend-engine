@@ -106,6 +106,10 @@ public class DataQualityCompilerExtension implements CompilerExtension
                         },
                         (dataquality, compileContext) ->
                         {
+
+                        },
+                        (dataquality, compileContext) ->
+                        {
                             Root_meta_external_dataquality_DataQuality<Object> metamodel = dataQualityIndex.get(compileContext.pureModel.buildPackageString(dataquality._package, dataquality.name));
                             metamodel._context(buildDataQualityExecutionContext(dataquality, compileContext))
                                     ._filter(getFilterLambda(dataquality, compileContext))
