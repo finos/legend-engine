@@ -30,9 +30,11 @@ public class HelperMeasureBuilder
         final GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(targetUnit);
         context.pureModel.typesGenericTypeIndex.put(context.pureModel.buildPackageString(unit._package, unit.name), genericType);
         GenericType unitGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::type::Unit"));
-        synchronized (context.pureModel)
+
+        org.finos.legend.pure.m3.coreinstance.Package pack = context.pureModel.getOrCreatePackage(unit._package);
+
+        synchronized (pack)
         {
-            org.finos.legend.pure.m3.coreinstance.Package pack = context.pureModel.getOrCreatePackage(unit._package);
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit res = targetUnit
                     ._name(unit.name)
                     ._classifierGenericType(unitGenericType)

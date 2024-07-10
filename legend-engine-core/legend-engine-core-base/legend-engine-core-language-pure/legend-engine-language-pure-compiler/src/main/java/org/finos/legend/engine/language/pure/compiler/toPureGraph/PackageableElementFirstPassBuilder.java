@@ -330,10 +330,11 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         }
         pureElement._name(name);
 
-        synchronized (this.context.pureModel)
+        // Validate and set package
+        Package pack = this.context.pureModel.getOrCreatePackage(packagePath);
+
+        synchronized (pack)
         {
-            // Validate and set package
-            Package pack = this.context.pureModel.getOrCreatePackage(packagePath);
             if (pack._children().anySatisfy(c -> name.equals(c._name())))
             {
                 throw new EngineException("An element named '" + name + "' already exists in the package '" + packagePath + "'", sourceInformation, EngineErrorType.COMPILATION);
