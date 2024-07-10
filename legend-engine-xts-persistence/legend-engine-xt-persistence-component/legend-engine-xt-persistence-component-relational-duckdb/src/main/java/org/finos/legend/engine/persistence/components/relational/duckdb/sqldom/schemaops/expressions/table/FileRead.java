@@ -66,6 +66,8 @@ public class FileRead extends TableLike
     @Override
     public void genSql(StringBuilder builder) throws SqlDomException
     {
+        validate();
+
         builder.append("READ_" + fileType.name());
         builder.append(OPEN_PARENTHESIS);
 
@@ -142,6 +144,18 @@ public class FileRead extends TableLike
                     builder.append(COMMA + WHITE_SPACE);
                 }
             }
+        }
+    }
+
+    void validate() throws SqlDomException
+    {
+        if (fileType == null)
+        {
+            throw new SqlDomException("File type is mandatory for FileRead");
+        }
+        if (files == null || files.isEmpty())
+        {
+            throw new SqlDomException("File paths/patterns is mandatory for FileRead");
         }
     }
 }
