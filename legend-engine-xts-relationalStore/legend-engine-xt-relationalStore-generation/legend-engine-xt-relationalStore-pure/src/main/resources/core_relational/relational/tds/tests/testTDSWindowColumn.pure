@@ -63,7 +63,7 @@ meta::relational::tests::tds::tdsWindow::testPercentileWindowFunction():Boolean[
 }
 
 
-function <<test.Test>>
+function <<test.Test, test.AlloyOnly>>
 meta::relational::tests::tds::tdsWindow::testDistinctBeforeWindowFunction():Boolean[1]
 {
    let resultJson = meta::legend::executeLegendQuery(
@@ -94,7 +94,7 @@ meta::relational::tests::tds::tdsWindow::testDistinctBeforeWindowFunction():Bool
   assertSameElements( ['Anthony|Fabrice|4', 'Anthony|John|4', 'Anthony|Oliver|4', 'Anthony|Peter|4', 'Fabrice|Anthony|2', 'Fabrice|Oliver|2', 'John|David|2', 'John|Oliver|2', 'Peter|Anthony|2', 'Peter|John|2'], $values.rows->map(r|$r.values->makeString('|')));
 }
 
-function <<test.Test>>
+function <<test.Test, test.AlloyOnly>>
 meta::relational::tests::tds::tdsWindow::testDistinctAfterWindowFunction():Boolean[1]
 {
    let resultJson = meta::legend::executeLegendQuery(

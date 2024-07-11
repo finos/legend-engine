@@ -41,8 +41,8 @@ function <<test.Test>> meta::relational::tests::tds::window::routing::testExecut
                     '    Relational\n'+
                     '    (\n'+
                     '      type = TDS[(firstName, String, VARCHAR(200), ""), (lastName, String, VARCHAR(200), ""), (id, Integer, BIGINT, ""), (ageSum, Integer, INT, ""), (olapcolumn, Integer, INT, "")]\n'+
-                    '      resultColumns = [("firstName", VARCHAR(200)), ("lastName", VARCHAR(200)), ("id", ""), ("ageSum", ""), ("olapcolumn", "")]\n'+
-                    '      sql = select "root".firstname as "firstName", "root".lastname as "lastName", char_length("root".id) as "id", sum("root".age) as "ageSum", count(sum("root".age)) OVER (Partition By "root".firstname,"root".lastname Order By char_length("root".id) ASC) as "olapcolumn" from AccountSchema.AccountTable as "root" where ("root".age > ${limit} and "root".firstname like \'D%\') group by "firstName","lastName","id"\n'+
+                    '      resultColumns = [("firstName", ""), ("lastName", ""), ("id", ""), ("ageSum", ""), ("olapcolumn", "")]\n'+
+                    '      sql = select "firstName" as "firstName", "lastName" as "lastName", "id" as "id", "ageSum" as "ageSum", count("ageSum") OVER (Partition By "firstName","lastName" Order By "id" ASC) as "olapcolumn" from (select "root".firstname as "firstName", "root".lastname as "lastName", char_length("root".id) as "id", sum("root".age) as "ageSum" from AccountSchema.AccountTable as "root" where ("root".age > ${limit} and "root".firstname like \'D%\') group by "firstName","lastName","id") as "subselect"\n'+
                     '      connection = TestDatabaseConnection(type = "H2")\n'+
                     '    )\n'+
                     '  )\n'+
