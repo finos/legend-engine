@@ -146,7 +146,7 @@ function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testSingleWindowA
                             ->olapGroupBy('firstName',asc('lastName'),func('cnt',y|$y->sum()),'testCol1')
    };
    let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", count(*) as "cnt", sum(count(*)) OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "testCol1" from personTable as "root" group by "firstName","lastName"', $result);
+   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "cnt" as "cnt", sum("cnt") OVER (Partition By "firstName" Order By "lastName" ASC) as "testCol1" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", count(*) as "cnt" from personTable as "root" group by "firstName","lastName") as "subselect"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testWindowWithoutSortWithRankAndTdsSort():Boolean[1]
@@ -205,7 +205,7 @@ function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testWindowColumnR
                 ->filter(r|$r.getInteger('rowNumber') > 10)
                };
    let result =  toSQLString($func, simpleRelationalMappingIncWithStoreFilter, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "ageSum" as "ageSum", "rowNumber" as "rowNumber" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", sum("root".AGE) as "ageSum", row_number() OVER (Order By "root".FIRSTNAME ASC) as "rowNumber" from (select "root".ID as ID, "root".FIRSTNAME as FIRSTNAME, "root".LASTNAME as LASTNAME, "root".AGE as AGE from personTable as "root" where "root".AGE > 110) as "root" where "root".AGE < 200 and "root".LASTNAME like \'David%\' group by "firstName","lastName") as "subselect" where "rowNumber" > 10', $result);
+   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "ageSum" as "ageSum", "rowNumber" as "rowNumber" from (select "firstName" as "firstName", "lastName" as "lastName", "ageSum" as "ageSum", row_number() OVER (Order By "firstName" ASC) as "rowNumber" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", sum("root".AGE) as "ageSum" from (select "root".ID as ID, "root".FIRSTNAME as FIRSTNAME, "root".LASTNAME as LASTNAME, "root".AGE as AGE from personTable as "root" where "root".AGE > 110) as "root" where "root".AGE < 200 and "root".LASTNAME like \'David%\' group by "firstName","lastName") as "subselect") as "subselect" where "rowNumber" > 10', $result);
 }
 
 function <<test.Test, test.AlloyOnly>>
