@@ -17,6 +17,7 @@ package org.finos.legend.engine.repl.relational.server.handler;
 import com.sun.net.httpserver.HttpHandler;
 import org.apache.commons.io.IOUtils;
 import org.finos.legend.engine.repl.relational.server.REPLServer;
+import org.finos.legend.engine.repl.relational.server.model.DataCubeInfrastructureInfo;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -36,9 +37,9 @@ public class DataCubeInfrastructure
                 {
                     try
                     {
-                        String licenseKey = System.getProperty("legend.repl.dataCube.gridLicenseKey") == null ? "" : System.getProperty("legend.repl.dataCube.gridLicenseKey");
-                        String key = state.objectMapper.writeValueAsString(licenseKey);
-                        handleResponse(exchange, 200, key, state);
+                        DataCubeInfrastructureInfo info = new DataCubeInfrastructureInfo();
+                        info.gridClientLicense = System.getProperty("legend.repl.dataCube.gridLicenseKey") == null ? "" : System.getProperty("legend.repl.dataCube.gridLicenseKey");
+                        handleResponse(exchange, 200, state.objectMapper.writeValueAsString(info), state);
                     }
                     catch (Exception e)
                     {

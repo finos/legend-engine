@@ -59,9 +59,7 @@ public class REPLServer
 
     public String getUrl()
     {
-        String dynamicBaseUrl = System.getenv("LEGEND_REPL_DATA_CUBE_BASE_URL");
-        String baseUrl = dynamicBaseUrl != null ? dynamicBaseUrl : this.webAppDevBaseUrl;
-        return (baseUrl != null ? baseUrl : "http://localhost:" + this.port) + "/repl/dataCube";
+        return (this.webAppDevBaseUrl != null ? this.webAppDevBaseUrl : "http://localhost:" + this.port) + "/repl/dataCube";
     }
 
     public void initialize() throws Exception
@@ -72,7 +70,7 @@ public class REPLServer
         // register handlers
         MutableList<HttpContext> contexts = Maps.mutable.<String, REPLServerHelpers.DataCubeServerHandler>empty()
                 .withKeyValue("/repl/", new DataCubeInfrastructure.StaticContent())
-                .withKeyValue("/api/dataCube/gridLicenseKey", new DataCubeInfrastructure.GridLicenseKey())
+                .withKeyValue("/api/dataCube/infrastructureInfo", new DataCubeInfrastructure.GridLicenseKey())
                 .withKeyValue("/api/dataCube/typeahead", new DataCubeQueryBuilder.QueryTypeahead())
                 .withKeyValue("/api/dataCube/parseQuery", new DataCubeQueryBuilder.ParseQuery())
                 .withKeyValue("/api/dataCube/getQueryCode", new DataCubeQueryBuilder.GetQueryCode())
