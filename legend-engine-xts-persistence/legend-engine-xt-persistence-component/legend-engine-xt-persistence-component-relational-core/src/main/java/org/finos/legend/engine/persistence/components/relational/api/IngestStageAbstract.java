@@ -49,9 +49,4 @@ public abstract class IngestStageAbstract
     {
         return ApiUtils.deriveMainDatasetFromStaging(mainDataset(), stagingDataset(), ingestMode());
     }
-
-    public IngestMode getEnrichedIngestMode(CaseConversion caseConversion)
-    {
-        return ApiUtils.applyCase(ingestMode(), caseConversion);
-    }
 }

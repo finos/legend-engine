@@ -126,7 +126,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
      * @param Map of dataset Name, List of IngestStages
      * @return Map of dataset Name, List of IngestStageResults
      */
-    public void init(List<DatasetIngestDetails> datasetIngestDetailsMap, RelationalConnection connection)
+    public void init(List<DatasetIngestDetails> datasetIngestDetails, RelationalConnection connection)
     {
         // 1. Initialize the executor
         initExecutor(connection);
