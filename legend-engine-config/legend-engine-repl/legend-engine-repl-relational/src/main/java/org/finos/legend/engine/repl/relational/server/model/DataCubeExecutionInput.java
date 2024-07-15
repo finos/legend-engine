@@ -19,4 +19,5 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 public class DataCubeExecutionInput
 {
     public Lambda query;
+    public Boolean debug;
 }

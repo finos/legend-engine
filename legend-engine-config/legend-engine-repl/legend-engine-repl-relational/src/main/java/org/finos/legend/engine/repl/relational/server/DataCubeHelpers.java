@@ -40,6 +40,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.repl.autocomplete.Completer;
 import org.finos.legend.engine.repl.autocomplete.CompletionResult;
+import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.legend.LegendInterface;
 import org.finos.legend.engine.repl.relational.autocomplete.RelationalCompleterExtension;
 import org.finos.legend.engine.repl.relational.server.model.DataCubeExecutionResult;
@@ -54,17 +55,39 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_QUALIFIED_PATH;
+import static org.jline.jansi.Ansi.ansi;
 
 public class DataCubeHelpers
 {
-    public static DataCubeExecutionResult executeQuery(LegendInterface legendInterface, PlanExecutor planExecutor, PureModelContextData data) throws IOException
+    public static DataCubeExecutionResult executeQuery(Client client, LegendInterface legendInterface, PlanExecutor planExecutor, PureModelContextData data, boolean debug) throws IOException
     {
+        if (client != null && debug)
+        {
+            client.getTerminal().writer().println(ansi().fgBrightBlue().a("Debugging query execution...").reset());
+            client.getTerminal().writer().println("");
+
+            Function func = (Function) ListIterate.select(data.getElements(), e -> e.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)).getFirst();
+            client.getTerminal().writer().println(ansi().fgBrightBlack().a("---------------------------------------- INPUT ----------------------------------------").reset());
+            client.getTerminal().writer().println(ansi().fgBrightBlack().a("Function: " + getQueryCode(func.body.get(0), false)).reset());
+            client.getTerminal().writer().println("");
+        }
+
         PureModel pureModel = legendInterface.compile(data);
         RichIterable<? extends Root_meta_pure_extension_Extension> extensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
 
         // Plan
-        Root_meta_pure_executionPlan_ExecutionPlan _plan = legendInterface.generatePlan(pureModel, false);
+        if (client != null && debug)
+        {
+            client.getTerminal().writer().println(ansi().fgBrightBlack().a("---------------------------------------- PLAN ----------------------------------------").reset());
+        }
+        Root_meta_pure_executionPlan_ExecutionPlan _plan = legendInterface.generatePlan(pureModel, debug);
         String planStr = PlanGenerator.serializeToJSON(_plan, "vX_X_X", pureModel, extensions, LegendPlanTransformers.transformers);
+        if (client != null && debug)
+        {
+            client.getTerminal().writer().println("");
+            client.getTerminal().writer().println(ansi().fgBrightBlack().a("Generated Plan: " + planStr).reset());
+            client.getTerminal().writer().println("");
+        }
 
         // Execute
         Identity identity;
@@ -84,10 +107,18 @@ public class DataCubeHelpers
         {
             if (execResult instanceof RelationalResult)
             {
+                if (client != null && debug)
+                {
+                    client.getTerminal().writer().println(ansi().fgBrightBlack().a("---------------------------------------- RESULT ----------------------------------------").reset());
+                    client.getTerminal().writer().println(ansi().fgBrightBlack().a("Executed SQL: " + ((RelationalResult) execResult).executedSQl).reset());
+                    client.getTerminal().writer().println("");
+                }
+
                 DataCubeExecutionResult result = new DataCubeExecutionResult();
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 ((RelationalResult) execResult).getSerializer(SerializationFormat.DEFAULT).stream(byteArrayOutputStream);
                 result.result = byteArrayOutputStream.toString();
+                result.executedSQL = ((RelationalResult) execResult).executedSQl;
                 return result;
             }
             throw new RuntimeException("Expected execution result of type 'RelationalResult', but got '" + execResult.getClass().getName() + "'");

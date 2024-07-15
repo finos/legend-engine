@@ -48,8 +48,7 @@ public class REPLServer
     public REPLServer(Client client)
     {
         this.client = client;
-        this.state = new REPLServerHelpers.REPLServerState(objectMapper, planExecutor, client.getLegendInterface());
-        this.state.setClient(client);
+        this.state = new REPLServerHelpers.REPLServerState(client, objectMapper, planExecutor, client.getLegendInterface());
     }
 
     public void setExecuteResult(Execute.ExecuteResult executeResult)

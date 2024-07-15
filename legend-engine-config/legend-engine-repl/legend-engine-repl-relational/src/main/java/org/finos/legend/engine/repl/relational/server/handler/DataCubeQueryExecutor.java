@@ -46,10 +46,11 @@ public class DataCubeQueryExecutor
                         BufferedReader bufferReader = new BufferedReader(inputStreamReader);
                         String requestBody = bufferReader.lines().collect(Collectors.joining());
                         DataCubeExecutionInput input = state.objectMapper.readValue(requestBody, DataCubeExecutionInput.class);
+                        boolean debug = input.debug != null && input.debug;
                         Lambda lambda = input.query;
                         PureModelContextData data = DataCubeHelpers.injectNewFunction(state.getCurrentPureModelContextData(), lambda).getOne();
-                        DataCubeExecutionResult result = executeQuery(state.legendInterface, state.planExecutor, data);
-                        handleResponse(exchange, 200,  state.objectMapper.writeValueAsString(result), state);
+                        DataCubeExecutionResult result = executeQuery(state.client, state.legendInterface, state.planExecutor, data, debug);
+                        handleResponse(exchange, 200, state.objectMapper.writeValueAsString(result), state);
                     }
                     catch (Exception e)
                     {

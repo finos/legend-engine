@@ -94,17 +94,18 @@ public class REPLServerHelpers
 
     public static class REPLServerState
     {
+        public final Client client;
         public final ObjectMapper objectMapper;
         public final PlanExecutor planExecutor;
         public final LegendInterface legendInterface;
         public Long startTime;
 
-        private Client client;
         private PureModelContextData currentPureModelContextData;
         private DataCubeQuery query;
 
-        public REPLServerState(ObjectMapper objectMapper, PlanExecutor planExecutor, LegendInterface legendInterface)
+        public REPLServerState(Client client, ObjectMapper objectMapper, PlanExecutor planExecutor, LegendInterface legendInterface)
         {
+            this.client = client;
             this.objectMapper = objectMapper;
             this.planExecutor = planExecutor;
             this.legendInterface = legendInterface;
@@ -216,17 +217,9 @@ public class REPLServerHelpers
             return this.query;
         }
 
-        public void setClient(Client client)
-        {
-            this.client = client;
-        }
-
         public void log(String message)
         {
-            if (this.client != null)
-            {
-                this.client.getTerminal().writer().println(message);
-            }
+            this.client.getTerminal().writer().println(message);
         }
     }
 

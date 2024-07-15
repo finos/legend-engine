@@ -94,6 +94,7 @@ public class TestDataCubeHelpers
         testExecuteQuery(expectedResult, lambda);
     }
 
+
     @Test
     public void testExecuteFilter()
     {
@@ -116,7 +117,7 @@ public class TestDataCubeHelpers
         {
             Lambda lambda = (Lambda) DataCubeHelpers.parseQuery(code, false);
             PureModelContextData data = DataCubeHelpers.injectNewFunction(pureModelContextData, lambda).getOne();
-            DataCubeExecutionResult result = executeQuery(legendInterface, planExecutor, data);
+            DataCubeExecutionResult result = executeQuery(null, legendInterface, planExecutor, data, false);
             Assert.assertEquals(expectedResult, RelationalResultToJsonDefaultSerializer.removeComment(result.result));
         }
         catch (IOException e)
