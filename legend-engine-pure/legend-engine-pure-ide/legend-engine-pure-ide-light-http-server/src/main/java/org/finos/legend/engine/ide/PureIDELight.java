@@ -29,6 +29,7 @@ public class PureIDELight extends PureIDEServer
     public static void main(String[] args) throws Exception
     {
         System.setProperty("legend.test.h2.port", "1975");
+        System.setProperty("user.timezone","GMT");
         new PureIDELight().run(args.length == 0 ? new String[]{"server", "legend-engine-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server/src/main/resources/ideLightConfig.json"} : args);
     }
 

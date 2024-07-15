@@ -323,10 +323,10 @@ public class Test_Relational_Postgres_EssentialFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::string::tests::parseBoolean::testParseTrue_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseBoolean' (state: [Select, false]) is not supported yet\""),
 
             // ParseDate
-            one("meta::pure::functions::string::tests::parseDate::testParseDateTypes_Function_1__Boolean_1_", "\"expected %2014-02-27T05:00:00+0000 to be an instance of StrictDate, actual: DateTime\""),
-            one("meta::pure::functions::string::tests::parseDate::testParseDateWithTimezone_Function_1__Boolean_1_", "\"\nexpected: %2014-02-27T15:01:35.231+0000\nactual:   %2014-02-27T15:01:35+0000\""),
-            one("meta::pure::functions::string::tests::parseDate::testParseDateWithZ_Function_1__Boolean_1_", "\"\nexpected: %2014-02-27T10:01:35.231+0000\nactual:   %2014-02-27T15:01:35+0000\""),
-            one("meta::pure::functions::string::tests::parseDate::testParseDate_Function_1__Boolean_1_", "\"\nexpected: %2014-02-27T10:01:35.231+0000\nactual:   %2014-02-27T15:01:35+0000\""),
+            one("meta::pure::functions::string::tests::parseDate::testParseDateTypes_Function_1__Boolean_1_", "\"expected %2014-02-27 to be an instance of DateTime, actual: StrictDate\""),
+            one("meta::pure::functions::string::tests::parseDate::testParseDateWithTimezone_Function_1__Boolean_1_", "\"\nexpected: %2014-02-27T15:01:35.231+0000\nactual:   %2014-02-27T10:01:35+0000\""),
+            one("meta::pure::functions::string::tests::parseDate::testParseDateWithZ_Function_1__Boolean_1_", "\"\nexpected: %2014-02-27T10:01:35.231+0000\nactual:   %2014-02-27T10:01:35+0000\""),
+            one("meta::pure::functions::string::tests::parseDate::testParseDate_Function_1__Boolean_1_", "\"\nexpected: %2014-02-27T10:01:35.231+0000\nactual:   %2014-02-27T10:01:35+0000\""),
 
             // ParseDecimal
             one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),

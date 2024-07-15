@@ -134,7 +134,7 @@
         <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
         <maven.enforcer.requireMavenVersion>3.6.2</maven.enforcer.requireMavenVersion>
         <project.build.outputTimestamp>1680115922</project.build.outputTimestamp>
-        <surefire.vm.params>-XX:-MaxFDLimit -XX:SoftRefLRUPolicyMSPerMB=1</surefire.vm.params>
+        <surefire.vm.params>-XX:-MaxFDLimit -XX:SoftRefLRUPolicyMSPerMB=1 -Duser.timezone=GMT</surefire.vm.params>
         <surefire.reports.directory />
 
         <!-- Databases -->
