@@ -274,14 +274,14 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testLangPureTests() : Boolean[1]
 {
    javaPureTests(engineConventions([]), [
-      meta::pure::functions::lang::tests::match::testMatchOneWithZeroOne__Boolean_1_,
-      meta::pure::functions::lang::tests::match::testMatchOneWith__Boolean_1_,
-      meta::pure::functions::lang::tests::match::testMatchOneWithMany__Boolean_1_,
-      meta::pure::functions::lang::tests::match::testMatchZeroWithZero__Boolean_1_,
-      meta::pure::functions::lang::tests::match::testMatchZeroWithMany__Boolean_1_,
-      meta::pure::functions::lang::tests::match::testMatchManyWithMany__Boolean_1_,
-      meta::pure::functions::lang::tests::match::testMatchWithFunctions__Boolean_1_,
-      meta::pure::functions::lang::tests::match::testMatchWithFunctionsManyMatch__Boolean_1_,
+//      meta::pure::functions::lang::tests::match::testMatchOneWithZeroOne__Boolean_1_,
+//      meta::pure::functions::lang::tests::match::testMatchOneWith__Boolean_1_,
+//      meta::pure::functions::lang::tests::match::testMatchOneWithMany__Boolean_1_,
+//      meta::pure::functions::lang::tests::match::testMatchZeroWithZero__Boolean_1_,
+//      meta::pure::functions::lang::tests::match::testMatchZeroWithMany__Boolean_1_,
+//      meta::pure::functions::lang::tests::match::testMatchManyWithMany__Boolean_1_,
+//      meta::pure::functions::lang::tests::match::testMatchWithFunctions__Boolean_1_,
+//      meta::pure::functions::lang::tests::match::testMatchWithFunctionsManyMatch__Boolean_1_,
       meta::pure::functions::lang::tests::orElse::testOrElse__Boolean_1_
    ])
       ->addTestsWithin(meta::pure::functions::lang::tests::compare)

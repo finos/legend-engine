@@ -19,7 +19,7 @@ import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.shared.core.extension.Extensions;
 import org.finos.legend.engine.shared.core.extension.LegendExtension;
-import org.finos.legend.engine.shared.core.extension.TreeNode;
+import org.finos.legend.shared.stuctures.TreeNode;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;

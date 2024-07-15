@@ -11,8 +11,6 @@
     <packaging>pom</packaging>
     <name>Legend Engine - XTS - DataQuality</name>
 
-
-
     <modules>
         <module>legend-engine-xt-dataquality-pure</module>
         <module>legend-engine-xt-dataquality-grammar</module>

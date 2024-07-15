@@ -261,8 +261,9 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('toOne',                  $allStates,            ^ToSql(format='%s')),
     dynaFnToSql('toUpper',                $allStates,            ^ToSql(format='upper(%s)')),
     dynaFnToSql('trim',                   $allStates,            ^ToSql(format='trim(%s)')),
-    dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='var_samp(%s)')),
-    dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='var_pop(%s)'))
+    dynaFnToSql('variance',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|if ($p->last() == 'true', | 'var_samp', |'var_pop') + '('+$p->init()->joinStrings('[', ',', ']')+')'})),
+    dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='var_samp(%s)', transform={p:String[*]|if($p->size() == 1, | $p->toOne() , | $p->joinStrings('[', ',', ']'))})),
+    dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='var_pop(%s)', transform={p:String[*]|if($p->size() == 1, | $p->toOne() , | $p->joinStrings('[', ',', ']'))}))
   ];
 }
 

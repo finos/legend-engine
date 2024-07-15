@@ -128,6 +128,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-shared-extensions</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-structures</artifactId>
+        </dependency>
         <!-- TODO -> Itemize... Only using ErrorManagement import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException; -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

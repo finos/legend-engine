@@ -25,7 +25,7 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.support
 
 import java.util.List;
 
-import static org.finos.legend.pure.generated.platform_pure_basics_meta_pathToElement.Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_;
+import static org.finos.legend.pure.generated.platform_pure_essential_meta_graph_pathToElement.Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_;
 
 @Deprecated
 public class ProtobufGenerationConfig extends GenerationConfiguration

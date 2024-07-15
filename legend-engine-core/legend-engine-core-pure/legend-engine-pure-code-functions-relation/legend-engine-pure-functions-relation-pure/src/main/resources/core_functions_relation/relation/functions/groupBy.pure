@@ -1,0 +1,149 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+
+native function <<PCT.function>> meta::pure::functions::relation::groupBy<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1], agg:meta::pure::metamodel::relation::AggColSpec<{T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<Z+R>[1];
+
+native function <<PCT.function>> meta::pure::functions::relation::groupBy<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:meta::pure::metamodel::relation::AggColSpec<{T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<Z+R>[1];
+
+native function <<PCT.function>> meta::pure::functions::relation::groupBy<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1], agg:meta::pure::metamodel::relation::AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<Z+R>[1];
+
+native function <<PCT.function>> meta::pure::functions::relation::groupBy<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:meta::pure::metamodel::relation::AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<Z+R>[1];
+
+function <<PCT.test>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBySingleSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->groupBy(~grp, ~newCol : x | $x.name : y | $y->joinStrings(''))
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,newCol\n'+
+                  '   0,J\n'+
+                  '   1,BFH\n'+
+                  '   2,AE\n'+
+                  '   3,CG\n'+
+                  '   4,D\n'+
+                  '   5,I\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+
+function <<PCT.test>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupByMultipleSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->groupBy(~[grp], ~newCol : x | $x.name : y | $y->joinStrings(''))
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,newCol\n'+
+                  '   0,J\n'+
+                  '   1,BFH\n'+
+                  '   2,AE\n'+
+                  '   3,CG\n'+
+                  '   4,D\n'+
+                  '   5,I\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBySingleMultiple<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->groupBy(~grp, ~[newCol : x | $x.name : y | $y->joinStrings(''), YoCol : x | $x.id : y | $y->plus()])
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,newCol,YoCol\n'+
+                  '   0,J,10\n'+
+                  '   1,BFH,16\n'+
+                  '   2,AE,6\n'+
+                  '   3,CG,10\n'+
+                  '   4,D,4\n'+
+                  '   5,I,9\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupByMultipleMultiple<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->groupBy(~[grp], ~[newCol : x | $x.name : y | $y->joinStrings(''), YoCol : x | $x.id : y | $y->plus()])
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,newCol,YoCol\n'+
+                  '   0,J,10\n'+
+                  '   1,BFH,16\n'+
+                  '   2,AE,6\n'+
+                  '   3,CG,10\n'+
+                  '   4,D,4\n'+
+                  '   5,I,9\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}

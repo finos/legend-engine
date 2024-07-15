@@ -1,0 +1,154 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+import meta::pure::functions::relation::tests::project::*;
+
+native function <<PCT.function>> meta::pure::functions::relation::project<C,T>(cl:C[*], x:FuncColSpecArray<{C[1]->Any[*]},T>[1]):Relation<T>[1];
+
+Class meta::pure::functions::relation::tests::project::Address
+{
+  val : String[1];
+}
+
+Class meta::pure::functions::relation::tests::project::TypeForProjectTest
+{
+  name : String[1];
+  addresses : Address[*];
+  values : PrimitiveContainer[*];
+}
+
+Class meta::pure::functions::relation::tests::project::PrimitiveContainer
+{
+  val : Integer[1];
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::project::testSimpleProject<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = {
+                | ^TypeForProjectTest
+                  (
+                    name = 'ok',
+                    addresses = [
+                        ^Address(val='no'),
+                        ^Address(val='other')
+                    ],
+                    values = [
+                      ^PrimitiveContainer(val=1),
+                      ^PrimitiveContainer(val=2),
+                      ^PrimitiveContainer(val=3)
+                    ]
+                  )->project(~[
+                          one:x|$x.name,
+                          two:x|$x.addresses.val,
+                          three:x|$x.values.val
+                       ])
+            };
+
+  let res = $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   one,two,three\n'+
+                '   ok,no,1\n'+
+                '   ok,no,2\n'+
+                '   ok,no,3\n'+
+                '   ok,other,1\n'+
+                '   ok,other,2\n'+
+                '   ok,other,3\n'+
+                '#', $res->sort([~one->ascending(),~two->ascending(),~three->ascending()])->toString());
+}
+
+
+function <<PCT.test>> meta::pure::functions::relation::tests::project::testSimpleProjectList<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+
+  let expr = {
+                | [
+                      ^TypeForProjectTest
+                      (
+                        name = 'ok',
+                        addresses = [
+                            ^Address(val='no'),
+                            ^Address(val='other')
+                        ],
+                        values = [
+                                   ^PrimitiveContainer(val=1),
+                                   ^PrimitiveContainer(val=2),
+                                   ^PrimitiveContainer(val=3)
+                                 ]
+                      ),
+                      ^TypeForProjectTest
+                      (
+                        name = 'ok3',
+                        addresses = [
+                            ^Address(val='no')
+                        ],
+                        values = [
+                                   ^PrimitiveContainer(val=1),
+                                   ^PrimitiveContainer(val=2),
+                                   ^PrimitiveContainer(val=3)
+                                 ]
+                      )
+                  ]->project(~[
+                                  one:x|$x.name,
+                                  two:x|$x.addresses.val,
+                                  three:x|$x.values.val
+                              ])
+             };
+
+  let res = $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   one,two,three\n'+
+                '   ok,no,1\n'+
+                '   ok,no,2\n'+
+                '   ok,no,3\n'+
+                '   ok,other,1\n'+
+                '   ok,other,2\n'+
+                '   ok,other,3\n'+
+                '   ok3,no,1\n'+
+                '   ok3,no,2\n'+
+                '   ok3,no,3\n'+
+                '#', $res->sort([~one->ascending(), ~two->ascending(), ~three->ascending()])->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::project::testSimpleProjectWithEmpty<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+
+  let expr = {
+                |
+                ^TypeForProjectTest
+                (
+                  name = 'ok',
+                  addresses = [
+                      ^Address(val='no'),
+                      ^Address(val='other')
+                  ],
+                  values = []
+                )->project(~[
+                                one:x|$x.name,
+                                two:x|$x.addresses.val,
+                                three:x|$x.values.val
+                            ])
+              };
+
+  let res = $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   one,two,three\n'+
+                '   ok,no,null\n'+
+                '   ok,other,null\n'+
+                '#', $res->toString());
+}

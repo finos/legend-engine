@@ -21,6 +21,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
    let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
    let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
                               getDynaFunctionToSqlForDuckDB()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
+
    ^DbExtension(
       isBooleanLiteralSupported = true,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords); },                                          // check case insensitive
@@ -148,7 +149,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
     dynaFnToSql('jaroWinklerSimilarity',  $allStates,            ^ToSql(format='jaro_winkler_similarity(%s, %s)')),
-    dynaFnToSql('levenshteinDistance',    $allStates,            ^ToSql(format='levenshtein(%s, %s)'))
+    dynaFnToSql('levenshteinDistance',    $allStates,            ^ToSql(format='levenshtein(%s, %s)')),
+    dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='%s', transform={p:String[*] | if($p->size() == 1,|'var_samp('+$p->toOne()+')',|'list_var_samp('+$p->joinStrings('[',',',']')+')'); })),
+    dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='%s', transform={p:String[*] | if($p->size() == 1,|'var_pop('+$p->toOne()+')',|'list_var_pop('+$p->joinStrings('[',',',']')+')'); })),
+    dynaFnToSql('variance',               $allStates,            ^ToSql(format='%s', transform={p:String[*]| if ($p->last() == 'true', | 'list_var_samp', |'list_var_pop') + '('+$p->init()->joinStrings('[', ',', ']')+')'}))
   ];
 }
 

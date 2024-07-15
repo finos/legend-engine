@@ -3,9 +3,8 @@
   "pattern": "(meta::analytics::function)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
-    "core",
-    "core_functions",
-    "platform_functions_json"
+    "core_functions_unclassified",
+    "core_functions_json",
+    "core"
   ]
 }
