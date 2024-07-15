@@ -50,11 +50,11 @@ public class Help implements Command
     @Override
     public boolean process(String cmd) throws Exception
     {
-        if (cmd.isEmpty() || cmd.equals("help"))
+        if (cmd.trim().isEmpty() || cmd.trim().equals("help"))
         {
             int maxDocLength = this.commands.maxBy(c -> c.documentation().length()).documentation().length();
             this.client.getTerminal().writer().println(this.commands
-                    .sortThis(Comparator.comparing(Command::documentation))
+                    .toSortedList(Comparator.comparing(Command::documentation))
                     // pad right to align the command description
                     .collect(c -> "  " + c.documentation() + String.join("", Collections.nCopies(maxDocLength - c.documentation().length() + 2, " ")) + c.description())
                     .makeString("\n"));
