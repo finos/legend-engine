@@ -21,7 +21,7 @@
 
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine-pure-platform-modular-generation</artifactId>
+        <artifactId>legend-engine-pure-code-functions-json</artifactId>
         <version>4.50.2-SNAPSHOT</version>
     </parent>
 

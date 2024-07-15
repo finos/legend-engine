@@ -20,7 +20,7 @@ import meta::pure::test::pct::*;
 
 function <<PCT.adapter>> meta::pure::executionPlan::platformBinding::legendJava::pct::testAdapterForJavaBindingExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
-    let debug = debug();
+    let debug = noDebug();
 
     let rawPlan = meta::pure::executionPlan::executionPlan($f->cast(@FunctionDefinition<{->Any[*]}>), ^meta::pure::runtime::ExecutionContext(), [], $debug);
 
