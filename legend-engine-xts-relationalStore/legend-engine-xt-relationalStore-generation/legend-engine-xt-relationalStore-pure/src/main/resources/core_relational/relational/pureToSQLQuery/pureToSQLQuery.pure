@@ -2813,7 +2813,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsWindowColumn(f:F
    let topQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
    let selectQuery = $topQuery.select->cast(@TdsSelectSqlQuery);
    
-   let noSubSelect = $selectQuery.groupBy->isEmpty() && ($selectQuery.distinct->isEmpty() || !$selectQuery.distinct->toOne());
+   let noSubSelect = ($selectQuery.distinct->isEmpty() || !$selectQuery.distinct->toOne());
 
    let mainQuery = if($noSubSelect, |$topQuery, |$selectQuery->isolateTdsSelect($topQuery, $extensions))->cast(@SelectWithCursor);
    let mainSelect = $mainQuery.select->cast(@TdsSelectSqlQuery);
