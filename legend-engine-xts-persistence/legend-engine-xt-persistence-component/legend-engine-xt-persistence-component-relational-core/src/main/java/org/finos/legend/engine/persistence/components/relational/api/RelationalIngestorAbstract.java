@@ -752,7 +752,7 @@ public abstract class RelationalIngestorAbstract
         }
         else
         {
-            enrichedDatasets = enrichedDatasets.withMainDataset(ApiUtils.deriveMainDatasetFromStaging(enrichedDatasets, enrichedIngestMode));
+            enrichedDatasets = enrichedDatasets.withMainDataset(ApiUtils.deriveMainDatasetFromStaging(enrichedDatasets.mainDataset(), enrichedDatasets.stagingDataset(), enrichedIngestMode));
         }
 
         // 6. Add Optimization Columns if needed

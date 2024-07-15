@@ -32,7 +32,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetCaseConverter;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetsCaseConverter;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.planner.Planner;
@@ -58,15 +58,15 @@ public class ApiUtils
 {
     public static final String LOCK_INFO_DATASET_SUFFIX = "_legend_persistence_lock";
 
-    public static Dataset deriveMainDatasetFromStaging(Datasets datasets, IngestMode ingestMode)
+    public static Dataset deriveMainDatasetFromStaging(Dataset mainDataset, Dataset stagingDataset, IngestMode ingestMode)
     {
-        Dataset mainDataset = datasets.mainDataset();
-        List<Field> mainDatasetFields = mainDataset.schema().fields();
-        if (mainDatasetFields == null || mainDatasetFields.isEmpty())
+        Dataset enrichedMainDataset = mainDataset;
+        if (mainDataset instanceof DatasetReference ||
+                (mainDataset instanceof DatasetDefinition && mainDataset.schema().fields() == null || mainDataset.schema().fields().isEmpty()))
         {
-            mainDataset = ingestMode.accept(new DeriveMainDatasetSchemaFromStaging(datasets.mainDataset(), datasets.stagingDataset()));
+            enrichedMainDataset = ingestMode.accept(new DeriveMainDatasetSchemaFromStaging(mainDataset, stagingDataset));
         }
-        return mainDataset;
+        return enrichedMainDataset;
     }
 
     public static Datasets enrichAndApplyCase(Datasets datasets, CaseConversion caseConversion)

@@ -17,7 +17,10 @@ package org.finos.legend.engine.persistence.components.relational.api;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
+import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.immutables.value.Value;
+
+import java.util.UUID;
 
 @Value.Immutable
 @Value.Style(
@@ -34,4 +37,21 @@ public abstract class IngestStageAbstract
     public abstract DatasetReference mainDataset();
 
     public abstract IngestMode ingestMode();
+
+    @Value.Derived
+    public String getRunId()
+    {
+        return UUID.randomUUID().toString();
+    }
+
+    @Value.Derived
+    public Dataset deriveMainDataset()
+    {
+        return ApiUtils.deriveMainDatasetFromStaging(mainDataset(), stagingDataset(), ingestMode());
+    }
+
+    public IngestMode getEnrichedIngestMode(CaseConversion caseConversion)
+    {
+        return ApiUtils.applyCase(ingestMode(), caseConversion);
+    }
 }

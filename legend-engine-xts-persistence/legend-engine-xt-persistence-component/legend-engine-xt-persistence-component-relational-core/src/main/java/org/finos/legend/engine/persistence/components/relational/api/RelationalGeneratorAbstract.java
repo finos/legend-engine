@@ -239,7 +239,8 @@ public abstract class RelationalGeneratorAbstract
     {
         IngestMode ingestModeWithCaseConversion = ApiUtils.applyCase(ingestMode(), caseConversion());
         Datasets datasetsWithCaseConversion = ApiUtils.enrichAndApplyCase(datasets, caseConversion());
-        Dataset enrichedMainDataset = ApiUtils.deriveMainDatasetFromStaging(datasetsWithCaseConversion, ingestModeWithCaseConversion);
+        Dataset enrichedMainDataset = ApiUtils.deriveMainDatasetFromStaging(datasetsWithCaseConversion.mainDataset(),
+                datasetsWithCaseConversion.stagingDataset(), ingestModeWithCaseConversion);
         Datasets enrichedDatasets = datasetsWithCaseConversion.withMainDataset(enrichedMainDataset);
         Planner planner = Planners.get(enrichedDatasets, ingestModeWithCaseConversion, plannerOptions(), relationalSink().capabilities());
         return generateOperations(enrichedDatasets, resources, planner, ingestModeWithCaseConversion);
