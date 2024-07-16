@@ -646,9 +646,9 @@ public abstract class RelationalIngestorAbstract
     {
         if (enrichedIngestMode instanceof BulkLoad)
         {
-            executor.executePhysicalPlan(generatorResult.dryRunPreActionsSqlPlan());
-            List<DataError> results = relationalSink().performDryRun(enrichedDatasets, transformer, executor, generatorResult.dryRunSqlPlan(), generatorResult.dryRunValidationSqlPlan(), sampleRowCount(), caseConversion());
-            executor.executePhysicalPlan(generatorResult.dryRunPostCleanupSqlPlan());
+            executor.executePhysicalPlan(generatorResult.dryRunPreActionsSqlPlan().orElseThrow(IllegalStateException::new));
+            List<DataError> results = relationalSink().performDryRun(enrichedDatasets, transformer, executor, generatorResult.dryRunSqlPlan().orElseThrow(IllegalStateException::new), generatorResult.dryRunValidationSqlPlan(), sampleRowCount(), caseConversion());
+            executor.executePhysicalPlan(generatorResult.dryRunPostCleanupSqlPlan().orElseThrow(IllegalStateException::new));
             return results;
         }
         else

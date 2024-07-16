@@ -264,7 +264,11 @@ public abstract class RelationalGeneratorAbstract
 
         // dry-run pre-actions
         LogicalPlan dryRunPreActionsLogicalPlan = planner.buildLogicalPlanForDryRunPreActions(resources);
-        SqlPlan dryRunPreActionsSqlPlan = transformer.generatePhysicalPlan(dryRunPreActionsLogicalPlan);
+        Optional<SqlPlan> dryRunPreActionsSqlPlan = Optional.empty();
+        if (dryRunPreActionsLogicalPlan != null)
+        {
+            dryRunPreActionsSqlPlan = Optional.of(transformer.generatePhysicalPlan(dryRunPreActionsLogicalPlan));
+        }
 
         // initialize-lock
         LogicalPlan initializeLockLogicalPlan = planner.buildLogicalPlanForInitializeLock(resources);
@@ -320,7 +324,11 @@ public abstract class RelationalGeneratorAbstract
 
         // dry-run
         LogicalPlan dryRunLogicalPlan = planner.buildLogicalPlanForDryRun(resources);
-        SqlPlan dryRunSqlPlan = transformer.generatePhysicalPlan(dryRunLogicalPlan);
+        Optional<SqlPlan> dryRunSqlPlan = Optional.empty();
+        if (dryRunLogicalPlan != null)
+        {
+            dryRunSqlPlan = Optional.of(transformer.generatePhysicalPlan(dryRunLogicalPlan));
+        }
 
         // dry-run validations
         Map<ValidationCategory, List<Pair<Set<FieldValue>, LogicalPlan>>> dryRunValidationLogicalPlan = planner.buildLogicalPlanForDryRunValidation(resources);
@@ -353,7 +361,11 @@ public abstract class RelationalGeneratorAbstract
 
         // dry-run post-cleanup
         LogicalPlan dryRunPostCleanupLogicalPlan = planner.buildLogicalPlanForDryRunPostCleanup(resources);
-        SqlPlan dryRunPostCleanupSqlPlan = transformer.generatePhysicalPlan(dryRunPostCleanupLogicalPlan);
+        Optional<SqlPlan> dryRunPostCleanupSqlPlan = Optional.empty();
+        if (dryRunPostCleanupLogicalPlan != null)
+        {
+            dryRunPostCleanupSqlPlan = Optional.of(transformer.generatePhysicalPlan(dryRunPostCleanupLogicalPlan));
+        }
 
         // post-run statistics
         Map<StatisticName, LogicalPlan> postIngestStatisticsLogicalPlan = planner.buildLogicalPlanForPostRunStatistics(resources);
@@ -381,6 +393,18 @@ public abstract class RelationalGeneratorAbstract
             .putAllDeduplicationAndVersioningErrorChecksSqlPlan(deduplicationAndVersioningErrorChecksSqlPlan)
             .putAllPreIngestStatisticsSqlPlan(preIngestStatisticsSqlPlan)
             .putAllPostIngestStatisticsSqlPlan(postIngestStatisticsSqlPlan)
+            .build();
+    }
+
+    GeneratorResult generateOperationsForCreate(Resources resources, Planner planner)
+    {
+        Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
+
+        LogicalPlan preActionsLogicalPlan = planner.buildLogicalPlanForPreActions(resources);
+        SqlPlan preActionsSqlPlan = transformer.generatePhysicalPlan(preActionsLogicalPlan);
+
+        return GeneratorResult.builder()
+            .preActionsSqlPlan(preActionsSqlPlan)
             .build();
     }
 }

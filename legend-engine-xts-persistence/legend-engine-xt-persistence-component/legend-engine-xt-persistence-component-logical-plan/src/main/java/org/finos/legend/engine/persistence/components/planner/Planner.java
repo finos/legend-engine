@@ -308,7 +308,7 @@ public abstract class Planner
 
     public LogicalPlan buildLogicalPlanForDryRun(Resources resources)
     {
-        return LogicalPlan.of(Collections.emptyList());
+        return null;
     }
 
     public Map<ValidationCategory, List<Pair<Set<FieldValue>, LogicalPlan>>> buildLogicalPlanForDryRunValidation(Resources resources)
@@ -318,12 +318,12 @@ public abstract class Planner
 
     public LogicalPlan buildLogicalPlanForDryRunPreActions(Resources resources)
     {
-        return LogicalPlan.of(Collections.emptyList());
+        return null;
     }
 
     public LogicalPlan buildLogicalPlanForDryRunPostCleanup(Resources resources)
     {
-        return LogicalPlan.of(Collections.emptyList());
+        return null;
     }
 
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
