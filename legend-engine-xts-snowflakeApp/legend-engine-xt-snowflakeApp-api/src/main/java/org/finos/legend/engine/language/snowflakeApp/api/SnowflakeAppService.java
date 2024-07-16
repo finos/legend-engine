@@ -93,7 +93,7 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
     @Override
     public MutableList<? extends FunctionActivatorError> validate(Identity identity, PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        SnowflakeAppArtifact artifact = SnowflakeAppGenerator.generateArtifact(pureModel, activator, inputModel, true, routerExtensions);
+        SnowflakeAppArtifact artifact = SnowflakeAppGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
         return validate(identity, artifact);
     }
 
