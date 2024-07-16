@@ -126,7 +126,18 @@ public class Client
                     @Override
                     public boolean safeAccept(Command c) throws Exception
                     {
-                        return c.process(line);
+                        try
+                        {
+                            return c.process(line);
+                        }
+                        catch (RuntimeException e)
+                        {
+                            throw e;
+                        }
+                        catch (Exception e)
+                        {
+                            throw new RuntimeException(e);
+                        }
                     }
                 });
             }
@@ -169,22 +180,29 @@ public class Client
     {
         int e_start = e.getSourceInformation().startColumn;
         int e_end = e.getSourceInformation().endColumn;
-        if (e_start <= line.length())
+        try
         {
-            String beg = line.substring(0, e_start - 1);
-            String mid = line.substring(e_start - 1, e_end);
-            String end = line.substring(e_end, line.length());
-            AttributedStringBuilder ab = new AttributedStringBuilder();
-            ab.style(new AttributedStyle().underlineOff().boldOff().foreground(0, 200, 0));
-            ab.append(beg);
-            ab.style(new AttributedStyle().underline().bold().foreground(200, 0, 0));
-            ab.append(mid);
-            ab.style(new AttributedStyle().underlineOff().boldOff().foreground(0, 200, 0));
-            ab.append(end);
-            this.terminal.writer().println("");
-            this.terminal.writer().println(ab.toAnsi());
+            if (e_start <= line.length())
+            {
+                String beg = line.substring(0, e_start - 1);
+                String mid = line.substring(e_start - 1, e_end);
+                String end = line.substring(e_end, line.length());
+                AttributedStringBuilder ab = new AttributedStringBuilder();
+                ab.style(new AttributedStyle().underlineOff().foregroundOff());
+                ab.append(beg);
+                ab.style(new AttributedStyle().underline().foreground(AttributedStyle.RED));
+                ab.append(mid);
+                ab.style(new AttributedStyle().underlineOff().foregroundOff());
+                ab.append(end);
+                this.terminal.writer().println("");
+                this.terminal.writer().println(ab.toAnsi());
+            }
         }
-        this.terminal.writer().println(e.getMessage());
+        catch (Exception ex)
+        {
+            // do nothing
+        }
+        this.terminal.writer().println(ansi().fgRed().a(e.getMessage()).reset());
         if (this.debug)
         {
             e.printStackTrace();

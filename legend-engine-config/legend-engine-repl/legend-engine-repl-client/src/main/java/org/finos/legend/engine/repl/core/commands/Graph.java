@@ -92,9 +92,9 @@ public class Graph implements Command
 
     public static void drawPath(AttributedStringBuilder ab, String _package, String name)
     {
-        ab.style(new AttributedStyle().foreground(100, 100, 100).italic());
+        ab.style(new AttributedStyle().foreground(AttributedStyle.WHITE).italic());
         ab.append(_package == null || _package.isEmpty() ? "" : _package + "::");
-        ab.style(new AttributedStyle().foreground(200, 200, 200).italic());
+        ab.style(new AttributedStyle().foreground(AttributedStyle.WHITE).italic());
         ab.append(name);
     }
 

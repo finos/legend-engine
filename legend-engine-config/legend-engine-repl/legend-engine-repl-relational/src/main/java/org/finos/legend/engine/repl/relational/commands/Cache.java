@@ -163,7 +163,7 @@ public class Cache implements Command
                     CompletionResult result = new org.finos.legend.engine.repl.autocomplete.Completer(this.client.getModelState().getText(), this.client.getCompleterExtensions()).complete(expression);
                     if (result.getEngineException() == null)
                     {
-                        list.addAll(result.getCompletion().collect(c -> new Candidate(c.getCompletion(), c.getDisplay(), (String) null, (String) null, (String) null, (String) null, false, 0)));
+                        list.addAll(result.getCompletion().collect(c -> new Candidate(c.getCompletion(), c.getDisplay(), null, null, null, null, false, 0)));
                         return list;
                     }
                     else
@@ -171,7 +171,7 @@ public class Cache implements Command
                         this.client.printError(result.getEngineException(), expression);
                         AttributedStringBuilder ab = new AttributedStringBuilder();
                         ab.append("> ");
-                        ab.style(new AttributedStyle().underlineOff().boldOff().foreground(0, 200, 0));
+                        ab.style(new AttributedStyle().foreground(AttributedStyle.GREEN));
                         ab.append(parsedLine.line());
                         this.client.getTerminal().writer().print(ab.toAnsi());
                         return Lists.mutable.empty();

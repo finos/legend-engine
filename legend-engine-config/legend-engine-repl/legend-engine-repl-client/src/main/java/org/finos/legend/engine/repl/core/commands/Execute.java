@@ -94,7 +94,7 @@ public class Execute implements Command
                 this.client.printError(result.getEngineException(), parsedLine.line());
                 AttributedStringBuilder ab = new AttributedStringBuilder();
                 ab.append("> ");
-                ab.style(new AttributedStyle().underlineOff().boldOff().foreground(0, 200, 0));
+                ab.style(new AttributedStyle().foreground(AttributedStyle.GREEN));
                 ab.append(parsedLine.line());
                 this.client.getTerminal().writer().print(ab.toAnsi());
             }
