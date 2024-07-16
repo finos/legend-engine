@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-code-functions-unclassified</artifactId>
-        <version>4.50.2-SNAPSHOT</version>
+        <version>4.51.0</version>
     </parent>
 
     <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-unclassified</artifactId>
