@@ -24,11 +24,16 @@ import java.util.Date;
 
 public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
 {
+    @Deprecated
     public MutableList<String> sqlExpressions = Lists.mutable.empty();
+    public String createStatement;
+    public String grantStatement;
     public String applicationName;
     public String description;
     public String ownership;
     public String creationTime;
+    public String permissionScope;
+    public MutableList<String> usedTables = Lists.mutable.empty();
 
     public SnowflakeAppContent()
     {
@@ -50,6 +55,19 @@ public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
         this.ownership = ownership;
 
     }
+
+    public SnowflakeAppContent(String applicationName, String createStatement, String grantStatement, String permissionScope, String description, String ownership, MutableList<String> usedTables)
+    {
+        this.applicationName = applicationName;
+        this.createStatement = createStatement;
+        this.grantStatement = grantStatement;
+        this.permissionScope = permissionScope;
+        this.description = description;
+        this.ownership = ownership;
+        this.creationTime = convertToValidDate(new Date());;
+        this.usedTables = usedTables;
+    }
+
 
     public static String convertToValidDate(Date date)
     {

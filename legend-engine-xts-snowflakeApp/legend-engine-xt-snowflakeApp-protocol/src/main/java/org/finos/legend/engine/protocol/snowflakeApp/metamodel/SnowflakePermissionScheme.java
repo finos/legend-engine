@@ -14,18 +14,8 @@
 
 package org.finos.legend.engine.protocol.snowflakeApp.metamodel;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.FunctionActivator;
-
-
-//------------------------------------------------------------
-// Should be generated out of the Pure protocol specification
-//------------------------------------------------------------
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class SnowflakeApp extends FunctionActivator
+public enum SnowflakePermissionScheme
 {
-    public String applicationName;
-    public String description;
-    public String usageRole;
-    public SnowflakePermissionScheme permissionScheme;
+    DEFAULT,
+    SEQUESTERED
 }

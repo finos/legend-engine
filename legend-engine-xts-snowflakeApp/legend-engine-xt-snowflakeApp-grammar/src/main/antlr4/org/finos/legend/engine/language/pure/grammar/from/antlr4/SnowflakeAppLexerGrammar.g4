@@ -10,6 +10,8 @@ SNOWFLAKE_APP__OWNER:                           'ownership';
 SNOWFLAKE_APP__OWNER_DEPLOYMENT:                'Deployment';
 SNOWFLAKE_APP__OWNER_DEPLOYMENT_ID:             'identifier';
 SNOWFLAKE_APP__ACTIVATION:                      'activationConfiguration';
+SNOWFLAKE_APP__PERMISSION:                      'permissionScheme';
+SNOWFLAKE_APP__USAGE_ROLE:                      'usageRole';
 
 // ------------------------------------- CONFIGURATION -------------------------------
 CONFIGURATION:                          'SnowflakeAppDeploymentConfiguration';
