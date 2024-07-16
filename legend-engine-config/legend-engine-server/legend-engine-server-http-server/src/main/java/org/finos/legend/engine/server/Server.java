@@ -159,7 +159,6 @@ import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.ws.rs.container.DynamicFeature;
 import java.io.FileInputStream;
-import java.util.concurrent.ForkJoinPool;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -270,8 +269,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         DeploymentStateAndVersions.DEPLOYMENT_MODE = serverConfiguration.deployment.mode;
 
         SDLCLoader sdlcLoader = new SDLCLoader(serverConfiguration.metadataserver, null);
-        ForkJoinPool compilerPool = new ForkJoinPool();
-        ModelManager modelManager = new ModelManager(serverConfiguration.deployment.mode, compilerPool, sdlcLoader);
+        ModelManager modelManager = new ModelManager(serverConfiguration.deployment.mode, sdlcLoader);
 
         ChainFixingFilterHandler.apply(environment.getApplicationContext(), serverConfiguration.filterPriorities);
 
