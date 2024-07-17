@@ -17,6 +17,12 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
@@ -294,9 +300,16 @@ public class PureModel implements IPureModel
             }, forkJoinPool);
             try
             {
-                pureModelCompilationFuture.join();
+                pureModelCompilationFuture.get(10, TimeUnit.MINUTES);
             }
-            catch (CompletionException e)
+            catch (InterruptedException | TimeoutException e)
+            {
+                String threadDump = Stream.of(ManagementFactory.getThreadMXBean().dumpAllThreads(true, true))
+                        .map(ThreadInfo::toString)
+                        .collect(Collectors.joining("\n\t\t"));
+                throw new RuntimeException("Failure while waiting for compiler to finish.\n\nPool state: " + forkJoinPool.toString() + "\n\nThread Dump: " + threadDump, e);
+            }
+            catch (ExecutionException | CompletionException e)
             {
                 Throwable cause = e.getCause();
                 if (cause instanceof Error)
