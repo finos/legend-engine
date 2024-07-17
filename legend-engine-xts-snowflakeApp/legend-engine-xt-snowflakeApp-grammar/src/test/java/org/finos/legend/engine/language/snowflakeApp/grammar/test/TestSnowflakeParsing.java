@@ -49,7 +49,7 @@ public class TestSnowflakeParsing extends TestGrammarParser.TestGrammarParserTes
                 "SnowflakeApp x::A\n" +
                 "{\n" +
                 "   applicatioName : 'sass';\n" +
-                "}\n", "PARSER error at [4:4-17]: Unexpected token 'applicatioName'. Valid alternatives: ['applicationName', 'description', 'function', 'ownership', 'activationConfiguration']");
+                "}\n", "PARSER error at [4:4-17]: Unexpected token 'applicatioName'. Valid alternatives: ['applicationName', 'description', 'function', 'ownership', 'activationConfiguration', 'permissionScheme', 'usageRole']");
     }
 
     @Test
@@ -82,6 +82,19 @@ public class TestSnowflakeParsing extends TestGrammarParser.TestGrammarParserTes
                 "   applicationName : 'MyApp';\n" +
                 "   ownership : Deployment { identifier: 'pierre'};\n" +
                 "}\n", "PARSER error at [2:1-6:1]: Field 'function' is required");
+    }
+
+    @Test
+    public void testGetParserErrorWrongScheme()
+    {
+        test("###Snowflake\n" +
+                "SnowflakeApp x::A\n" +
+                "{\n" +
+                "   function : a::f():String[1];" +
+                "   applicationName : 'MyApp';\n" +
+                "   permissionScheme : WHATSCHEME;\n" +
+                "   ownership : Deployment { identifier: 'pierre'};\n" +
+                "}\n", "PARSER error at [5:4-33]: Unknown permission scheme 'WHATSCHEME'");
     }
 
 }

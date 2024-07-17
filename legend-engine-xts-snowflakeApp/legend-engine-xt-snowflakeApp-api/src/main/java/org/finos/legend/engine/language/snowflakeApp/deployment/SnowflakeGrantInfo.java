@@ -12,23 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.snowflakeApp.api;
+package org.finos.legend.engine.language.snowflakeApp.deployment;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
-
-public class SnowflakeAppError extends FunctionActivatorError
+public class SnowflakeGrantInfo
 {
-    public MutableList<String> foundSQLs;
+    public String privilege;
+    public String objectType;
+    public String objectName;
+    public String granteeRole;
+    public String grantee;
 
-    public SnowflakeAppError(String message, MutableList<String> foundSQLs)
+    public SnowflakeGrantInfo(String privilege, String objectType, String objectName, String granteeRole, String grantee)
     {
-        super(message);
-        this.foundSQLs = foundSQLs;
-    }
-
-    public SnowflakeAppError(String message)
-    {
-        super(message);
+        this.privilege = privilege;
+        this.objectType = objectType;
+        this.objectName = objectName;
+        this.granteeRole = granteeRole;
+        this.grantee = grantee;
     }
 }
