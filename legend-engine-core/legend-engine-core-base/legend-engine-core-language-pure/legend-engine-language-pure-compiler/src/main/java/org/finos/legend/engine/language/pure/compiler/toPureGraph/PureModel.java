@@ -460,12 +460,15 @@ public class PureModel implements IPureModel
     {
         org.finos.legend.pure.m3.coreinstance.Package newPkg = getOrCreatePackage(root, pack);
         org.finos.legend.pure.m3.coreinstance.Package oldPkg = getPackage((org.finos.legend.pure.m3.coreinstance.Package) METADATA_LAZY.getMetadata(M3Paths.Package, M3Paths.Root), pack);
-        for (String child : children)
+        synchronized (newPkg)
         {
-            // allow duplicated registration, but only the first one will actually get registered
-            if (newPkg._children().detect(c -> child.equals(c._name())) == null)
+            for (String child : children)
             {
-                newPkg._childrenAdd(Objects.requireNonNull(oldPkg._children().detect(c -> child.equals(c._name())), "Can't find child element '" + child + "' in package '" + pack + "' for path registration"));
+                // allow duplicated registration, but only the first one will actually get registered
+                if (newPkg._children().detect(c -> child.equals(c._name())) == null)
+                {
+                    newPkg._childrenAdd(Objects.requireNonNull(oldPkg._children().detect(c -> child.equals(c._name())), "Can't find child element '" + child + "' in package '" + pack + "' for path registration"));
+                }
             }
         }
     }
@@ -1388,9 +1391,17 @@ public class PureModel implements IPureModel
             String pkg = HelperModelBuilder.getElementFullPath(((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) f.getFunc())._package(), this.getExecutionSupport());
             org.finos.legend.pure.m3.coreinstance.Package n = getOrCreatePackage(root, pkg);
             org.finos.legend.pure.m3.coreinstance.Package o = getPackage((org.finos.legend.pure.m3.coreinstance.Package) METADATA_LAZY.getMetadata(M3Paths.Package, M3Paths.Root), pkg);
+
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement pkgToAdd;
+
+            synchronized (o)
+            {
+                pkgToAdd = Objects.requireNonNull(o._children().detect(c -> f.getFunctionSignature().equals(c._name())), "Can't find child element '" + f.getFunctionSignature() + "' in package '" + o._name() + "' for path registration");
+            }
+
             synchronized (n)
             {
-                n._childrenAdd(o._children().detect(c -> f.getFunctionSignature().equals(c._name())));
+                n._childrenAdd(pkgToAdd);
             }
         }
     }
