@@ -49,7 +49,7 @@ public class TestSnowflakeParsing extends TestGrammarParser.TestGrammarParserTes
                 "SnowflakeApp x::A\n" +
                 "{\n" +
                 "   applicatioName : 'sass';\n" +
-                "}\n", "PARSER error at [4:4-17]: Unexpected token 'applicatioName'. Valid alternatives: ['applicationName', 'description', 'function', 'ownership', 'activationConfiguration']");
+                "}\n", "PARSER error at [4:4-17]: Unexpected token 'applicatioName'. Valid alternatives: ['applicationName', 'description', 'function', 'ownership', 'activationConfiguration', 'permissionScheme', 'usageRole']");
     }
 
     @Test
