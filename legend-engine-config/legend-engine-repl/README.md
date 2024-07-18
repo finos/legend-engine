@@ -16,7 +16,7 @@ load data.csv local::DuckDuckConnection test1
 # then show the data
 #>{local::DuckDuckDatabase.test1}#->sort([])->from(local::DuckDuckRuntime)
 
-# to show the result grid in GUI mode
+# to show the result grid in DataCube
 show
 # to debug when error occurs, toggle debug mode
 debug

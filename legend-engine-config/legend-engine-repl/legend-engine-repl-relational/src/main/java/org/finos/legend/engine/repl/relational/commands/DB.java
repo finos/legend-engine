@@ -64,7 +64,7 @@ public class DB implements Command
             String[] tokens = line.split(" ");
             if (tokens.length != 2)
             {
-                throw new RuntimeException("Error, load should be used as 'db <connection>'");
+                throw new RuntimeException("Error: command should be used as '" + this.documentation() + "'");
             }
 
             PureModelContextData d = this.client.getModelState().parse();

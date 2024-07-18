@@ -56,6 +56,7 @@ import java.util.HashMap;
 
 import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_SIGNATURE;
 import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
+import static org.jline.jansi.Ansi.ansi;
 
 public class Cache implements Command
 {
@@ -77,7 +78,7 @@ public class Cache implements Command
     @Override
     public String description()
     {
-        return "cache the result of the last executed query into a table";
+        return "run the query and cache the result";
     }
 
     @Override
@@ -88,7 +89,7 @@ public class Cache implements Command
             String[] tokens = line.split(" ");
             if (tokens.length <= 2)
             {
-                throw new RuntimeException("Error, cache command should be used as 'cache <connection> <pure expression>'");
+                throw new RuntimeException("Error: command should be used as '" + this.documentation() + "'");
             }
 
             String argsString = line.substring("cache".length() + 1);
@@ -102,10 +103,11 @@ public class Cache implements Command
             PureModel pureModel = this.client.getLegendInterface().compile(parsed);
             RichIterable<? extends Root_meta_pure_extension_Extension> extensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
             Root_meta_pure_executionPlan_ExecutionPlan plan = this.client.getLegendInterface().generatePlan(pureModel, this.client.isDebug());
+
             if (this.client.isDebug())
             {
-                this.client.getTerminal().writer().println("Generated Plan:");
-                this.client.getTerminal().writer().println(core_pure_executionPlan_executionPlan_print.Root_meta_pure_executionPlan_toString_planToString_ExecutionPlan_1__Boolean_1__Extension_MANY__String_1_(plan, true, extensions, pureModel.getExecutionSupport()));
+                this.client.getTerminal().writer().println(ansi().fgBrightBlack().a("---------------------------------------- PLAN ----------------------------------------").reset());
+                this.client.getTerminal().writer().println(ansi().fgBrightBlack().a("Generated Plan: " + core_pure_executionPlan_executionPlan_print.Root_meta_pure_executionPlan_toString_planToString_ExecutionPlan_1__Boolean_1__Extension_MANY__String_1_(plan, true, extensions, pureModel.getExecutionSupport())).reset());
             }
             String planStr = PlanGenerator.serializeToJSON(plan, "vX_X_X", pureModel, extensions, LegendPlanTransformers.transformers);
 
@@ -115,10 +117,13 @@ public class Cache implements Command
                 if (res instanceof RelationalResult)
                 {
                     RelationalResult relationalResult = (RelationalResult) res;
+
                     if (this.client.isDebug())
                     {
-                        this.client.getTerminal().writer().println("Executed SQL: " + relationalResult.executedSQl);
+                        this.client.getTerminal().writer().println(ansi().fgBrightBlack().a("---------------------------------------- RESULT ----------------------------------------").reset());
+                        this.client.getTerminal().writer().println(ansi().fgBrightBlack().a("Executed SQL: " + relationalResult.executedSQl).reset());
                     }
+
                     String tempDir = ((RelationalStoreState) this.planExecutor.getExecutorsOfType(StoreType.Relational).getOnly().getStoreState()).getRelationalExecutor().getRelationalExecutionConfiguration().tempPath;
                     try (TemporaryFile tempFile = new TemporaryFile(tempDir))
                     {

@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.repl.client;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.block.predicate.checked.CheckedPredicate;
@@ -36,6 +37,9 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.jline.jansi.Ansi.ansi;
 import static org.jline.reader.LineReader.BLINK_MATCHING_PAREN;
@@ -66,6 +70,7 @@ public class Client
         this.state = new ModelState(this.legendInterface, this.replExtensions);
         this.terminal = TerminalBuilder.terminal();
 
+        this.initialize();
         replExtensions.forEach(e -> e.initialize(this));
 
         this.terminal.writer().println(ansi().fgBrightBlack().a("Welcome to the Legend REPL! Press 'Enter' or type 'help' to see the list of available commands.").reset());
@@ -106,7 +111,6 @@ public class Client
         this.terminal.flush();
         ((Execute) this.commands.getLast()).execute("1+1");
         this.terminal.writer().println("Ready!\n");
-
     }
 
     public void loop()
@@ -209,6 +213,27 @@ public class Client
         {
             e.printStackTrace();
         }
+    }
+
+    private void initialize()
+    {
+        try
+        {
+            Path homeDir = this.getHomeDir();
+            if (Files.notExists(homeDir))
+            {
+                Files.createDirectories(homeDir);
+            }
+        }
+        catch (Exception e)
+        {
+            this.terminal.writer().println(ansi().fgRed().a("Failed to create home directory at: " + this.getHomeDir().toString()).reset());
+        }
+    }
+
+    public Path getHomeDir()
+    {
+        return FileUtils.getUserDirectory().toPath().resolve(".legend-repl");
     }
 
     public Terminal getTerminal()

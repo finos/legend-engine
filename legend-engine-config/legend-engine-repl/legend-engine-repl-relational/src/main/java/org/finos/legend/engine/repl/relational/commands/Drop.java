@@ -24,14 +24,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
-import org.finos.legend.engine.repl.relational.RelationalReplExtension;
 import org.finos.legend.engine.repl.relational.shared.ConnectionHelper;
-import org.jline.builtins.Completers;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.Statement;
 
@@ -40,7 +37,6 @@ import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getT
 public class Drop implements Command
 {
     private final Client client;
-    private final Completers.FilesCompleter completer = new Completers.FilesCompleter(new File("/"));
 
     public Drop(Client client)
     {
@@ -54,6 +50,12 @@ public class Drop implements Command
     }
 
     @Override
+    public String description()
+    {
+        return "remove the specified table";
+    }
+
+    @Override
     public boolean process(String line) throws Exception
     {
         if (line.startsWith("drop"))
@@ -61,7 +63,7 @@ public class Drop implements Command
             String[] tokens = line.split(" ");
             if (tokens.length != 3)
             {
-                throw new RuntimeException("Error, drop should be used as '" + this.documentation() + "'");
+                throw new RuntimeException("Error: command should be used as '" + this.documentation() + "'");
             }
 
             DatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(this.client.getModelState().parse(), tokens[1]);
@@ -92,9 +94,9 @@ public class Drop implements Command
                 String start = words.get(0);
                 PureModelContextData d = this.client.getModelState().parse();
                 return ListIterate.select(d.getElementsOfType(PackageableConnection.class), c -> !c._package.equals("__internal__"))
-                                .collect(c -> PureGrammarComposerUtility.convertPath(c.getPath()))
-                                .select(c -> c.startsWith(start))
-                                .collect(Candidate::new);
+                        .collect(c -> PureGrammarComposerUtility.convertPath(c.getPath()))
+                        .select(c -> c.startsWith(start))
+                        .collect(Candidate::new);
             }
             else
             {

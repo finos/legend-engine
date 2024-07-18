@@ -22,12 +22,13 @@ import com.sun.net.httpserver.HttpHandler;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.RelationTypeHelper;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.builder.tds.TDSBuilder;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
@@ -46,8 +47,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Relati
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_QUALIFIED_PATH;
 
@@ -111,9 +111,9 @@ public class REPLServerHelpers
             this.legendInterface = legendInterface;
         }
 
-        public void initializeWithREPLExecutedQuery(Execute.ExecuteResult executeResult)
+        private void initialize(PureModelContextData pureModelContextData, List<DataCubeQueryColumn> columns)
         {
-            this.currentPureModelContextData = executeResult.pureModelContextData;
+            this.currentPureModelContextData = pureModelContextData;
 
             this.startTime = System.currentTimeMillis();
             this.query = new DataCubeQuery();
@@ -122,31 +122,13 @@ public class REPLServerHelpers
 
             // process source
             DataCubeQuerySourceREPLExecutedQuery source = new DataCubeQuerySourceREPLExecutedQuery();
-
-            if (!(executeResult.result instanceof RelationalResult) || !(((RelationalResult) executeResult.result).builder instanceof TDSBuilder))
-            {
-                throw new RuntimeException("Can't initialize DataCube. Last executed query did not produce a TDS (i.e. data-grid), try a different query...");
-            }
-
-            RelationType relationType;
-            try
-            {
-                relationType = (RelationType) executeResult.pureModel.getConcreteFunctionDefinition(REPL_RUN_FUNCTION_QUALIFIED_PATH, null)._expressionSequence().getLast()._genericType()._typeArguments().getFirst()._rawType();
-            }
-            catch (Exception e)
-            {
-                throw new RuntimeException("Can't initialize DataCube. Last executed query must return a relation type, try a different query...");
-            }
-
-            RelationalResult result = (RelationalResult) executeResult.result;
-            source.columns = ListIterate.collect(((TDSBuilder) result.builder).columns, col -> new DataCubeQueryColumn(col.name, col.type));
-
+            source.columns = columns;
             // try to extract the runtime for the query
             // remove any usage of multiple from(), only add one to the end
             // TODO: we might need to account for other variants of ->from(), such as when mapping is specified
-            Function function = (Function) ListIterate.select(executeResult.pureModelContextData.getElements(), e -> e.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)).getFirst();
+            Function function = (Function) ListIterate.select(pureModelContextData.getElements(), e -> e.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)).getFirst();
             String runtime = null;
-            MutableList<AppliedFunction> fns = Lists.mutable.empty();
+            Deque<AppliedFunction> fns = new LinkedList<>();
             ValueSpecification currentExpression = function.body.get(0);
             while (currentExpression instanceof AppliedFunction)
             {
@@ -165,7 +147,7 @@ public class REPLServerHelpers
                 }
                 else
                 {
-                    fns.add(fn);
+                    fns.addFirst(fn);
                 }
                 currentExpression = fn.parameters.get(0);
             }
@@ -200,6 +182,42 @@ public class REPLServerHelpers
             fullFn.parameters = Lists.mutable.with(partialFn, new PackageableElementPtr(runtime));
             partialFn.parameters = Lists.mutable.with(currentExpression).withAll(partialFn.parameters);
             this.query.query = fullFn.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build());
+        }
+
+        public void initializeFromTable(PureModelContextData pureModelContextData)
+        {
+            PureModel pureModel = client.getLegendInterface().compile(pureModelContextData);
+            RelationType<?> relationType;
+            try
+            {
+                relationType = (RelationType) pureModel.getConcreteFunctionDefinition(REPL_RUN_FUNCTION_QUALIFIED_PATH, null)._expressionSequence().getLast()._genericType()._typeArguments().getFirst()._rawType();
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException("Can't initialize DataCube: expected to get a relation type");
+            }
+            this.initialize(pureModelContextData, ListIterate.collect(RelationTypeHelper.convert(relationType).columns, col -> new DataCubeQueryColumn(col.name, col.type)));
+        }
+
+        public void initializeWithREPLExecutedQuery(Execute.ExecuteResultSummary executeResultSummary)
+        {
+            if (!(executeResultSummary.result instanceof RelationalResult) || !(((RelationalResult) executeResultSummary.result).builder instanceof TDSBuilder))
+            {
+                throw new RuntimeException("Can't initialize DataCube: last executed query did not produce a TDS (i.e. data-grid), try a different query...");
+            }
+
+            RelationType relationType;
+            try
+            {
+                relationType = (RelationType) executeResultSummary.pureModel.getConcreteFunctionDefinition(REPL_RUN_FUNCTION_QUALIFIED_PATH, null)._expressionSequence().getLast()._genericType()._typeArguments().getFirst()._rawType();
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException("Can't initialize DataCube: last executed query must return a relation type, try a different query...");
+            }
+
+            RelationalResult result = (RelationalResult) executeResultSummary.result;
+            this.initialize(executeResultSummary.pureModelContextData, ListIterate.collect(((TDSBuilder) result.builder).columns, col -> new DataCubeQueryColumn(col.name, col.type)));
         }
 
         public PureModelContextData getCurrentPureModelContextData()

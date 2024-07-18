@@ -22,6 +22,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.commands.Execute;
 import org.finos.legend.engine.repl.relational.server.handler.DataCubeInfrastructure;
@@ -51,9 +52,14 @@ public class REPLServer
         this.state = new REPLServerHelpers.REPLServerState(client, objectMapper, planExecutor, client.getLegendInterface());
     }
 
-    public void setExecuteResult(Execute.ExecuteResult executeResult)
+    public void initializeStateWithREPLExecutedQuery(Execute.ExecuteResultSummary executeResultSummary)
     {
-        this.state.initializeWithREPLExecutedQuery(executeResult);
+        this.state.initializeWithREPLExecutedQuery(executeResultSummary);
+    }
+
+    public void initializeStateFromTable(PureModelContextData pureModelContextData)
+    {
+        this.state.initializeFromTable(pureModelContextData);
     }
 
     public String getUrl()

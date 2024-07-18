@@ -52,8 +52,9 @@ public class Help implements Command
     {
         if (cmd.trim().isEmpty() || cmd.trim().equals("help"))
         {
-            int maxDocLength = this.commands.maxBy(c -> c.documentation().length()).documentation().length();
-            this.client.getTerminal().writer().println(this.commands
+            MutableList<Command> commands = this.commands.select(c -> c.parentCommand() == null);
+            int maxDocLength = commands.maxBy(c -> c.documentation().length()).documentation().length();
+            this.client.getTerminal().writer().println(commands
                     .toSortedList(Comparator.comparing(Command::documentation))
                     // pad right to align the command description
                     .collect(c -> "  " + c.documentation() + String.join("", Collections.nCopies(maxDocLength - c.documentation().length() + 2, " ")) + c.description())

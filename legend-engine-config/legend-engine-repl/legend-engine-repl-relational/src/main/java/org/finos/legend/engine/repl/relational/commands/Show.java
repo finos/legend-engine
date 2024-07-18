@@ -49,7 +49,7 @@ public class Show implements Command
     @Override
     public String description()
     {
-        return "show the result for the last executed query in GUI mode (DataCube)";
+        return "show the result for the last executed query in DataCube";
     }
 
     @Override
@@ -57,33 +57,35 @@ public class Show implements Command
     {
         if (line.startsWith("show"))
         {
-            Execute.ExecuteResult lastExecuteResult = this.client.getExecuteCommand().getLastExecuteResult();
-            if (lastExecuteResult == null)
+            Execute.ExecuteResultSummary lastExecuteResultSummary = this.client.getExecuteCommand().getLastExecuteResultSummary();
+            if (lastExecuteResultSummary == null)
             {
                 this.client.getTerminal().writer().println("Can't show result grid in DataCube. Try to run a query in REPL first...");
             }
             else
             {
-                this.REPLServer.setExecuteResult(lastExecuteResult);
-                try
-                {
-                    if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
-                    {
-                        Desktop.getDesktop().browse(URI.create(REPLServer.getUrl()));
-                    }
-                    else
-                    {
-                        this.client.getTerminal().writer().println(REPLServer.getUrl());
-                    }
-                }
-                catch (Exception e)
-                {
-                    this.client.getTerminal().writer().println(ansi().fgRed().a(e.getMessage()).reset());
-                }
+                this.REPLServer.initializeStateWithREPLExecutedQuery(lastExecuteResultSummary);
+                launchDataCube(this.client, this.REPLServer);
             }
             return true;
         }
         return false;
+    }
+
+    public static void launchDataCube(Client client, REPLServer replServer)
+    {
+        try
+        {
+            client.getTerminal().writer().println(replServer.getUrl());
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
+            {
+                Desktop.getDesktop().browse(URI.create(replServer.getUrl()));
+            }
+        }
+        catch (Exception e)
+        {
+            client.getTerminal().writer().println(ansi().fgRed().a(e.getMessage()).reset());
+        }
     }
 
     @Override

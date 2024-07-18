@@ -27,12 +27,12 @@ import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransforme
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
-import org.finos.legend.engine.repl.autocomplete.CompletionItem;
 import org.finos.legend.engine.repl.autocomplete.CompletionResult;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.core.Helpers;
 import org.finos.legend.engine.repl.core.ReplExtension;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
@@ -43,15 +43,18 @@ import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 
 import java.util.HashMap;
+import java.util.UUID;
 
 import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_SIGNATURE;
+import static org.jline.jansi.Ansi.ansi;
 
 public class Execute implements Command
 {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private final Client client;
     private final PlanExecutor planExecutor;
-    private ExecuteResult lastExecuteResult;
+    private ExecuteResultSummary lastExecuteResultSummary;
+    private String currentExecutionId;
 
     public Execute(Client client, PlanExecutor planExecutor)
     {
@@ -59,9 +62,14 @@ public class Execute implements Command
         this.planExecutor = planExecutor;
     }
 
-    public ExecuteResult getLastExecuteResult()
+    public ExecuteResultSummary getLastExecuteResultSummary()
     {
-        return this.lastExecuteResult;
+        return this.lastExecuteResultSummary;
+    }
+
+    public String getCurrentExecutionId()
+    {
+        return this.currentExecutionId;
     }
 
     @Override
@@ -86,7 +94,7 @@ public class Execute implements Command
             CompletionResult result = new org.finos.legend.engine.repl.autocomplete.Completer(this.client.getModelState().getText(), this.client.getCompleterExtensions()).complete(inScope);
             if (result.getEngineException() == null)
             {
-                list.addAll(result.getCompletion().collect(this::buildCandidate));
+                list.addAll(result.getCompletion().collect(s -> new Candidate(s.getCompletion(), s.getDisplay(), null, null, null, null, false, 0)));
                 return list;
             }
             else
@@ -106,24 +114,31 @@ public class Execute implements Command
         return null;
     }
 
-    private Candidate buildCandidate(CompletionItem s)
+    public String execute(String txt)
     {
-        return new Candidate(s.getCompletion(), s.getDisplay(), (String) null, (String) null, (String) null, (String) null, false, 0);
+        this.currentExecutionId = UUID.randomUUID().toString();
+        this.lastExecuteResultSummary = executeCode(txt, this.client, this.planExecutor, this.currentExecutionId);
+        return this.lastExecuteResultSummary.resultPreview;
     }
 
-
-    public String execute(String txt)
+    public static ExecuteResultSummary executeCode(String txt, Client client, PlanExecutor planExecutor, String executionId)
     {
         String code = "###Pure\n" +
                 "function " + REPL_RUN_FUNCTION_SIGNATURE + "\n{\n" + txt + ";\n}";
 
-        PureModelContextData d = this.client.getModelState().parseWithTransient(code);
+        if (client.isDebug())
+        {
+            client.getTerminal().writer().println(ansi().fgBrightBlack().a("---------------------------------------- INPUT ----------------------------------------").reset());
+            client.getTerminal().writer().println(ansi().fgBrightBlack().a("Function: " + code).reset());
+        }
 
-        if (this.client.isDebug())
+        PureModelContextData d = client.getModelState().parseWithTransient(code);
+
+        if (client.isDebug())
         {
             try
             {
-                this.client.getTerminal().writer().println((objectMapper.writeValueAsString(d)));
+                client.getTerminal().writer().println(ansi().fgBrightBlack().a("PMCD: " + objectMapper.writeValueAsString(d)).reset());
             }
             catch (Exception e)
             {
@@ -132,40 +147,36 @@ public class Execute implements Command
         }
 
         // Compile
-        PureModel pureModel = this.client.getLegendInterface().compile(d);
-        RichIterable<? extends Root_meta_pure_extension_Extension> extensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
-        if (this.client.isDebug())
-        {
-            this.client.getTerminal().writer().println(">> " + extensions.collect(Root_meta_pure_extension_Extension::_type).makeString(", "));
-        }
+        PureModel pureModel = client.getLegendInterface().compile(d);
 
         // Plan
-        Root_meta_pure_executionPlan_ExecutionPlan plan = this.client.getLegendInterface().generatePlan(pureModel, this.client.isDebug());
+        Root_meta_pure_executionPlan_ExecutionPlan plan = client.getLegendInterface().generatePlan(pureModel, client.isDebug());
+        RichIterable<? extends Root_meta_pure_extension_Extension> extensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
         String planStr = PlanGenerator.serializeToJSON(plan, "vX_X_X", pureModel, extensions, LegendPlanTransformers.transformers);
-        if (this.client.isDebug())
+
+        if (client.isDebug())
         {
-            this.client.getTerminal().writer().println(planStr);
+            client.getTerminal().writer().println(ansi().fgBrightBlack().a("---------------------------------------- PLAN ----------------------------------------").reset());
+            client.getTerminal().writer().println(ansi().fgBrightBlack().a("Extensions: " + extensions.collect(Root_meta_pure_extension_Extension::_type).makeString(", ")).reset());
+            client.getTerminal().writer().println(ansi().fgBrightBlack().a("Generated Plan: " + planStr).reset());
         }
 
         // Execute
-        Identity identity = Helpers.resolveIdentityFromLocalSubject(this.client);
+        Identity identity = Helpers.resolveIdentityFromLocalSubject(client);
         SingleExecutionPlan execPlan = (SingleExecutionPlan) PlanExecutor.readExecutionPlan(planStr);
-        Result res = this.planExecutor.execute(execPlan, new HashMap<>(), identity.getName(), identity, null);
-
-        // Store these infos for commands that need to access data from the latest execute
-        this.lastExecuteResult = new ExecuteResult(d, pureModel, res, execPlan);
+        Result res = planExecutor.execute(execPlan, new HashMap<>(), identity.getName(), identity, null);
 
         // Show result
         if (res instanceof ConstantResult)
         {
-            return ((ConstantResult) res).getValue().toString();
+            return new ExecuteResultSummary(d, pureModel, res, ((ConstantResult) res).getValue().toString(), null);
         }
         else
         {
-            ReplExtension extension = this.client.getReplExtensions().detect(x -> x.supports(res));
+            ReplExtension extension = client.getReplExtensions().detect(x -> x.supports(res));
             if (extension != null)
             {
-                return extension.print(res);
+                return new ExecuteResultSummary(d, pureModel, res, extension.print(res), executionId);
             }
             else
             {
@@ -174,24 +185,21 @@ public class Execute implements Command
         }
     }
 
-    public PlanExecutor getPlanExecutor()
+    public static class ExecuteResultSummary
     {
-        return this.planExecutor;
-    }
-
-    public static class ExecuteResult
-    {
+        public final String executionId;
         public final PureModelContextData pureModelContextData;
         public final PureModel pureModel;
         public final Result result;
-        public final SingleExecutionPlan plan;
+        public final String resultPreview;
 
-        public ExecuteResult(PureModelContextData pureModelContextData, PureModel pureModel, Result result, SingleExecutionPlan plan)
+        public ExecuteResultSummary(PureModelContextData pureModelContextData, PureModel pureModel, Result result, String resultPreview, String executionId)
         {
             this.pureModelContextData = pureModelContextData;
             this.pureModel = pureModel;
             this.result = result;
-            this.plan = plan;
+            this.resultPreview = resultPreview;
+            this.executionId = executionId;
         }
     }
 }

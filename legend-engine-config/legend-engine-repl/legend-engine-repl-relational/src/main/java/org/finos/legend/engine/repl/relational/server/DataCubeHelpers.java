@@ -64,12 +64,10 @@ public class DataCubeHelpers
         if (client != null && debug)
         {
             client.getTerminal().writer().println(ansi().fgBrightBlue().a("Debugging query execution...").reset());
-            client.getTerminal().writer().println("");
 
             Function func = (Function) ListIterate.select(data.getElements(), e -> e.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)).getFirst();
             client.getTerminal().writer().println(ansi().fgBrightBlack().a("---------------------------------------- INPUT ----------------------------------------").reset());
             client.getTerminal().writer().println(ansi().fgBrightBlack().a("Function: " + getQueryCode(func.body.get(0), false)).reset());
-            client.getTerminal().writer().println("");
         }
 
         PureModel pureModel = legendInterface.compile(data);
@@ -84,9 +82,7 @@ public class DataCubeHelpers
         String planStr = PlanGenerator.serializeToJSON(_plan, "vX_X_X", pureModel, extensions, LegendPlanTransformers.transformers);
         if (client != null && debug)
         {
-            client.getTerminal().writer().println("");
             client.getTerminal().writer().println(ansi().fgBrightBlack().a("Generated Plan: " + planStr).reset());
-            client.getTerminal().writer().println("");
         }
 
         // Execute
@@ -111,7 +107,6 @@ public class DataCubeHelpers
                 {
                     client.getTerminal().writer().println(ansi().fgBrightBlack().a("---------------------------------------- RESULT ----------------------------------------").reset());
                     client.getTerminal().writer().println(ansi().fgBrightBlack().a("Executed SQL: " + ((RelationalResult) execResult).executedSQl).reset());
-                    client.getTerminal().writer().println("");
                 }
 
                 DataCubeExecutionResult result = new DataCubeExecutionResult();
