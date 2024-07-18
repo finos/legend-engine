@@ -548,7 +548,7 @@ function meta::pure::router::routing::processColumnSpecification(v:ValueSpecific
 
 function meta::pure::router::routing::processColSpecParams(fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Any[*]
 {
-   let routedFe  = ^$state(value=$fe)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug);
+   let routedFe = ^$state(value=$fe)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug);
    let newFe = $routedFe.value->evaluateAndDeactivate()->match([i: InstanceValue[1] | $i.values, a: Any[1] | $a])->cast(@FunctionExpression);
    $newFe->map(fe|
       let parametersValues = $fe.parametersValues->map(x | $x->byPassRouterInfo()->match([

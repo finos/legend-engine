@@ -295,7 +295,7 @@ function meta::relational::tests::query::routing::getFilterLambda():Function<{TD
 
 function meta::relational::tests::query::routing::getFilterCondition(r:TDSRow[1]):Boolean[1]
 {
-  $r.getString('firstName') != 'John';
+  !$r.getString('firstName')->in(getNames());
 }
 
 function meta::relational::tests::query::routing::getNames():String[*]
@@ -318,6 +318,16 @@ function meta::relational::tests::query::routing::joinCondition():Function<{TDSR
   {a:TDSRow[1],b:TDSRow[1]|($a.getString('firstName') == $b.getString('employeeFirstName'))}
 }
 
+function meta::relational::tests::query::routing::personProjected():TabularDataSet[1]
+{
+  meta::relational::tests::model::simple::Person.all()->project([x|$x.firstName, x|$x.age], ['firstName', 'age']);
+}
+
+function meta::relational::tests::query::routing::extendWithIsAdult(t:TabularDataSet[1]):TabularDataSet[1]
+{
+  $t->extend([col(x:TDSRow[1]|if($x.getInteger('age') > 18, |'1', |'0'), 'isAdult')]);
+}
+
 function meta::relational::tests::query::routing::getJoin(a:TabularDataSet[1], b:TabularDataSet[1]):TabularDataSet[1]
 {
   $a->join($b, JoinType.LEFT_OUTER, joinCondition())
@@ -337,7 +347,7 @@ function <<test.Test>> meta::relational::tests::query::routing::testFunctionComp
 {
   let result = executeInternal(|firmProjected());
   assertSize($result.values, 1);
-  assertEquals(['Peter', 'John', 'John', 'Anthony', 'Fabrice', 'Oliver', 'David'], $result.values->at(0).rows.values);
+  assertEquals(['Peter', 'John', 'John', 'Anthony', 'New', 'Don', 'Fabrice', 'Oliver', 'Elena', 'David', 'No address', ^TDSNull()], $result.values->at(0).rows.values);
   assertEquals('select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
 
   let routingResult = routeInternal(|firmProjected()->from(simpleRelationalMapping, testRuntime()));
@@ -348,7 +358,7 @@ function <<test.Test>> meta::relational::tests::query::routing::testFunctionComp
 {
   let result = executeInternal(|firmGetAll()->project([x|$x.employees.name], ['name']));
   assertSize($result.values, 1);
-  assertEquals(['Peter Smith', 'John Johnson', 'John Hill', 'Anthony Allen', 'Fabrice Roberts', 'Oliver Hill', 'David Harris'], $result.values->at(0).rows.values);
+  assertEquals(['Peter Smith', 'John Johnson', 'John Hill', 'Anthony Allen', 'New York', 'Don New York', 'Fabrice Roberts', 'Oliver Hill', 'Elena Firm B', 'David Harris', 'No address Smith', ' '], $result.values->at(0).rows.values);
   assertEquals('select concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "name" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
 
   let routingResult = routeInternal(|firmGetAll()->project([x|$x.employees.name], ['name'])->from(simpleRelationalMapping, testRuntime()));
@@ -359,7 +369,7 @@ function <<test.Test>> meta::relational::tests::query::routing::testFunctionComp
 {
   let result = executeInternal(|firmGetAll()->project(getColumns()));
   assertSize($result.values, 1);
-  assertEquals(['Peter', 'John', 'John', 'Anthony', 'Fabrice', 'Oliver', 'David'], $result.values->at(0).rows.values);
+  assertEquals(['Peter', 'John', 'John', 'Anthony', 'New', 'Don', 'Fabrice', 'Oliver', 'Elena', 'David', 'No address', ^TDSNull()], $result.values->at(0).rows.values);
   assertEquals('select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
 
   let routingResult = routeInternal(|firmGetAll()->project(getColumns())->from(simpleRelationalMapping, testRuntime()));
@@ -370,29 +380,29 @@ function <<test.Test>> meta::relational::tests::query::routing::testFunctionComp
 {
   let result = executeInternal(|firmProjected()->addFilter());
   assertSize($result.values, 1);
-  assertEquals(['Peter', 'Anthony', 'Fabrice', 'Oliver', 'David'], $result.values->at(0).rows.values);
-  assertEquals('select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where ("persontable_0".FIRSTNAME <> \'John\' OR "persontable_0".FIRSTNAME is null)', $result->sqlRemoveFormatting());
+  assertEquals(['John', 'John', 'Anthony', 'New', 'Don', 'Fabrice', 'Elena', 'David', 'No address', ^TDSNull()], $result.values->at(0).rows.values);
+  assertEquals('select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where ("persontable_0".FIRSTNAME not in (\'Peter\', \'Oliver\') OR "persontable_0".FIRSTNAME is null)', $result->sqlRemoveFormatting());
 
   let routingResult = routeInternal(|firmProjected()->addFilter()->from(simpleRelationalMapping, testRuntime()));
-  assertEquals(' | {meta::relational::tests::db> [from wrapper /[1 meta_relational_tests_model_simple_Firm/[1 meta_relational_tests_model_simple_Firm/Class Firm].all()] -> project(^BasicColumnSpecification<Firm>(name = \'firstName\', func = x:meta::relational::tests::model::simple::Firm[1] | [2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[2 meta_relational_tests_model_simple_Person/[1 meta_relational_tests_model_simple_Firm/$x].employees] -> map([2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[Routed Func:v_automap:meta::relational::tests::model::simple::Person[1] | [2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[2 meta_relational_tests_model_simple_Person/$v_automap].firstName];]])];)) -> filter([Routed Func:x:meta::pure::tds::TDSRow[1] | [1 meta_relational_tests_model_simple_Firm/$x] -> getString(\'firstName\'){ [1 meta_relational_tests_model_simple_Firm/[1 meta_relational_tests_model_simple_Firm/$this] -> get(\'firstName\')] -> cast() } == \'John\' -> not();])]};', $routingResult->map(f|$f->asString())->joinStrings(''));
+  assertEquals(' | {meta::relational::tests::db> [from wrapper /[1 meta_relational_tests_model_simple_Firm/[1 meta_relational_tests_model_simple_Firm/Class Firm].all()] -> project(^BasicColumnSpecification<Firm>(name = \'firstName\', func = x:meta::relational::tests::model::simple::Firm[1] | [2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[2 meta_relational_tests_model_simple_Person/[1 meta_relational_tests_model_simple_Firm/$x].employees] -> map([2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[Routed Func:v_automap:meta::relational::tests::model::simple::Person[1] | [2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[2 meta_relational_tests_model_simple_Person/$v_automap].firstName];]])];)) -> filter([Routed Func:x:meta::pure::tds::TDSRow[1] | [1 meta_relational_tests_model_simple_Firm/$x] -> getString(\'firstName\'){ [1 meta_relational_tests_model_simple_Firm/[1 meta_relational_tests_model_simple_Firm/$this] -> get(\'firstName\')] -> cast() } -> in([\'Peter\', \'Oliver\']) -> not();])]};', $routingResult->map(f|$f->asString())->joinStrings(''));
 }
 
 function <<test.Test>> meta::relational::tests::query::routing::testFunctionComposition5():Boolean[1]
 {
   let result = executeInternal(|firmProjected()->addFilter()->concatenate(firmGetAll()->project(getColumns())));
   assertSize($result.values, 1);
-  assertEquals(['Peter', 'Anthony', 'Fabrice', 'Oliver', 'David', 'Peter', 'John', 'John', 'Anthony', 'Fabrice', 'Oliver', 'David'], $result.values->at(0).rows.values);
-  assertEquals('select "unionalias_0"."firstName" as "firstName" from (select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where ("persontable_0".FIRSTNAME <> \'John\' OR "persontable_0".FIRSTNAME is null) UNION ALL select "persontable_1".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_1" on ("root".ID = "persontable_1".FIRMID)) as "unionalias_0"', $result->sqlRemoveFormatting());
+  assertEquals(['John', 'John', 'Anthony', 'New', 'Don', 'Fabrice', 'Elena', 'David', 'No address', ^TDSNull(), 'Peter', 'John', 'John', 'Anthony', 'New', 'Don', 'Fabrice', 'Oliver', 'Elena', 'David', 'No address', ^TDSNull()], $result.values->at(0).rows.values);
+  assertEquals('select "unionalias_0"."firstName" as "firstName" from (select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where ("persontable_0".FIRSTNAME not in (\'Peter\', \'Oliver\') OR "persontable_0".FIRSTNAME is null) UNION ALL select "persontable_1".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_1" on ("root".ID = "persontable_1".FIRMID)) as "unionalias_0"', $result->sqlRemoveFormatting());
 
   let routingResult = routeInternal(|firmProjected()->addFilter()->concatenate(firmGetAll()->project(getColumns()))->from(simpleRelationalMapping, testRuntime()));
-  assertEquals(' | {meta::relational::tests::db> [from wrapper /[1 meta_relational_tests_model_simple_Firm/[1 meta_relational_tests_model_simple_Firm/Class Firm].all()] -> project(^BasicColumnSpecification<Firm>(name = \'firstName\', func = x:meta::relational::tests::model::simple::Firm[1] | [2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[2 meta_relational_tests_model_simple_Person/[1 meta_relational_tests_model_simple_Firm/$x].employees] -> map([2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[Routed Func:v_automap:meta::relational::tests::model::simple::Person[1] | [2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[2 meta_relational_tests_model_simple_Person/$v_automap].firstName];]])];)) -> filter([Routed Func:x:meta::pure::tds::TDSRow[1] | [1 meta_relational_tests_model_simple_Firm/$x] -> getString(\'firstName\'){ [1 meta_relational_tests_model_simple_Firm/[1 meta_relational_tests_model_simple_Firm/$this] -> get(\'firstName\')] -> cast() } == \'John\' -> not();]) -> concatenate([1 meta_relational_tests_model_simple_Firm/[1 meta_relational_tests_model_simple_Firm/Class Firm].all()] -> project(^BasicColumnSpecification<Firm>(name = \'firstName\', func = x:meta::relational::tests::model::simple::Firm[1] | [2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[2 meta_relational_tests_model_simple_Person/[1 meta_relational_tests_model_simple_Firm/$x].employees] -> map([2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[Routed Func:v_automap:meta::relational::tests::model::simple::Person[1] | [2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[2 meta_relational_tests_model_simple_Person/$v_automap].firstName];]])];)))]};', $routingResult->map(f|$f->asString())->joinStrings(''));
+  assertEquals(' | {meta::relational::tests::db> [from wrapper /[1 meta_relational_tests_model_simple_Firm/[1 meta_relational_tests_model_simple_Firm/Class Firm].all()] -> project(^BasicColumnSpecification<Firm>(name = \'firstName\', func = x:meta::relational::tests::model::simple::Firm[1] | [2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[2 meta_relational_tests_model_simple_Person/[1 meta_relational_tests_model_simple_Firm/$x].employees] -> map([2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[Routed Func:v_automap:meta::relational::tests::model::simple::Person[1] | [2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[2 meta_relational_tests_model_simple_Person/$v_automap].firstName];]])];)) -> filter([Routed Func:x:meta::pure::tds::TDSRow[1] | [1 meta_relational_tests_model_simple_Firm/$x] -> getString(\'firstName\'){ [1 meta_relational_tests_model_simple_Firm/[1 meta_relational_tests_model_simple_Firm/$this] -> get(\'firstName\')] -> cast() } -> in([\'Peter\', \'Oliver\']) -> not();]) -> concatenate([1 meta_relational_tests_model_simple_Firm/[1 meta_relational_tests_model_simple_Firm/Class Firm].all()] -> project(^BasicColumnSpecification<Firm>(name = \'firstName\', func = x:meta::relational::tests::model::simple::Firm[1] | [2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[2 meta_relational_tests_model_simple_Person/[1 meta_relational_tests_model_simple_Firm/$x].employees] -> map([2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[Routed Func:v_automap:meta::relational::tests::model::simple::Person[1] | [2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[2 meta_relational_tests_model_simple_Person/$v_automap].firstName];]])];)))]};', $routingResult->map(f|$f->asString())->joinStrings(''));
 }
 
 function <<test.Test>> meta::relational::tests::query::routing::testFunctionComposition6():Boolean[1]
 {
   let result = executeInternal(|Person.all()->addGroupBy());
   assertSize($result.values, 1);
-  assertEquals(['Anthony Allen', 22, 'David Harris', 35, 'Fabrice Roberts', 34, 'John Hill', 12, 'John Johnson', 22, 'Oliver Hill', 32, 'Peter Smith', 23], $result.values->at(0).rows.values);
+  assertEquals(['Anthony Allen', 22, 'David Harris', 35, 'Don New York', 35, 'Elena Firm B', 35, 'Fabrice Roberts', 34, 'John Hill', 12, 'John Johnson', 22, 'New York', 35, 'No address Smith', 35, 'No firm no Firm', 35, 'Oliver Hill', 32, 'Peter Smith', 23], $result.values->at(0).rows.values);
   assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "name", sum("root".AGE) as "ageSum" from personTable as "root" group by "name"', $result->sqlRemoveFormatting());
 
   let routingResult = routeInternal(|Person.all()->addGroupBy()->from(simpleRelationalMapping, testRuntime()));
@@ -414,7 +424,7 @@ function <<test.Test>> meta::relational::tests::query::routing::testFunctionComp
 {
   let result = executeInternal(|getJoin(firmProjected(), firmProjected1()));
   assertSize($result.values, 1);
-  assertEquals(['Peter', 'Peter', 'John', 'John', 'John', 'John', 'John', 'John', 'John', 'John', 'Anthony', 'Anthony', 'Fabrice', 'Fabrice', 'Oliver', 'Oliver', 'David', 'David'], $result.values->at(0).rows.values);
+  assertEquals(['Peter', 'Peter', 'John', 'John', 'John', 'John', 'John', 'John', 'John', 'John', 'Anthony', 'Anthony', 'New', 'New', 'Don', 'Don', 'Fabrice', 'Fabrice', 'Oliver', 'Oliver', 'Elena', 'Elena', 'David', 'David', 'No address', 'No address', ^TDSNull(), ^TDSNull()], $result.values->at(0).rows.values);
   assertEquals('select "firmtable_0"."firstName" as "firstName", "firmtable_0"."employeeFirstName" as "employeeFirstName" from (select "firmtable_1"."firstName" as "firstName", "firmtable_3"."employeeFirstName" as "employeeFirstName" from (select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)) as "firmtable_1" left outer join (select "persontable_0".FIRSTNAME as "employeeFirstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)) as "firmtable_3" on ("firmtable_1"."firstName" = "firmtable_3"."employeeFirstName")) as "firmtable_0"', $result->sqlRemoveFormatting());
 
   let routingResult = routeInternal(|getJoin(firmProjected(), firmProjected1())->from(simpleRelationalMapping, testRuntime()));
@@ -425,7 +435,7 @@ function <<test.Test>> meta::relational::tests::query::routing::testFunctionComp
 {
   let result = executeInternal(|firmProjected()->filter(x|$x.getString('firstName')->length()->plusOne() > 5));
   assertSize($result.values, 1);
-  assertEquals(['Peter', 'Anthony', 'Fabrice', 'Oliver', 'David'], $result.values->at(0).rows.values);
+  assertEquals(['Peter', 'Anthony', 'Fabrice', 'Oliver', 'Elena', 'David', 'No address'], $result.values->at(0).rows.values);
   assertEquals('select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where (char_length("persontable_0".FIRSTNAME) + 1) > 5', $result->sqlRemoveFormatting());
 
   let routingResult = routeInternal(|firmProjected()->filter(x|$x.getString('firstName')->length()->plusOne() > 5)->from(simpleRelationalMapping, testRuntime()));
@@ -452,5 +462,16 @@ function <<test.Test>> meta::relational::tests::query::routing::testFunctionComp
                                       firmProjected()->filter(x|$x.getString('firstName')->in($names))->from(simpleRelationalMapping, testRuntime());
                                     });
   assertEquals(' | {meta::relational::tests::db> [from wrapper /[1 meta_relational_tests_model_simple_Firm/[1 meta_relational_tests_model_simple_Firm/Class Firm].all()] -> project(^BasicColumnSpecification<Firm>(name = \'firstName\', func = x:meta::relational::tests::model::simple::Firm[1] | [2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[2 meta_relational_tests_model_simple_Person/[1 meta_relational_tests_model_simple_Firm/$x].employees] -> map([2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[Routed Func:v_automap:meta::relational::tests::model::simple::Person[1] | [2 meta_relational_tests_model_simple_PersonSortable, meta_relational_tests_model_simple_FirmExtension_employeesExt, meta_relational_tests_model_simple_PersonWithConstraints/[2 meta_relational_tests_model_simple_Person/$v_automap].firstName];]])];)) -> filter([Routed Func:x:meta::pure::tds::TDSRow[1] | $x -> getString(\'firstName\'){ [1 meta_relational_tests_model_simple_Firm/$this -> get(\'firstName\')] -> cast() } -> in([\'Peter\', \'Oliver\']);])]};', $routingResult->map(f|$f->asString())->joinStrings(''));
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::testFunctionComposition12():Boolean[1]
+{
+  let result = executeInternal(|personProjected()->extendWithIsAdult());
+  assertSize($result.values, 1);
+  assertEquals(['Peter', 23, '1', 'John', 22, '1', 'John', 12, '0', 'Anthony', 22, '1', 'Fabrice', 34, '1', 'Oliver', 32, '1', 'David', 35, '1', 'No address', 35, '1', 'No firm', 35, '1', 'New', 35, '1', 'Elena', 35, '1', 'Don', 35, '1'], $result.values->at(0).rows.values);
+  assertEquals('select "root".FIRSTNAME as "firstName", "root".AGE as "age", case when "root".AGE > 18 then \'1\' else \'0\' end as "isAdult" from personTable as "root"', $result->sqlRemoveFormatting());
+
+  let routingResult = routeInternal(|personProjected()->extendWithIsAdult()->from(simpleRelationalMapping, testRuntime()));
+  assertEquals(' | {meta::relational::tests::db> [from wrapper /[1 meta_relational_tests_model_simple_Person/[1 meta_relational_tests_model_simple_Person/Class Person].all()] -> project([[Routed Func:x:meta::relational::tests::model::simple::Person[1] | [1 @firstName(meta_relational_tests_model_simple_Person->)@ meta_relational_tests_model_simple_Person/[1 meta_relational_tests_model_simple_Person/$x].firstName];], [Routed Func:x:meta::relational::tests::model::simple::Person[1] | [1 @age(meta_relational_tests_model_simple_Person->)@ meta_relational_tests_model_simple_Person/[1 meta_relational_tests_model_simple_Person/$x].age];]], [\'firstName\', \'age\']) -> extend(^BasicColumnSpecification<TDSRow>(name = \'isAdult\', func = x:meta::pure::tds::TDSRow[1] | [1 meta_relational_tests_model_simple_Person/$x] -> getInteger(\'age\'){ [1 meta_relational_tests_model_simple_Person/[1 meta_relational_tests_model_simple_Person/$this] -> get(\'age\')] -> cast() } -> greaterThan(18) -> if([Routed Func: | \'1\';], [Routed Func: | \'0\';]);))]};', $routingResult->map(f|$f->asString())->joinStrings(''));
 }
   
