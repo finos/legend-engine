@@ -396,15 +396,70 @@ public abstract class RelationalGeneratorAbstract
             .build();
     }
 
-    GeneratorResult generateOperationsForCreate(Resources resources, Planner planner)
+    GeneratorResult generateOperationsForCreate(Resources resources, Planner planner, Transformer<SqlGen, SqlPlan> transformer)
     {
-        Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
-
+        // pre-actions
         LogicalPlan preActionsLogicalPlan = planner.buildLogicalPlanForPreActions(resources);
         SqlPlan preActionsSqlPlan = transformer.generatePhysicalPlan(preActionsLogicalPlan);
 
         return GeneratorResult.builder()
             .preActionsSqlPlan(preActionsSqlPlan)
+            .build();
+    }
+
+    GeneratorResult generateOperationsForIngest(Resources resources, Planner planner, Transformer<SqlGen, SqlPlan> transformer)
+    {
+        // pre-run statistics
+        Map<StatisticName, LogicalPlan> preIngestStatisticsLogicalPlan = planner.buildLogicalPlanForPreRunStatistics(resources);
+        Map<StatisticName, SqlPlan> preIngestStatisticsSqlPlan = new HashMap<>();
+        for (StatisticName statistic : preIngestStatisticsLogicalPlan.keySet())
+        {
+            preIngestStatisticsSqlPlan.put(statistic, transformer.generatePhysicalPlan(preIngestStatisticsLogicalPlan.get(statistic)));
+        }
+
+        // deduplication and versioning
+        LogicalPlan deduplicationAndVersioningLogicalPlan = planner.buildLogicalPlanForDeduplicationAndVersioning(resources);
+        Optional<SqlPlan> deduplicationAndVersioningSqlPlan = Optional.empty();
+        if (deduplicationAndVersioningLogicalPlan != null)
+        {
+            deduplicationAndVersioningSqlPlan = Optional.of(transformer.generatePhysicalPlan(deduplicationAndVersioningLogicalPlan));
+        }
+
+        Map<DedupAndVersionErrorSqlType, LogicalPlan> deduplicationAndVersioningErrorChecksLogicalPlan = planner.buildLogicalPlanForDeduplicationAndVersioningErrorChecks(resources);
+        Map<DedupAndVersionErrorSqlType, SqlPlan> deduplicationAndVersioningErrorChecksSqlPlan = new HashMap<>();
+        for (DedupAndVersionErrorSqlType statistic : deduplicationAndVersioningErrorChecksLogicalPlan.keySet())
+        {
+            deduplicationAndVersioningErrorChecksSqlPlan.put(statistic, transformer.generatePhysicalPlan(deduplicationAndVersioningErrorChecksLogicalPlan.get(statistic)));
+        }
+
+        // ingest
+        LogicalPlan ingestLogicalPlan = planner.buildLogicalPlanForIngest(resources);
+        SqlPlan ingestSqlPlan = transformer.generatePhysicalPlan(ingestLogicalPlan);
+
+        // metadata ingest
+        LogicalPlan metaDataIngestLogicalPlan = planner.buildLogicalPlanForMetadataIngest(resources);
+        SqlPlan metaDataIngestSqlPlan = transformer.generatePhysicalPlan(metaDataIngestLogicalPlan);
+
+        // post-actions
+        LogicalPlan postActionsLogicalPlan = planner.buildLogicalPlanForPostActions(resources);
+        SqlPlan postActionsSqlPlan = transformer.generatePhysicalPlan(postActionsLogicalPlan);
+
+        // post-run statistics
+        Map<StatisticName, LogicalPlan> postIngestStatisticsLogicalPlan = planner.buildLogicalPlanForPostRunStatistics(resources);
+        Map<StatisticName, SqlPlan> postIngestStatisticsSqlPlan = new HashMap<>();
+        for (StatisticName statistic : postIngestStatisticsLogicalPlan.keySet())
+        {
+            postIngestStatisticsSqlPlan.put(statistic, transformer.generatePhysicalPlan(postIngestStatisticsLogicalPlan.get(statistic)));
+        }
+
+        return GeneratorResult.builder()
+            .ingestSqlPlan(ingestSqlPlan)
+            .postActionsSqlPlan(postActionsSqlPlan)
+            .metadataIngestSqlPlan(metaDataIngestSqlPlan)
+            .deduplicationAndVersioningSqlPlan(deduplicationAndVersioningSqlPlan)
+            .putAllDeduplicationAndVersioningErrorChecksSqlPlan(deduplicationAndVersioningErrorChecksSqlPlan)
+            .putAllPreIngestStatisticsSqlPlan(preIngestStatisticsSqlPlan)
+            .putAllPostIngestStatisticsSqlPlan(postIngestStatisticsSqlPlan)
             .build();
     }
 }

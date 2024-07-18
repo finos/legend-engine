@@ -21,11 +21,16 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType;
 import org.finos.legend.engine.persistence.components.common.FilterType;
 import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
+import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.ingestmode.*;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetDeduplicationHandler;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DeriveDataErrorRowsLogicalPlan;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DeriveDuplicatePkRowsLogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -37,26 +42,55 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Schem
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.planner.Planner;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
+import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
+import org.finos.legend.engine.persistence.components.relational.exception.DataQualityException;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
+import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
+import org.finos.legend.engine.persistence.components.util.MetadataUtils;
+import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.DATA_ERROR_ROWS;
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.DUPLICATE_ROWS;
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.MAX_DATA_ERRORS;
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.MAX_DUPLICATES;
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.MAX_PK_DUPLICATES;
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.PK_DUPLICATE_ROWS;
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MAX_OF_FIELD;
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MIN_OF_FIELD;
+import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.TABLE_IS_NON_EMPTY;
+import static org.finos.legend.engine.persistence.components.relational.api.DataErrorAbstract.NUM_DATA_VERSION_ERRORS;
+import static org.finos.legend.engine.persistence.components.relational.api.DataErrorAbstract.NUM_DUPLICATES;
+import static org.finos.legend.engine.persistence.components.relational.api.DataErrorAbstract.NUM_PK_DUPLICATES;
+import static org.finos.legend.engine.persistence.components.relational.api.RelationalGeneratorAbstract.BULK_LOAD_BATCH_STATUS_PATTERN;
+import static org.finos.legend.engine.persistence.components.transformer.Transformer.TransformOptionsAbstract.DATE_TIME_FORMATTER;
 import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_STAGING_FILTERS;
 
 public class ApiUtils
 {
+    public static final String BATCH_ID_PATTERN = "{NEXT_BATCH_ID_PATTERN}";
+    public static final String BATCH_START_TS_PATTERN = "{BATCH_START_TIMESTAMP_PLACEHOLDER}";
+    public static final String BATCH_END_TS_PATTERN = "{BATCH_END_TIMESTAMP_PLACEHOLDER}";
+    public static final String ADDITIONAL_METADATA_KEY_PATTERN = "{ADDITIONAL_METADATA_KEY_PLACEHOLDER}";
+    public static final String ADDITIONAL_METADATA_VALUE_PATTERN = "{ADDITIONAL_METADATA_VALUE_PLACEHOLDER}";
+    public static final String ADDITIONAL_METADATA_PLACEHOLDER_PATTERN = "{\"" + ADDITIONAL_METADATA_KEY_PATTERN + "\":\"" + ADDITIONAL_METADATA_VALUE_PATTERN + "\"}";
     public static final String LOCK_INFO_DATASET_SUFFIX = "_legend_persistence_lock";
+    private static final String SINGLE_QUOTE = "'";
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApiUtils.class);
 
     public static Dataset deriveMainDatasetFromStaging(Dataset mainDataset, Dataset stagingDataset, IngestMode ingestMode)
     {
@@ -183,6 +217,158 @@ public class ApiUtils
         return lockInfoDataset;
     }
 
+    public static List<IngestorResult> performIngestion(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Planner planner, Executor<SqlGen,
+        TabularData, SqlPlan> executor, GeneratorResult generatorResult, List<DataSplitRange> dataSplitRanges, IngestMode ingestMode,
+        SchemaEvolutionResult schemaEvolutionResult, Map<String, Object> additionalMetadata, Clock executionTimestampClock)
+    {
+        List<IngestorResult> results = new ArrayList<>();
+        int dataSplitIndex = 0;
+        int dataSplitsCount = (dataSplitRanges == null || dataSplitRanges.isEmpty()) ? 0 : dataSplitRanges.size();
+        do
+        {
+            Optional<DataSplitRange> dataSplitRange = Optional.ofNullable(dataSplitsCount == 0 ? null : dataSplitRanges.get(dataSplitIndex));
+            // Extract the Placeholders values
+            Map<String, PlaceholderValue> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, dataSplitRange, additionalMetadata, executionTimestampClock);
+            // Load main table, extract stats and update metadata table
+            Map<StatisticName, Object> statisticsResultMap = loadData(executor, generatorResult, placeHolderKeyValues, executionTimestampClock);
+            IngestorResult result = IngestorResult.builder()
+                .putAllStatisticByName(statisticsResultMap)
+                .updatedDatasets(datasets)
+                .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN).value()) : null))
+                .dataSplitRange(dataSplitRange)
+                .schemaEvolutionSql(schemaEvolutionResult.schemaEvolutionSql())
+                .status(IngestStatus.SUCCEEDED)
+                .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN).value())
+                .build();
+            results.add(result);
+            dataSplitIndex++;
+        }
+        while (planner.dataSplitExecutionSupported() && dataSplitIndex < dataSplitsCount);
+        // Clean up
+        executor.executePhysicalPlan(generatorResult.postActionsSqlPlan());
+        return results;
+    }
+
+    private static Map<StatisticName, Object> loadData(Executor<SqlGen, TabularData, SqlPlan> executor, GeneratorResult generatorResult, Map<String, PlaceholderValue> placeHolderKeyValues, Clock executionTimestampClock)
+    {
+        // Extract preIngest Statistics
+        Map<StatisticName, Object> statisticsResultMap = new HashMap<>(
+            executeStatisticsPhysicalPlan(executor, generatorResult.preIngestStatisticsSqlPlan(), placeHolderKeyValues));
+        // Execute ingest SqlPlan
+        executor.executePhysicalPlan(generatorResult.ingestSqlPlan(), placeHolderKeyValues);
+        // Extract postIngest Statistics
+        statisticsResultMap.putAll(
+            executeStatisticsPhysicalPlan(executor, generatorResult.postIngestStatisticsSqlPlan(), placeHolderKeyValues));
+        // Execute metadata ingest SqlPlan
+        // add batchEndTimestamp
+        placeHolderKeyValues.put(BATCH_END_TS_PATTERN, PlaceholderValue.of(LocalDateTime.now(executionTimestampClock).format(DATE_TIME_FORMATTER), false));
+        placeHolderKeyValues.put(MetadataUtils.BATCH_STATISTICS_PATTERN, PlaceholderValue.of(writeValueAsString(statisticsResultMap), false));
+        executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan(), placeHolderKeyValues);
+        return statisticsResultMap;
+    }
+
+    private static Map<StatisticName, Object> executeStatisticsPhysicalPlan(Executor<SqlGen, TabularData, SqlPlan> executor,
+                                                                     Map<StatisticName, SqlPlan> statisticsSqlPlan,
+                                                                     Map<String, PlaceholderValue> placeHolderKeyValues)
+    {
+        Map<StatisticName, Object> results = new HashMap<>();
+        for (Map.Entry<StatisticName, SqlPlan> entry: statisticsSqlPlan.entrySet())
+        {
+            List<TabularData> result = executor.executePhysicalPlanAndGetResults(entry.getValue(), placeHolderKeyValues);
+            Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(result));
+            Object value = obj.orElse(null);
+            results.put(entry.getKey(), value);
+        }
+        return results;
+    }
+
+    public static List<IngestorResult> performBulkLoad(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Planner planner,
+                                                Executor<SqlGen, TabularData, SqlPlan> executor, GeneratorResult generatorResult,
+                                                IngestMode ingestMode, SchemaEvolutionResult schemaEvolutionResult,
+                                                Map<String, Object> additionalMetadata, Clock executionTimestampClock, RelationalSink relationalSink)
+    {
+        List<IngestorResult> results = new ArrayList<>();
+        Map<String, PlaceholderValue> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, Optional.empty(), additionalMetadata, executionTimestampClock);
+
+        // Execute ingest SqlPlan
+        IngestorResult result = relationalSink.performBulkLoad(datasets, executor, generatorResult.ingestSqlPlan(), generatorResult.postIngestStatisticsSqlPlan(), placeHolderKeyValues);
+        if (schemaEvolutionResult != null && !schemaEvolutionResult.schemaEvolutionSql().isEmpty())
+        {
+            result = result.withSchemaEvolutionSql(schemaEvolutionResult.schemaEvolutionSql());
+        }
+        // Execute metadata ingest SqlPlan
+        // add batchEndTimestamp
+        placeHolderKeyValues.put(BATCH_END_TS_PATTERN, PlaceholderValue.of(LocalDateTime.now(executionTimestampClock).format(DATE_TIME_FORMATTER), false));
+        placeHolderKeyValues.put(BULK_LOAD_BATCH_STATUS_PATTERN, PlaceholderValue.of(result.status().name(), false));
+        placeHolderKeyValues.put(MetadataUtils.BATCH_STATISTICS_PATTERN, PlaceholderValue.of(writeValueAsString(result.statisticByName()), false));
+        executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan(), placeHolderKeyValues);
+        results.add(result);
+        // Clean up
+        executor.executePhysicalPlan(generatorResult.postActionsSqlPlan());
+
+        return results;
+    }
+
+    private static Map<String, PlaceholderValue> extractPlaceHolderKeyValues(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
+                                                                      Planner planner, Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode,
+                                                                      Optional<DataSplitRange> dataSplitRange, Map<String, Object> additionalMetadata, Clock executionTimestampClock)
+    {
+        Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
+
+        // Handle batch ID
+        Optional<Long> nextBatchId = ApiUtils.getNextBatchId(datasets, executor, transformer);
+        if (nextBatchId.isPresent())
+        {
+            LOGGER.info(String.format("Obtained the next Batch id: %s", nextBatchId.get()));
+            placeHolderKeyValues.put(BATCH_ID_PATTERN, PlaceholderValue.of(nextBatchId.get().toString(), false));
+        }
+
+        // Handle optimization filters
+        Optional<Map<OptimizationFilter, Pair<Object, Object>>> optimizationFilters = ApiUtils.getOptimizationFilterBounds(datasets, executor, transformer, ingestMode);
+        if (optimizationFilters.isPresent())
+        {
+            for (OptimizationFilter filter : optimizationFilters.get().keySet())
+            {
+                Object lowerBound = optimizationFilters.get().get(filter).getOne();
+                Object upperBound = optimizationFilters.get().get(filter).getTwo();
+                if (lowerBound instanceof Number)
+                {
+                    placeHolderKeyValues.put(SINGLE_QUOTE + filter.lowerBoundPattern() + SINGLE_QUOTE, PlaceholderValue.of(lowerBound.toString(), true));
+                    placeHolderKeyValues.put(SINGLE_QUOTE + filter.upperBoundPattern() + SINGLE_QUOTE, PlaceholderValue.of(upperBound.toString(), true));
+                }
+                else
+                {
+                    placeHolderKeyValues.put(filter.lowerBoundPattern(), PlaceholderValue.of(lowerBound.toString(), true));
+                    placeHolderKeyValues.put(filter.upperBoundPattern(), PlaceholderValue.of(upperBound.toString(), true));
+                }
+            }
+        }
+
+        // Handle data splits
+        if (planner.dataSplitExecutionSupported() && dataSplitRange.isPresent())
+        {
+            placeHolderKeyValues.put(SINGLE_QUOTE + LogicalPlanUtils.DATA_SPLIT_LOWER_BOUND_PLACEHOLDER + SINGLE_QUOTE, PlaceholderValue.of(String.valueOf(dataSplitRange.get().lowerBound()), false));
+            placeHolderKeyValues.put(SINGLE_QUOTE + LogicalPlanUtils.DATA_SPLIT_UPPER_BOUND_PLACEHOLDER + SINGLE_QUOTE, PlaceholderValue.of(String.valueOf(dataSplitRange.get().upperBound()), false));
+        }
+
+        // Handle additional metadata
+        try
+        {
+            ObjectMapper objectMapper = new ObjectMapper();
+            String additionalMetadataString = objectMapper.writeValueAsString(additionalMetadata);
+            placeHolderKeyValues.put(ADDITIONAL_METADATA_PLACEHOLDER_PATTERN, PlaceholderValue.of(additionalMetadataString, true));
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new IllegalStateException("Unable to parse additional metadata");
+        }
+
+        // Handle batch timestamp
+        placeHolderKeyValues.put(BATCH_START_TS_PATTERN, PlaceholderValue.of(LocalDateTime.now(executionTimestampClock).format(DATE_TIME_FORMATTER), false));
+
+        return placeHolderKeyValues;
+    }
+
     public static Optional<Long> getNextBatchId(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
                                           Transformer<SqlGen, SqlPlan> transformer)
     {
@@ -265,6 +451,89 @@ public class ApiUtils
             }
         }
         return dataSplitRanges;
+    }
+
+    public static boolean datasetEmpty(Dataset dataset, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor)
+    {
+        LogicalPlan checkIsDatasetEmptyLogicalPlan = LogicalPlanFactory.getLogicalPlanForIsDatasetEmpty(dataset);
+        SqlPlan physicalPlanForCheckIsDataSetEmpty = transformer.generatePhysicalPlan(checkIsDatasetEmptyLogicalPlan);
+        List<TabularData> results = executor.executePhysicalPlanAndGetResults(physicalPlanForCheckIsDataSetEmpty);
+        Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(results));
+        String value = String.valueOf(obj.orElseThrow(IllegalStateException::new));
+        return !value.equals(TABLE_IS_NON_EMPTY);
+    }
+
+    public static void dedupAndVersion(Executor<SqlGen, TabularData, SqlPlan> executor, GeneratorResult generatorResult, Datasets enrichedDatasets, CaseConversion caseConversion)
+    {
+        executor.executePhysicalPlan(generatorResult.deduplicationAndVersioningSqlPlan().get());
+
+        Map<DedupAndVersionErrorSqlType, SqlPlan> dedupAndVersionErrorSqlTypeSqlPlanMap = generatorResult.deduplicationAndVersioningErrorChecksSqlPlan();
+
+        // Error Check for Duplicates: if Dedup = fail on dups, Fail the job if count > 1
+        if (dedupAndVersionErrorSqlTypeSqlPlanMap.containsKey(MAX_DUPLICATES))
+        {
+            List<TabularData> result = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(MAX_DUPLICATES));
+            Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(result));
+            Optional<Long> maxDuplicatesValue = retrieveValueAsLong(obj.orElse(null));
+            if (maxDuplicatesValue.isPresent() && maxDuplicatesValue.get() > 1)
+            {
+                // Find the duplicate rows
+                TabularData duplicateRows = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(DUPLICATE_ROWS)).get(0);
+                String errorMessage = "Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy";
+                LOGGER.error(errorMessage);
+                List<DataError> dataErrors = constructDataQualityErrors(enrichedDatasets.stagingDataset(), duplicateRows.getData(),
+                    ErrorCategory.DUPLICATES, caseConversion, DatasetDeduplicationHandler.COUNT, NUM_DUPLICATES);
+                throw new DataQualityException(errorMessage, dataErrors);
+            }
+        }
+
+        // Error Check for PK Duplicates: if versioning = No Versioning (fail on pk dups), Fail the job if count > 1
+        if (dedupAndVersionErrorSqlTypeSqlPlanMap.containsKey(MAX_PK_DUPLICATES))
+        {
+            List<TabularData> result = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(MAX_PK_DUPLICATES));
+            Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(result));
+            Optional<Long> maxPkDuplicatesValue = retrieveValueAsLong(obj.orElse(null));
+            if (maxPkDuplicatesValue.isPresent() && maxPkDuplicatesValue.get() > 1)
+            {
+                // Find the pk-duplicate rows
+                TabularData duplicatePkRows = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(PK_DUPLICATE_ROWS)).get(0);
+                String errorMessage = "Encountered multiple rows with duplicate primary keys, Failing the batch as Fail on Duplicate Primary Keys is selected";
+                LOGGER.error(errorMessage);
+                List<DataError> dataErrors = ApiUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), duplicatePkRows.getData(),
+                    ErrorCategory.DUPLICATE_PRIMARY_KEYS, caseConversion, DeriveDuplicatePkRowsLogicalPlan.DUPLICATE_PK_COUNT, NUM_PK_DUPLICATES);
+                throw new DataQualityException(errorMessage, dataErrors);
+            }
+        }
+
+        // Error Check for Data Error: If versioning = Max Version/ All Versioning, Check for data error
+        if (dedupAndVersionErrorSqlTypeSqlPlanMap.containsKey(MAX_DATA_ERRORS))
+        {
+            List<TabularData> result = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(MAX_DATA_ERRORS));
+            Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(result));
+            Optional<Long> maxDataErrorsValue = retrieveValueAsLong(obj.orElse(null));
+            if (maxDataErrorsValue.isPresent() && maxDataErrorsValue.get() > 1)
+            {
+                // Find the data errors
+                TabularData errors = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(DATA_ERROR_ROWS)).get(0);
+                String errorMessage = "Encountered Data errors (same PK, same version but different data), hence failing the batch";
+                LOGGER.error(errorMessage);
+                List<DataError> dataErrors = ApiUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), errors.getData(),
+                    ErrorCategory.DATA_VERSION_ERROR, caseConversion, DeriveDataErrorRowsLogicalPlan.DATA_VERSION_ERROR_COUNT, NUM_DATA_VERSION_ERRORS);
+                throw new DataQualityException(errorMessage, dataErrors);
+            }
+        }
+    }
+
+    private static String writeValueAsString(Map<StatisticName, Object> statisticByName)
+    {
+        try
+        {
+            return new ObjectMapper().writeValueAsString(statisticByName);
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     public static Optional<Long> retrieveValueAsLong(Object obj)

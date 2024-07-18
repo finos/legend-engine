@@ -14,12 +14,10 @@
 
 package org.finos.legend.engine.persistence.components.relational.api;
 
+import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
+import org.finos.legend.engine.persistence.components.planner.Planner;
 import org.immutables.value.Value;
-
-import java.util.UUID;
 
 @Value.Immutable
 @Value.Style(
@@ -29,17 +27,14 @@ import java.util.UUID;
         optionalAcceptNullable = true,
         strictBuilder = true
 )
-public abstract class IngestStageAbstract
+public abstract class IngestStageMetadataAbstract
 {
-    public abstract Dataset stagingDataset();
-
-    public abstract DatasetReference mainDataset();
+    // TODO: review if datasets and ingestMode are really needed
+    public abstract Datasets datasets();
 
     public abstract IngestMode ingestMode();
 
-    @Value.Derived
-    public String getRunId()
-    {
-        return UUID.randomUUID().toString();
-    }
+    public abstract Planner planner();
+
+    public abstract RelationalGenerator relationalGenerator();
 }
