@@ -452,9 +452,10 @@ public class BaseTest
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "COPY \"TEST\".\"staging\"" +
+            "INSERT INTO \"TEST\".\"staging\"" +
             "(\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"digest\", \"delete_indicator\")" +
-            " FROM '" + path + "' CSV";
+            "SELECT \"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"digest\", \"delete_indicator\" " +
+            " FROM READ_CSV('" + path + "', COLUMNS = {'id':'INTEGER', 'name':'VARCHAR', 'income':'BIGINT', 'start_time':'TIMESTAMP', 'expiry_date':'DATE', 'digest':'VARCHAR', 'delete_indicator':'VARCHAR'}, AUTO_DETECT = FALSE)";
         duckDBSink.executeStatement(loadSql);
     }
 
