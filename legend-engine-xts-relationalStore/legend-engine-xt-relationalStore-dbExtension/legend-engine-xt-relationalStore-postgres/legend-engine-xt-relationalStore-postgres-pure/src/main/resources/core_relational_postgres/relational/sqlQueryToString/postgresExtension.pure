@@ -211,7 +211,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
-    dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
+    dynaFnToSql('today',                  $allStates,            ^ToSql(format='CURRENT_DATE')),
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double precision)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),

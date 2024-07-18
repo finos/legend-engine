@@ -242,7 +242,11 @@ function meta::pure::router::routing::routeFunctionExpressionColumn(c:Column<Nil
 function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
   if ($fe.parametersValues->isEmpty(),
-      | $state,
+      | if ($f->instanceOf(NativeFunction) || $f->shouldStop($extensions),
+          | $state,
+          | assert($f->cast(@FunctionDefinition<Any>).expressionSequence->size() <= 1, | 'Function ' +$f->cast(@FunctionDefinition<Any>)->elementToPath() + ' is not yet supported as functions with more than one expression can not be routed');
+            ^$state(value=$f->cast(@FunctionDefinition<Any>).expressionSequence->at(0))->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug);
+        );,
       | // First pass (everything but lambda, AggregateValue & ColumnSpecification)
         let firstPassResults  = processCollection($state,
                                                   $fe.parametersValues->evaluateAndDeactivate(),
@@ -545,17 +549,20 @@ function meta::pure::router::routing::processColumnSpecification(v:ValueSpecific
 function meta::pure::router::routing::processColSpecParams(fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Any[*]
 {
    let routedFe  = ^$state(value=$fe)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug);
-   let parametersValues = $routedFe.value->evaluateAndDeactivate()->cast(@FunctionExpression)->toOne().parametersValues->map(x | $x->byPassRouterInfo()->match([
-      i: InstanceValue[1] | $i.values->match([
-        // workaround a compile execution behavior that check for open variables and cause expressions to fail reactivation (does not happen on interpreted)
-        l: LambdaFunction<Any>[1] | ^$i(values = ^$l(openVariables = [])),
-        a: Any[*] | $i
-      ]),
-      a: ValueSpecification[*] | $a
+   let newFe = $routedFe.value->evaluateAndDeactivate()->match([i: InstanceValue[1] | $i.values, a: Any[1] | $a])->cast(@FunctionExpression);
+   $newFe->map(fe|
+      let parametersValues = $fe.parametersValues->map(x | $x->byPassRouterInfo()->match([
+        i: InstanceValue[1] | $i.values->match([
+          // workaround a compile execution behavior that check for open variables and cause expressions to fail reactivation (does not happen on interpreted)
+          l: LambdaFunction<Any>[1] | ^$i(values = ^$l(openVariables = [])),
+          a: Any[*] | $i
+        ]),
+        a: ValueSpecification[*] | $a
     ]))->cast(@ValueSpecification);
 
-   let nfe = ^$fe(parametersValues = $parametersValues);
-   $nfe->reactivate($inScopeVars)->evaluateAndDeactivate()->cast(@ColumnSpecification<Any>);
+      let nfe = ^$fe(parametersValues = $parametersValues);
+      $nfe->reactivate($inScopeVars)->evaluateAndDeactivate()->cast(@ColumnSpecification<Any>);
+   );
 }
 
 

@@ -117,7 +117,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
 function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::testToSqlGenerationFirstDayOfThisYear_MemSQL():Boolean[1]
 {
    let expected = [
-      pair(DatabaseType.MemSQL, 'select subdate(curdate(), INTERVAL dayofyear(current_date()) - 1 DAY) as `date` from tradeTable as `root`')
+      pair(DatabaseType.MemSQL, 'select subdate(curdate(), INTERVAL dayofyear(curdate()) - 1 DAY) as `date` from tradeTable as `root`')
    ];
 
    $expected->map(p|
@@ -137,7 +137,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
 function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::testToSqlGenerationFirstDayOfThisQuarter_MemSQL():Boolean[1]
 {
    let expected = [
-      pair(DatabaseType.MemSQL, 'select adddate(subdate(curdate(), INTERVAL dayofyear(current_date()) - 1 DAY), INTERVAL (quarter(curdate()) -1) QUARTER) as `date` from tradeTable as `root`')
+      pair(DatabaseType.MemSQL, 'select adddate(subdate(curdate(), INTERVAL dayofyear(curdate()) - 1 DAY), INTERVAL (quarter(date(curdate())) -1) QUARTER) as `date` from tradeTable as `root`')
    ];
 
    $expected->map(p|

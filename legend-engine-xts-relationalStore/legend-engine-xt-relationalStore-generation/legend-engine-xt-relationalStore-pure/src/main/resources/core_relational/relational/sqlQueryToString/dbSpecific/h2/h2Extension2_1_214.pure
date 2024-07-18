@@ -203,7 +203,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='dateadd(DAY, -(dayofmonth(%s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
     dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='dateadd(MONTH, 3 * quarter(%s) - 3, dateadd(DAY, -(dayofyear(%s) - 1), %s))', transform={p:String[1] | $p->repeat(3)})),
     dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='dateadd(DAY, -(dayofmonth(current_date()) - 1), current_date())')),
-    dynaFnToSql('firstDayOfThisQuarter',  $allStates,            ^ToSql(format='dateadd(MONTH, 3 * quarter(current_date) - 3, dateadd(DAY, -(dayofyear(current_date()) - 1), current_date()))')),
+    dynaFnToSql('firstDayOfThisQuarter',  $allStates,            ^ToSql(format='dateadd(MONTH, 3 * quarter(current_date()) - 3, dateadd(DAY, -(dayofyear(current_date()) - 1), current_date()))')),
     dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='dateadd(DAY, -(dayofyear(current_date()) - 1), current_date())')),
     dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='dateadd(DAY, -(mod(dayofweek(%s)+5, 7)), %s)', transform={p:String[1] | $p->repeat(2)})),
     dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='dateadd(DAY, -(dayofyear(%s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
