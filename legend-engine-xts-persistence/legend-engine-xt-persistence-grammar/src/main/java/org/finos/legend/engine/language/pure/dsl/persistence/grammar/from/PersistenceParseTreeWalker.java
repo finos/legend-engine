@@ -27,6 +27,8 @@ import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.DatasetType;
@@ -190,7 +192,11 @@ public class PersistenceParseTreeWalker
 
         // service
         PersistenceParserGrammar.ServiceContext serviceContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.service(), "service", persistence.sourceInformation);
-        persistence.service = PureGrammarParserUtility.fromQualifiedName(serviceContext.qualifiedName().packagePath() == null ? Collections.emptyList() : serviceContext.qualifiedName().packagePath().identifier(), serviceContext.qualifiedName().identifier());
+        persistence.service = new PackageableElementPointer(
+                PackageableElementType.SERVICE,
+                PureGrammarParserUtility.fromQualifiedName(serviceContext.qualifiedName().packagePath() == null ? Collections.emptyList() : serviceContext.qualifiedName().packagePath().identifier(), serviceContext.qualifiedName().identifier())
+        );
+        persistence.service.sourceInformation = walkerSourceInformation.getSourceInformation(serviceContext);
 
         // service output targets (optional)
         PersistenceParserGrammar.ServiceOutputTargetsContext serviceOutputTargetsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceOutputTargets(), "serviceOutputTargets", persistence.sourceInformation);
@@ -943,7 +949,11 @@ public class PersistenceParseTreeWalker
 
         // database
         PersistenceParserGrammar.SinkDatabaseContext sinkDatabaseContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.sinkDatabase(), "database", sink.sourceInformation);
-        sink.database = visitDatabasePointer(sinkDatabaseContext, sink.sourceInformation);
+        sink.database = new PackageableElementPointer(
+                PackageableElementType.STORE,
+                visitDatabasePointer(sinkDatabaseContext, sink.sourceInformation)
+        );
+        sink.database.sourceInformation = walkerSourceInformation.getSourceInformation(sinkDatabaseContext);
 
         return sink;
     }
@@ -955,7 +965,8 @@ public class PersistenceParseTreeWalker
 
         // binding
         PersistenceParserGrammar.SinkBindingContext sinkBindingContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.sinkBinding(), "binding", sink.sourceInformation);
-        sink.binding = visitBindingPointer(sinkBindingContext, sink.sourceInformation);
+        sink.binding = new PackageableElementPointer(visitBindingPointer(sinkBindingContext, sink.sourceInformation));
+        sink.binding.sourceInformation = walkerSourceInformation.getSourceInformation(sinkBindingContext);
 
         return sink;
     }
