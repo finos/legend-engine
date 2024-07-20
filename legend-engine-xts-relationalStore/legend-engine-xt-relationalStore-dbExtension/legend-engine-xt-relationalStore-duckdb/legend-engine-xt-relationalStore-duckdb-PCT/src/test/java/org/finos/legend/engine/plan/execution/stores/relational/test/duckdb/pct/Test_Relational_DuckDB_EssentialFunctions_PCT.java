@@ -220,7 +220,7 @@ public class Test_Relational_DuckDB_EssentialFunctions_PCT extends PCTReportConf
             // Rem
             one("meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"mod(%s,%s)\"\""),
             one("meta::pure::functions::math::tests::rem::testRemInEval_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"mod(%s,%s)\"\""),
-            one("meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_", "\"\nexpected: 0.14D\nactual:   0.14000000000000012\""),
+            one("meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_", "\"\nexpected: 0.14D\nactual:   0.14\""),
 
             // Round
             one("meta::pure::functions::math::tests::round::testDecimalRound_Function_1__Boolean_1_", "\"[unsupported-api] The function 'round' (state: [Select, false]) is not supported yet\""),
