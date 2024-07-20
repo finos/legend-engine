@@ -27,8 +27,8 @@ import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransforme
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
-import org.finos.legend.engine.repl.autocomplete.CompletionItem;
-import org.finos.legend.engine.repl.autocomplete.CompletionResult;
+import org.finos.legend.engine.language.pure.code.completer.CompletionItem;
+import org.finos.legend.engine.language.pure.code.completer.CompletionResult;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.core.Helpers;
@@ -83,7 +83,7 @@ public class Execute implements Command
         try
         {
             MutableList<Candidate> list = Lists.mutable.empty();
-            CompletionResult result = new org.finos.legend.engine.repl.autocomplete.Completer(this.client.getModelState().getText(), this.client.getCompleterExtensions()).complete(inScope);
+            CompletionResult result = new org.finos.legend.engine.language.pure.code.completer.Completer(this.client.getModelState().getText(), this.client.getCompleterExtensions()).complete(inScope);
             if (result.getEngineException() == null)
             {
                 list.addAll(result.getCompletion().collect(this::buildCandidate));

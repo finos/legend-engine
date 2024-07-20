@@ -19,7 +19,7 @@ import org.eclipse.collections.impl.map.mutable.MapAdapter;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.repl.autocomplete.CompletionResult;
+import org.finos.legend.engine.language.pure.code.completer.CompletionResult;
 import org.finos.legend.engine.repl.relational.server.DataCubeHelpers;
 import org.finos.legend.engine.repl.relational.server.model.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;

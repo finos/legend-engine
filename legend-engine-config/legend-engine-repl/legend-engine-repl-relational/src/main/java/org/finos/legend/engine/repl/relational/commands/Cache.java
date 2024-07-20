@@ -35,7 +35,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecut
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
-import org.finos.legend.engine.repl.autocomplete.CompletionResult;
+import org.finos.legend.engine.language.pure.code.completer.CompletionResult;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.core.Helpers;
@@ -160,7 +160,7 @@ public class Cache implements Command
                     String expression = argsString.substring(argsString.indexOf(" ") + 1);
 
                     MutableList<Candidate> list = Lists.mutable.empty();
-                    CompletionResult result = new org.finos.legend.engine.repl.autocomplete.Completer(this.client.getModelState().getText(), this.client.getCompleterExtensions()).complete(expression);
+                    CompletionResult result = new org.finos.legend.engine.language.pure.code.completer.Completer(this.client.getModelState().getText(), this.client.getCompleterExtensions()).complete(expression);
                     if (result.getEngineException() == null)
                     {
                         list.addAll(result.getCompletion().collect(c -> new Candidate(c.getCompletion(), c.getDisplay(), (String) null, (String) null, (String) null, (String) null, false, 0)));

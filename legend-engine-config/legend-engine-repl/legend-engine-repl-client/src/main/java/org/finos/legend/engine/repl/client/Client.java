@@ -18,7 +18,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.block.predicate.checked.CheckedPredicate;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
-import org.finos.legend.engine.repl.autocomplete.CompleterExtension;
+import org.finos.legend.engine.language.pure.code.completer.CompleterExtension;
 import org.finos.legend.engine.repl.client.jline3.JLine3Completer;
 import org.finos.legend.engine.repl.client.jline3.JLine3Highlighter;
 import org.finos.legend.engine.repl.client.jline3.JLine3Parser;

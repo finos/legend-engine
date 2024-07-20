@@ -66,6 +66,8 @@ import org.finos.legend.engine.generation.artifact.api.ArtifactGenerationExtensi
 import org.finos.legend.engine.language.dataquality.api.DataQualityExecute;
 import org.finos.legend.engine.language.hostedService.api.HostedServiceService;
 import org.finos.legend.engine.language.memsql.api.MemSqlFunctionService;
+import org.finos.legend.engine.language.pure.code.completer.CompleterExtension;
+import org.finos.legend.engine.language.pure.code.completer.api.CompleteCode;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
@@ -166,6 +168,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class Server<T extends ServerConfiguration> extends Application<T>
 {
@@ -360,6 +364,9 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         // Compilation
         environment.jersey().register((DynamicFeature) (resourceInfo, context) -> context.register(new InflateInterceptor()));
         environment.jersey().register(new Compile(modelManager));
+
+        // Code Completion
+        environment.jersey().register(new CompleteCode(modelManager, StreamSupport.stream(ServiceLoader.load(CompleterExtension.class).spliterator(), false).collect(Collectors.toList())));
 
         // Generation and Import
         MutableList<GenerationExtension> genExtensions = Iterate.addAllTo(ServiceLoader.load(GenerationExtension.class), Lists.mutable.empty());

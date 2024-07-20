@@ -33,5 +33,6 @@
         <module>legend-engine-xt-relationalStore-protocol</module>
         <module>legend-engine-xt-relationalStore-pure</module>
         <module>legend-engine-xt-relationalStore-testDataGeneration-http-api</module>
+        <module>legend-engine-xt-relationalStore-code-completer</module>
     </modules>
 </project>

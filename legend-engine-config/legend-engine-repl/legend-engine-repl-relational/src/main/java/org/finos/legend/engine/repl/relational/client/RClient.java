@@ -18,7 +18,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.relational.RelationalReplExtension;
-import org.finos.legend.engine.repl.relational.autocomplete.RelationalCompleterExtension;
+import org.finos.legend.engine.language.pure.code.completer.RelationalCompleterExtension;
 
 public class RClient
 {

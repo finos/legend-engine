@@ -38,5 +38,7 @@
         <module>legend-engine-protocol</module>
         <module>legend-engine-protocol-http-api</module>
         <module>legend-engine-protocol-pure</module>
+        <module>legend-engine-language-pure-code-completer</module>
+        <module>legend-engine-language-pure-code-completer-http-api</module>
     </modules>
 </project>

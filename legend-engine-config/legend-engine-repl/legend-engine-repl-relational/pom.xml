@@ -85,10 +85,6 @@
 
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m4</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
         </dependency>
 
@@ -114,6 +110,13 @@
         </dependency>
         <!-- Pure Compiler -->
 
+        <!-- Pure Code Completer -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-code-completer</artifactId>
+        </dependency>
+        <!-- Pure Code Completer -->
+
         <!-- Pure Plan Generation / Execution -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -131,14 +134,6 @@
 
         <!-- Relational -->
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-dsl-store-pure</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-store-relational-pure</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-executionPlan-connection</artifactId>
         </dependency>
@@ -152,8 +147,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
-            <scope>runtime</scope>
+            <artifactId>legend-engine-xt-relationalStore-code-completer</artifactId>
         </dependency>
         <!-- Relational -->
 

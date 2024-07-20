@@ -38,10 +38,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.relationType.RelationType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
-import org.finos.legend.engine.repl.autocomplete.Completer;
-import org.finos.legend.engine.repl.autocomplete.CompletionResult;
+import org.finos.legend.engine.language.pure.code.completer.Completer;
+import org.finos.legend.engine.language.pure.code.completer.CompletionResult;
 import org.finos.legend.engine.repl.core.legend.LegendInterface;
-import org.finos.legend.engine.repl.relational.autocomplete.RelationalCompleterExtension;
+import org.finos.legend.engine.language.pure.code.completer.RelationalCompleterExtension;
 import org.finos.legend.engine.repl.relational.server.model.DataCubeExecutionResult;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -127,7 +127,7 @@ public class DataCubeHelpers
                 String existingCode = func.body.get(0).accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build());
                 queryCode = existingCode + code;
             }
-            CompletionResult result = new Completer(graphCode, Lists.mutable.with(new RelationalCompleterExtension()), legendInterface).complete(queryCode);
+            CompletionResult result = new Completer(graphCode, Lists.mutable.with(new RelationalCompleterExtension()), legendInterface::compile).complete(queryCode);
             if (result.getEngineException() != null)
             {
                 return new CompletionResult(Lists.mutable.empty());
