@@ -17,6 +17,7 @@ package org.finos.legend.engine.persistence.components.relational.api;
 import org.immutables.value.Value;
 
 import java.util.List;
+import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(
@@ -28,6 +29,10 @@ import java.util.List;
 )
 public abstract class DatasetIngestResultsAbstract
 {
+    public abstract Optional<String> ingestRequestId();
+
+    public abstract int batchId();
+
     public abstract String dataset();
 
     public abstract List<IngestStageResult> ingestStageResults();

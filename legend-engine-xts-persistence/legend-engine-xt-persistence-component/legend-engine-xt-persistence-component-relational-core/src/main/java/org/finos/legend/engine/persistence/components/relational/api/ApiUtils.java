@@ -56,6 +56,7 @@ import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -217,6 +218,45 @@ public class ApiUtils
         return lockInfoDataset;
     }
 
+    public static List<IngestorResult> verifyIfRequestAlreadyProcessedPreviously(SchemaEvolutionResult schemaEvolutionResult, Datasets enrichedDatasets,
+                                                                                 Optional<String> ingestRequestId, Transformer<SqlGen, SqlPlan> transformer,
+                                                                                 Executor<SqlGen, TabularData, SqlPlan> executor, String batchSuccessStatusValue)
+    {
+        LOGGER.info("Perform Idempotency Check");
+        List<IngestorResult> result = new ArrayList<>();
+
+        LogicalPlan logicalPlan = LogicalPlanFactory.getLogicalPlanForBatchMetaRowsWithExistingIngestRequestId(
+            enrichedDatasets.metadataDataset().orElseThrow(IllegalStateException::new),
+            ingestRequestId.orElseThrow(IllegalStateException::new),
+            enrichedDatasets.mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new));
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<TabularData> tabularDataList = executor.executePhysicalPlanAndGetResults(physicalPlan);
+        MetadataDataset metadataDataset = enrichedDatasets.metadataDataset().get();
+        if (!tabularDataList.isEmpty())
+        {
+            List<Map<String, Object>> metadataResults = tabularDataList.get(0).getData();
+            for (Map<String, Object> metadata: metadataResults)
+            {
+                Timestamp ingestionTimestampUTC = (Timestamp) metadata.get(metadataDataset.batchStartTimeField());
+                String batchStatus = String.valueOf(metadata.get(metadataDataset.batchStatusField()));
+                batchStatus = batchStatus.equalsIgnoreCase(batchSuccessStatusValue)  ? IngestStatus.SUCCEEDED.name() : batchStatus;
+                IngestorResult ingestorResult = IngestorResult.builder()
+                    .batchId((int) metadata.get(metadataDataset.tableBatchIdField()))
+                    .putAllStatisticByName(readValueAsMap(String.valueOf(metadata.get(metadataDataset.batchStatisticsField()))))
+                    .status(IngestStatus.valueOf(batchStatus))
+                    .updatedDatasets(enrichedDatasets)
+                    .schemaEvolutionSql(schemaEvolutionResult.schemaEvolutionSql())
+                    .ingestionTimestampUTC(ingestionTimestampUTC.toLocalDateTime().format(DATE_TIME_FORMATTER))
+                    .previouslyProcessed(true)
+                    .build();
+                result.add(ingestorResult);
+            }
+        }
+
+        return result;
+    }
+
+
     public static List<IngestorResult> performIngestion(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Planner planner, Executor<SqlGen,
         TabularData, SqlPlan> executor, GeneratorResult generatorResult, List<DataSplitRange> dataSplitRanges, IngestMode ingestMode,
         SchemaEvolutionResult schemaEvolutionResult, Map<String, Object> additionalMetadata, Clock executionTimestampClock)
@@ -309,6 +349,7 @@ public class ApiUtils
         return results;
     }
 
+    // TODO: This method needs to be changed to take in a batch ID for multi dataset
     private static Map<String, PlaceholderValue> extractPlaceHolderKeyValues(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
                                                                       Planner planner, Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode,
                                                                       Optional<DataSplitRange> dataSplitRange, Map<String, Object> additionalMetadata, Clock executionTimestampClock)
@@ -536,7 +577,7 @@ public class ApiUtils
         }
     }
 
-    public static Optional<Long> retrieveValueAsLong(Object obj)
+    private static Optional<Long> retrieveValueAsLong(Object obj)
     {
         if (obj instanceof Integer)
         {
@@ -547,6 +588,18 @@ public class ApiUtils
             return Optional.of((Long) obj);
         }
         return Optional.empty();
+    }
+
+    private static Map<StatisticName, Object> readValueAsMap(String batchStatistics)
+    {
+        try
+        {
+            return new ObjectMapper().readValue(batchStatistics, new TypeReference<HashMap<StatisticName, Object>>() {});
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     public static Map<String, Object> getFirstRowForFirstResult(List<TabularData> tabularData)

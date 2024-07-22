@@ -14,7 +14,10 @@
 
 package org.finos.legend.engine.persistence.components.relational.api;
 
+import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.immutables.value.Value;
+
+import java.util.Map;
 
 @Value.Immutable
 @Value.Style(
@@ -26,14 +29,11 @@ import org.immutables.value.Value;
 )
 public abstract class IngestStageResultAbstract
 {
-    /*
-    ingest request id
-    batch id
-    start time
-    end time
-    batch stats
+    public abstract String ingestionStartTimestampUTC();
 
-    // TBD: In case of Failure , should we also create Result or throw exception like now
+    public abstract String ingestionEndTimestampUTC();
 
-    */
+    public abstract Map<StatisticName, Object> statisticByName();
+
+    // TODO : In case of Failure , should we also create Result or throw exception like now
 }

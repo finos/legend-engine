@@ -15,8 +15,6 @@
 package org.finos.legend.engine.persistence.components.relational.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.persistence.components.common.*;
 import org.finos.legend.engine.persistence.components.executor.DigestInfo;
 import org.finos.legend.engine.persistence.components.executor.Executor;
@@ -52,12 +50,15 @@ import org.immutables.value.Value.Style;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.*;
+import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.ADDITIONAL_METADATA_KEY_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.ADDITIONAL_METADATA_VALUE_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.BATCH_END_TS_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.BATCH_ID_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.BATCH_START_TS_PATTERN;
 import static org.finos.legend.engine.persistence.components.transformer.Transformer.TransformOptionsAbstract.DATE_TIME_FORMATTER;
 
 @Immutable
@@ -506,39 +507,11 @@ public abstract class RelationalIngestorAbstract
 
     private List<IngestorResult> verifyIfRequestAlreadyProcessedPreviously(SchemaEvolutionResult schemaEvolutionResult)
     {
-        List<IngestorResult> result = new ArrayList<>();
         if (enableConcurrentSafety() && enableIdempotencyCheck())
         {
-            LOGGER.info("Perform Idempotency Check");
-            LogicalPlan logicalPlan = LogicalPlanFactory.getLogicalPlanForBatchMetaRowsWithExistingIngestRequestId(
-                    enrichedDatasets.metadataDataset().orElseThrow(IllegalStateException::new),
-                    ingestRequestId().orElseThrow(IllegalStateException::new),
-                    enrichedDatasets.mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new));
-            SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
-            List<TabularData> tabularDataList = executor.executePhysicalPlanAndGetResults(physicalPlan);
-            MetadataDataset metadataDataset = enrichedDatasets.metadataDataset().get();
-            if (!tabularDataList.isEmpty())
-            {
-                List<Map<String, Object>> metadataResults = tabularDataList.get(0).getData();
-                for (Map<String, Object> metadata: metadataResults)
-                {
-                    Timestamp ingestionTimestampUTC = (Timestamp) metadata.get(metadataDataset.batchStartTimeField());
-                    String batchStatus = String.valueOf(metadata.get(metadataDataset.batchStatusField()));
-                    batchStatus = batchStatus.equalsIgnoreCase(batchSuccessStatusValue())  ? IngestStatus.SUCCEEDED.name() : batchStatus;
-                    IngestorResult ingestorResult = IngestorResult.builder()
-                            .batchId((int) metadata.get(metadataDataset.tableBatchIdField()))
-                            .putAllStatisticByName(readValueAsMap(String.valueOf(metadata.get(metadataDataset.batchStatisticsField()))))
-                            .status(IngestStatus.valueOf(batchStatus))
-                            .updatedDatasets(enrichedDatasets)
-                            .schemaEvolutionSql(schemaEvolutionResult.schemaEvolutionSql())
-                            .ingestionTimestampUTC(ingestionTimestampUTC.toLocalDateTime().format(DATE_TIME_FORMATTER))
-                            .previouslyProcessed(true)
-                            .build();
-                    result.add(ingestorResult);
-                }
-            }
+            return ApiUtils.verifyIfRequestAlreadyProcessedPreviously(schemaEvolutionResult, enrichedDatasets, ingestRequestId(), transformer, executor, batchSuccessStatusValue());
         }
-        return result;
+        return new ArrayList<>();
     }
 
     private void postCleanup()
@@ -555,12 +528,12 @@ public abstract class RelationalIngestorAbstract
         if (enrichedIngestMode instanceof BulkLoad)
         {
             LOGGER.info("Starting Bulk Load");
-            return performBulkLoad(enrichedDatasets, transformer, planner, executor, generatorResult, enrichedIngestMode, schemaEvolutionResult, additionalMetadata(), executionTimestampClock(), relationalSink());
+            return ApiUtils.performBulkLoad(enrichedDatasets, transformer, planner, executor, generatorResult, enrichedIngestMode, schemaEvolutionResult, additionalMetadata(), executionTimestampClock(), relationalSink());
         }
         else
         {
             LOGGER.info(String.format("Starting Ingestion with IngestMode: {%s}", enrichedIngestMode.getClass().getSimpleName()));
-            return performIngestion(enrichedDatasets, transformer, planner, executor, generatorResult, dataSplitRanges, enrichedIngestMode, schemaEvolutionResult, additionalMetadata(), executionTimestampClock());
+            return ApiUtils.performIngestion(enrichedDatasets, transformer, planner, executor, generatorResult, dataSplitRanges, enrichedIngestMode, schemaEvolutionResult, additionalMetadata(), executionTimestampClock());
         }
     }
 
@@ -661,7 +634,7 @@ public abstract class RelationalIngestorAbstract
         // 4. Check if staging dataset is empty TODO: DONE
         if (ingestMode().accept(IngestModeVisitors.NEED_TO_CHECK_STAGING_EMPTY) && executor.datasetExists(enrichedDatasets.stagingDataset()))
         {
-            boolean isStagingDatasetEmpty = datasetEmpty(enrichedDatasets.stagingDataset(), transformer, executor);
+            boolean isStagingDatasetEmpty = ApiUtils.datasetEmpty(enrichedDatasets.stagingDataset(), transformer, executor);
             LOGGER.info(String.format("Checking if staging dataset is empty : {%s}", isStagingDatasetEmpty));
             resourcesBuilder.stagingDataSetEmpty(isStagingDatasetEmpty);
         }
@@ -763,17 +736,5 @@ public abstract class RelationalIngestorAbstract
         resourcesBuilder.externalDatasetImported(true);
 
         return updatedDatasets;
-    }
-
-    private Map<StatisticName, Object> readValueAsMap(String batchStatistics)
-    {
-        try
-        {
-            return new ObjectMapper().readValue(batchStatistics, new TypeReference<HashMap<StatisticName, Object>>() {});
-        }
-        catch (JsonProcessingException e)
-        {
-            throw new RuntimeException(e);
-        }
     }
 }

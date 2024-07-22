@@ -29,7 +29,6 @@ import org.immutables.value.Value;
 )
 public abstract class IngestStageMetadataAbstract
 {
-    // TODO: review if datasets and ingestMode are really needed
     public abstract Datasets datasets();
 
     public abstract IngestMode ingestMode();
