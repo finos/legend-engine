@@ -15,15 +15,24 @@
 package org.finos.legend.engine.repl.dataCube.commands;
 
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.dataCube.server.REPLServer;
+import org.finos.legend.engine.repl.relational.shared.ConnectionHelper;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 
+import java.sql.Connection;
+
 import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_SIGNATURE;
+import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
 
 public class DataCubeTable implements Command
 {
@@ -82,6 +91,28 @@ public class DataCubeTable implements Command
     @Override
     public MutableList<Candidate> complete(String inScope, LineReader lineReader, ParsedLine parsedLine)
     {
+        if (inScope.startsWith("datacube table "))
+        {
+            MutableList<String> words = Lists.mutable.withAll(parsedLine.words()).drop(3);
+            {
+                String start = words.subList(words.indexOf(" ") + 1, words.size()).get(0);
+                PureModelContextData d = this.client.getModelState().parse();
+                MutableList<PackageableConnection> foundConnections = ListIterate.select(d.getElementsOfType(PackageableConnection.class), c -> !c._package.equals("__internal__"))
+                        .select(c -> PureGrammarComposerUtility.convertPath(c.getPath()).equals(DataCube.getLocalConnectionPath()));
+                if (!foundConnections.isEmpty() && foundConnections.getFirst().connectionValue instanceof DatabaseConnection)
+                {
+                    try (Connection connection = ConnectionHelper.getConnection((DatabaseConnection) foundConnections.getFirst().connectionValue, client.getPlanExecutor()))
+                    {
+                        return getTables(connection).select(c -> c.name.startsWith(start)).collect(c -> c.name).collect(Candidate::new);
+                    }
+                    catch (Exception e)
+                    {
+                        // do nothing
+                    }
+                }
+                return null;
+            }
+        }
         return null;
     }
 }
