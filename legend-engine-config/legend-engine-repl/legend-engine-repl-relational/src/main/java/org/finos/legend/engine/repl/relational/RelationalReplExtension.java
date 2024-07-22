@@ -28,10 +28,12 @@ import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.core.ReplExtension;
 import org.finos.legend.engine.repl.core.commands.Execute;
-import org.finos.legend.engine.repl.relational.commands.*;
+import org.finos.legend.engine.repl.relational.commands.Cache;
+import org.finos.legend.engine.repl.relational.commands.DB;
+import org.finos.legend.engine.repl.relational.commands.Drop;
+import org.finos.legend.engine.repl.relational.commands.Load;
 import org.finos.legend.engine.repl.relational.local.LocalConnectionManagement;
 import org.finos.legend.engine.repl.relational.local.LocalConnectionType;
-import org.finos.legend.engine.repl.relational.server.REPLServer;
 
 import java.awt.*;
 import java.io.*;
@@ -46,7 +48,6 @@ import static org.jline.jansi.Ansi.ansi;
 public class RelationalReplExtension implements ReplExtension
 {
     private Client client;
-    public REPLServer REPLServer;
     public static String DUCKDB_LOCAL_CONNECTION_BASE_NAME = "DuckDuck";
     public static String CACHED_SERIALIZED_RESULTS_DIR = "relational/cachedResults";
 
@@ -87,8 +88,6 @@ public class RelationalReplExtension implements ReplExtension
         try
         {
             flushCachedResults(this.client);
-            this.REPLServer = new REPLServer(this.client);
-            this.REPLServer.initialize();
         }
         catch (Exception e)
         {
@@ -130,18 +129,11 @@ public class RelationalReplExtension implements ReplExtension
     @Override
     public MutableList<Command> getExtraCommands()
     {
-        DataCube dataCubeCommand = new DataCube(this.client);
         return Lists.mutable.with(
                 new DB(this.client, this),
                 new Load(this.client, this),
                 new Drop(this.client),
-                new Show(this.client, this.REPLServer),
-                new Cache(this.client, this.client.getPlanExecutor()),
-                new DataCubeCache(dataCubeCommand, this.client, this.REPLServer),
-                new DataCubeTable(dataCubeCommand, this.client, this.REPLServer),
-                new DataCubeCsv(dataCubeCommand, this.client, this.REPLServer),
-                new DataCubeRun(dataCubeCommand, this.client, this.REPLServer, this.client.getPlanExecutor()),
-                dataCubeCommand // NOTE: this has to be the last datacube command to ensure autocomplete works properly
+                new Cache(this.client, this.client.getPlanExecutor())
         );
     }
 

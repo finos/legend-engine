@@ -50,7 +50,7 @@ The exact command to run it can be copied from the command run by IntelliJ (and 
 
 ```shell
 # NOTE: this command has a very long classpath!
-java -Dfile.encoding=UTF-8 -classpath ... -Xdebug -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5005 org.finos.legend.engine.repl.relational.client.RClient
+java -Dfile.encoding=UTF-8 -classpath ... -Xdebug -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5005 org.finos.legend.engine.repl.dataCube.client.DataCubeClient
 ```
 
 Then, in IntelliJ, start the Remote JVM Debug session with the specified port (5005 like in command above).
@@ -68,5 +68,5 @@ Or if in a terminal
 
 ```shell
 # NOTE: this command has a very long classpath!
-java -Dfile.encoding=UTF-8 -classpath ... -Dlegend.repl.devPort=9006 -Dlegend.repl.devWebAppBaseUrl=http://localhost:9005 org.finos.legend.engine.repl.relational.client.RClient
+java -Dfile.encoding=UTF-8 -classpath ... -Dlegend.repl.devPort=9006 -Dlegend.repl.devWebAppBaseUrl=http://localhost:9005 org.finos.legend.engine.repl.dataCube.client.DataCubeClient
 ```
