@@ -2813,9 +2813,9 @@ function meta::relational::functions::pureToSqlQuery::processTdsWindowColumn(f:F
    let topQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
    let selectQuery = $topQuery.select->cast(@TdsSelectSqlQuery);
    
-   let noSubSelect = ($selectQuery.distinct->isEmpty() || !$selectQuery.distinct->toOne());
+   let shouldIsolateDistinct = $selectQuery.distinct->defaultIfEmpty(false)->toOne();
 
-   let mainQuery = if($noSubSelect, |$topQuery, |$selectQuery->isolateTdsSelect($topQuery, $extensions))->cast(@SelectWithCursor);
+   let mainQuery = if($shouldIsolateDistinct, |$selectQuery->isolateTdsSelect($topQuery, $extensions), |$topQuery)->cast(@SelectWithCursor);
    let mainSelect = $mainQuery.select->cast(@TdsSelectSqlQuery);
 
    let columnName = $f.parametersValues->last()->toOne()->cast(@InstanceValue).values->at(0)->cast(@String);
