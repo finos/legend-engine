@@ -74,6 +74,86 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>module-info.class</exclude>
+                                        <exclude>META-INF/**/module-info.class</exclude>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>org.finos.legend.engine.repl.dataCube.client.DataCubeClient</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>${maven.enforcer.requireJavaVersion}</version>
+                                </requireJavaVersion>
+                                <requireMavenVersion>
+                                    <version>${maven.enforcer.requireMavenVersion}</version>
+                                </requireMavenVersion>
+                                <dependencyConvergence />
+                                <bannedDependencies>
+                                    <excludes>
+                                        <!-- Default -->
+                                        <exclude>log4j:*:*:*:compile</exclude>
+                                        <exclude>log4j:*:*:*:runtime</exclude>
+                                        <exclude>org.slf4j:*:*:*:compile</exclude>
+                                        <exclude>org.slf4j:*:*:*:runtime</exclude>
+                                        <exclude>commons-logging</exclude>
+                                        <exclude>javax.mail</exclude>
+                                        <!-- Default -->
+                                    </excludes>
+                                    <includes>
+                                        <!--only the specific included logging jars are allowed -->
+                                        <include>org.slf4j:slf4j-nop:${slf4j.version}</include> <!-- include this since there is no need for logging in REPL -->
+                                        <include>org.slf4j:jul-to-slf4j:${slf4j.version}</include>
+                                        <include>org.slf4j:slf4j-api:${slf4j.version}</include>
+                                        <include>org.slf4j:jcl-over-slf4j:${slf4j.version}</include>
+                                        <include>org.slf4j:slf4j-jdk14:${slf4j.version}</include>
+                                        <include>org.slf4j:slf4j-log4j12:${slf4j.version}</include>
+                                        <include>org.slf4j:slf4j-ext:${slf4j.version}</include>
+                                        <include>log4j:log4j:${log4j.version}</include>
+                                        <include>log4j:apache-log4j-extras:${log4j.version}</include>
+                                    </includes>
+                                </bannedDependencies>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -225,6 +305,13 @@
             <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <scope>runtime</scope>
+            <version>${slf4j.version}</version>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -233,14 +320,6 @@
             <properties>
                 <skip.yarn>true</skip.yarn>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-nop</artifactId>
-                    <scope>runtime</scope>
-                    <version>${slf4j.version}</version>
-                </dependency>
-            </dependencies>
             <build>
                 <plugins>
                     <plugin>
@@ -275,6 +354,7 @@
                                 <configuration>
                                     <shadedArtifactAttached>true</shadedArtifactAttached>
                                     <createDependencyReducedPom>false</createDependencyReducedPom>
+                                    <finalName>legend-engine-repl-data-cube-${project.version}-DEV</finalName>
                                     <filters>
                                         <filter>
                                             <artifact>*:*</artifact>
@@ -290,56 +370,9 @@
                                     <transformers>
                                         <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
                                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                            <mainClass>org.finos.legend.engine.repl.relational.client.RClient</mainClass>
+                                            <mainClass>org.finos.legend.engine.repl.dataCube.client.DataCubeClient</mainClass>
                                         </transformer>
                                     </transformers>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-enforcer-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>default</id>
-                                <goals>
-                                    <goal>enforce</goal>
-                                </goals>
-                                <configuration>
-                                    <rules>
-                                        <requireJavaVersion>
-                                            <version>${maven.enforcer.requireJavaVersion}</version>
-                                        </requireJavaVersion>
-                                        <requireMavenVersion>
-                                            <version>${maven.enforcer.requireMavenVersion}</version>
-                                        </requireMavenVersion>
-                                        <dependencyConvergence />
-                                        <bannedDependencies>
-                                            <excludes>
-                                                <!-- Default -->
-                                                <exclude>log4j:*:*:*:compile</exclude>
-                                                <exclude>log4j:*:*:*:runtime</exclude>
-                                                <exclude>org.slf4j:*:*:*:compile</exclude>
-                                                <exclude>org.slf4j:*:*:*:runtime</exclude>
-                                                <exclude>commons-logging</exclude>
-                                                <exclude>javax.mail</exclude>
-                                                <!-- Default -->
-                                            </excludes>
-                                            <includes>
-                                                <!--only the specific included logging jars are allowed -->
-                                                <include>org.slf4j:slf4j-nop:${slf4j.version}</include> <!-- include this since there is no need for logging in REPL -->
-                                                <include>org.slf4j:jul-to-slf4j:${slf4j.version}</include>
-                                                <include>org.slf4j:slf4j-api:${slf4j.version}</include>
-                                                <include>org.slf4j:jcl-over-slf4j:${slf4j.version}</include>
-                                                <include>org.slf4j:slf4j-jdk14:${slf4j.version}</include>
-                                                <include>org.slf4j:slf4j-log4j12:${slf4j.version}</include>
-                                                <include>org.slf4j:slf4j-ext:${slf4j.version}</include>
-                                                <include>log4j:log4j:${log4j.version}</include>
-                                                <include>log4j:apache-log4j-extras:${log4j.version}</include>
-                                            </includes>
-                                        </bannedDependencies>
-                                    </rules>
                                 </configuration>
                             </execution>
                         </executions>
