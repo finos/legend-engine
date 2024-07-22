@@ -48,6 +48,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.ADDITIONAL_METADATA_KEY_PATTERN;
 import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.ADDITIONAL_METADATA_VALUE_PATTERN;
@@ -319,9 +320,13 @@ public abstract class RelationalMultiDatasetIngestorAbstract
 
     private List<DatasetIngestResults> performIngestionForAllStages()
     {
+        List<DatasetIngestResults> results = new ArrayList<>();
+
         for (String dataset : ingestStageMetadataMap.keySet())
         {
             List<IngestStageMetadata> ingestStageMetadataList = ingestStageMetadataMap.get(dataset);
+            List<IngestStageResult> ingestStageResults = new ArrayList<>();
+
             for (IngestStageMetadata ingestStageMetadata : ingestStageMetadataList)
             {
                 IngestMode enrichedIngestMode = ingestStageMetadata.ingestMode();
@@ -332,11 +337,11 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 // 1. Perform idempotency check
                 if (enableIdempotencyCheck())
                 {
-                    List<IngestorResult> result = ApiUtils.verifyIfRequestAlreadyProcessedPreviously(SchemaEvolutionResult.builder().updatedDatasets(enrichedDatasets).build(),
+                    List<IngestorResult> previouslyProcessedResults = ApiUtils.verifyIfRequestAlreadyProcessedPreviously(SchemaEvolutionResult.builder().updatedDatasets(enrichedDatasets).build(),
                         enrichedDatasets, ingestRequestId(), transformer, executor, IngestStatus.SUCCEEDED.name());
-                    if (!result.isEmpty())
+                    if (!previouslyProcessedResults.isEmpty())
                     {
-                        // TODO: Add to results
+                        ingestStageResults.addAll(previouslyProcessedResults.stream().map(this::buildIngestStageResult).collect(Collectors.toList()));
                         continue;
                     }
                 }
@@ -377,10 +382,26 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 }
 
                 // 6. Build ingest stage result
-
+                ingestStageResults.addAll(ingestorResults.stream().map(this::buildIngestStageResult).collect(Collectors.toList()));
             }
+
+            results.add(DatasetIngestResults.builder()
+                .dataset(dataset)
+                .ingestRequestId(ingestRequestId())
+                .batchId(0) // TODO
+                .addAllIngestStageResults(ingestStageResults)
+                .build());
         }
 
-        return null;
+        return results;
+    }
+
+    private IngestStageResult buildIngestStageResult(IngestorResult ingestorResult)
+    {
+        return IngestStageResult.builder()
+            .ingestionStartTimestampUTC(ingestorResult.ingestionTimestampUTC())
+            // TODO: Add end timestamp
+            .putAllStatisticByName(ingestorResult.statisticByName())
+            .build();
     }
 }
