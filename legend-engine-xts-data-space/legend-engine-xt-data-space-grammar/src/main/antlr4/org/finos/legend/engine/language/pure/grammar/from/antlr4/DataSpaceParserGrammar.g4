@@ -154,7 +154,7 @@ executableDescription:              DATA_SPACE__DESCRIPTION COLON STRING SEMI_CO
 ;
 executablePath:                     DATA_SPACE_EXECUTABLE COLON qualifiedName SEMI_COLON
 ;
-executableTemplateQuery:            DATA_SPACE__TEMPLATE_QUERY COLON combinedExpression SEMI_COLON
+executableTemplateQuery:            DATA_SPACE__TEMPLATE_QUERY COLON (combinedExpression | functionIdentifier) SEMI_COLON
 ;
 executableTemplateQueryId:          DATA_SPACE__TEMPLATE_QUERY__ID COLON (VALID_STRING | INTEGER | DECIMAL) SEMI_COLON
 ;
