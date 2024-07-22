@@ -3,10 +3,10 @@
   "pattern" : "(meta::external::store::elasticsearch::v7)(::.*)?",
   "dependencies" : [
     "platform",
-    "platform_functions",
     "platform_dsl_mapping",
     "platform_dsl_store",
-    "core_functions",
+    "core_functions_unclassified",
+    "core_functions_standard",
     "core",
     "core_authentication"
   ]

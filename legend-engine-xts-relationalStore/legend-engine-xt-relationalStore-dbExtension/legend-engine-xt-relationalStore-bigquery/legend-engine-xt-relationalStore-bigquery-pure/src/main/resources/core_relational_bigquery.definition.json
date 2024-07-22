@@ -3,10 +3,10 @@
   "pattern": "(meta::relational::functions::sqlQueryToString::bigQuery|meta::relational::tests::sqlQueryToString::bigQuery|meta::relational::bigQuery::tests|meta::pure::alloy::connections|meta::external::store::relational::runtime|meta::protocols::pure|meta::relational::tests::connEquality)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
     "platform_dsl_store",
     "platform_store_relational",
-    "core_functions",
+    "core_functions_unclassified",
+    "core_functions_standard",
     "core",
     "core_relational"
   ]

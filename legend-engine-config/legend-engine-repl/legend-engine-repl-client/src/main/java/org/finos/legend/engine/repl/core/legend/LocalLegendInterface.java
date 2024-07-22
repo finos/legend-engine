@@ -30,6 +30,8 @@ import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 
 import java.net.URL;
 
+import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_QUALIFIED_PATH;
+
 public class LocalLegendInterface implements LegendInterface
 {
     @Override
@@ -82,7 +84,7 @@ public class LocalLegendInterface implements LegendInterface
     public Root_meta_pure_executionPlan_ExecutionPlan generatePlan(PureModel pureModel, boolean debug)
     {
         RichIterable<? extends Root_meta_pure_extension_Extension> extensions =  PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
-        Pair<Root_meta_pure_executionPlan_ExecutionPlan, String> res = PlanGenerator.generateExecutionPlanAsPure(pureModel.getConcreteFunctionDefinition_safe("a::b::c::d__Any_MANY_"), null, pureModel, PlanPlatform.JAVA, "", debug, extensions);
+        Pair<Root_meta_pure_executionPlan_ExecutionPlan, String> res = PlanGenerator.generateExecutionPlanAsPure(pureModel.getConcreteFunctionDefinition_safe(REPL_RUN_FUNCTION_QUALIFIED_PATH), null, pureModel, PlanPlatform.JAVA, "", debug, extensions);
         if (debug)
         {
             System.out.println(res.getTwo());

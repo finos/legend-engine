@@ -45,7 +45,13 @@ public class Graph implements Command
     @Override
     public String documentation()
     {
-        return "graph (<Packageable Element>)";
+        return "graph (<element path>)";
+    }
+
+    @Override
+    public String description()
+    {
+        return "show graph element definition in Pure";
     }
 
     @Override

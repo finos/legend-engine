@@ -16,6 +16,7 @@ package org.finos.legend.engine.shared.core.extension;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.shared.stuctures.TreeNode;
 
 import java.util.ServiceLoader;
 

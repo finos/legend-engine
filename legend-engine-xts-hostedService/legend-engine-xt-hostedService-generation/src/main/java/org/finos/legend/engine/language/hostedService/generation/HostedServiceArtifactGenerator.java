@@ -46,7 +46,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Concre
 import java.util.Map;
 import java.util.ServiceLoader;
 
-import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
+import static org.finos.legend.pure.generated.platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
 
 public class HostedServiceArtifactGenerator
 {
@@ -81,6 +81,12 @@ public class HostedServiceArtifactGenerator
            return PlanGenerator.generateExecutionPlan((ConcreteFunctionDefinition)activator._function(), null, null, null, pureModel,
                     clientVersion,  PlanPlatform.JAVA, null, routerExtensions.apply(pureModel), transformers);
         }
+    }
+
+    public static String generateLineage(PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    {
+        //TODO fix multiEnv
+        return core_hostedservice_generation_generation.Root_meta_external_function_activator_hostedService_generation_computeLineage_HostedService_1__Extension_MANY__String_1_(activator, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
     }
 
     public boolean validateOwner(Identity identity, PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)

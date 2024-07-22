@@ -20,6 +20,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
+import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeGrantInfo;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
@@ -93,22 +94,39 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
     public MutableList<? extends FunctionActivatorError> validate(Identity identity, PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         SnowflakeAppArtifact artifact = SnowflakeAppGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
-        return validate(artifact);
+        return validate(identity, artifact);
     }
 
-    public MutableList<? extends FunctionActivatorError> validate(SnowflakeAppArtifact artifact)
+    public MutableList<? extends FunctionActivatorError> validate(Identity identity, SnowflakeAppArtifact artifact)
     {
-        int size = ((SnowflakeAppContent)artifact.content).sqlExpressions.size();
-        return size != 1 ?
-                Lists.mutable.with(new SnowflakeAppError("SnowflakeApp can't be used with a plan containing '" + size + "' SQL expressions", ((SnowflakeAppContent)artifact.content).sqlExpressions)) :
-                Lists.mutable.empty();
+        MutableList<FunctionActivatorError> errors = Lists.mutable.empty();
+        SnowflakeAppContent content = (SnowflakeAppContent)artifact.content;
+        if (!content.sqlExpressions.isEmpty())
+        {
+            int size = content.sqlExpressions.select(e -> !e.toLowerCase().endsWith("to role public;")).size();
+            if (size != 1)
+            {
+                errors.add(new SnowflakeAppError("SnowflakeApp can't be used with a plan containing '" + size + "' SQL expressions", content.sqlExpressions));
+            }
+        }
+        if (content.permissionScope.equals("SEQUESTERED"))
+        {
+            MutableList<SnowflakeGrantInfo> grantsToRole = this.snowflakeDeploymentManager.getGrants(identity, artifact);
+            MutableList<String> contentTables = ((SnowflakeAppContent) artifact.content).usedTables.collect(String::toUpperCase);
+            MutableList<SnowflakeGrantInfo> violations = grantsToRole.select(g -> g.privilege.equals("SELECT") && contentTables.contains(g.objectName.toUpperCase()));
+            if (!violations.isEmpty())
+            {
+                errors.add(new SnowflakeAppError("Privilege Violation for SEQUESTERED scheme. Deployment Role contains SELECT permissions on tables: " + violations.collect(v -> v.objectName).makeString("[", ",", "]")));
+            }
+        }
+        return errors;
     }
 
     @Override
     public SnowflakeDeploymentResult publishToSandbox(Identity identity, PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, List<SnowflakeAppDeploymentConfiguration> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         SnowflakeAppArtifact artifact = SnowflakeAppGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
-        MutableList<? extends  FunctionActivatorError> validationError = validate(artifact);
+        MutableList<? extends  FunctionActivatorError> validationError = validate(identity, artifact);
         if (validationError.isEmpty())
         {
             return this.snowflakeDeploymentManager.deploy(identity, artifact, runtimeConfigurations);
@@ -121,6 +139,12 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
     public SnowflakeAppArtifact renderArtifact(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         return SnowflakeAppGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
+    }
+
+    @Override
+    public String generateLineage(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    {
+        return SnowflakeAppGenerator.generateFunctionLineage(pureModel, activator, inputModel, routerExtensions);
     }
 
     @Override

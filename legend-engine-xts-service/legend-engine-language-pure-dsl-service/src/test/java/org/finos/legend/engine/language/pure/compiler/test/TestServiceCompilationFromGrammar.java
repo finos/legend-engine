@@ -894,6 +894,41 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
     }
 
     @Test
+    public void testServiceCompilationWithMilestoningElements()
+    {
+        String resource = "" +
+                "Class <<temporal.businesstemporal>> test::class\n" +
+                "{\n" +
+                "  prop1 : test::class2[0..1];\n" +
+                "}\n" +
+                "Class <<temporal.businesstemporal>> test::class2\n" +
+                "{\n" +
+                "  prop1 : Integer[0..1];\n" +
+                "}\n";
+
+        test(resource + "###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName', 'ownerName2'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::class.allVersions()->project(x | $x.prop1AllVersions.prop1, 'hello');\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "        { [], res: meta::pure::mapping::Result[1]|$res.values->toOne()->size() == 1 }\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+    }
+
+    @Test
     public void testServiceWithImport()
     {
         test("Class meta::mySimpleClass\n" +

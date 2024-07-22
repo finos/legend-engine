@@ -29,6 +29,7 @@ public class PureIDELight extends PureIDEServer
     public static void main(String[] args) throws Exception
     {
         System.setProperty("legend.test.h2.port", "1975");
+        System.setProperty("user.timezone","GMT");
         new PureIDELight().run(args.length == 0 ? new String[]{"server", "legend-engine-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server/src/main/resources/ideLightConfig.json"} : args);
     }
 
@@ -37,6 +38,9 @@ public class PureIDELight extends PureIDEServer
     {
         return Lists.mutable.<RepositoryCodeStorage>empty()
                 .with(this.buildCore("legend-engine-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-metadata-pure", "ide_metadata"))
+                .with(this.buildCore("legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-standard/legend-engine-pure-functions-standard-pure", "functions_standard"))
+                .with(this.buildCore("legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-unclassified/legend-engine-pure-functions-unclassified-pure", "functions_unclassified"))
+                .with(this.buildCore("legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-functions-relation-pure", "functions_relation"))
                 .with(this.buildCore("legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-compiled-core", ""))
                 .with(this.buildCore("legend-engine-xts-protocol-java-generation/legend-engine-protocol-generation-pure", "protocol_generation"))
                 .with(this.buildCore("legend-engine-xts-persistence/legend-engine-xt-persistence-pure", "persistence"))
@@ -107,6 +111,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-arrow/legend-engine-xt-arrow-pure", "external-format-arrow"))
                 .with(this.buildCore("legend-engine-xts-relationalai/legend-engine-xt-relationalai-pure", "external-query-relationalai"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-PCT/legend-engine-pure-functions-relationalStore-PCT-pure", "external_test_connection"))
+                .with(this.buildCore("legend-engine-xts-dataquality/legend-engine-xt-dataquality-pure", "dataquality"))
                 ;
     }
 

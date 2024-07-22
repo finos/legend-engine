@@ -53,13 +53,12 @@ public class MemSqlFunctionGenerator
                 sdlc = (AlloySDLC) sdlcInfo;
             }
         }
-        //, activator._description(), ((Root_meta_external_function_activator_DeploymentOwnership)activator._ownership())._id(), sdlc
         MemSqlFunctionContent content = new MemSqlFunctionContent(activator._functionName(), Lists.mutable.of(sqlFunctionExpression));
         if (activator._activationConfiguration() != null)
         {
             //identify connection
             MemSqlFunction protocolActivator = Lists.mutable.withAll(((PureModelContextData) inputModel).getElementsOfType(MemSqlFunction.class))
-                    .select(c -> c.getPath().equals(platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(activator, pureModel.getExecutionSupport())))
+                    .select(c -> c.getPath().equals(platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(activator, pureModel.getExecutionSupport())))
                     .getFirst();
             connection   = (RelationalDatabaseConnection) Lists.mutable.withAll(((PureModelContextData) inputModel).getElementsOfType(PackageableConnection.class))
                     .select(c -> c.getPath().equals(((org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionDeploymentConfiguration)protocolActivator.activationConfiguration).activationConnection.connection)).getFirst().connectionValue;
@@ -69,6 +68,11 @@ public class MemSqlFunctionGenerator
         }
 
         return new MemSqlFunctionArtifact(content.functionName, Lists.mutable.of(sqlFunctionExpression));
+    }
+
+    public static String generateLineage(PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    {
+        return core_memsqlfunction_generation_generation.Root_meta_external_function_activator_memSqlFunction_generation_computeLineage_MemSqlFunction_1__Extension_MANY__String_1_(activator, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
     }
 
     private static RichIterable<String> extractSQLExpressions(Root_meta_pure_executionPlan_ExecutionPlan executionPlan)

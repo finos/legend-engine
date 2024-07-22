@@ -15,8 +15,11 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state;
 
 import io.prometheus.client.CollectorRegistry;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.Assert;
@@ -376,6 +379,66 @@ public class TestConnectionStateManager extends TestConnectionManagement
         assertPoolExists(false, user2.getName(), ds2.getConnectionKey());
         assertPoolExists(true, user3.getName(), ds1.getConnectionKey());
         assertPoolStateExists(pool3);
+    }
+
+    @Test
+    public void testDataSourceEvictionForDatasourceWithConnectionErrors() throws SQLException
+    {
+        Identity user1 = new Identity("user1");
+
+        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Collections.singletonList("DROP TABLE IF EXISTS T1"));
+
+        Assert.assertEquals(0, connectionStateManager.size());
+        assertPoolExists(false, user1.getName(), ds1.getConnectionKey());
+
+        ConnectionStateManager.ConnectionStateHousekeepingTask houseKeeper = new ConnectionStateManager.ConnectionStateHousekeepingTask(Duration.ofMinutes(5).getSeconds());
+
+        Connection connection1 = requestConnection(user1, ds1);
+        //assume a connection error happened while building/connecting to datasource
+        DataSourceWithStatistics ds1WithStatistics = getDataSourceWithStatistics(user1.getName(), ds1.getConnectionKey());
+        ds1WithStatistics.getStatistics().logConnectionError();
+
+        connection1.close();
+
+        // advance clock by 4 minutes and run housekeeper
+        clock.advance(Duration.ofMinutes(4));
+        houseKeeper.run();
+
+        // pool should still exist as eviction duration is 5min
+        Assert.assertEquals(1, connectionStateManager.size());
+        assertPoolExists(true, user1.getName(), ds1.getConnectionKey());
+
+        clock.advance(Duration.ofMinutes(2));
+        houseKeeper.run();
+
+        // eviction time is 5 min, no new connection for user1 , should be removed
+        Assert.assertEquals(0, connectionStateManager.size());
+        assertPoolExists(false, user1.getName(), ds1.getConnectionKey());
+    }
+
+    @Test
+    public void testDataSourceManualEvictionOnExceptionsDuringDatasourceBuild()
+    {
+        Identity user1 = new Identity("user1");
+
+        // creating invalid datasource without db manager to enact situations where an exception is thrown while building datasource
+        // ideal scenario: exception thrown while building HikariDataSource in DataSourceSpecification.buildDataSource()
+        DataSourceSpecification invalidDs = new LocalH2DataSourceSpecification(Collections.emptyList(), null, new TestDatabaseAuthenticationStrategy());
+
+        Assert.assertEquals(0, connectionStateManager.size());
+        assertPoolExists(false, user1.getName(), invalidDs.getConnectionKey());
+
+        try
+        {
+            requestConnection(user1, invalidDs);
+            Assert.fail("Exception not thrown while building datasource");
+        }
+        catch (Exception e)
+        {
+            // pool should have been evicted on exceptions during datasource build
+            Assert.assertEquals(0, connectionStateManager.size());
+            assertPoolExists(false, user1.getName(), invalidDs.getConnectionKey());
+        }
     }
 
     @Test

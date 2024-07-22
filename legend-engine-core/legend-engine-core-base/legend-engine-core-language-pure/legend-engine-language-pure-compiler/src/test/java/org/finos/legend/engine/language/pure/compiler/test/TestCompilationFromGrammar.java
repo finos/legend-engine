@@ -17,14 +17,21 @@ package org.finos.legend.engine.language.pure.compiler.test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProcessParameter;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -65,10 +72,28 @@ public class TestCompilationFromGrammar
             {
                 // do a full re-serialization after parsing to make sure the protocol produced is proper
                 PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(str);
-                ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
-                String json = objectMapper.writeValueAsString(modelData);
-                modelData = objectMapper.readValue(json, PureModelContextData.class);
+                if (expectedErrorMsg == null && (expectedWarnings == null || expectedWarnings.isEmpty()))
+                {
+                    ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+                    String json = objectMapper.writeValueAsString(modelData);
+                    modelData = objectMapper.readValue(json, PureModelContextData.class);
+                }
                 PureModel pureModel = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+                modelData.getElements().parallelStream().forEach(element ->
+                {
+                    String fullPath;
+                    if (element instanceof Function)
+                    {
+                        Function function = (Function) element;
+                        String functionSignature = HelperModelBuilder.getSignature(function);
+                        fullPath = pureModel.buildPackageString(function._package, functionSignature);
+                    }
+                    else
+                    {
+                        fullPath = element.getPath();
+                    }
+                    pureModel.getPackageableElement(fullPath, element.sourceInformation);
+                });
                 if (expectedErrorMsg != null)
                 {
                     Assert.fail("Expected compilation error with message: " + expectedErrorMsg + "; but no error occurred");
@@ -97,6 +122,89 @@ public class TestCompilationFromGrammar
                 Assert.assertNotNull("No source information provided in error", e.getSourceInformation());
                 MatcherAssert.assertThat(EngineException.buildPrettyErrorMessage(e.getMessage(), e.getSourceInformation(),
                         e.getErrorType()), CoreMatchers.startsWith(expectedErrorMsg));
+                return null;
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public static Pair<PureModelContextData, PureModel> partialCompilationTest(String str)
+        {
+            return partialCompilationTest(str, null);
+        }
+
+        public static Pair<PureModelContextData, PureModel> partialCompilationTest(String str, List<String> expectedEngineExceptions)
+        {
+            return partialCompilationTest(str, expectedEngineExceptions, null);
+        }
+
+        public static Pair<PureModelContextData, PureModel> partialCompilationTest(String str, List<String> expectedEngineExceptions, List<String> expectedWarnings)
+        {
+            try
+            {
+                // do a full re-serialization after parsing to make sure the protocol produced is proper
+                PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(str);
+                if ((expectedEngineExceptions == null || expectedEngineExceptions.isEmpty()) && (expectedWarnings == null || expectedWarnings.isEmpty()))
+                {
+                    ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+                    String json = objectMapper.writeValueAsString(modelData);
+                    modelData = objectMapper.readValue(json, PureModelContextData.class);
+                }
+                PureModelProcessParameter pureModelProcessParameter = PureModelProcessParameter.newBuilder().withEnablePartialCompilation(true).build();
+                PureModel pureModel = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName(), null, pureModelProcessParameter);
+                modelData.getElements().parallelStream().forEach(element ->
+                {
+                    String fullPath;
+                    if (element instanceof Function)
+                    {
+                        Function function = (Function) element;
+                        String functionSignature = HelperModelBuilder.getSignature(function);
+                        fullPath = pureModel.buildPackageString(function._package, functionSignature);
+                    }
+                    else
+                    {
+                        fullPath = element.getPath();
+                    }
+                    pureModel.getPackageableElement(fullPath, element.sourceInformation);
+                });
+
+                Set<String> engineExceptions = pureModel.getEngineExceptions().stream().map(EngineException::toPretty).collect(Collectors.toSet());
+                if (expectedEngineExceptions != null)
+                {
+                    ImmutableSet<String> expectedEngineExceptionsSet = Sets.immutable.withAll(expectedEngineExceptions);
+                    Assert.assertEquals(expectedEngineExceptionsSet, engineExceptions);
+                }
+                else
+                {
+                    Assert.assertTrue("expected no engine exceptions but found " + engineExceptions, engineExceptions.isEmpty());
+                }
+
+                if (expectedWarnings == null)
+                {
+                    Assert.assertTrue("expected no warnings but found " + pureModel.getWarnings().stream().map(Warning::buildPrettyWarningMessage).collect(Collectors.toList()), pureModel.getWarnings().isEmpty());
+                }
+
+                if (expectedWarnings != null)
+                {
+                    List<String> warnings = pureModel.getWarnings().stream().map(Warning::buildPrettyWarningMessage).sorted().collect(Collectors.toList());
+                    Collections.sort(expectedWarnings);
+                    Assert.assertEquals(expectedWarnings, warnings);
+                }
+
+                return Tuples.pair(modelData, pureModel);
+            }
+            catch (EngineException e)
+            {
+                if (expectedEngineExceptions == null)
+                {
+                    throw e;
+                }
+                Assert.assertEquals("There should only be one expected engine exception but was provided " + expectedEngineExceptions.size(), 1, expectedEngineExceptions.size());
+                Assert.assertNotNull("No source information provided in error", e.getSourceInformation());
+                MatcherAssert.assertThat(EngineException.buildPrettyErrorMessage(e.getMessage(), e.getSourceInformation(),
+                        e.getErrorType()), CoreMatchers.startsWith(expectedEngineExceptions.get(0)));
                 return null;
             }
             catch (Exception e)

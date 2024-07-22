@@ -35,6 +35,7 @@ import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 import org.finos.legend.engine.shared.core.operational.prometheus.Prometheus;
 import org.finos.legend.engine.testable.TestableRunner;
+import org.finos.legend.engine.testable.model.DebugTestsResult;
 import org.finos.legend.engine.testable.model.RunTestsInput;
 
 import javax.ws.rs.Consumes;
@@ -96,6 +97,28 @@ public class TestableApi
         catch (Exception e)
         {
             MetricsHandler.observeError(LoggingEventType.RUN_TEST_ERROR, e, null);
+            return ExceptionTool.exceptionManager(e, LoggingEventType.TESTABLE_DO_TESTS_ERROR, identity.getName());
+        }
+    }
+
+    @POST
+    @Path("debugTests")
+    @ApiOperation(value = "Debug testables")
+    @Consumes({MediaType.APPLICATION_JSON, InflateInterceptor.APPLICATION_ZLIB})
+    public Response debugTests(RunTestsInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
+        Identity identity = Identity.makeIdentity(profiles);
+        try
+        {
+            LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.TESTABLE_DO_TESTS_START, "").toString());
+            Pair<PureModelContextData, PureModel> modelAndData = this.modelManager.loadModelAndData(input.model, input.model instanceof PureModelContextPointer ? ((PureModelContextPointer) input.model).serializer.version : null, identity, null);
+            DebugTestsResult runTestsResult = testableRunner.debugTests(input.testables, modelAndData.getTwo(), modelAndData.getOne());
+            LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.TESTABLE_DO_TESTS_STOP, "").toString());
+            return ManageConstantResult.manageResult(identity.getName(), runTestsResult, objectMapper);
+        }
+        catch (Exception e)
+        {
             return ExceptionTool.exceptionManager(e, LoggingEventType.TESTABLE_DO_TESTS_ERROR, identity.getName());
         }
     }

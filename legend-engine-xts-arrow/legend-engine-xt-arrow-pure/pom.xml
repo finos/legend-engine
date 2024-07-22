@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-arrow</artifactId>
-        <version>4.47.3-SNAPSHOT</version>
+        <version>4.51.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -34,9 +34,6 @@
                     <sourceDirectory>src/main/resources</sourceDirectory>
                     <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
                     <repositories>
-                        <repository>platform</repository>
-                        <repository>platform_functions</repository>
-                        <repository>core</repository>
                         <repository>core_external_format_arrow</repository>
                     </repositories>
                     <extraRepositories>

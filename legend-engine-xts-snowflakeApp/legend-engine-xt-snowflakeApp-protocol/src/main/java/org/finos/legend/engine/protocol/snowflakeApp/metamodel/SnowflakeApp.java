@@ -26,5 +26,6 @@ public class SnowflakeApp extends FunctionActivator
 {
     public String applicationName;
     public String description;
-   // public String owner;
+    public String usageRole;
+    public SnowflakePermissionScheme permissionScheme;
 }

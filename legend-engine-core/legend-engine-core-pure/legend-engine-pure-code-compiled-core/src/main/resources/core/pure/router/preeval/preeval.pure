@@ -30,7 +30,7 @@ Class meta::pure::router::preeval::State
   path               : FunctionDefinition<Any>[*];
 
   shouldInlineFxn    : FunctionDefinition<{Function<Any>[1] -> Boolean[1]}>[1];
-  stopPreeval        : Function<{Any[1] -> Boolean[1]}>[1];
+  stopPreeval        : Function<{Any[*] -> Boolean[1]}>[1];
 
   toString() { $this->simpleToString() }:String[1];
 }
@@ -805,9 +805,9 @@ function <<access.public>> meta::pure::router::preeval::defaultFunctionInlineStr
                         || (!meta::pure::router::routing::shouldStop($f, $extensions) && !($f->instanceOf(NativeFunction)))}
 }
 
-function <<access.public>> meta::pure::router::preeval::defaultPreevalStopStrategy(extensions:Extension[*]) : FunctionDefinition<{Any[1]->Boolean[1]}>[1]
+function <<access.public>> meta::pure::router::preeval::defaultPreevalStopStrategy(extensions:Extension[*]) : FunctionDefinition<{Any[*]->Boolean[1]}>[1]
 {
-  {a:Any[1] | stopPreeval($a, $extensions)};
+  {a:Any[*] | stopPreeval($a, $extensions)};
 }
 
 function meta::pure::router::preeval::getPreevalStateWithAdditionalStopInlineFunc(inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], stopInlineFunctions:Function<Any>[*]):meta::pure::router::preeval::State[1]
@@ -851,6 +851,8 @@ function <<access.private>> meta::pure::router::preeval::stopPreeval(value : Any
             p : TdsOlapRank<Any>[*]| true,
             p : TdsOlapAggregation<Any>[*]| true,
             p : meta::pure::graphFetch::execution::AlloySerializationConfig[1]| true,
+            p : meta::external::format::shared::ExternalFormatExternalizeConfig[1] | true,
+            p : meta::external::format::shared::ExternalFormatInternalizeConfig[1] | true,
             f : SimpleFunctionExpression[1]| $f.func->in([letFunction_String_1__T_m__T_m_]),
             a : Any[*]| $a->type()
                           ->match([

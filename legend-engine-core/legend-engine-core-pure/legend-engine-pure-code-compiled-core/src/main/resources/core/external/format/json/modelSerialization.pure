@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::json::*;
+import meta::pure::metamodel::constraint::*;
 import meta::pure::metamodel::serialization::json::*;
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::milestoning::*;
@@ -74,6 +75,14 @@ function meta::pure::metamodel::serialization::json::qualifiedPropertyToJSON(pro
                    newJSONKeyValue('stereotypes', ^JSONArray(values=$property.stereotypes->map(s | $s->stereotypeToJSON()))),
                    newJSONKeyValue('taggedValues', ^JSONArray(values=$property.taggedValues->map(t | $t->taggedValueToJSON())))
                    ])
+}
+
+function meta::pure::metamodel::serialization::json::constraintToJSON(constraint:Constraint[1]):JSONElement[1]
+{
+    newJSONObject(newJSONKeyValue('name', ^JSONString(value=$constraint.name->toOne()))
+                  ->concatenate(if($constraint.owner->isEmpty(), |[], |newJSONKeyValue('owner', ^JSONString(value=$constraint.owner->toOne()))))
+                  ->concatenate(if($constraint.externalId->isEmpty(), |[], |newJSONKeyValue('externalId', ^JSONString(value=$constraint.externalId->toOne()))))
+                  ->concatenate(if($constraint.enforcementLevel->isEmpty(), |[], |newJSONKeyValue('enforcementLevel', ^JSONString(value=$constraint.enforcementLevel->toOne())))))
 }
 
 function meta::pure::metamodel::serialization::json::parameterToJSON(p:VariableExpression[1]):JSONElement[1]

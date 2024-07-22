@@ -3,7 +3,7 @@
   "pattern": "(meta::external::format::arrow|meta::protocols::pure)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
+    "core_functions_unclassified",
     "core"
   ]
 }

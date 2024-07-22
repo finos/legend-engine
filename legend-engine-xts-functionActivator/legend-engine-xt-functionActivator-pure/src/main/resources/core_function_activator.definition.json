@@ -2,6 +2,8 @@
   "name": "core_function_activator",
   "pattern": "(meta::external::function::activator|meta::protocols)(::.*)?",
   "dependencies": [
+    "core_analytics_lineage",
+    "core_functions_unclassified",
     "platform",
     "core"
   ]

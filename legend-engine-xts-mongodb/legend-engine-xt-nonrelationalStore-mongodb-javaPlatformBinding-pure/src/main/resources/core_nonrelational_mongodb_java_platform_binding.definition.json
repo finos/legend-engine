@@ -3,10 +3,9 @@
   "pattern": "(meta::external::store::mongodb::executionPlan::platformBinding)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
     "platform_dsl_graph",
     "platform_dsl_mapping",
-    "core_functions",
+    "core_functions_unclassified",
     "core",
     "core_external_format_json",
     "core_nonrelational_mongodb",

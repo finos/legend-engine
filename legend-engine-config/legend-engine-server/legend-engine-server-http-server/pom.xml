@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-server</artifactId>
-        <version>4.47.3-SNAPSHOT</version>
+        <version>4.51.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-server-http-server</artifactId>
@@ -393,6 +393,31 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-snowflakeApp-protocol</artifactId>
         </dependency>
+        <!--        DataQuality     -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-dataquality-compiler</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-dataquality-grammar</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-dataquality-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-dataquality-protocol</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <!--        DataQuality     -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-bigqueryFunction-compiler</artifactId>
@@ -458,6 +483,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-shared-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-structures</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -1022,8 +1051,8 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-compiled-functions-json</artifactId>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-json</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -1044,11 +1073,11 @@
         <!-- RUNTIME -->
 
         <!-- PCT -->
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.engine</groupId>-->
-<!--            <artifactId>legend-engine-xt-relationalStore-duckdb-PCT</artifactId>-->
-<!--            <scope>runtime</scope>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-duckdb-PCT</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-javaPlatformBinding-PCT</artifactId>

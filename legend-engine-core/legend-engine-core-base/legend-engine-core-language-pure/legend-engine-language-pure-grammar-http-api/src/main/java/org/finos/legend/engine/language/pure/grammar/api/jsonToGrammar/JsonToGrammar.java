@@ -64,16 +64,17 @@ public class JsonToGrammar extends GrammarAPI
                           @Context UriInfo uriInfo)
     {
         long start = System.currentTimeMillis();
-        Response response = model(pureModelContext, renderStyle, pm);
+        PureGrammarComposerExtensionLoader.logExtensionList();
+        Response response = jsonToGrammar(pureModelContext, renderStyle, (value, renderStyle1) -> PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().withRenderStyle(renderStyle1).build()).renderPureModelContextData(value), pm, "Json to Grammar : Model");
         long end = System.currentTimeMillis();
         MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, end);
         return response;
     }
 
+    @Deprecated
     public Response model(PureModelContextData pureModelContext, RenderStyle renderStyle, ProfileManager<CommonProfile> pm)
     {
-        PureGrammarComposerExtensionLoader.logExtensionList();
-        return jsonToGrammar(pureModelContext, renderStyle, (value, renderStyle1) -> PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().withRenderStyle(renderStyle1).build()).renderPureModelContextData(value), pm, "Json to Grammar : Model");
+        return model(pureModelContext, renderStyle, pm, null);
     }
 
     @POST

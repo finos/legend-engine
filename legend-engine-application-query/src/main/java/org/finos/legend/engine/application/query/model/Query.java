@@ -39,6 +39,7 @@ public class Query
     public String content;
     public Long lastUpdatedAt;
     public Long createdAt;
+    public Long lastOpenAt;
 
     public List<TaggedValue> taggedValues;
     public List<StereotypePtr> stereotypes;

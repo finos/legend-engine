@@ -39,8 +39,6 @@ public class MemSqlFunctionProtocolExtension implements PureProtocolExtension
         return Lists.fixedSize.with(() -> Lists.mutable.with(
                 ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
                         .withSubtype(MemSqlFunction.class, packageJSONType)
-                        .build(),
-                ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
                         .withSubtype(MemSqlFunctionDeploymentConfiguration.class, packageJSONType + "Config")
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(FunctionActivatorDeploymentConfiguration.class)
@@ -58,6 +56,9 @@ public class MemSqlFunctionProtocolExtension implements PureProtocolExtension
     @Override
     public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
-        return Maps.mutable.with(MemSqlFunction.class, "meta::external::function::activator::memSqlFunction::MemSqlFunction");
+        return Maps.mutable.with(
+                MemSqlFunction.class, "meta::external::function::activator::memSqlFunction::MemSqlFunction",
+                MemSqlFunctionDeploymentConfiguration.class, "meta::external::function::activator::memSqlFunction::MemSqlFunctionDeploymentConfiguration"
+        );
     }
 }

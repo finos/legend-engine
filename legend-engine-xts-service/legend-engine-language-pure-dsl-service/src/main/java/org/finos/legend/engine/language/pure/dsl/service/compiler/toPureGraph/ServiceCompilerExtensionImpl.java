@@ -37,6 +37,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ExecutionEnvironmentInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
@@ -80,8 +81,20 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
         return Lists.immutable.with(
                 Processor.newProcessor(
                         Service.class,
-                        Lists.fixedSize.with(PackageableConnection.class, PackageableRuntime.class, DataElement.class, ExecutionEnvironmentInstance.class),
+                        Lists.fixedSize.with(PackageableConnection.class, PackageableRuntime.class, DataElement.class, ExecutionEnvironmentInstance.class, DataSpace.class),
                         (service, context) -> processserviceFirstPass(service, context),
+                        (service, context) ->
+                        {
+
+                        },
+                        (service, context) ->
+                        {
+
+                        },
+                        (service, context) ->
+                        {
+
+                        },
                         (service, context) ->
                         {
                             Root_meta_legend_service_metamodel_Service pureService = (Root_meta_legend_service_metamodel_Service) context.pureModel.getOrCreatePackage(service._package)._children().detect(c -> service.name.equals(c._name()));

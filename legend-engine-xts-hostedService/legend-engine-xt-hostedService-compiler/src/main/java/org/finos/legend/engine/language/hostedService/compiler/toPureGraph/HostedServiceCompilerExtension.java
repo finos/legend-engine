@@ -25,6 +25,7 @@ import org.finos.legend.engine.protocol.hostedService.metamodel.HostedService;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.Ownership;
 import org.finos.legend.engine.protocol.hostedService.metamodel.control.UserList;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ExecutionEnvironmentInstance;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_DeploymentOwnership_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_HostedService;
@@ -64,7 +65,7 @@ public class HostedServiceCompilerExtension implements CompilerExtension
                 ),
                 Processor.newProcessor(
                         HostedService.class,
-                        org.eclipse.collections.impl.factory.Lists.fixedSize.with(HostedServiceDeploymentConfiguration.class, ExecutionEnvironmentInstance.class),
+                        org.eclipse.collections.impl.factory.Lists.fixedSize.with(HostedServiceDeploymentConfiguration.class, ExecutionEnvironmentInstance.class, Function.class),
                         this::buildHostedService
                 )//,
 //                Processor.newProcessor(

@@ -63,6 +63,7 @@ import org.finos.legend.engine.external.shared.format.generations.loaders.Schema
 import org.finos.legend.engine.external.shared.format.model.api.ExternalFormats;
 import org.finos.legend.engine.functionActivator.api.FunctionActivatorAPI;
 import org.finos.legend.engine.generation.artifact.api.ArtifactGenerationExtensionApi;
+import org.finos.legend.engine.language.dataquality.api.DataQualityExecute;
 import org.finos.legend.engine.language.hostedService.api.HostedServiceService;
 import org.finos.legend.engine.language.memsql.api.MemSqlFunctionService;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
@@ -133,6 +134,7 @@ import org.finos.legend.engine.server.core.api.Memory;
 import org.finos.legend.engine.server.core.bundles.ErrorHandlingBundle;
 import org.finos.legend.engine.server.core.exceptionMappers.CatchAllExceptionMapper;
 import org.finos.legend.engine.server.core.exceptionMappers.JsonInformationExceptionMapper;
+import org.finos.legend.engine.server.core.pct.PCT;
 import org.finos.legend.engine.server.core.session.SessionAttributeBundle;
 import org.finos.legend.engine.server.core.session.SessionTracker;
 import org.finos.legend.engine.server.core.session.StoreExecutableManagerSessionListener;
@@ -334,6 +336,9 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new ConcurrentExecutionNodeExecutorPoolInfo(Collections.emptyList()));
         environment.jersey().register(new ParallelGraphFetchExecutionExecutorPoolInfo(parallelGraphFetchExecutionExecutorPool));
 
+        // PCT
+        environment.jersey().register(new PCT());
+
         // Protocol
         environment.jersey().register(new PureProtocol());
 
@@ -415,6 +420,10 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new DataSpaceAnalytics(modelManager, generatorExtensions, entitlementServiceExtensions));
         environment.jersey().register(new LineageAnalytics(modelManager));
         environment.jersey().register(new StoreEntitlementAnalytics(modelManager, entitlementServiceExtensions));
+
+        // DataQuality
+        environment.jersey().register(new DataQualityExecute(modelManager, planExecutor, routerExtensions, generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), serverConfiguration.metadataserver, null));
+
 
         // Testable
         environment.jersey().register(new TestableApi(modelManager));

@@ -48,5 +48,7 @@ public interface FunctionActivatorService<T extends Root_meta_external_function_
 
    FunctionActivatorArtifact renderArtifact(PureModel pureModel, T functionActivator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions);
 
+   String generateLineage(PureModel pureModel, T functionActivator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions);
+
    List<U> selectConfig(List<FunctionActivatorDeploymentConfiguration> configurations);
 }

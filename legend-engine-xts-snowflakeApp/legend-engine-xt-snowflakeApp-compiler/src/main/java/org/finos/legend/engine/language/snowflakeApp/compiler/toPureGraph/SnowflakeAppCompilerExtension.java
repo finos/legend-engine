@@ -23,8 +23,10 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeApp;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeAppDeploymentConfiguration;
+import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakePermissionScheme;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
 import org.finos.legend.pure.m3.navigation.function.FunctionDescriptor;
@@ -52,7 +54,7 @@ public class SnowflakeAppCompilerExtension implements CompilerExtension
         return Lists.fixedSize.of(
                 Processor.newProcessor(
                         SnowflakeApp.class,
-                        org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableConnection.class),
+                        org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableConnection.class, Function.class),
                         this::buildSnowflakeApp
                 )
         );
@@ -71,6 +73,8 @@ public class SnowflakeAppCompilerExtension implements CompilerExtension
                     ._applicationName(app.applicationName)
                     ._function(func)
                     ._description(app.description)
+                    ._usageRole(app.usageRole)
+                    ._permissionScheme(app.permissionScheme != null ? context.pureModel.getEnumValue("meta::external::function::activator::snowflakeApp::SnowflakePermissionScheme", app.permissionScheme.toString()) : context.pureModel.getEnumValue("meta::external::function::activator::snowflakeApp::SnowflakePermissionScheme", SnowflakePermissionScheme.DEFAULT.toString()))
                     ._ownership(new Root_meta_external_function_activator_DeploymentOwnership_Impl("")._id(((DeploymentOwner)app.ownership).id))
                     ._activationConfiguration(app.activationConfiguration != null ? buildDeploymentConfig((SnowflakeAppDeploymentConfiguration) app.activationConfiguration, context) : null);
         }

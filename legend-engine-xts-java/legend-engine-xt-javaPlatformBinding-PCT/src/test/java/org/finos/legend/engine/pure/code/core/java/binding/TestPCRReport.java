@@ -24,6 +24,6 @@ public class TestPCRReport
     public void canFindPCTReport()
     {
         Assert.assertEquals("Java, Native", PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey.adapter.name).distinct().sortThis().makeString(", "));
-        Assert.assertEquals(8, PCTReportProviderLoader.gatherReports().size());
+        Assert.assertEquals(9, PCTReportProviderLoader.gatherReports().size());
     }
 }

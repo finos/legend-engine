@@ -52,7 +52,7 @@ public class TestValidation
                         "   ownership : Deployment { identifier: 'ownership' };" +
                         "   function: a::f():TabularDataSet[1];" +
                         "}";
-        Response response = api.validate(new FunctionActivatorInput("vX_X_X", "a::myApp", PureGrammarParser.newInstance().parseModel(val)), null);
+        Response response = api.validate(new FunctionActivatorInput("vX_X_X", "a::myApp", PureGrammarParser.newInstance().parseModel(val)), null, null);
         Assert.assertEquals("[]", response.getEntity().toString());
     }
 
@@ -75,7 +75,7 @@ public class TestValidation
                         "   ownership : Deployment { identifier: 'ownership' };" +
                         "   function: a::f():Person[*];" +
                         "}";
-        Response response = api.validate(new FunctionActivatorInput("vX_X_X", "a::myApp", PureGrammarParser.newInstance().parseModel(val)), null);
+        Response response = api.validate(new FunctionActivatorInput("vX_X_X", "a::myApp", PureGrammarParser.newInstance().parseModel(val)), null, null);
         Assert.assertEquals("[{\"foundSQLs\":[],\"message\":\"SnowflakeApp can't be used with a plan containing '0' SQL expressions\"}]", response.getEntity().toString());
     }
 

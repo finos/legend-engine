@@ -55,3 +55,9 @@ function <<access.private>>  meta::external::function::activator::memSqlFunction
   pair(Boolean, 'BOOLEAN')
   ]->newMap()
 }
+
+function meta::external::function::activator::memSqlFunction::generation::computeLineage(m: meta::external::function::activator::memSqlFunction::MemSqlFunction[1], extensions:meta::pure::extension::Extension[*]): String[1]
+{
+  let fullAnalytics  = meta::external::function::activator::lineage::computeLineage($m.function, $extensions);
+  meta::alloy::metadataServer::alloyToJSON($fullAnalytics);
+}

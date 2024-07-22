@@ -30,7 +30,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enu
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.core_pure_router_operations_router_operations;
-import org.finos.legend.pure.generated.platform_functions_meta_getAllTypeGeneralisations;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EnumerationMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -49,6 +48,7 @@ import java.util.stream.Collectors;
 
 import static org.finos.legend.pure.generated.platform_dsl_mapping_functions_Mapping.Root_meta_pure_mapping__classMappingByClass_Mapping_1__Class_1__SetImplementation_MANY_;
 import static org.finos.legend.pure.generated.platform_dsl_mapping_functions_Mapping.Root_meta_pure_mapping__classMappingByIdRecursive_Mapping_1__String_MANY__SetImplementation_MANY_;
+import static org.finos.legend.pure.generated.platform_pure_essential_meta_type_getAllTypeGeneralisations.Root_meta_pure_functions_meta_getAllTypeGeneralisations_Type_1__Type_MANY_;
 
 public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImplementation>
 {
@@ -176,7 +176,7 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
 
     private static boolean checkTransformTypeMatchesPropertyType(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> property, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification expression, CompileContext context)
     {
-        RichIterable<? extends Type> classesTaxonomy = platform_functions_meta_getAllTypeGeneralisations.Root_meta_pure_functions_meta_getAllTypeGeneralisations_Type_1__Type_MANY_(expression._genericType()._rawType(), context.getExecutionSupport());
+        RichIterable<? extends Type> classesTaxonomy = Root_meta_pure_functions_meta_getAllTypeGeneralisations_Type_1__Type_MANY_(expression._genericType()._rawType(), context.getExecutionSupport());
         return classesTaxonomy.contains(property._genericType()._rawType());
     }
 }

@@ -40,6 +40,8 @@ public class SnowflakeAppArtifactGenerationExtension implements ArtifactGenerati
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SnowflakeAppArtifactGenerationExtension.class);
     private static final String ROOT_PATH = "snowflakeApp";
     private static final String FILE_NAME = "snowflakeAppArtifact.json";
+    private static final String LINEAGE_FILE_NAME = "snowflakeAppLineageArtifact.json";
+
 
     @Override
     public MutableList<String> group()
@@ -65,18 +67,20 @@ public class SnowflakeAppArtifactGenerationExtension implements ArtifactGenerati
     {
         List<Artifact> result = Lists.mutable.empty();
         Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel p) -> PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(p.getExecutionSupport()));
-        SnowflakeAppArtifact artifact  = SnowflakeAppGenerator.generateArtifact(pureModel, (Root_meta_external_function_activator_snowflakeApp_SnowflakeApp) element, data, routerExtensions);
         try
         {
-            LOGGER.info("Generating snowflake artifact for " + element.getName());
+            LOGGER.info("Generating snowflakeApp deploy artifact for " + element.getName());
+            SnowflakeAppArtifact artifact  = SnowflakeAppGenerator.generateArtifact(pureModel, (Root_meta_external_function_activator_snowflakeApp_SnowflakeApp) element, data, routerExtensions);
             String content = mapper.writeValueAsString(artifact);
             result.add((new Artifact(content, FILE_NAME, "json")));
-            LOGGER.info("Generated snowflake artifact for " + element.getName());
-
+            LOGGER.info("Generating snowflakeApp lineage artifact for " + element.getName());
+            String lineage = SnowflakeAppGenerator.generateFunctionLineage(pureModel, (Root_meta_external_function_activator_snowflakeApp_SnowflakeApp) element, data, routerExtensions);
+            result.add(new Artifact(lineage, LINEAGE_FILE_NAME, "json"));
+            LOGGER.info("Generated artifacts for " + element.getName());
         }
         catch (Exception e)
         {
-            LOGGER.error("Error generating snowflake artifact for " + element.getName() + " reason: " + e.getMessage());
+            LOGGER.error("Error generating artifact for " + element.getName() + " reason: " + e.getMessage());
         }
         return result;
 

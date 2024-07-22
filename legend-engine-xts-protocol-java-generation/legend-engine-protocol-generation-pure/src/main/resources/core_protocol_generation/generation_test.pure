@@ -489,10 +489,6 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolToM
                 '                                                                                                                                           : store.includes,\n' +
                 '                                                                                                                                      (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store x) -> this.translate(x, pureModel)))\n' +
                 '                                                                                                       ._package(this.translate(store._package, pureModel))\n' +
-                '                                                                                                       ._referenceUsages(ListIterate.collect(store.referenceUsages == null\n' +
-                '                                                                                                                                                  ? Collections.<ReferenceUsage>emptyList()\n' +
-                '                                                                                                                                                  : store.referenceUsages,\n' +
-                '                                                                                                                                             (ReferenceUsage x) -> this.translate(x, pureModel)))\n' +
                 '                                                                                                       ._name(store.name)\n' +
                 '                                                                                                       ._stereotypes(ListIterate.collect(store.stereotypes == null\n' +
                 '                                                                                                                                              ? Collections.<Stereotype>emptyList()\n' +
@@ -501,7 +497,11 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolToM
                 '                                                                                                       ._taggedValues(ListIterate.collect(store.taggedValues == null\n' +
                 '                                                                                                                                               ? Collections.<TaggedValue>emptyList()\n' +
                 '                                                                                                                                               : store.taggedValues,\n' +
-                '                                                                                                                                          (TaggedValue x) -> this.translate(x, pureModel)));\n' +
+                '                                                                                                                                          (TaggedValue x) -> this.translate(x, pureModel)))\n' +
+                '                                                                                                       ._referenceUsages(ListIterate.collect(store.referenceUsages == null\n' +
+                '                                                                                                                                                  ? Collections.<ReferenceUsage>emptyList()\n' +
+                '                                                                                                                                                  : store.referenceUsages,\n' +
+                '                                                                                                                                             (ReferenceUsage x) -> this.translate(x, pureModel)));\n' +
                 '    }\n' +
                 '}', $sources->at(0));
 }

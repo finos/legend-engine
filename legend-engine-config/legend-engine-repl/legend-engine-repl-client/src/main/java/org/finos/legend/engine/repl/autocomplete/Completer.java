@@ -60,6 +60,9 @@ import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import java.util.List;
 import java.util.Objects;
 
+import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_QUALIFIED_PATH;
+import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_SIGNATURE;
+
 public class Completer
 {
     private final String buildCodeContext;
@@ -82,7 +85,7 @@ public class Completer
                 buildCodeContext +
                         "\n###Pure\n" +
                         "import meta::pure::functions::relation::*;\n" +
-                        "function _pierre::func():Any[*]{\n";
+                        "function " + REPL_RUN_FUNCTION_SIGNATURE + "{\n";
         this.lineOffset = StringUtils.countMatches(header, "\n") + 1;
         this.handlers = Lists.mutable.with(
                 new FilterHandler(),
@@ -158,7 +161,7 @@ public class Completer
             if (currentExpression == topExpression)
             {
                 // The top function name is being written, propose candidates
-                return new CompletionResult(getFunctionCandidates(leftCompiledVS, pureModel, null).select(c -> c.startsWith(currentlyTypeFunctionName)).collect(c -> new CompletionItem(c, c)));
+                return new CompletionResult(getFunctionCandidates(leftCompiledVS, pureModel, null).select(c -> c.startsWith(currentlyTypeFunctionName)).collect(c -> new CompletionItem(c, c + "(")));
             }
             else if (handler != null)
             {
@@ -238,7 +241,7 @@ public class Completer
     {
         String code = header + value + "\n" + "\n}";
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(code);
-        Function func = (Function) ListIterate.select(pureModelContextData.getElements(), s -> s.getPath().equals("_pierre::func__Any_MANY_")).getFirst();
+        Function func = (Function) ListIterate.select(pureModelContextData.getElements(), s -> s.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)).getFirst();
         return func.body.get(0);
     }
 
@@ -260,14 +263,14 @@ public class Completer
             }
             else
             {
-                return Lists.mutable.with("count");
+                return Lists.mutable.with("count", "joinStrings");
             }
         }
         else if (org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(leftType._rawType(), pureModel.getType(M3Paths.Number), pureModel.getExecutionSupport().getProcessorSupport()))
         {
             if (org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.isToOne(multiplicity))
             {
-                return Lists.mutable.with("sqrt", "pow", "exp");
+                return Lists.mutable.with("abs", "pow", "sqrt", "exp");
             }
             else
             {

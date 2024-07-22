@@ -34,6 +34,23 @@ public class TestSnowflakeAppRoundtrip extends TestGrammarRoundtrip.TestGrammarR
     }
 
     @Test
+    public void testSnowflakeAppWithSchemeAndRole()
+    {
+        test("###Snowflake\n" +
+                "SnowflakeApp <<a::A.test>> {a::A.val = 'ok'} xx::MyApp\n" +
+                "{\n" +
+                "   applicationName : 'MyApp';\n" +
+                "   function : zxx(Integer[1]):String[1];\n" +
+                "   ownership : Deployment { identifier: 'pierre'};\n" +
+                "   description : 'A super nice app!';\n" +
+                "   usageRole : 'PRIVATE';\n" +
+                "   permissionScheme : SEQUESTERED;\n" +
+                "   activationConfiguration : a::b::connection;\n" +
+                "}\n");
+    }
+
+
+    @Test
     public void testSnowflakeAppMinimal()
     {
         test("###Snowflake\n" +

@@ -30,12 +30,17 @@ public class Compiler
 {
     public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, String user)
     {
-        return compile(model, deploymentMode, user, null, null);
+        return compile(model, deploymentMode, user, (String) null, null);
     }
 
     public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, String user, String packageOffset)
     {
         return compile(model, deploymentMode, user, packageOffset, null);
+    }
+
+    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, String user, Metadata metaData, PureModelProcessParameter pureModelProcessParameter)
+    {
+        return new PureModel(model, user, deploymentMode, pureModelProcessParameter, metaData);
     }
 
     public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, String user, String packageOffset, Metadata metaData)

@@ -14,17 +14,97 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import java.util.concurrent.ForkJoinPool;
+
 public class PureModelProcessParameter
 {
-    String packagePrefix;
+    private final String packagePrefix;
+    private final ForkJoinPool forkJoinPool;
+    private final boolean enablePartialCompilation;
 
     PureModelProcessParameter()
     {
-        this.packagePrefix = null;
+        this(null);
     }
 
     public PureModelProcessParameter(String packagePrefix)
     {
+        this(packagePrefix, null, false);
+    }
+
+    private PureModelProcessParameter(String packagePrefix, ForkJoinPool forkJoinPool, boolean enablePartialCompilation)
+    {
         this.packagePrefix = packagePrefix;
+        this.forkJoinPool = forkJoinPool;
+        this.enablePartialCompilation = enablePartialCompilation;
+    }
+
+    public String getPackagePrefix()
+    {
+        return this.packagePrefix;
+    }
+
+    public ForkJoinPool getForkJoinPool()
+    {
+        return this.forkJoinPool;
+    }
+
+    public boolean getEnablePartialCompilation()
+    {
+        return this.enablePartialCompilation;
+    }
+
+    public static Builder newBuilder()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+    {
+        private String packagePrefix;
+        private ForkJoinPool forkJoinPool;
+        private boolean enablePartialCompilation;
+
+        public Builder()
+        {
+        }
+
+        public void setPackagePrefix(String packagePrefix)
+        {
+            this.packagePrefix = packagePrefix;
+        }
+
+        public Builder withPackagePrefix(String packagePrefix)
+        {
+            setPackagePrefix(packagePrefix);
+            return this;
+        }
+
+        public void setForkJoinPool(ForkJoinPool forkJoinPool)
+        {
+            this.forkJoinPool = forkJoinPool;
+        }
+
+        public Builder withForkJoinPool(ForkJoinPool forkJoinPool)
+        {
+            setForkJoinPool(forkJoinPool);
+            return this;
+        }
+
+        public void setEnablePartialCompilation(boolean enablePartialCompilation)
+        {
+            this.enablePartialCompilation = enablePartialCompilation;
+        }
+
+        public Builder withEnablePartialCompilation(boolean enablePartialCompilation)
+        {
+            setEnablePartialCompilation(enablePartialCompilation);
+            return this;
+        }
+
+        public PureModelProcessParameter build()
+        {
+            return new PureModelProcessParameter(this.packagePrefix, this.forkJoinPool, this.enablePartialCompilation);
+        }
     }
 }

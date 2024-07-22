@@ -167,7 +167,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 import static org.finos.legend.pure.generated.platform_dsl_mapping_functions_PropertyMappingsImplementation.Root_meta_pure_mapping_superMapping_PropertyMappingsImplementation_1__PropertyMappingsImplementation_$0_1$_;
-import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
+import static org.finos.legend.pure.generated.platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
 
 public class HelperRelationalBuilder
 {
@@ -1502,14 +1502,26 @@ public class HelperRelationalBuilder
     {
         if (rsi._mainTableAlias() == null && rsi._superSetImplementationId() != null)
         {
-            PropertyMappingsImplementation superMapping = Root_meta_pure_mapping_superMapping_PropertyMappingsImplementation_1__PropertyMappingsImplementation_$0_1$_(rsi, context.pureModel.getExecutionSupport());
-            if (superMapping == null)
+            PropertyMappingsImplementation currentPmi = rsi;
+            boolean mainTableAliasFound = false;
+            while (!mainTableAliasFound)
             {
-                throw new EngineException("Can't find the main table for class '" + classMapping.id + "'");
-            }
-            if (superMapping instanceof RootRelationalInstanceSetImplementation)
-            {
-                rsi._mainTableAlias(((RootRelationalInstanceSetImplementation) superMapping)._mainTableAlias());
+                PropertyMappingsImplementation superMapping = Root_meta_pure_mapping_superMapping_PropertyMappingsImplementation_1__PropertyMappingsImplementation_$0_1$_(currentPmi, context.pureModel.getExecutionSupport());
+                if (superMapping == null)
+                {
+                    throw new EngineException("Can't find the main table for class '" + classMapping.id + "'");
+                }
+                if (superMapping instanceof RootRelationalInstanceSetImplementation)
+                {
+                    RootRelationalInstanceSetImplementation superRsi = (RootRelationalInstanceSetImplementation) superMapping;
+                    TableAlias mainTableAlias = superRsi._mainTableAlias();
+                    if (mainTableAlias != null)
+                    {
+                        rsi._mainTableAlias(mainTableAlias);
+                        mainTableAliasFound = true;
+                    }
+                }
+                currentPmi = superMapping;
             }
         }
 
