@@ -39,6 +39,6 @@ public class ParameterValidationContextExecutor implements ParameterValidationCo
         {
             throw new IllegalArgumentException("Collection of Enums (" + value + ") is not supported as service parameter");
         }
-        return (validEnumValues.contains(value.toString())) ? ValidationResult.successValidationResult() : ValidationResult.errorValidationResult("Invalid enum value " + value + " for " + var._class + ", valid enum values: " + validEnumValues);
+        return (validEnumValues.contains(value.toString())) ? ValidationResult.successValidationResult() : ValidationResult.errorValidationResult("Invalid enum value " + value + " for " + var._class.path + ", valid enum values: " + validEnumValues);
     }
 }

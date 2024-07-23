@@ -47,7 +47,7 @@ public class FunctionParametersParametersValidation
 
         if (!missingExternalParameters.isEmpty())
         {
-            throw new IllegalArgumentException("Missing external parameter(s): " + missingExternalParameters.collect(a -> a.name + ":" + a._class + "[" + renderMultiplicity(a.multiplicity) + "]").makeString(","));
+            throw new IllegalArgumentException("Missing external parameter(s): " + missingExternalParameters.collect(a -> a.name + ":" + a._class.path + "[" + renderMultiplicity(a.multiplicity) + "]").makeString(","));
         }
     }
 
@@ -72,7 +72,7 @@ public class FunctionParametersParametersValidation
 
     public static ValidationResult validate(Variable var, List<ParameterValidationContext> parameterValidationContext, Object value)
     {
-        FunctionParameterTypeValidator validator = FunctionParameterTypeValidator.externalParameterTypeValidator(var._class);
+        FunctionParameterTypeValidator validator = FunctionParameterTypeValidator.externalParameterTypeValidator(var._class.path);
         if (validator == null)
         {
             ValidationResult result = null;
@@ -84,7 +84,7 @@ public class FunctionParametersParametersValidation
                     return result;
                 }
             }
-            return result == null ? ValidationResult.errorValidationResult("Unknown external parameter type: " + var._class + ", valid external parameter types: " + FunctionParameterTypeValidator.getExternalParameterTypes().makeString("[", ", ", "]")) : ValidationResult.successValidationResult();
+            return result == null ? ValidationResult.errorValidationResult("Unknown external parameter type: " + var._class.path + ", valid external parameter types: " + FunctionParameterTypeValidator.getExternalParameterTypes().makeString("[", ", ", "]")) : ValidationResult.successValidationResult();
         }
         if (value instanceof Stream)
         {

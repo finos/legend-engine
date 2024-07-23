@@ -64,7 +64,7 @@ class FunctionParameterProcessor
         }
         catch (Exception e)
         {
-            throw new IllegalArgumentException("Failed to process " + param._class + " parameter in plan for " + paramName + ", message: " + e.getMessage());
+            throw new IllegalArgumentException("Failed to process " + param._class.path + " parameter in plan for " + paramName + ", message: " + e.getMessage());
         }
     }
 }

@@ -42,6 +42,8 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
@@ -262,7 +264,7 @@ public class SQLExecutor
                 Variable variable = new Variable();
                 variable.name = "_" + (index + 1);
                 variable.multiplicity = Multiplicity.PURE_ONE;
-                variable._class = LITERAL_TO_PURE_TYPES.get(expression.getClass());
+                variable._class = new PackageableElementPointer(PackageableElementType.CLASS, LITERAL_TO_PURE_TYPES.get(expression.getClass()));
 
                 return new SQLQueryParameter(variable, expression);
             });

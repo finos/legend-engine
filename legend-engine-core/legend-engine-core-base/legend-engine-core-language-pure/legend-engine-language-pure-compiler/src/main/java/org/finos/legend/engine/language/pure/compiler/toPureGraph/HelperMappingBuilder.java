@@ -29,6 +29,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handl
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestBuilderHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
@@ -441,7 +442,7 @@ public class HelperMappingBuilder
         if (aggregateFunction.aggregateFn.parameters.size() > 0)
         {
             Variable variable = aggregateFunction.aggregateFn.parameters.get(0);
-            variable._class = PackageableElement.getUserPathForPackageableElement(Handlers.funcReturnType(processed, context.pureModel)._rawType());
+            variable._class = new PackageableElementPointer(PackageableElementType.CLASS, PackageableElement.getUserPathForPackageableElement(Handlers.funcReturnType(processed, context.pureModel)._rawType()));
             variable.multiplicity = new Multiplicity(1, 1);
         }
         afs._aggregateFn((LambdaFunction) ((InstanceValue) aggregateFunction.aggregateFn.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)))._values().getFirst());

@@ -20,6 +20,8 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMappingVisitor;
@@ -121,7 +123,7 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
             {
                 Variable param = new Variable();
                 param.name = "src";
-                param._class = classMapping.srcClass;
+                param._class = new PackageableElementPointer(PackageableElementType.CLASS, classMapping.srcClass);
                 param.multiplicity = new Multiplicity(1, 1);
                 params.add(param);
             }

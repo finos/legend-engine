@@ -33,6 +33,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.build
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.*;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
@@ -134,7 +136,7 @@ public class Handlers
         }
         else
         {
-            variable._class = PackageableElement.getUserPathForPackageableElement(newGenericType._rawType());
+            variable._class = new PackageableElementPointer(PackageableElementType.CLASS, PackageableElement.getUserPathForPackageableElement(newGenericType._rawType()));
         }
     }
 
@@ -155,10 +157,10 @@ public class Handlers
     private static void updateTDSRowLambda(List<Variable> vars)
     {
         Variable variable = vars.get(0);
-        variable._class = "meta::pure::tds::TDSRow";
+        variable._class = new PackageableElementPointer(PackageableElementType.CLASS, "meta::pure::tds::TDSRow");
         variable.multiplicity = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1);
         Variable variable2 = vars.get(1);
-        variable2._class = "meta::pure::tds::TDSRow";
+        variable2._class = new PackageableElementPointer(PackageableElementType.CLASS, "meta::pure::tds::TDSRow");
         variable2.multiplicity = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1);
     }
 
