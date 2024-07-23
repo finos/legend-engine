@@ -42,8 +42,13 @@ import java.util.stream.Collectors;
 
 public class FlatDataExternalFormatExtension implements ExternalFormatSchemaGenerationExtension<Root_meta_external_format_flatdata_metamodel_FlatData, ModelToFlatDataConfiguration>, ExternalFormatModelGenerationExtension<Root_meta_external_format_flatdata_metamodel_FlatData, FlatDataToModelConfiguration>
 {
-    private static final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_flatdata_metamodel_FlatData> flatDataContract = (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_flatdata_metamodel_FlatData>) core_external_format_flatdata_externalFormatContract.Root_meta_external_format_flatdata_contract_flatDataFormatContract__ExternalFormatContract_1_(PureModel.getCorePureModel().getExecutionSupport());
-    public static final String TYPE = flatDataContract._id();
+    public static final String TYPE = "FlatData";
+
+    @Override
+    public String getFormat()
+    {
+        return TYPE;
+    }
 
     @Override
     public String type()
@@ -58,9 +63,9 @@ public class FlatDataExternalFormatExtension implements ExternalFormatSchemaGene
     }
 
     @Override
-    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_flatdata_metamodel_FlatData> getExternalFormatContract()
+    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_flatdata_metamodel_FlatData> getExternalFormatContract(PureModel pureModel)
     {
-        return flatDataContract;
+        return (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_flatdata_metamodel_FlatData>) core_external_format_flatdata_externalFormatContract.Root_meta_external_format_flatdata_contract_flatDataFormatContract__ExternalFormatContract_1_(pureModel.getExecutionSupport());
     }
 
     @Override

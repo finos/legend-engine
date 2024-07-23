@@ -32,6 +32,12 @@ import org.finos.legend.pure.generated.core_pure_binding_transformation_tests_ex
 public class ExampleExternalFormatExtension implements ExternalFormatSchemaGenerationExtension<Root_meta_external_format_shared_transformation_tests_ExampleSchema, ModelToExampleSchemaConfiguration>, ExternalFormatModelGenerationExtension<Root_meta_external_format_shared_transformation_tests_ExampleSchema, ExampleSchemaToModelConfiguration>
 {
     @Override
+    public String getFormat()
+    {
+        return TYPE;
+    }
+
+    @Override
     public String type()
     {
         return "MIX_Model_Generation_&_Schema_Generation";
@@ -43,14 +49,13 @@ public class ExampleExternalFormatExtension implements ExternalFormatSchemaGener
         return Lists.mutable.with("__Test__");
     }
 
-    private static final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_shared_transformation_tests_ExampleSchema> externalFormatContract = (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_shared_transformation_tests_ExampleSchema>) core_pure_binding_transformation_tests_externalFormatContract.Root_meta_external_format_shared_transformation_tests_exampleFormatContract__ExternalFormatContract_1_(PureModel.getCorePureModel().getExecutionSupport());
 
-    public static final String TYPE = externalFormatContract._id();
+    public static final String TYPE = "Example";
 
     @Override
-    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_shared_transformation_tests_ExampleSchema> getExternalFormatContract()
+    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_shared_transformation_tests_ExampleSchema> getExternalFormatContract(PureModel pureModel)
     {
-        return externalFormatContract;
+        return (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_shared_transformation_tests_ExampleSchema>) core_pure_binding_transformation_tests_externalFormatContract.Root_meta_external_format_shared_transformation_tests_exampleFormatContract__ExternalFormatContract_1_(pureModel.getExecutionSupport());
     }
 
     @Override

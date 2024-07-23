@@ -106,11 +106,11 @@ public class ExternalFormats
             long start = System.currentTimeMillis();
             LOGGER.info(new LogInfo(identity.getName(), interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_INTERACTIVE_START : LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_START).toString());
             ExternalFormatExtension<?> extension = extensions.get(generateModelInput.config.format);
+            PureModel pureModel = this.modelManager.loadModel(generateModelInput.model, generateModelInput.clientVersion, identity, null);
             if (!(extension instanceof ExternalFormatModelGenerationExtension))
             {
                 throw new UnsupportedOperationException("Model generation not supported for " + extension.getFormat());
             }
-            PureModel pureModel = this.modelManager.loadModel(generateModelInput.model, generateModelInput.clientVersion, identity, null);
             SchemaToModelGenerator generator = new SchemaToModelGenerator(pureModel, generateModelInput.clientVersion, extensions);
             PureModelContextData generated = generator.generate(generateModelInput.config, generateModelInput.sourceSchemaSet, generateModelInput.generateBinding, generateModelInput.targetBindingPath);
             LOGGER.info(new LogInfo(identity.getName(), interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_INTERACTIVE_STOP : LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_STOP, (double) System.currentTimeMillis() - start).toString());
@@ -144,6 +144,9 @@ public class ExternalFormats
             {
                 throw new UnsupportedOperationException("Can't find an extension supporting the external format " + generateSchemaInput.config.format);
             }
+
+            PureModel pureModel = this.modelManager.loadModel(generateSchemaInput.model, generateSchemaInput.clientVersion, identity, null);
+
             if (!(extension instanceof ExternalFormatSchemaGenerationExtension))
             {
                 throw new UnsupportedOperationException("Schema generation not supported for " + extension.getFormat());
@@ -153,7 +156,6 @@ public class ExternalFormats
             {
                 throw new UnsupportedOperationException("Please provide a PureModelContext");
             }
-            PureModel pureModel = this.modelManager.loadModel(generateSchemaInput.model, generateSchemaInput.clientVersion, identity, null);
             ModelToSchemaGenerator generator = new ModelToSchemaGenerator(pureModel, extensions);
             PureModelContextData generated = generator.generate(generateSchemaInput.config, generateSchemaInput.sourceModelUnit, generateSchemaInput.generateBinding, generateSchemaInput.targetBindingPath);
             LOGGER.info(new LogInfo(identity.getName(), interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_INTERACTIVE_STOP : LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_STOP, (double) System.currentTimeMillis() - start).toString());

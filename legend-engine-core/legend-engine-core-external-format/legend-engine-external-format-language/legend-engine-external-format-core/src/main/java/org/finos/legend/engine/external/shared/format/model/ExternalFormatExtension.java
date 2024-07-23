@@ -55,7 +55,7 @@ public interface ExternalFormatExtension<Metamodel> extends LegendExternalFormat
     /**
      * Returns the contract for this external format written in PURE
      */
-    Root_meta_external_format_shared_ExternalFormatContract<Metamodel> getExternalFormatContract();
+    Root_meta_external_format_shared_ExternalFormatContract<Metamodel> getExternalFormatContract(PureModel pureModel);
 
     /**
      * Called to compile an external format schema set of this format.  This should verify the schema contents
@@ -84,26 +84,23 @@ public interface ExternalFormatExtension<Metamodel> extends LegendExternalFormat
      *     ~~END~~
      * </pre>
      */
-    default String getFormat()
-    {
-        return getExternalFormatContract()._id();
-    }
+    String getFormat();
 
     /**
      * Returns whether the external format contract supports binding validation
      */
-    default Boolean supportsBinding()
+    default Boolean supportsBinding(PureModel pureModel)
     {
-        return getExternalFormatContract()._externalFormatBindingValidator() != null;
+        return getExternalFormatContract(pureModel)._externalFormatBindingValidator() != null;
     }
 
     /**
      * Returns the content types (see https://www.iana.org/assignments/media-types/media-types.xhtml) supported
      * by this format.
      */
-    default List<String> getContentTypes()
+    default List<String> getContentTypes(PureModel pureModel)
     {
-        return FastList.newList(getExternalFormatContract()._contentTypes());
+        return FastList.newList(getExternalFormatContract(pureModel)._contentTypes());
     }
 
     /**
@@ -113,7 +110,7 @@ public interface ExternalFormatExtension<Metamodel> extends LegendExternalFormat
      */
     default Root_meta_external_format_shared_binding_validation_BindingDetail bindDetails(Root_meta_external_format_shared_binding_Binding binding, CompileContext context)
     {
-        Root_meta_external_format_shared_ExternalFormatContract<Metamodel> externalFormatContract = getExternalFormatContract();
+        Root_meta_external_format_shared_ExternalFormatContract<Metamodel> externalFormatContract = getExternalFormatContract(context.pureModel);
 
         if (externalFormatContract._externalFormatBindingValidator() == null)
         {

@@ -37,12 +37,10 @@ public class GraphQLFormatExtension implements ExternalFormatModelGenerationExte
         return org.eclipse.collections.impl.factory.Lists.mutable.with("Query", "GraphQL");
     }
 
-    private final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer> graphQLIntrospectionContract = (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer>) core_external_query_graphql_contract.Root_meta_external_query_graphQL_contract_graphQLIntrospectionContract__ExternalFormatContract_1_(PureModel.getCorePureModel().getExecutionSupport());
-
     @Override
-    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer> getExternalFormatContract()
+    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer> getExternalFormatContract(PureModel pureModel)
     {
-        return graphQLIntrospectionContract;
+        return  (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer>) core_external_query_graphql_contract.Root_meta_external_query_graphQL_contract_graphQLIntrospectionContract__ExternalFormatContract_1_(pureModel.getExecutionSupport());
     }
 
     @Override
@@ -68,6 +66,12 @@ public class GraphQLFormatExtension implements ExternalFormatModelGenerationExte
     public String metamodelToText(Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer schemaDetail, PureModel pureModel)
     {
         return null;
+    }
+
+    @Override
+    public String getFormat()
+    {
+        return "GraphQL_Introspection";
     }
 
     @Override

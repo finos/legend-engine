@@ -90,7 +90,7 @@ public class SchemaToModelGenerator extends Generator
             ModelUnit modelUnit = new ModelUnit();
             modelUnit.packageableElementIncludes = ListIterate.collect(packageableElements, this::elementToPath);
 
-            builder.addElement(generateBinding(targetBindingPath, sourceSchemaSet, configuration.sourceSchemaId, schemaExtension.getContentTypes().get(0), modelUnit));
+            builder.addElement(generateBinding(targetBindingPath, sourceSchemaSet, configuration.sourceSchemaId, schemaExtension.getContentTypes(pureModel).get(0), modelUnit));
         }
 
         return toPureModelContextData(packageableElements, builder);

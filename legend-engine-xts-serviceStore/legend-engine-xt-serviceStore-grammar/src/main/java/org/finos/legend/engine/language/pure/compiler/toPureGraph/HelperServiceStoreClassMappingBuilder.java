@@ -260,7 +260,7 @@ public class HelperServiceStoreClassMappingBuilder
     {
         Root_meta_external_format_shared_binding_Binding binding = rootClassMapping._servicesMapping().getAny()._service()._response()._binding();
 
-        ExternalFormatExtension schemaExtension = HelperExternalFormat.getExternalFormatExtension(binding);
+        ExternalFormatExtension schemaExtension = HelperExternalFormat.getExternalFormatExtension(binding, context);
         Root_meta_external_format_shared_binding_validation_BindingDetail bindingDetail = schemaExtension.bindDetails(binding, context);
 
         if (bindingDetail instanceof Root_meta_external_format_shared_binding_validation_SuccessfulBindingDetail)
@@ -437,13 +437,5 @@ public class HelperServiceStoreClassMappingBuilder
         {
             throw new EngineException("Unable to infer type for service parameter : " + requestParameterBuildInfo._serviceParameter()._name(), sourceInformation, EngineErrorType.COMPILATION);
         }
-    }
-
-    private static ExternalFormatExtension getExtension(Root_meta_external_format_shared_binding_Binding binding)
-    {
-        return ExternalFormatExtensionLoader.extensions().values().stream()
-                .filter(ext -> ext.getContentTypes().contains(binding._contentType()))
-                .findFirst()
-                .orElseThrow(() -> new EngineException("Unknown contentType '" + binding._contentType() + "'", SourceInformation.getUnknownSourceInformation(), EngineErrorType.COMPILATION));  // Should never reach here as binding should be compiled before
     }
 }

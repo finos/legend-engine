@@ -31,8 +31,13 @@ import org.finos.legend.pure.generated.core_external_format_xml_externalFormatCo
 
 public class XsdExternalFormatExtension implements ExternalFormatModelGenerationExtension<Root_meta_external_format_xml_metamodel_xsd_XsdSchema, XsdToModelConfiguration>
 {
-    private static final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_xml_metamodel_xsd_XsdSchema> xsdContract = (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_xml_metamodel_xsd_XsdSchema>) core_external_format_xml_externalFormatContract.Root_meta_external_format_xml_contract_xsdFormatContract__ExternalFormatContract_1_(PureModel.getCorePureModel().getExecutionSupport());
-    public static final String TYPE = xsdContract._id();
+    public static final String TYPE = "XSD";
+
+    @Override
+    public String getFormat()
+    {
+        return TYPE;
+    }
 
     @Override
     public MutableList<String> group()
@@ -41,9 +46,9 @@ public class XsdExternalFormatExtension implements ExternalFormatModelGeneration
     }
 
     @Override
-    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_xml_metamodel_xsd_XsdSchema> getExternalFormatContract()
+    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_xml_metamodel_xsd_XsdSchema> getExternalFormatContract(PureModel pureModel)
     {
-        return xsdContract;
+        return (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_xml_metamodel_xsd_XsdSchema>) core_external_format_xml_externalFormatContract.Root_meta_external_format_xml_contract_xsdFormatContract__ExternalFormatContract_1_(pureModel.getExecutionSupport());
     }
 
     @Override

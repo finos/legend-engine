@@ -32,8 +32,13 @@ import org.finos.legend.pure.generated.core_external_format_json_externalFormatC
 
 public class JsonExternalFormatExtension implements ExternalFormatSchemaGenerationExtension<Root_meta_external_format_json_metamodel_JsonSchema, ModelToJsonSchemaConfiguration>, ExternalFormatModelGenerationExtension<Root_meta_external_format_json_metamodel_JsonSchema, JsonSchemaToModelConfiguration>
 {
-    private static final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_json_metamodel_JsonSchema> jsonSchemaContract = (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_json_metamodel_JsonSchema>) core_external_format_json_externalFormatContract.Root_meta_external_format_json_contract_jsonSchemaFormatContract__ExternalFormatContract_1_(PureModel.getCorePureModel().getExecutionSupport());
-    public static final String TYPE = jsonSchemaContract._id();
+    public static final String TYPE = "JSON";
+
+    @Override
+    public String getFormat()
+    {
+        return TYPE;
+    }
 
     @Override
     public String type()
@@ -47,11 +52,10 @@ public class JsonExternalFormatExtension implements ExternalFormatSchemaGenerati
         return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "JSON");
     }
 
-
     @Override
-    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_json_metamodel_JsonSchema> getExternalFormatContract()
+    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_json_metamodel_JsonSchema> getExternalFormatContract(PureModel pureModel)
     {
-        return jsonSchemaContract;
+        return (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_json_metamodel_JsonSchema>) core_external_format_json_externalFormatContract.Root_meta_external_format_json_contract_jsonSchemaFormatContract__ExternalFormatContract_1_(pureModel.getExecutionSupport());
     }
 
     @Override

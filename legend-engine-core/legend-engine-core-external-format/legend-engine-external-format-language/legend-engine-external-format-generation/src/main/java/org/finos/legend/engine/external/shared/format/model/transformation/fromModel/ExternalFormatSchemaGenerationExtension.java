@@ -49,7 +49,7 @@ public interface ExternalFormatSchemaGenerationExtension<Metamodel, SchemaGenCon
      */
     default RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter> getSchemaGenerationProperties(PureModel pureModel)
     {
-        Root_meta_external_format_shared_ExternalFormatFromPureDescriptor<?> descriptor = getExternalFormatContract()._externalFormatFromPureDescriptor();
+        Root_meta_external_format_shared_ExternalFormatFromPureDescriptor<?> descriptor = getExternalFormatContract(pureModel)._externalFormatFromPureDescriptor();
         if (descriptor == null)
         {
             throw new EngineException("Format - " + this.getFormat() + " does not support schema generation");
@@ -62,7 +62,7 @@ public interface ExternalFormatSchemaGenerationExtension<Metamodel, SchemaGenCon
      */
     default Root_meta_external_format_shared_metamodel_SchemaSet generateSchema(SchemaGenConfig config, ModelUnit sourceModelUnit, PureModel pureModel)
     {
-        Root_meta_external_format_shared_ExternalFormatFromPureDescriptor descriptor = getExternalFormatContract()._externalFormatFromPureDescriptor();
+        Root_meta_external_format_shared_ExternalFormatFromPureDescriptor descriptor = getExternalFormatContract(pureModel)._externalFormatFromPureDescriptor();
         if (descriptor == null)
         {
             throw new EngineException("Format - " + this.getFormat() + " does not support schema generation");

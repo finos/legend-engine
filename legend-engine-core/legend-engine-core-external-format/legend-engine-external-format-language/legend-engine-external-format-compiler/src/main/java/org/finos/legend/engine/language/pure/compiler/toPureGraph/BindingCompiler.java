@@ -106,7 +106,7 @@ public class BindingCompiler
             throw new EngineException("ID '" + compiled._schemaId() + "' does not exist in SchemaSet '" + srcBinding.schemaSet + "'", srcBinding.sourceInformation, EngineErrorType.COMPILATION);
         }
 
-        ExternalFormatExtension<?> schemaExtension = getExtension(compiled, srcBinding);
+        ExternalFormatExtension<?> schemaExtension = getExtension(compiled, srcBinding, context);
         if (compiled._schemaSet() != null && !schemaExtension.getFormat().equals(compiled._schemaSet()._format()))
         {
             throw new EngineException("Content type and SchemaSet format do not match", srcBinding.sourceInformation, EngineErrorType.COMPILATION);
@@ -119,7 +119,7 @@ public class BindingCompiler
         String path = context.pureModel.buildPackageString(srcBinding._package, srcBinding.name);
         Root_meta_external_format_shared_binding_Binding compiled = bindingIndex.get(path);
 
-        ExternalFormatExtension<?> schemaExtension = getExtension(compiled, srcBinding);
+        ExternalFormatExtension<?> schemaExtension = getExtension(compiled, srcBinding, context);
         Root_meta_external_format_shared_binding_validation_BindingDetail bindingDetail = schemaExtension.bindDetails(compiled, context);
         if (bindingDetail instanceof Root_meta_external_format_shared_binding_validation_FailedBindingDetail)
         {
@@ -128,10 +128,10 @@ public class BindingCompiler
         }
     }
 
-    private ExternalFormatExtension<?> getExtension(Root_meta_external_format_shared_binding_Binding binding, Binding srcBinding)
+    private ExternalFormatExtension<?> getExtension(Root_meta_external_format_shared_binding_Binding binding, Binding srcBinding, CompileContext context)
     {
         return externalFormatExtensions.values().stream()
-                .filter(ext -> ext.getContentTypes().contains(binding._contentType()))
+                .filter(ext -> ext.getContentTypes(context.pureModel).contains(binding._contentType()))
                 .findFirst()
                 .orElseThrow(() -> new EngineException("Unknown contentType '" + binding._contentType() + "'", srcBinding.sourceInformation, EngineErrorType.COMPILATION));
     }

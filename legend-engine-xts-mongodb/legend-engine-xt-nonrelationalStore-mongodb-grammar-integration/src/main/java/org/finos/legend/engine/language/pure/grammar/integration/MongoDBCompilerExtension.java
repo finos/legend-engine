@@ -117,7 +117,7 @@ public class MongoDBCompilerExtension implements IMongoDBStoreCompilerExtension
                         MutableList<EmbeddedSetImplementation> embeddedSetImplementations = org.eclipse.collections.impl.factory.Lists.mutable.empty();
                         Root_meta_external_store_mongodb_metamodel_pure_MongoDBSetImplementation mongoDBSetImplementation = MongoDBCompilerHelper.createMongoDBSetImplementation(classMapping, context, parentMapping, cm, binding);
 
-                        ExternalFormatExtension schemaExtension = HelperExternalFormat.getExternalFormatExtension(binding);
+                        ExternalFormatExtension schemaExtension = HelperExternalFormat.getExternalFormatExtension(binding, context);
                         Root_meta_external_format_shared_binding_validation_BindingDetail bindingDetail = schemaExtension.bindDetails(binding, context);
 
                         if (bindingDetail instanceof Root_meta_external_format_shared_binding_validation_SuccessfulBindingDetail)

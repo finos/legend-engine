@@ -45,12 +45,12 @@ public class ExternalFormatDescription
     {
         ExternalFormatDescription result = new ExternalFormatDescription();
         result.name = extension.getFormat();
-        result.contentTypes = Collections.unmodifiableList(extension.getContentTypes());
+        result.contentTypes = Collections.unmodifiableList(extension.getContentTypes(pureModel));
         result.supportsModelGeneration = extension instanceof ExternalFormatModelGenerationExtension;
         result.modelGenerationProperties = result.supportsModelGeneration ? toGenerationProperties(((ExternalFormatModelGenerationExtension<?, ?>) extension).getModelGenerationProperties(pureModel)) : Collections.emptyList();
         result.supportsSchemaGeneration = extension instanceof ExternalFormatSchemaGenerationExtension;
         result.schemaGenerationProperties = result.supportsSchemaGeneration ? toGenerationProperties(((ExternalFormatSchemaGenerationExtension<?, ?>) extension).getSchemaGenerationProperties(pureModel)) : Collections.emptyList();
-        result.supportsBinding = extension.supportsBinding();
+        result.supportsBinding = extension.supportsBinding(pureModel);
         return result;
     }
 

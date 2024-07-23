@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.shared.format.model;
 
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.junit.Test;
 
 /**
@@ -26,6 +27,6 @@ public abstract class TestExternalFormatExtension
     @Test
     public void testExternalFormatContractValidity()
     {
-        getExternalFormatExtension().getExternalFormatContract();
+        getExternalFormatExtension().getExternalFormatContract(PureModel.getCorePureModel());
     }
 }

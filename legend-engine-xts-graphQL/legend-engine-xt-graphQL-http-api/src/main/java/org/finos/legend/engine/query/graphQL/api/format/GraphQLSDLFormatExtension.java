@@ -27,11 +27,13 @@ import org.finos.legend.pure.generated.core_external_query_graphql_contract;
 
 public class GraphQLSDLFormatExtension implements ExternalFormatSchemaGenerationExtension<Root_meta_external_query_graphQL_metamodel_sdl_GraphQLSDLContainer, ModelToGraphQLSchemaConfiguration>
 {
+    public static final String TYPE = "GraphQL_SDL";
 
-    private static final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_query_graphQL_metamodel_sdl_GraphQLSDLContainer> contract =
-        (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_query_graphQL_metamodel_sdl_GraphQLSDLContainer>) core_external_query_graphql_contract.Root_meta_external_query_graphQL_contract_graphQLSdlContract__ExternalFormatContract_1_(
-            PureModel.getCorePureModel().getExecutionSupport());
-    public static final String TYPE = contract._id();
+    @Override
+    public String getFormat()
+    {
+        return TYPE;
+    }
 
     @Override
     public MutableList<String> group()
@@ -40,9 +42,10 @@ public class GraphQLSDLFormatExtension implements ExternalFormatSchemaGeneration
     }
 
     @Override
-    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_query_graphQL_metamodel_sdl_GraphQLSDLContainer> getExternalFormatContract()
+    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_query_graphQL_metamodel_sdl_GraphQLSDLContainer> getExternalFormatContract(PureModel pureModel)
     {
-        return contract;
+        return (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_query_graphQL_metamodel_sdl_GraphQLSDLContainer>) core_external_query_graphql_contract.Root_meta_external_query_graphQL_contract_graphQLSdlContract__ExternalFormatContract_1_(
+                pureModel.getExecutionSupport());
     }
 
     @Override

@@ -33,9 +33,13 @@ import org.finos.legend.pure.generated.core_external_language_daml_serialization
 
 public class DamlFormatExtension implements ExternalFormatSchemaGenerationExtension<Root_meta_external_language_haskell_format_HaskellSchema, ModelToDamlConfiguration>
 {
-    private static final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_language_haskell_format_HaskellSchema> damlContract = (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_language_haskell_format_HaskellSchema>) core_external_language_daml_externalFormatContract.Root_meta_external_language_daml_contract_damlFormatContract__ExternalFormatContract_1_(PureModel.getCorePureModel().getExecutionSupport());
+    public static final String TYPE = "DAML";
 
-    public static final String TYPE = damlContract._id();
+    @Override
+    public String getFormat()
+    {
+        return TYPE;
+    }
 
     @Override
     public MutableList<String> group()
@@ -44,9 +48,9 @@ public class DamlFormatExtension implements ExternalFormatSchemaGenerationExtens
     }
 
     @Override
-    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_language_haskell_format_HaskellSchema> getExternalFormatContract()
+    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_language_haskell_format_HaskellSchema> getExternalFormatContract(PureModel pureModel)
     {
-        return damlContract;
+        return (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_language_haskell_format_HaskellSchema>) core_external_language_daml_externalFormatContract.Root_meta_external_language_daml_contract_damlFormatContract__ExternalFormatContract_1_(pureModel.getExecutionSupport());
     }
 
     @Override

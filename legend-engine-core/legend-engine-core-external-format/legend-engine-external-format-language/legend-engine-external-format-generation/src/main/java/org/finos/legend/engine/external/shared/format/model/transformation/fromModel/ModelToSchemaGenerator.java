@@ -63,7 +63,7 @@ public class ModelToSchemaGenerator extends Generator
         builder.addElement(externalFormatSchemaSet);
         if (generateBinding)
         {
-            builder.addElement(generateBinding(targetBindingPath, externalFormatSchemaSet.getPath(), null, schemaExtension.getContentTypes().get(0), sourceModelUnit));
+            builder.addElement(generateBinding(targetBindingPath, externalFormatSchemaSet.getPath(), null, schemaExtension.getContentTypes(pureModel).get(0), sourceModelUnit));
         }
 
         return builder.build();

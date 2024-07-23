@@ -34,8 +34,13 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.support
 
 public class ProtobufFormatExtension implements ExternalFormatSchemaGenerationExtension<Root_meta_external_format_protobuf_metamodel_ProtobufSchema, ModelToProtobufConfiguration>
 {
-    private static final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_protobuf_metamodel_ProtobufSchema> protobufContract = (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_protobuf_metamodel_ProtobufSchema>) core_external_format_protobuf_externalFormatContract.Root_meta_external_format_protobuf_contract_protobufFormatContract__ExternalFormatContract_1_(PureModel.getCorePureModel().getExecutionSupport());
-    public static final String TYPE = protobufContract._id();
+    public static final String TYPE = "Protobuf";
+
+    @Override
+    public String getFormat()
+    {
+        return TYPE;
+    }
 
     @Override
     public MutableList<String> group()
@@ -44,9 +49,9 @@ public class ProtobufFormatExtension implements ExternalFormatSchemaGenerationEx
     }
 
     @Override
-    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_protobuf_metamodel_ProtobufSchema> getExternalFormatContract()
+    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_protobuf_metamodel_ProtobufSchema> getExternalFormatContract(PureModel pureModel)
     {
-        return protobufContract;
+        return (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_protobuf_metamodel_ProtobufSchema>) core_external_format_protobuf_externalFormatContract.Root_meta_external_format_protobuf_contract_protobufFormatContract__ExternalFormatContract_1_(pureModel.getExecutionSupport());
     }
 
     @Override

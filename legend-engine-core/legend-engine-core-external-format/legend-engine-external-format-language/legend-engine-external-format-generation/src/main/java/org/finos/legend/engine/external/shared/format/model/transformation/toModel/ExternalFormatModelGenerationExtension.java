@@ -54,7 +54,7 @@ public interface ExternalFormatModelGenerationExtension<Metamodel, ModelGenConfi
      */
     default RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter> getModelGenerationProperties(PureModel pureModel)
     {
-        Root_meta_external_format_shared_ExternalFormatToPureDescriptor<?> descriptor = getExternalFormatContract()._externalFormatToPureDescriptor();
+        Root_meta_external_format_shared_ExternalFormatToPureDescriptor<?> descriptor = getExternalFormatContract(pureModel)._externalFormatToPureDescriptor();
         if (descriptor == null)
         {
             throw new EngineException("Format - " + this.getFormat() + " does not support model generation");
@@ -67,7 +67,7 @@ public interface ExternalFormatModelGenerationExtension<Metamodel, ModelGenConfi
      */
     default List<? extends PackageableElement> generateModel(Root_meta_external_format_shared_metamodel_SchemaSet schemaSet, ModelGenConfig config, PureModel pureModel)
     {
-        Root_meta_external_format_shared_ExternalFormatToPureDescriptor descriptor = getExternalFormatContract()._externalFormatToPureDescriptor();
+        Root_meta_external_format_shared_ExternalFormatToPureDescriptor descriptor = getExternalFormatContract(pureModel)._externalFormatToPureDescriptor();
         if (descriptor == null)
         {
             throw new EngineException("Format - " + this.getFormat() + " does not support model generation");
