@@ -677,7 +677,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                 (this.isVariableInFunctionSignature ? "" : "$") +
                 PureGrammarComposerUtility.convertIdentifier(variable.name) +
                 (this.isRenderingHTML() ? "</span>" : "") +
-                (variable._class != null ? ": " + HelperValueSpecificationGrammarComposer.printFullPath(variable._class, this) + "[" + HelperDomainGrammarComposer.renderMultiplicity(variable.multiplicity) + "]" : "");
+                (variable._class != null ? ": " + HelperValueSpecificationGrammarComposer.printFullPath(variable._class.path, this) + "[" + HelperDomainGrammarComposer.renderMultiplicity(variable.multiplicity) + "]" : "");
     }
 
     @Override

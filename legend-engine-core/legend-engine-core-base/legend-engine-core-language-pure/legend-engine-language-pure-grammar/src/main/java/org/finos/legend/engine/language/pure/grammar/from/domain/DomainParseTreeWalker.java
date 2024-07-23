@@ -392,7 +392,8 @@ public class DomainParseTreeWalker
         {
             Variable variable = new Variable();
             variable.name = PureGrammarParserUtility.fromIdentifier(functionVariableExpressionContext.identifier());
-            variable._class = functionVariableExpressionContext.type().getText();
+            String path = functionVariableExpressionContext.type().getText();
+            variable._class = new PackageableElementPointer(PackageableElementType.CLASS, path, walkerSourceInformation.getSourceInformation(functionVariableExpressionContext.type()));
             variable.multiplicity = this.buildMultiplicity(functionVariableExpressionContext.multiplicity().multiplicityArgument());
             variable.sourceInformation = walkerSourceInformation.getSourceInformation(functionVariableExpressionContext);
             return variable;
@@ -435,7 +436,8 @@ public class DomainParseTreeWalker
         {
             Variable variable = new Variable();
             variable.name = PureGrammarParserUtility.fromIdentifier(functionVariableExpressionContext.identifier());
-            variable._class = functionVariableExpressionContext.type().getText();
+            String path = functionVariableExpressionContext.type().getText();
+            variable._class = new PackageableElementPointer(PackageableElementType.CLASS, path, this.walkerSourceInformation.getSourceInformation(functionVariableExpressionContext.type()));
             variable.multiplicity = this.buildMultiplicity(functionVariableExpressionContext.multiplicity().multiplicityArgument());
             variable.sourceInformation = this.walkerSourceInformation.getSourceInformation(functionVariableExpressionContext);
             return variable;
@@ -1325,7 +1327,7 @@ public class DomainParseTreeWalker
                 {
                     hasLambdaParams = true;
                     DomainParserGrammar.IdentifierContext idCtx = ctx.lambdaFunction().lambdaParam(i).identifier();
-                    expr = this.lambdaParam(ctx.lambdaFunction().lambdaParam(i).lambdaParamType(), idCtx, typeParametersNames, space);
+                    expr = this.lambdaParam(ctx.lambdaFunction().lambdaParam(i), idCtx, typeParametersNames, space);
                     expressions.add(expr);
                 }
             }
@@ -1333,7 +1335,7 @@ public class DomainParseTreeWalker
         }
         else if (ctx.lambdaParam() != null && ctx.lambdaPipe() != null)
         {
-            expr = this.lambdaParam(ctx.lambdaParam().lambdaParamType(), ctx.lambdaParam().identifier(), typeParametersNames, space);
+            expr = this.lambdaParam(ctx.lambdaParam(), ctx.lambdaParam().identifier(), typeParametersNames, space);
             expressions.add(expr);
             result = this.lambdaPipe(ctx.lambdaPipe(), ctx.lambdaParam().getStart(), expressions, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
         }
@@ -1382,12 +1384,12 @@ public class DomainParseTreeWalker
         colSpec.type = oneColSpec.type() == null ? null : oneColSpec.type().getText();
         if (oneColSpec.lambdaParam() != null && oneColSpec.lambdaPipe() != null)
         {
-            Variable var = this.lambdaParam(oneColSpec.lambdaParam().lambdaParamType(), oneColSpec.lambdaParam().identifier(), typeParametersNames, space);
+            Variable var = this.lambdaParam(oneColSpec.lambdaParam(), oneColSpec.lambdaParam().identifier(), typeParametersNames, space);
             params.add(var);
             colSpec.function1 = this.lambdaPipe(oneColSpec.lambdaPipe(), oneColSpec.lambdaParam().getStart(), params, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
             if (oneColSpec.extraFunction() != null)
             {
-                List<Variable> var2 = Lists.mutable.with(this.lambdaParam(oneColSpec.extraFunction().lambdaParam().lambdaParamType(), oneColSpec.extraFunction().lambdaParam().identifier(), typeParametersNames, space));
+                List<Variable> var2 = Lists.mutable.with(this.lambdaParam(oneColSpec.extraFunction().lambdaParam(), oneColSpec.extraFunction().lambdaParam().identifier(), typeParametersNames, space));
                 colSpec.function2 = this.lambdaPipe(oneColSpec.extraFunction().lambdaPipe(), oneColSpec.extraFunction().lambdaParam().getStart(), var2, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
             }
         }
@@ -1480,14 +1482,15 @@ public class DomainParseTreeWalker
         return Lists.mutable.with(new GraphFetchTreeParseTreeWalker(graphFetchWalkerSourceInformation).visitDefinition(graphParser.definition()));
     }
 
-    private Variable lambdaParam(DomainParserGrammar.LambdaParamTypeContext ctx, DomainParserGrammar.IdentifierContext var, List<String> typeParametersNames, String space)
+    private Variable lambdaParam(DomainParserGrammar.LambdaParamContext ctx, DomainParserGrammar.IdentifierContext var, List<String> typeParametersNames, String space)
     {
         Variable variable = new Variable();
-        if (ctx != null)
+        if (ctx != null && ctx.lambdaParamType() != null)
         {
-            variable.multiplicity = this.buildMultiplicity(ctx.multiplicity().multiplicityArgument());
-            variable._class = ctx.type().getText();
-            variable.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.type());
+            variable.multiplicity = this.buildMultiplicity(ctx.lambdaParamType().multiplicity().multiplicityArgument());
+            String path = ctx.lambdaParamType().type().getText();
+            variable._class = new PackageableElementPointer(PackageableElementType.CLASS, path, walkerSourceInformation.getSourceInformation(ctx.lambdaParamType().type()));
+            variable.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         }
         variable.name = PureGrammarParserUtility.fromIdentifier(var);
         return variable;

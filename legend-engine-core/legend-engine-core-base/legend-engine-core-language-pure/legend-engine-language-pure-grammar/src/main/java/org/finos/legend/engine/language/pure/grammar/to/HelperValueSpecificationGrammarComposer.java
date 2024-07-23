@@ -313,12 +313,12 @@ public class HelperValueSpecificationGrammarComposer
 
     private static String getParameterSignature(Variable p)
     {
-        return p._class != null ? getClassSignature(p._class) + "_" + getMultiplicitySignature(p.multiplicity) : null;
+        return p._class != null ? getClassSignature(p._class.path) + "_" + getMultiplicitySignature(p.multiplicity) : null;
     }
 
     private static String getFunctionDescriptorParameterSignature(Variable p)
     {
-        return p._class != null ? getClassSignature(p._class) + "[" + HelperDomainGrammarComposer.renderMultiplicity(p.multiplicity) + "]" : null;
+        return p._class != null ? getClassSignature(p._class.path) + "[" + HelperDomainGrammarComposer.renderMultiplicity(p.multiplicity) + "]" : null;
     }
 
     private static String getClassSignature(String _class)

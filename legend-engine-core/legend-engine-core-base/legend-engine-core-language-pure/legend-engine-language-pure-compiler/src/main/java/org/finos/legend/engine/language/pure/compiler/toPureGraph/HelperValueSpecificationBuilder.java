@@ -23,6 +23,8 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
@@ -245,13 +247,14 @@ public class HelperValueSpecificationBuilder
                 Variable automaLambdaparam = new Variable();
                 automapvar.name = automapName;
                 appliedProperty.parameters = Lists.mutable.of(automapvar);
+                appliedProperty.sourceInformation = sourceInformation;
                 if (!localParameters.isEmpty())
                 {
                     localParameters.remove(0);
                 }
                 appliedProperty.parameters.addAll(localParameters);
                 automaLambdaparam.name = automapName;
-                automaLambdaparam._class = HelperModelBuilder.getElementFullPath((PackageableElement) inferredVariable._genericType()._rawType(), context.pureModel.getExecutionSupport());
+                automaLambdaparam._class = new PackageableElementPointer(PackageableElementType.CLASS, HelperModelBuilder.getElementFullPath((PackageableElement) inferredVariable._genericType()._rawType(), context.pureModel.getExecutionSupport()));
                 automaLambdaparam.multiplicity = Multiplicity.PURE_ONE;
                 automapLambda.body = Lists.mutable.of(appliedProperty);
 
