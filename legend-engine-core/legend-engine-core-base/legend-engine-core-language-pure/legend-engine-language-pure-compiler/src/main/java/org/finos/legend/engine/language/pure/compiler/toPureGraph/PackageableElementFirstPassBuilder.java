@@ -175,7 +175,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
 
         ProcessingContext ctx = new ProcessingContext("Function '" + functionFullName + "' First Pass");
 
-        setNameAndPackage(targetFunc, functionSignature, function._package, function.sourceInformation)
+        this.context.pureModel.setNameAndPackage(targetFunc, functionSignature, function._package, function.sourceInformation)
                 ._functionName(functionName) // function name to be used in the handler map -> meta::pure::functions::date::isAfterDay
                 ._classifierGenericType(newGenericType(this.context.pureModel.getType("meta::pure::metamodel::function::ConcreteFunctionDefinition"), PureModel.buildFunctionType(ListIterate.collect(function.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), ctx))), this.context.resolveGenericType(function.returnType, function.sourceInformation), this.context.pureModel.getMultiplicity(function.returnMultiplicity), this.context.pureModel)))
                 ._stereotypes(ListIterate.collect(function.stereotypes, this::resolveStereotype))
@@ -314,35 +314,6 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
 
     private <T extends PackageableElement> T setNameAndPackage(T pureElement, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement sourceElement)
     {
-        return setNameAndPackage(pureElement, sourceElement.name, sourceElement._package, sourceElement.sourceInformation);
-    }
-
-    private <T extends PackageableElement> T setNameAndPackage(T pureElement, String name, String packagePath, SourceInformation sourceInformation)
-    {
-        // Validate and set name
-        if ((name == null) || name.isEmpty())
-        {
-            throw new EngineException("PackageableElement name may not be null or empty", sourceInformation, EngineErrorType.COMPILATION);
-        }
-        if (!name.equals(pureElement.getName()))
-        {
-            throw new EngineException("PackageableElement name '" + name + "' must match CoreInstance name '" + pureElement.getName() + "'", sourceInformation, EngineErrorType.COMPILATION);
-        }
-        pureElement._name(name);
-
-        // Validate and set package
-        Package pack = this.context.pureModel.getOrCreatePackage(packagePath);
-
-        synchronized (pack)
-        {
-            if (pack._children().anySatisfy(c -> name.equals(c._name())))
-            {
-                throw new EngineException("An element named '" + name + "' already exists in the package '" + packagePath + "'", sourceInformation, EngineErrorType.COMPILATION);
-            }
-            pureElement._package(pack);
-            pureElement.setSourceInformation(SourceInformationHelper.toM3SourceInformation(sourceInformation));
-            pack._childrenAdd(pureElement);
-        }
-        return pureElement;
+        return this.context.pureModel.setNameAndPackage(pureElement, sourceElement.name, sourceElement._package, sourceElement.sourceInformation);
     }
 }
