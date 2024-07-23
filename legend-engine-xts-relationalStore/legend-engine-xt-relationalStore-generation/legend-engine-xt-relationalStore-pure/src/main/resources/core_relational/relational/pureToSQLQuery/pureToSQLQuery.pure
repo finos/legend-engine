@@ -2810,8 +2810,14 @@ function meta::relational::functions::pureToSqlQuery::processTdsWindowColumn(f:F
 
 function meta::relational::functions::pureToSqlQuery::processTdsWindowColumn(f:FunctionExpression[1], i:InstanceValue[0..1], sortFe:ValueSpecification[0..1], operationFe: ValueSpecification[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-   let mainQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
+   let topQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
+   let selectQuery = $topQuery.select->cast(@TdsSelectSqlQuery);
+   
+   let shouldIsolateDistinct = $selectQuery.distinct->defaultIfEmpty(false)->toOne();
+
+   let mainQuery = if($shouldIsolateDistinct, |$selectQuery->isolateTdsSelect($topQuery, $extensions), |$topQuery)->cast(@SelectWithCursor);
    let mainSelect = $mainQuery.select->cast(@TdsSelectSqlQuery);
+
    let columnName = $f.parametersValues->last()->toOne()->cast(@InstanceValue).values->at(0)->cast(@String);
    assert(!$mainSelect.columns->map(col | $col->extractColumnName())->contains($columnName), | 'Attempting to reuse the same column name: '+ $columnName);
    let windowElement = if($i->isNotEmpty(),|$i.values->map(v|let col = findAliasOrFail($v->toString(), $mainSelect);
@@ -2826,6 +2832,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsWindowColumn(f:F
    let windowColumn = ^Alias(name='"'+$columnName+'"' , relationalElement = ^meta::relational::metamodel::WindowColumn(columnName = $columnName,func=$func, window = ^meta::relational::metamodel::Window(partition=$windowElement,sortBy=$sortElement, sortDirection=$sortDirection)));
    let pureType = $olapOperation->match([t:TdsOlapAggregation<Any>[1]|$t.func->functionReturnType().rawType->toOne(), r:TdsOlapRank<Any>[1]|Integer]);
    let newPath = pair($columnName, ^PathInformation(type=$pureType, relationalType= meta::relational::transform::fromPure::pureTypeToDataType($pureType)));
+   
    ^$mainSelect(columns = $mainSelect.columns->concatenate($windowColumn),paths +=$newPath)->isolateSubSelectIfNotLastOperation($operation, $f, $state.functionExpressionStack, $extensions);
 }
 
