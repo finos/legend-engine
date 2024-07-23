@@ -152,7 +152,6 @@ public class PureModelProcessParameter
         public void close()
         {
             this.lock.unlock();
-            ;
         }
     }
 

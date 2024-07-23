@@ -1303,38 +1303,35 @@ public class PureModel implements IPureModel
 
     private org.finos.legend.pure.m3.coreinstance.Package getOrCreatePackage_int(org.finos.legend.pure.m3.coreinstance.Package parent, String pack, boolean insert, int start)
     {
-        try (AutoCloseableLock ignored = this.pureModelProcessParameter.readLock())
+        int end = pack.indexOf(':', start);
+        String name = (end == -1) ? pack.substring(start) : pack.substring(start, end);
+        org.finos.legend.pure.m3.coreinstance.Package child = findChildPackage(parent, name);
+        if (child == null)
         {
-            int end = pack.indexOf(':', start);
-            String name = (end == -1) ? pack.substring(start) : pack.substring(start, end);
-            org.finos.legend.pure.m3.coreinstance.Package child = findChildPackage(parent, name);
-            if (child == null)
+            if (!insert)
             {
-                if (!insert)
-                {
-                    StringBuilder builder = new StringBuilder("Can't find package '").append(pack, start, pack.length()).append("' in '");
-                    PackageableElement.writeUserPathForPackageableElement(builder, parent);
-                    builder.append("'");
-                    throw new EngineException(builder.toString());
-                }
-                if (RESERVED_PACKAGES.contains(name))
-                {
-                    throw new EngineException("Can't create package with reserved name '" + name + "'");
-                }
-
-                try (AutoCloseableLock ignored1 = this.pureModelProcessParameter.writeLock())
-                {
-                    child = findChildPackage(parent, name);
-                    if (child == null)
-                    {
-                        child = new Package_Impl(name, null, this.getClass("Package"))._name(name)._package(parent);
-                        parent._childrenAdd(child);
-                    }
-                }
+                StringBuilder builder = new StringBuilder("Can't find package '").append(pack, start, pack.length()).append("' in '");
+                PackageableElement.writeUserPathForPackageableElement(builder, parent);
+                builder.append("'");
+                throw new EngineException(builder.toString());
+            }
+            if (RESERVED_PACKAGES.contains(name))
+            {
+                throw new EngineException("Can't create package with reserved name '" + name + "'");
             }
 
-            return (end == -1) ? child : getOrCreatePackage_int(child, pack, insert, end + 2);
+            try (AutoCloseableLock ignored1 = this.pureModelProcessParameter.writeLock())
+            {
+                child = findChildPackage(parent, name);
+                if (child == null)
+                {
+                    child = new Package_Impl(name, null, this.getClass("Package"))._name(name)._package(parent);
+                    parent._childrenAdd(child);
+                }
+            }
         }
+
+        return (end == -1) ? child : getOrCreatePackage_int(child, pack, insert, end + 2);
     }
 
     private org.finos.legend.pure.m3.coreinstance.Package findChildPackage(org.finos.legend.pure.m3.coreinstance.Package parent, String childName)
