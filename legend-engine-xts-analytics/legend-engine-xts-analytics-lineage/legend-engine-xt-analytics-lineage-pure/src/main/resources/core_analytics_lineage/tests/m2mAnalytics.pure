@@ -13,8 +13,37 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::tes
                                                                                     element=^meta::external::store::model::ModelStore())),
                                 defaultExtensions()
                 );
+  let expectedDatabaseNodesId = [];
+  let expectedDatabaseEdgesId = [];
 
-   true;
+  let expectedClassNodesId = [
+    'Lambda',
+    'meta::analytics::lineage::test::TargetClass',
+    'meta::analytics::lineage::test::SourceClass',
+    'pack_meta::analytics::lineage::test'
+  ];
+  
+  let expectedClassEdgesId = [
+    'Lambda -> meta::analytics::lineage::test::TargetClass',
+    'meta::analytics::lineage::test::TargetClass -> pack_meta::analytics::lineage::test',
+    'meta::analytics::lineage::test::TargetClass -> meta::analytics::lineage::test::SourceClass',
+    'meta::analytics::lineage::test::SourceClass -> pack_meta::analytics::lineage::test'
+  ];
+
+  let expectedPropertyTrees = [
+    ['root\n',
+     ' c_TargetClass\n',
+     '  p_TargetClass.value1\n']->joinStrings(),
+    ['root\n',
+     ' c_TargetClass\n',
+     '  p_TargetClass.value1\n']->joinStrings()
+  ];
+
+  assertSameElements($expectedDatabaseNodesId, $result.databaseLineage.nodes);
+  assertSameElements($expectedDatabaseEdgesId, $result.databaseLineage.edges);
+  assertSameElements($expectedClassNodesId, $result.classLineage.nodes.data.id);
+  assertSameElements($expectedClassEdgesId, $result.classLineage.edges.data->map(m | $m.target.data.id + ' -> ' + $m.source.data.id));
+  assertSameElements($expectedPropertyTrees, $result.functionTrees->map(ft | $ft->meta::pure::lineage::scanProperties::propertyTree::printTree('')));
 }
 
 Class meta::analytics::lineage::test::TargetClass
