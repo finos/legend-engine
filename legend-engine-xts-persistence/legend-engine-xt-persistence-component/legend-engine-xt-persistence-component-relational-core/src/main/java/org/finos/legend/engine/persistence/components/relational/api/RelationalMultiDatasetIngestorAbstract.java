@@ -175,11 +175,11 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         // 1. Validate initialization has been performed
         validateInitialization();
 
-        // 2. Acquire lock for all ingest stages
-        acquireLock();
+        // 2. Acquire lock for all ingest stages and get the latest batch ID
+        long batchId = acquireLock();
 
         // 3. Perform ingestion
-        List<DatasetIngestResults> result = performIngestionForAllStages();
+        List<DatasetIngestResults> result = performIngestionForAllStages(batchId);
         LOGGER.info("Ingestion completed");
 
         return result;
@@ -308,7 +308,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         }
     }
 
-    private void acquireLock()
+    private long acquireLock()
     {
         LOGGER.info("Concurrent safety is enabled, Acquiring lock");
         Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
@@ -316,9 +316,10 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         // TODO: Instead of using the generator/planner to do this, we should build the logical plan here
         // TODO: This step should also return the batch ID
         //executor.executePhysicalPlan(generatorResult.acquireLockSqlPlan().orElseThrow(IllegalStateException::new), placeHolderKeyValues);
+        return 1;
     }
 
-    private List<DatasetIngestResults> performIngestionForAllStages()
+    private List<DatasetIngestResults> performIngestionForAllStages(long batchId)
     {
         List<DatasetIngestResults> results = new ArrayList<>();
 
@@ -369,15 +370,17 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 if (enrichedIngestMode instanceof BulkLoad)
                 {
                     LOGGER.info("Starting Bulk Load for stage");
-                    ingestorResults = ApiUtils.performBulkLoad(enrichedDatasets, transformer, planner, executor, generatorResult, enrichedIngestMode,
-                        SchemaEvolutionResult.builder().updatedDatasets(enrichedDatasets).build(), additionalMetadata(), executionTimestampClock(), relationalSink());
+                    ingestorResults = ApiUtils.performBulkLoad(enrichedDatasets, transformer, planner, executor, generatorResult,
+                        enrichedIngestMode, SchemaEvolutionResult.builder().updatedDatasets(enrichedDatasets).build(),
+                        additionalMetadata(), executionTimestampClock(), relationalSink(), Optional.of(batchId));
                     LOGGER.info("Ingestion completed for stage");
                 }
                 else
                 {
                     LOGGER.info(String.format("Starting Ingestion for stage with IngestMode: {%s}", enrichedIngestMode.getClass().getSimpleName()));
-                    ingestorResults = ApiUtils.performIngestion(enrichedDatasets, transformer, planner, executor, generatorResult, new ArrayList<>(),
-                        enrichedIngestMode, SchemaEvolutionResult.builder().updatedDatasets(enrichedDatasets).build(), additionalMetadata(), executionTimestampClock());
+                    ingestorResults = ApiUtils.performIngestion(enrichedDatasets, transformer, planner, executor, generatorResult,
+                        new ArrayList<>(), enrichedIngestMode, SchemaEvolutionResult.builder().updatedDatasets(enrichedDatasets).build(),
+                        additionalMetadata(), executionTimestampClock(), Optional.of(batchId));
                     LOGGER.info("Ingestion completed for stage");
                 }
 
@@ -388,7 +391,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
             results.add(DatasetIngestResults.builder()
                 .dataset(dataset)
                 .ingestRequestId(ingestRequestId())
-                .batchId(0) // TODO
+                .batchId(batchId)
                 .addAllIngestStageResults(ingestStageResults)
                 .build());
         }

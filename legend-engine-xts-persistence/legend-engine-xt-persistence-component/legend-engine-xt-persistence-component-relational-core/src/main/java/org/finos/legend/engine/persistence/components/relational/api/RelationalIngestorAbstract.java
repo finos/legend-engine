@@ -528,12 +528,12 @@ public abstract class RelationalIngestorAbstract
         if (enrichedIngestMode instanceof BulkLoad)
         {
             LOGGER.info("Starting Bulk Load");
-            return ApiUtils.performBulkLoad(enrichedDatasets, transformer, planner, executor, generatorResult, enrichedIngestMode, schemaEvolutionResult, additionalMetadata(), executionTimestampClock(), relationalSink());
+            return ApiUtils.performBulkLoad(enrichedDatasets, transformer, planner, executor, generatorResult, enrichedIngestMode, schemaEvolutionResult, additionalMetadata(), executionTimestampClock(), relationalSink(), Optional.empty());
         }
         else
         {
             LOGGER.info(String.format("Starting Ingestion with IngestMode: {%s}", enrichedIngestMode.getClass().getSimpleName()));
-            return ApiUtils.performIngestion(enrichedDatasets, transformer, planner, executor, generatorResult, dataSplitRanges, enrichedIngestMode, schemaEvolutionResult, additionalMetadata(), executionTimestampClock());
+            return ApiUtils.performIngestion(enrichedDatasets, transformer, planner, executor, generatorResult, dataSplitRanges, enrichedIngestMode, schemaEvolutionResult, additionalMetadata(), executionTimestampClock(), Optional.empty());
         }
     }
 

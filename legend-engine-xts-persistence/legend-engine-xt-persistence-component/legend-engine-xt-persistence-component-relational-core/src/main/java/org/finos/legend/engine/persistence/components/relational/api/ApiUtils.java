@@ -259,7 +259,7 @@ public class ApiUtils
 
     public static List<IngestorResult> performIngestion(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Planner planner, Executor<SqlGen,
         TabularData, SqlPlan> executor, GeneratorResult generatorResult, List<DataSplitRange> dataSplitRanges, IngestMode ingestMode,
-        SchemaEvolutionResult schemaEvolutionResult, Map<String, Object> additionalMetadata, Clock executionTimestampClock)
+        SchemaEvolutionResult schemaEvolutionResult, Map<String, Object> additionalMetadata, Clock executionTimestampClock, Optional<Long> batchId)
     {
         List<IngestorResult> results = new ArrayList<>();
         int dataSplitIndex = 0;
@@ -268,7 +268,7 @@ public class ApiUtils
         {
             Optional<DataSplitRange> dataSplitRange = Optional.ofNullable(dataSplitsCount == 0 ? null : dataSplitRanges.get(dataSplitIndex));
             // Extract the Placeholders values
-            Map<String, PlaceholderValue> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, dataSplitRange, additionalMetadata, executionTimestampClock);
+            Map<String, PlaceholderValue> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, dataSplitRange, additionalMetadata, executionTimestampClock, batchId);
             // Load main table, extract stats and update metadata table
             Map<StatisticName, Object> statisticsResultMap = loadData(executor, generatorResult, placeHolderKeyValues, executionTimestampClock);
             IngestorResult result = IngestorResult.builder()
@@ -325,10 +325,11 @@ public class ApiUtils
     public static List<IngestorResult> performBulkLoad(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Planner planner,
                                                 Executor<SqlGen, TabularData, SqlPlan> executor, GeneratorResult generatorResult,
                                                 IngestMode ingestMode, SchemaEvolutionResult schemaEvolutionResult,
-                                                Map<String, Object> additionalMetadata, Clock executionTimestampClock, RelationalSink relationalSink)
+                                                Map<String, Object> additionalMetadata, Clock executionTimestampClock,
+                                                RelationalSink relationalSink, Optional<Long> batchId)
     {
         List<IngestorResult> results = new ArrayList<>();
-        Map<String, PlaceholderValue> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, Optional.empty(), additionalMetadata, executionTimestampClock);
+        Map<String, PlaceholderValue> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, Optional.empty(), additionalMetadata, executionTimestampClock, batchId);
 
         // Execute ingest SqlPlan
         IngestorResult result = relationalSink.performBulkLoad(datasets, executor, generatorResult.ingestSqlPlan(), generatorResult.postIngestStatisticsSqlPlan(), placeHolderKeyValues);
@@ -349,15 +350,18 @@ public class ApiUtils
         return results;
     }
 
-    // TODO: This method needs to be changed to take in a batch ID for multi dataset
     private static Map<String, PlaceholderValue> extractPlaceHolderKeyValues(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
                                                                       Planner planner, Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode,
-                                                                      Optional<DataSplitRange> dataSplitRange, Map<String, Object> additionalMetadata, Clock executionTimestampClock)
+                                                                      Optional<DataSplitRange> dataSplitRange, Map<String, Object> additionalMetadata,
+                                                                      Clock executionTimestampClock, Optional<Long> nextBatchId)
     {
         Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
 
         // Handle batch ID
-        Optional<Long> nextBatchId = ApiUtils.getNextBatchId(datasets, executor, transformer);
+        if (!nextBatchId.isPresent())
+        {
+            nextBatchId = ApiUtils.getNextBatchId(datasets, executor, transformer);
+        }
         if (nextBatchId.isPresent())
         {
             LOGGER.info(String.format("Obtained the next Batch id: %s", nextBatchId.get()));

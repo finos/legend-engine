@@ -31,7 +31,7 @@ public abstract class DatasetIngestResultsAbstract
 {
     public abstract Optional<String> ingestRequestId();
 
-    public abstract int batchId();
+    public abstract long batchId();
 
     public abstract String dataset();
 
