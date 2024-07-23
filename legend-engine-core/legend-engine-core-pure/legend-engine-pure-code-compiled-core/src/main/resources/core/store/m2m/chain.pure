@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::router::metamodel::clustering::*;
 import meta::pure::milestoning::*;
 import meta::pure::executionPlan::*;
 import meta::pure::router::routing::*;
@@ -151,7 +152,7 @@ function meta::pure::mapping::modelToModel::chain::allReprocess(f:FunctionExpres
                         print(if(!$debug.debug, |'', | $debug.space+'  Mapping: '+$a.name->toOne()+'\n'));
                         let rez = ^LambdaFunction<{->Any[*]}>(expressionSequence = $b.res->cast(@FunctionExpression))->routeFunction($a, ^Runtime(), $extensions, $debug);
                         print(if(!$debug.debug, |'', | $debug.space+'  Routed: '+$rez->at(0)->asString()+'\n'));
-                        let res = $rez.expressionSequence->evaluateAndDeactivate()->cast(@StoreMappingClusteredValueSpecification).val->match(
+                        let res = $rez.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification).val->match(
                            [
                               e:StoreMappingRoutedValueSpecification[1]|pair(list($e), $e.value->cast(@FunctionExpression)->toOne()->reprocess($e, $a, $mappings, [], $extensions).newExpression);,
                               f:FunctionExpression[1]|pair(list($r), $f->reprocess($r, $a, $mappings, [], $extensions).newExpression);
@@ -223,6 +224,7 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                   );,
          r:FunctionRoutedValueSpecification[1]|$r.value->reprocess($e, $mapping, $mappings, $r, $extensions);,
          e:StoreMappingRoutedValueSpecification[1]|$e.value->reprocess($e, $mapping, $mappings, [], $extensions);,
+         s:StoreMappingClusteredValueSpecification[1] | $s.val->reprocess($e, $mapping, $mappings, [], $extensions);,
          v:VariableExpression[1]| let newGenericType = if($v.genericType.rawType->toOne()->instanceOf(Class) && $e.sets->isNotEmpty(),| ^GenericType(rawType=$e.sets->at(0)->cast(@PureInstanceSetImplementation).srcClass), | $v.genericType);
                                   ^Res(
                                        newExpression = ^$v(genericType=$newGenericType),
@@ -293,7 +295,9 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                                       d:Date[1]|$d,
                                                                       b:Boolean[1]|$b,
                                                                       f:Float[1]|$f,
-                                                                      e:Enumeration<Any>[1]|$e
+                                                                      e:Enumeration<Any>[1]|$e,
+                                                                      st:StoreMappingClusteredValueSpecification[1]| $st,
+                                                                      gft:meta::pure::graphFetch::GraphFetchTree[1] | $gft
                                                                      ]););
                             let values = $results->map(r|$r->match([v:Res[1]|$v.newExpression->match([i:InstanceValue[1]|$i.values,a:Any[1]|$a]),k:Any[1]|$k]));
 
