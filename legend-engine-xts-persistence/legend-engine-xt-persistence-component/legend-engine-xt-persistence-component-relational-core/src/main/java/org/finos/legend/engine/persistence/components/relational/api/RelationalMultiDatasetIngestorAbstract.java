@@ -22,6 +22,9 @@ import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestModeOptimizationColumnHandler;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestModeVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.TempDatasetsEnricher;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.planner.Planner;
 import org.finos.legend.engine.persistence.components.planner.Planners;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
@@ -29,6 +32,7 @@ import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
+import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
@@ -148,7 +152,10 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         // 1. Initialize the executor
         Executor executor = initExecutor(connection);
 
-        // 2. Initialize the ingestStageMetadataMap
+        // 2. Initialize the transformer
+        transformer = new RelationalTransformer(relationalSink(), transformOptions());
+
+        // 3. Initialize the ingestStageMetadataMap
         initIngestStageMetadataMap(datasetIngestDetails);
 
         return executor;
@@ -210,7 +217,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 // 2. Build datasets with main, staging and metadata
                 Datasets enrichedDatasets = Datasets.builder()
                     .stagingDataset(ingestStage.stagingDataset())
-                    .mainDataset(ApiUtils.deriveMainDatasetFromStaging(ingestStage.mainDataset(), ingestStage.stagingDataset(), enrichedIngestMode))
+                    .mainDataset(ApiUtils.deriveMainDatasetFromStaging(convertDatasetReferenceToDatasetSchema(ingestStage.mainDataset()), ingestStage.stagingDataset(), enrichedIngestMode))
                     .metadataDataset(metadataDataset)
                     .build();
 
@@ -237,7 +244,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                     .cleanupStagingData(cleanupStagingData())
                     .collectStatistics(collectStatistics())
                     .writeStatistics(collectStatistics()) // Collecting statistics will imply writing it into the batch metadata table
-                    .skipMainAndMetadataDatasetCreation(true)
+                    .skipMainAndMetadataDatasetCreation(false) // TODO: ??
                     .enableConcurrentSafety(true)
                     .caseConversion(caseConversion())
                     .executionTimestampClock(executionTimestampClock())
@@ -261,7 +268,11 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                     .planner(planner)
                     .build();
 
-                ingestStageMetadataMap.getOrDefault(details.dataset(), new ArrayList<>()).add(ingestStageMetadata);
+                if (!ingestStageMetadataMap.containsKey(details.dataset()))
+                {
+                    ingestStageMetadataMap.put(details.dataset(), new ArrayList<>());
+                }
+                ingestStageMetadataMap.get(details.dataset()).add(ingestStageMetadata);
             }
         }
     }
@@ -285,7 +296,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 RelationalGenerator generator = ingestStageMetadata.relationalGenerator();
                 Planner planner = ingestStageMetadata.planner();
 
-                GeneratorResult generatorResult = generator.generateOperationsForCreate(Resources.builder().build(), planner, transformer); // Resources are not used in pre-actions
+                GeneratorResult generatorResult = generator.generateOperationsForCreate(Resources.builder().build(), planner); // Resources are not used in pre-actions
                 executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
             }
         }
@@ -357,7 +368,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 }
 
                 // 3. Generate SQLs
-                GeneratorResult generatorResult = generator.generateOperationsForIngest(resourcesBuilder.build(), planner, transformer);
+                GeneratorResult generatorResult = generator.generateOperationsForIngest(resourcesBuilder.build(), planner);
 
                 // 4. Perform deduplication and versioning
                 if (generatorResult.deduplicationAndVersioningSqlPlan().isPresent())
@@ -406,5 +417,21 @@ public abstract class RelationalMultiDatasetIngestorAbstract
             // TODO: Add end timestamp
             .putAllStatisticByName(ingestorResult.statisticByName())
             .build();
+    }
+
+    private DatasetDefinition convertDatasetReferenceToDatasetSchema(DatasetReference datasetReference)
+    {
+        DatasetDefinition.Builder builder = DatasetDefinition.builder()
+            .database(datasetReference.database())
+            .group(datasetReference.group())
+            .name(datasetReference.name().orElseThrow(IllegalStateException::new))
+            .schema(SchemaDefinition.builder().build());
+
+        if (datasetReference.alias().isPresent())
+        {
+            builder.alias(datasetReference.alias().get());
+        }
+
+        return builder.build();
     }
 }

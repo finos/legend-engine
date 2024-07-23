@@ -396,19 +396,26 @@ public abstract class RelationalGeneratorAbstract
             .build();
     }
 
-    GeneratorResult generateOperationsForCreate(Resources resources, Planner planner, Transformer<SqlGen, SqlPlan> transformer)
+    GeneratorResult generateOperationsForCreate(Resources resources, Planner planner)
     {
+        Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
+
         // pre-actions
         LogicalPlan preActionsLogicalPlan = planner.buildLogicalPlanForPreActions(resources);
         SqlPlan preActionsSqlPlan = transformer.generatePhysicalPlan(preActionsLogicalPlan);
 
         return GeneratorResult.builder()
             .preActionsSqlPlan(preActionsSqlPlan)
+            .ingestSqlPlan(SqlPlan.builder().build())
+            .metadataIngestSqlPlan(SqlPlan.builder().build())
+            .postActionsSqlPlan(SqlPlan.builder().build())
             .build();
     }
 
-    GeneratorResult generateOperationsForIngest(Resources resources, Planner planner, Transformer<SqlGen, SqlPlan> transformer)
+    GeneratorResult generateOperationsForIngest(Resources resources, Planner planner)
     {
+        Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
+
         // pre-run statistics
         Map<StatisticName, LogicalPlan> preIngestStatisticsLogicalPlan = planner.buildLogicalPlanForPreRunStatistics(resources);
         Map<StatisticName, SqlPlan> preIngestStatisticsSqlPlan = new HashMap<>();
@@ -460,6 +467,7 @@ public abstract class RelationalGeneratorAbstract
             .putAllDeduplicationAndVersioningErrorChecksSqlPlan(deduplicationAndVersioningErrorChecksSqlPlan)
             .putAllPreIngestStatisticsSqlPlan(preIngestStatisticsSqlPlan)
             .putAllPostIngestStatisticsSqlPlan(postIngestStatisticsSqlPlan)
+            .preActionsSqlPlan(SqlPlan.builder().build())
             .build();
     }
 }
