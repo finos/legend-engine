@@ -787,7 +787,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
     }
 
     @Test
-    public void testDataSpaceWithTemplateExecutable()
+    public void testDataSpaceWithTemplateExecutableWithInlineQuery()
     {
         test("Class model::element {}\n" +
                 "Class model::sub::element {}\n" +
@@ -986,6 +986,143 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    }\n" +
                 "  ];\n" +
                 "}\n", "COMPILATION error at [20:1-46:1]: Data space template executable's executionContextKey, random 1, is not valid. Please specify one from [Context 1]");
+    }
+
+    @Test
+    public void testDataSpaceWithTemplateExecutableWithFunctionPointer()
+    {
+        String model = "Class model::element {}\n" +
+                "Class model::sub::element\n" +
+                "{" +
+                " name: String[1];\n" +
+                "}\n" +
+                "function model::templateFunc(): meta::pure::tds::TabularDataSet[1]\n" +
+                "{\n" +
+                "   model::sub::element.all()->project([x | $x.name],['Name'])->from(model::dummyMapping, model::dummyRuntime)\n" +
+                "}\n" +
+                "function model::templateFunc1(): meta::pure::tds::TabularDataSet[1]\n" +
+                "{\n" +
+                "   model::sub::element.all()->project([x | $x.name],['Name'])->from(model::dummyMapping1, model::dummyRuntime)\n" +
+                "}\n" +
+                "function model::templateFunc2(): meta::pure::tds::TabularDataSet[1]\n" +
+                "{\n" +
+                "   model::sub::element.all()->project([x | $x.name],['Name'])->from(model::dummyMapping, model::dummyRuntime1)\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "Mapping model::dummyMapping1\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "Runtime model::dummyRuntime1\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n";
+
+        test(model +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  elements: [model::element, model, model::sub];\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      id: 1;\n" +
+                "      title: 'Template 1';\n" +
+                "      query: model::templateFunc():TabularDataSet[1];\n" +
+                "      executionContextKey: 'Context 1';\n" +
+                "    },\n" +
+                "    {\n" +
+                "      id: 2;\n" +
+                "      title: 'Template 2';\n" +
+                "      query: model::templateFunc():TabularDataSet[1];\n" +
+                "    },\n" +
+                "    {\n" +
+                "      id: 3;\n" +
+                "      title: 'Template 3';\n" +
+                "      description: 'an example of a template query';\n" +
+                "      query: model::templateFunc():TabularDataSet[1];\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+
+        test(model +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  elements: [model::element, model, model::sub];\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      id: 1;\n" +
+                "      title: 'Template 1';\n" +
+                "      query: model::templateFunc1():TabularDataSet[1];\n" +
+                "      executionContextKey: 'Context 1';\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n", " at [44:1-65:1]: Error in 'model::dataSpace': The mapping utilized in the function within the curated template query does not align with the mapping applied in the execution context `Context 1`.");
+
+        test(model +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  elements: [model::element, model, model::sub];\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      id: 1;\n" +
+                "      title: 'Template 1';\n" +
+                "      query: model::templateFunc2():TabularDataSet[1];\n" +
+                "      executionContextKey: 'Context 1';\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n", " at [44:1-65:1]: Error in 'model::dataSpace': The runtime utilized in the function within the curated template query does not align with the runtime applied in the execution context `Context 1`.");
     }
 
     @Test
