@@ -298,16 +298,16 @@ public class TestTestTDS
 
         TestTDS t = tds1.join(tds2);
 
-        Assert.assertEquals("id, extra, name\n" +
-                "1, X, A\n" +
-                "1, Y, A\n" +
-                "1, Z, A\n" +
-                "2, X, B\n" +
-                "2, Y, B\n" +
-                "2, Z, B\n" +
-                "3, X, C\n" +
-                "3, Y, C\n" +
-                "3, Z, C", t.toString());
+        Assert.assertEquals("id, name, extra\n" +
+                "1, A, X\n" +
+                "1, A, Y\n" +
+                "1, A, Z\n" +
+                "2, B, X\n" +
+                "2, B, Y\n" +
+                "2, B, Z\n" +
+                "3, C, X\n" +
+                "3, C, Y\n" +
+                "3, C, Z", t.toString());
 
         Assert.assertEquals(initialTds1, tds1.toString());
         Assert.assertEquals(initialTds2, tds2.toString());
@@ -334,13 +334,13 @@ public class TestTestTDS
 
         TestTDS t = left.compensateLeft(res).join(third);
 
-        Assert.assertEquals("id, id2, extra, name, boom, extraInt\n" +
-                "1, 4, More David, David, A1, 1\n" +
-                "3, 4, More David, David, A3, 1\n" +
-                "1, 1, More George 2, George, A1, 2\n" +
-                "3, 1, More George 2, George, A3, 2\n" +
-                "1, NULL, NULL, Sachin, A1, NULL\n" +
-                "3, NULL, NULL, Sachin, A3, NULL", t.toString());
+        Assert.assertEquals("id, id2, extra, name, extraInt, id, boom\n" +
+                "1, 4, More David, David, 1, 1, A1\n" +
+                "3, 4, More David, David, 1, 3, A3\n" +
+                "1, 1, More George 2, George, 2, 1, A1\n" +
+                "3, 1, More George 2, George, 2, 3, A3\n" +
+                "1, NULL, NULL, Sachin, NULL, 1, A1\n" +
+                "3, NULL, NULL, Sachin, NULL, 3, A3", t.toString());
 
         Assert.assertEquals(initialRes, res.toString());
         Assert.assertEquals(initialLeft, left.toString());
@@ -389,11 +389,11 @@ public class TestTestTDS
 
         TestTDS res = new TestTDSImpl(resTDS);
 
-        Assert.assertEquals("id, col, other, id2, name\n" +
-                "1, More George 1, 1, 1, George\n" +
-                "1, More George 2, 2, 1, George\n" +
-                "2, NULL, NULL, NULL, Pierre\n" +
-                "3, NULL, NULL, NULL, Sachin\n" +
-                "4, More David, 1, 4, David", res.toString());
+        Assert.assertEquals("id, name, id2, col, other\n" +
+                "1, George, 1, More George 1, 1\n" +
+                "1, George, 1, More George 2, 2\n" +
+                "2, Pierre, NULL, NULL, NULL\n" +
+                "3, Sachin, NULL, NULL, NULL\n" +
+                "4, David, 4, More David, 1", res.toString());
     }
 }
