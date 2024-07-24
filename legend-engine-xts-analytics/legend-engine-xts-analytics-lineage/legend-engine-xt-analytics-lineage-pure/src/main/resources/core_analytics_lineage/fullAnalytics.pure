@@ -83,7 +83,7 @@ Class meta::analytics::lineage::PropertyElement
 function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[0..1], extensions:meta::pure::extension::Extension[*]):FunctionAnalytics[1]
 {
    let mappings = if($r->isEmpty(), |$m, |$m->concatenate(getMappingsFromRuntime($r->toOne())));
-   let modelToModelMappings = if($mappings->size() == 1, | $mappings, | $mappings->init());
+   let modelToModelMappings = $mappings->init();
    let sourceMapping = $mappings->last()->toOne();
    let funcBody = $f.expressionSequence->at(0)->evaluateAndDeactivate();
    let updatedFuncBody = $funcBody->meta::pure::lineage::analytics::inlineQualifiedProperties(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)), $f->openVariableValues(), $extensions);
@@ -189,7 +189,7 @@ function meta::analytics::lineage::flowDatabase::toFlowDatabase(f:FunctionDefini
          let dbs = $tables->map(r|$r->schema()).database->removeDuplicates();
          let maturityTests = maturityTests();
          ^Flow(
-            functions = if($tables->size() == 0 && $dbs->size() == 0, | [], | $f),
+            functions = $f,
             databases = $dbs,
             tables = $tables->cast(@NamedRelation),
             links = $tables->map(t|let db = $t->map(r|$r->schema()).database->toOne();
@@ -218,11 +218,7 @@ function meta::analytics::lineage::flowDatabase::toFlowDatabase(p:PropertyPathTr
                              sp:Property<Nil,Any|*>[1]|let propertyMappings = $wsets->map(s|$s->_propertyMappingsByPropertyName($pr.property.name->toOne()););
                                                        let isDataTypeProperty = !$pr.property.genericType.rawType->isEmpty() && $pr.property.genericType.rawType->toOne()->instanceOf(DataType);
                                                        if ($isDataTypeProperty,
-                                                         | $propertyMappings->map(pm |$pm->match([
-                                                                                              rpm: RelationalPropertyMapping[1] | $rpm->meta::analytics::lineage::flowDatabase::getTables(),
-                                                                                              ppm: PurePropertyMapping[1] | [],
-                                                                                              a: Any[*] | fail('Database lineage not support for given type of mapping: ' + $pm->typeName()); [];
-                                                                                             ])),
+                                                         | $propertyMappings->cast(@RelationalPropertyMapping)->map(pm|$pm->meta::analytics::lineage::flowDatabase::getTables());,
                                                          | $propertyMappings->map(pm|processNonDataTypeProperty($p, $pm, $possiblePropertyTargetClasses, $m, $extraChildren))
                                                        );,
                              q:QualifiedProperty<Any>[1]|if($q->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(),
