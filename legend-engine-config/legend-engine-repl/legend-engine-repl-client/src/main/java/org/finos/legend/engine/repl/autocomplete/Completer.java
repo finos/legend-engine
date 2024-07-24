@@ -46,6 +46,7 @@ import org.finos.legend.engine.repl.autocomplete.handlers.RenameHandler;
 import org.finos.legend.engine.repl.autocomplete.handlers.SelectHandler;
 import org.finos.legend.engine.repl.autocomplete.handlers.SortHandler;
 import org.finos.legend.engine.repl.autocomplete.parser.ParserFixer;
+import org.finos.legend.engine.repl.core.legend.LegendInterface;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionAccessor;
@@ -69,7 +70,7 @@ public class Completer
     private final String header;
     private final int lineOffset;
     private final MutableMap<String, FunctionHandler> handlers;
-
+    private final java.util.function.Function<PureModelContextData, PureModel> compiler;
     private MutableList<CompleterExtension> extensions;
 
     public Completer(String buildCodeContext)
@@ -79,6 +80,17 @@ public class Completer
 
     public Completer(String buildCodeContext, MutableList<CompleterExtension> extensions)
     {
+        this(buildCodeContext, extensions, x -> Compiler.compile(x, null, Identity.getAnonymousIdentity().getName()));
+    }
+
+    public Completer(String buildCodeContext, MutableList<CompleterExtension> extensions, LegendInterface legendInterface)
+    {
+        this(buildCodeContext, extensions, legendInterface::compile);
+    }
+
+    private Completer(String buildCodeContext, MutableList<CompleterExtension> extensions, java.util.function.Function<PureModelContextData, PureModel> compiler)
+    {
+        this.compiler = compiler;
         this.extensions = extensions;
         this.buildCodeContext = buildCodeContext;
         this.header =
@@ -125,7 +137,7 @@ public class Completer
             ValueSpecification currentExpression = findPartiallyWrittenExpression(vs, lineOffset, value.length());
 
             PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(buildCodeContext);
-            PureModel pureModel = Compiler.compile(pureModelContextData, null, Identity.getAnonymousIdentity().getName());
+            PureModel pureModel = this.compiler.apply(pureModelContextData);
 
             ProcessingContext processingContext = new ProcessingContext("");
 
