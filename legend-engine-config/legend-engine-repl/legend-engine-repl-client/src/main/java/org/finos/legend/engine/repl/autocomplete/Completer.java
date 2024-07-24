@@ -75,7 +75,12 @@ public class Completer
 
     public Completer(String buildCodeContext)
     {
-        this(buildCodeContext, Lists.mutable.empty(), x -> Compiler.compile(x, null, Identity.getAnonymousIdentity().getName()));
+        this(buildCodeContext, Lists.mutable.empty());
+    }
+
+    public Completer(String buildCodeContext, MutableList<CompleterExtension> extensions)
+    {
+        this(buildCodeContext, extensions, x -> Compiler.compile(x, null, Identity.getAnonymousIdentity().getName()));
     }
 
     public Completer(String buildCodeContext, MutableList<CompleterExtension> extensions, LegendInterface legendInterface)
