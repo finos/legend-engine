@@ -214,7 +214,7 @@ public class TestDataCubeHelpers
     {
         try
         {
-            Assert.assertEquals(expectedResult, objectMapper.writeValueAsString(DataCubeHelpers.getCodeTypeahead(code, isPartial, pureModelContextData)));
+            Assert.assertEquals(expectedResult, objectMapper.writeValueAsString(DataCubeHelpers.getCodeTypeahead(this.legendInterface, code, isPartial, pureModelContextData)));
         }
         catch (IOException e)
         {
