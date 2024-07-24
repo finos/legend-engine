@@ -24,9 +24,11 @@ import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.collection.MutableCollection;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.multimap.MutableMultimap;
+import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
@@ -104,11 +106,11 @@ public class SQLExecutor
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SQLExecutor.class);
     private static final ObjectMapper OBJECT_MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private static final Map<Class<? extends Literal>, String> LITERAL_TO_PURE_TYPES = UnifiedMap.newMapWith(
-        Tuples.pair(IntegerLiteral.class, "Integer"),
-        Tuples.pair(StringLiteral.class, "String"),
-        Tuples.pair(BooleanLiteral.class, "Boolean"),
-        Tuples.pair(LongLiteral.class, "Integer"),
-        Tuples.pair(DoubleLiteral.class, "Float")
+            Tuples.pair(IntegerLiteral.class, "Integer"),
+            Tuples.pair(StringLiteral.class, "String"),
+            Tuples.pair(BooleanLiteral.class, "Boolean"),
+            Tuples.pair(LongLiteral.class, "Integer"),
+            Tuples.pair(DoubleLiteral.class, "Float")
     );
 
     private final ModelManager modelManager;
@@ -250,9 +252,12 @@ public class SQLExecutor
         {
             span.setTag("queryHash", hash(query));
 
+
             Pair<RichIterable<SQLSource>, PureModelContext> sqlSourcesAndPureModel = getSourcesAndModel(query, context, identity);
             RichIterable<SQLSource> sources = sqlSourcesAndPureModel.getOne();
             PureModelContext pureModelContext = sqlSourcesAndPureModel.getTwo();
+
+            traceSources(sources, span);
 
             PureModel pureModel = modelManager.loadModel(pureModelContext, PureClientVersions.production, identity, "");
 
@@ -287,6 +292,18 @@ public class SQLExecutor
         });
     }
 
+    private void traceSources(RichIterable<SQLSource> sources, Span span)
+    {
+        try
+        {
+            MutableSet<SQLTraceSource> traceSource = Sets.mutable.withAll(IterableIterate.collect(sources, source -> new SQLTraceSource(source.getType(), source.getKey())));
+            span.setTag("sources", OBJECT_MAPPER.writeValueAsString(traceSource));
+        }
+        catch (Exception e)
+        {
+            //ignore, no need to action
+        }
+    }
 
     private Expression createParameterValueExpression(Object o)
     {
