@@ -102,6 +102,10 @@ public class Client
                 .option(LineReader.Option.INSERT_TAB, true)
                 // Make sure word navigation works properly with Alt + (left/right) arrow key
                 .variable(LineReader.WORDCHARS, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-$")
+                // Make sure to not break the completer when exclamation sign is present
+                // Do this by disabling history expansion
+                // See https://github.com/jline/jline3/issues/246
+                .option(LineReader.Option.DISABLE_EVENT_EXPANSION, true)
                 .highlighter(new JLine3Highlighter())
                 .parser(new JLine3Parser())
                 .completer(new JLine3Completer(this.commands))
