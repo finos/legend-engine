@@ -137,7 +137,7 @@ public class DataCubeHelpers
         return valueSpecification.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(pretty != null && pretty ? RenderStyle.PRETTY : RenderStyle.STANDARD).build());
     }
 
-    public static CompletionResult getCodeTypeahead(String code, Boolean isPartial, PureModelContextData data, MutableList<CompleterExtension> extensions)
+    public static CompletionResult getCodeTypeahead(String code, Boolean isPartial, PureModelContextData data, MutableList<CompleterExtension> extensions, LegendInterface legendInterface)
     {
         try
         {
@@ -154,7 +154,7 @@ public class DataCubeHelpers
                 String existingCode = func.body.get(0).accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build());
                 queryCode = existingCode + code;
             }
-            CompletionResult result = new Completer(graphCode, extensions).complete(queryCode);
+            CompletionResult result = new Completer(graphCode, extensions, legendInterface).complete(queryCode);
             if (result.getEngineException() != null)
             {
                 return new CompletionResult(Lists.mutable.empty());

@@ -220,7 +220,7 @@ public class TestDataCubeHelpers
     {
         try
         {
-            Assert.assertEquals(expectedResult, objectMapper.writeValueAsString(DataCubeHelpers.getCodeTypeahead(code, isPartial, pureModelContextData, completerExtensions)));
+            Assert.assertEquals(expectedResult, objectMapper.writeValueAsString(DataCubeHelpers.getCodeTypeahead(code, isPartial, pureModelContextData, completerExtensions, legendInterface)));
         }
         catch (IOException e)
         {
