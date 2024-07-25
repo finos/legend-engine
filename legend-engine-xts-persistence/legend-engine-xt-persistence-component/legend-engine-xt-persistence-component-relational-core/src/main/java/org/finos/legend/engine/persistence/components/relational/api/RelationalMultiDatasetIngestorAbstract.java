@@ -14,7 +14,9 @@
 
 package org.finos.legend.engine.persistence.components.relational.api;
 
+import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.FilterType;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
@@ -22,8 +24,10 @@ import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestModeOptimizationColumnHandler;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestModeVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.TempDatasetsEnricher;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.planner.Planner;
 import org.finos.legend.engine.persistence.components.planner.Planners;
@@ -81,12 +85,6 @@ public abstract class RelationalMultiDatasetIngestorAbstract
     abstract LockInfoDataset lockInfoDataset();
 
     //-------------------- FLAGS --------------------
-
-    @Value.Default
-    public boolean cleanupStagingData()
-    {
-        return true;
-    }
 
     @Value.Default
     public boolean collectStatistics()
@@ -185,8 +183,12 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         // 2. Acquire lock for all ingest stages and get the latest batch ID
         long batchId = acquireLock();
 
-        // 3. Perform ingestion
-        List<DatasetIngestResults> result = performIngestionForAllStages(batchId);
+        // 3. Put batch ID into placeholder map - this is needed to handle DerivedDataset whose filter was built using placeholders
+        Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
+        placeHolderKeyValues.put(BATCH_ID_PATTERN, PlaceholderValue.of(String.valueOf(batchId), false));
+
+        // 4. Perform ingestion
+        List<DatasetIngestResults> result = performIngestionForAllStages(batchId, placeHolderKeyValues);
         LOGGER.info("Ingestion completed");
 
         return result;
@@ -216,8 +218,8 @@ public abstract class RelationalMultiDatasetIngestorAbstract
 
                 // 2. Build datasets with main, staging and metadata
                 Datasets enrichedDatasets = Datasets.builder()
-                    .stagingDataset(ingestStage.stagingDataset())
-                    .mainDataset(ApiUtils.deriveMainDatasetFromStaging(convertDatasetReferenceToDatasetSchema(ingestStage.mainDataset()), ingestStage.stagingDataset(), enrichedIngestMode))
+                    .stagingDataset(deriveStagingDataset(ingestStage))
+                    .mainDataset(deriveMainDataset(ingestStage, enrichedIngestMode))
                     .metadataDataset(metadataDataset)
                     .build();
 
@@ -241,10 +243,10 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 RelationalGenerator generator = RelationalGenerator.builder()
                     .ingestMode(enrichedIngestMode)
                     .relationalSink(relationalSink())
-                    .cleanupStagingData(cleanupStagingData())
+                    .cleanupStagingData(false) // TODO: It does not make sense to be true right?
                     .collectStatistics(collectStatistics())
                     .writeStatistics(collectStatistics()) // Collecting statistics will imply writing it into the batch metadata table
-                    .skipMainAndMetadataDatasetCreation(false) // TODO: ??
+                    .skipMainAndMetadataDatasetCreation(false) // TODO: Should we expose this?
                     .enableConcurrentSafety(true)
                     .caseConversion(caseConversion())
                     .executionTimestampClock(executionTimestampClock())
@@ -330,7 +332,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         return 1;
     }
 
-    private List<DatasetIngestResults> performIngestionForAllStages(long batchId)
+    private List<DatasetIngestResults> performIngestionForAllStages(long batchId, Map<String, PlaceholderValue> placeHolderKeyValues)
     {
         List<DatasetIngestResults> results = new ArrayList<>();
 
@@ -362,7 +364,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 Resources.Builder resourcesBuilder = Resources.builder();
                 if (enrichedIngestMode.accept(IngestModeVisitors.NEED_TO_CHECK_STAGING_EMPTY) && executor.datasetExists(enrichedDatasets.stagingDataset()))
                 {
-                    boolean isStagingDatasetEmpty = ApiUtils.datasetEmpty(enrichedDatasets.stagingDataset(), transformer, executor);
+                    boolean isStagingDatasetEmpty = ApiUtils.datasetEmpty(enrichedDatasets.stagingDataset(), transformer, executor, placeHolderKeyValues);
                     LOGGER.info(String.format("Checking if staging dataset is empty : {%s}", isStagingDatasetEmpty));
                     resourcesBuilder.stagingDataSetEmpty(isStagingDatasetEmpty);
                 }
@@ -414,24 +416,46 @@ public abstract class RelationalMultiDatasetIngestorAbstract
     {
         return IngestStageResult.builder()
             .ingestionStartTimestampUTC(ingestorResult.ingestionTimestampUTC())
-            // TODO: Add end timestamp
+            .ingestionEndTimestampUTC("DUMMY") // TODO
             .putAllStatisticByName(ingestorResult.statisticByName())
             .build();
     }
 
-    private DatasetDefinition convertDatasetReferenceToDatasetSchema(DatasetReference datasetReference)
+    private Dataset deriveStagingDataset(IngestStage ingestStage)
     {
+        Dataset stagingDataset = ingestStage.stagingDataset();
+        if (ingestStage.stagingDatasetBatchIdField().isPresent())
+        {
+            return DerivedDataset.builder()
+                .database(stagingDataset.datasetReference().database())
+                .group(stagingDataset.datasetReference().group())
+                .name(stagingDataset.datasetReference().name().orElseThrow(IllegalStateException::new))
+                .schema(stagingDataset.schema())
+                .addDatasetFilters(DatasetFilter.of(ingestStage.stagingDatasetBatchIdField().get(), FilterType.EQUAL_TO, BATCH_ID_PATTERN))
+                .build();
+        }
+        else
+        {
+            return stagingDataset;
+        }
+    }
+
+    private Dataset deriveMainDataset(IngestStage ingestStage, IngestMode enrichedIngestMode)
+    {
+        DatasetReference mainDatasetReference = ingestStage.mainDataset();
+
         DatasetDefinition.Builder builder = DatasetDefinition.builder()
-            .database(datasetReference.database())
-            .group(datasetReference.group())
-            .name(datasetReference.name().orElseThrow(IllegalStateException::new))
+            .database(mainDatasetReference.database())
+            .group(mainDatasetReference.group())
+            .name(mainDatasetReference.name().orElseThrow(IllegalStateException::new))
             .schema(SchemaDefinition.builder().build());
 
-        if (datasetReference.alias().isPresent())
+        if (mainDatasetReference.alias().isPresent())
         {
-            builder.alias(datasetReference.alias().get());
+            builder.alias(mainDatasetReference.alias().get());
         }
+        DatasetDefinition mainDatasetDefinition = builder.build();
 
-        return builder.build();
+        return ApiUtils.deriveMainDatasetFromStaging(mainDatasetDefinition, ingestStage.stagingDataset(), enrichedIngestMode);
     }
 }

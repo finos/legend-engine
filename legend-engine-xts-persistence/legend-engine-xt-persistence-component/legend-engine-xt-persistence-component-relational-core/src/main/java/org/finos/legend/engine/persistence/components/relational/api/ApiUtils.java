@@ -369,7 +369,7 @@ public class ApiUtils
         }
 
         // Handle optimization filters
-        Optional<Map<OptimizationFilter, Pair<Object, Object>>> optimizationFilters = ApiUtils.getOptimizationFilterBounds(datasets, executor, transformer, ingestMode);
+        Optional<Map<OptimizationFilter, Pair<Object, Object>>> optimizationFilters = ApiUtils.getOptimizationFilterBounds(datasets, executor, transformer, ingestMode, placeHolderKeyValues);
         if (optimizationFilters.isPresent())
         {
             for (OptimizationFilter filter : optimizationFilters.get().keySet())
@@ -428,7 +428,8 @@ public class ApiUtils
     }
 
     public static Optional<Map<OptimizationFilter, Pair<Object, Object>>> getOptimizationFilterBounds(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
-                                                                                                Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode)
+                                                                                                      Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode,
+                                                                                                      Map<String, PlaceholderValue> placeHolderKeyValues)
     {
         List<OptimizationFilter> filters = ingestMode.accept(IngestModeVisitors.RETRIEVE_OPTIMIZATION_FILTERS);
         if (!filters.isEmpty())
@@ -437,7 +438,7 @@ public class ApiUtils
             for (OptimizationFilter filter : filters)
             {
                 LogicalPlan logicalPlanForMinAndMaxForField = LogicalPlanFactory.getLogicalPlanForMinAndMaxForField(datasets.stagingDataset(), filter.fieldName());
-                List<TabularData> tabularData = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForMinAndMaxForField));
+                List<TabularData> tabularData = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForMinAndMaxForField), placeHolderKeyValues);
                 Map<String, Object> resultMap = getFirstRowForFirstResult(tabularData);
                 // Put into map only when not null
                 Object lower = resultMap.get(MIN_OF_FIELD);
@@ -498,11 +499,11 @@ public class ApiUtils
         return dataSplitRanges;
     }
 
-    public static boolean datasetEmpty(Dataset dataset, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor)
+    public static boolean datasetEmpty(Dataset dataset, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, Map<String, PlaceholderValue> placeHolderKeyValues)
     {
         LogicalPlan checkIsDatasetEmptyLogicalPlan = LogicalPlanFactory.getLogicalPlanForIsDatasetEmpty(dataset);
         SqlPlan physicalPlanForCheckIsDataSetEmpty = transformer.generatePhysicalPlan(checkIsDatasetEmptyLogicalPlan);
-        List<TabularData> results = executor.executePhysicalPlanAndGetResults(physicalPlanForCheckIsDataSetEmpty);
+        List<TabularData> results = executor.executePhysicalPlanAndGetResults(physicalPlanForCheckIsDataSetEmpty, placeHolderKeyValues);
         Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(results));
         String value = String.valueOf(obj.orElseThrow(IllegalStateException::new));
         return !value.equals(TABLE_IS_NON_EMPTY);

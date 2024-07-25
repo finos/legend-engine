@@ -19,6 +19,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
 import org.immutables.value.Value;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Value.Immutable
@@ -36,6 +37,8 @@ public abstract class IngestStageAbstract
     public abstract DatasetReference mainDataset();
 
     public abstract IngestMode ingestMode();
+
+    public abstract Optional<String> stagingDatasetBatchIdField();
 
     @Value.Derived
     public String getRunId()

@@ -634,7 +634,7 @@ public abstract class RelationalIngestorAbstract
         // 4. Check if staging dataset is empty TODO: DONE
         if (ingestMode().accept(IngestModeVisitors.NEED_TO_CHECK_STAGING_EMPTY) && executor.datasetExists(enrichedDatasets.stagingDataset()))
         {
-            boolean isStagingDatasetEmpty = ApiUtils.datasetEmpty(enrichedDatasets.stagingDataset(), transformer, executor);
+            boolean isStagingDatasetEmpty = ApiUtils.datasetEmpty(enrichedDatasets.stagingDataset(), transformer, executor, new HashMap<>());
             LOGGER.info(String.format("Checking if staging dataset is empty : {%s}", isStagingDatasetEmpty));
             resourcesBuilder.stagingDataSetEmpty(isStagingDatasetEmpty);
         }
