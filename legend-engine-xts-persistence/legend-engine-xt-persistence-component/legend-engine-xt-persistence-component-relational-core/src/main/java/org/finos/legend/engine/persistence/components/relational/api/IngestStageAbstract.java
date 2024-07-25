@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.api;
 
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
 import org.immutables.value.Value;
@@ -44,5 +45,14 @@ public abstract class IngestStageAbstract
     public String getRunId()
     {
         return UUID.randomUUID().toString();
+    }
+
+    @Value.Check
+    public void validate()
+    {
+        if (ingestMode().versioningStrategy() instanceof AllVersionsStrategy)
+        {
+            throw new IllegalArgumentException("AllVersionsStrategy not allowed for multi-dataset ingestion");
+        }
     }
 }

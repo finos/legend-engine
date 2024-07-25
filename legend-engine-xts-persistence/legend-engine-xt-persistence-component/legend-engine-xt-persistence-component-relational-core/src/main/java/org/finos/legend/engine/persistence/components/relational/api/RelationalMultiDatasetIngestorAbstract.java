@@ -180,17 +180,35 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         // 1. Validate initialization has been performed
         validateInitialization();
 
-        // 2. Acquire lock for all ingest stages and get the latest batch ID
-        long batchId = acquireLock();
+        List<DatasetIngestResults> result;
+        try
+        {
+            executor.begin();
 
-        // 3. Put batch ID into placeholder map - this is needed to handle DerivedDataset whose filter was built using placeholders
-        Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
-        placeHolderKeyValues.put(BATCH_ID_PATTERN, PlaceholderValue.of(String.valueOf(batchId), false));
+            // 2. Acquire lock for all ingest stages and get the latest batch ID
+            long batchId = acquireLock();
 
-        // 4. Perform ingestion
-        List<DatasetIngestResults> result = performIngestionForAllStages(batchId, placeHolderKeyValues);
+            // 3. Put batch ID into placeholder map - this is needed to handle DerivedDataset whose filter was built using placeholders
+            Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
+            placeHolderKeyValues.put(BATCH_ID_PATTERN, PlaceholderValue.of(String.valueOf(batchId), false));
+
+            // 4. Perform ingestion
+            result = performIngestionForAllStages(batchId, placeHolderKeyValues);
+
+            executor.commit();
+        }
+        catch (Exception e)
+        {
+            executor.revert();
+            throw e;
+        }
+        finally
+        {
+            executor.close();
+        }
+
+        // TODO: Clean up here or create an API to clean up?
         LOGGER.info("Ingestion completed");
-
         return result;
     }
 
