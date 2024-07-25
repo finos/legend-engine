@@ -213,15 +213,15 @@ public abstract class RelationalMultiDatasetIngestorAbstract
             MetadataDataset metadataDataset = details.metadataDataset();
             for (IngestStage ingestStage : details.ingestStages())
             {
-                // 1. Enrich the ingest mode with case conversion
-                IngestMode enrichedIngestMode = ApiUtils.applyCase(ingestStage.ingestMode(), caseConversion());
-
-                // 2. Build datasets with main, staging and metadata
+                // 1. Build datasets with main, staging and metadata
                 Datasets enrichedDatasets = Datasets.builder()
                     .stagingDataset(deriveStagingDataset(ingestStage))
-                    .mainDataset(deriveMainDataset(ingestStage, enrichedIngestMode))
+                    .mainDataset(deriveMainDataset(ingestStage, ingestStage.ingestMode()))
                     .metadataDataset(metadataDataset)
                     .build();
+
+                // 2. Enrich the ingest mode with case conversion
+                IngestMode enrichedIngestMode = ApiUtils.applyCase(ingestStage.ingestMode(), caseConversion());
 
                 // 3. Enrich the datasets with case conversion
                 enrichedDatasets = ApiUtils.enrichAndApplyCase(enrichedDatasets, caseConversion());
@@ -375,7 +375,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 // 4. Perform deduplication and versioning
                 if (generatorResult.deduplicationAndVersioningSqlPlan().isPresent())
                 {
-                    ApiUtils.dedupAndVersion(executor, generatorResult, enrichedDatasets, caseConversion());
+                    ApiUtils.dedupAndVersion(executor, generatorResult, enrichedDatasets, caseConversion(), placeHolderKeyValues);
                 }
 
                 // 5. Perform ingestion

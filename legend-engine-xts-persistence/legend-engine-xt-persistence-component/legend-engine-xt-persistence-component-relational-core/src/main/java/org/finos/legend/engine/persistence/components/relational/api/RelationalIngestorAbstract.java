@@ -471,7 +471,7 @@ public abstract class RelationalIngestorAbstract
         if (generatorResult.deduplicationAndVersioningSqlPlan().isPresent())
         {
             LOGGER.info("Executing Deduplication and Versioning");
-            ApiUtils.dedupAndVersion(executor, generatorResult, enrichedDatasets, caseConversion());
+            ApiUtils.dedupAndVersion(executor, generatorResult, enrichedDatasets, caseConversion(), new HashMap<>());
         }
     }
 
