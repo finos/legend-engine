@@ -560,8 +560,8 @@ function meta::pure::router::routing::processColSpecParams(fe:FunctionExpression
         a: ValueSpecification[*] | $a
     ]))->cast(@ValueSpecification);
 
-      let nfe = ^$fe(parametersValues = $parametersValues);
-      $nfe->reactivate($inScopeVars)->evaluateAndDeactivate()->cast(@ColumnSpecification<Any>);
+    let nfe = ^$fe(parametersValues = $parametersValues);
+    $nfe->reactivate($inScopeVars)->evaluateAndDeactivate()->cast(@ColumnSpecification<Any>);
    );
 }
 
@@ -703,6 +703,10 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     firstDayOfYear_Date_1__Date_1_,
     firstDayOfQuarter_Date_1__StrictDate_1_,
     firstDayOfWeek_Date_1__Date_1_,
+    firstDayOfThisMonth__Date_1_,
+    firstDayOfThisYear__Date_1_,
+    firstDayOfThisQuarter__StrictDate_1_,
+    firstDayOfThisWeek__Date_1_,
     firstHourOfDay_Date_1__DateTime_1_,
     firstMinuteOfHour_Date_1__DateTime_1_,
     firstSecondOfMinute_Date_1__DateTime_1_,

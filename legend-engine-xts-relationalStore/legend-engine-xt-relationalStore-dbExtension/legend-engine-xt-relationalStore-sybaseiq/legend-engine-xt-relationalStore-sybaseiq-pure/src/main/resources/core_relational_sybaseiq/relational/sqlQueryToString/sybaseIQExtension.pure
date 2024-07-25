@@ -64,7 +64,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
   let allStates = allGenerationStates();
 
   [
-    dynaFnToSql('contains',               $allStates,            ^ToSql(format=likePattern('%%%s%%'), transform={p:String[2]|$p->transformLikeParamsForSybaseIQ()})),
+    dynaFnToSql('contains',               $allStates,            ^ToSql(format=likePattern('%%%s%%'), transform={p:String[2]|println($p); $p->transformLikeParamsForSybaseIQ();})),
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForSybaseIQ(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='date(%s)')),
     dynaFnToSql('endsWith',               $allStates,            ^ToSql(format=likePattern('%%%s'), transform={p:String[2]|$p->transformLikeParamsForSybaseIQ()})),
@@ -163,6 +163,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
 function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::transformLikeParamsForSybaseIQ(params: String[2]):String[*]
 {
    let likeExpression = $params->at(1)->removeQuotes()->escapeLikeExprForSybaseIQ();
+   println($params);
+  //  fail();
    $params->at(0)
       ->concatenate($likeExpression)
       ->concatenate(likeEscapeClauseForSybaseIQ($likeExpression));
