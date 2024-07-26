@@ -19,13 +19,17 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core-shared</artifactId>
-        <version>4.49.2-SNAPSHOT</version>
+        <version>4.52.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-shared-extensions</artifactId>
     <name>Legend Engine - Shared - Extensions</name>
 
     <dependencies>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-structures</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>

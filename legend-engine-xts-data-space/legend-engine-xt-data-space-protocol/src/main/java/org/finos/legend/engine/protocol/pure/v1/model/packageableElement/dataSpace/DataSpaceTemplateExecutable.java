@@ -14,11 +14,29 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = DataSpaceTemplateExecutablePointer.class)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = DataSpaceTemplateExecutablePointer.class, name = "dataSpaceTemplateExecutablePointer"),
+        @JsonSubTypes.Type(value = DataSpaceInlineTemplateExecutable.class, name = "dataSpaceTemplateExecutable"),
+})
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DataSpaceTemplateExecutable extends DataSpaceExecutable
 {
-    public Lambda query;
     public String id;
     public String executionContextKey;
+
+    public DataSpaceTemplateExecutable()
+    {
+
+    }
+
+    public DataSpaceTemplateExecutable(String id, String executionContextKey)
+    {
+        this.id = id;
+        this.executionContextKey = executionContextKey;
+    }
 }

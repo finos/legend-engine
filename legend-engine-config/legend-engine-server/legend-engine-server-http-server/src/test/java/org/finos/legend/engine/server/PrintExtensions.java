@@ -19,7 +19,7 @@ import ch.qos.logback.classic.Logger;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.shared.core.extension.Extensions;
 import org.finos.legend.engine.shared.core.extension.LegendExtension;
-import org.finos.legend.engine.shared.core.extension.TreeNode;
+import org.finos.legend.shared.stuctures.TreeNode;
 import org.slf4j.LoggerFactory;
 
 public class PrintExtensions

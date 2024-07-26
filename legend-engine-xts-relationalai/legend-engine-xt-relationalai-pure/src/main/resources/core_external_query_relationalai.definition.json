@@ -3,15 +3,15 @@
   "pattern" : "(meta::external::store::rel)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
     "platform_dsl_store",
     "platform_dsl_mapping",
     "platform_dsl_graph",
     "platform_dsl_path",
-    "platform_functions_json",
+    "core_functions_unclassified",
+    "core_functions_json",
+    "core_functions_standard",
     "platform_store_relational",
     "core",
-    "core_relational",
-    "core_functions"
+    "core_relational"
   ]
 }

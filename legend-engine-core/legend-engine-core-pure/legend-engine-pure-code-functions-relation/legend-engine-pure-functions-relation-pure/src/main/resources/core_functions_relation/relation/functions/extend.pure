@@ -1,0 +1,121 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+
+native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z>(r:Relation<T>[1], f:FuncColSpec<{T[1]->Any[0..1]},Z>[1]):Relation<T+Z>[1];
+
+native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z>(r:Relation<T>[1], fs:FuncColSpecArray<{T[1]->Any[*]},Z>[1]):Relation<T+Z>[1];
+
+
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimpleExtendStrShared<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  val, str
+                  1, a
+                  3, ewe
+                  4, qw
+                  5, wwe
+                  6, weq
+                #->extend(~name:c|$c.str->toOne() + $c.val->toOne()->toString())
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,str,name\n'+
+                  '   1,a,a1\n'+
+                  '   3,ewe,ewe3\n'+
+                  '   4,qw,qw4\n'+
+                  '   5,wwe,wwe5\n'+
+                  '   6,weq,weq6\n'+
+                  '#', $res->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimpleExtendInt<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  val, str
+                  1, a
+                  3, ewe
+                  4, qw
+                  5, wwe
+                  6, weq
+                #->extend(~name:c|$c.val->toOne() + 1)
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,str,name\n'+
+                  '   1,a,2\n'+
+                  '   3,ewe,4\n'+
+                  '   4,qw,5\n'+
+                  '   5,wwe,6\n'+
+                  '   6,weq,7\n'+
+                  '#', $res->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimpleExtendFloat<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                  val, doub
+                  1, 1.2
+                  3, 2.3
+                  4, 4.2
+                  5, 4.2
+                  6, 4.5
+                 #->extend(~name:c|$c.doub->toOne() + 1.0)
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,doub,name\n'+
+                  '   1,1.2,2.2\n'+
+                  '   3,2.3,3.3\n'+
+                  '   4,4.2,5.2\n'+
+                  '   5,4.2,5.2\n'+
+                  '   6,4.5,5.5\n'+
+                  '#', $res->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimpleMultipleColumns<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  val, str
+                  1, a
+                  3, ewe
+                  4, qw
+                  5, wwe
+                  6, weq
+                #->extend(~[name:c|$c.val->toOne() + 1, other:x|$x.str->toOne()+'_ext'])
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,str,name,other\n'+
+                  '   1,a,2,a_ext\n'+
+                  '   3,ewe,4,ewe_ext\n'+
+                  '   4,qw,5,qw_ext\n'+
+                  '   5,wwe,6,wwe_ext\n'+
+                  '   6,weq,7,weq_ext\n'+
+                  '#', $res->toString());
+}

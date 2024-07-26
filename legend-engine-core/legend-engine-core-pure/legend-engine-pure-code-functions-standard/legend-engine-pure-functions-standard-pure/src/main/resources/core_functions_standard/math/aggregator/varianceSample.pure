@@ -1,0 +1,50 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+
+function <<PCT.function>>  meta::pure::functions::math::varianceSample(numbers:Number[*]):Number[1]
+{
+   variance($numbers, true);
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::variance::testVarianceSample<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEq(1.0, $f->eval(|varianceSample([1.0,2.0,3.0])));
+  assertEq(4.0, $f->eval(|varianceSample([2,4,6])));
+}
+
+
+function <<PCT.test>> meta::pure::functions::math::tests::variance::testSimpleGroupByVarianceSample<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  id, val
+                  1, 1.0
+                  1, 2.0
+                  1, 3.0
+                  2, 2
+                  2, 4
+                  2, 6
+                #->groupBy(~[id], ~[newCol : x | $x.val : y | $y->meta::pure::functions::math::varianceSample()])
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,newCol\n'+
+                  '   1,1.0\n'+
+                  '   2,4.0\n'+
+                  '#', $res->sort(~id->ascending())->toString());
+}

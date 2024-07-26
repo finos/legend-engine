@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::metamodel::relation::*;
 import meta::relational::functions::pureToSqlQuery::*;
 import meta::relational::postProcessor::*;
 import meta::relational::functions::pureToSqlQuery::metamodel::*;
@@ -20,6 +21,7 @@ import meta::pure::runtime::*;
 import meta::core::runtime::*;
 import meta::relational::metamodel::*;
 import meta::relational::mapping::*;
+
 
 function meta::relational::postProcessor::ReplaceFreeMarkerWithTableFunctionParamHolder(query:SQLQuery[1]): PostProcessorResult[1]
 {
@@ -36,7 +38,7 @@ function meta::relational::postProcessor::ReplaceFreeMarkerWithTableFunctionPara
 
   let transformedQuery = $query->transform($transformFunc, ^Map<RelationalOperationElement, RelationalOperationElement>()).first; 
   
-  ^PostProcessorResult(query = $transformedQuery->cast(@SQLQuery));
+  ^PostProcessorResult(query = $transformedQuery->cast(@SQLQuery)); 
 }
 
 function <<access.private>> meta::relational::postProcessor::replaceVarPlaceHolder(v: VarPlaceHolder[1]): RelationalOperationElement[1]

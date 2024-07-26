@@ -14,9 +14,13 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+
 public class RelationalSink extends Sink
 {
-    public String database;
+    @JsonSerialize(converter = PackageableElementPointer.ToPathSerializerConverter.class)
+    public PackageableElementPointer database;
 
     @Override
     public <T> T accept(SinkVisitor<T> visitor)

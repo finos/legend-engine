@@ -26,6 +26,7 @@ import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.finos.legend.engine.generation.dataquality.DataQualityLambdaGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
@@ -89,7 +90,7 @@ public class DataQualityExecute
     private final DataQualityPlanLoader dataQualityPlanLoader;
 
 
-    public DataQualityExecute(ModelManager modelManager, PlanExecutor planExecutor, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions, Iterable<? extends PlanTransformer> transformers, MetaDataServerConfiguration metaDataServerConfiguration, CloseableHttpClient httpClientProvider)
+    public DataQualityExecute(ModelManager modelManager, PlanExecutor planExecutor, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions, Iterable<? extends PlanTransformer> transformers, MetaDataServerConfiguration metaDataServerConfiguration, Function<Identity, CloseableHttpClient> httpClientProvider)
     {
         this.modelManager = modelManager;
         this.extensions = extensions;

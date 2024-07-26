@@ -60,7 +60,7 @@ public class HelperPersistenceRelationalComposer
         return getTabString(indentLevel) + "Relational\n" +
             getTabString(indentLevel) + "#{\n" +
             renderTable(persistenceTarget.table, indentLevel + 1) +
-            renderDatabasePointer(persistenceTarget.database, indentLevel + 1) +
+            renderDatabasePointer(persistenceTarget.database.path, indentLevel + 1) +
             renderTemporality(persistenceTarget.temporality, indentLevel + 1) +
             getTabString(indentLevel) + "}#";
     }

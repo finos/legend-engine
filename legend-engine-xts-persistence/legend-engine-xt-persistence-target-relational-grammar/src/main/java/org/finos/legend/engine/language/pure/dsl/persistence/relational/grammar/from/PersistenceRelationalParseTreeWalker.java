@@ -18,6 +18,8 @@ import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceI
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.sink.RelationalPersistenceTarget;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.Bitemporal;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.Nontemporal;
@@ -72,7 +74,11 @@ public class PersistenceRelationalParseTreeWalker
 
         // database
         PersistenceRelationalParserGrammar.DatabaseContext databaseContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.database(), "database", persistenceTarget.sourceInformation);
-        persistenceTarget.database = visitDatabasePointer(databaseContext, persistenceTarget.sourceInformation);
+        persistenceTarget.database = new PackageableElementPointer(
+                PackageableElementType.STORE,
+                visitDatabasePointer(databaseContext, persistenceTarget.sourceInformation)
+        );
+        persistenceTarget.database.sourceInformation = walkerSourceInformation.getSourceInformation(databaseContext);
 
         // temporality (optional)
         PersistenceRelationalParserGrammar.TemporalityContext temporalityContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.temporality(), "temporality", persistenceTarget.sourceInformation);

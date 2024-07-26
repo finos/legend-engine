@@ -25,6 +25,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Proc
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.builder.FunctionExpressionBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
@@ -212,6 +213,11 @@ public class CompileContext
 
 
     // ------------------------------------------ ELEMENT RESOLVER -----------------------------------------
+
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement resolvePackageableElement(PackageableElementPointer pointer)
+    {
+        return this.resolvePackageableElement(pointer.path, pointer.sourceInformation);
+    }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement resolvePackageableElement(String fullPath)
     {

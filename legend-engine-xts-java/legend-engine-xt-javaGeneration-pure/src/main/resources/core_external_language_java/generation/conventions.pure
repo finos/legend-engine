@@ -805,7 +805,7 @@ Class meta::external::language::java::transform::FuncCoderContext
 
    returnType()
    {
-      $this.conventions->pureTypeToJavaType($this.fe.genericType.rawType->toOne(), $this.fe.multiplicity);
+      $this.conventions->pureTypeToJavaType(if($this.fe.genericType.rawType->isEmpty(),|Any,|$this.fe.genericType.rawType->toOne()), $this.fe.multiplicity);
    }:meta::external::language::java::metamodel::Type[1];
 }
 

@@ -15,7 +15,7 @@
 package org.finos.legend.engine.protocol.dataquality.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
+import org.finos.legend.engine.protocol.pure.v1.model.context.SDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 
 import java.util.List;
@@ -23,7 +23,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DataQualityExecuteInput
 {
-    public AlloySDLC alloySDLC;
+    public SDLC sdlc;
     public String rootClass;
     public String elementPath;
     public List<ParameterValue> lambdaParameterValues;

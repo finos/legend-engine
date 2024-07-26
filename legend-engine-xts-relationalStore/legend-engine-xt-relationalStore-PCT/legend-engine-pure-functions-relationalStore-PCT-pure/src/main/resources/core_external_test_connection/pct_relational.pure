@@ -86,7 +86,11 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
     let resultType = $f->functionReturnType().rawType;
 
     if ($resultType->toOne()->instanceOf(PrimitiveType),
-      | let resultFinal = $res.result.rows->at(0).values->at(0);
+      | let preResultFinal = $res.result.rows->at(0).values->at(0);
+        let resultFinal = if ($resultType->toOne()->subTypeOf(Date),
+          | buildDate($preResultFinal->toString()),
+          | $preResultFinal->toOne()
+        );
         print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->makeString(','),|''));
         $resultFinal;,
       | let tdsString = $res.result.columns->joinStrings(',') + '\n' +
@@ -107,6 +111,40 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
           print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->toString(),|''));
           $resultFinal;
     )->cast(@X)->toMultiplicity(@[o]);
+}
+
+function meta::relational::tests::pct::process::buildDate(dateStr:String[1]):Date[1]
+{
+  // Need to find a better way...
+  
+  // Manage SubSecond
+  let _dot = if ($dateStr->contains('.'),
+    | let subPart = $dateStr->substring($dateStr->indexOf('.') + 1, $dateStr->lastIndexOf('+'));
+      let x = '.'+$subPart;
+      if ($subPart == '000000000',
+        | $dateStr->substring(0, $dateStr->indexOf('.')) + '' + $dateStr->substring($dateStr->lastIndexOf('+')),
+        | $dateStr->substring(0, $dateStr->indexOf('.')) + $x->parseFloat()->toString()->substring(1) + $dateStr->substring($dateStr->lastIndexOf('+'))
+      );,
+    | $dateStr
+  );
+
+  // Remove +
+  let _plus = if ($_dot->startsWith('+'),
+    |$_dot->substring(1),
+    |$_dot
+  );
+
+  // StrictDate
+  let _strict = if ($_plus->contains('T'),
+    |let time = $_plus->substring($_plus->indexOf('T') + 1, $_plus->lastIndexOf('+'));
+     if ($time == '00:00:00',
+          | $_plus->substring(0, $_plus->indexOf('T')),
+          | $_plus
+        );,
+    |$_plus
+  );
+
+  meta::pure::functions::string::parseDate($_strict);
 }
 
 function meta::relational::tests::pct::process::reprocess(f:Function<{->Any[*]}>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1], debug: DebugContext[1]):Pair<FunctionDefinition<{->Any[*]}>,ProcessingState>[1]

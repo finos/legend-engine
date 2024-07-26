@@ -34,6 +34,4 @@ public abstract class IngestStageResultAbstract
     public abstract String ingestionEndTimestampUTC();
 
     public abstract Map<StatisticName, Object> statisticByName();
-
-    // TODO : In case of Failure , should we also create Result or throw exception like now
 }

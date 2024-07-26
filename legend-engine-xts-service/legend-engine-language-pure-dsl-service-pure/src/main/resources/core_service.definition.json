@@ -3,11 +3,10 @@
   "pattern": "(meta::legend::service|meta::pure::mapping)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
     "platform_dsl_diagram",
     "platform_dsl_mapping",
     "platform_dsl_store",
-    "core_functions",
+    "core_functions_unclassified",
     "core_data_space_metamodel",
     "core"
   ]

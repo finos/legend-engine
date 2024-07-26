@@ -134,6 +134,7 @@ import org.finos.legend.engine.server.core.api.Memory;
 import org.finos.legend.engine.server.core.bundles.ErrorHandlingBundle;
 import org.finos.legend.engine.server.core.exceptionMappers.CatchAllExceptionMapper;
 import org.finos.legend.engine.server.core.exceptionMappers.JsonInformationExceptionMapper;
+import org.finos.legend.engine.server.core.pct.PCT;
 import org.finos.legend.engine.server.core.session.SessionAttributeBundle;
 import org.finos.legend.engine.server.core.session.SessionTracker;
 import org.finos.legend.engine.server.core.session.StoreExecutableManagerSessionListener;
@@ -269,8 +270,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         DeploymentStateAndVersions.DEPLOYMENT_MODE = serverConfiguration.deployment.mode;
 
         SDLCLoader sdlcLoader = new SDLCLoader(serverConfiguration.metadataserver, null);
-        ForkJoinPool compilerPool = new ForkJoinPool();
-        ModelManager modelManager = new ModelManager(serverConfiguration.deployment.mode, compilerPool, sdlcLoader);
+        ModelManager modelManager = new ModelManager(serverConfiguration.deployment.mode, sdlcLoader);
 
         ChainFixingFilterHandler.apply(environment.getApplicationContext(), serverConfiguration.filterPriorities);
 
@@ -336,6 +336,9 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new RelationalExecutorInformation());
         environment.jersey().register(new ConcurrentExecutionNodeExecutorPoolInfo(Collections.emptyList()));
         environment.jersey().register(new ParallelGraphFetchExecutionExecutorPoolInfo(parallelGraphFetchExecutionExecutorPool));
+
+        // PCT
+        environment.jersey().register(new PCT());
 
         // Protocol
         environment.jersey().register(new PureProtocol());

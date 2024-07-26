@@ -28,6 +28,7 @@ import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.Ser
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.protocol.dataquality.model.DataQualityExecuteInput;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
+import org.finos.legend.engine.protocol.pure.v1.model.context.SDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -37,6 +38,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.function.Function;
 
 public class DataQualityPlanLoader
 {
@@ -48,9 +50,9 @@ public class DataQualityPlanLoader
     public static final String EXECUTION_PLAN_FILE_NAME = "dataQualityValidationExecutionPlan.json";
 
     private final ServerConnectionConfiguration sdlcServerConnectionConfig;
-    private final CloseableHttpClient httpClientProvider;
+    private final Function<Identity, CloseableHttpClient> httpClientProvider;
 
-    public DataQualityPlanLoader(ServerConnectionConfiguration sdlcServerConnectionConfig, CloseableHttpClient httpClientProvider)
+    public DataQualityPlanLoader(ServerConnectionConfiguration sdlcServerConnectionConfig, Function<Identity, CloseableHttpClient> httpClientProvider)
     {
         this.sdlcServerConnectionConfig = sdlcServerConnectionConfig;
         this.httpClientProvider = httpClientProvider;
@@ -58,26 +60,48 @@ public class DataQualityPlanLoader
 
     public SingleExecutionPlan fetchPlanFromSDLC(Identity identity, DataQualityExecuteInput dataQualityParameterValue)
     {
-        List<Artifact> metaDataArtifactList = loadPlanDataQualityFromHTTPURL(getMetaDataApiUrl(dataQualityParameterValue.elementPath, dataQualityParameterValue.alloySDLC));
+        Assert.assertTrue(dataQualityParameterValue != null && dataQualityParameterValue.elementPath != null && dataQualityParameterValue.sdlc != null, () -> "DataQualityParameter info must contain Element Path and sdlc to access metadata services");
+        List<Artifact> metaDataArtifactList = loadPlanDataQualityFromHTTPURL(identity, getMetaDataApiUrl(dataQualityParameterValue.elementPath, dataQualityParameterValue.sdlc));
         return getPlanFromArtifactResponse(metaDataArtifactList);
     }
 
-    private String getMetaDataApiUrl(String elementPath, AlloySDLC alloySDLC)
+    private String getMetaDataApiUrl(String elementPath, SDLC sdlc)
+    {
+        if (sdlc instanceof AlloySDLC)
+        {
+            AlloySDLC alloySDLC = (AlloySDLC) sdlc;
+            return getMetaDataApiUrlFromAlloySDLC(elementPath, alloySDLC);
+        }
+        else
+        {
+            throw new EngineException("Unsupported SDLC type:" + sdlc.getClass().getSimpleName());
+        }
+    }
+
+    private String getMetaDataApiUrlFromAlloySDLC(String elementPath, AlloySDLC alloySDLC)
     {
         Assert.assertTrue(alloySDLC != null && alloySDLC.groupId != null && alloySDLC.artifactId != null && alloySDLC.version != null, () -> "AlloySDLC info must contain and group and artifact IDs to access metadata services");
         return String.format("%s/generations/%s/%s/versions/%s/%s", sdlcServerConnectionConfig.getBaseUrl(), alloySDLC.groupId, alloySDLC.artifactId, alloySDLC.version, elementPath);
     }
 
-    private List<Artifact> loadPlanDataQualityFromHTTPURL(String url)
+    private List<Artifact> loadPlanDataQualityFromHTTPURL(Identity identity, String url)
     {
+        Scope scope = GlobalTracer.get().scopeManager().active();
+        CloseableHttpClient httpclient;
 
-        try (
-                CloseableHttpClient client = httpClientProvider == null ? (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore()) : httpClientProvider;
-                Scope scope = GlobalTracer.get().buildSpan("Load project upstream dependencies").startActive(true)
-        )
+        if (httpClientProvider != null)
+        {
+            httpclient = httpClientProvider.apply(identity);
+        }
+        else
+        {
+            httpclient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
+        }
+
+        try
         {
             HttpGet httpRequest = new HttpGet(url);
-            HttpEntity entity = SDLCLoader.execHttpRequest(scope.span(), client, httpRequest);
+            HttpEntity entity = SDLCLoader.execHttpRequest(scope.span(), httpclient, httpRequest);
             try (InputStream content = entity.getContent())
             {
                 return objectMapper.readValue(content, ARTIFACT_TYPE);

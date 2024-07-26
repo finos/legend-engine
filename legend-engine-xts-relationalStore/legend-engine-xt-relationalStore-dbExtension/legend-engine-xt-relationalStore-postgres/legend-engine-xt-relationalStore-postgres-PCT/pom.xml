@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-postgres</artifactId>
-        <version>4.49.2-SNAPSHOT</version>
+        <version>4.52.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -47,8 +47,8 @@
                     <mode>Compiled</mode>
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.postgres.pct.Test_Relational_Postgres_BaseFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.postgres.pct.Test_Relational_Postgres_BasicFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.postgres.pct.Test_Relational_Postgres_StandardFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.postgres.pct.Test_Relational_Postgres_EssentialFunctions_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.postgres.pct.Test_Relational_Postgres_GrammarFunctions_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.postgres.pct.Test_Relational_Postgres_RelationFunctions_PCT</PCTTestSuite>
                     </PCTTestSuites>
@@ -70,7 +70,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-platform-functions-java</artifactId>
+                        <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -80,7 +80,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-platform-functions-relation-java</artifactId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -141,14 +141,13 @@
             <artifactId>legend-engine-shared-vault-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-functions-relation-pure</artifactId>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-functions-base-pure</artifactId>
-            <scope>runtime</scope>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -159,11 +158,6 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-postgres-execution</artifactId>
             <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
         </dependency>
 
         <dependency>
@@ -202,7 +196,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-platform-functions-relation-java</artifactId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

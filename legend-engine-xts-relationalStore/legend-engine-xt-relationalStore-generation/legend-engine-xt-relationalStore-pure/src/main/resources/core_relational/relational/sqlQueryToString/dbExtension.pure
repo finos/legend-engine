@@ -1075,6 +1075,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   toUpper,
   today,
   trim,
+  variance,
   variancePopulation,
   varianceSample,
   weekOfYear,

@@ -304,7 +304,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
                                                         cols.collect(c ->
                                                         {
                                                             Column<?, ?> theCol = ((RelationType<?>) c._genericType()._typeArguments().getLast()._rawType())._columns().getFirst();
-                                                            return _Column.getColumnInstance(theCol._name(), false, null, _Column.getColumnType(theCol), null, processorSupport);
+                                                            return _Column.getColumnInstance(theCol._name(), false, _Column.getColumnType(theCol), null, processorSupport);
                                                         }),
                                                         null,
                                                         processorSupport
@@ -365,7 +365,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
                                     new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                                             ._rawType(
                                                     _RelationType.build(
-                                                            Lists.mutable.with(_Column.getColumnInstance(colSpec.name, false, null, funcReturnType(funcVS, context.pureModel), null, processorSupport)),
+                                                            Lists.mutable.with(_Column.getColumnInstance(colSpec.name, false, funcReturnType(funcVS, context.pureModel), null, processorSupport)),
                                                             null,
                                                             processorSupport
                                                     )
@@ -405,7 +405,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
                                     new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                                             ._rawType(
                                                     _RelationType.build(
-                                                            Lists.mutable.with(_Column.getColumnInstance(colSpec.name, false, null, funcReturnType(func2VS, context.pureModel), null, processorSupport)),
+                                                            Lists.mutable.with(_Column.getColumnInstance(colSpec.name, false, funcReturnType(func2VS, context.pureModel), null, processorSupport)),
                                                             null,
                                                             processorSupport
                                                     )
@@ -590,7 +590,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
                     ._name(variable.name);
             GenericType genericType = variable.relationType != null ?
                     new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(RelationTypeHelper.convert(variable.relationType, context.pureModel.getExecutionSupport().getProcessorSupport(), null)) :
-                    this.context.resolveGenericType(this.context.pureModel.addPrefixToTypeReference(variable._class), variable.sourceInformation);
+                    this.context.resolveGenericType(this.context.pureModel.addPrefixToTypeReference(variable._class.path), variable.sourceInformation);
             ve._genericType(genericType);
             ve._multiplicity(this.context.pureModel.getMultiplicity(variable.multiplicity));
             processingContext.addInferredVariables(variable.name, ve);

@@ -219,54 +219,6 @@ Class meta::legend::test::handlers::model::TestAggregation
    sumIntegers() {$this.integers->sum()}:Integer[1];
 }
 
-Class meta::legend::test::handlers::model::StdDev
-{
-   numbers : Number[*];
-   numbersMinOne : Number[1..*];
-   floats : Float[*];
-   floatsMinOne : Float[1..*];
-   integers : Integer[*];
-   integersMinOne: Integer[1..*];
-
-   stdDevPopulationNumber() {$this.numbers->stdDevPopulation()}:Number[1];
-   stdDevPopulationNumberMinOne() {$this.numbersMinOne->stdDevPopulation()}:Number[1];
-   stdDevPopulationFloat() {$this.floats->stdDevPopulation()}:Number[1];
-   stdDevPopulationFloatMinOne() {$this.floatsMinOne->stdDevPopulation()}:Number[1];
-   stdDevPopulationInteger() {$this.integers->stdDevPopulation()}:Number[1];
-   stdDevPopulationIntegerMinOne() {$this.integersMinOne->stdDevPopulation()}:Number[1];
-
-   stdDevSampleNumber() {$this.numbers->stdDevSample()}:Number[1];
-   stdDevSampleNumberMinOne() {$this.numbersMinOne->stdDevSample()}:Number[1];
-   stdDevSampleFloat() {$this.floats->stdDevSample()}:Number[1];
-   stdDevSampleFloatMinOne() {$this.floatsMinOne->stdDevSample()}:Number[1];
-   stdDevSampleInteger() {$this.integers->stdDevSample()}:Number[1];
-   stdDevSampleIntegerMinOne() {$this.integersMinOne->stdDevSample()}:Number[1];
-}
-
-Class meta::legend::test::handlers::model::Variance
-{
-   numbers : Number[*];
-   numbersMinOne : Number[1..*];
-   floats : Float[*];
-   floatsMinOne : Float[1..*];
-   integers : Integer[*];
-   integersMinOne: Integer[1..*];
-
-   variancePopulationNumber() {$this.numbers->variancePopulation()}:Number[1];
-   variancePopulationNumberMinOne() {$this.numbersMinOne->variancePopulation()}:Number[1];
-   variancePopulationFloat() {$this.floats->variancePopulation()}:Number[1];
-   variancePopulationFloatMinOne() {$this.floatsMinOne->variancePopulation()}:Number[1];
-   variancePopulationInteger() {$this.integers->variancePopulation()}:Number[1];
-   variancePopulationIntegerMinOne() {$this.integersMinOne->variancePopulation()}:Number[1];
-
-   varianceSampleNumber() {$this.numbers->varianceSample()}:Number[1];
-   varianceSampleNumberMinOne() {$this.numbersMinOne->varianceSample()}:Number[1];
-   varianceSampleFloat() {$this.floats->varianceSample()}:Number[1];
-   varianceSampleFloatMinOne() {$this.floatsMinOne->varianceSample()}:Number[1];
-   varianceSampleInteger() {$this.integers->varianceSample()}:Number[1];
-   varianceSampleIntegerMinOne() {$this.integersMinOne->varianceSample()}:Number[1];
-}
-
 Class meta::legend::test::handlers::model::Trigo
 {
    number : Number[1];

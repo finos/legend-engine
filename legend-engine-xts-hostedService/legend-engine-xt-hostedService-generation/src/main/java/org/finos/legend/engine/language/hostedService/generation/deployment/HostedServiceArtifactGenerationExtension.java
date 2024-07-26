@@ -77,13 +77,16 @@ public class HostedServiceArtifactGenerationExtension implements ArtifactGenerat
             Root_meta_external_function_activator_hostedService_HostedService activator = (Root_meta_external_function_activator_hostedService_HostedService) element;
             Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel p) -> PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(p.getExecutionSupport()));
             GenerationInfoData info = HostedServiceArtifactGenerator.renderArtifact(pureModel, activator, data, clientVersion, routerExtensions);
-            PureModelContextData s = HostedServiceArtifactGenerator.fetchHostedService(activator, data, pureModel);
-            result.add(new Artifact(mapper.writeValueAsString(new HostedServiceArtifact(activator._pattern(), info, generatePointerForActivator(s, data), (AlloySDLC) data.origin.sdlcInfo)), FILE_NAME, "json"));
-
-            //lineage
-            LOGGER.info("Generating hostedService lineage artifacts for " + element.getName());
-            String lineage = HostedServiceArtifactGenerator.generateLineage(pureModel, activator, data, routerExtensions);
-            result.add(new Artifact(lineage, LINEAGE_FILE_NAME, "json"));
+            PureModelContextData serviceData = HostedServiceArtifactGenerator.fetchHostedService(activator, data, pureModel);
+            result.add(new Artifact(mapper.writeValueAsString(new HostedServiceArtifact(activator._pattern(), info, generatePointerForActivator(serviceData, data), (AlloySDLC) data.origin.sdlcInfo)), FILE_NAME, "json"));
+            if (!(element._stereotypes().anySatisfy(stereotype ->
+                    stereotype._profile()._name().equals("devStatus") && stereotype._profile()._p_stereotypes().anySatisfy(s -> s._value().equals("inProgress")))))
+            {
+                //lineage
+                LOGGER.info("Generating hostedService lineage artifacts for " + element.getName());
+                String lineage = HostedServiceArtifactGenerator.generateLineage(pureModel, activator, data, routerExtensions);
+                result.add(new Artifact(lineage, LINEAGE_FILE_NAME, "json"));
+            }
             LOGGER.info("Generated artifacts for " + element.getName());
 
         }

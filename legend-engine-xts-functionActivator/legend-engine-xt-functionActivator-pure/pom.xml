@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-functionActivator</artifactId>
-        <version>4.49.2-SNAPSHOT</version>
+        <version>4.52.2-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -168,19 +168,11 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-platform-functions-java</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.engine</groupId>-->
-<!--            <artifactId>legend-engine-pure-platform-dsl-store-java</artifactId>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-code-compiled-functions</artifactId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
         </dependency>
         <!-- ENGINE -->
 

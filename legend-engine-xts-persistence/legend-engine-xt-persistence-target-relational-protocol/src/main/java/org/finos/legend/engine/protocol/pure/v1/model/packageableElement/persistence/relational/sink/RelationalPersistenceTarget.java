@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.sink;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.Temporality;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.sink.PersistenceTarget;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.sink.PersistenceTargetVisitor;
@@ -21,7 +23,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 public class RelationalPersistenceTarget extends PersistenceTarget
 {
     public String table;
-    public String database;
+    @JsonSerialize(converter = PackageableElementPointer.ToPathSerializerConverter.class)
+    public PackageableElementPointer database;
     public Temporality temporality;
 
     @Override

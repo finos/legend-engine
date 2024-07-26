@@ -1,0 +1,92 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+import meta::pure::functions::relation::*;
+import meta::pure::functions::relation::tests::composition::*;
+
+Class meta::pure::functions::relation::tests::composition::FirmTypeForCompositionTests
+{
+  legalName : String[1];
+  employees : PersonTypeForCompositionTests[*];
+}
+
+Class meta::pure::functions::relation::tests::composition::PersonTypeForCompositionTests
+{
+  firstName : String[1];
+  lastName  : String[1];
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testExtendFilter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                  val, str
+                  1, a
+                  3, ewe
+                  4, qw
+                  5, wwe
+                  6, weq
+                #->extend(~newCol:x|$x.str->toOne() + $x.val->toOne()->toString())
+                 ->filter(x|$x.newCol == 'qw4');
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,str,newCol\n'+
+                  '   4,qw,qw4\n'+
+                  '#', $res->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testFilterPostProject<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                     [
+                        ^FirmTypeForCompositionTests
+                        (
+                            legalName = 'Firm X',
+                            employees = [
+                                ^PersonTypeForCompositionTests(firstName = 'Peter', lastName = 'Smith'),
+                                ^PersonTypeForCompositionTests(firstName = 'John', lastName = 'Johnson'),
+                                ^PersonTypeForCompositionTests(firstName = 'John', lastName = 'Hill'),
+                                ^PersonTypeForCompositionTests(firstName = 'Anthony', lastName = 'Allen')
+                            ]
+                        ),
+                        ^FirmTypeForCompositionTests
+                        (
+                            legalName = 'Firm A',
+                            employees = [
+                                ^PersonTypeForCompositionTests(firstName = 'Fabrice', lastName = 'Roberts')
+                            ]
+                        )
+                     ]
+                     ->project(~[
+                        legalName : x | $x.legalName,
+                        firstName : x | $x.employees.firstName
+                     ])
+                     ->filter(x | $x.legalName == 'Firm X');
+                  };
+
+        let res =  $f->eval($expr);
+
+        assertEquals( '#TDS\n' +
+                      '   legalName,firstName\n' +
+                      '   Firm X,Peter\n' +
+                      '   Firm X,John\n' +
+                      '   Firm X,John\n' +
+                      '   Firm X,Anthony\n' +
+                      '#', $res->toString());
+}

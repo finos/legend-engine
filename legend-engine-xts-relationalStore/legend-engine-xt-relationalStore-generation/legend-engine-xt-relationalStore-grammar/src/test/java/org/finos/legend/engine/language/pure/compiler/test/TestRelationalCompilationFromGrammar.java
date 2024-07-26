@@ -367,7 +367,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                         "    ProductID VARCHAR(30) PRIMARY KEY\n" +
                         "  )\n" +
                         ")",
-                "COMPILATION error at [8:12-48]: Can't find stereotype 'type3' in profile 'meta::pure::profiles::storeType'"
+                "COMPILATION error at [8:44-48]: Can't find stereotype 'type3' in profile 'meta::pure::profiles::storeType'"
         );
     }
 

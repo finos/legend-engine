@@ -21,9 +21,14 @@ public class SnowflakeAppError extends FunctionActivatorError
 {
     public MutableList<String> foundSQLs;
 
-    public <V> SnowflakeAppError(String message, MutableList<String> foundSQLs)
+    public SnowflakeAppError(String message, MutableList<String> foundSQLs)
     {
         super(message);
         this.foundSQLs = foundSQLs;
+    }
+
+    public SnowflakeAppError(String message)
+    {
+        super(message);
     }
 }

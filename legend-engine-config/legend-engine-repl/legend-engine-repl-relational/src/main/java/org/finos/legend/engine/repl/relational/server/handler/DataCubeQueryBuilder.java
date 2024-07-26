@@ -140,7 +140,7 @@ public class DataCubeQueryBuilder
                         String requestBody = bufferReader.lines().collect(Collectors.joining());
                         DataCubeQueryTypeaheadInput input = state.objectMapper.readValue(requestBody, DataCubeQueryTypeaheadInput.class);
                         PureModelContextData data = state.getCurrentPureModelContextData();
-                        CompletionResult result = DataCubeHelpers.getCodeTypeahead(input.code, input.isPartial, data);
+                        CompletionResult result = DataCubeHelpers.getCodeTypeahead(state.legendInterface, input.code, input.isPartial, data);
                         handleResponse(exchange, 200, state.objectMapper.writeValueAsString(result.getCompletion()), state);
                     }
                     catch (Exception e)
