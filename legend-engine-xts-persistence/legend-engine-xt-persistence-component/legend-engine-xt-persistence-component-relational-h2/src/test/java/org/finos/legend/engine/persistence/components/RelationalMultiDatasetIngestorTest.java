@@ -23,9 +23,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeA
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTime;
@@ -59,31 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.persistence.components.TestUtils.appendTimeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.batchIdInName;
-import static org.finos.legend.engine.persistence.components.TestUtils.batchIdName;
-import static org.finos.legend.engine.persistence.components.TestUtils.batchIdOutName;
-import static org.finos.legend.engine.persistence.components.TestUtils.batchTimeInName;
-import static org.finos.legend.engine.persistence.components.TestUtils.batchTimeOutName;
-import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
-import static org.finos.legend.engine.persistence.components.TestUtils.digestUDF;
-import static org.finos.legend.engine.persistence.components.TestUtils.expiryDateName;
-import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema;
-import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema2;
-import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema2WithVersion;
-import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema2WithVersionWithoutPkWithoutDigest;
-import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema2WithoutPkWithoutDigest;
-import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchemaWithNonPkVersion;
-import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchemaWithVersionWithoutPkWithoutDigest;
-import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchemaWithoutPkWithoutDigest;
-import static org.finos.legend.engine.persistence.components.TestUtils.idName;
-import static org.finos.legend.engine.persistence.components.TestUtils.incomeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
-import static org.finos.legend.engine.persistence.components.TestUtils.ratingName;
-import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.testDatabaseName;
-import static org.finos.legend.engine.persistence.components.TestUtils.testSchemaName;
-import static org.finos.legend.engine.persistence.components.TestUtils.versionName;
+import static org.finos.legend.engine.persistence.components.TestUtils.*;
 
 class RelationalMultiDatasetIngestorTest extends BaseTest
 {
@@ -109,17 +84,6 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         .metadataDatasetName(dataset2 + suffixForBatchMetadataTable)
         .build();
 
-    private static final MetadataDataset metadataDataset1 = MetadataDataset.builder()
-        .metadataDatasetDatabaseName(testDatabaseName)
-        .metadataDatasetGroupName(testSchemaName)
-        .metadataDatasetName(dataset1 + suffixForBatchMetadataTable)
-        .build();
-
-    private static final MetadataDataset metadataDataset2 = MetadataDataset.builder()
-        .metadataDatasetDatabaseName(testDatabaseName)
-        .metadataDatasetGroupName(testSchemaName)
-        .metadataDatasetName(dataset2 + suffixForBatchMetadataTable)
-        .build();
 
     private static final LockInfoDataset lockInfoDataset = LockInfoDataset.builder()
         .database(testDatabaseName)
