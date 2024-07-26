@@ -1,0 +1,43 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+
+native function <<PCT.function>> meta::pure::functions::relation::rename<T,Z,K,V>(r:Relation<T>[1], old:ColSpec<Z=(?:K)⊆T>[1], new:ColSpec<V=(?:K)>[1]):Relation<T-Z+V>[1];
+
+function <<PCT.test>> meta::pure::functions::relation::tests::rename::testSimpleRenameShared<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                      val, str
+                      1, a
+                      3, ewe
+                      4, qw
+                      5, wwe
+                      6, weq
+                  #->rename(~str, ~newStr);
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,newStr\n'+
+                  '   1,a\n'+
+                  '   3,ewe\n'+
+                  '   4,qw\n'+
+                  '   5,wwe\n'+
+                  '   6,weq\n'+
+                  '#', $res->toString());
+}

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::executionPlan::platformBinding::legendJava::pct::*;
+import meta::json::*;
 import meta::pure::executionPlan::platformBinding::localBinding::*;
 import meta::pure::executionPlan::platformBinding::*;
 import meta::pure::test::pct::*;
@@ -30,14 +32,52 @@ function <<PCT.adapter>> meta::pure::executionPlan::platformBinding::legendJava:
 
     let x = meta::legend::executePlanAsJSON($planAsJson, []);
 
-    let res = $x->meta::json::parseJSON()->meta::json::fromJSON(Any, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull));
+    let funcReturnType = $f->functionReturnType().rawType->toOne();
+    let returnType = if ($funcReturnType->isEmpty(), |Any, |$funcReturnType);
+
+    let res = if ($returnType != Nil && $returnType->meta::pure::functions::meta::subTypeOf(Date),
+      | jsonToDate($x),
+      |$x->meta::json::parseJSON()->meta::json::fromJSON($returnType, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull));
+    );
     
     // processResult
-    let resultType = $f->functionReturnType().rawType;
+    let resultType = $f->functionReturnType().rawType;    
 
-    if ($resultType->toOne()->instanceOf(PrimitiveType) || $resultType == Nil,
-      | $res,
-      | fail();
-    )->cast(@X)->toMultiplicity(@[o]);
+    $res->cast(@X)->toMultiplicity(@[o]);
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::pct::jsonToDate(s:String[1]):Date[1]
+{
+    let jsonObject = $s->meta::json::parseJSON()->cast(@meta::json::JSONObject);
+    let year = extractValue($jsonObject, 'year');
+    let month = extractValue($jsonObject, 'month');
+    let day = extractValue($jsonObject, 'day');
+    let hour = extractValue($jsonObject, 'hour');
+    let minute = extractValue($jsonObject, 'minute');
+    let second = extractValue($jsonObject, 'second');
+    let subsecond = extractValue($jsonObject, 'subsecond');
+    let res = if(
+      [
+        pair(|$month == '-1',|'%'+$year),
+        pair(|$day == '-1',|'%'+$year+'-'+$month),
+        pair(|$hour == '-1',|'%'+$year+'-'+$month+'-'+$day),
+        pair(|$minute == '-1',|'%'+$year+'-'+$month+'-'+$day+'T'+$hour),
+        pair(|$second == '-1',|'%'+$year+'-'+$month+'-'+$day+'T'+$hour+':'+$minute),
+        pair(|$subsecond == '',|'%'+$year+'-'+$month+'-'+$day+'T'+$hour+':'+$minute+':'+$second)
+      ],
+      |'%'+$year+'-'+$month+'-'+$day+'T'+$hour+':'+$minute+':'+$second+'.'+$subsecond
+    );
+    parseDate($res);
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::pct::extractValue(obj:JSONObject[1], key:String[1]):String[1]
+{
+  $obj.keyValuePairs->filter(k|$k.key.value == $key).value->match(
+    [
+        n:JSONNumber[1]|$n.value->toOne()->toString(),
+        s:JSONString[1]|$s.value->toOne(),
+        x:Any[0..1]|''
+    ]
+  );
 }
 

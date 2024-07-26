@@ -39,3 +39,4 @@
 /legend-engine-xts-xml/**                @finos/legend-engine-maintainers
 .gitignore                               @finos/legend-engine-maintainers
 pom.xml                                  @finos/legend-engine-maintainers
+/legend-engine-xts-persistence/**        @finos/legend-engine-maintainers @davidsunglee

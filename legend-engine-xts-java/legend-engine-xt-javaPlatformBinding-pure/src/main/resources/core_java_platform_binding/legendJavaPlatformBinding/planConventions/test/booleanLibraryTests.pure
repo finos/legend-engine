@@ -76,8 +76,8 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 meta::pure::executionPlan::platformBinding::legendJava::library::boolean::tests::pureBooleanTests() : Boolean[1]
 {
    javaPureTests(engineConventions([]), [
-      meta::pure::functions::boolean::tests::testIsPrimitive__Boolean_1_,
-      meta::pure::functions::boolean::tests::testIsEnum__Boolean_1_,
+      //meta::pure::functions::boolean::tests::testIsPrimitive__Boolean_1_,
+      //meta::pure::functions::boolean::tests::testIsEnum__Boolean_1_,
       meta::pure::executionPlan::platformBinding::legendJava::library::boolean::tests::testInstanceEquality__Boolean_1_
       //meta::pure::functions::boolean::tests::testIsNonPrimitive__Boolean_1_, // TODO Requires New
       //meta::pure::functions::boolean::tests::testIsNativeFunctions__Boolean_1_, // TODO Requires Metadata

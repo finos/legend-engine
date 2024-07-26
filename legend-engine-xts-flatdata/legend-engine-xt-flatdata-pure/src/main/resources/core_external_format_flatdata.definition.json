@@ -3,7 +3,7 @@
   "pattern": "(meta::external::format::flatdata)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
+    "core_functions_unclassified",
     "core"
   ]
 }

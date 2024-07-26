@@ -15,6 +15,9 @@
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.relationType.RelationType;
 
@@ -25,7 +28,8 @@ public class Variable extends ValueSpecification
 
     // Type can be either a Class or a RelationType
     @JsonProperty(value = "class")
-    public String _class;
+    @JsonSerialize(converter = PackageableElementPointer.ToPathSerializerConverter.class)
+    public PackageableElementPointer _class;
     public RelationType relationType;
 
     public Boolean supportsStream;
@@ -38,7 +42,7 @@ public class Variable extends ValueSpecification
     public Variable(String name, String _class, Multiplicity multiplicity)
     {
         this.name = name;
-        this._class = _class;
+        this._class = new PackageableElementPointer(PackageableElementType.CLASS, _class);
         this.multiplicity = multiplicity;
     }
 

@@ -1,0 +1,4 @@
+Profile meta::pure::profiles::cipher
+{
+    stereotypes: [Cipher, Decipher];
+}

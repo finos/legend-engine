@@ -54,7 +54,7 @@ function <<access.private>> meta::pure::platform::executionPlan::generation::def
    ^PureExpressionPlatformExecutionNode
    (
       expression = $fe,
-      resultType = ^ResultType(type=$fe.genericType.rawType->toOne()),
+      resultType = ^ResultType(type=if($fe.genericType.rawType->isEmpty(),|Any,|$fe.genericType.rawType->toOne())),
       requiredVariableInputs = $variableExpressionInputs->concatenate($varPlaceHolderInputs),
       resultSizeRange = $fe.multiplicity,
       executionNodes = $children,

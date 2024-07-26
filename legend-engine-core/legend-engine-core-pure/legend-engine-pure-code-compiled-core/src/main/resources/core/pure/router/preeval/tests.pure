@@ -1468,7 +1468,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testRecursiveSimpleCo
     if($s == Any, {|[]}, {|$s.properties->concatenate($s.generalizations->map({g|$g.general.rawType->cast(Any)
       ->toOne()
       ->hierarchicalProperties()}))
-      ->removeDuplicates([], [])})
+      ->removeDuplicates()})
   };
 
   assertRoundTrip($input, $expected);

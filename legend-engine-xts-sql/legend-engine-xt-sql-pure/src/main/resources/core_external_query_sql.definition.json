@@ -3,11 +3,11 @@
   "pattern": "(meta::external::query::sql)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
     "platform_dsl_mapping",
     "platform_dsl_store",
     "platform_store_relational",
-    "core_functions",
+    "core_functions_unclassified",
+    "core_functions_standard",
     "core",
     "core_service",
     "core_relational",

@@ -21,6 +21,7 @@ import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceI
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.SnowflakeAppParserGrammar;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -31,6 +32,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeApp;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeAppDeploymentConfiguration;
+import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakePermissionScheme;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
 import java.util.List;
@@ -83,6 +86,23 @@ public class SnowflakeAppTreeWalker
         {
             snowflakeApp.description = PureGrammarParserUtility.fromGrammarString(descriptionContext.STRING().getText(), true);
         }
+        SnowflakeAppParserGrammar.RoleContext roleContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.role(), "role", snowflakeApp.sourceInformation);
+        if (roleContext != null)
+        {
+           snowflakeApp.usageRole = PureGrammarParserUtility.fromGrammarString(roleContext.STRING().getText(), true);
+        }
+        SnowflakeAppParserGrammar.SchemeContext schemeContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.scheme(), "scheme", snowflakeApp.sourceInformation);
+        if (schemeContext != null)
+        {
+            try
+            {
+                snowflakeApp.permissionScheme = SnowflakePermissionScheme.valueOf(PureGrammarParserUtility.fromIdentifier(schemeContext.identifier()));
+            }
+            catch (Exception e)
+            {
+                throw new EngineException("Unknown permission scheme '" + PureGrammarParserUtility.fromIdentifier(schemeContext.identifier()) + "'", this.walkerSourceInformation.getSourceInformation(schemeContext), EngineErrorType.PARSER);
+            }
+        }
         SnowflakeAppParserGrammar.ActivationContext activationContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.activation(), "activation", snowflakeApp.sourceInformation);
         if (activationContext != null)
         {
@@ -120,7 +140,7 @@ public class SnowflakeAppTreeWalker
             stereotypePtr.profile = PureGrammarParserUtility.fromQualifiedName(stereotypeContext.qualifiedName().packagePath() == null ? Collections.emptyList() : stereotypeContext.qualifiedName().packagePath().identifier(), stereotypeContext.qualifiedName().identifier());
             stereotypePtr.value = PureGrammarParserUtility.fromIdentifier(stereotypeContext.identifier());
             stereotypePtr.profileSourceInformation = this.walkerSourceInformation.getSourceInformation(stereotypeContext.qualifiedName());
-            stereotypePtr.sourceInformation = this.walkerSourceInformation.getSourceInformation(stereotypeContext);
+            stereotypePtr.sourceInformation = this.walkerSourceInformation.getSourceInformation(stereotypeContext.identifier());
             return stereotypePtr;
         });
     }

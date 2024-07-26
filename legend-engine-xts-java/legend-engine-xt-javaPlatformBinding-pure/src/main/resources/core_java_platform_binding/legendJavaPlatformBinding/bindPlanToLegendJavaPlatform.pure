@@ -65,13 +65,14 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::prepareGenerationContext(plan: ExecutionPlan[1], legendJavaConfig: LegendJavaPlatformBindingConfig[1], extensions: Extension[*], debug: DebugContext[1]): GenerationContext[1]
 {
    let conventions  = engineConventions($extensions);
+  
    let pathAdjusted = if ($legendJavaConfig.planId->isEmpty(), 
                           | $conventions, 
                           | $conventions->setBasePackageName($conventions.basePackageName+'.'+$conventions->identifier('plan_'+$legendJavaConfig.planId->toOne()))
                       );
 
    let initialContext  = ^GenerationContext(typeInfos=newTypeInfoSet(), conventions=$pathAdjusted);
-
+  
    let preparedContext = $plan.rootExecutionNode->prepareForLegendJavaPlatformBinding('root', $initialContext, $extensions, $debug)->fillNewFunctionProhibitedList();
    
    // TODO Move Interface/Enum/Unit generation to here

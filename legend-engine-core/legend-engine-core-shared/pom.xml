@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core</artifactId>
-        <version>4.49.2-SNAPSHOT</version>
+        <version>4.52.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -31,5 +31,6 @@
         <module>legend-engine-shared-extensions</module>
         <module>legend-engine-shared-javaCompiler</module>
         <module>legend-engine-shared-vault</module>
+        <module>legend-engine-shared-structures</module>
     </modules>
 </project>

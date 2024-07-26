@@ -28,7 +28,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Proc
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationResult;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationRuleSet;
-import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
@@ -93,7 +92,7 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                                 ._documentation(persistence.documentation),
                         (persistence, context) ->
                         {
-                            Root_meta_pure_persistence_metamodel_Persistence purePersistence = (Root_meta_pure_persistence_metamodel_Persistence) context.pureModel.getOrCreatePackage(persistence._package)._children().detect(c -> persistence.name.equals(c._name()));
+                            Root_meta_pure_persistence_metamodel_Persistence purePersistence = (Root_meta_pure_persistence_metamodel_Persistence) context.pureModel.getPackageableElement(persistence);
                             purePersistence._trigger(HelperPersistenceBuilder.buildTrigger(persistence.trigger, context));
                             purePersistence._service(HelperPersistenceBuilder.buildService(persistence, context));
                             if (persistence.serviceOutputTargets != null)
@@ -115,7 +114,7 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                         (persistenceContext, context) -> new Root_meta_pure_persistence_metamodel_PersistenceContext_Impl(persistenceContext.name, null, context.pureModel.getClass("meta::pure::persistence::metamodel::PersistenceContext"))._name(persistenceContext.name),
                         (persistenceContext, context) ->
                         {
-                            Root_meta_pure_persistence_metamodel_PersistenceContext purePersistenceContext = (Root_meta_pure_persistence_metamodel_PersistenceContext) context.pureModel.getOrCreatePackage(persistenceContext._package)._children().detect(c -> persistenceContext.name.equals(c._name()));
+                            Root_meta_pure_persistence_metamodel_PersistenceContext purePersistenceContext = (Root_meta_pure_persistence_metamodel_PersistenceContext) context.pureModel.getPackageableElement(persistenceContext);
                             purePersistenceContext._persistence(HelperPersistenceContextBuilder.buildPersistence(persistenceContext, context));
                             purePersistenceContext._platform(HelperPersistenceContextBuilder.buildPersistencePlatform(persistenceContext.platform, context));
                             purePersistenceContext._serviceParameters(ListIterate.collect(persistenceContext.serviceParameters, sp -> HelperPersistenceContextBuilder.buildServiceParameter(sp, context)));
@@ -130,9 +129,7 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                         // use the final compiler pass to invoke validation extensions
                         (persistenceContext, context) ->
                         {
-                            Root_meta_pure_persistence_metamodel_PersistenceContext purePersistenceContext = (Root_meta_pure_persistence_metamodel_PersistenceContext) context.pureModel.getOrCreatePackage(persistenceContext._package)._children().detect(c -> persistenceContext.name.equals(c._name()));
-
-                            ListIterable<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+                            Root_meta_pure_persistence_metamodel_PersistenceContext purePersistenceContext = (Root_meta_pure_persistence_metamodel_PersistenceContext) context.pureModel.getPackageableElement(persistenceContext);
                             ListIterable<? extends Root_meta_pure_extension_Extension> pureExtensions = PureCoreExtensionLoader.extensions().flatCollect(x -> x.extraPureCoreExtensions(context.pureModel.getExecutionSupport())).toList();
 
                             // execute common validations

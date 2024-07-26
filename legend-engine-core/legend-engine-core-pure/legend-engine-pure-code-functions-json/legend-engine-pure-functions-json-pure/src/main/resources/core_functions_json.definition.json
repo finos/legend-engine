@@ -1,0 +1,5 @@
+{
+  "name" : "core_functions_json",
+  "pattern" : "(meta::json|meta::pure::functions)(::.*)?",
+  "dependencies" : ["platform"]
+}

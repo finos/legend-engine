@@ -14,10 +14,12 @@
 
 package org.finos.legend.engine.repl.core.legend;
 
+import java.util.concurrent.ForkJoinPool;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProcessParameter;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
@@ -34,6 +36,8 @@ import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_QUALIF
 
 public class LocalLegendInterface implements LegendInterface
 {
+    private final ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+
     @Override
     public PureModelContextData parse(String txt)
     {
@@ -77,7 +81,7 @@ public class LocalLegendInterface implements LegendInterface
     @Override
     public PureModel compile(PureModelContextData pureModelContextData)
     {
-        return Compiler.compile(pureModelContextData, DeploymentMode.PROD, Identity.getAnonymousIdentity().getName());
+        return Compiler.compile(pureModelContextData, DeploymentMode.PROD, Identity.getAnonymousIdentity().getName(), null, PureModelProcessParameter.newBuilder().withForkJoinPool(this.forkJoinPool).build());
     }
 
     @Override

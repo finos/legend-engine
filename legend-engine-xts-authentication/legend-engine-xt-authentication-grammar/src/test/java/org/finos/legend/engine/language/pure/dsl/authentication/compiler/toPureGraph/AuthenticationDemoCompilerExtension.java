@@ -47,7 +47,7 @@ public class AuthenticationDemoCompilerExtension implements IAuthenticationDemoC
                         ._name(authenticationDemo.name),
                 (authenticationDemo, context) ->
                 {
-                    Root_meta_pure_runtime_connection_authentication_demo_AuthenticationDemo pureAuthenticationDemo = (Root_meta_pure_runtime_connection_authentication_demo_AuthenticationDemo) context.pureModel.getOrCreatePackage(authenticationDemo._package)._children().detect(c -> authenticationDemo.name.equals(c._name()));
+                    Root_meta_pure_runtime_connection_authentication_demo_AuthenticationDemo pureAuthenticationDemo = (Root_meta_pure_runtime_connection_authentication_demo_AuthenticationDemo) context.pureModel.getPackageableElement(authenticationDemo);
                     pureAuthenticationDemo._authentication(HelperAuthenticationBuilder.buildAuthenticationSpecification(authenticationDemo.authenticationSpecification, context));
                 }
         );

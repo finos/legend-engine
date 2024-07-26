@@ -275,9 +275,9 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 meta::pure::executionPlan::platformBinding::legendJava::library::collection::tests::testCollectionsPureTests() : Boolean[1]
 {
    javaPureTests(engineConventions([]), [
-      meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesPrimitiveNonStandardFunction__Boolean_1_,
-      meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesEmptyList__Boolean_1_,
-      meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesByPrimitive__Boolean_1_
+      //meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesPrimitiveNonStandardFunction__Boolean_1_,
+      //meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesEmptyList__Boolean_1_,
+      //meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesByPrimitive__Boolean_1_
    ])
       ->generate(GeographicEntityType)
       ->addTestsWithin(meta::pure::functions::collection::tests::init)

@@ -102,7 +102,7 @@ public class TestParameterizedValueSpecification
 
     private Boolean variableCompare(Variable a, Variable b)
     {
-        return a.name.equals(b.name) && a._class.equals(b._class) && a.multiplicity.equals(b.multiplicity);
+        return a.name.equals(b.name) && a._class.path.equals(b._class.path) && a.multiplicity.equals(b.multiplicity);
     }
 
     private ParameterValue createParameterValue(String name, ValueSpecification value)

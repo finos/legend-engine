@@ -5,12 +5,21 @@ Class meta::external::function::activator::snowflakeApp::SnowflakeApp extends Fu
 {
   applicationName : String[1];
   description : String[0..1];
+  usageRole: String[0..1];
+  deploymentSchema: String[0..1];
+  permissionScheme: SnowflakePermissionScheme[0..1];
 }
 
- Class meta::external::function::activator::snowflakeApp::SnowflakeDeploymentConfiguration extends DeploymentConfiguration
- {
-    target:  meta::external::store::relational::runtime::RelationalDatabaseConnection[1];
- }
+Enum meta::external::function::activator::snowflakeApp::SnowflakePermissionScheme
+{
+  DEFAULT,
+  SEQUESTERED
+}
+
+Class meta::external::function::activator::snowflakeApp::SnowflakeDeploymentConfiguration extends DeploymentConfiguration
+{
+  target:  meta::external::store::relational::runtime::RelationalDatabaseConnection[1];
+}
 
  Class meta::external::function::activator::snowflakeApp::SnowflakeDeploymentResult extends DeploymentResult
  {

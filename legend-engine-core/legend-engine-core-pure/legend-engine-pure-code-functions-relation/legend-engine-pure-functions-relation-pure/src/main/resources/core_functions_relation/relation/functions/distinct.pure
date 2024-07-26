@@ -1,0 +1,32 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::relation::*;
+import meta::pure::test::pct::*;
+
+native function meta::pure::functions::relation::distinct<X,T>(rel:Relation<T>[1], columns:ColSpecArray<X⊆T>[1]):Relation<T>[1];
+
+function <<test.Test>> meta::pure::functions::relation::tests::distinct::testSimpleDistinct():Boolean[1]
+{
+    let res = #TDS
+                val, str
+                1, a
+                3, ewe
+                1, qw
+                5, wwe
+                5, weq
+              #->distinct(~[val]);
+    assertEquals(3, $res->size());
+    assertEquals('135', $res->map(c|$c.val->toOne()->toString())->joinStrings(''));
+}
