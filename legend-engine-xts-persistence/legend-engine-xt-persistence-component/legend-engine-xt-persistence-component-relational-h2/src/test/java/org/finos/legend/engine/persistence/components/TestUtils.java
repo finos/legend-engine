@@ -1479,6 +1479,18 @@ public class TestUtils
             .build();
     }
 
+    public static SchemaDefinition getStagingSchema2WithVersionWithoutPk()
+    {
+        return SchemaDefinition.builder()
+            .addFields(idNonPk)
+            .addFields(name)
+            .addFields(rating)
+            .addFields(startTimeNonPk)
+            .addFields(version)
+            .addFields(digest)
+            .build();
+    }
+
     public static MetadataDataset getMetadataDataset()
     {
         return MetadataDataset.builder().build();

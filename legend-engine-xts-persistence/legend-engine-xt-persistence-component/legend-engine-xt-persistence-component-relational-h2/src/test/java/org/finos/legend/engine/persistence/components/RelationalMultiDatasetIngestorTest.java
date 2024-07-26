@@ -17,11 +17,14 @@ package org.finos.legend.engine.persistence.components;
 import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
+import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
+import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTime;
@@ -67,6 +70,7 @@ import static org.finos.legend.engine.persistence.components.TestUtils.expiryDat
 import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema;
 import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema2;
 import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema2WithVersion;
+import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema2WithVersionWithoutPk;
 import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema2WithVersionWithoutPkWithoutDigest;
 import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema2WithoutPkWithoutDigest;
 import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchemaWithNonPkVersion;
@@ -90,26 +94,30 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
     private static final String dataset2 = "DATASET_2";
     private static final String requestId1 = "REQUEST_1";
     private static final String lockDataset = "LOCK_DATASET";
-    private static final String[] schema1 = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
-    private static final String[] schema2 = new String[]{idName, nameName, ratingName, startTimeName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
-    private static final String[] schema1WithVersion = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, versionName, digestName, batchIdInName, batchIdOutName};
-    private static final String[] schema2WithVersion = new String[]{idName, nameName, ratingName, startTimeName, versionName, digestName, batchIdInName, batchIdOutName};
+
     private static final MetadataDataset metadataDataset1 = MetadataDataset.builder()
         .metadataDatasetDatabaseName(testDatabaseName)
         .metadataDatasetGroupName(testSchemaName)
         .metadataDatasetName(dataset1 + suffixForBatchMetadataTable)
         .build();
+
     private static final MetadataDataset metadataDataset2 = MetadataDataset.builder()
         .metadataDatasetDatabaseName(testDatabaseName)
         .metadataDatasetGroupName(testSchemaName)
         .metadataDatasetName(dataset2 + suffixForBatchMetadataTable)
         .build();
+
     private static final LockInfoDataset lockInfoDataset = LockInfoDataset.builder()
         .database(testDatabaseName)
         .group(testSchemaName)
         .name(lockDataset)
         .build();
 
+    /*
+    Test Case:
+        - [Dataset1: [BulkLoad, UnitemporalDelta],
+           Dataset2: [BulkLoad, UnitemporalDelta]]
+     */
     @Test
     public void testSameIngestMode() throws IOException
     {
@@ -225,10 +233,22 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
 
         verifyResults(
             actual, expected,
-            Arrays.asList("src/test/resources/data/multi-dataset/set1/expected/expected_pass1_for_dataset1.csv", "src/test/resources/data/multi-dataset/set1/expected/expected_pass1_for_dataset2.csv"),
-            Arrays.asList(dataset1, dataset2), Arrays.asList(schema1, schema2));
+            Arrays.asList("src/test/resources/data/multi-dataset/set1/expected/expected_pass1_for_dataset1.csv",
+                "src/test/resources/data/multi-dataset/set1/expected/expected_pass1_for_dataset2.csv"),
+            Arrays.asList(dataset1 + suffixForFinalTable,
+                dataset2 + suffixForFinalTable),
+            Arrays.asList(new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName},
+                new String[]{idName, nameName, ratingName, startTimeName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName}));
     }
 
+    /*
+    Test Case:
+        - [Dataset1: [BulkLoad, UnitemporalDelta],
+           Dataset2: [BulkLoad, UnitemporalDelta]]
+       - CaseConversion: TO_UPPER
+       - FilterDuplicates
+       - MaxVersioning
+     */
     @Test
     public void testSameIngestModeWithDedupAndVersioningUpperCase() throws IOException
     {
@@ -349,15 +369,142 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
 
         verifyResults(
             actual, expected,
-            Arrays.asList("src/test/resources/data/multi-dataset/set2/expected/expected_pass1_for_dataset1.csv", "src/test/resources/data/multi-dataset/set2/expected/expected_pass1_for_dataset2.csv"),
-            Arrays.asList(dataset1, dataset2), Arrays.asList(Arrays.stream(schema1WithVersion).map(String::toUpperCase).toArray(String[]::new), Arrays.stream(schema2WithVersion).map(String::toUpperCase).toArray(String[]::new)));
+            Arrays.asList("src/test/resources/data/multi-dataset/set2/expected/expected_pass1_for_dataset1.csv",
+                "src/test/resources/data/multi-dataset/set2/expected/expected_pass1_for_dataset2.csv"),
+            Arrays.asList(dataset1 + suffixForFinalTable,
+                dataset2 + suffixForFinalTable),
+            Arrays.asList(Arrays.stream(new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, versionName, digestName, batchIdInName, batchIdOutName}).map(String::toUpperCase).toArray(String[]::new),
+                Arrays.stream(new String[]{idName, nameName, ratingName, startTimeName, versionName, digestName, batchIdInName, batchIdOutName}).map(String::toUpperCase).toArray(String[]::new)));
     }
 
+    /*
+    Test Case:
+        - [Dataset1: [BulkLoad],
+           Dataset2: [BulkLoad, NontemporalSnapshot]]
+       - FilterDuplicates
+       - MaxVersioning
+     */
     @Test
-    public void testMixedIngestMode()
+    public void testMixedIngestMode() throws IOException
     {
+        // Register UDF
+        H2DigestUtil.registerMD5Udf(h2Sink, digestUDF);
+
+        // Configure ingest modes
+        BulkLoad bulkLoad1 = BulkLoad.builder()
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(digestUDF).digestField(digestName).build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(appendTimeName).build())
+            .batchIdField(batchIdName)
+            .build();
+
+        BulkLoad bulkLoad2 = BulkLoad.builder()
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(appendTimeName).build())
+            .batchIdField(batchIdName)
+            .build();
+
+        NontemporalSnapshot nontemporalSnapshot = NontemporalSnapshot.builder()
+            .auditing(NoAuditing.builder().build())
+            .batchIdField(batchIdName)
+            .versioningStrategy(MaxVersionStrategy.builder().versioningField(versionName).build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .build();
+
+        // Configure dataset 1
+        StagedFilesDataset bulkLoadStageTableForDataset1 = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                H2StagedFilesDatasetProperties.builder()
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(Collections.singletonList("src/test/resources/data/multi-dataset/set3/input/file1_for_dataset1.csv")).build())
+            .schema(getStagingSchemaWithoutPkWithoutDigest())
+            .build();
+        DatasetReference bulkLoadMainTableForDataset1 = DatasetReferenceImpl.builder()
+            .database(testDatabaseName)
+            .group(testSchemaName)
+            .name(dataset1 + suffixForAppendTable)
+            .build();
+
+        // Configure dataset 2
+        StagedFilesDataset bulkLoadStageTableForDataset2 = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                H2StagedFilesDatasetProperties.builder()
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(Collections.singletonList("src/test/resources/data/multi-dataset/set3/input/file1_for_dataset2.csv")).build())
+            .schema(getStagingSchema2WithVersionWithoutPk())
+            .build();
+        DatasetReference bulkLoadMainTableForDataset2 = DatasetReferenceImpl.builder()
+            .database(testDatabaseName)
+            .group(testSchemaName)
+            .name(dataset2 + suffixForAppendTable)
+            .build();
+        DatasetDefinition nontemporalSnapshotStageTableForDataset2 = DatasetDefinition.builder()
+            .database(testDatabaseName)
+            .group(testSchemaName)
+            .name(dataset2 + suffixForAppendTable)
+            .schema(getStagingSchema2WithVersion())
+            .build();
+        DatasetReference nontemporalSnapshotMainTableForDataset2 = DatasetReferenceImpl.builder()
+            .database(testDatabaseName)
+            .group(testSchemaName)
+            .name(dataset2 + suffixForFinalTable)
+            .build();
+
+        // Configure ingest stages
+        IngestStage ingestStage1ForDataset1 = IngestStage.builder().ingestMode(bulkLoad1).stagingDataset(bulkLoadStageTableForDataset1).mainDataset(bulkLoadMainTableForDataset1).build();
+        IngestStage ingestStage1ForDataset2 = IngestStage.builder().ingestMode(bulkLoad2).stagingDataset(bulkLoadStageTableForDataset2).mainDataset(bulkLoadMainTableForDataset2).build();
+        IngestStage ingestStage2ForDataset2 = IngestStage.builder().ingestMode(nontemporalSnapshot).stagingDataset(nontemporalSnapshotStageTableForDataset2).mainDataset(nontemporalSnapshotMainTableForDataset2).stagingDatasetBatchIdField(batchIdName).build();
+
+        List<DatasetIngestDetails> datasetIngestDetails = buildDatasetIngestDetails(Collections.singletonList(ingestStage1ForDataset1), Arrays.asList(ingestStage1ForDataset2, ingestStage2ForDataset2));
+
+        RelationalMultiDatasetIngestor ingestor = RelationalMultiDatasetIngestor.builder()
+            .relationalSink(H2Sink.get())
+            .lockInfoDataset(lockInfoDataset)
+            .ingestRequestId(requestId1)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .build();
+
+        // Run ingestion
+        ingestor.init(datasetIngestDetails, JdbcConnection.of(h2Sink.connection()));
+        ingestor.create();
+        List<DatasetIngestResults> actual = ingestor.ingest();
+
+        // Verify results
+        IngestStageResult ingestStageResult1ForDataset1 = buildIngestStageResultForBulkLoad("2000-01-01 00:00:00.000000", "DUMMY", 3);
+        IngestStageResult ingestStageResult2ForDataset1 = buildIngestStageResult("2000-01-01 00:00:00.000000", "DUMMY", 3, 0, 3, 0, 0);
+        IngestStageResult ingestStageResult1ForDataset2 = buildIngestStageResultForBulkLoad("2000-01-01 00:00:00.000000", "DUMMY", 8);
+        IngestStageResult ingestStageResult2ForDataset2 = buildIngestStageResult("2000-01-01 00:00:00.000000", "DUMMY", 8, 0, 4, 0, 0);
+
+        List<DatasetIngestResults> expected = new ArrayList<>();
+        expected.add(DatasetIngestResults.builder()
+            .dataset(dataset1)
+            .batchId(1L)
+            .ingestRequestId(requestId1)
+            .addAllIngestStageResults(Arrays.asList(ingestStageResult1ForDataset1, ingestStageResult2ForDataset1))
+            .build());
+        expected.add(DatasetIngestResults.builder()
+            .dataset(dataset2)
+            .batchId(1L)
+            .ingestRequestId(requestId1)
+            .addAllIngestStageResults(Arrays.asList(ingestStageResult1ForDataset2, ingestStageResult2ForDataset2))
+            .build());
+
+        verifyResults(
+            actual, expected,
+            Arrays.asList("src/test/resources/data/multi-dataset/set3/expected/expected_pass1_for_dataset1.csv",
+                "src/test/resources/data/multi-dataset/set3/expected/expected_pass1_for_dataset2.csv"),
+            Arrays.asList(dataset1 + suffixForAppendTable,
+                dataset2 + suffixForFinalTable),
+            Arrays.asList(new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName},
+                new String[]{idName, nameName, ratingName, startTimeName, versionName, digestName, batchIdName}));
     }
 
+    /*
+    Test Case:
+        - [Dataset1: [BulkLoad, UnitemporalDelta],
+           Dataset2: [BulkLoad, UnitemporalDelta]]
+       - FailOnDuplicates
+       - Execution fails at second stage of Dataset2, commit is reverted
+     */
     @Test
     public void testFirstDatasetSuccessAndSecondDatasetFailure()
     {
@@ -536,7 +683,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         // Verify table data
         for (int i = 0; i < datasetNames.size(); i++)
         {
-            List<Map<String, Object>> tableData = h2Sink.executeQuery("select * from \"TEST\".\"" + datasetNames.get(i) + suffixForFinalTable + "\"");
+            List<Map<String, Object>> tableData = h2Sink.executeQuery("select * from \"TEST\".\"" + datasetNames.get(i) + "\"");
             TestUtils.assertFileAndTableDataEquals(schema.get(i), expectedDataPaths.get(i), tableData);
         }
 
