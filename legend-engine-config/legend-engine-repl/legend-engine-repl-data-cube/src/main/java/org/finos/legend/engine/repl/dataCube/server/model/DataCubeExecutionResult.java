@@ -17,5 +17,6 @@ package org.finos.legend.engine.repl.dataCube.server.model;
 public class DataCubeExecutionResult
 {
     public String result;
+    public String executedQuery;
     public String executedSQL;
 }

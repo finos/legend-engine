@@ -61,13 +61,15 @@ public class DataCubeHelpers
 {
     public static DataCubeExecutionResult executeQuery(Client client, LegendInterface legendInterface, PlanExecutor planExecutor, PureModelContextData data, boolean debug) throws IOException
     {
+
+        Function func = (Function) ListIterate.select(data.getElements(), e -> e.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)).getFirst();
+        String queryCode = getQueryCode(func.body.get(0), false);
+
         if (client != null && debug)
         {
             client.printInfo("Debugging query execution...");
-
-            Function func = (Function) ListIterate.select(data.getElements(), e -> e.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)).getFirst();
             client.printDebug("---------------------------------------- INPUT ----------------------------------------");
-            client.printInfo("Function: " + getQueryCode(func.body.get(0), false));
+            client.printInfo("Function: " + queryCode);
         }
 
         PureModel pureModel = legendInterface.compile(data);
@@ -113,6 +115,7 @@ public class DataCubeHelpers
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 ((RelationalResult) execResult).getSerializer(SerializationFormat.DEFAULT).stream(byteArrayOutputStream);
                 result.result = byteArrayOutputStream.toString();
+                result.executedQuery = queryCode;
                 result.executedSQL = ((RelationalResult) execResult).executedSQl;
                 return result;
             }
