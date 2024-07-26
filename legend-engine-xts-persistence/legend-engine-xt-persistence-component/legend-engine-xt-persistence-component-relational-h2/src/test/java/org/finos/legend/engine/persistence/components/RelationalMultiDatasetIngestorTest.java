@@ -58,7 +58,32 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.persistence.components.TestUtils.*;
+import static org.finos.legend.engine.persistence.components.TestUtils.appendTimeName;
+import static org.finos.legend.engine.persistence.components.TestUtils.batchIdInName;
+import static org.finos.legend.engine.persistence.components.TestUtils.batchIdName;
+import static org.finos.legend.engine.persistence.components.TestUtils.batchIdOutName;
+import static org.finos.legend.engine.persistence.components.TestUtils.batchTimeInName;
+import static org.finos.legend.engine.persistence.components.TestUtils.batchTimeOutName;
+import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
+import static org.finos.legend.engine.persistence.components.TestUtils.digestUDF;
+import static org.finos.legend.engine.persistence.components.TestUtils.expiryDateName;
+import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema;
+import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema2;
+import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema2WithVersion;
+import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema2WithVersionWithoutPk;
+import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema2WithVersionWithoutPkWithoutDigest;
+import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema2WithoutPkWithoutDigest;
+import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchemaWithNonPkVersion;
+import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchemaWithVersionWithoutPkWithoutDigest;
+import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchemaWithoutPkWithoutDigest;
+import static org.finos.legend.engine.persistence.components.TestUtils.idName;
+import static org.finos.legend.engine.persistence.components.TestUtils.incomeName;
+import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
+import static org.finos.legend.engine.persistence.components.TestUtils.ratingName;
+import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
+import static org.finos.legend.engine.persistence.components.TestUtils.testDatabaseName;
+import static org.finos.legend.engine.persistence.components.TestUtils.testSchemaName;
+import static org.finos.legend.engine.persistence.components.TestUtils.versionName;
 
 class RelationalMultiDatasetIngestorTest extends BaseTest
 {
@@ -69,21 +94,18 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
     private static final String dataset2 = "DATASET_2";
     private static final String requestId1 = "REQUEST_1";
     private static final String lockDataset = "LOCK_DATASET";
-    private static final String[] schema1 = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
-    private static final String[] schema2 = new String[]{idName, nameName, ratingName, startTimeName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
-    private static final String[] schema1WithVersion = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, versionName, digestName, batchIdInName, batchIdOutName};
-    private static final String[] schema2WithVersion = new String[]{idName, nameName, ratingName, startTimeName, versionName, digestName, batchIdInName, batchIdOutName};
+
     private static final MetadataDataset metadataDataset1 = MetadataDataset.builder()
         .metadataDatasetDatabaseName(testDatabaseName)
         .metadataDatasetGroupName(testSchemaName)
         .metadataDatasetName(dataset1 + suffixForBatchMetadataTable)
         .build();
+
     private static final MetadataDataset metadataDataset2 = MetadataDataset.builder()
         .metadataDatasetDatabaseName(testDatabaseName)
         .metadataDatasetGroupName(testSchemaName)
         .metadataDatasetName(dataset2 + suffixForBatchMetadataTable)
         .build();
-
 
     private static final LockInfoDataset lockInfoDataset = LockInfoDataset.builder()
         .database(testDatabaseName)
@@ -211,11 +233,17 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
 
         verifyResults(
             actual, expected,
-            Arrays.asList("src/test/resources/data/multi-dataset/set1/expected/expected_pass1_for_dataset1.csv",
-                "src/test/resources/data/multi-dataset/set1/expected/expected_pass1_for_dataset2.csv"),
-            Arrays.asList(dataset1 + suffixForFinalTable,
+            Arrays.asList("src/test/resources/data/multi-dataset/set1/expected/expected_pass1_for_dataset1_append.csv",
+                "src/test/resources/data/multi-dataset/set1/expected/expected_pass1_for_dataset1_final.csv",
+                "src/test/resources/data/multi-dataset/set1/expected/expected_pass1_for_dataset2_append.csv",
+                "src/test/resources/data/multi-dataset/set1/expected/expected_pass1_for_dataset2_final.csv"),
+            Arrays.asList(dataset1 + suffixForAppendTable,
+                dataset1 + suffixForFinalTable,
+                dataset2 + suffixForAppendTable,
                 dataset2 + suffixForFinalTable),
-            Arrays.asList(new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName},
+            Arrays.asList(new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName},
+                new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName},
+                new String[]{idName, nameName, ratingName, startTimeName, digestName, batchIdName},
                 new String[]{idName, nameName, ratingName, startTimeName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName}));
     }
 
@@ -347,11 +375,17 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
 
         verifyResults(
             actual, expected,
-            Arrays.asList("src/test/resources/data/multi-dataset/set2/expected/expected_pass1_for_dataset1.csv",
-                "src/test/resources/data/multi-dataset/set2/expected/expected_pass1_for_dataset2.csv"),
-            Arrays.asList(dataset1 + suffixForFinalTable,
+            Arrays.asList("src/test/resources/data/multi-dataset/set2/expected/expected_pass1_for_dataset1_append.csv",
+                "src/test/resources/data/multi-dataset/set2/expected/expected_pass1_for_dataset1_final.csv",
+                "src/test/resources/data/multi-dataset/set2/expected/expected_pass1_for_dataset2_append.csv",
+                "src/test/resources/data/multi-dataset/set2/expected/expected_pass1_for_dataset2_final.csv"),
+            Arrays.asList(dataset1 + suffixForAppendTable,
+                dataset1 + suffixForFinalTable,
+                dataset2 + suffixForAppendTable,
                 dataset2 + suffixForFinalTable),
-            Arrays.asList(Arrays.stream(new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, versionName, digestName, batchIdInName, batchIdOutName}).map(String::toUpperCase).toArray(String[]::new),
+            Arrays.asList(Arrays.stream(new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, versionName, digestName, batchIdName}).map(String::toUpperCase).toArray(String[]::new),
+                Arrays.stream(new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, versionName, digestName, batchIdInName, batchIdOutName}).map(String::toUpperCase).toArray(String[]::new),
+                Arrays.stream(new String[]{idName, nameName, ratingName, startTimeName, versionName, digestName, batchIdName}).map(String::toUpperCase).toArray(String[]::new),
                 Arrays.stream(new String[]{idName, nameName, ratingName, startTimeName, versionName, digestName, batchIdInName, batchIdOutName}).map(String::toUpperCase).toArray(String[]::new)));
     }
 
@@ -468,11 +502,14 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
 
         verifyResults(
             actual, expected,
-            Arrays.asList("src/test/resources/data/multi-dataset/set3/expected/expected_pass1_for_dataset1.csv",
-                "src/test/resources/data/multi-dataset/set3/expected/expected_pass1_for_dataset2.csv"),
+            Arrays.asList("src/test/resources/data/multi-dataset/set3/expected/expected_pass1_for_dataset1_append.csv",
+                "src/test/resources/data/multi-dataset/set3/expected/expected_pass1_for_dataset2_append.csv",
+                "src/test/resources/data/multi-dataset/set3/expected/expected_pass1_for_dataset2_final.csv"),
             Arrays.asList(dataset1 + suffixForAppendTable,
+                dataset2 + suffixForAppendTable,
                 dataset2 + suffixForFinalTable),
             Arrays.asList(new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName},
+                new String[]{idName, nameName, ratingName, startTimeName, versionName, digestName, batchIdName},
                 new String[]{idName, nameName, ratingName, startTimeName, versionName, digestName, batchIdName}));
     }
 
