@@ -41,7 +41,6 @@ import java.sql.Statement;
 import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
 import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_SIGNATURE;
 import static org.finos.legend.engine.repl.shared.ExecutionHelper.executeCode;
-import static org.jline.jansi.Ansi.ansi;
 
 public class DataCubeCache implements Command
 {
@@ -89,7 +88,7 @@ public class DataCubeCache implements Command
             String expression = this.client.getLastCommand(1);
             if (expression == null)
             {
-                this.client.getTerminal().writer().println("Failed to retrieve the last command");
+                this.client.printError("Failed to retrieve the last command");
                 return true;
             }
             DatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(this.client.getModelState().parse(), DataCube.getLocalConnectionPath());
@@ -120,7 +119,7 @@ public class DataCubeCache implements Command
                                 try (Statement statement = connection.createStatement())
                                 {
                                     statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().load(tableName, tempFile.getTemporaryPathForFile()));
-                                    this.client.getTerminal().writer().println(ansi().fgBrightBlack().a("Cached into table: '" + tableName + "'. Launching DataCube...").reset());
+                                    this.client.printInfo("Cached into table: '" + tableName + "'. Launching DataCube...");
 
                                     String functionBodyCode = "#>{" + DataCube.getLocalDatabasePath() + "." + tableName + "}#->sort([])->from(" + DataCube.getLocalRuntimePath() + ")";
                                     String functionCode = "###Pure\n" +
@@ -138,17 +137,17 @@ public class DataCubeCache implements Command
                     }
                     else
                     {
-                        this.client.getTerminal().writer().println("Failed to cache: can cache only relational result (got result of type: " + res.getClass().getCanonicalName() + ")");
+                        this.client.printError("Failed to cache: can cache only relational result (got result of type: " + res.getClass().getCanonicalName() + ")");
                     }
                     return null;
                 });
             }
             catch (Exception e)
             {
-                this.client.getTerminal().writer().println("Last command run is not an execution of a Pure expression (command run: '" + expression + "')");
+                this.client.printError("Last command run is not an execution of a Pure expression (command run: '" + expression + "')");
                 if (e instanceof EngineException)
                 {
-                    this.client.printError((EngineException) e, expression);
+                    this.client.printEngineError((EngineException) e, expression);
                 }
                 else
                 {

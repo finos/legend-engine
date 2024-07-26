@@ -75,7 +75,7 @@ public class Graph implements Command
                                     return ab.toAnsi();
                                 }
                         ),
-                        e -> this.client.getTerminal().writer().println(e));
+                        e -> this.client.printInfo(e));
             }
             else
             {
@@ -83,7 +83,7 @@ public class Graph implements Command
                 PackageableElement element = ListIterate.select(d.getElements(), c -> c.getPath().equals(showArgs.getFirst())).getFirst();
                 Section section = LazyIterate.selectInstancesOf(d.getElements(), SectionIndex.class).flatCollect(c -> c.sections).select(c -> c.elements.contains(PureGrammarComposerUtility.convertPath(element.getPath()))).getFirst();
                 PureGrammarComposer composer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
-                this.client.getTerminal().writer().println(composer.render(element, section.parserName));
+                this.client.printInfo(composer.render(element, section.parserName));
             }
             return true;
         }

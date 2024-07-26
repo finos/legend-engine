@@ -30,7 +30,6 @@ import java.sql.Statement;
 import java.util.List;
 
 import static org.finos.legend.engine.repl.relational.shared.ResultHelper.prettyGridPrint;
-import static org.jline.jansi.Ansi.ansi;
 
 public class DataCube__DEV__runDuckDBSelectSQL implements Command
 {
@@ -88,8 +87,8 @@ public class DataCube__DEV__runDuckDBSelectSQL implements Command
                         columnNames.add(result.getMetaData().getColumnLabel(i));
                         columnTypes.add(result.getMetaData().getColumnTypeName(i));
                     }
-                    this.client.getTerminal().writer().println("Executed SELECT SQL: '" + expression + "'");
-                    this.client.getTerminal().writer().println(prettyGridPrint(result, columnNames, columnNames, 40, 60));
+                    this.client.printInfo("Executed SELECT SQL: '" + expression + "'");
+                    this.client.printInfo(prettyGridPrint(result, columnNames, columnNames, 40, 60));
                 }
             }
 

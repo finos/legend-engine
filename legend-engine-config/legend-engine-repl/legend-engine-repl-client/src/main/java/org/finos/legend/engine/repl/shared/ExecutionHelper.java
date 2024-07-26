@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.repl.shared;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function3;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -32,9 +31,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPla
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 
 import java.util.HashMap;
-import java.util.function.Function;
-
-import static org.jline.jansi.Ansi.ansi;
 
 public class ExecutionHelper
 {
@@ -51,7 +47,7 @@ public class ExecutionHelper
         {
             if (client.isDebug())
             {
-                client.getTerminal().writer().println("Couldn't resolve identity from local subject");
+                client.printInfo("Error: Couldn't resolve identity from local subject");
             }
             return Identity.getAnonymousIdentity();
         }
@@ -64,8 +60,8 @@ public class ExecutionHelper
 
         if (client.isDebug())
         {
-            client.getTerminal().writer().println(ansi().fgBrightBlack().a("---------------------------------------- INPUT ----------------------------------------").reset());
-            client.getTerminal().writer().println(ansi().fgBrightBlack().a("Function: " + code).reset());
+            client.printDebug("---------------------------------------- INPUT ----------------------------------------");
+            client.printInfo("Function: " + code);
         }
 
         PureModelContextData pmcd = client.getModelState().parseWithTransient(code);
@@ -74,7 +70,7 @@ public class ExecutionHelper
         {
             try
             {
-                client.getTerminal().writer().println(ansi().fgBrightBlack().a("PMCD: " + client.getObjectMapper().writeValueAsString(pmcd)).reset());
+                client.printInfo("PMCD: " + client.getObjectMapper().writeValueAsString(pmcd));
             }
             catch (Exception e)
             {
@@ -92,9 +88,9 @@ public class ExecutionHelper
 
         if (client.isDebug())
         {
-            client.getTerminal().writer().println(ansi().fgBrightBlack().a("---------------------------------------- PLAN ----------------------------------------").reset());
-            client.getTerminal().writer().println(ansi().fgBrightBlack().a("Extensions: " + extensions.collect(Root_meta_pure_extension_Extension::_type).makeString(", ")).reset());
-            client.getTerminal().writer().println(ansi().fgBrightBlack().a("Generated Plan: " + planStr).reset());
+            client.printDebug("---------------------------------------- PLAN ----------------------------------------");
+            client.printInfo("Extensions: " + extensions.collect(Root_meta_pure_extension_Extension::_type).makeString(", "));
+            client.printInfo("Generated Plan: " + planStr);
         }
 
         // Execute

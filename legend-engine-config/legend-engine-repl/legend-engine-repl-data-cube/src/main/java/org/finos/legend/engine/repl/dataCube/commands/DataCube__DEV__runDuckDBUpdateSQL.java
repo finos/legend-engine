@@ -26,8 +26,6 @@ import org.jline.reader.ParsedLine;
 import java.sql.Connection;
 import java.sql.Statement;
 
-import static org.jline.jansi.Ansi.ansi;
-
 public class DataCube__DEV__runDuckDBUpdateSQL implements Command
 {
     private final DataCube parentCommand;
@@ -77,7 +75,7 @@ public class DataCube__DEV__runDuckDBUpdateSQL implements Command
                 try (Statement statement = connection.createStatement())
                 {
                     statement.executeUpdate(expression);
-                    this.client.getTerminal().writer().println("Executed UPDATE SQL: '" + expression + "'");
+                    this.client.printInfo("Executed UPDATE SQL: '" + expression + "'");
                 }
             }
 

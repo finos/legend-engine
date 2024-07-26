@@ -76,8 +76,8 @@ public class Client
         this.initialize();
         replExtensions.forEach(e -> e.initialize(this));
 
-        this.terminal.writer().println(ansi().fgBrightBlack().a("Welcome to the Legend REPL! Press 'Enter' or type 'help' to see the list of available commands.").reset());
-        this.terminal.writer().println("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
+        this.printDebug("Welcome to the Legend REPL! Press 'Enter' or type 'help' to see the list of available commands.");
+        this.printInfo("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
 
         // NOTE: the order here matters, the default command 'help' should always go first
         // and "catch-all" command 'execute' should always go last
@@ -119,10 +119,10 @@ public class Client
                 .completer(new JLine3Completer(this.commands))
                 .build();
 
-        this.terminal.writer().println("Warming up...");
+        this.printInfo("Warming up...");
         this.terminal.flush();
         ((Execute) this.commands.getLast()).execute("1+1");
-        this.terminal.writer().println("Ready!\n");
+        this.printInfo("Ready!\n");
     }
 
     public void loop()
@@ -163,7 +163,7 @@ public class Client
             }
             catch (EngineException e)
             {
-                printError(e, this.reader.getBuffer().toString());
+                printEngineError(e, this.reader.getBuffer().toString());
             }
             // handle Ctrl + C: if the input is not empty, start a new line; otherwise, exit
             catch (UserInterruptException e)
@@ -189,7 +189,7 @@ public class Client
             }
             catch (Exception e)
             {
-                this.terminal.writer().println(ansi().fgRed().a(e.getMessage()).reset());
+                this.printError(e.getMessage());
                 if (this.debug)
                 {
                     e.printStackTrace();
@@ -202,7 +202,7 @@ public class Client
         }
     }
 
-    public void printError(EngineException e, String line)
+    public void printEngineError(EngineException e, String line)
     {
         int e_start = e.getSourceInformation().startColumn;
         int e_end = e.getSourceInformation().endColumn;
@@ -220,19 +220,34 @@ public class Client
                 ab.append(mid);
                 ab.style(new AttributedStyle().underlineOff().foregroundOff());
                 ab.append(end);
-                this.terminal.writer().println("");
-                this.terminal.writer().println(ab.toAnsi());
+                this.printInfo("");
+                this.printInfo(ab.toAnsi());
             }
         }
         catch (Exception ex)
         {
             // do nothing
         }
-        this.terminal.writer().println(ansi().fgRed().a(e.getMessage()).reset());
+        this.printError(e.getMessage());
         if (this.debug)
         {
             e.printStackTrace();
         }
+    }
+
+    public void printDebug(String message)
+    {
+        this.terminal.writer().println(ansi().fgBrightBlack().a(message).reset());
+    }
+
+    public void printInfo(String message)
+    {
+        this.terminal.writer().println(message);
+    }
+
+    public void printError(String message)
+    {
+        this.terminal.writer().println(ansi().fgRed().a(message).reset());
     }
 
     private void initialize()
@@ -247,7 +262,7 @@ public class Client
         }
         catch (Exception e)
         {
-            this.terminal.writer().println(ansi().fgRed().a("Failed to create home directory at: " + this.getHomeDir().toString()).reset());
+            this.printError("Failed to create home directory at: " + this.getHomeDir().toString());
         }
     }
 

@@ -81,7 +81,7 @@ public class Cache implements Command
             String expression = this.client.getLastCommand(1);
             if (expression == null)
             {
-                this.client.getTerminal().writer().println("Failed to retrieve the last command");
+                this.client.printError("Failed to retrieve the last command");
                 return true;
             }
             DatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(this.client.getModelState().parse(), connectionPath);
@@ -112,7 +112,7 @@ public class Cache implements Command
                                 try (Statement statement = connection.createStatement())
                                 {
                                     statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().load(tableName, tempFile.getTemporaryPathForFile()));
-                                    this.client.getTerminal().writer().println("Cached into table: '" + tableName + "'");
+                                    this.client.printInfo("Cached into table: '" + tableName + "'");
                                 }
                             }
                             catch (SQLException e)
@@ -123,17 +123,17 @@ public class Cache implements Command
                     }
                     else
                     {
-                        this.client.getTerminal().writer().println("Failed to cache: can cache only relational result (got result of type: " + res.getClass().getCanonicalName() + ")");
+                        this.client.printError("Failed to cache: can cache only relational result (got result of type: " + res.getClass().getCanonicalName() + ")");
                     }
                     return null;
                 });
             }
             catch (Exception e)
             {
-                this.client.getTerminal().writer().println("Last command run is not an execution of a Pure expression (command run: '" + expression + "')");
+                this.client.printError("Last command run is not an execution of a Pure expression (command run: '" + expression + "')");
                 if (e instanceof EngineException)
                 {
-                    this.client.printError((EngineException) e, expression);
+                    this.client.printEngineError((EngineException) e, expression);
                 }
                 else
                 {

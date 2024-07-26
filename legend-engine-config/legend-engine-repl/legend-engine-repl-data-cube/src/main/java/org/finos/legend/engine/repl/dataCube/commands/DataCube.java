@@ -56,7 +56,7 @@ public class DataCube implements Command
         {
             MutableList<Command> commands = this.client.commands.select(c -> this.equals(c.parentCommand()));
             int maxDocLength = commands.maxBy(c -> c.documentation().length()).documentation().length();
-            this.client.getTerminal().writer().println(commands
+            this.client.printInfo(commands
                     .toSortedList(Comparator.comparing(c ->
                     {
                         String doc = c.documentation();

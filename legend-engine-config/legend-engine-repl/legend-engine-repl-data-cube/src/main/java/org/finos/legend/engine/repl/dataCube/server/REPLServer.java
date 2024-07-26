@@ -34,7 +34,6 @@ import java.net.InetSocketAddress;
 import java.util.List;
 
 import static org.finos.legend.engine.repl.dataCube.server.REPLServerHelpers.DEV__CORSFilter;
-import static org.jline.jansi.Ansi.ansi;
 
 public class REPLServer
 {
@@ -100,8 +99,8 @@ public class REPLServer
         this.port = server.getAddress().getPort();
         if (this.webAppDevBaseUrl != null)
         {
-            this.client.getTerminal().writer().println(ansi().fgBrightBlack().a("[DEV] DataCube expects webapp at: " + webAppDevBaseUrl).reset());
+            this.client.printDebug("[DEV] DataCube expects webapp at: " + webAppDevBaseUrl);
         }
-        this.client.getTerminal().writer().println(ansi().fgBrightBlack().a("[DEV] DataCube has started at port: " + this.port).reset());
+        this.client.printDebug("[DEV] DataCube has started at port: " + this.port);
     }
 }

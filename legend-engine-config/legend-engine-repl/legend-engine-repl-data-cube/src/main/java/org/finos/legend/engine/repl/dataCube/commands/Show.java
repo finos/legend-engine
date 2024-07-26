@@ -31,7 +31,6 @@ import java.awt.*;
 import java.net.URI;
 
 import static org.finos.legend.engine.repl.shared.ExecutionHelper.executeCode;
-import static org.jline.jansi.Ansi.ansi;
 
 public class Show implements Command
 {
@@ -65,7 +64,7 @@ public class Show implements Command
             String expression = this.client.getLastCommand(1);
             if (expression == null)
             {
-                this.client.getTerminal().writer().println("Failed to retrieve the last command");
+                this.client.printError("Failed to retrieve the last command");
                 return true;
             }
 
@@ -93,7 +92,7 @@ public class Show implements Command
     {
         try
         {
-            client.getTerminal().writer().println(replServer.getUrl());
+            client.printInfo(replServer.getUrl());
             if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
             {
                 Desktop.getDesktop().browse(URI.create(replServer.getUrl()));
@@ -101,7 +100,7 @@ public class Show implements Command
         }
         catch (Exception e)
         {
-            client.getTerminal().writer().println(ansi().fgRed().a(e.getMessage()).reset());
+            client.printError(e.getMessage());
         }
     }
 

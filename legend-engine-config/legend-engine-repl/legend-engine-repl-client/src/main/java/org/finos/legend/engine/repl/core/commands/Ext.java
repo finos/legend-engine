@@ -52,7 +52,7 @@ public class Ext implements Command
         {
             MutableList<LegendExtension> extensionList = Extensions.get();
             TreeNode extensions = Extensions.buildTree(extensionList);
-            this.client.getTerminal().writer().println(extensions.print());
+            this.client.printInfo(extensions.print());
             return true;
         }
         return false;

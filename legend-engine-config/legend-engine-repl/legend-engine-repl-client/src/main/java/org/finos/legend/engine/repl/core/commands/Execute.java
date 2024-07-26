@@ -51,7 +51,7 @@ public class Execute implements Command
     @Override
     public boolean process(String line) throws Exception
     {
-        this.client.getTerminal().writer().println(execute(line));
+        this.client.printInfo(execute(line));
         return true;
     }
 
@@ -69,7 +69,7 @@ public class Execute implements Command
             }
             else
             {
-                this.client.printError(result.getEngineException(), parsedLine.line());
+                this.client.printEngineError(result.getEngineException(), parsedLine.line());
                 AttributedStringBuilder ab = new AttributedStringBuilder();
                 ab.append("> ");
                 ab.style(new AttributedStyle().foreground(AttributedStyle.GREEN));

@@ -136,7 +136,7 @@ public class DataCubeRun implements Command
                     }
                     else
                     {
-                        this.client.printError(result.getEngineException(), expression);
+                        this.client.printEngineError(result.getEngineException(), expression);
                         AttributedStringBuilder ab = new AttributedStringBuilder();
                         ab.append("> ");
                         ab.style(new AttributedStyle().foreground(AttributedStyle.GREEN));

@@ -82,7 +82,7 @@ public class Load implements Command
                 try (Statement statement = connection.createStatement())
                 {
                     statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().load(tableName, tokens[1]));
-                    this.client.getTerminal().writer().println("Loaded into table: '" + tableName + "'");
+                    this.client.printInfo("Loaded into table: '" + tableName + "'");
                 }
             }
 

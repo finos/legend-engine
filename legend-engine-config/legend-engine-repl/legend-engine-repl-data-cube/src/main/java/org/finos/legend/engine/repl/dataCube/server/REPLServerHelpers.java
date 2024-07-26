@@ -65,7 +65,7 @@ public class REPLServerHelpers
         }
         catch (IOException e)
         {
-            state.log(e.getMessage());
+            state.client.printError(e.getMessage());
         }
     }
 
@@ -233,11 +233,6 @@ public class REPLServerHelpers
         public DataCubeQuery getQuery()
         {
             return this.query;
-        }
-
-        public void log(String message)
-        {
-            this.client.getTerminal().writer().println(message);
         }
     }
 

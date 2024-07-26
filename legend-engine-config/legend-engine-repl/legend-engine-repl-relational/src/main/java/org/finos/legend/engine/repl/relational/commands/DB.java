@@ -72,7 +72,7 @@ public class DB implements Command
 
             try (Connection connection = ConnectionHelper.getConnection(databaseConnection, client.getPlanExecutor()))
             {
-                this.client.getTerminal().writer().println(
+                this.client.printInfo(
                         getTables(connection).collect(c -> c.schema + "." + c.name + "(" + c.columns.collect(col -> col.name + " " + col.type).makeString(", ") + ")").makeString("\n")
                 );
             }
