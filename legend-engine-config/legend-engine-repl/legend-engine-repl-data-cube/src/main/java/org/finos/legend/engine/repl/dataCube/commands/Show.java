@@ -23,6 +23,7 @@ import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.core.ReplExtension;
 import org.finos.legend.engine.repl.dataCube.server.REPLServer;
 import org.finos.legend.engine.repl.shared.ExecutionHelper;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
@@ -68,18 +69,36 @@ public class Show implements Command
                 return true;
             }
 
-            ExecutionHelper.ExecuteResultSummary lastExecuteResultSummary = executeCode(expression, this.client, (Result res, PureModelContextData pmcd, PureModel pureModel) ->
+            ExecutionHelper.ExecuteResultSummary lastExecuteResultSummary;
+
+            try
             {
-                ReplExtension extension = this.client.getReplExtensions().detect(x -> x.supports(res));
-                if (extension != null)
+                lastExecuteResultSummary = executeCode(expression, this.client, (Result res, PureModelContextData pmcd, PureModel pureModel) ->
                 {
-                    return new ExecutionHelper.ExecuteResultSummary(pmcd, pureModel, res, null);
+                    ReplExtension extension = this.client.getReplExtensions().detect(x -> x.supports(res));
+                    if (extension != null)
+                    {
+                        return new ExecutionHelper.ExecuteResultSummary(pmcd, pureModel, res, null);
+                    }
+                    else
+                    {
+                        throw new RuntimeException(res.getClass() + " not supported!");
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                this.client.printError("Last command run is not an execution of a Pure expression (command run: '" + expression + "')");
+                if (e instanceof EngineException)
+                {
+                    this.client.printEngineError((EngineException) e, expression);
+                    return true;
                 }
                 else
                 {
-                    throw new RuntimeException(res.getClass() + " not supported!");
+                    throw e;
                 }
-            });
+            }
 
             this.REPLServer.initializeStateWithREPLExecutedQuery(lastExecuteResultSummary);
             launchDataCube(this.client, this.REPLServer);
