@@ -24,11 +24,15 @@ import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestModeOptimizationColumnHandler;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestModeVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.TempDatasetsEnricher;
+import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
+import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestampAbstract;
 import org.finos.legend.engine.persistence.components.planner.Planner;
 import org.finos.legend.engine.persistence.components.planner.Planners;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
@@ -39,10 +43,7 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
-import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
-import org.finos.legend.engine.persistence.components.util.MetadataDataset;
-import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
-import org.finos.legend.engine.persistence.components.util.SqlLogging;
+import org.finos.legend.engine.persistence.components.util.*;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -180,17 +181,35 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         // 1. Validate initialization has been performed
         validateInitialization();
 
-        // 2. Acquire lock for all ingest stages and get the latest batch ID
-        long batchId = acquireLock();
+        List<DatasetIngestResults> result;
+        try
+        {
+            executor.begin();
 
-        // 3. Put batch ID into placeholder map - this is needed to handle DerivedDataset whose filter was built using placeholders
-        Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
-        placeHolderKeyValues.put(BATCH_ID_PATTERN, PlaceholderValue.of(String.valueOf(batchId), false));
+            // 2. Acquire lock for all ingest stages and get the latest batch ID
+            long batchId = acquireLock();
 
-        // 4. Perform ingestion
-        List<DatasetIngestResults> result = performIngestionForAllStages(batchId, placeHolderKeyValues);
+            // 3. Put batch ID into placeholder map - this is needed to handle DerivedDataset whose filter was built using placeholders
+            Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
+            placeHolderKeyValues.put(BATCH_ID_PATTERN, PlaceholderValue.of(String.valueOf(batchId), false));
+
+            // 4. Perform ingestion
+            result = performIngestionForAllStages(batchId, placeHolderKeyValues);
+
+            executor.commit();
+        }
+        catch (Exception e)
+        {
+            executor.revert();
+            throw e;
+        }
+        finally
+        {
+            executor.close();
+        }
+
+        // TODO: Clean up here or create an API to clean up?
         LOGGER.info("Ingestion completed");
-
         return result;
     }
 
@@ -213,15 +232,15 @@ public abstract class RelationalMultiDatasetIngestorAbstract
             MetadataDataset metadataDataset = details.metadataDataset();
             for (IngestStage ingestStage : details.ingestStages())
             {
-                // 1. Enrich the ingest mode with case conversion
-                IngestMode enrichedIngestMode = ApiUtils.applyCase(ingestStage.ingestMode(), caseConversion());
-
-                // 2. Build datasets with main, staging and metadata
+                // 1. Build datasets with main, staging and metadata
                 Datasets enrichedDatasets = Datasets.builder()
                     .stagingDataset(deriveStagingDataset(ingestStage))
-                    .mainDataset(deriveMainDataset(ingestStage, enrichedIngestMode))
+                    .mainDataset(deriveMainDataset(ingestStage, ingestStage.ingestMode()))
                     .metadataDataset(metadataDataset)
                     .build();
+
+                // 2. Enrich the ingest mode with case conversion
+                IngestMode enrichedIngestMode = ApiUtils.applyCase(ingestStage.ingestMode(), caseConversion());
 
                 // 3. Enrich the datasets with case conversion
                 enrichedDatasets = ApiUtils.enrichAndApplyCase(enrichedDatasets, caseConversion());
@@ -247,7 +266,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                     .collectStatistics(collectStatistics())
                     .writeStatistics(collectStatistics()) // Collecting statistics will imply writing it into the batch metadata table
                     .skipMainAndMetadataDatasetCreation(false) // TODO: Should we expose this?
-                    .enableConcurrentSafety(true)
+                    .enableConcurrentSafety(false) //todo(rengam) : to discuss if this works or introduce new variable
                     .caseConversion(caseConversion())
                     .executionTimestampClock(executionTimestampClock())
                     .batchStartTimestampPattern(BATCH_START_TS_PATTERN)
@@ -302,6 +321,16 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
             }
         }
+        createLockDataset();
+    }
+
+    private void createLockDataset()
+    {
+        List<Operation> operations = new ArrayList<>();
+        operations.add(Create.of(true, lockInfoDataset().get()));
+        LogicalPlan createLockDataset = LogicalPlan.of(operations);
+        SqlPlan createLockDatasetSqlPlan = transformer.generatePhysicalPlan(createLockDataset);
+        executor.executePhysicalPlan(createLockDatasetSqlPlan);
     }
 
     private void initializeLock()
@@ -311,8 +340,9 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         placeHolderKeyValues.put(BATCH_START_TS_PATTERN, PlaceholderValue.of(LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER), false));
         try
         {
-            // TODO: Instead of using the generator/planner to do this, we should build the logical plan here
-            // executor.executePhysicalPlan(generatorResult.initializeLockSqlPlan().orElseThrow(IllegalStateException::new), placeHolderKeyValues);
+            LockInfoUtils lockInfoUtils = new LockInfoUtils(lockInfoDataset());
+            SqlPlan initializeLockSqlPlan = transformer.generatePhysicalPlan(LogicalPlan.of(Collections.singleton(lockInfoUtils.initializeLockInfoForMultiIngest(BatchStartTimestampAbstract.INSTANCE))));
+            executor.executePhysicalPlan(initializeLockSqlPlan, placeHolderKeyValues);
         }
         catch (Exception e)
         {
@@ -326,10 +356,10 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         LOGGER.info("Concurrent safety is enabled, Acquiring lock");
         Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
         placeHolderKeyValues.put(BATCH_START_TS_PATTERN, PlaceholderValue.of(LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER), false));
-        // TODO: Instead of using the generator/planner to do this, we should build the logical plan here
-        // TODO: This step should also return the batch ID
-        //executor.executePhysicalPlan(generatorResult.acquireLockSqlPlan().orElseThrow(IllegalStateException::new), placeHolderKeyValues);
-        return 1;
+        LockInfoUtils lockInfoUtils = new LockInfoUtils(lockInfoDataset());
+        SqlPlan acquireLockSqlPlan = transformer.generatePhysicalPlan(LogicalPlan.of(Collections.singleton(lockInfoUtils.updateLockInfoForMultiIngest(0L, BatchStartTimestampAbstract.INSTANCE))));
+        executor.executePhysicalPlan(acquireLockSqlPlan, placeHolderKeyValues);
+        return ApiUtils.getBatchIdFromLockTable(lockInfoUtils.getLogicalPlanForBatchIdValue(),executor, transformer);
     }
 
     private List<DatasetIngestResults> performIngestionForAllStages(long batchId, Map<String, PlaceholderValue> placeHolderKeyValues)
@@ -375,7 +405,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 // 4. Perform deduplication and versioning
                 if (generatorResult.deduplicationAndVersioningSqlPlan().isPresent())
                 {
-                    ApiUtils.dedupAndVersion(executor, generatorResult, enrichedDatasets, caseConversion());
+                    ApiUtils.dedupAndVersion(executor, generatorResult, enrichedDatasets, caseConversion(), placeHolderKeyValues);
                 }
 
                 // 5. Perform ingestion

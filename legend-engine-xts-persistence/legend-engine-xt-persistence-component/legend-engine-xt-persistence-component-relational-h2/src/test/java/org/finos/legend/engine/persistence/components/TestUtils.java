@@ -264,6 +264,18 @@ public class TestUtils
             .build();
     }
 
+    public static SchemaDefinition getStagingSchemaWithVersionWithoutPkWithoutDigest()
+    {
+        return SchemaDefinition.builder()
+            .addFields(idNonPk)
+            .addFields(name)
+            .addFields(income)
+            .addFields(startTimeNonPk)
+            .addFields(expiryDate)
+            .addFields(version)
+            .build();
+    }
+
     public static SchemaDefinition getStagingSchemaWithExpiryDatePk()
     {
         return SchemaDefinition.builder()
@@ -1434,6 +1446,18 @@ public class TestUtils
             .build();
     }
 
+    public static SchemaDefinition getStagingSchema2WithVersion()
+    {
+        return SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(rating)
+            .addFields(startTime)
+            .addFields(version)
+            .addFields(digest)
+            .build();
+    }
+
     public static SchemaDefinition getStagingSchema2WithoutPkWithoutDigest()
     {
         return SchemaDefinition.builder()
@@ -1441,6 +1465,17 @@ public class TestUtils
             .addFields(name)
             .addFields(rating)
             .addFields(startTimeNonPk)
+            .build();
+    }
+
+    public static SchemaDefinition getStagingSchema2WithVersionWithoutPkWithoutDigest()
+    {
+        return SchemaDefinition.builder()
+            .addFields(idNonPk)
+            .addFields(name)
+            .addFields(rating)
+            .addFields(startTimeNonPk)
+            .addFields(version)
             .build();
     }
 

@@ -161,29 +161,16 @@ public class PostgresTestArtifacts
             "\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE PRECISION,\"biz_date\" DATE,\"digest\" VARCHAR)";
 
     public static String expectedLockInfoTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main_legend_persistence_lock\"" +
-            "(\"insert_ts_utc\" TIMESTAMP,\"last_used_ts_utc\" TIMESTAMP,\"table_name\" VARCHAR UNIQUE)";
-
-    public static String expectedLockInfoTableUpperCaseCreateQuery = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN_LEGEND_PERSISTENCE_LOCK\"" +
-            "(\"INSERT_TS_UTC\" DATETIME,\"LAST_USED_TS_UTC\" DATETIME,\"TABLE_NAME\" VARCHAR UNIQUE)";
+            "(\"insert_ts_utc\" TIMESTAMP,\"last_used_ts_utc\" TIMESTAMP,\"batch_id\" INTEGER)";
 
     public static String lockInitializedQuery = "INSERT INTO \"mydb\".\"main_legend_persistence_lock\" " +
-            "(\"insert_ts_utc\", \"table_name\") " +
-            "(SELECT '2000-01-01 00:00:00.000000','main' " +
+            "(\"insert_ts_utc\") " +
+            "(SELECT '2000-01-01 00:00:00.000000' " +
             "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main_legend_persistence_lock\" as main_legend_persistence_lock)))";
-
-    public static String lockInitializedUpperCaseQuery = "INSERT INTO \"MYDB\".\"MAIN_LEGEND_PERSISTENCE_LOCK\" (\"INSERT_TS_UTC\", \"TABLE_NAME\")" +
-            " (SELECT '2000-01-01 00:00:00.000000','MAIN' WHERE NOT (EXISTS (SELECT * FROM \"MYDB\".\"MAIN_LEGEND_PERSISTENCE_LOCK\" as MAIN_LEGEND_PERSISTENCE_LOCK)))";
 
     public static String lockAcquiredQuery = "UPDATE \"mydb\".\"main_legend_persistence_lock\" as main_legend_persistence_lock " +
             "SET \"last_used_ts_utc\" = '2000-01-01 00:00:00.000000'";
 
-    public static String lockAcquiredUpperCaseQuery = "UPDATE \"MYDB\".\"MAIN_LEGEND_PERSISTENCE_LOCK\" as MAIN_LEGEND_PERSISTENCE_LOCK " +
-            "SET MAIN_LEGEND_PERSISTENCE_LOCK.\"LAST_USED_TS_UTC\" = '2000-01-01 00:00:00.000000'";
-
-    public static String getDropTempTableQuery(String tableName)
-    {
-        return String.format("DROP TABLE IF EXISTS %s CASCADE", tableName);
-    }
 
     public static String expectedBaseTablePlusDigestCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"(" +
             "\"ID\" INTEGER NOT NULL," +

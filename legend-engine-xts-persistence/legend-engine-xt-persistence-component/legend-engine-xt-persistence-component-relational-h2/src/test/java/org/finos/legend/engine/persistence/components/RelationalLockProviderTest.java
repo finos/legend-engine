@@ -42,7 +42,6 @@ public class RelationalLockProviderTest extends BaseTest
         List<Map<String, Object>> result = h2Sink.executeQuery("select * from main_legend_persistence_lock");
         Assertions.assertEquals("2000-01-01 00:00:00.0", result.get(0).get("insert_ts_utc").toString());
         Assertions.assertEquals(null, result.get(0).get("last_used_ts_utc"));
-        Assertions.assertEquals("main", result.get(0).get("table_name"));
     }
 
     @Test
@@ -60,6 +59,5 @@ public class RelationalLockProviderTest extends BaseTest
         List<Map<String, Object>> result = h2Sink.executeQuery("select * from main_legend_persistence_lock");
         Assertions.assertEquals("2000-01-01 00:00:00.0", result.get(0).get("insert_ts_utc").toString());
         Assertions.assertEquals("2000-01-01 00:00:00.0", result.get(0).get("last_used_ts_utc").toString());
-        Assertions.assertEquals("main", result.get(0).get("table_name"));
     }
 }

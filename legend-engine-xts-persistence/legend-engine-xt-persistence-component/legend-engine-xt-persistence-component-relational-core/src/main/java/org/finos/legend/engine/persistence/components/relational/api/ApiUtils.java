@@ -427,6 +427,21 @@ public class ApiUtils
         return Optional.empty();
     }
 
+    public static long getBatchIdFromLockTable(LogicalPlan plan, Executor<SqlGen, TabularData, SqlPlan> executor,
+                                                Transformer<SqlGen, SqlPlan> transformer)
+    {
+        List<TabularData> tabularData = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(plan));
+        Optional<Object> nextBatchId = getFirstColumnValue(getFirstRowForFirstResult(tabularData));
+        if (nextBatchId.isPresent())
+        {
+            return retrieveValueAsLong(nextBatchId.get()).orElseThrow(IllegalStateException::new);
+        }
+        else
+        {
+            throw new IllegalStateException();
+        }
+    }
+
     public static Optional<Map<OptimizationFilter, Pair<Object, Object>>> getOptimizationFilterBounds(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
                                                                                                       Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode,
                                                                                                       Map<String, PlaceholderValue> placeHolderKeyValues)
@@ -509,22 +524,22 @@ public class ApiUtils
         return !value.equals(TABLE_IS_NON_EMPTY);
     }
 
-    public static void dedupAndVersion(Executor<SqlGen, TabularData, SqlPlan> executor, GeneratorResult generatorResult, Datasets enrichedDatasets, CaseConversion caseConversion)
+    public static void dedupAndVersion(Executor<SqlGen, TabularData, SqlPlan> executor, GeneratorResult generatorResult, Datasets enrichedDatasets, CaseConversion caseConversion, Map<String, PlaceholderValue> placeHolderKeyValues)
     {
-        executor.executePhysicalPlan(generatorResult.deduplicationAndVersioningSqlPlan().get());
+        executor.executePhysicalPlan(generatorResult.deduplicationAndVersioningSqlPlan().get(), placeHolderKeyValues);
 
         Map<DedupAndVersionErrorSqlType, SqlPlan> dedupAndVersionErrorSqlTypeSqlPlanMap = generatorResult.deduplicationAndVersioningErrorChecksSqlPlan();
 
         // Error Check for Duplicates: if Dedup = fail on dups, Fail the job if count > 1
         if (dedupAndVersionErrorSqlTypeSqlPlanMap.containsKey(MAX_DUPLICATES))
         {
-            List<TabularData> result = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(MAX_DUPLICATES));
+            List<TabularData> result = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(MAX_DUPLICATES), placeHolderKeyValues);
             Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(result));
             Optional<Long> maxDuplicatesValue = retrieveValueAsLong(obj.orElse(null));
             if (maxDuplicatesValue.isPresent() && maxDuplicatesValue.get() > 1)
             {
                 // Find the duplicate rows
-                TabularData duplicateRows = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(DUPLICATE_ROWS)).get(0);
+                TabularData duplicateRows = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(DUPLICATE_ROWS), placeHolderKeyValues).get(0);
                 String errorMessage = "Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy";
                 LOGGER.error(errorMessage);
                 List<DataError> dataErrors = constructDataQualityErrors(enrichedDatasets.stagingDataset(), duplicateRows.getData(),
@@ -536,13 +551,13 @@ public class ApiUtils
         // Error Check for PK Duplicates: if versioning = No Versioning (fail on pk dups), Fail the job if count > 1
         if (dedupAndVersionErrorSqlTypeSqlPlanMap.containsKey(MAX_PK_DUPLICATES))
         {
-            List<TabularData> result = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(MAX_PK_DUPLICATES));
+            List<TabularData> result = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(MAX_PK_DUPLICATES), placeHolderKeyValues);
             Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(result));
             Optional<Long> maxPkDuplicatesValue = retrieveValueAsLong(obj.orElse(null));
             if (maxPkDuplicatesValue.isPresent() && maxPkDuplicatesValue.get() > 1)
             {
                 // Find the pk-duplicate rows
-                TabularData duplicatePkRows = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(PK_DUPLICATE_ROWS)).get(0);
+                TabularData duplicatePkRows = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(PK_DUPLICATE_ROWS), placeHolderKeyValues).get(0);
                 String errorMessage = "Encountered multiple rows with duplicate primary keys, Failing the batch as Fail on Duplicate Primary Keys is selected";
                 LOGGER.error(errorMessage);
                 List<DataError> dataErrors = ApiUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), duplicatePkRows.getData(),
@@ -554,13 +569,13 @@ public class ApiUtils
         // Error Check for Data Error: If versioning = Max Version/ All Versioning, Check for data error
         if (dedupAndVersionErrorSqlTypeSqlPlanMap.containsKey(MAX_DATA_ERRORS))
         {
-            List<TabularData> result = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(MAX_DATA_ERRORS));
+            List<TabularData> result = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(MAX_DATA_ERRORS), placeHolderKeyValues);
             Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(result));
             Optional<Long> maxDataErrorsValue = retrieveValueAsLong(obj.orElse(null));
             if (maxDataErrorsValue.isPresent() && maxDataErrorsValue.get() > 1)
             {
                 // Find the data errors
-                TabularData errors = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(DATA_ERROR_ROWS)).get(0);
+                TabularData errors = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(DATA_ERROR_ROWS), placeHolderKeyValues).get(0);
                 String errorMessage = "Encountered Data errors (same PK, same version but different data), hence failing the batch";
                 LOGGER.error(errorMessage);
                 List<DataError> dataErrors = ApiUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), errors.getData(),

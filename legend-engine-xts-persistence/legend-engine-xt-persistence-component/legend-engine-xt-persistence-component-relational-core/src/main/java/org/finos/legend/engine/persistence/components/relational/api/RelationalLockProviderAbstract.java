@@ -112,7 +112,7 @@ public abstract class RelationalLockProviderAbstract
         List<Operation> operations = new ArrayList<>();
         LockInfoUtils lockInfoUtils = new LockInfoUtils(enrichedLockInfoDataset);
         operations.add(Create.of(true, enrichedLockInfoDataset.get()));
-        operations.add(lockInfoUtils.initializeLockInfo(tableName, BatchStartTimestampAbstract.INSTANCE));
+        operations.add(lockInfoUtils.initializeLockInfo(BatchStartTimestampAbstract.INSTANCE));
         LogicalPlan initializeLockLogicalPlan = LogicalPlan.of(operations);
         return transformer().generatePhysicalPlan(initializeLockLogicalPlan);
     }
