@@ -81,13 +81,15 @@ public class DataCube__DEV__runDuckDBSelectSQL implements Command
                 try (Statement statement = connection.createStatement())
                 {
                     ResultSet result = statement.executeQuery(expression);
-                    List<String> columns = Lists.mutable.ofInitialCapacity(result.getMetaData().getColumnCount());
+                    List<String> columnNames = Lists.mutable.empty();
+                    List<String> columnTypes = Lists.mutable.empty();
                     for (int i = 1; i <= result.getMetaData().getColumnCount(); i++)
                     {
-                        columns.add(result.getMetaData().getColumnLabel(i));
+                        columnNames.add(result.getMetaData().getColumnLabel(i));
+                        columnTypes.add(result.getMetaData().getColumnTypeName(i));
                     }
-                    this.client.getTerminal().writer().println(ansi().fgBrightBlack().a("Executed SELECT SQL: '" + expression + "'").reset());
-                    this.client.getTerminal().writer().println(ansi().fgBrightBlack().a(prettyGridPrint(result, columns, columns, 40, 60)).reset());
+                    this.client.getTerminal().writer().println("Executed SELECT SQL: '" + expression + "'");
+                    this.client.getTerminal().writer().println(prettyGridPrint(result, columnNames, columnNames, 40, 60));
                 }
             }
 

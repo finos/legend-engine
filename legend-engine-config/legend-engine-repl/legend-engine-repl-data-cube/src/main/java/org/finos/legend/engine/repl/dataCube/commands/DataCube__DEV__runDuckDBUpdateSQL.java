@@ -77,7 +77,7 @@ public class DataCube__DEV__runDuckDBUpdateSQL implements Command
                 try (Statement statement = connection.createStatement())
                 {
                     statement.executeUpdate(expression);
-                    this.client.getTerminal().writer().println(ansi().fgBrightBlack().a("Executed UPDATE SQL: '" + expression + "'").reset());
+                    this.client.getTerminal().writer().println("Executed UPDATE SQL: '" + expression + "'");
                 }
             }
 

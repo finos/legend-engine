@@ -22,15 +22,10 @@ import org.eclipse.collections.impl.factory.Lists;
 import java.sql.ResultSet;
 import java.util.List;
 
-import static org.jline.jansi.Ansi.ansi;
-
 public class ResultHelper
 {
-    // TODO: the return of this will be printed directly to the console, so we should be mindful of the size
-    // in order to not flood the console, and making client wait for the print to finish before moving on to next operation
-    public static String prettyGridPrint(ResultSet resultSet, List<String> columnNames, List<String> headers, int maxRowSize, int maxColSize)
+    public static String prettyGridPrint(ResultSet resultSet, List<String> columnNames, List<String> columnTypes, int maxRowSize, int maxColSize)
     {
-
         MutableList<String> columns = Lists.mutable.empty();
         MutableList<Integer> size = Lists.mutable.empty();
         MutableList<MutableList<String>> values = Lists.mutable.empty();
@@ -38,12 +33,13 @@ public class ResultHelper
         try
         {
             int columnCount = columnNames.size();
+
+            // collect data
             for (int i = 0; i < columnCount; i++)
             {
                 columns.add(columnNames.get(i));
                 values.add(Lists.mutable.empty());
             }
-
             while (resultSet.next())
             {
                 for (int i = 1; i <= columnCount; i++)
@@ -52,29 +48,56 @@ public class ResultHelper
                     values.get(i - 1).add(value);
                 }
             }
+
+            // determine the max size for each column
             for (int i = 0; i < columnCount; i++)
             {
-                size.add(values.get(i).injectInto(columns.get(i).length(), (IntObjectToIntFunction<? super String>) (a, b) -> Math.max(b.length(), a)));
+                size.add(values.get(i).injectInto(Math.max(columns.get(i).length(), columnTypes.get(i).length()), (IntObjectToIntFunction<? super String>) (a, b) -> Math.max(b.length(), a)));
             }
             size = Lists.mutable.withAll(size.collect(s -> Math.min(maxColSize, s + 2)));
 
+            // print the result
             StringBuilder builder = new StringBuilder();
 
             drawSeparation(builder, columnCount, size);
             drawRow(builder, columnCount, size, columns::get, maxColSize);
+            drawRow(builder, columnCount, size, columnTypes::get, maxColSize);
             drawSeparation(builder, columnCount, size);
 
             int rows = values.get(0).size();
-            for (int k = 0; k < rows; k++)
+            if (rows <= maxRowSize)
             {
-                final int fk = k;
-                drawRow(builder, columnCount, size, i -> values.get(i).get(fk), maxColSize);
+                for (int k = 0; k < rows; k++)
+                {
+                    final int fk = k;
+                    drawRow(builder, columnCount, size, i -> values.get(i).get(fk), maxColSize);
+                }
             }
+            else
+            {
+                int topRows = (int) Math.ceil((float) maxRowSize / 2);
+                int bottomRows = maxRowSize - topRows;
+                for (int k = 0; k < topRows; k++)
+                {
+                    final int fk = k;
+                    drawRow(builder, columnCount, size, i -> values.get(i).get(fk), maxColSize);
+                }
+                for (int k = 0; k < 3; k++)
+                {
+                    drawRow(builder, columnCount, size, i -> ".", maxColSize);
+                }
+                for (int k = rows - bottomRows; k < rows; k++)
+                {
+                    final int fk = k;
+                    drawRow(builder, columnCount, size, i -> values.get(i).get(fk), maxColSize);
+                }
+            }
+
 
             drawSeparation(builder, columnCount, size);
 
             // add summary
-            builder.append(ansi().fgBrightBlack().a(rows + " rows -- " + columns.size() + " columns").reset());
+            builder.append(rows + " rows " + (rows > maxRowSize ? ("(" + maxRowSize + " shown) ") : "") + "-- " + columns.size() + " columns");
             return builder.toString();
         }
         catch (Exception e)

@@ -265,7 +265,7 @@ public class Client
 
     public Path getHomeDir()
     {
-        return FileUtils.getUserDirectory().toPath().resolve(".legend-repl");
+        return FileUtils.getUserDirectory().toPath().resolve(".legend/repl");
     }
 
     public Terminal getTerminal()

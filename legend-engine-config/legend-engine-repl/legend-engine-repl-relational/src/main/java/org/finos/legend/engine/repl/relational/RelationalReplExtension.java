@@ -16,6 +16,7 @@ package org.finos.legend.engine.repl.relational;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
@@ -71,7 +72,7 @@ public class RelationalReplExtension implements ReplExtension
     {
         this.client = client;
         this.localConnectionManagement = new LocalConnectionManagement(client);
-        //this.localConnectionManagement.addLocalConnection(LocalConnectionType.H2, "MyTestH2");
+        // this.localConnectionManagement.addLocalConnection(LocalConnectionType.H2, "MyTestH2");
         this.localConnectionManagement.addLocalConnection(LocalConnectionType.DuckDB, DUCKDB_LOCAL_CONNECTION_BASE_NAME);
     }
 
@@ -104,7 +105,7 @@ public class RelationalReplExtension implements ReplExtension
         RelationalResult relationalResult = (RelationalResult) res;
         try (ResultSet rs = relationalResult.resultSet)
         {
-            return prettyGridPrint(rs, relationalResult.sqlColumns, relationalResult.getColumnListForSerializer(), 40, 60);
+            return prettyGridPrint(rs, relationalResult.sqlColumns, ListIterate.collect(relationalResult.getSQLResultColumns(), col -> col.dataType), 40, 60);
         }
         catch (Exception e)
         {
