@@ -173,7 +173,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
 
     /**
      * Ingest multi datasets in a transaction. Each dataset can have multiple stages
-     * @return List of IngestStageResults
+     * @return List of DatasetIngestResults
      */
     public List<DatasetIngestResults> ingest()
     {
