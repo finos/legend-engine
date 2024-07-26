@@ -29,6 +29,9 @@ import org.finos.legend.pure.runtime.java.extension.external.relation.interprete
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Extend;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Filter;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.GroupBy;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.First;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Offset;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Last;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Join;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Limit;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Map;
@@ -57,6 +60,15 @@ public class RelationExtensionInterpreted extends BaseInterpretedExtension
                 Tuples.pair("drop_Relation_1__Integer_1__Relation_1_", Drop::new),
                 Tuples.pair("extend_Relation_1__FuncColSpec_1__Relation_1_", Extend::new),
                 Tuples.pair("extend_Relation_1__FuncColSpecArray_1__Relation_1_", Extend::new),
+                Tuples.pair("extend_Relation_1__AggColSpec_1__Relation_1_", Extend::new),
+                Tuples.pair("extend_Relation_1__AggColSpecArray_1__Relation_1_", Extend::new),
+                Tuples.pair("extend_Relation_1___Window_1__AggColSpec_1__Relation_1_", Extend::new),
+                Tuples.pair("extend_Relation_1___Window_1__AggColSpecArray_1__Relation_1_", Extend::new),
+                Tuples.pair("extend_Relation_1___Window_1__FuncColSpec_1__Relation_1_", Extend::new),
+                Tuples.pair("extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_", Extend::new),
+                Tuples.pair("first_Relation_1__T_1_", First::new),
+                Tuples.pair("last_Relation_1__T_1_", Last::new),
+                Tuples.pair("offset_Relation_1__T_1__Integer_1__T_1_", Offset::new),
                 Tuples.pair("filter_Relation_1__Function_1__Relation_1_", Filter::new),
                 Tuples.pair("map_Relation_1__Function_1__V_MANY_", Map::new),
                 Tuples.pair("size_Relation_1__Integer_1_", Size::new),

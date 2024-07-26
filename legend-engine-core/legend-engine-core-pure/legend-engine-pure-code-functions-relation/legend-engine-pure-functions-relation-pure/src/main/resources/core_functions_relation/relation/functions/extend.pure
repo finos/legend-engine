@@ -16,8 +16,16 @@ import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
 native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z>(r:Relation<T>[1], f:FuncColSpec<{T[1]->Any[0..1]},Z>[1]):Relation<T+Z>[1];
-
 native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z>(r:Relation<T>[1], fs:FuncColSpecArray<{T[1]->Any[*]},Z>[1]):Relation<T+Z>[1];
+
+native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<T+R>[1];
+native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], agg:AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<T+R>[1];
+
+native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z,W,R>(r:Relation<T>[1], window:_Window<T>[1], f:FuncColSpec<{Relation<T>[1],T[1]->Any[0..1]},R>[1]):Relation<T+R>[1];
+native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z,W,R>(r:Relation<T>[1], window:_Window<T>[1], f:FuncColSpecArray<{Relation<T>[1],T[1]->Any[*]},R>[1]):Relation<T+R>[1];
+
+native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], window:_Window<T>[1], agg:AggColSpec<{Relation<T>[1],T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<T+R>[1];
+native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], window:_Window<T>[1], agg:AggColSpecArray<{Relation<T>[1],T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<T+R>[1];
 
 
 function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimpleExtendStrShared<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
@@ -119,3 +127,403 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimple
                   '   6,weq,7,weq_ext\n'+
                   '#', $res->toString());
 }
+
+
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggNoWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(~newCol:c|$c.id:y|$y->plus())
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol\n'+
+                  '   1,2,A,55\n'+
+                  '   2,1,B,55\n'+
+                  '   3,3,C,55\n'+
+                  '   4,4,D,55\n'+
+                  '   5,2,E,55\n'+
+                  '   6,1,F,55\n'+
+                  '   7,3,G,55\n'+
+                  '   8,1,H,55\n'+
+                  '   9,5,I,55\n'+
+                  '   10,0,J,55\n'+
+                  '#', $res->sort(~id->ascending())->toString());
+}
+
+
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowMultipleColums<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(~[newCol:c|$c.id:y|$y->plus(), other:c|$c.id:y|$y->plus() +1])
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol,other\n'+
+                  '   1,2,A,55,56\n'+
+                  '   2,1,B,55,56\n'+
+                  '   3,3,C,55,56\n'+
+                  '   4,4,D,55,56\n'+
+                  '   5,2,E,55,56\n'+
+                  '   6,1,F,55,56\n'+
+                  '   7,3,G,55,56\n'+
+                  '   8,1,H,55,56\n'+
+                  '   9,5,I,55,56\n'+
+                  '   10,0,J,55,56\n'+
+                  '#', $res->sort(~id->ascending())->toString());
+}
+
+
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp), ~newCol:{w,c|$c.id}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol\n'+
+                  '   10,0,J,10\n'+
+                  '   2,1,B,16\n'+
+                  '   6,1,F,16\n'+
+                  '   8,1,H,16\n'+
+                  '   1,2,A,6\n'+
+                  '   5,2,E,6\n'+
+                  '   3,3,C,10\n'+
+                  '   7,3,G,10\n'+
+                  '   4,4,D,4\n'+
+                  '   9,5,I,9\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindowMultipleColumns<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp), ~[newCol:{w,c|$c.id}:y|$y->plus(), other:{w,c|$c.id}:y|$y->plus()+1])
+               };
+
+    let res =  $f->eval($expr);
+
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol,other\n'+
+                  '   10,0,J,10,11\n'+
+                  '   2,1,B,16,17\n'+
+                  '   6,1,F,16,17\n'+
+                  '   8,1,H,16,17\n'+
+                  '   1,2,A,6,7\n'+
+                  '   5,2,E,6,7\n'+
+                  '   3,3,C,10,11\n'+
+                  '   7,3,G,10,11\n'+
+                  '   4,4,D,4,5\n'+
+                  '   9,5,I,9,10\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp, ~id->descending()), ~newCol:{w,c|$c.name}:y|$y->joinStrings(''))
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol\n'+
+                  '   10,0,J,J\n'+
+                  '   8,1,H,HFB\n'+
+                  '   6,1,F,HFB\n'+
+                  '   2,1,B,HFB\n'+
+                  '   5,2,E,EA\n'+
+                  '   1,2,A,EA\n'+
+                  '   7,3,G,GC\n'+
+                  '   3,3,C,GC\n'+
+                  '   4,4,D,D\n'+
+                  '   9,5,I,I\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowUsingLag<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp, ~id->descending()), ~newCol:{w,c|$w->lag($c).name}:y|$y->joinStrings(''))
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol\n'+
+                  '   10,0,J,\n'+
+                  '   8,1,H,HF\n'+
+                  '   6,1,F,HF\n'+
+                  '   2,1,B,HF\n'+
+                  '   5,2,E,E\n'+
+                  '   1,2,A,E\n'+
+                  '   7,3,G,G\n'+
+                  '   3,3,C,G\n'+
+                  '   4,4,D,\n'+
+                  '   9,5,I,\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp, ~id->descending()), ~[newCol:{w,c|$c.name}:y|$y->joinStrings(''),other:{w,x|$x.id}:y|$y->plus()])
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol,other\n'+
+                  '   10,0,J,J,10\n'+
+                  '   8,1,H,HFB,16\n'+
+                  '   6,1,F,HFB,16\n'+
+                  '   2,1,B,HFB,16\n'+
+                  '   5,2,E,EA,6\n'+
+                  '   1,2,A,EA,6\n'+
+                  '   7,3,G,GC,10\n'+
+                  '   3,3,C,GC,10\n'+
+                  '   4,4,D,D,4\n'+
+                  '   9,5,I,I,9\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndOrderWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp, ~id->descending()), ~newCol:{w,c|$w->lead($c).id})
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol\n'+
+                  '   10,0,J,null\n'+
+                  '   8,1,H,6\n'+
+                  '   6,1,F,2\n'+
+                  '   2,1,B,null\n'+
+                  '   5,2,E,1\n'+
+                  '   1,2,A,null\n'+
+                  '   7,3,G,3\n'+
+                  '   3,3,C,null\n'+
+                  '   4,4,D,null\n'+
+                  '   9,5,I,null\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndOrderWindowMultipleColumns<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp, ~id->descending()), ~[newCol:{w,c|$w->lead($c).id}, other:{w,c|$w->first().name}])
+               };
+               
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol,other\n'+
+                  '   10,0,J,null,J\n'+
+                  '   8,1,H,6,H\n'+
+                  '   6,1,F,2,H\n'+
+                  '   2,1,B,null,H\n'+
+                  '   5,2,E,1,E\n'+
+                  '   1,2,A,null,E\n'+
+                  '   7,3,G,3,G\n'+
+                  '   3,3,C,null,G\n'+
+                  '   4,4,D,null,D\n'+
+                  '   9,5,I,null,I\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowChainedWithSimple<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(~newCol:c|$c.id:y|$y->plus())
+                ->extend(~other:x|floor($x.newCol->toOne() / $x.id->toOne()))
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol,other\n'+
+                  '   1,2,A,55,55\n'+
+                  '   2,1,B,55,27\n'+
+                  '   3,3,C,55,18\n'+
+                  '   4,4,D,55,13\n'+
+                  '   5,2,E,55,11\n'+
+                  '   6,1,F,55,9\n'+
+                  '   7,3,G,55,7\n'+
+                  '   8,1,H,55,6\n'+
+                  '   9,5,I,55,6\n'+
+                  '   10,0,J,55,5\n'+
+                  '#', $res->sort(~id->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPWithMultiplePartitionsAndOrderWindowMultipleColumns<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, grp2, name
+                  1, 2, 2, A
+                  2, 1, 1, B
+                  3, 3, 3, C
+                  4, 4, 4, D
+                  5, 2, 2, E
+                  6, 1, 2, F
+                  7, 3, 3, G
+                  8, 1, 1, H
+                  9, 5, 5, I
+                  10, 0, 0, J
+                #->extend(over(~[grp,grp2], ~id->descending()), ~[newCol:{w,c|$w->lead($c).id}, other:{w,c|$w->first().name}])
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,grp2,name,newCol,other\n'+
+                  '   10,0,0,J,null,J\n'+
+                  '   8,1,1,H,2,H\n'+
+                  '   2,1,1,B,null,H\n'+
+                  '   6,1,2,F,null,F\n'+
+                  '   5,2,2,E,1,E\n'+
+                  '   1,2,2,A,null,E\n'+
+                  '   7,3,3,G,3,G\n'+
+                  '   3,3,3,C,null,G\n'+
+                  '   4,4,4,D,null,D\n'+
+                  '   9,5,5,I,null,I\n'+
+                  '#', $res->sort([~grp->ascending(), ~grp2->ascending()])->toString());
+}
+

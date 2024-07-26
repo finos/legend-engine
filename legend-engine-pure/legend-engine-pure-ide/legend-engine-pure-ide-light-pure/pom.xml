@@ -141,17 +141,6 @@
             <artifactId>legend-pure-m2-dsl-tds-grammar</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

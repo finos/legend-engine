@@ -38,7 +38,7 @@ public class Project extends AbstractNative implements Native
         result.append("), ");
         result.append("Lists.mutable.withAll(" + transformedParams.get(1) + "._funcSpecs())");
 
-        buildCollectFuncSpec(result);
+        buildCollectFuncSpec(result, false);
 
 //        result.append("._names(), ");
 //        result.append(transformedParams.get(1));

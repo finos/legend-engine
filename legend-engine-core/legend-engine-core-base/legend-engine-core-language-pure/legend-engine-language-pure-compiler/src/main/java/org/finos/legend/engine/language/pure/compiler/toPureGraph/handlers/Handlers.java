@@ -257,7 +257,7 @@ public class Handlers
             RelationType<?> relType =
                     _RelationType.build(
                             types.flatCollect(RelationTypeAccessor::_columns)
-                                    .collect(c -> _Column.getColumnInstance(c._name(), false, _Column.getColumnType(c), null, processorSupport)),
+                                    .collect(c -> _Column.getColumnInstance(c._name(), false, _Column.getColumnType(c), _Column.getColumnMultiplicity(c), null, processorSupport)),
                             null,
                             processorSupport
                     );
@@ -297,7 +297,7 @@ public class Handlers
                     Lists.mutable
                             .withAll((RichIterable<Column<?, ?>>) ((RelationType<?>) ps.get(0)._genericType()._typeArguments().getFirst()._rawType())._columns())
                             .withAll((RichIterable<Column<?, ?>>) ((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType())._columns())
-                            .collect(c -> (CoreInstance) _Column.getColumnInstance(c._name(), false, _Column.getColumnType(c), null, processorSupport)),
+                            .collect(c -> (CoreInstance) _Column.getColumnInstance(c._name(), false, _Column.getColumnType(c), _Column.getColumnMultiplicity(c), null, processorSupport)),
                     null,
                     processorSupport
             );
@@ -354,7 +354,7 @@ public class Handlers
         return Lists.mutable.with(
                 vs,
                 wrapInstanceValue(buildColSpec(foundColumn, cc.pureModel, ps), cc.pureModel),
-                wrapInstanceValue(buildColSpec(secondCol.name, _Column.getColumnType(foundColumn), cc.pureModel, ps), cc.pureModel)
+                wrapInstanceValue(buildColSpec(secondCol.name, _Column.getColumnType(foundColumn), _Column.getColumnMultiplicity(foundColumn), cc.pureModel, ps), cc.pureModel)
         );
     };
 
@@ -391,12 +391,12 @@ public class Handlers
                 ._values(values);
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpec<?> buildColSpec(String name, GenericType colType, PureModel pureModel, ProcessorSupport ps)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpec<?> buildColSpec(String name, GenericType colType, Multiplicity multiplicity, PureModel pureModel, ProcessorSupport ps)
     {
         GenericType firstGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                 ._rawType(
                         _RelationType.build(
-                                Lists.mutable.with(_Column.getColumnInstance(name, false, colType, null, ps)),
+                                Lists.mutable.with(_Column.getColumnInstance(name, false, colType, multiplicity, null, ps)),
                                 null,
                                 ps
                         )
@@ -413,16 +413,16 @@ public class Handlers
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpec<?> buildColSpec(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?> col, PureModel pureModel, ProcessorSupport ps)
     {
-        return buildColSpec(col._name(), _Column.getColumnType(col), pureModel, ps);
+        return buildColSpec(col._name(), _Column.getColumnType(col), _Column.getColumnMultiplicity(col), pureModel, ps);
     }
 
     public static final ParametersInference LambdaColCollectionInference = (parameters, ov, cc, pc) ->
     {
         ValueSpecification firstProcessedParameter = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
         GenericType gt = firstProcessedParameter._genericType();
-        if (parameters.get(1) instanceof  ClassInstance)
+        if (parameters.get(1) instanceof ClassInstance)
         {
-            ((ColSpecArray)((ClassInstance) parameters.get(1)).value).colSpecs.forEach(col -> updateSimpleLambda(col.function1, gt, new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1)));
+            ((ColSpecArray) ((ClassInstance) parameters.get(1)).value).colSpecs.forEach(col -> updateSimpleLambda(col.function1, gt, new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1)));
         }
         else
         {
@@ -1108,11 +1108,11 @@ public class Handlers
                     {
                         if (c._name().equals(firstCol._name()))
                         {
-                            return (CoreInstance) _Column.getColumnInstance(secondCol._name(), false, _Column.getColumnType(c), null, processorSupport);
+                            return (CoreInstance) _Column.getColumnInstance(secondCol._name(), false, _Column.getColumnType(c), _Column.getColumnMultiplicity(c), null, processorSupport);
                         }
                         else
                         {
-                            return (CoreInstance) _Column.getColumnInstance(c._name(), false, _Column.getColumnType(c), null, processorSupport);
+                            return (CoreInstance) _Column.getColumnInstance(c._name(), false, _Column.getColumnType(c), _Column.getColumnMultiplicity(c), null, processorSupport);
                         }
                     }).toList(),
                     null,
@@ -1895,6 +1895,11 @@ public class Handlers
     public static GenericType funcReturnType(ValueSpecification vs, PureModel pm)
     {
         return funcType(vs._genericType(), pm)._returnType();
+    }
+
+    public static Multiplicity funcReturnMul(ValueSpecification vs, PureModel pm)
+    {
+        return funcType(vs._genericType(), pm)._returnMultiplicity();
     }
 
     private GenericType funcReturnType(ValueSpecification vs)
