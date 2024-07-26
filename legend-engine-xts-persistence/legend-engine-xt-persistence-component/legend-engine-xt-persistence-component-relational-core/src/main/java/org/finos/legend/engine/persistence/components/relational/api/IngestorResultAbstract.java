@@ -34,7 +34,7 @@ import java.util.Optional;
 )
 public abstract class IngestorResultAbstract
 {
-    public abstract Optional<Integer> batchId(); // TODO: Can we change this to long?
+    public abstract Optional<Integer> batchId();
 
     public abstract Optional<DataSplitRange> dataSplitRange();
 

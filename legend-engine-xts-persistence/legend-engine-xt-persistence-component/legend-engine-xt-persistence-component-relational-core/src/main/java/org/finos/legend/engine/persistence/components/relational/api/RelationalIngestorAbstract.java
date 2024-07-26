@@ -617,21 +617,21 @@ public abstract class RelationalIngestorAbstract
             throw new IllegalStateException("Executor not initialized, call init(Connection) before invoking this method!");
         }
 
-        // 1. Case handling TODO: DONE
+        // 1. Case handling
         enrichedIngestMode = ApiUtils.applyCase(ingestMode(), caseConversion());
         enrichedDatasets = ApiUtils.enrichAndApplyCase(datasets, caseConversion());
 
-        // 2. Initialize transformer TODO: DONE
+        // 2. Initialize transformer
         transformer = new RelationalTransformer(relationalSink(), transformOptions());
         resourcesBuilder = Resources.builder();
 
-        // 3. import external dataset TODO: SKIPPED
+        // 3. import external dataset
         if (enrichedDatasets.stagingDataset() instanceof ExternalDatasetReference)
         {
             enrichedDatasets = importExternalDataset(enrichedDatasets);
         }
 
-        // 4. Check if staging dataset is empty TODO: DONE
+        // 4. Check if staging dataset is empty
         if (ingestMode().accept(IngestModeVisitors.NEED_TO_CHECK_STAGING_EMPTY) && executor.datasetExists(enrichedDatasets.stagingDataset()))
         {
             boolean isStagingDatasetEmpty = ApiUtils.datasetEmpty(enrichedDatasets.stagingDataset(), transformer, executor, new HashMap<>());
@@ -639,7 +639,7 @@ public abstract class RelationalIngestorAbstract
             resourcesBuilder.stagingDataSetEmpty(isStagingDatasetEmpty);
         }
 
-        // 5. Check if main Dataset Exists TODO: ??
+        // 5. Check if main Dataset Exists
         mainDatasetExists = executor.datasetExists(enrichedDatasets.mainDataset());
         if (mainDatasetExists && enableSchemaEvolution())
         {
@@ -647,17 +647,16 @@ public abstract class RelationalIngestorAbstract
         }
         else
         {
-            // TODO: DONE
             enrichedDatasets = enrichedDatasets.withMainDataset(ApiUtils.deriveMainDatasetFromStaging(enrichedDatasets.mainDataset(), enrichedDatasets.stagingDataset(), enrichedIngestMode));
         }
 
-        // 6. Add Optimization Columns if needed TODO: DONE
+        // 6. Add Optimization Columns if needed
         enrichedIngestMode = enrichedIngestMode.accept(new IngestModeOptimizationColumnHandler(enrichedDatasets));
 
-        // 7. Enrich temp Datasets TODO: DONE
+        // 7. Enrich temp Datasets
         enrichedDatasets = enrichedIngestMode.accept(new TempDatasetsEnricher(enrichedDatasets));
 
-        // 8. Use a placeholder for additional metadata TODO: DONE
+        // 8. Use a placeholder for additional metadata
         Map<String, Object> placeholderAdditionalMetadata = new HashMap<>();
         if (!additionalMetadata().isEmpty())
         {
