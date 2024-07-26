@@ -554,6 +554,7 @@ public class ServiceParseTreeWalker
         ExecutionEnvironmentInstance execEnv = new ExecutionEnvironmentInstance();
         execEnv.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
         execEnv._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
+        execEnv.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         List<ServiceParserGrammar.ExecParamsContext> execEnvCtxList = PureGrammarParserUtility.validateRequiredListField(ctx.executions().execParams(), "executions", walkerSourceInformation.getSourceInformation(ctx.executions()));
         if (execEnvCtxList.stream().anyMatch(x -> x.singleExecEnv() != null))
         {
