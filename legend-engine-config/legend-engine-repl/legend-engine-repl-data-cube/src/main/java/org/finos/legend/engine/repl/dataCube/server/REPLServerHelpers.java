@@ -37,11 +37,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pac
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
 import org.finos.legend.engine.repl.client.Client;
-import org.finos.legend.engine.repl.core.commands.Execute;
 import org.finos.legend.engine.repl.core.legend.LegendInterface;
 import org.finos.legend.engine.repl.dataCube.server.model.DataCubeQuery;
 import org.finos.legend.engine.repl.dataCube.server.model.DataCubeQueryColumn;
 import org.finos.legend.engine.repl.dataCube.server.model.DataCubeQuerySourceREPLExecutedQuery;
+import org.finos.legend.engine.repl.shared.ExecutionHelper;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 
 import java.io.IOException;
@@ -49,7 +49,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_QUALIFIED_PATH;
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_QUALIFIED_PATH;
 
 public class REPLServerHelpers
 {
@@ -199,7 +199,7 @@ public class REPLServerHelpers
             this.initialize(pureModelContextData, ListIterate.collect(RelationTypeHelper.convert(relationType).columns, col -> new DataCubeQueryColumn(col.name, col.type)));
         }
 
-        public void initializeWithREPLExecutedQuery(Execute.ExecuteResultSummary executeResultSummary)
+        public void initializeWithREPLExecutedQuery(ExecutionHelper.ExecuteResultSummary executeResultSummary)
         {
             if (!(executeResultSummary.result instanceof RelationalResult) || !(((RelationalResult) executeResultSummary.result).builder instanceof TDSBuilder))
             {

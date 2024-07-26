@@ -31,8 +31,8 @@ import org.jline.reader.ParsedLine;
 
 import java.sql.Connection;
 
-import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_SIGNATURE;
 import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_SIGNATURE;
 
 public class DataCubeTable implements Command
 {
@@ -73,7 +73,7 @@ public class DataCubeTable implements Command
             String[] tokens = line.split(" ");
             if (tokens.length != 3)
             {
-                throw new RuntimeException("Error: command should be used as '" + this.documentation() + "'");
+                throw new RuntimeException("Command should be used as '" + this.documentation() + "'");
             }
 
             String tableName = tokens[2];

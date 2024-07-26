@@ -14,17 +14,11 @@
 
 package org.finos.legend.engine.repl.relational.shared;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.primitive.IntObjectToIntFunction;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 
-import java.io.BufferedWriter;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.sql.ResultSet;
 import java.util.List;
 
@@ -34,17 +28,14 @@ public class ResultHelper
 {
     // TODO: the return of this will be printed directly to the console, so we should be mindful of the size
     // in order to not flood the console, and making client wait for the print to finish before moving on to next operation
-    public static String printAndSerializeResultSetToCSV(ResultSet resultSet, List<String> columnNames, List<String> headers, OutputStream outputStream, int maxRowSize, int maxColSize)
+    public static String prettyGridPrint(ResultSet resultSet, List<String> columnNames, List<String> headers, int maxRowSize, int maxColSize)
     {
-        CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader((headers.isEmpty() ? columnNames : headers).toArray(new String[0]));
 
         MutableList<String> columns = Lists.mutable.empty();
         MutableList<Integer> size = Lists.mutable.empty();
         MutableList<MutableList<String>> values = Lists.mutable.empty();
 
-        try (
-                Writer fileWriter = new BufferedWriter(new OutputStreamWriter(outputStream));
-                CSVPrinter csvPrinter = new CSVPrinter(fileWriter, csvFormat))
+        try
         {
             int columnCount = columnNames.size();
             for (int i = 0; i < columnCount; i++)
@@ -58,10 +49,8 @@ public class ResultHelper
                 for (int i = 1; i <= columnCount; i++)
                 {
                     String value = resultSet.getObject(i) == null ? "" : resultSet.getObject(i).toString();
-                    csvPrinter.print(value);
                     values.get(i - 1).add(value);
                 }
-                csvPrinter.println();
             }
             for (int i = 0; i < columnCount; i++)
             {

@@ -16,13 +16,16 @@ package org.finos.legend.engine.repl.dataCube.commands;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.repl.autocomplete.CompletionResult;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
-import org.finos.legend.engine.repl.core.commands.Execute;
+import org.finos.legend.engine.repl.core.ReplExtension;
 import org.finos.legend.engine.repl.dataCube.server.REPLServer;
+import org.finos.legend.engine.repl.shared.ExecutionHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
@@ -30,19 +33,19 @@ import org.jline.reader.ParsedLine;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.executeCode;
+
 public class DataCubeRun implements Command
 {
     private final DataCube parentCommand;
     private final Client client;
     private final REPLServer replServer;
-    private final PlanExecutor planExecutor;
 
-    public DataCubeRun(DataCube parentCommand, Client client, REPLServer replServer, PlanExecutor planExecutor)
+    public DataCubeRun(DataCube parentCommand, Client client, REPLServer replServer)
     {
         this.parentCommand = parentCommand;
         this.client = client;
         this.replServer = replServer;
-        this.planExecutor = planExecutor;
     }
 
     @Override
@@ -71,15 +74,26 @@ public class DataCubeRun implements Command
             String[] tokens = line.split(" ");
             if (tokens.length <= 3)
             {
-                throw new RuntimeException("Error: command should be used as '" + this.documentation() + "'");
+                throw new RuntimeException("Command should be used as '" + this.documentation() + "'");
             }
 
             int commandLength = "datacube run --".length() + 1;
             String expression = line.substring(commandLength).trim();
-            Execute.ExecuteResultSummary executeResultSummary;
+            ExecutionHelper.ExecuteResultSummary executeResultSummary;
             try
             {
-                executeResultSummary = Execute.executeCode(expression, this.client, this.planExecutor, null);
+                executeResultSummary = executeCode(expression, this.client, (Result res, PureModelContextData pmcd, PureModel pureModel) ->
+                {
+                    ReplExtension extension = this.client.getReplExtensions().detect(x -> x.supports(res));
+                    if (extension != null)
+                    {
+                        return new ExecutionHelper.ExecuteResultSummary(pmcd, pureModel, res, null);
+                    }
+                    else
+                    {
+                        throw new RuntimeException(res.getClass() + " not supported!");
+                    }
+                });
             }
             catch (EngineException e)
             {

@@ -70,7 +70,7 @@ public class Load implements Command
             String[] tokens = line.split(" ");
             if (tokens.length != 3 && tokens.length != 4)
             {
-                throw new RuntimeException("Error: command should be used as '" + this.documentation() + "'");
+                throw new RuntimeException("Command should be used as '" + this.documentation() + "'");
             }
 
             DatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(this.client.getModelState().parse(), tokens[2]);

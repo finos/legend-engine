@@ -65,7 +65,7 @@ public class DataCube__DEV__runDuckDBUpdateSQL implements Command
             String[] tokens = line.split(" ");
             if (tokens.length <= 3)
             {
-                throw new RuntimeException("Error: command should be used as '" + this.documentation() + "'");
+                throw new RuntimeException("Command should be used as '" + this.documentation() + "'");
             }
 
             int commandLength = "datacube DEV__runDuckDBUpdateSQL --".length() + 1;

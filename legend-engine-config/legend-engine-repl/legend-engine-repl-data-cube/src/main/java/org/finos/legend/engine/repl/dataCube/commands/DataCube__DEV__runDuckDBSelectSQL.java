@@ -24,13 +24,12 @@ import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 
-import java.io.ByteArrayOutputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
 
-import static org.finos.legend.engine.repl.relational.shared.ResultHelper.printAndSerializeResultSetToCSV;
+import static org.finos.legend.engine.repl.relational.shared.ResultHelper.prettyGridPrint;
 import static org.jline.jansi.Ansi.ansi;
 
 public class DataCube__DEV__runDuckDBSelectSQL implements Command
@@ -70,7 +69,7 @@ public class DataCube__DEV__runDuckDBSelectSQL implements Command
             String[] tokens = line.split(" ");
             if (tokens.length <= 3)
             {
-                throw new RuntimeException("Error: command should be used as '" + this.documentation() + "'");
+                throw new RuntimeException("Command should be used as '" + this.documentation() + "'");
             }
 
             int commandLength = "datacube DEV__runDuckDBSelectSQL --".length() + 1;
@@ -79,9 +78,7 @@ public class DataCube__DEV__runDuckDBSelectSQL implements Command
 
             try (Connection connection = ConnectionHelper.getConnection(databaseConnection, client.getPlanExecutor()))
             {
-                try (Statement statement = connection.createStatement();
-                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
-                )
+                try (Statement statement = connection.createStatement())
                 {
                     ResultSet result = statement.executeQuery(expression);
                     List<String> columns = Lists.mutable.ofInitialCapacity(result.getMetaData().getColumnCount());
@@ -90,7 +87,7 @@ public class DataCube__DEV__runDuckDBSelectSQL implements Command
                         columns.add(result.getMetaData().getColumnLabel(i));
                     }
                     this.client.getTerminal().writer().println(ansi().fgBrightBlack().a("Executed SELECT SQL: '" + expression + "'").reset());
-                    this.client.getTerminal().writer().println(ansi().fgBrightBlack().a(printAndSerializeResultSetToCSV(result, columns, columns, outputStream, 40, 60)).reset());
+                    this.client.getTerminal().writer().println(ansi().fgBrightBlack().a(prettyGridPrint(result, columns, columns, 40, 60)).reset());
                 }
             }
 

@@ -35,7 +35,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_SIGNATURE;
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_SIGNATURE;
 import static org.finos.legend.engine.repl.dataCube.server.DataCubeHelpers.executeQuery;
 
 public class TestDataCubeHelpers

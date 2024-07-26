@@ -15,26 +15,32 @@
 package org.finos.legend.engine.repl.dataCube.commands;
 
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.result.serialization.TemporaryFile;
+import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreState;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
+import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializerWithTransformersApplied;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
-import org.finos.legend.engine.repl.core.commands.Execute;
 import org.finos.legend.engine.repl.dataCube.server.REPLServer;
 import org.finos.legend.engine.repl.relational.shared.ConnectionHelper;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 
-import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_SIGNATURE;
-import static org.finos.legend.engine.repl.relational.RelationalReplExtension.getCachedSerializedResultPath;
+import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_SIGNATURE;
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.executeCode;
 import static org.jline.jansi.Ansi.ansi;
 
 public class DataCubeCache implements Command
@@ -76,46 +82,77 @@ public class DataCubeCache implements Command
             String[] tokens = line.split(" ");
             if (tokens.length != 3)
             {
-                throw new RuntimeException("Error: command should be used as '" + this.documentation() + "'");
+                throw new RuntimeException("Command should be used as '" + this.documentation() + "'");
             }
 
-            Execute.ExecuteResultSummary lastExecuteResultSummary = this.client.getExecuteCommand().getLastExecuteResultSummary();
-            if (lastExecuteResultSummary == null)
+            String specifiedTableName = tokens[2];
+            String expression = this.client.getLastCommand(1);
+            if (expression == null)
             {
-                this.client.getTerminal().writer().println("Can't retrieve result for the last executed query. Try to run a query in REPL first...");
+                this.client.getTerminal().writer().println("Failed to retrieve the last command");
+                return true;
             }
-            else
+            DatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(this.client.getModelState().parse(), DataCube.getLocalConnectionPath());
+
+            try
             {
-                if (lastExecuteResultSummary.result instanceof RelationalResult)
+                executeCode(expression, this.client, (Result res, PureModelContextData pmcd, PureModel pureModel) ->
                 {
-                    DatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(this.client.getModelState().parse(), DataCube.getLocalConnectionPath());
-
-                    try (Connection connection = ConnectionHelper.getConnection(databaseConnection, client.getPlanExecutor()))
+                    if (res instanceof RelationalResult)
                     {
-                        String tableName = tokens[2];
-                        try (Statement statement = connection.createStatement())
+                        RelationalResult relationalResult = (RelationalResult) res;
+                        String tempDir = ((RelationalStoreState) this.client.getPlanExecutor().getExecutorsOfType(StoreType.Relational).getOnly().getStoreState()).getRelationalExecutor().getRelationalExecutionConfiguration().tempPath;
+                        try (TemporaryFile tempFile = new TemporaryFile(tempDir))
                         {
-                            Path serializedCsvResultPath = getCachedSerializedResultPath(lastExecuteResultSummary.executionId, client);
-                            if (Files.notExists(serializedCsvResultPath))
+                            RelationalResultToCSVSerializerWithTransformersApplied serializer = new RelationalResultToCSVSerializerWithTransformersApplied(relationalResult, true);
+                            try
                             {
-                                this.client.getTerminal().writer().println("Can't cache result: cached CSV result file (" + serializedCsvResultPath + ") not found. Try to run a query in REPL again...");
-                                return false;
+                                tempFile.writeFile(serializer);
                             }
-                            statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().load(tableName, serializedCsvResultPath.toString()));
-                            this.client.getTerminal().writer().println(ansi().fgBrightBlack().a("Cached into table: '" + tableName + "'. Launching DataCube...").reset());
+                            catch (Exception e)
+                            {
+                                throw new RuntimeException(e);
+                            }
 
-                            String functionBodyCode = "#>{" + DataCube.getLocalDatabasePath() + "." + tableName + "}#->sort([])->from(" + DataCube.getLocalRuntimePath() + ")";
-                            String functionCode = "###Pure\n" +
-                                    "function " + REPL_RUN_FUNCTION_SIGNATURE + "\n{\n" + functionBodyCode + ";\n}";
-                            PureModelContextData pureModelContextData = client.getModelState().parseWithTransient(functionCode);
-                            this.replServer.initializeStateFromTable(pureModelContextData);
-                            Show.launchDataCube(client, replServer);
+                            try (Connection connection = ConnectionHelper.getConnection(databaseConnection, client.getPlanExecutor()))
+                            {
+                                String tableName = specifiedTableName != null ? specifiedTableName : "test" + (getTables(connection).size() + 1);
+                                try (Statement statement = connection.createStatement())
+                                {
+                                    statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().load(tableName, tempFile.getTemporaryPathForFile()));
+                                    this.client.getTerminal().writer().println(ansi().fgBrightBlack().a("Cached into table: '" + tableName + "'. Launching DataCube...").reset());
+
+                                    String functionBodyCode = "#>{" + DataCube.getLocalDatabasePath() + "." + tableName + "}#->sort([])->from(" + DataCube.getLocalRuntimePath() + ")";
+                                    String functionCode = "###Pure\n" +
+                                            "function " + REPL_RUN_FUNCTION_SIGNATURE + "\n{\n" + functionBodyCode + ";\n}";
+                                    PureModelContextData pureModelContextData = client.getModelState().parseWithTransient(functionCode);
+                                    this.replServer.initializeStateFromTable(pureModelContextData);
+                                    Show.launchDataCube(client, replServer);
+                                }
+                            }
+                            catch (SQLException e)
+                            {
+                                throw new RuntimeException(e);
+                            }
                         }
                     }
+                    else
+                    {
+                        this.client.getTerminal().writer().println("Failed to cache: can cache only relational result (got result of type: " + res.getClass().getCanonicalName() + ")");
+                    }
+                    return null;
+                });
+            }
+            catch (Exception e)
+            {
+                this.client.getTerminal().writer().println("Last command run is not an execution of a Pure expression (command run: '" + expression + "')");
+                if (e instanceof EngineException)
+                {
+                    this.client.printError((EngineException) e, expression);
                 }
                 else
                 {
-                    this.client.getTerminal().writer().println("Can't cache result: only relational result supported, got result of type: " + lastExecuteResultSummary.result.getClass().getCanonicalName());
+                    throw e;
                 }
             }
             return true;

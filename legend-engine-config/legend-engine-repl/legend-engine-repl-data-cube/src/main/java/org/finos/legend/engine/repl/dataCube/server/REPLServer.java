@@ -24,10 +24,10 @@ import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.repl.client.Client;
-import org.finos.legend.engine.repl.core.commands.Execute;
 import org.finos.legend.engine.repl.dataCube.server.handler.DataCubeInfrastructure;
 import org.finos.legend.engine.repl.dataCube.server.handler.DataCubeQueryBuilder;
 import org.finos.legend.engine.repl.dataCube.server.handler.DataCubeQueryExecutor;
+import org.finos.legend.engine.repl.shared.ExecutionHelper;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 
 import java.net.InetSocketAddress;
@@ -52,7 +52,7 @@ public class REPLServer
         this.state = new REPLServerHelpers.REPLServerState(client, objectMapper, planExecutor, client.getLegendInterface());
     }
 
-    public void initializeStateWithREPLExecutedQuery(Execute.ExecuteResultSummary executeResultSummary)
+    public void initializeStateWithREPLExecutedQuery(ExecutionHelper.ExecuteResultSummary executeResultSummary)
     {
         this.state.initializeWithREPLExecutedQuery(executeResultSummary);
     }

@@ -35,16 +35,16 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.Statement;
 
-import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_SIGNATURE;
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_SIGNATURE;
 
-public class DataCubeCsv implements Command
+public class DataCubeLoadCSV implements Command
 {
     private final DataCube parentCommand;
     private final Client client;
     private final REPLServer replServer;
     private final Completers.FilesCompleter completer = new Completers.FilesCompleter(new File("/"));
 
-    public DataCubeCsv(DataCube parentCommand, Client client, REPLServer replServer)
+    public DataCubeLoadCSV(DataCube parentCommand, Client client, REPLServer replServer)
     {
         this.parentCommand = parentCommand;
         this.client = client;
@@ -77,7 +77,7 @@ public class DataCubeCsv implements Command
             String[] tokens = line.split(" ");
             if (tokens.length != 4)
             {
-                throw new RuntimeException("Error: command should be used as '" + this.documentation() + "'");
+                throw new RuntimeException("Command should be used as '" + this.documentation() + "'");
             }
 
             String tableName = tokens[3];

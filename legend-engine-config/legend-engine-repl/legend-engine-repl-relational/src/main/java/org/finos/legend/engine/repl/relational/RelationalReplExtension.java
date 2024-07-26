@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.repl.relational;
 
-import org.apache.commons.io.FileUtils;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.result.Result;
@@ -23,7 +22,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.result.Relationa
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.core.ReplExtension;
-import org.finos.legend.engine.repl.core.commands.Execute;
 import org.finos.legend.engine.repl.relational.commands.Cache;
 import org.finos.legend.engine.repl.relational.commands.DB;
 import org.finos.legend.engine.repl.relational.commands.Drop;
@@ -32,21 +30,15 @@ import org.finos.legend.engine.repl.relational.local.LocalConnectionManagement;
 import org.finos.legend.engine.repl.relational.local.LocalConnectionType;
 
 import java.awt.*;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.UUID;
 
-import static org.finos.legend.engine.repl.relational.shared.ResultHelper.printAndSerializeResultSetToCSV;
+import static org.finos.legend.engine.repl.relational.shared.ResultHelper.prettyGridPrint;
 
 public class RelationalReplExtension implements ReplExtension
 {
     private Client client;
     public static String DUCKDB_LOCAL_CONNECTION_BASE_NAME = "DuckDuck";
-    public static String CACHED_SERIALIZED_RESULTS_DIR = "relational/cachedResults";
 
     private LocalConnectionManagement localConnectionManagement;
 
@@ -81,40 +73,6 @@ public class RelationalReplExtension implements ReplExtension
         this.localConnectionManagement = new LocalConnectionManagement(client);
         //this.localConnectionManagement.addLocalConnection(LocalConnectionType.H2, "MyTestH2");
         this.localConnectionManagement.addLocalConnection(LocalConnectionType.DuckDB, DUCKDB_LOCAL_CONNECTION_BASE_NAME);
-
-        try
-        {
-            flushCachedResults(this.client);
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static void flushCachedResults(Client client)
-    {
-        try
-        {
-            File cachedResultDir = client.getHomeDir().resolve(CACHED_SERIALIZED_RESULTS_DIR).toFile();
-            if (cachedResultDir.exists())
-            {
-                FileUtils.cleanDirectory(cachedResultDir);
-            }
-            else
-            {
-                Files.createDirectories(cachedResultDir.toPath());
-            }
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static Path getCachedSerializedResultPath(String serializationId, Client client)
-    {
-        return client.getHomeDir().resolve(CACHED_SERIALIZED_RESULTS_DIR).resolve(serializationId + ".csv");
     }
 
     @Override
@@ -130,7 +88,7 @@ public class RelationalReplExtension implements ReplExtension
                 new DB(this.client, this),
                 new Load(this.client, this),
                 new Drop(this.client),
-                new Cache(this.client, this.client.getPlanExecutor())
+                new Cache(this.client)
         );
     }
 
@@ -144,17 +102,9 @@ public class RelationalReplExtension implements ReplExtension
     public String print(Result res)
     {
         RelationalResult relationalResult = (RelationalResult) res;
-        String serializationFileName = ((Execute) client.commands.getLast()).getCurrentExecutionId();
-        serializationFileName = serializationFileName != null ? serializationFileName : UUID.randomUUID().toString();
-        flushCachedResults(client);
-        Path filePath = getCachedSerializedResultPath(serializationFileName, client);
-
-        try (
-                ResultSet rs = relationalResult.resultSet;
-                FileOutputStream outputStream = new FileOutputStream(filePath.toString());
-        )
+        try (ResultSet rs = relationalResult.resultSet)
         {
-            return printAndSerializeResultSetToCSV(rs, relationalResult.sqlColumns, relationalResult.getColumnListForSerializer(), outputStream, 40, 60);
+            return prettyGridPrint(rs, relationalResult.sqlColumns, relationalResult.getColumnListForSerializer(), 40, 60);
         }
         catch (Exception e)
         {

@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.repl.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
@@ -28,6 +29,7 @@ import org.finos.legend.engine.repl.core.ReplExtension;
 import org.finos.legend.engine.repl.core.commands.*;
 import org.finos.legend.engine.repl.core.legend.LegendInterface;
 import org.finos.legend.engine.repl.core.legend.LocalLegendInterface;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
@@ -46,6 +48,7 @@ import static org.jline.reader.LineReader.BLINK_MATCHING_PAREN;
 
 public class Client
 {
+    private final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private final LegendInterface legendInterface = new LocalLegendInterface();
     private final Terminal terminal;
     private final LineReader reader;
@@ -85,7 +88,7 @@ public class Client
                                 new Ext(this),
                                 new Debug(this),
                                 new Graph(this),
-                                new Execute(this, planExecutor)
+                                new Execute(this)
                         )
                 );
 
@@ -305,8 +308,25 @@ public class Client
         return this.completerExtensions;
     }
 
-    public Execute getExecuteCommand()
+    public ObjectMapper getObjectMapper()
     {
-        return (Execute) this.commands.detect(c -> c instanceof Execute);
+        return objectMapper;
+    }
+
+    public String getLastCommand()
+    {
+        return this.getLastCommand(0);
+    }
+
+    public String getLastCommand(int skip)
+    {
+        try
+        {
+            return this.reader.getHistory().get(this.reader.getHistory().last() - skip);
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
     }
 }

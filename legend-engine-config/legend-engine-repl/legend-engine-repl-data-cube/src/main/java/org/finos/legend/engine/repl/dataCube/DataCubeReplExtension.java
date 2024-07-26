@@ -64,8 +64,8 @@ public class DataCubeReplExtension implements ReplExtension
                 new Show(this.client, this.REPLServer),
                 new DataCubeCache(dataCubeCommand, this.client, this.REPLServer),
                 new DataCubeTable(dataCubeCommand, this.client, this.REPLServer),
-                new DataCubeCsv(dataCubeCommand, this.client, this.REPLServer),
-                new DataCubeRun(dataCubeCommand, this.client, this.REPLServer, this.client.getPlanExecutor()),
+                new DataCubeLoadCSV(dataCubeCommand, this.client, this.REPLServer),
+                new DataCubeRun(dataCubeCommand, this.client, this.REPLServer),
                 new DataCube__DEV__runDuckDBSelectSQL(dataCubeCommand, this.client),
                 new DataCube__DEV__runDuckDBUpdateSQL(dataCubeCommand, this.client),
                 dataCubeCommand // NOTE: this has to be the last datacube command to ensure autocomplete works properly

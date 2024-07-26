@@ -15,10 +15,14 @@
 package org.finos.legend.engine.repl.dataCube.commands;
 
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
-import org.finos.legend.engine.repl.core.commands.Execute;
+import org.finos.legend.engine.repl.core.ReplExtension;
 import org.finos.legend.engine.repl.dataCube.server.REPLServer;
+import org.finos.legend.engine.repl.shared.ExecutionHelper;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
@@ -26,6 +30,7 @@ import org.jline.reader.ParsedLine;
 import java.awt.*;
 import java.net.URI;
 
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.executeCode;
 import static org.jline.jansi.Ansi.ansi;
 
 public class Show implements Command
@@ -57,16 +62,28 @@ public class Show implements Command
     {
         if (line.startsWith("show"))
         {
-            Execute.ExecuteResultSummary lastExecuteResultSummary = this.client.getExecuteCommand().getLastExecuteResultSummary();
-            if (lastExecuteResultSummary == null)
+            String expression = this.client.getLastCommand(1);
+            if (expression == null)
             {
-                this.client.getTerminal().writer().println("Can't show result grid in DataCube. Try to run a query in REPL first...");
+                this.client.getTerminal().writer().println("Failed to retrieve the last command");
+                return true;
             }
-            else
+
+            ExecutionHelper.ExecuteResultSummary lastExecuteResultSummary = executeCode(expression, this.client, (Result res, PureModelContextData pmcd, PureModel pureModel) ->
             {
-                this.REPLServer.initializeStateWithREPLExecutedQuery(lastExecuteResultSummary);
-                launchDataCube(this.client, this.REPLServer);
-            }
+                ReplExtension extension = this.client.getReplExtensions().detect(x -> x.supports(res));
+                if (extension != null)
+                {
+                    return new ExecutionHelper.ExecuteResultSummary(pmcd, pureModel, res, null);
+                }
+                else
+                {
+                    throw new RuntimeException(res.getClass() + " not supported!");
+                }
+            });
+
+            this.REPLServer.initializeStateWithREPLExecutedQuery(lastExecuteResultSummary);
+            launchDataCube(this.client, this.REPLServer);
             return true;
         }
         return false;
