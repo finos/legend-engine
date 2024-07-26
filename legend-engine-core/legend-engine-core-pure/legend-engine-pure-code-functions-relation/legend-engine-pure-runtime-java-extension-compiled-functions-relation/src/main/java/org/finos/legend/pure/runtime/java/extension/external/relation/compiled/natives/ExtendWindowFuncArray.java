@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,28 +19,19 @@ import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.AbstractNative;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.Native;
-import static org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.GroupBy.processAggColSpec;
 
-public class GroupByArray extends AbstractNative implements Native
+public class ExtendWindowFuncArray extends AbstractNative implements Native
 {
-    public GroupByArray()
+    public ExtendWindowFuncArray()
     {
-        super("groupBy_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_", "groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_");
+        super("extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_");
     }
 
     @Override
     public String build(CoreInstance topLevelElement, CoreInstance functionExpression, ListIterable<String> transformedParams, ProcessorContext processorContext)
     {
-        StringBuilder result = new StringBuilder("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.groupBy");
-        result.append('(');
-        result.append(transformedParams.get(0));
-        result.append(", ");
-        result.append(transformedParams.get(1));
-        result.append(", ");
-        result.append("Lists.mutable.withAll(" + transformedParams.get(2) + "._aggSpecs())");
-        processAggColSpec(result, false);
-        result.append(", es)");
+        StringBuilder result = ExtendWindowFunc.buildCode(transformedParams, s -> transformedParams.get(2) + "._funcSpecs().toList()");
         return result.toString();
     }
-
 }
+

@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,31 +14,11 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared;
 
-import java.util.function.Function;
-
-public class RowContainer implements Function<String, Object>
+public class NullRowContainer extends RowContainer
 {
-    private int row;
-    private TestTDSCompiled tds;
-
-    public RowContainer()
-    {
-    }
-
-    public RowContainer(TestTDSCompiled tds, int row)
-    {
-        this.tds = tds;
-        this.row = row;
-    }
-
-    public int getRow()
-    {
-        return row;
-    }
-
     @Override
     public Object apply(String s)
     {
-        return tds.getValueAsCoreInstance(s, row);
+        return null;
     }
 }

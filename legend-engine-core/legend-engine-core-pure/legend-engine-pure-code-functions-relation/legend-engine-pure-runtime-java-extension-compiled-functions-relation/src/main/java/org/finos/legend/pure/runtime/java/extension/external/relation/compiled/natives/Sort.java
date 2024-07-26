@@ -34,7 +34,14 @@ public class Sort extends AbstractNative implements Native
         result.append('(');
         result.append(transformedParams.get(0));
         result.append(", ");
-        result.append("CompiledSupport.toPureCollection(" + transformedParams.get(1) + ")");
+        processSortInfo(result, transformedParams.get(1));
+        result.append(" , es)\n");
+        return result.toString();
+    }
+
+    public static void processSortInfo(StringBuilder result, String param)
+    {
+        result.append("CompiledSupport.toPureCollection(" + param + ")");
         result.append(".collect(new DefendedFunction<Root_meta_pure_functions_relation_SortInfo<? extends Object>, org.eclipse.collections.api.tuple.Pair<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum, String>>()\n" +
                 "{\n" +
                 "    @Override\n" +
@@ -42,7 +49,6 @@ public class Sort extends AbstractNative implements Native
                 "    {\n" +
                 "        return org.eclipse.collections.impl.tuple.Tuples.pair(it._direction(), it._column()._name());\n" +
                 "    }\n" +
-                "}) , es)\n");
-        return result.toString();
+                "})");
     }
 }

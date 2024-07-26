@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.runtime.java.extension.relation;
+package org.finos.legend.pure.runtime.java.extension.relation.compiled.pure;
 
 import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.tests.function.base.PureExpressionTest;
@@ -43,42 +43,25 @@ public class TestFunctionTester extends PureExpressionTest
     @org.junit.Test
     public void testFunction()
     {
-        compileTestSource("fromString.pure",
-                                "function test():Any[*]\n" +
-                                        "{" +
-                                        "print(#TDS\n" +
-                                "                  value, str\n" +
-                                "                  1, a\n" +
-                                "                  3, ewe\n" +
-                                "                  4, qw\n" +
-                                "                #\n" +
-                                "                ->filter\n" +
-                                "                (\n" +
-                                "                  x|$x.value == 1" +
-                                        "        )->toString(),1);\n" +
-                                "}");
-        this.execute("test():Any[*]");
-        runtime.delete("fromString.pure");
-
 //        //--------------------------------------------------------------------
 //
-//        compileTestSource("fromString.pure",
-//                "function test():Any[*]\n" +
-//                        "{ " +
-//                        "    let tds = #TDS\n" +
-//                        "              id, name\n" +
-//                        "              1, George\n" +
-//                        "              2, Pierre\n" +
-//                        "              3, Sachin\n" +
-//                        "              4, David\n" +
-//                        "            #;\n" +
-//                        "\n" +
-//                        "  print(" +
-//                        "       $tds->limit(2)->size()" +
-//                        "   ,2);" +
-//                        "}\n");
-//        this.execute("test():Any[*]");
-//        runtime.delete("fromString.pure");
+        compileTestSource("fromString.pure",
+                "function test():Any[*]\n" +
+                        "{ " +
+                        "    let tds = #TDS\n" +
+                        "              id, name\n" +
+                        "              1, George\n" +
+                        "              2, Pierre\n" +
+                        "              3, Sachin\n" +
+                        "              4, David\n" +
+                        "            #;\n" +
+                        "\n" +
+                        "  print(" +
+                        "       $tds->limit(2)->size()" +
+                        "   ,2);" +
+                        "}\n");
+        this.execute("test():Any[*]");
+        runtime.delete("fromString.pure");
 //
 //        //--------------------------------------------------------------------
 //
