@@ -93,6 +93,11 @@ public class Client
 
         this.reader = LineReaderBuilder.builder()
                 .terminal(terminal)
+                // Configure history file
+                // See https://github.com/jline/jline3/wiki/History
+                .variable(LineReader.HISTORY_FILE, this.getHomeDir().resolve("history"))
+                .variable(LineReader.HISTORY_FILE_SIZE, 1_000)
+                .variable(LineReader.HISTORY_IGNORE, ": *") // make sure empty space(s) are not persisted
                 // Disable cursor jumping to opening brace when typing closing brace
                 // See https://github.com/jline/jline3/issues/216
                 .variable(BLINK_MATCHING_PAREN, false)
@@ -126,6 +131,8 @@ public class Client
                 String line = this.reader.readLine("> ");
                 if (line == null || line.equalsIgnoreCase("exit"))
                 {
+                    System.exit(0);
+                    this.persistHistory();
                     break;
                 }
 
@@ -162,6 +169,7 @@ public class Client
                 if (lineContent.isEmpty())
                 {
                     System.exit(0);
+                    this.persistHistory();
                     break;
                 }
                 else
@@ -173,6 +181,7 @@ public class Client
             catch (EndOfFileException e)
             {
                 System.exit(0);
+                this.persistHistory();
                 break;
             }
             catch (Exception e)
@@ -182,6 +191,10 @@ public class Client
                 {
                     e.printStackTrace();
                 }
+            }
+            finally
+            {
+                this.persistHistory();
             }
         }
     }
@@ -232,6 +245,18 @@ public class Client
         catch (Exception e)
         {
             this.terminal.writer().println(ansi().fgRed().a("Failed to create home directory at: " + this.getHomeDir().toString()).reset());
+        }
+    }
+
+    private void persistHistory()
+    {
+        try
+        {
+            this.reader.getHistory().save();
+        }
+        catch (Exception e)
+        {
+            // ignore
         }
     }
 
