@@ -233,17 +233,11 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
 
         verifyResults(
             actual, expected,
-            Arrays.asList("src/test/resources/data/multi-dataset/set1/expected/expected_pass1_for_dataset1_append.csv",
-                "src/test/resources/data/multi-dataset/set1/expected/expected_pass1_for_dataset1_final.csv",
-                "src/test/resources/data/multi-dataset/set1/expected/expected_pass1_for_dataset2_append.csv",
-                "src/test/resources/data/multi-dataset/set1/expected/expected_pass1_for_dataset2_final.csv"),
-            Arrays.asList(dataset1 + suffixForAppendTable,
-                dataset1 + suffixForFinalTable,
-                dataset2 + suffixForAppendTable,
+            Arrays.asList("src/test/resources/data/multi-dataset/set1/expected/expected_pass1_for_dataset1.csv",
+                "src/test/resources/data/multi-dataset/set1/expected/expected_pass1_for_dataset2.csv"),
+            Arrays.asList(dataset1 + suffixForFinalTable,
                 dataset2 + suffixForFinalTable),
-            Arrays.asList(new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName},
-                new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName},
-                new String[]{idName, nameName, ratingName, startTimeName, digestName, batchIdName},
+            Arrays.asList(new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName},
                 new String[]{idName, nameName, ratingName, startTimeName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName}));
     }
 
@@ -375,17 +369,11 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
 
         verifyResults(
             actual, expected,
-            Arrays.asList("src/test/resources/data/multi-dataset/set2/expected/expected_pass1_for_dataset1_append.csv",
-                "src/test/resources/data/multi-dataset/set2/expected/expected_pass1_for_dataset1_final.csv",
-                "src/test/resources/data/multi-dataset/set2/expected/expected_pass1_for_dataset2_append.csv",
-                "src/test/resources/data/multi-dataset/set2/expected/expected_pass1_for_dataset2_final.csv"),
-            Arrays.asList(dataset1 + suffixForAppendTable,
-                dataset1 + suffixForFinalTable,
-                dataset2 + suffixForAppendTable,
+            Arrays.asList("src/test/resources/data/multi-dataset/set2/expected/expected_pass1_for_dataset1.csv",
+                "src/test/resources/data/multi-dataset/set2/expected/expected_pass1_for_dataset2.csv"),
+            Arrays.asList(dataset1 + suffixForFinalTable,
                 dataset2 + suffixForFinalTable),
-            Arrays.asList(Arrays.stream(new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, versionName, digestName, batchIdName}).map(String::toUpperCase).toArray(String[]::new),
-                Arrays.stream(new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, versionName, digestName, batchIdInName, batchIdOutName}).map(String::toUpperCase).toArray(String[]::new),
-                Arrays.stream(new String[]{idName, nameName, ratingName, startTimeName, versionName, digestName, batchIdName}).map(String::toUpperCase).toArray(String[]::new),
+            Arrays.asList(Arrays.stream(new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, versionName, digestName, batchIdInName, batchIdOutName}).map(String::toUpperCase).toArray(String[]::new),
                 Arrays.stream(new String[]{idName, nameName, ratingName, startTimeName, versionName, digestName, batchIdInName, batchIdOutName}).map(String::toUpperCase).toArray(String[]::new)));
     }
 
@@ -502,14 +490,11 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
 
         verifyResults(
             actual, expected,
-            Arrays.asList("src/test/resources/data/multi-dataset/set3/expected/expected_pass1_for_dataset1_append.csv",
-                "src/test/resources/data/multi-dataset/set3/expected/expected_pass1_for_dataset2_append.csv",
-                "src/test/resources/data/multi-dataset/set3/expected/expected_pass1_for_dataset2_final.csv"),
+            Arrays.asList("src/test/resources/data/multi-dataset/set3/expected/expected_pass1_for_dataset1.csv",
+                "src/test/resources/data/multi-dataset/set3/expected/expected_pass1_for_dataset2.csv"),
             Arrays.asList(dataset1 + suffixForAppendTable,
-                dataset2 + suffixForAppendTable,
                 dataset2 + suffixForFinalTable),
             Arrays.asList(new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName},
-                new String[]{idName, nameName, ratingName, startTimeName, versionName, digestName, batchIdName},
                 new String[]{idName, nameName, ratingName, startTimeName, versionName, digestName, batchIdName}));
     }
 
