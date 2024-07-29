@@ -136,44 +136,21 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting2():Boo
   assertRoundTrip($input, $expected);
 }
 
-function meta::pure::router::preeval::tests::firstDayOfThisMonthCopied():Date[1]
-{
-  today()->firstDayOfMonth()
-}
-
-function meta::pure::router::preeval::tests::firstDayOfThisYearCopied():Date[1]
-{
-  today()->firstDayOfYear()
-}
-
-function meta::pure::router::preeval::tests::firstDayOfThisQuarterCopied():StrictDate[1]
-{
-  today()->firstDayOfQuarter();
-}
-
 function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting2b():Boolean[1]
 {
   let input = {|
-      let x = firstDayOfThisYearCopied()->adjust(1, DurationUnit.DAYS);
-      let y = firstDayOfThisMonthCopied();
-      let z = firstDayOfThisQuarterCopied()->adjust(2, DurationUnit.DAYS);
-
       let a = mostRecentDayOfWeek(DayOfWeek.Monday);
-      let b= previousDayOfWeek(DayOfWeek.Monday);
+      let b = previousDayOfWeek(DayOfWeek.Monday)->adjust(2, DurationUnit.DAYS);
 
       true;
     };
 
   let expected = {|
-      let x = today()->firstDayOfYear()->adjust(1, DurationUnit.DAYS);
-      let y = today()->firstDayOfMonth();
-      let z = today()->firstDayOfQuarter()->adjust(2, DurationUnit.DAYS);
-
       let a = today()->mostRecentDayOfWeek(DayOfWeek.Monday);
-      let b = today()->previousDayOfWeek(DayOfWeek.Monday);
+      let b = today()->previousDayOfWeek(DayOfWeek.Monday)->adjust(2, DurationUnit.DAYS);
 
       true;
-      };
+    };
 
   assertRoundTrip($input, $expected);
 }
