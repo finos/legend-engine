@@ -29,6 +29,7 @@ import java.time.Clock;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public class LockInfoUtilsTest
 {
@@ -57,7 +58,7 @@ public class LockInfoUtilsTest
     public void testInitializeLockInfoForMultiIngest()
     {
         LockInfoUtils store = new LockInfoUtils(lockInfoDataset);
-        Insert operation = store.initializeLockInfoForMultiIngest(BatchStartTimestamp.INSTANCE);
+        Insert operation = store.initializeLockInfoForMultiIngest(Optional.empty(), BatchStartTimestamp.INSTANCE);
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions);
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(operation).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
@@ -84,12 +85,12 @@ public class LockInfoUtilsTest
     public void testUpdateLockInfoForMultiIngest()
     {
         LockInfoUtils store = new LockInfoUtils(lockInfoDataset);
-        Update operation = store.updateLockInfoForMultiIngest(50, BatchStartTimestamp.INSTANCE);
+        Update operation = store.updateLockInfoForMultiIngest(BatchStartTimestamp.INSTANCE);
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions);
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(operation).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expectedSql = "UPDATE main_table_lock as main_table_lock SET main_table_lock.\"last_used_ts_utc\" = '2000-01-01 00:00:00.000000',main_table_lock.\"batch_id\" = (SELECT COALESCE(main_table_lock.\"batch_id\",50)+1 FROM main_table_lock as main_table_lock)";
+        String expectedSql = "UPDATE main_table_lock as main_table_lock SET main_table_lock.\"last_used_ts_utc\" = '2000-01-01 00:00:00.000000',main_table_lock.\"batch_id\" = (SELECT main_table_lock.\"batch_id\"+1 FROM main_table_lock as main_table_lock)";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 

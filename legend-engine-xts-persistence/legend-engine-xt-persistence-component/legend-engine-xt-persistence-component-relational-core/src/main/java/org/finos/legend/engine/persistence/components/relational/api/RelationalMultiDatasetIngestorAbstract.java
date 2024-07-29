@@ -341,7 +341,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         try
         {
             LockInfoUtils lockInfoUtils = new LockInfoUtils(lockInfoDataset());
-            SqlPlan initializeLockSqlPlan = transformer.generatePhysicalPlan(LogicalPlan.of(Collections.singleton(lockInfoUtils.initializeLockInfoForMultiIngest(BatchStartTimestampAbstract.INSTANCE))));
+            SqlPlan initializeLockSqlPlan = transformer.generatePhysicalPlan(LogicalPlan.of(Collections.singleton(lockInfoUtils.initializeLockInfoForMultiIngest(Optional.empty(), BatchStartTimestampAbstract.INSTANCE))));
             executor.executePhysicalPlan(initializeLockSqlPlan, placeHolderKeyValues);
         }
         catch (Exception e)
@@ -357,7 +357,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
         placeHolderKeyValues.put(BATCH_START_TS_PATTERN, PlaceholderValue.of(LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER), false));
         LockInfoUtils lockInfoUtils = new LockInfoUtils(lockInfoDataset());
-        SqlPlan acquireLockSqlPlan = transformer.generatePhysicalPlan(LogicalPlan.of(Collections.singleton(lockInfoUtils.updateLockInfoForMultiIngest(0L, BatchStartTimestampAbstract.INSTANCE))));
+        SqlPlan acquireLockSqlPlan = transformer.generatePhysicalPlan(LogicalPlan.of(Collections.singleton(lockInfoUtils.updateLockInfoForMultiIngest(BatchStartTimestampAbstract.INSTANCE))));
         executor.executePhysicalPlan(acquireLockSqlPlan, placeHolderKeyValues);
         return ApiUtils.getBatchIdFromLockTable(lockInfoUtils.getLogicalPlanForBatchIdValue(),executor, transformer);
     }

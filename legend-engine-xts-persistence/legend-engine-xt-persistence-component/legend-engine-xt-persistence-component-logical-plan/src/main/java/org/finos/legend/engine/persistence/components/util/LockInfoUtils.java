@@ -28,6 +28,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class LockInfoUtils
 {
@@ -50,13 +51,19 @@ public class LockInfoUtils
         return Insert.of(dataset, Selection.builder().addAllFields(selectFields).condition(condition).build(), insertFields);
     }
 
-    public Insert initializeLockInfoForMultiIngest(BatchStartTimestamp batchStartTimestamp)
+    //todo (rengam) : insert or update logic for batchId field
+    public Insert initializeLockInfoForMultiIngest(Optional<Long> batchId, BatchStartTimestamp batchStartTimestamp)
     {
         DatasetReference metaTableRef = this.dataset.datasetReference();
+        NumericalValue batchIdValue = NumericalValue.of(0L);
+        if (batchId.isPresent())
+        {
+            batchIdValue = NumericalValue.of(batchId);
+        }
         FieldValue insertTimeField = FieldValue.builder().datasetRef(metaTableRef).fieldName(lockInfoDataset.insertTimeField()).build();
         FieldValue batchIdField = FieldValue.builder().datasetRef(metaTableRef).fieldName(lockInfoDataset.batchIdField()).build();
         List<Value> insertFields = Arrays.asList(insertTimeField, batchIdField);
-        List<Value> selectFields = Arrays.asList(batchStartTimestamp, NumericalValue.of(0L));
+        List<Value> selectFields = Arrays.asList(batchStartTimestamp, batchIdValue);
         Condition condition = Not.of(Exists.of(Selection.builder().addFields(All.INSTANCE).source(dataset).build()));
         return Insert.of(dataset, Selection.builder().addAllFields(selectFields).condition(condition).build(), insertFields);
     }
@@ -69,12 +76,11 @@ public class LockInfoUtils
         return update;
     }
 
-    public Update updateLockInfoForMultiIngest(long batchId, BatchStartTimestamp batchStartTimestamp)
+    public Update updateLockInfoForMultiIngest(BatchStartTimestamp batchStartTimestamp)
     {
         List<Pair<FieldValue, Value>> keyValuePairs = new ArrayList<>();
         FieldValue batchIdField = FieldValue.builder().datasetRef(this.dataset.datasetReference()).fieldName(lockInfoDataset.batchIdField()).build();
-        FunctionImpl coalesce = FunctionImpl.builder().functionName(FunctionName.COALESCE).addValue(batchIdField, NumericalValue.of(batchId)).build();
-        SelectValue batchIdValue = SelectValue.of(Selection.builder().source(dataset).addFields(SumBinaryValueOperator.of(coalesce, NumericalValue.of(1L))).build());
+        SelectValue batchIdValue = SelectValue.of(Selection.builder().source(dataset).addFields(SumBinaryValueOperator.of(batchIdField, NumericalValue.of(1L))).build());
         keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.lastUsedTimeField()).build(), batchStartTimestamp));
         keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.batchIdField()).build(), batchIdValue));
         Update update = Update.builder().dataset(dataset).addAllKeyValuePairs(keyValuePairs).build();
