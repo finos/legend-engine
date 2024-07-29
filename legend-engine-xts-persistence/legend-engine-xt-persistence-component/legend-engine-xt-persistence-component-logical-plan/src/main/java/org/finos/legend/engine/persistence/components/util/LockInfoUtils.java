@@ -22,6 +22,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Update;
 import org.finos.legend.engine.persistence.components.logicalplan.values.*;
 
@@ -51,9 +52,9 @@ public class LockInfoUtils
         return Insert.of(dataset, Selection.builder().addAllFields(selectFields).condition(condition).build(), insertFields);
     }
 
-    //todo (rengam) : insert or update logic for batchId field
-    public Insert initializeLockInfoForMultiIngest(Optional<Long> batchId, BatchStartTimestamp batchStartTimestamp)
+    public List<Operation> initializeLockInfoForMultiIngest(Optional<Long> batchId, BatchStartTimestamp batchStartTimestamp)
     {
+        List<Operation> operations = new ArrayList<>();
         DatasetReference metaTableRef = this.dataset.datasetReference();
         NumericalValue batchIdValue = NumericalValue.of(0L);
         if (batchId.isPresent())
@@ -64,8 +65,15 @@ public class LockInfoUtils
         FieldValue batchIdField = FieldValue.builder().datasetRef(metaTableRef).fieldName(lockInfoDataset.batchIdField()).build();
         List<Value> insertFields = Arrays.asList(insertTimeField, batchIdField);
         List<Value> selectFields = Arrays.asList(batchStartTimestamp, batchIdValue);
-        Condition condition = Not.of(Exists.of(Selection.builder().addFields(All.INSTANCE).source(dataset).build()));
-        return Insert.of(dataset, Selection.builder().addAllFields(selectFields).condition(condition).build(), insertFields);
+
+        Condition existsCondition = Exists.of(Selection.builder().addFields(All.INSTANCE).source(dataset).build());
+        Condition notExistsCondition = Not.of(existsCondition);
+        Pair<FieldValue, Value> keyValuePairs = Pair.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.batchIdField()).build(), batchIdValue);
+
+        operations.add(Update.builder().dataset(dataset).addKeyValuePairs(keyValuePairs).whereCondition(existsCondition).build());
+        operations.add(Insert.of(dataset, Selection.builder().addAllFields(selectFields).condition(notExistsCondition).build(), insertFields));
+
+        return operations;
     }
 
     public Update updateLockInfo(BatchStartTimestamp batchStartTimestamp)
