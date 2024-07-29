@@ -15,9 +15,7 @@
 package org.finos.legend.engine.persistence.components.util;
 
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.Exists;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.Not;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.*;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
@@ -65,12 +63,18 @@ public class LockInfoUtils
         FieldValue batchIdField = FieldValue.builder().datasetRef(metaTableRef).fieldName(lockInfoDataset.batchIdField()).build();
         List<Value> insertFields = Arrays.asList(insertTimeField, batchIdField);
         List<Value> selectFields = Arrays.asList(batchStartTimestamp, batchIdValue);
-
         Condition existsCondition = Exists.of(Selection.builder().addFields(All.INSTANCE).source(dataset).build());
+
+        List<Condition> updateConditionList = new ArrayList<>();
+        Condition nullCondition = IsNull.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.batchIdField()).build());
+        updateConditionList.add(existsCondition);
+        updateConditionList.add(nullCondition);
+        Condition updateCondition = And.of(updateConditionList);
+
         Condition notExistsCondition = Not.of(existsCondition);
         Pair<FieldValue, Value> keyValuePairs = Pair.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.batchIdField()).build(), batchIdValue);
 
-        operations.add(Update.builder().dataset(dataset).addKeyValuePairs(keyValuePairs).whereCondition(existsCondition).build());
+        operations.add(Update.builder().dataset(dataset).addKeyValuePairs(keyValuePairs).whereCondition(updateCondition).build());
         operations.add(Insert.of(dataset, Selection.builder().addAllFields(selectFields).condition(notExistsCondition).build(), insertFields));
 
         return operations;
