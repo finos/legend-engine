@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -56,6 +57,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecificationContext;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.navigation.M3Paths;
+import org.finos.legend.pure.m3.navigation.linearization.C3Linearization;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.slf4j.Logger;
@@ -473,7 +475,8 @@ public class HelperModelBuilder
         for (CoreInstance c_type : org.finos.legend.pure.m3.navigation.type.Type.getGeneralizationResolutionOrder(_class, context.pureModel.getExecutionSupport().getProcessorSupport()))
         {
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) c_type;
-            AbstractProperty<?> property = type._properties().detect(p -> name.equals(p.getName()));
+            ListIterable<CoreInstance> orderedGeneralizations = C3Linearization.getTypeGeneralizationLinearization(type, context.pureModel.getExecutionSupport().getProcessorSupport());
+            AbstractProperty<?> property = getCompatibleProperty(orderedGeneralizations, name);
             if (property != null)
             {
                 return property;
@@ -495,6 +498,20 @@ public class HelperModelBuilder
             }
         }
         throw new EngineException("Can't find property '" + name + "' in [" + org.finos.legend.pure.m3.navigation.type.Type.getGeneralizationResolutionOrder(_class, context.pureModel.getExecutionSupport().getProcessorSupport()).makeString(", ") + "]", sourceInformation, EngineErrorType.COMPILATION);
+    }
+
+    public static AbstractProperty<?> getCompatibleProperty(ListIterable<CoreInstance> orderedGeneralizations, String name)
+    {
+        for (CoreInstance instance : orderedGeneralizations)
+        {
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) instance;
+            AbstractProperty<?> property = type._properties().detect(p -> name.equals(p.getName()));
+            if (property != null)
+            {
+                return property;
+            }
+        }
+        return null;
     }
 
     public static QualifiedProperty<?> getCompatibleDerivedProperty(RichIterable<? extends QualifiedProperty<?>> qualifiedProperties, String name, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters)
