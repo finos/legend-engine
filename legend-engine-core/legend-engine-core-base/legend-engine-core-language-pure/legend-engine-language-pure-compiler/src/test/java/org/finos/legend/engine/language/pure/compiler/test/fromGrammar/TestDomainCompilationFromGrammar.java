@@ -15,11 +15,14 @@
 package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.set.SetIterable;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Milestoning;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
@@ -29,6 +32,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_FunctionTyp
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
@@ -180,7 +184,16 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                         "   testMaxInteger(1);" +
                         "   testMaxInteger();" +
                         "}\n";
-        test(code);
+
+        PureModel pm = test(code).getTwo();
+
+        ConcreteFunctionDefinition<?> maxInt0 = pm.getConcreteFunctionDefinition("example::testMaxInteger__Any_$0_1$_", SourceInformation.getUnknownSourceInformation());
+        SetIterable<SourceInformation> sourceInformationMaxInt0 = pm.getPureModelReferenceCollector().references().get(maxInt0);
+        Assert.assertEquals(Sets.mutable.with(), sourceInformationMaxInt0);
+
+        ConcreteFunctionDefinition<?> maxInt1 = pm.getConcreteFunctionDefinition("example::testMaxInteger_Integer_1__Any_$0_1$_", SourceInformation.getUnknownSourceInformation());
+        SetIterable<SourceInformation> sourceInformationMaxInt1 = pm.getPureModelReferenceCollector().references().get(maxInt1);
+        Assert.assertEquals(Sets.mutable.with(), sourceInformationMaxInt1);
     }
 
     @Test
@@ -587,7 +600,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     @Test
     public void testComplexConstraint()
     {
-        test("Class test::A\n" +
+        PureModel pm = test("Class test::A\n" +
                 "[\n" +
                 "  constraint1\n" +
                 "  (" +
@@ -599,7 +612,14 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "]\n" +
                 "{\n" +
                 "  ok: Integer[1..2];\n" +
-                "}\n");
+                "}\n").getTwo();
+
+        AbstractProperty<?> property = pm.getProperty("test::A", "ok");
+        SetIterable<SourceInformation> references = pm.getPureModelReferenceCollector().references().get(property);
+        Assert.assertEquals(Sets.mutable.with(
+                new SourceInformation("", 5, 25, 5, 26),
+                new SourceInformation("", 7, 21, 7, 22)
+        ), references);
     }
 
     @Test
@@ -623,7 +643,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     @Test
     public void testFunctionWithExpressionInParameter()
     {
-        test("Class test::A\n" +
+        PureModel pm = test("Class test::A\n" +
                 "[\n" +
                 "  constraint1\n" +
                 "  (" +
@@ -636,7 +656,21 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "  start: Integer[1];\n" +
                 "  end: Integer[1];\n" +
-                "}\n");
+                "}\n").getTwo();
+
+        AbstractProperty<?> startProperty = pm.getProperty("test::A", "start");
+        SetIterable<SourceInformation> startPropertyReferences = pm.getPureModelReferenceCollector().references().get(startProperty);
+        Assert.assertEquals(Sets.mutable.with(
+                new SourceInformation("", 7, 21, 7, 25),
+                new SourceInformation("", 5, 39, 5, 43)
+        ), startPropertyReferences);
+
+        AbstractProperty<?> endProperty = pm.getProperty("test::A", "end");
+        SetIterable<SourceInformation> endPropertyReferences = pm.getPureModelReferenceCollector().references().get(endProperty);
+        Assert.assertEquals(Sets.mutable.with(
+                new SourceInformation("", 7, 68, 7, 70),
+                new SourceInformation("", 5, 52, 5, 54)
+        ), endPropertyReferences);
     }
 
     @Test
@@ -812,7 +846,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     @Test
     public void testGoodLoopedQualified()
     {
-        test("Class test::Dog\n" +
+        PureModel pm = test("Class test::Dog\n" +
                 "{\n" +
                 "   name : String[*];\n" +
                 "}\n" +
@@ -823,13 +857,21 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::C\n" +
                 "{\n" +
                 "   xza(s: test::B[1]){$s.pet.name->at(0) + 'ok'}:String[1];\n" +
-                "}\n");
+                "}\n").getTwo();
+
+        AbstractProperty<?> petProperty = pm.getProperty("test::B", "pet");
+        SetIterable<SourceInformation> petPropertyReferences = pm.getPureModelReferenceCollector().references().get(petProperty);
+        Assert.assertEquals(Sets.mutable.with(new SourceInformation("", 11, 26, 11, 28)), petPropertyReferences);
+
+        AbstractProperty<?> dogNameProperty = pm.getProperty("test::Dog", "name");
+        SetIterable<SourceInformation> dogNamePropertyReferences = pm.getPureModelReferenceCollector().references().get(dogNameProperty);
+        Assert.assertEquals(Sets.mutable.with(new SourceInformation("", 11, 30, 11, 33)), dogNamePropertyReferences);
     }
 
     @Test
     public void testGoodQualifiedProperty()
     {
-        test("Class test::Dog\n" +
+        PureModel pm = test("Class test::Dog\n" +
                 "{\n" +
                 "    funcDog(){'my Name is Bobby';}:String[1];\n" +
                 "}\n" +
@@ -840,7 +882,28 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::C\n" +
                 "{\n" +
                 "   test(s: test::B[1], d: test::Dog[1]){$s.funcB($d) + '!'}:String[1];\n" +
-                "}\n");
+                "}\n").getTwo();
+
+
+        AbstractProperty<?> funcDogProperty = HelperModelBuilder.getOwnedAppliedProperty(
+                pm.getContext(),
+                pm.getClass("test::Dog"),
+                "funcDog",
+                SourceInformation.getUnknownSourceInformation(),
+                pm.getExecutionSupport()
+        );
+        SetIterable<SourceInformation> funcDogPropertyReferences = pm.getPureModelReferenceCollector().references().get(funcDogProperty);
+        Assert.assertEquals(Sets.mutable.with(new SourceInformation("", 7, 31, 7, 37)), funcDogPropertyReferences);
+
+        AbstractProperty<?> funcBProperty = HelperModelBuilder.getOwnedAppliedProperty(
+                pm.getContext(),
+                pm.getClass("test::B"),
+                "funcB",
+                SourceInformation.getUnknownSourceInformation(),
+                pm.getExecutionSupport()
+        );
+        SetIterable<SourceInformation> funcBPropertyReferences = pm.getPureModelReferenceCollector().references().get(funcBProperty);
+        Assert.assertEquals(Sets.mutable.with(new SourceInformation("", 11, 44, 11, 48)), funcBPropertyReferences);
     }
 
     @Test

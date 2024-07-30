@@ -384,15 +384,15 @@ public class HelperModelBuilder
         return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) property._genericType()._rawType();
     }
 
-    public static AbstractProperty<?> getOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
+    public static AbstractProperty<?> getOwnedAppliedProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
     {
-        return HelperModelBuilder.getOwnedAppliedProperty(_class, null, name, sourceInformation, executionSupport);
+        return HelperModelBuilder.getOwnedAppliedProperty(context, _class, null, name, sourceInformation, executionSupport);
     }
 
     /**
      * Find the property (normal and derived) that the class owns.
      */
-    public static AbstractProperty<?> getOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String classPath, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
+    public static AbstractProperty<?> getOwnedAppliedProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String classPath, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
     {
         AbstractProperty<?> prop = _class._properties().detect(p -> name.equals(p.getName()));
         if (prop == null)
@@ -476,21 +476,25 @@ public class HelperModelBuilder
             AbstractProperty<?> property = type._properties().detect(p -> name.equals(p.getName()));
             if (property != null)
             {
+                context.pureModel.getPureModelReferenceCollector().register(sourceInformation, property);
                 return property;
             }
             property = type._propertiesFromAssociations().detect(p -> name.equals(p.getName()));
             if (property != null)
             {
+                context.pureModel.getPureModelReferenceCollector().register(sourceInformation, property);
                 return property;
             }
             property = getCompatibleDerivedProperty(type._qualifiedProperties(), name, parameters);
             if (property != null)
             {
+                context.pureModel.getPureModelReferenceCollector().register(sourceInformation, property);
                 return property;
             }
             property = type._qualifiedPropertiesFromAssociations().detect(p -> name.equals(p._name()));
             if (property != null)
             {
+                context.pureModel.getPureModelReferenceCollector().register(sourceInformation, property);
                 return property;
             }
         }

@@ -70,8 +70,7 @@ public class MappingValidator
     private void visitMappingInclude(Mapping mapping, PureModel pureModel, Map<String, Mapping> mappings, Set<Mapping> visited, Set<Mapping> discovered)
     {
         discovered.add(mapping);
-        RichIterable<? extends MappingInclude> mappingIncludes = pureModel.getContext().resolveMapping(pureModel.buildPackageString(mapping._package,
-                mapping.name))._includes();
+        RichIterable<? extends MappingInclude> mappingIncludes = pureModel.getMapping(mapping.getPath())._includes();
         mappingIncludes.forEach(mappingInclude ->
         {
             String underlyingMappingName = IncludedMappingHandler.parseIncludedMappingNameRecursively(mappingInclude);

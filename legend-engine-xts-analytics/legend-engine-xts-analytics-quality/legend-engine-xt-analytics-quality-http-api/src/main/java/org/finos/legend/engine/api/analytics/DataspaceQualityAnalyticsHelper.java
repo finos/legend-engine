@@ -41,7 +41,7 @@ public class DataspaceQualityAnalyticsHelper
         CompiledExecutionSupport es = pureModel.getExecutionSupport();
 
         FastList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> _elements = FastList.newList();
-        allElements.forEach(elem -> _elements.add(pureModel.getContext().resolvePackageableElement(elem.getPath(), elem.sourceInformation)));
+        allElements.forEach(elem -> _elements.add(pureModel.getPackageableElement(elem.getPath())));
         RichIterable<? extends Root_meta_analytics_quality_model_ViolationInstance<?>> result = core_analytics_quality_checksEngine.Root_meta_analytics_quality_model_domain_runQualityChecks_PackageableElement_MANY__ViolationInstance_MANY_(_elements, es);
 
         if (result.isEmpty())

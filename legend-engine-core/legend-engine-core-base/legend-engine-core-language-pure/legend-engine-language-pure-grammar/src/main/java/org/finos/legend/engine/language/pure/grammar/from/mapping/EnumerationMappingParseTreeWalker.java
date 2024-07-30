@@ -19,6 +19,8 @@ import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceI
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.enumerationMapping.EnumerationMappingParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumValueMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumValueMappingEnumSourceValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumValueMappingIntegerSourceValue;
@@ -78,8 +80,13 @@ public class EnumerationMappingParseTreeWalker
         if (ctx.enumReference() != null)
         {
             EnumValueMappingEnumSourceValue sourceValue = new EnumValueMappingEnumSourceValue();
-            sourceValue.enumeration = PureGrammarParserUtility.fromQualifiedName(ctx.enumReference().qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.enumReference().qualifiedName().packagePath().identifier(), ctx.enumReference().qualifiedName().identifier());
+            sourceValue.enumeration = new PackageableElementPointer(
+                    PackageableElementType.ENUMERATION,
+                    PureGrammarParserUtility.fromQualifiedName(ctx.enumReference().qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.enumReference().qualifiedName().packagePath().identifier(), ctx.enumReference().qualifiedName().identifier())
+            );
+            sourceValue.enumeration.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.enumReference().qualifiedName());
             sourceValue.value = PureGrammarParserUtility.fromIdentifier(ctx.enumReference().identifier());
+            sourceValue.valueSourceInformation = walkerSourceInformation.getSourceInformation(ctx.enumReference().identifier());
             return sourceValue;
         }
         throw new EngineException("Source value must be either a string, an integer, or an enum", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);

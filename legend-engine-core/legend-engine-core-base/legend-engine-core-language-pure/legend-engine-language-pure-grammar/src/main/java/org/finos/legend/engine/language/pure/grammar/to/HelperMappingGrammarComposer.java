@@ -92,7 +92,7 @@ public class HelperMappingGrammarComposer
                     }
                     else if (sourceValue instanceof EnumValueMappingEnumSourceValue)
                     {
-                        return PureGrammarComposerUtility.convertPath(((EnumValueMappingEnumSourceValue) sourceValue).enumeration) + "." + PureGrammarComposerUtility.convertIdentifier(((EnumValueMappingEnumSourceValue) sourceValue).value);
+                        return PureGrammarComposerUtility.convertPath(((EnumValueMappingEnumSourceValue) sourceValue).enumeration.path) + "." + PureGrammarComposerUtility.convertIdentifier(((EnumValueMappingEnumSourceValue) sourceValue).value);
                     }
                     else if (sourceValue instanceof String)
                     {

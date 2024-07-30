@@ -15,6 +15,7 @@
 package org.finos.legend.engine.protocol.pure.v1.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Objects;
 
 public class SourceInformation
 {
@@ -74,6 +75,55 @@ public class SourceInformation
             builder.append(']');
         }
         return builder.toString();
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (!(o instanceof SourceInformation))
+        {
+            return false;
+        }
+        SourceInformation that = (SourceInformation) o;
+        return startLine == that.startLine && startColumn == that.startColumn && endLine == that.endLine && endColumn == that.endColumn && Objects.equals(sourceId, that.sourceId);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(sourceId, startLine, startColumn, endLine, endColumn);
+    }
+
+    public String toString()
+    {
+        return this.appendMessage(new StringBuilder("<SourceInformation ")).append('>').toString();
+    }
+
+    public StringBuilder appendMessage(StringBuilder appendable)
+    {
+        appendable.append(this.sourceId).append(':');
+        if (this.startLine == this.endLine)
+        {
+            appendable.append(this.startLine);
+            if (this.startColumn == this.endColumn)
+            {
+                appendable.append('c').append(this.startColumn);
+            }
+            else
+            {
+                appendable.append("cc").append(this.startColumn).append('-').append(this.endColumn);
+            }
+        }
+        else
+        {
+            appendable.append(this.startLine).append('c').append(this.startColumn).append('-').append(this.endLine).append('c').append(this.endColumn);
+        }
+
+        return appendable;
     }
 
     public static SourceInformation getUnknownSourceInformation()

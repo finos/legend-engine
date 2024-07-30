@@ -14,9 +14,17 @@
 
 package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
+import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.set.SetIterable;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.pure.generated.Root_meta_external_store_model_PureInstanceSetImplementation_Impl;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -642,7 +650,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    CORP: ['corporation']\n" +
                 "  }\n" +
                 ")\n";
-        test(shared + "###Mapping\n" +
+        PureModel pm = test(shared + "###Mapping\n" +
                 "Mapping model::mapping1\n" +
                 "(\n" +
                 "  include model::mapping2\n" +
@@ -653,7 +661,39 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    type: EnumerationMapping model_IncType2: $src._type\n" +
                 "  }\n" +
                 ")\n" +
-                "\n");
+                "\n").getTwo();
+
+        Mapping mapping2 = pm.getMapping("model::mapping2");
+        SetIterable<SourceInformation> mapping2References = pm.getPureModelReferenceCollector().references().get(mapping2);
+        Assert.assertEquals(Sets.mutable.with(new SourceInformation("", 43, 3, 43, 25)), mapping2References);
+
+        Class<?> firmClass = pm.getClass("model::Firm");
+        SetIterable<SourceInformation> firmClassReferences = pm.getPureModelReferenceCollector().references().get(firmClass);
+        Assert.assertEquals(Sets.mutable.with(new SourceInformation("", 44, 4, 44, 14)), firmClassReferences);
+
+        Class<?> _firmClass = pm.getClass("model::_Firm");
+        SetIterable<SourceInformation> _firmClassReferences = pm.getPureModelReferenceCollector().references().get(_firmClass);
+        Assert.assertEquals(Sets.mutable.with(new SourceInformation("", 46, 10, 46, 21)), _firmClassReferences);
+
+        AbstractProperty<?> firmEmployeesProperty = pm.getProperty("model::Firm", "employees");
+        SetIterable<SourceInformation> firmEmployeesPropertyReferences = pm.getPureModelReferenceCollector().references().get(firmEmployeesProperty);
+        Assert.assertEquals(Sets.mutable.with(new SourceInformation("", 47, 5, 47, 13)), firmEmployeesPropertyReferences);
+
+        AbstractProperty<?> _firmEmProperty = pm.getProperty("model::_Firm", "em");
+        SetIterable<SourceInformation> _firmEmPropertyReferences = pm.getPureModelReferenceCollector().references().get(_firmEmProperty);
+        Assert.assertEquals(Sets.mutable.with(new SourceInformation("", 47, 37, 47, 38)), _firmEmPropertyReferences);
+
+        Enumeration<Enum> enumeration = pm.getEnumeration("model::IncType", SourceInformation.getUnknownSourceInformation());
+        SetIterable<SourceInformation> enumerationReferences = pm.getPureModelReferenceCollector().references().get(enumeration);
+        Assert.assertEquals(Sets.mutable.with(
+                new SourceInformation("", 35, 3, 35, 16),
+                new SourceInformation("", 3, 9, 3, 22)
+        ), enumerationReferences);
+
+        Enum corpEnum = pm.getEnumValue("model::IncType", "CORP");
+        SetIterable<SourceInformation> corpEnumReferences = pm.getPureModelReferenceCollector().references().get(corpEnum);
+        Assert.assertEquals(Sets.mutable.with(new SourceInformation("", 37, 5, 37, 8)), corpEnumReferences);
+
         test(shared + "###Mapping\n" +
                 "Mapping model::mapping1\n" +
                 "(\n" +
@@ -831,7 +871,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "     date: $src.anotherDate,\n" +
                 "     number: $src.oneNumber\n" +
                 "    }\n" +
-                ")\n", "COMPILATION error at [4:4-10:5]: Can't find class 'model::domain::Target'");
+                ")\n", "COMPILATION error at [4:5-25]: Can't find class 'model::domain::Target'");
         // check source class
         test("Class ui::Person\n" +
                 "{\n" +

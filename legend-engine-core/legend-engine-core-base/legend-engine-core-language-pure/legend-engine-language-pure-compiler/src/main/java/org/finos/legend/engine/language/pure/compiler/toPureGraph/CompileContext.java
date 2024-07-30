@@ -31,7 +31,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -40,6 +39,8 @@ import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnect
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Tag;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Measure;
@@ -50,6 +51,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.navigation._package._Package;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -166,49 +168,53 @@ public class CompileContext
         return getCompilerExtensions().getExtraProcessorOrThrow(element);
     }
 
-    public <T> T resolve(String path, SourceInformation sourceInformation, Function<String, T> resolver)
+    public <T extends CoreInstance> T resolve(String path, SourceInformation sourceInformation, Function<String, T> resolver)
     {
         if (path == null)
         {
             throw new EngineException("Can't resolve from 'null' path", SourceInformation.getUnknownSourceInformation(), EngineErrorType.COMPILATION);
         }
 
+        T coreInstance;
+
         // Try the find from special types (not user-defined top level types)
-        if (SPECIAL_TYPES.contains(path))
+        // or if the path is a path with package, no resolution from import is needed
+        if (SPECIAL_TYPES.contains(path) || path.contains(PACKAGE_SEPARATOR))
         {
-            return resolver.apply(path);
+            coreInstance = resolver.apply(path);
+        }
+        else
+        {
+            // NOTE: here we make the assumption that we have populated the indices properly so the same element
+            // is not referred using 2 different paths in the same element index
+            MutableMap<String, T> results = searchImports(path, resolver);
+            switch (results.size())
+            {
+                case 0:
+                {
+                    // NOTE: if nothing is found then we will try to find user-defined elements at root package (i.e. no package)
+                    // We place this after import resolution since we want to emphasize that this type of element has the lowest precedence
+                    // In fact, due to the restriction that engine imposes on element path, the only kinds of element
+                    // we could find at this level are packages, but they will not fit the type we look for
+                    // in PURE, since we resolve to CoreInstance, further validation needs to be done to make the resolution complete
+                    // here we count on the `resolver` to do the validation of the type of element instead
+                    coreInstance = resolver.apply(path);
+                    break;
+                }
+                case 1:
+                {
+                    coreInstance = results.valuesView().getAny();
+                    break;
+                }
+                default:
+                {
+                    throw new EngineException(results.keysView().makeString("Can't resolve element with path '" + path + "' - multiple matches found [", ", ", "]"), sourceInformation, EngineErrorType.COMPILATION);
+                }
+            }
         }
 
-        // if the path is a path with package, no resolution from import is needed
-        if (path.contains(PACKAGE_SEPARATOR))
-        {
-            return resolver.apply(path);
-        }
-
-        // NOTE: here we make the assumption that we have populated the indices properly so the same element
-        // is not referred using 2 different paths in the same element index
-        MutableMap<String, T> results = searchImports(path, resolver);
-        switch (results.size())
-        {
-            case 0:
-            {
-                // NOTE: if nothing is found then we will try to find user-defined elements at root package (i.e. no package)
-                // We place this after import resolution since we want to emphasize that this type of element has the lowest precedence
-                // In fact, due to the restriction that engine imposes on element path, the only kinds of element
-                // we could find at this level are packages, but they will not fit the type we look for
-                // in PURE, since we resolve to CoreInstance, further validation needs to be done to make the resolution complete
-                // here we count on the `resolver` to do the validation of the type of element instead
-                return resolver.apply(path);
-            }
-            case 1:
-            {
-                return results.valuesView().getAny();
-            }
-            default:
-            {
-                throw new EngineException(results.keysView().makeString("Can't resolve element with path '" + path + "' - multiple matches found [", ", ", "]"), sourceInformation, EngineErrorType.COMPILATION);
-            }
-        }
+        this.pureModel.getPureModelReferenceCollector().register(sourceInformation, coreInstance);
+        return coreInstance;
     }
 
 
@@ -217,11 +223,6 @@ public class CompileContext
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement resolvePackageableElement(PackageableElementPointer pointer)
     {
         return this.resolvePackageableElement(pointer.path, pointer.sourceInformation);
-    }
-
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement resolvePackageableElement(String fullPath)
-    {
-        return this.resolve(fullPath, SourceInformation.getUnknownSourceInformation(), path -> this.pureModel.getPackageableElement(path, SourceInformation.getUnknownSourceInformation()));
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement resolvePackageableElement(String fullPath, SourceInformation sourceInformation)
@@ -254,11 +255,6 @@ public class CompileContext
         return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getPropertyOwner(path, sourceInformation));
     }
 
-    public Enumeration<Enum> resolveEnumeration(String fullPath)
-    {
-        return this.resolveEnumeration(fullPath, SourceInformation.getUnknownSourceInformation());
-    }
-
     public Enumeration<Enum> resolveEnumeration(String fullPath, SourceInformation sourceInformation)
     {
         return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getEnumeration(path, sourceInformation));
@@ -274,19 +270,9 @@ public class CompileContext
         return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getUnit(path, sourceInformation));
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association resolveAssociation(String fullPath)
-    {
-        return this.resolveAssociation(fullPath, SourceInformation.getUnknownSourceInformation());
-    }
-
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association resolveAssociation(String fullPath, SourceInformation sourceInformation)
     {
         return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getAssociation(path, sourceInformation));
-    }
-
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile resolveProfile(String fullPath)
-    {
-        return this.resolveProfile(fullPath, SourceInformation.getUnknownSourceInformation());
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile resolveProfile(String fullPath, SourceInformation sourceInformation)
@@ -309,11 +295,6 @@ public class CompileContext
         return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getStore(path, sourceInformation));
     }
 
-    public Mapping resolveMapping(String fullPath)
-    {
-        return this.resolveMapping(fullPath, SourceInformation.getUnknownSourceInformation());
-    }
-
     public Mapping resolveMapping(String fullPath, SourceInformation sourceInformation)
     {
         return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getMapping(path, sourceInformation));
@@ -327,11 +308,6 @@ public class CompileContext
     public Root_meta_pure_runtime_PackageableConnection resolvePackagebleConnection(String fullPath, SourceInformation sourceInformation)
     {
         return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getPackageableConnection(path, sourceInformation));
-    }
-
-    public Root_meta_core_runtime_Runtime resolveRuntime(String fullPath)
-    {
-        return this.resolveRuntime(fullPath, SourceInformation.getUnknownSourceInformation());
     }
 
     public Root_meta_core_runtime_Runtime resolveRuntime(String fullPath, SourceInformation sourceInformation)
@@ -374,22 +350,23 @@ public class CompileContext
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum resolveEnumValue(String fullPath, String value, SourceInformation enumerationSourceInformation, SourceInformation sourceInformation)
     {
-        return this.pureModel.getEnumValue(this.resolveEnumeration(fullPath, enumerationSourceInformation), fullPath, value, sourceInformation);
-    }
-
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype resolveStereotype(String fullPath, String value)
-    {
-        return this.resolveStereotype(fullPath, value, SourceInformation.getUnknownSourceInformation(), SourceInformation.getUnknownSourceInformation());
+        Enum enumValue = this.pureModel.getEnumValue(this.resolveEnumeration(fullPath, enumerationSourceInformation), fullPath, value, sourceInformation);
+        this.pureModel.getPureModelReferenceCollector().register(sourceInformation, enumValue);
+        return enumValue;
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype resolveStereotype(String fullPath, String value, SourceInformation profileSourceInformation, SourceInformation sourceInformation)
     {
-        return this.pureModel.getStereotype(this.resolveProfile(fullPath, profileSourceInformation), fullPath, value, sourceInformation);
+        Stereotype stereotype = this.pureModel.getStereotype(this.resolveProfile(fullPath, profileSourceInformation), fullPath, value, sourceInformation);
+        this.pureModel.getPureModelReferenceCollector().register(sourceInformation, stereotype);
+        return stereotype;
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Tag resolveTag(String fullPath, String value, SourceInformation profileSourceInformation, SourceInformation sourceInformation)
     {
-        return this.pureModel.getTag(this.resolveProfile(fullPath, profileSourceInformation), fullPath, value, sourceInformation);
+        Tag tag = this.pureModel.getTag(this.resolveProfile(fullPath, profileSourceInformation), fullPath, value, sourceInformation);
+        this.pureModel.getPureModelReferenceCollector().register(sourceInformation, tag);
+        return tag;
     }
 
 

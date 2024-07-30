@@ -15,7 +15,9 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 
 public class ServiceParameter
 {
@@ -26,7 +28,8 @@ public class ServiceParameter
     public Boolean allowReserved;
     public Boolean required;
     @JsonAlias({"_enum"})
-    public String enumeration;
+    @JsonSerialize(converter = PackageableElementPointer.ToPathSerializerConverter.class)
+    public PackageableElementPointer enumeration;
     public SerializationFormat serializationFormat;
 
     public SourceInformation sourceInformation;

@@ -23,6 +23,8 @@ import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.extensions.IServiceStoreGrammarParserExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
@@ -255,7 +257,11 @@ public class ServiceStoreParseTreeWalker
         ServiceStoreParserGrammar.EnumDefinitionContext enumCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ListIterate.collectIf(paramCtx.parameterOptions(), p -> p.enumDefinition() != null, ServiceStoreParserGrammar.ParameterOptionsContext::enumDefinition), "enum", this.walkerSourceInformation.getSourceInformation(paramCtx));
         if (enumCtx != null)
         {
-            param.enumeration = PureGrammarParserUtility.fromQualifiedName(enumCtx.qualifiedName().packagePath() == null ? Collections.emptyList() : enumCtx.qualifiedName().packagePath().identifier(), enumCtx.qualifiedName().identifier());
+            param.enumeration = new PackageableElementPointer(
+                    PackageableElementType.ENUMERATION,
+                    PureGrammarParserUtility.fromQualifiedName(enumCtx.qualifiedName().packagePath() == null ? Collections.emptyList() : enumCtx.qualifiedName().packagePath().identifier(), enumCtx.qualifiedName().identifier())
+            );
+            param.enumeration.sourceInformation = walkerSourceInformation.getSourceInformation(enumCtx);
         }
 
         ServiceStoreParserGrammar.AllowReservedDefinitionContext allowReservedCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ListIterate.collectIf(paramCtx.parameterOptions(), p -> p.allowReservedDefinition() != null, ServiceStoreParserGrammar.ParameterOptionsContext::allowReservedDefinition), "allowReserved", this.walkerSourceInformation.getSourceInformation(paramCtx));

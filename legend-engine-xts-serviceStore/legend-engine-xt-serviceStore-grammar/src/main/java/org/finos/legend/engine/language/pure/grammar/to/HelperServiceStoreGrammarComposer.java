@@ -135,7 +135,7 @@ public class HelperServiceStoreGrammarComposer
 
         if (param.enumeration != null)
         {
-            builder.append(", ").append("enum = ").append(param.enumeration);
+            builder.append(", ").append("enum = ").append(param.enumeration.path);
         }
 
         if (param.allowReserved != null)

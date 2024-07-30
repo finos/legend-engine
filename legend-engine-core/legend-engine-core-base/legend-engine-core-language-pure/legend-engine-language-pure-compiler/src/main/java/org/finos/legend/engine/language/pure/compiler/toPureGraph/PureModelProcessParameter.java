@@ -25,6 +25,7 @@ public class PureModelProcessParameter
     private final boolean enablePartialCompilation;
     private final AutoCloseableLock parallelReadLock;
     private final AutoCloseableLock parallelWriteLock;
+    private final boolean collectReferenceEnabled;
 
     PureModelProcessParameter()
     {
@@ -33,10 +34,10 @@ public class PureModelProcessParameter
 
     public PureModelProcessParameter(String packagePrefix)
     {
-        this(packagePrefix, null, false);
+        this(packagePrefix, null, false, false);
     }
 
-    private PureModelProcessParameter(String packagePrefix, ForkJoinPool forkJoinPool, boolean enablePartialCompilation)
+    private PureModelProcessParameter(String packagePrefix, ForkJoinPool forkJoinPool, boolean enablePartialCompilation, boolean collectReferenceEnabled)
     {
         this.packagePrefix = packagePrefix;
         this.forkJoinPool = forkJoinPool;
@@ -53,6 +54,7 @@ public class PureModelProcessParameter
             this.parallelReadLock = noOpLock;
             this.parallelWriteLock = noOpLock;
         }
+        this.collectReferenceEnabled = collectReferenceEnabled;
     }
 
     public String getPackagePrefix()
@@ -75,6 +77,11 @@ public class PureModelProcessParameter
         return this.parallelWriteLock.lock();
     }
 
+    public boolean isCollectReferenceEnabled()
+    {
+        return this.collectReferenceEnabled;
+    }
+
     public boolean getEnablePartialCompilation()
     {
         return this.enablePartialCompilation;
@@ -90,6 +97,7 @@ public class PureModelProcessParameter
         private String packagePrefix;
         private ForkJoinPool forkJoinPool;
         private boolean enablePartialCompilation;
+        private boolean collectReferenceEnabled;
 
         public Builder()
         {
@@ -128,9 +136,15 @@ public class PureModelProcessParameter
             return this;
         }
 
+        public Builder withReferenceCollector()
+        {
+            this.collectReferenceEnabled = true;
+            return this;
+        }
+
         public PureModelProcessParameter build()
         {
-            return new PureModelProcessParameter(this.packagePrefix, this.forkJoinPool, this.enablePartialCompilation);
+            return new PureModelProcessParameter(this.packagePrefix, this.forkJoinPool, this.enablePartialCompilation, this.collectReferenceEnabled);
         }
     }
 

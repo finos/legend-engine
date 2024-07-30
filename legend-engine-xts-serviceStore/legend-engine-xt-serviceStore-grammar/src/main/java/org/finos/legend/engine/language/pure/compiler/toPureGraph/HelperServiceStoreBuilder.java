@@ -304,7 +304,7 @@ public class HelperServiceStoreBuilder
 
         if (serviceParameter.enumeration != null)
         {
-            pureServiceParameter._enum(context.resolveEnumeration(serviceParameter.enumeration));
+            pureServiceParameter._enum(context.resolveEnumeration(serviceParameter.enumeration.path, serviceParameter.enumeration.sourceInformation));
         }
 
         if (serviceParameter.allowReserved != null)

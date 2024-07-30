@@ -72,13 +72,7 @@ public class TestCompilationFromGrammar
             {
                 // do a full re-serialization after parsing to make sure the protocol produced is proper
                 PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(str);
-                if (expectedErrorMsg == null && (expectedWarnings == null || expectedWarnings.isEmpty()))
-                {
-                    ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
-                    String json = objectMapper.writeValueAsString(modelData);
-                    modelData = objectMapper.readValue(json, PureModelContextData.class);
-                }
-                PureModel pureModel = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+                PureModel pureModel = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName(), null, PureModelProcessParameter.newBuilder().withReferenceCollector().build());
                 modelData.getElements().parallelStream().forEach(element ->
                 {
                     String fullPath;
@@ -109,6 +103,15 @@ public class TestCompilationFromGrammar
                     List<String> warnings = pureModel.getWarnings().stream().map(Warning::buildPrettyWarningMessage).sorted().collect(Collectors.toList());
                     Collections.sort(expectedWarnings);
                     Assert.assertEquals(expectedWarnings, warnings);
+                }
+
+                // try to roundtrip grammar into json->pmcd and recompile
+                if ((expectedWarnings == null || expectedWarnings.isEmpty()))
+                {
+                    ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+                    String json = objectMapper.writeValueAsString(modelData);
+                    PureModelContextData reProcessed = objectMapper.readValue(json, PureModelContextData.class);
+                    Compiler.compile(reProcessed, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
                 }
 
                 return Tuples.pair(modelData, pureModel);

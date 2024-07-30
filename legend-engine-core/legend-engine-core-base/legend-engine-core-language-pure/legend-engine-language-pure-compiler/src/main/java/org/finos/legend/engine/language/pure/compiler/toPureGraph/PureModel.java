@@ -130,7 +130,6 @@ public class PureModel implements IPureModel
     private static final ImmutableSet<String> RESERVED_PACKAGES = Sets.immutable.with("$implicit");
 
     public static final MetadataLazy METADATA_LAZY = MetadataLazy.fromClassLoader(PureModel.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories(PureModel.class.getClassLoader(), true).collectIf(r -> !r.getName().startsWith("test_") && !r.getName().startsWith("other_"), CodeRepository::getName));
-
     private final CompiledExecutionSupport executionSupport;
     private final DeploymentMode deploymentMode;
     private final PureModelProcessParameter pureModelProcessParameter;
@@ -158,6 +157,7 @@ public class PureModel implements IPureModel
     final ConcurrentHashMap<String, Root_meta_pure_runtime_PackageableRuntime> packageableRuntimesIndex = new ConcurrentHashMap<>();
     final ConcurrentHashMap<String, Root_meta_core_runtime_Runtime> runtimesIndex = new ConcurrentHashMap<>();
     private final ConcurrentLinkedQueue<EngineException> engineExceptions = new ConcurrentLinkedQueue<>();
+    private final PureModelReferenceCollector referenceCollector;
 
     public PureModel(PureModelContextData pure, String user, DeploymentMode deploymentMode)
     {
@@ -192,6 +192,16 @@ public class PureModel implements IPureModel
         this.extensions = extensions;
         this.deploymentMode = deploymentMode;
         this.pureModelProcessParameter = pureModelProcessParameter;
+
+        if (this.pureModelProcessParameter.isCollectReferenceEnabled())
+        {
+            this.referenceCollector = new PureModelReferenceCollector.PureModelReferenceCollectorImpl();
+        }
+        else
+        {
+            this.referenceCollector = PureModelReferenceCollector.NO_OP_COLLECTOR;
+        }
+
         Span span = GlobalTracer.get().buildSpan("Build Pure Model").start();
         try (Scope ignore = GlobalTracer.get().scopeManager().activate(span))
         {
@@ -1560,5 +1570,10 @@ public class PureModel implements IPureModel
             pack._childrenAdd(pureElement);
         }
         return pureElement;
+    }
+
+    public PureModelReferenceCollector getPureModelReferenceCollector()
+    {
+        return this.referenceCollector;
     }
 }

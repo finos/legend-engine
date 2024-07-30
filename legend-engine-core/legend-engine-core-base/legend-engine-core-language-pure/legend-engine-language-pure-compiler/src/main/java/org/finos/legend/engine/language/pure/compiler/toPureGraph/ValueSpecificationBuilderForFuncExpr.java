@@ -46,7 +46,7 @@ public class ValueSpecificationBuilderForFuncExpr extends ValueSpecificationBuil
 
         if (packageableElement instanceof Root_meta_pure_runtime_PackageableRuntime)
         {
-            Root_meta_core_runtime_Runtime resolvedRuntime = this.context.resolveRuntime(packageableElementPtr.fullPath);
+            Root_meta_core_runtime_Runtime resolvedRuntime = this.context.resolveRuntime(packageableElementPtr.fullPath, packageableElementPtr.sourceInformation);
             GenericType runtimeGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::core::runtime::Runtime"));
             return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(packageableElementPtr.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                     ._genericType(runtimeGenericType)

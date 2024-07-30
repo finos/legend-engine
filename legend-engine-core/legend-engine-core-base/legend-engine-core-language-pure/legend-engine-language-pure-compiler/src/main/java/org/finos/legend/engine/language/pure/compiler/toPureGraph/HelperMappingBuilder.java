@@ -27,6 +27,7 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestBuilderHelper;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
@@ -166,7 +167,7 @@ public class HelperMappingBuilder
                 ._parent(pureMapping)
                 ._enumeration(context.resolveEnumeration(em.enumeration.path, em.enumeration.sourceInformation))
                 ._enumValueMappings(ListIterate.collect(em.enumValueMappings, v -> new Root_meta_pure_mapping_EnumValueMapping_Impl(null, SourceInformationHelper.toM3SourceInformation(v.sourceInformation), null)
-                        ._enum(context.resolveEnumValue(em.enumeration.path, v.enumValue))
+                        ._enum(context.resolveEnumValue(em.enumeration.path, v.enumValue, em.enumeration.sourceInformation, v.enumValueSourceInformation))
                         ._sourceValues(convertSourceValues(em, v.sourceValues, context))
                 ));
     }
@@ -207,7 +208,8 @@ public class HelperMappingBuilder
         {
             return ((EnumValueMappingStringSourceValue) o).value;
         }
-        return context.resolveEnumValue(((EnumValueMappingEnumSourceValue) o).enumeration, ((EnumValueMappingEnumSourceValue) o).value);
+        EnumValueMappingEnumSourceValue enumSourceValue = (EnumValueMappingEnumSourceValue) o;
+        return context.resolveEnumValue(enumSourceValue.enumeration.path, enumSourceValue.value, enumSourceValue.enumeration.sourceInformation, enumSourceValue.valueSourceInformation);
     }
 
     /**
@@ -373,7 +375,7 @@ public class HelperMappingBuilder
         {
             String superType = superTypePtr.path;
             Generalization generalization = new Root_meta_pure_metamodel_relationship_Generalization_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::relationship::Generalization"))._general(context.resolveGenericType(superType))._specific(mappingClass);
-            context.resolveType(superType)._specializationsAdd(generalization);
+            context.resolveType(superType, superTypePtr.sourceInformation)._specializationsAdd(generalization);
             return generalization;
         });
         mappingClass._generalizations(generalizations);
@@ -471,9 +473,11 @@ public class HelperMappingBuilder
                     ._multiplicity(context.pureModel.getMultiplicity(localMappingPropertyInfo.multiplicity));
         }
 
-        PropertyOwner owner = context.resolvePropertyOwner(propertyMapping.property._class, propertyMapping.property.sourceInformation);
+        PropertyOwner owner = context.resolvePropertyOwner(propertyMapping.property._class, SourceInformation.getUnknownSourceInformation());
         Class<?> _class = owner instanceof Class<?> ? (Class<?>) owner : HelperModelBuilder.getAssociationPropertyClass((Association) owner, propertyMapping.property.property, propertyMapping.property.sourceInformation, context);
-        return HelperModelBuilder.getPropertyOrResolvedEdgePointProperty(context, _class, Optional.empty(), propertyMapping.property.property, propertyMapping.property.sourceInformation);
+        Property<?, ?> property = HelperModelBuilder.getPropertyOrResolvedEdgePointProperty(context, _class, Optional.empty(), propertyMapping.property.property, propertyMapping.property.sourceInformation);
+        context.pureModel.getPureModelReferenceCollector().register(propertyMapping.property.sourceInformation, property);
+        return property;
     }
 
     public static void buildMappingClassOutOfLocalProperties(SetImplementation setImplementation, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping> propertyMappings, CompileContext context)

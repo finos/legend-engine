@@ -14,8 +14,16 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+
 public class EnumValueMappingEnumSourceValue extends EnumValueMappingSourceValue
 {
-    public String enumeration;
+    @JsonSerialize(converter = PackageableElementPointer.ToPathSerializerConverter.class)
+    public PackageableElementPointer enumeration;
     public String value;
+    @JsonIgnore
+    public SourceInformation valueSourceInformation;
 }

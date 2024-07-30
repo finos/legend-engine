@@ -152,7 +152,7 @@ public class HelperRuntimeBuilder
                 pureRuntime._connectionStoresAdd(connectionStore);
             });
         });
-        ListIterate.forEach(engineRuntime.connections.stream().filter(c -> c.store.path.equals("ModelStore") || !(context.resolvePackageableElement(c.store.path, c.store.sourceInformation) instanceof Root_meta_external_format_shared_binding_Binding)).collect(Collectors.toList()), storeConnections ->
+        ListIterate.forEach(engineRuntime.connections.stream().filter(c -> c.store.path.equals("ModelStore") || !(context.resolvePackageableElement(c.store) instanceof Root_meta_external_format_shared_binding_Binding)).collect(Collectors.toList()), storeConnections ->
         {
             ListIterate.forEach(storeConnections.storeConnections, identifiedConnection ->
             {

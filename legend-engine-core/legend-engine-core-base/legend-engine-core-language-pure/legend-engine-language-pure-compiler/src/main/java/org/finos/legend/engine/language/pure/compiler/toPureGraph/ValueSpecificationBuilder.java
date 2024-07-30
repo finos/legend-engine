@@ -603,6 +603,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
             {
                 throw new EngineException("Can't find variable class for variable '" + variable.name + "' in the graph", variable.sourceInformation, EngineErrorType.COMPILATION);
             }
+            this.context.pureModel.getPureModelReferenceCollector().register(variable.sourceInformation, vs);
             return vs;
         }
     }
@@ -689,7 +690,6 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         SimpleFunctionExpression result = func.getOne();
         result.setSourceInformation(SourceInformationHelper.toM3SourceInformation(appliedFunction.sourceInformation));
         MilestoningDatePropagationHelper.updateMilestoningContextFromValidSources(result, processingContext);
-
         return result;
     }
 
