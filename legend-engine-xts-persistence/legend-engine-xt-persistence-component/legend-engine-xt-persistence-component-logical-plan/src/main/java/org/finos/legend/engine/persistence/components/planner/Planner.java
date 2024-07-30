@@ -351,7 +351,7 @@ public abstract class Planner
         if (options().enableConcurrentSafety())
         {
             LockInfoUtils lockInfoUtils = new LockInfoUtils(datasets.lockInfoDataset().orElseThrow(IllegalStateException::new));
-            return LogicalPlan.of(Collections.singleton(lockInfoUtils.initializeLockInfo(mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new), BatchStartTimestampAbstract.INSTANCE)));
+            return LogicalPlan.of(Collections.singleton(lockInfoUtils.initializeLockInfo(BatchStartTimestampAbstract.INSTANCE)));
         }
         return null;
     }

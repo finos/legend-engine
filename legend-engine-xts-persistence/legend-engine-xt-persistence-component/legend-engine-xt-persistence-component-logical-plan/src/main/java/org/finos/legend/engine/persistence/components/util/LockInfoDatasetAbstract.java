@@ -53,9 +53,9 @@ public interface LockInfoDatasetAbstract
     }
 
     @Value.Default
-    default String tableNameField()
+    default String batchIdField()
     {
-        return "table_name";
+        return "batch_id";
     }
 
     @Value.Derived
@@ -68,7 +68,7 @@ public interface LockInfoDatasetAbstract
             .schema(SchemaDefinition.builder()
                 .addFields(Field.builder().name(insertTimeField()).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build())
                 .addFields(Field.builder().name(lastUsedTimeField()).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build())
-                .addFields(Field.builder().name(tableNameField()).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).unique(true).build())
+                .addFields(Field.builder().name(batchIdField()).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).build())
                 .build())
             .build();
     }

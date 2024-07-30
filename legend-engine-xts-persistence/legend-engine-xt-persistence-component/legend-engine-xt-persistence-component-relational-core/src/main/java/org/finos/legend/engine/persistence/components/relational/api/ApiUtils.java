@@ -427,6 +427,21 @@ public class ApiUtils
         return Optional.empty();
     }
 
+    public static long getBatchIdFromLockTable(LogicalPlan plan, Executor<SqlGen, TabularData, SqlPlan> executor,
+                                                Transformer<SqlGen, SqlPlan> transformer)
+    {
+        List<TabularData> tabularData = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(plan));
+        Optional<Object> nextBatchId = getFirstColumnValue(getFirstRowForFirstResult(tabularData));
+        if (nextBatchId.isPresent())
+        {
+            return retrieveValueAsLong(nextBatchId.get()).orElseThrow(IllegalStateException::new);
+        }
+        else
+        {
+            throw new IllegalStateException();
+        }
+    }
+
     public static Optional<Map<OptimizationFilter, Pair<Object, Object>>> getOptimizationFilterBounds(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
                                                                                                       Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode,
                                                                                                       Map<String, PlaceholderValue> placeHolderKeyValues)
