@@ -23,6 +23,7 @@ import org.finos.legend.engine.language.dataquality.grammar.from.DataQualityGram
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQuality;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityPropertyGraphFetchTree;
@@ -124,7 +125,12 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
         {
             return "";
         }
-        return "<" + String.join(", ", constraints) + ">";
+        return "<" + constraints.stream().map(DataQualityGrammarComposerExtension::renderConstraintName).collect(Collectors.joining(", ")) + ">";
+    }
+
+    private static String renderConstraintName(String constraintName)
+    {
+        return PureGrammarComposerUtility.convertIdentifier(constraintName);
     }
 
     public static String printFullPath(String fullPath)

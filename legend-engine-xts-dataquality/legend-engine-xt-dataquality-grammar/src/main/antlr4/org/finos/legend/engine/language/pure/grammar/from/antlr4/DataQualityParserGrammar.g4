@@ -96,5 +96,5 @@ constraintList:                     LESS_THAN
                                       dqConstraintName (COMMA dqConstraintName)*
                                     GREATER_THAN
 ;
-dqConstraintName:                   STRING | identifier
+dqConstraintName:                   identifier
 ;

@@ -118,6 +118,23 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
                 "    ]$;\n" +
                 "    filter: p:Person[1] | p.age >= 18;\n" +
                 "}");
+        // whitespace chars in constraint names
+        test("###DataQualityValidation\n" +
+                "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
+                "{\n" +
+                "    context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "    validationTree: $[\n" +
+                "     Person<ageMustBePositive, 'nameMust \\r\\nNotBeBlank'>{\n" +
+                "       lastName,\n" +
+                "       name,\n" +
+                "       addresses{\n" +
+                "         addressId\n" +
+                "       }\n" +
+                "     }\n" +
+                "    ]$;\n" +
+                "    filter: p:Person[1] | p.age >= 18;\n" +
+                "}");
+
     }
 
 

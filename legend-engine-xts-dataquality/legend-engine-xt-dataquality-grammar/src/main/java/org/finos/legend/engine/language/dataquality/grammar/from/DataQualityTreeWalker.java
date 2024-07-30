@@ -124,10 +124,15 @@ public class DataQualityTreeWalker
             result.constraints = new ArrayList<>();
             for (DataQualityParserGrammar.DqConstraintNameContext dqConstraintNameContext : validationDefinitionContext.constraintList().dqConstraintName())
             {
-                result.constraints.add(dqConstraintNameContext.getText());
+                result.constraints.add(visitConstraintName(dqConstraintNameContext));
             }
         }
         return result;
+    }
+
+    private String visitConstraintName(DataQualityParserGrammar.DqConstraintNameContext dqConstraintNameContext)
+    {
+        return PureGrammarParserUtility.fromIdentifier(dqConstraintNameContext.identifier());
     }
 
     private PropertyGraphFetchTree visitGraphPathContext(DataQualityParserGrammar.GraphPathContext graphPathContext)
