@@ -70,7 +70,7 @@ public class Load implements Command
             String[] tokens = line.split(" ");
             if (tokens.length != 3 && tokens.length != 4)
             {
-                throw new RuntimeException("Error, load should be used as '" + this.documentation() + "'");
+                throw new RuntimeException("Command should be used as '" + this.documentation() + "'");
             }
 
             DatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(this.client.getModelState().parse(), tokens[2]);
@@ -82,7 +82,7 @@ public class Load implements Command
                 try (Statement statement = connection.createStatement())
                 {
                     statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().load(tableName, tokens[1]));
-                    this.client.getTerminal().writer().println("Loaded into table: '" + tableName + "'");
+                    this.client.printInfo("Loaded into table: '" + tableName + "'");
                 }
             }
 
@@ -105,7 +105,7 @@ public class Load implements Command
                 MutableList<Candidate> ca = ListIterate.collect(list, c ->
                 {
                     String val = compressed.length() == 1 ? c.value() : c.value().substring(1);
-                    return new Candidate(val, val, (String) null, (String) null, (String) null, (String) null, false, 0);
+                    return new Candidate(val, val, null, null, null, null, false, 0);
                 });
                 list.clear();
                 list.addAll(ca);

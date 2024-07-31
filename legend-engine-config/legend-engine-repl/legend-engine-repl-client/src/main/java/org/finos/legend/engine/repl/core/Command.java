@@ -21,14 +21,19 @@ import org.jline.reader.ParsedLine;
 
 public interface Command
 {
-    public boolean process(String cmd) throws Exception;
+    boolean process(String cmd) throws Exception;
 
-    public String documentation();
+    String documentation();
 
-    public default String description()
+    default String description()
     {
         return "";
     }
 
-    public MutableList<Candidate> complete(String cmd, LineReader lineReader, ParsedLine parsedLine);
+    default Command parentCommand()
+    {
+        return null;
+    }
+
+    MutableList<Candidate> complete(String cmd, LineReader lineReader, ParsedLine parsedLine);
 }
