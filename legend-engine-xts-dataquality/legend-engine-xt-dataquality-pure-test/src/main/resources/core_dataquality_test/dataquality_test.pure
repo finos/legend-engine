@@ -47,7 +47,6 @@ Class meta::external::dataquality::tests::Person
    name : String[1];
    age : Integer[1];
    addresses : meta::external::dataquality::tests::Address[*];
-   nameGS(){$this.name+ '@GS'}:String[1];
 }
 
 Class meta::external::dataquality::tests::Address
