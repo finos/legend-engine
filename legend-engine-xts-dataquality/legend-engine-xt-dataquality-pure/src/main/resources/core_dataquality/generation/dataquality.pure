@@ -17,7 +17,8 @@ import meta::pure::lineage::scanProperties::propertyTree::*;
 
 function meta::external::dataquality::executeDataQualityValidation(dataquality:meta::external::dataquality::DataQuality<Any>[1], limit: Integer[*]): LambdaFunction<Any>[1]
 { 
-  // 1. enrich tree with selected constraint properties
+   $dataquality.validationTree->validateTreeForNestedConstraints(true);
+   // 1. enrich tree with selected constraint properties
    let enrichedTree = $dataquality.validationTree->ensureFunctionRequirementsForDataQuality($dataquality.validationTree.constraints, $dataquality.validationTree.class, [], true)->cast(@RootGraphFetchTree<Any>);
 
    // 2. build query
@@ -69,6 +70,14 @@ function meta::external::dataquality::executeDataQualityValidation(dataquality:m
       );
 }
 
+function meta::external::dataquality::validateTreeForNestedConstraints(node:GraphFetchTree[1], isRoot:Boolean[1]): Boolean[1]
+{
+  if ($isRoot->isFalse() && $node->cast(@DataQualityPropertyGraphFetchTree).constraints->isNotEmpty(),
+      | fail('Nested constraints are not currently supported!'),
+      | ''
+      );
+  $node.subTrees->fold({subtree, isValid | $isValid && $subtree->validateTreeForNestedConstraints(false)}, true);
+}
 
 function meta::external::dataquality::ensureFunctionRequirementsForDataQuality(node:GraphFetchTree[1], constraints:Constraint[*], class:Class<Any>[1], processed:Class<Any>[*], ensureConstraintsForSubTrees:Boolean[1]): GraphFetchTree[1]
 {
