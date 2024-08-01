@@ -36,6 +36,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQuality;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityExecutionContext;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityPropertyGraphFetchTree;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityPropertyGraphFetchTree_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRootGraphFetchTree;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRootGraphFetchTree_Impl;
@@ -45,6 +46,7 @@ import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataSpaceD
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_MappingAndRuntimeDataQualityExecutionContext;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_MappingAndRuntimeDataQualityExecutionContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_constraint_Constraint_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.constraint.Constraint;
@@ -180,13 +182,17 @@ public class DataQualityCompilerExtension implements CompilerExtension
         Type returnType = subType == null ? property._genericType()._rawType() : subType;
 
         ListIterable<GraphFetchTree> children = ListIterate.collect(propertyGraphFetchTree.subTrees, subTree -> buildPropertyGraphFetchTree((DataQualityPropertyGraphFetchTree) subTree, context, (Class<?>) returnType, openVariables, processingContext));
-        return new Root_meta_external_dataquality_DataQualityPropertyGraphFetchTree_Impl("", SourceInformationHelper.toM3SourceInformation(propertyGraphFetchTree.sourceInformation), context.pureModel.getClass("meta::external::dataquality::DataQualityPropertyGraphFetchTree"))
+        Root_meta_external_dataquality_DataQualityPropertyGraphFetchTree root_meta_external_dataquality_dataQualityPropertyGraphFetchTree = new Root_meta_external_dataquality_DataQualityPropertyGraphFetchTree_Impl("", SourceInformationHelper.toM3SourceInformation(propertyGraphFetchTree.sourceInformation), context.pureModel.getClass("meta::external::dataquality::DataQualityPropertyGraphFetchTree"))
                 ._property(property)
                 ._parameters(pureParameters)
                 ._alias(propertyGraphFetchTree.alias)
                 ._subType(subType)
-                ._subTrees(children)
-                ._constraints(resolveNodeConstraints(context, parentClass, propertyGraphFetchTree.constraints)); // returnType - current property type - for constraints
+                ._subTrees(children);
+        if (returnType instanceof Root_meta_pure_metamodel_type_Class_Impl)
+        {
+            root_meta_external_dataquality_dataQualityPropertyGraphFetchTree._constraints(resolveNodeConstraints(context, (Class<?>) returnType, propertyGraphFetchTree.constraints));
+        }
+        return root_meta_external_dataquality_dataQualityPropertyGraphFetchTree; // returnType - current property type - for constraints
     }
 
     private static Root_meta_external_dataquality_DataQualityRootGraphFetchTree buildRootGraphFetchTree(DataQualityRootGraphFetchTree rootGraphFetchTree, CompileContext context, Class<?> parentClass, MutableList<String> openVariables, ProcessingContext processingContext)
