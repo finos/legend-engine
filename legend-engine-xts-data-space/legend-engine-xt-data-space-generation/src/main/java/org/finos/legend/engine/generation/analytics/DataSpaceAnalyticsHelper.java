@@ -404,24 +404,32 @@ public class DataSpaceAnalyticsHelper
                     DataSpaceExecutableAnalysisResult executableAnalysisResult = new DataSpaceExecutableAnalysisResult();
                     executableAnalysisResult.title = executable._title();
                     executableAnalysisResult.description = executable._description();
-                    DataSpaceTemplateExecutableInfo templateExecutableInfo = new DataSpaceTemplateExecutableInfo();
-                    templateExecutableInfo.id = ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._id();
 
                     // get V1 lambda
                     DataSpaceTemplateExecutable executableV1 = (DataSpaceTemplateExecutable) dataSpaceProtocol.executables.stream().filter(e -> e instanceof DataSpaceTemplateExecutable && ((DataSpaceTemplateExecutable) e).id.equals(((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._id())).findFirst().get();
                     FunctionDefinition<?> lambda = null;
                     if (executableV1 instanceof DataSpaceInlineTemplateExecutable)
                     {
+                        DataSpaceInlineTemplateExecutableInfo templateExecutableInfo = new DataSpaceInlineTemplateExecutableInfo();
+                        templateExecutableInfo.id = ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._id();
                         lambda = (FunctionDefinition<?>) ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._query();
                         templateExecutableInfo.query = (((DataSpaceInlineTemplateExecutable) executableV1).query).accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withIndentation(getTabSize(1)).build());
+                        templateExecutableInfo.executionContextKey = ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey() == null ? dataSpace._defaultExecutionContext()._name() : ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey();
+                        executableAnalysisResult.info = templateExecutableInfo;
                     }
                     else if (executableV1 instanceof DataSpaceTemplateExecutablePointer)
                     {
                         try
                         {
+                            DataSpaceTemplateExecutablePointerInfo templateExecutableInfo = new DataSpaceTemplateExecutablePointerInfo();
+                            templateExecutableInfo.id = ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._id();
                             PackageableElementPointer functionPointer = ((DataSpaceTemplateExecutablePointer) executableV1).query;
-                            lambda = pureModel.getConcreteFunctionDefinition(FunctionDescriptor.functionDescriptorToId(functionPointer.path), functionPointer.sourceInformation);
+                            String functionPath = FunctionDescriptor.functionDescriptorToId(functionPointer.path);
+                            lambda = pureModel.getConcreteFunctionDefinition(functionPath, functionPointer.sourceInformation);
                             templateExecutableInfo.query = functionPointer.path;
+                            templateExecutableInfo.executionContextKey = ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey() == null ? dataSpace._defaultExecutionContext()._name() : ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey();
+                            templateExecutableInfo.function = functionPath;
+                            executableAnalysisResult.info = templateExecutableInfo;
                         }
                         catch (InvalidFunctionDescriptorException e)
                         {
@@ -431,8 +439,6 @@ public class DataSpaceAnalyticsHelper
 
                     org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContext = ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey() == null ? dataSpace._defaultExecutionContext() :
                             dataSpace._executionContexts().toList().stream().filter(c -> c._name().equals(((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey())).findFirst().get();
-                    templateExecutableInfo.executionContextKey = ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey() == null ? dataSpace._defaultExecutionContext()._name() : ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey();
-                    executableAnalysisResult.info = templateExecutableInfo;
                     executableAnalysisResult.result = buildExecutableResult(PlanGenerator.generateExecutionPlanDebug(
                             lambda,
                             executionContext._mapping(),
