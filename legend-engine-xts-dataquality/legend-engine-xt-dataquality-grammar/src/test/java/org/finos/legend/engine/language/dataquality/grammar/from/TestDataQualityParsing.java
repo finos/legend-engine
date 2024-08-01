@@ -137,6 +137,66 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
 
     }
 
+    @Test
+    public void testEdgeScenarios()
+    {
+        // only model constraints
+        test("###DataQualityValidation\n" +
+                "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
+                "{\n" +
+                "    context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "    validationTree: $[\n" +
+                "     Person<ageMustBePositive>{\n" +
+                "     }\n" +
+                "    ]$;\n" +
+                "}");
+        test("###DataQualityValidation\n" +
+                "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
+                "{\n" +
+                "    context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "    validationTree: $[\n" +
+                "     Person{\n" +
+                "       addresses<idMustBeValid>{\n" +
+                "       }\n" +
+                "     }\n" +
+                "    ]$;\n" +
+                "}");
+        // only structural constraints
+        test("###DataQualityValidation\n" +
+                "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
+                "{\n" +
+                "    context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "    validationTree: $[\n" +
+                "     Person{\n" +
+                "        age\n" +
+                "     }\n" +
+                "    ]$;\n" +
+                "}");
+        test("###DataQualityValidation\n" +
+                "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
+                "{\n" +
+                "    context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "    validationTree: $[\n" +
+                "     Person{\n" +
+                "       addresses{\n" +
+                "         id\n" +
+                "       }\n" +
+                "     }\n" +
+                "    ]$;\n" +
+                "}");
+        // both model and structural constraints are absent
+        test("###DataQualityValidation\n" +
+                "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
+                "{\n" +
+                "    context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "    validationTree: $[\n" +
+                "     Person{\n" +
+                "     }\n" +
+                "    ]$;\n" +
+                "}");
+
+    }
+
 
 
 }
