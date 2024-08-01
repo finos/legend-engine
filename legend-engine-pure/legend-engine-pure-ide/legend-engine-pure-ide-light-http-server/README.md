@@ -83,6 +83,17 @@ This will load the core_external_language_java in mutable state and
 all its dependencies. No other repositories will be loaded
 (e.g. repositories discovered by the service loader)
 
+#### Specifying repositories to exclude
+
+You can specify a regex pattern to exclude repositories by using the excludeRepositories configuaration.
+This is useful for 'badly' structured repositories where the definition files and repository directories live in the same parent directory
+
+```
+  "requiredRepositories" : ["blah*"]
+```
+
+The above will exclude all repositories starting with the name blah.
+
 ### Runtime Pure properties
 
 The platform uses a number of properties to help with debugging of
