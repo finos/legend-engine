@@ -60,7 +60,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
     }
 
     @Test
-    public void testOnlyModelConstraints()
+    public void testRootClassNoModelConstraints()
     {
         TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
                 "###DataQualityValidation\n" +
