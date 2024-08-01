@@ -68,7 +68,7 @@ loader mechanism (and hence not editable).
 The pathPatternsToExclude property specifies a glob pattern of paths to ignore when searching directories for code repositories.
 The example config excludes any paths containing archetype-resources and target. 
 
-#### Specifying required repositories to load
+#### Limiting specific repositories to load in the IDE
 
 You can limit the IDE from loading all classpath repositories
 dynamically found by the service loader by using the
@@ -86,7 +86,7 @@ all its dependencies. No other repositories will be loaded
 #### Specifying repositories to exclude
 
 You can specify a regex pattern to exclude repositories by using the excludeRepositories configuaration.
-This is useful for 'badly' structured repositories where the definition files and repository directories live in the same parent directory
+This is useful for 'badly' structured repositories where multile definition files and repositories live in the same parent directory
 
 ```
   "requiredRepositories" : ["blah*"]
