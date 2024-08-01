@@ -31,7 +31,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration(
   assert($dqLambda->isNotEmpty());
 }
 
-function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_NO_RootConstraints():Boolean[1]
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_OnlyStructuralConstraints():Boolean[1]
 { let dqRootConstraints = meta::external::dataquality::tests::Person->getAllTypeGeneralisations()->filter(x| $x->instanceOf(ElementWithConstraints))->cast(@ElementWithConstraints).constraints->filter(x| $x.name == 'addressIDGreaterThan2');
 
   let validationTree = ^DataQualityRootGraphFetchTree<Person>(
