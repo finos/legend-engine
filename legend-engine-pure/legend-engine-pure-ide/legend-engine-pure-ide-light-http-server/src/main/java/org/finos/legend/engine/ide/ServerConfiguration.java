@@ -28,4 +28,5 @@ public class ServerConfiguration extends Configuration
     public SwaggerBundleConfiguration swagger;
     public SourceLocationConfiguration sourceLocationConfiguration;
     public List<String> requiredRepositories;
+    public List<String> excludeRepositories;
 }

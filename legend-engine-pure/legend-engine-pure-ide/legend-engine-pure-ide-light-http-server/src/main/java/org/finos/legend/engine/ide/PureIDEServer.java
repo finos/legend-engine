@@ -56,6 +56,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public abstract class PureIDEServer extends Application<ServerConfiguration>
 {
@@ -88,7 +89,7 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
                         (configuration.swagger.getContextRoot().endsWith("/") ? "" : "/") + "api")
         );
 
-        this.pureSession = new PureSession(configuration.sourceLocationConfiguration, this.getRepositories(configuration.sourceLocationConfiguration, configuration.requiredRepositories));
+        this.pureSession = new PureSession(configuration.sourceLocationConfiguration, this.getRepositories(configuration));
 
         environment.jersey().register(new Concept(pureSession));
         environment.jersey().register(new RenameConcept(pureSession));
@@ -133,17 +134,29 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
         corsFilter.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), false, "*");
     }
 
-    private MutableList<RepositoryCodeStorage> getRepositories(org.finos.legend.engine.ide.SourceLocationConfiguration sourceLocationConfiguration, List<String> requiredRepositories)
+    private MutableList<RepositoryCodeStorage> getRepositories(ServerConfiguration configuration)
     {
         Map<CodeRepository, RepositoryCodeStorage> repoToCodeStorageMap = Maps.mutable.empty();
         repoToCodeStorageMap.putAll(CodeRepositoryProviderHelper.findCodeRepositories().toMap(r -> r, ClassLoaderCodeStorage::new));
-        repoToCodeStorageMap.putAll(this.buildRepositories(sourceLocationConfiguration).toMap(cs -> cs.getAllRepositories().getOnly(), cs -> cs));
+        repoToCodeStorageMap.putAll(this.buildRepositories(configuration.sourceLocationConfiguration).toMap(cs -> cs.getAllRepositories().getOnly(), cs -> cs));
+
+        if (configuration.excludeRepositories != null && !configuration.excludeRepositories.isEmpty())
+        {
+            MutableList<Pattern> repositoryExclusionMatchers = configuration.excludeRepositories.stream().map(exclusion -> Pattern.compile(exclusion)).collect(Collectors2.toList());
+            repoToCodeStorageMap.forEach((k,v) ->
+            {
+                if (repositoryExclusionMatchers.anySatisfy(m -> m.matcher(k.getName()).matches()))
+                {
+                    repoToCodeStorageMap.remove(k);
+                }
+            });
+        }
 
         CodeRepositorySet codeRepositorySet = CodeRepositorySet.newBuilder().withCodeRepositories(repoToCodeStorageMap.keySet()).build();
 
-        if (requiredRepositories != null && !requiredRepositories.isEmpty())
+        if (configuration.requiredRepositories != null && !configuration.requiredRepositories.isEmpty())
         {
-            MutableSet<String> requiredSet = Sets.mutable.withAll(requiredRepositories);
+            MutableSet<String> requiredSet = Sets.mutable.withAll(configuration.requiredRepositories);
             if (codeRepositorySet.hasRepository("pure_ide"))
             {
                 requiredSet.add("pure_ide");
