@@ -22,15 +22,45 @@ public class TestJsonFunctionCompilation
     @Test
     public void testToJson()
     {
-        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(completeGrammar("data:String[1] | demo::Person->fromJson($data)"));
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(completeGrammar("data:String[1] | demo::Person->toJson($data)"));
 
-        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(completeGrammar("data:Byte[*] | demo::Person->fromJson($data)"));
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(completeGrammar("data:Byte[*] | demo::Person->toJson($data)"));
+    }
+
+    @Test
+    public void testToJsonWithConfig()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(completeGrammar("data:String[1] | let config = ^meta::external::format::json::metamodel::externalize::JsonSchemaExternalizeConfig(typeKeyName='_type', \n" +
+                "                                                                                                             includeType=true,\n" +
+                "                                                                                                             includeEnumType=false,\n" +
+                "                                                                                                             removePropertiesWithNullValues=false,\n" +
+                "                                                                                                             removePropertiesWithEmptySets=false,\n" +
+                "                                                                                                             fullyQualifiedTypePath=true\n" +
+                "                                                                                                             );\n" +
+                "                                                                                                             demo::Person->toJson($data, $config);"));
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(completeGrammar("data:Byte[*] | demo::Person->toJson($data, ^meta::external::format::json::metamodel::externalize::JsonSchemaExternalizeConfig(typeKeyName='_type', \n" +
+                "                                                                                                             includeType=true,\n" +
+                "                                                                                                             includeEnumType=false,\n" +
+                "                                                                                                             removePropertiesWithNullValues=false,\n" +
+                "                                                                                                             removePropertiesWithEmptySets=false,\n" +
+                "                                                                                                             fullyQualifiedTypePath=true\n" +
+                "                                                                                                             ))"));
     }
 
     @Test
     public void testFromJson()
     {
         TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(completeGrammar("data:String[1] | demo::Person->fromJson($data)->toJson(#{demo::Person{prop}}#)"));
+    }
+
+    @Test
+    public void testFromJsonWithConfig()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(completeGrammar("data:String[1] | let config = ^meta::external::format::json::metamodel::internalize::JsonSchemaInternalizeConfig(typeKeyName='_type'); \n" +
+                                                                                            "demo::Person->fromJson($data, $config)->toJson(#{demo::Person{prop}}#);"));
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(completeGrammar("data:String[1] | demo::Person->fromJson($data, ^meta::external::format::json::metamodel::internalize::JsonSchemaInternalizeConfig(typeKeyName='_type'))->toJson(#{demo::Person{prop}}#)"));
     }
 
     private String completeGrammar(String funcExp)
