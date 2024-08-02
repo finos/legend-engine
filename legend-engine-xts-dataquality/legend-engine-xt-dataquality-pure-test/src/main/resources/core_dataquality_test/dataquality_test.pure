@@ -48,21 +48,6 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
   assert($dqLambda->isNotEmpty());
 }
 
-function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_EmptyTree():Boolean[1]
-{ let dqRootConstraints = meta::external::dataquality::tests::Person->getAllTypeGeneralisations()->filter(x| $x->instanceOf(ElementWithConstraints))->cast(@ElementWithConstraints).constraints->filter(x| $x.name == 'addressIDGreaterThan2');
-
-  let validationTree = ^DataQualityRootGraphFetchTree<Person>(
-    class=meta::external::dataquality::tests::Person,
-    constraints=[],
-    subTrees=[]
-  );
-
-  let dataquality = ^DataQuality<Person>(validationTree=$validationTree,
-                                         context=^meta::external::dataquality::MappingAndRuntimeDataQualityExecutionContext(runtime=^meta::core::runtime::EngineRuntime(connectionStores = testDatabaseConnection(meta::relational::tests::db, [])), mapping=meta::external::dataquality::tests::dqValidationPersonMapping));
-  
-  let dqLambda = meta::external::dataquality::executeDataQualityValidation($dataquality, []);
-  assert($dqLambda->isNotEmpty());
-}
 
 
 

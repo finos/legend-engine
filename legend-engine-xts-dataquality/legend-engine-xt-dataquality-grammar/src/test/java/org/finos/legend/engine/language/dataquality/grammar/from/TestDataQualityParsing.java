@@ -185,6 +185,7 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
                 "    ]$;\n" +
                 "}");
         // both model and structural constraints are absent
+        // note: parser is lenient to allow empty trees but fails in compilation as constraints are added in tree pure model
         test("###DataQualityValidation\n" +
                 "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +

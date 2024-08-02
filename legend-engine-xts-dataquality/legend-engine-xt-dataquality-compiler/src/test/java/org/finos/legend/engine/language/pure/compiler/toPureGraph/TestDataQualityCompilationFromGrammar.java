@@ -105,7 +105,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "      meta::dataquality::Person{\n" +
                 "      }\n" +
                 "    ]$;\n" +
-                "}");
+                "}", " at [92:1-100:1]: Error in 'meta::dataquality::PersonDataQualityValidation': Execution error at (resource: lines:92c1-100c1), \"Constraint :[mustHaveAtLeastOnePropertyOrConstraint] violated in the Class DataQualityRootGraphFetchTree\"");
     }
 
 
