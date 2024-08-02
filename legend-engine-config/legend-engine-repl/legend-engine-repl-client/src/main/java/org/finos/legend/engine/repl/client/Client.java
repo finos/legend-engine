@@ -30,6 +30,7 @@ import org.finos.legend.engine.repl.core.commands.*;
 import org.finos.legend.engine.repl.core.legend.LegendInterface;
 import org.finos.legend.engine.repl.core.legend.LocalLegendInterface;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
@@ -76,7 +77,8 @@ public class Client
         this.initialize();
         replExtensions.forEach(e -> e.initialize(this));
 
-        this.printDebug("Welcome to the Legend REPL! Press 'Enter' or type 'help' to see the list of available commands.");
+        this.printDebug("Legend REPL v" + DeploymentStateAndVersions.sdlc.buildVersion + " (" + DeploymentStateAndVersions.sdlc.commitIdAbbreviated + ")");
+        this.printDebug("Press 'Enter' or type 'help' to see the list of available commands.");
         this.printInfo("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
 
         // NOTE: the order here matters, the default command 'help' should always go first
