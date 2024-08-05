@@ -13,7 +13,7 @@ import meta::pure::profiles::*;
 import meta::pure::metamodel::serialization::grammar::*;
 
 
-function <<test.Test>> meta::external::dataquality::tests::testPlanGeneration():Boolean[1]
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration():Boolean[1]
 { let dqRootConstraints = meta::external::dataquality::tests::Person->getAllTypeGeneralisations()->filter(x| $x->instanceOf(ElementWithConstraints))->cast(@ElementWithConstraints).constraints->filter(x| $x.name == 'addressIDGreaterThan2');
 
   let validationTree = ^DataQualityRootGraphFetchTree<Person>(
@@ -30,6 +30,25 @@ function <<test.Test>> meta::external::dataquality::tests::testPlanGeneration():
   let dqLambda = meta::external::dataquality::executeDataQualityValidation($dataquality, []);
   assert($dqLambda->isNotEmpty());
 }
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_OnlyStructuralConstraints():Boolean[1]
+{ let dqRootConstraints = meta::external::dataquality::tests::Person->getAllTypeGeneralisations()->filter(x| $x->instanceOf(ElementWithConstraints))->cast(@ElementWithConstraints).constraints->filter(x| $x.name == 'addressIDGreaterThan2');
+
+  let validationTree = ^DataQualityRootGraphFetchTree<Person>(
+    class=meta::external::dataquality::tests::Person,
+    constraints=[],
+    subTrees=meta::external::dataquality::tests::Person->hierarchicalProperties()->filter(p | $p->isPrimitiveValueProperty())->filter(p| $p.name=='age')->map(p | ^DataQualityPropertyGraphFetchTree(property=$p))
+  );
+  let filter = p:Person[1]| $p.name=='John';
+  let dataquality = ^DataQuality<Person>(validationTree=$validationTree,
+                                         context=^meta::external::dataquality::MappingAndRuntimeDataQualityExecutionContext(runtime=^meta::core::runtime::EngineRuntime(connectionStores = testDatabaseConnection(meta::relational::tests::db, [])), mapping=meta::external::dataquality::tests::dqValidationPersonMapping),
+                                         filter=$filter);
+  
+  let dqLambda = meta::external::dataquality::executeDataQualityValidation($dataquality, []);
+  assert($dqLambda->isNotEmpty());
+}
+
+
 
 
 // -------------------------------------- Test Setup -------------------------------------------------------------------------//

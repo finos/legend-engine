@@ -59,7 +59,7 @@ filter:                               FILTER COLON combinedExpression SEMI_COLON
 dqGraphDefinition:                  GRAPH_START qualifiedName(constraintList)? graphDefinition GRAPH_END
 ;
 graphDefinition:                    BRACE_OPEN
-                                        graphPaths
+                                        (graphPaths)?
                                     BRACE_CLOSE
 ;
 graphPaths:                         (graphPath | subTypeGraphPath) (COMMA (graphPath | subTypeGraphPath))*

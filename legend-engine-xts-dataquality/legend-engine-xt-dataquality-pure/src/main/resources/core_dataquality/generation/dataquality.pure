@@ -267,10 +267,13 @@ function meta::external::dataquality::generateFilterQuery<T>(c:Class<T>[1], f: F
 
 
 function meta::external::dataquality::generateConstraintsNegatedORQuery<T>(c:Class<T>[1], f: FunctionExpression[1], constraints: List<Constraint>[1]):FunctionExpression[1] {
-   if ($constraints.values->size() == 1,
-    | $c->generateConstraintNegatedQuery($f, $constraints.values->at(0)) ,
-    | $c->generateORNegatedQuery($f, $constraints)
-   );
+  if ($constraints.values->isEmpty(),
+       | $f ,
+       | if ($constraints.values->size() == 1,
+             | $c->generateConstraintNegatedQuery($f, $constraints.values->at(0)) ,
+             | $c->generateORNegatedQuery($f, $constraints)
+            );
+     );
 }
 
 
