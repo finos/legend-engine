@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -457,6 +457,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::applyJavaEngine
       ->addMethod(javaMethod('public', javaBoolean(), 'attemptAddingChildToParent', [javaParam(javaObject(), 'p0'), javaParam(javaObject(), 'p1')]))
       ->addMethod(javaMethod('public', javaParameterizedType(javaClass('java.util.Map'), [javaString(), javaObject()]), 'getCrossStoreKeysValueForChildren', [javaParam(javaObject(), 'p0')]))
       ->addMethod(javaMethod('public', javaParameterizedType(javaClass('java.util.Map'), [javaString(), javaObject()]), 'getCrossStoreKeysValueFromChild', [javaParam(javaObject(), 'p0')]))
+      ->addMethod(javaMethod('public', javaList(javaReflectMethod()), 'parentCrossKeyGettersOrderedByTargetProperties', []))
       ->addMethod(javaMethod('public', javaParameterizedType($jIGraphInstance, [javaWildcard()]), 'wrapChildInGraphInstance', [javaParam(javaObject(), 'p0')]));
 
    let jIRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics')

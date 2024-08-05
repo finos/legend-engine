@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -528,14 +528,14 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
                                     ->concatenate(j_if($javaExpression,
                                                        j_block([
                                                           $parentVar->j_invoke('add' + $property.name->toUpperFirstCharacter()->toOne(), $childVar, javaVoid()),
-                                                          $childVar->j_invoke('add' + $otherProperty.name->toUpperFirstCharacter()->toOne(), $parentVar, javaVoid()),
                                                           j_boolean('true')->j_return()
                                                        ]),
                                                        j_boolean('false')->j_return()));
    let addChildToParentMethod  = javaMethod(['public'], javaBoolean(), 'attemptAddingChildToParent', [$parentObjectParam, $childObjectParam], $childToParentMethodBody);
 
    let executeClassWithCrossStoreMethods = $executeClassWithImports->addMethods([$fetchKeyValueMethod, $childFetchKeyValueMethod, $wrapChildMethod, $addChildToParentMethod]);
-   $baseProject->replaceClass($executeClassWithCrossStoreMethods);
+   let executeClassWithCachingMethods = $executeClassWithCrossStoreMethods->addExecuteCachingMethods($node, $path, $context, $debug);
+   $baseProject->replaceClass($executeClassWithCachingMethods);
 }
 
 /* Helper functions */
@@ -859,4 +859,41 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
   let updatedLibrary = ^$libToBeReplaced(functionCoders = $libToBeReplaced.functionCoders->putAll($funcCodersToBeAdded->map(fc| pair($fc.pureFunction, $fc.coder))));
 
   ^$conventions(libraries = $conventions.libraries->filter(c | $c != $libToBeReplaced)->concatenate($updatedLibrary));
+}
+
+/* Cache related functions */
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::addExecuteCachingMethods(executeClass: meta::external::language::java::metamodel::Class[1], node: InMemoryGraphFetchExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]):meta::external::language::java::metamodel::Class[1]
+{
+   // currently, cache support is only available as part of CrossStore
+   let isCrossRoot    = $node->instanceOf(InMemoryCrossStoreGraphFetchExecutionNode);
+
+   $executeClass->map({exe |
+      if ($isCrossRoot,
+         {|
+            let conventions   = $context.conventions;
+            let tree          = $node.graphFetchTree;
+            let xStoreMapping = $tree->cast(@RoutedPropertyGraphFetchTree).propertyMapping->toOne()->cast(@XStorePropertyMapping);
+            let isMultiEqual  = $xStoreMapping.crossExpression.expressionSequence->evaluateAndDeactivate()->toOne()->isExpressionMultiEqual();
+            let propertyPairs = if ($isMultiEqual, | $xStoreMapping.crossExpression.expressionSequence->evaluateAndDeactivate()->toOne()->propertyOrNoArgQualifierPairsInMultiEqual(), | []);
+            let javaException = j_parameter(javaException(), 'e');
+
+            $exe
+               ->addMethod(
+                  $exe->buildParentCrossKeyGettersOrderedByTargetPropertiesMethod(
+                     ['public'],
+                     if ($isMultiEqual,
+                         | j_try(
+                              [
+                                 javaArrays()->j_invoke('asList', $propertyPairs->sortBy(x | $x.second.name->toOne()).first->map({x | $conventions->className($x.owner->cast(@meta::pure::metamodel::type::Class<Any>))->j_classField()->j_invoke('getMethod', [j_string($conventions->getterName($x))], javaReflectMethod())}), javaList(javaReflectMethod()))->j_return()
+                              ],
+                              j_catch($javaException, j_throw(j_new(javaRuntimeException(), [$javaException])))
+                           ),
+                         | j_null()->j_return()
+                     )
+                  )
+               );
+         },
+         {| $exe }
+        )
+   });
 }

@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMe
 import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryRootGraphFetchMergeExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IStoreStreamReadingExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;
+import org.finos.legend.engine.plan.execution.cache.ExecutionCache;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKey;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.DefaultExecutionNodeContext;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
@@ -39,7 +41,6 @@ import org.finos.legend.engine.plan.execution.result.graphFetch.GraphFetchResult
 import org.finos.legend.engine.plan.execution.result.graphFetch.GraphObjectsBatch;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.stores.inMemory.result.graphFetch.StoreStreamReadingResult;
-import org.finos.legend.engine.plan.execution.stores.inMemory.utils.InMemoryGraphFetchUtils;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AggregationAwareExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AllocationExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ConstantExecutionNode;
@@ -64,9 +65,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.Class
 import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleStrategyHashMap;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -304,6 +307,7 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
     @Override
     public Result visit(InMemoryCrossStoreGraphFetchExecutionNode node)
     {
+        // childObjects are the child nodes that should be processed next as part of the graph traversal
         List<Object> childObjects = new ArrayList<>();
         Result childResult = null;
 
@@ -358,41 +362,80 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                 }
                 else
                 {
+                    // set up to enable caching
+                    boolean cachingEnabled = false;
+                    ExecutionCache<GraphFetchCacheKey, List<Object>> childCrossCache = graphObjectsBatch.getXStorePropertyCacheForNodeIndex(node.nodeIndex);
+                    List<Method> parentCrossKeyGettersOrderedPerTargetProperties = null;
+
+                    if (childCrossCache != null)
+                    {
+                        cachingEnabled = true;
+                        parentCrossKeyGettersOrderedPerTargetProperties = nodeSpecifics.parentCrossKeyGettersOrderedByTargetProperties();
+                    }
+
                     for (Map.Entry<Object, List<Object>> entry : parentMap.entrySet())
                     {
-                        Map<String, Object> keyValuePairs = nodeSpecifics.getCrossStoreKeysValueForChildren(entry.getKey());
-
-                        keyValuePairs.forEach((key, value) -> this.executionState.addResult(key, new ConstantResult(value)));
-                        childResult = this.visit((InMemoryRootGraphFetchExecutionNode) node);
-                        GraphFetchResult childGraphFetchResult = (GraphFetchResult) childResult;
-                        Stream<GraphObjectsBatch> graphObjectsBatchStream = childGraphFetchResult.getGraphObjectsBatchStream();
-
-                        graphObjectsBatchStream.forEach(batch ->
+                        // if source-level batched query, need to track the added children
+                        List<Object> entryChildren = new ArrayList<>();
+                        boolean cacheHit = false;
+                        Object parent = entry.getKey();
+                        List<Object> parentsInScope = entry.getValue();
+                        if (cachingEnabled)
                         {
-                            batch.getObjectsForNodeIndex(node.nodeIndex).forEach(child ->
+                            List<Object> cachedChildren = childCrossCache.getIfPresent(new InMemoryGraphFetchUtils.InMemoryCrossObjectGraphFetchCacheKey(parent, parentCrossKeyGettersOrderedPerTargetProperties));
+                            if (cachedChildren != null)
                             {
-                                IGraphInstance<?> childGraphInstance = nodeSpecifics.wrapChildInGraphInstance(child);
-                                Object childObject = childGraphInstance.getValue();
+                                cacheHit = true;
+                                parentsInScope.forEach(parentObject -> cachedChildren.forEach(cachedChild -> nodeSpecifics.attemptAddingChildToParent(parentObject, cachedChild)));
+                            }
+                        }
 
-                                List<Object> parentsInScope = entry.getValue();
-                                if (parentsInScope != null)
-                                {
-                                    for (Object parentObject : parentsInScope)
+                        // if there are any parents for which children were not found in the cache, need to visit
+                        if (!cacheHit)
+                        {
+                            // Retrieve all foreign keys that need to be matched in the cross-store
+                            Map<String, Object> keyValuePairs = nodeSpecifics.getCrossStoreKeysValueForChildren(parent);
+                            // executionState is the shared memory used to pass parameters and intermediate results
+                            keyValuePairs.forEach((key, value) -> this.executionState.addResult(key, new ConstantResult(value)));
+                            // visit results in the REST api call
+                            childResult = this.visit((InMemoryRootGraphFetchExecutionNode) node);
+                            GraphFetchResult childGraphFetchResult = (GraphFetchResult) childResult;
+                            Stream<GraphObjectsBatch> graphObjectsBatchStream = childGraphFetchResult.getGraphObjectsBatchStream();
+                            graphObjectsBatchStream.forEach(batch ->
+                                    batch.getObjectsForNodeIndex(node.nodeIndex).forEach(child ->
                                     {
-                                        boolean isChildAdded = nodeSpecifics.attemptAddingChildToParent(parentObject, childObject);
-
-                                        if (isChildAdded)
+                                        boolean childAdded = false;
+                                        for (Object parentObject : parentsInScope)
                                         {
-                                            graphObjectsBatch.addObjectMemoryUtilization(childGraphInstance.instanceSize());
-                                            childObjects.add(childObject);
+                                            if (nodeSpecifics.attemptAddingChildToParent(parentObject, child))
+                                            {
+                                                if (!childAdded)
+                                                {
+                                                    entryChildren.add(child);
+                                                    childAdded = true;
+                                                }
+                                            }
                                         }
-                                    }
-                                }
-                            });
-                        });
+                                    }));
+
+                            // update the cache with the results if cachingEnabled
+                            if (cachingEnabled)
+                            {
+                                childCrossCache.put(
+                                        new InMemoryGraphFetchUtils.InMemoryCrossObjectGraphFetchCacheKey(parent, parentCrossKeyGettersOrderedPerTargetProperties),
+                                        entryChildren
+                                );
+                            }
+
+                            for (Object entryChild : entryChildren)
+                            {
+                                IGraphInstance<?> crossChildGraphInstance = nodeSpecifics.wrapChildInGraphInstance(entryChild);
+                                graphObjectsBatch.addObjectMemoryUtilization(crossChildGraphInstance.instanceSize());
+                                childObjects.add(entryChild);
+                            }
+                        }
                     }
                 }
-
                 graphObjectsBatch.setObjectsForNodeIndex(node.nodeIndex, childObjects);
             }
 
