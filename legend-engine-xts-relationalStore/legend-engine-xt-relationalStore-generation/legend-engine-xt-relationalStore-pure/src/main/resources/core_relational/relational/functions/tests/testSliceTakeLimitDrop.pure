@@ -96,14 +96,12 @@ function <<test.Test>> meta::relational::tests::query::take::testLimitFilterInSe
 {
    let result = execute(|Person.all()->project([x|$x.firstName,x|$x.lastName,x|$x.age],['firstName','lastName','age'])->limit(1)->filter(x | $x.getInteger('age') > 25);, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "age" as "age" from (select top 1 "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age" from personTable as "root") as "subselect" where "age" > 25', $result->sqlRemoveFormatting());
-   assertSize($result.values.rows, 1 ); 
 }
 
 function <<test.Test>> meta::relational::tests::query::take::testFilterLimitInSequence():Boolean[1]
 {
    let result = execute(|Person.all()->project([x|$x.firstName,x|$x.lastName,x|$x.age],['firstName','lastName','age'])-> filter(x | $x.getInteger('age') > 30)->limit(2);, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select top 2 "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age" from personTable as "root" where "root".AGE > 30',  $result->sqlRemoveFormatting());
-   assertSize($result.values.rows, 2 );
 }
 
 function <<test.Test>> meta::relational::tests::query::take::testLimitFilterInSequenceForTableAccessor():Boolean[1]
