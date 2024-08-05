@@ -18,6 +18,7 @@
         <module>legend-engine-xt-dataquality-api</module>
         <module>legend-engine-xt-dataquality-compiler</module>
         <module>legend-engine-xt-dataquality-generation</module>
+        <module>legend-engine-xt-dataquality-pure-test</module>
     </modules>
 
     <properties>

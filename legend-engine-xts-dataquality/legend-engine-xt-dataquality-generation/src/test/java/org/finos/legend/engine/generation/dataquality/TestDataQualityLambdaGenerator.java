@@ -12,103 +12,46 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.pure.compiler.toPureGraph;
+package org.finos.legend.engine.generation.dataquality;
 
-import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
+import org.finos.legend.engine.language.pure.compiler.Compiler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.pure.m3.exception.PureAssertFailException;
 import org.junit.Test;
 
-public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+
+public class TestDataQualityLambdaGenerator
 {
-    @Override
-    public String getDuplicatedElementTestCode()
+    @Test
+    public void testAssertionForNestedConstraints()
     {
-        return COMPILATION_PREREQUISITE_CODE +
+        String validation = COMPILATION_PREREQUISITE_CODE +
                 "###DataQualityValidation\n" +
-                "DataQualityValidation meta::dataquality::Person\n" + // duplicated the validation name, same name as the class
+                "DataQualityValidation meta::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
                 "    context: fromMappingAndRuntime(meta::dataquality::dataqualitymappings, meta::dataquality::DataQualityRuntime);\n" +
                 "    filter: p:meta::dataquality::Person[1] | $p.name=='John';\n" +
                 "    validationTree: $[\n" +
                 "      meta::dataquality::Person<mustBeOfLegalAge>{\n" +
-                "        name\n" +
+                "        name,\n" +
+                "        addresses<validAddressId>{\n" +
+                "         addressId\n" +
+                "        }\n" +
                 "      }\n" +
                 "    ]$;\n" +
                 "}";
+        PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(validation);
+        PureModel model = Compiler.compile(modelData, DeploymentMode.TEST_IGNORE_FUNCTION_MATCH, Identity.getAnonymousIdentity().getName());
+        assertEquals("Nested constraints are not currently supported!",
+                assertThrows(PureAssertFailException.class, () -> DataQualityLambdaGenerator.generateLambda(model, "meta::dataquality::PersonDataQualityValidation")).getInfo());
+
     }
-
-    @Override
-    public String getDuplicatedElementTestExpectedErrorMessage()
-    {
-        return "COMPILATION error at [92:1-101:1]: Duplicated element 'meta::dataquality::Person'";
-    }
-
-    @Test
-    public void testHappyPath()
-    {
-        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
-                "###DataQualityValidation\n" +
-                "DataQualityValidation meta::dataquality::PersonDataQualityValidation\n" +
-                "{\n" +
-                "    context: fromMappingAndRuntime(meta::dataquality::dataqualitymappings, meta::dataquality::DataQualityRuntime);\n" +
-                "    filter: p:meta::dataquality::Person[1] | $p.name=='John';\n" +
-                "    validationTree: $[\n" +
-                "      meta::dataquality::Person<mustBeOfLegalAge>{\n" +
-                "        name\n" +
-                "      }\n" +
-                "    ]$;\n" +
-                "}");
-    }
-
-    @Test
-    public void testRootClassNoModelConstraints()
-    {
-        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
-                "###DataQualityValidation\n" +
-                "DataQualityValidation meta::dataquality::PersonDataQualityValidation\n" +
-                "{\n" +
-                "    context: fromMappingAndRuntime(meta::dataquality::dataqualitymappings, meta::dataquality::DataQualityRuntime);\n" +
-                "    filter: p:meta::dataquality::Person[1] | $p.name=='John';\n" +
-                "    validationTree: $[\n" +
-                "      meta::dataquality::Person{\n" +
-                "        name\n" +
-                "      }\n" +
-                "    ]$;\n" +
-                "}");
-    }
-
-    @Test
-    public void testRootClassNoStructuralConstraints()
-    {
-        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
-                "###DataQualityValidation\n" +
-                "DataQualityValidation meta::dataquality::PersonDataQualityValidation\n" +
-                "{\n" +
-                "    context: fromMappingAndRuntime(meta::dataquality::dataqualitymappings, meta::dataquality::DataQualityRuntime);\n" +
-                "    filter: p:meta::dataquality::Person[1] | $p.name=='John';\n" +
-                "    validationTree: $[\n" +
-                "      meta::dataquality::Person<mustBeOfLegalAge>{\n" +
-                "      }\n" +
-                "    ]$;\n" +
-                "}");
-    }
-
-    @Test
-    public void testRootClassEmptyTree()
-    {
-        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
-                "###DataQualityValidation\n" +
-                "DataQualityValidation meta::dataquality::PersonDataQualityValidation\n" +
-                "{\n" +
-                "    context: fromMappingAndRuntime(meta::dataquality::dataqualitymappings, meta::dataquality::DataQualityRuntime);\n" +
-                "    filter: p:meta::dataquality::Person[1] | $p.name=='John';\n" +
-                "    validationTree: $[\n" +
-                "      meta::dataquality::Person{\n" +
-                "      }\n" +
-                "    ]$;\n" +
-                "}", " at [92:1-100:1]: Error in 'meta::dataquality::PersonDataQualityValidation': Execution error at (resource: lines:92c1-100c1), \"Constraint :[mustHaveAtLeastOnePropertyOrConstraint] violated in the Class DataQualityRootGraphFetchTree\"");
-    }
-
-
 
 
     private static final String COMPILATION_PREREQUISITE_CODE = "###Connection\n" +
@@ -189,6 +132,9 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
             "}\n" +
             "\n" +
             "Class meta::dataquality::Address\n" +
+            "[\n" +
+            "  validAddressId: $this.addressId->isNotEmpty()\n" +
+            "]\n" +
             "{\n" +
             "   location: meta::dataquality::Location[1];\n" +
             "   locationStreet: String[1];\n" +
@@ -199,7 +145,6 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
             "{\n" +
             "   street: String[1];\n" +
             "   locality: String[1];\n" +
-            "}\n" +
-            "\n";
+            "}\n";
 
 }
