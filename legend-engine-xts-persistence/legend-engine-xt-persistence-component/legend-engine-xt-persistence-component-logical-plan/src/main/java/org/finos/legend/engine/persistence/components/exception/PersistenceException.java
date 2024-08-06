@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,19 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.schemaevolution;
+package org.finos.legend.engine.persistence.components.exception;
 
-import org.finos.legend.engine.persistence.components.exception.PersistenceException;
-
-public class IncompatibleSchemaChangeException extends PersistenceException
+public abstract class PersistenceException extends RuntimeException
 {
-    @Override
-    public boolean isRecoverable()
+
+    public abstract boolean isRecoverable();
+
+    public PersistenceException(String message, Throwable cause)
     {
-        return false;
+        super(message, cause);
     }
 
-    public IncompatibleSchemaChangeException(String message)
+    public PersistenceException(String message)
     {
         super(message);
     }

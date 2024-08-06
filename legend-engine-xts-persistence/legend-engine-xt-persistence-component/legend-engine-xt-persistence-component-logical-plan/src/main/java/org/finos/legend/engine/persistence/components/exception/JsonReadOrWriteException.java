@@ -12,26 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.relational.exception;
+package org.finos.legend.engine.persistence.components.exception;
 
-import org.finos.legend.engine.persistence.components.exception.PersistenceException;
-import org.finos.legend.engine.persistence.components.relational.api.DataError;
-
-import java.util.List;
-
-public class DataQualityException extends PersistenceException
+public class JsonReadOrWriteException extends PersistenceException
 {
-    private List<DataError> dataErrors;
-
-    public List<DataError> getDataErrors()
+    public JsonReadOrWriteException(String message, Throwable cause)
     {
-        return dataErrors;
-    }
-
-    public DataQualityException(String message, List<DataError> dataErrors)
-    {
-        super(message);
-        this.dataErrors = dataErrors;
+        super(message, cause);
     }
 
     @Override
