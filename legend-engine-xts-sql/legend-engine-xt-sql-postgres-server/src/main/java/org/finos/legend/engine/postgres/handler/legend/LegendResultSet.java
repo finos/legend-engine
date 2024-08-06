@@ -112,6 +112,12 @@ public class LegendResultSet implements PostgresResultSet
                         {
                             return (Boolean) value;
                         });
+            case STRING:
+                return extractValue(value, legendColumn, String.class, "STRING",
+                        f ->
+                        {
+                            return (String) value;
+                        });
             default:
                 return value;
         }

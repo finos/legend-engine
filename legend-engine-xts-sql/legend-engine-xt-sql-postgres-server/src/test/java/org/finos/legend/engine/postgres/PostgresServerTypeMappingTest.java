@@ -90,6 +90,15 @@ public class PostgresServerTypeMappingTest
         validate(STRING, "\"\"", "varchar", "");
     }
 
+    @Test()
+    public void testStringInvalidData() throws Exception
+    {
+        expectedException.expect(Exception.class);
+        expectedException.expectMessage("ERROR: Unexpected data type for value '1....' in column 'column1'. " +
+                "Expected data type 'java.lang.String', actual data type 'java.lang.Long'");
+        validate(STRING, "1", "varchar", null);
+    }
+
     @Test
     public void testEnum() throws Exception
     {
