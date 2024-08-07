@@ -18,13 +18,13 @@ DataSpace domain::COVIDDataspace
       id: 1;
       title: 'this is template';
       description: 'Some more exec description';
-      query: domain::COVIDData_QueryFunction():TabularDataSet[1];
+      executable: domain::COVIDData_QueryFunction():TabularDataSet[1];
       executionContextKey: 'dummyContext';
     },
     {
       id: 2;
       title: 'this is template2';
-      query: domain::COVIDData_QueryFunction():TabularDataSet[1];
+      executable: domain::COVIDData_QueryFunction():TabularDataSet[1];
       executionContextKey: 'dummyContext';
     }
   ];

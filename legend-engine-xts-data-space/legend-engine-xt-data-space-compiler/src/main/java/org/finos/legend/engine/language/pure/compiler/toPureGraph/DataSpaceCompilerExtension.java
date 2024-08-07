@@ -38,6 +38,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Funct
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerHelper;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -51,8 +52,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.MappingIncludeDataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpacePackageableElementExecutable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceTemplateExecutable;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceTemplateExecutablePointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceInlineTemplateExecutable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
@@ -194,48 +193,62 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                     HashSet<String> executableIds = new HashSet<>();
                     metamodel._executables(dataSpace.executables != null ? ListIterate.collect(dataSpace.executables, executable ->
                     {
+                        if (executable.executionContextKey != null && !dataSpace.executionContexts.stream().map(c -> c.name).collect(Collectors.toList()).contains(executable.executionContextKey))
+                        {
+                            throw new EngineException("Data space template executable's executionContextKey, " + executable.executionContextKey + ", is not valid. Please specify one from " + dataSpace.executionContexts.stream().map(c -> c.name).collect(Collectors.toList()).toString(), dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                        }
                         if (executable instanceof DataSpacePackageableElementExecutable)
                         {
-                            return new Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpacePackageableElementExecutable"))
-                                    ._title(executable.title)
-                                    ._description(executable.description)
-                                    ._executable(context.pureModel.getPackageableElement(((DataSpacePackageableElementExecutable) executable).executable.path, ((DataSpacePackageableElementExecutable) executable).executable.sourceInformation));
-                        }
-                        else if (executable instanceof DataSpaceTemplateExecutable)
-                        {
-                            if (executableIds.add(((DataSpaceTemplateExecutable) executable).id))
+                            PackageableElement element;
+                            String executablePath = ((DataSpacePackageableElementExecutable) executable).executable.path;
+                            SourceInformation sourceInformation = ((DataSpacePackageableElementExecutable) executable).executable.sourceInformation;
+                            String executableId;
+                            try
                             {
-                                if (((DataSpaceTemplateExecutable) executable).executionContextKey != null && !dataSpace.executionContexts.stream().map(c -> c.name).collect(Collectors.toList()).contains(((DataSpaceTemplateExecutable) executable).executionContextKey))
+                                element = context.pureModel.getPackageableElement(executablePath, sourceInformation);
+                                executableId = executable.id == null ? ((DataSpacePackageableElementExecutable) executable).executable.path : executable.id;
+                            }
+                            catch (Exception exception)
+                            {
+                                try
                                 {
-                                    throw new EngineException("Data space template executable's executionContextKey, " + ((DataSpaceTemplateExecutable) executable).executionContextKey + ", is not valid. Please specify one from " + dataSpace.executionContexts.stream().map(c -> c.name).collect(Collectors.toList()).toString(), dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                                    element = context.pureModel.getPackageableElement(FunctionDescriptor.functionDescriptorToId(executablePath), sourceInformation);
+                                    executableId = executable.id;
                                 }
-
-                                FunctionDefinition<?> templateExecutableQuery = null;
-                                if (executable instanceof DataSpaceInlineTemplateExecutable)
+                                catch (InvalidFunctionDescriptorException e)
                                 {
-                                    templateExecutableQuery = HelperValueSpecificationBuilder.buildLambda(((DataSpaceInlineTemplateExecutable) executable).query, context);
+                                    throw new EngineException(exception.getMessage(), EngineErrorType.COMPILATION);
                                 }
-                                else if (executable instanceof DataSpaceTemplateExecutablePointer)
-                                {
-                                    try
-                                    {
-                                        templateExecutableQuery = (FunctionDefinition<?>) context.resolvePackageableElement(FunctionDescriptor.functionDescriptorToId((((DataSpaceTemplateExecutablePointer) executable).query).path), (((DataSpaceTemplateExecutablePointer) executable).query).sourceInformation);
-                                    }
-                                    catch (InvalidFunctionDescriptorException e)
-                                    {
-                                        throw new RuntimeException(e);
-                                    }
-                                }
-                                return new Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceTemplateExecutable"))
-                                        ._id(((DataSpaceTemplateExecutable) executable).id)
+                            }
+                            if (executableIds.add(executableId))
+                            {
+                                return new Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpacePackageableElementExecutable"))
+                                        ._id(executable.id)
                                         ._title(executable.title)
                                         ._description(executable.description)
-                                        ._query(templateExecutableQuery)
-                                        ._executionContextKey(((DataSpaceTemplateExecutable) executable).executionContextKey);
+                                        ._executionContextKey(executable.executionContextKey)
+                                        ._executable(element);
                             }
                             else
                             {
-                                throw new EngineException("Data space executable id, " + ((DataSpaceTemplateExecutable) executable).id + ", is not unique", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                                throw new EngineException("Data space executable id, " + executableId + ", is not unique", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                            }
+                        }
+                        else if (executable instanceof DataSpaceTemplateExecutable)
+                        {
+                            if (executableIds.add(executable.id))
+                            {
+                                FunctionDefinition<?> templateExecutableQuery = HelperValueSpecificationBuilder.buildLambda(((DataSpaceTemplateExecutable) executable).query, context);
+                                return new Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceTemplateExecutable"))
+                                        ._id(executable.id)
+                                        ._title(executable.title)
+                                        ._description(executable.description)
+                                        ._query(templateExecutableQuery)
+                                        ._executionContextKey(executable.executionContextKey);
+                            }
+                            else
+                            {
+                                throw new EngineException("Data space executable id, " + executable.id + ", is not unique", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                             }
                         }
                         else
@@ -301,14 +314,23 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                     {
                         dataSpace.executables.forEach(executable ->
                         {
-                            if (executable instanceof DataSpaceTemplateExecutablePointer)
+                            if (executable instanceof DataSpacePackageableElementExecutable)
                             {
+                                FunctionDefinition<?> executableFunction = null;
                                 try
                                 {
-                                    FunctionDefinition<?> templateExecutableQuery = (FunctionDefinition<?>) context.resolvePackageableElement(FunctionDescriptor.functionDescriptorToId((((DataSpaceTemplateExecutablePointer) executable).query).path), (((DataSpaceTemplateExecutablePointer) executable).query).sourceInformation);
-                                    if (templateExecutableQuery instanceof Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl)
+                                    // function
+                                    executableFunction = (FunctionDefinition<?>) context.resolvePackageableElement(FunctionDescriptor.functionDescriptorToId((((DataSpacePackageableElementExecutable) executable).executable).path), ((DataSpacePackageableElementExecutable) executable).executable.sourceInformation);
+                                }
+                                catch (Exception e)
+                                {
+                                    // service
+                                }
+                                if (executableFunction != null)
+                                {
+                                    if (executableFunction instanceof Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl)
                                     {
-                                        Optional<? extends ValueSpecification> fromFunc = templateExecutableQuery._expressionSequence().toList().stream()
+                                        Optional<? extends ValueSpecification> fromFunc = executableFunction._expressionSequence().toList().stream()
                                                 .filter(func -> func instanceof Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl && ((Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) func)._functionName.equals("from")).findAny();
                                         if (fromFunc.isPresent())
                                         {
@@ -318,7 +340,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                                             ValueSpecification mappingInstance = fromFuncExpression._parametersValues().toList().get(1);
                                             if (mappingInstance instanceof Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl)
                                             {
-                                                String executionContextKey = ((DataSpaceTemplateExecutable) executable).executionContextKey != null ? ((DataSpaceTemplateExecutable) executable).executionContextKey : dataSpace.defaultExecutionContext;
+                                                String executionContextKey = executable.executionContextKey != null ? executable.executionContextKey : dataSpace.defaultExecutionContext;
                                                 DataSpaceExecutionContext executionContext = dataSpace.executionContexts.stream().filter(ec -> ec.name.equals(executionContextKey)).collect(Collectors.toList()).get(0);
                                                 // check if mapping matches to what is used in execution key
                                                 Object mappingImpl = ((Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl) mappingInstance)._values().toList().get(0);
@@ -331,7 +353,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                                                     }
                                                 }
                                                 // check if runtime matches to what is used in execution key
-                                                RichIterable<? extends org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime> runtimes = org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_extractRuntimesFromFunctionDefinition_FunctionDefinition_1__Runtime_MANY_(templateExecutableQuery, context.pureModel.getExecutionSupport());
+                                                RichIterable<? extends Root_meta_core_runtime_Runtime> runtimes = core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_extractRuntimesFromFunctionDefinition_FunctionDefinition_1__Runtime_MANY_(executableFunction, context.pureModel.getExecutionSupport());
                                                 Root_meta_core_runtime_Runtime runtimeImpl;
                                                 if (runtimes.isEmpty())
                                                 {
@@ -356,10 +378,6 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                                             }
                                         }
                                     }
-                                }
-                                catch (InvalidFunctionDescriptorException e)
-                                {
-                                    throw new RuntimeException(e);
                                 }
                             }
                         });

@@ -15,7 +15,7 @@ DATA_SPACE__NAME:                           'name';
 DATA_SPACE__TITLE:                          'title';
 DATA_SPACE__DESCRIPTION:                    'description';
 DATA_SPACE__TEMPLATE_QUERY:                 'query';
-DATA_SPACE__TEMPLATE_QUERY__ID:             'id';
+DATA_SPACE__EXECUTABLE__ID:                 'id';
 DATA_SPACE__EXECUTION_CONTEXT_KEY:          'executionContextKey';
 
 DATA_SPACE_EXECUTION_CONTEXTS:              'executionContexts';

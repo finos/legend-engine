@@ -38,8 +38,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceTemplateExecutable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpacePackageableElementExecutable;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceTemplateExecutablePointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceInlineTemplateExecutable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
@@ -225,7 +223,14 @@ public class DataSpaceParseTreeWalker
         DataSpacePackageableElementExecutable executable = new DataSpacePackageableElementExecutable();
         executable.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
 
-        // Name
+        // ID
+        DataSpaceParserGrammar.ExecutableIdContext executableIdContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.executableId(), "id", executable.sourceInformation);
+        if (executableIdContext != null)
+        {
+            executable.id = executableIdContext.VALID_STRING() != null ? executableIdContext.VALID_STRING().getText() : executableIdContext.DECIMAL() != null ? executableIdContext.DECIMAL().getText() : executableIdContext.INTEGER().getText();
+        }
+
+        // title
         DataSpaceParserGrammar.ExecutableTitleContext executableTitleContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executableTitle(), "title", executable.sourceInformation);
         executable.title = PureGrammarParserUtility.fromGrammarString(executableTitleContext.STRING().getText(), true);
 
@@ -233,23 +238,41 @@ public class DataSpaceParseTreeWalker
         DataSpaceParserGrammar.ExecutableDescriptionContext descriptionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.executableDescription(), "description", executable.sourceInformation);
         executable.description = descriptionContext != null ? PureGrammarParserUtility.fromGrammarString(descriptionContext.STRING().getText(), true) : null;
 
-        // Path
-        DataSpaceParserGrammar.ExecutablePathContext pathContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executablePath(), "executable", executable.sourceInformation);
-        executable.executable = new PackageableElementPointer(
-                PureGrammarParserUtility.fromQualifiedName(pathContext.qualifiedName().packagePath() == null ? Collections.emptyList() : pathContext.qualifiedName().packagePath().identifier(), pathContext.qualifiedName().identifier())
-        );
-        executable.executable.sourceInformation = walkerSourceInformation.getSourceInformation(pathContext);
+        // executionContextKey
+        DataSpaceParserGrammar.ExecutableExecutionContextKeyContext executionContextKeyContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.executableExecutionContextKey(), "executionContextKey", executable.sourceInformation);
+        if (executionContextKeyContext != null)
+        {
+            executable.executionContextKey = PureGrammarParserUtility.fromGrammarString(executionContextKeyContext.STRING().getText(), true);
+        }
+
+        // executable
+        DataSpaceParserGrammar.ExecutablePathContext executableContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executablePath(), "executable", executable.sourceInformation);
+        if (executableContext.functionIdentifier() != null)
+        {
+            executable.executable = new PackageableElementPointer(PackageableElementType.FUNCTION, executableContext.functionIdentifier().getText(), walkerSourceInformation.getSourceInformation(executableContext.functionIdentifier()));
+        }
+        else if (executableContext.qualifiedName() != null)
+        {
+            executable.executable = new PackageableElementPointer(
+                    PureGrammarParserUtility.fromQualifiedName(executableContext.qualifiedName().packagePath() == null ? Collections.emptyList() : executableContext.qualifiedName().packagePath().identifier(), executableContext.qualifiedName().identifier())
+            );
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Can't parse unsupported executable in dataspace packageablement executable");
+        }
+        executable.executable.sourceInformation = walkerSourceInformation.getSourceInformation(executableContext);
 
         return executable;
     }
 
     private DataSpaceExecutable visitDataSpaceTemplateExecutable(DataSpaceParserGrammar.ExecutableContext ctx)
     {
-        DataSpaceTemplateExecutable executable;
+        DataSpaceTemplateExecutable executable = new DataSpaceTemplateExecutable();
         SourceInformation sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
 
         // ID
-        DataSpaceParserGrammar.ExecutableTemplateQueryIdContext executableTemplateQueryIdContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executableTemplateQueryId(), "id", sourceInformation);
+        DataSpaceParserGrammar.ExecutableIdContext executableTemplateQueryIdContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executableId(), "id", sourceInformation);
         String id = executableTemplateQueryIdContext.VALID_STRING() != null ? executableTemplateQueryIdContext.VALID_STRING().getText() : executableTemplateQueryIdContext.DECIMAL() != null ? executableTemplateQueryIdContext.DECIMAL().getText() : executableTemplateQueryIdContext.INTEGER().getText();
 
         // Title
@@ -264,31 +287,14 @@ public class DataSpaceParseTreeWalker
         DataSpaceParserGrammar.ExecutableExecutionContextKeyContext executionContextKeyContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.executableExecutionContextKey(), "executionContextKey", sourceInformation);
         String executionContextKey = executionContextKeyContext != null ? PureGrammarParserUtility.fromGrammarString(executionContextKeyContext.STRING().getText(), true) : null;
 
-        // query could either be type of PackageableElementPointer or Lambda
+        // query
         DataSpaceParserGrammar.ExecutableTemplateQueryContext queryContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executableTemplateQuery(), "query", sourceInformation);
-        if (queryContext.functionIdentifier() != null)
-        {
-            DataSpaceParserGrammar.ExecutableTemplateQueryContext functionContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executableTemplateQuery(), "query", sourceInformation);
-            executable = new DataSpaceTemplateExecutablePointer(id, executionContextKey, new PackageableElementPointer(
-                    PackageableElementType.FUNCTION,
-                    functionContext.functionIdentifier().getText(),
-                    walkerSourceInformation.getSourceInformation(functionContext.functionIdentifier())
-            ));
-            executable.description = description;
-            executable.title = title;
-            executable.sourceInformation = sourceInformation;
-        }
-        else if (queryContext.combinedExpression() != null)
-        {
-           executable = new DataSpaceInlineTemplateExecutable(id, executionContextKey, visitLambda(queryContext.combinedExpression()));
-           executable.description = description;
-           executable.title = title;
-           executable.sourceInformation = sourceInformation;
-        }
-        else
-        {
-            throw new UnsupportedOperationException("Can't parse unsupported query in curated dataspace template query");
-        }
+        executable.query = visitLambda(queryContext.combinedExpression());
+        executable.id = id;
+        executable.description = description;
+        executable.title = title;
+        executable.executionContextKey = executionContextKey;
+        executable.sourceInformation = sourceInformation;
         return executable;
     }
 

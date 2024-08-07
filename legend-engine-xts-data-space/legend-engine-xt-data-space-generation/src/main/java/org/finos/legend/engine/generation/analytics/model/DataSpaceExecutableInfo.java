@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = DataSpaceServiceExecutableInfo.class, name = "service"),
         @JsonSubTypes.Type(value = DataSpaceMultiExecutionServiceExecutableInfo.class, name = "multiExecutionService"),
+        @JsonSubTypes.Type(value = DataSpaceFunctionPointerExecutableInfo.class, name = "functionPointerExecutableInfo"),
         @JsonSubTypes.Type(value = DataSpaceTemplateExecutableInfo.class, name = "templateExecutableInfo"),
 })
 public abstract class DataSpaceExecutableInfo
