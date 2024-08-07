@@ -22,17 +22,17 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives
 
 import static org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.ExtendWindowFunc.buildFrame;
 
-public class First extends AbstractNative implements Native
+public class Last extends AbstractNative implements Native
 {
-    public First()
+    public Last()
     {
-        super("first_Relation_1__Frame_1__T_1__T_1_");
+        super("last_Relation_1__Frame_1__T_1__T_1_");
     }
 
     @Override
     public String build(CoreInstance topLevelElement, CoreInstance functionExpression, ListIterable<String> transformedParams, ProcessorContext processorContext)
     {
-        StringBuilder result = new StringBuilder("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.first(");
+        StringBuilder result = new StringBuilder("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.last(");
         result.append(transformedParams.get(0));
         result.append(", ");
         buildFrame(result, transformedParams.get(1));

@@ -15,7 +15,7 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
-function meta::pure::functions::relation::toString<T>(rel:Relation<T>[1]):String[1]
+function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::toString<T>(rel:Relation<T>[1]):String[1]
 {
     let cols = $rel->columns();
     '#TDS\n'+

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
-native function meta::pure::functions::relation::first<T>(w:Relation<T>[1]):T[1];
+native function <<PCT.function>> meta::pure::functions::relation::nth<T>(w:Relation<T>[1], offset:Integer[1]):T[1];

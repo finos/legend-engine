@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-Class meta::pure::functions::relation::Frame
-{
-  offsetFrom : Integer[1];
-  offsetTo : Integer[1];
-}
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+
+native function <<PCT.function>> meta::pure::functions::relation::denseRank<T>(w:Relation<T>[1], r:T[1]):Integer[1];

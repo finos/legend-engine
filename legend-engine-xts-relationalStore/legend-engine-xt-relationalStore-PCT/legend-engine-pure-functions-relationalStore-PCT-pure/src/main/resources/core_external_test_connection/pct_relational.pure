@@ -309,9 +309,13 @@ function meta::relational::tests::pct::process::reprocess(a:Any[1], state:Proces
                                 | if (!$z.func->in(
                                               [
                                                   meta::pure::functions::relation::funcColSpecArray_FuncColSpec_MANY__P_1__FuncColSpecArray_1_,
+                                                  meta::pure::functions::relation::funcColSpecArray2_FuncColSpec_MANY__P_1__FuncColSpecArray_1_,
                                                   meta::pure::functions::relation::funcColSpec_Function_1__String_1__T_1__FuncColSpec_1_,
+                                                  meta::pure::functions::relation::funcColSpec2_Function_1__String_1__T_1__FuncColSpec_1_,
                                                   meta::pure::functions::relation::aggColSpecArray_AggColSpec_MANY__P_1__AggColSpecArray_1_,
-                                                  meta::pure::functions::relation::aggColSpec_Function_1__Function_1__String_1__T_1__AggColSpec_1_
+                                                  meta::pure::functions::relation::aggColSpecArray2_AggColSpec_MANY__P_1__AggColSpecArray_1_,
+                                                  meta::pure::functions::relation::aggColSpec_Function_1__Function_1__String_1__T_1__AggColSpec_1_,
+                                                  meta::pure::functions::relation::aggColSpec2_Function_1__Function_1__String_1__T_1__AggColSpec_1_
                                               ]),
                                     | let repro = $z.parametersValues->evaluateAndDeactivate()->map(x|$x->reprocess($state));
                                       ^$state

@@ -12,6 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
+import meta::pure::functions::relation::*;
 
-native function meta::pure::functions::relation::rank<T>(w:Relation<T>[1],r:T[1]):Integer[1];
+function <<PCT.function>> meta::pure::functions::relation::lead<T>(w:Relation<T>[1],r:T[1]):T[1]
+{
+  lead($w, $r, 1)
+}
+
+function <<PCT.function>> meta::pure::functions::relation::lead<T>(w:Relation<T>[1],r:T[1], offset:Integer[1]):T[1]
+{
+  offset($w, $r, $offset);
+}

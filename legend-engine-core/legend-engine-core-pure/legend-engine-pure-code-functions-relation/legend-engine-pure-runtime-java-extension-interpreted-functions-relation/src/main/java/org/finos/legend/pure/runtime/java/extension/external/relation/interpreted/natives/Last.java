@@ -47,6 +47,8 @@ public class Last extends Shared
     {
         TestTDS tds = getTDS(params, 0, processorSupport);
         RelationType<?> relationType = getRelationType(params, 0);
-        return ValueSpecificationBootstrap.wrapValueSpecification(new TDSWithCursorCoreInstance(tds, (int)tds.getRowCount() - 1, "", null, relationType, -1, repository, false), true, processorSupport);
+        Extend.Frame frame = Extend.Frame.build(params.get(1).getValueForMetaPropertyToOne("values"), processorSupport);
+        TDSWithCursorCoreInstance rc = (TDSWithCursorCoreInstance) params.get(2).getValueForMetaPropertyToOne("values");
+        return ValueSpecificationBootstrap.wrapValueSpecification(new TDSWithCursorCoreInstance(tds, frame.getHigh(rc.getCurrentRow(), (int)tds.getRowCount()), "", null, relationType, -1, repository, false), true, processorSupport);
     }
 }

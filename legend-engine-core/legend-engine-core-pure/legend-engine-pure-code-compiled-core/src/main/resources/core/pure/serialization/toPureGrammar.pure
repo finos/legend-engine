@@ -130,7 +130,7 @@ function meta::pure::metamodel::serialization::grammar::printFunctionExpression(
     if($functionExpression.parametersValues->isEmpty(),
         |$name->toOne()+'()',
         |if ($name == 'getAll',
-           |$functionExpression.parametersValues->at(0)->cast(@InstanceValue).genericType.typeArguments->at(0).rawType->toOne()->cast(@Class<Any>)->elementToPath() + '.all()';,
+           |$functionExpression.parametersValues->at(0)->cast(@InstanceValue).genericType.rawType->toOne()->cast(@Class<Any>)->elementToPath() + '.all()';,
            |let m = special();
             if ($m->get($name)->isEmpty(),
                 | let firstParam = $functionExpression.parametersValues->head()->toOne(); 

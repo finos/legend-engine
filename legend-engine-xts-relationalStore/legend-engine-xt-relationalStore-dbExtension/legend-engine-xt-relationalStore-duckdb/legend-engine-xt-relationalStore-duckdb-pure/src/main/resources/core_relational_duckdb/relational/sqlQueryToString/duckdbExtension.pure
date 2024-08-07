@@ -25,6 +25,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
    ^DbExtension(
       isBooleanLiteralSupported = true,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords); },                                          // check case insensitive
+      windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
       literalProcessor = $literalProcessor,
       selectSQLQueryProcessor = processSelectSQLQueryForDuckDB_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
@@ -96,6 +97,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     // dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_decode(%s)')),
     // dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_encode(%s)')),
     // dynaFnToSql('extractFromSemiStructured', $allStates,         ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsForH2()})),
+    dynaFnToSql('first',                  $allStates,            ^ToSql(format='first(%s)')),
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='date_trunc(\'month\', %s)', transform={p:String[1] | $p->repeat(1)})),
     dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='date_trunc(\'quarter\', %s)', transform={p:String[1] | $p->repeat(1)})),
     dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='date_trunc(\'month\', now())')),
@@ -112,6 +114,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format='regexp_matches(%s,\'^[a-zA-Z0-9]*$\')', transform={p:String[1]|$p})),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='string_agg(%s,%s)')),
+    dynaFnToSql('last',                   $allStates,            ^ToSql(format='last(%s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('lpad',                   $allStates,            ^ToSql(format='lpad(%s,%s,%s)', transform=processPaddingParams_String_MANY__String_MANY_)),
     dynaFnToSql('matches',                $allStates,            ^ToSql(format= 'regexp_matches(%s,%s)', transform={p:String[2]|$p})),
@@ -160,8 +163,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 {
   if($dayOfWeek->size()==1,
    | 'dayofweek('+$dayOfWeek->at(0)+') +1',            //dayofweek(date) gives (Sunday = 0, Saturday = 6) >> we need from 1 to 7
-   | println($dayOfWeek);
-     assert(or($dayOfWeek->at(1)=='\'Sunday\'',$dayOfWeek->at(1)=='\'Monday\''),'DayOfWeekNumber Function requires either Sunday or Monday as First Day of Week');
+   | assert(or($dayOfWeek->at(1)=='\'Sunday\'',$dayOfWeek->at(1)=='\'Monday\''),'DayOfWeekNumber Function requires either Sunday or Monday as First Day of Week');
      if($dayOfWeek->at(1)=='\'Sunday\'',
       |'dayofweek('+$dayOfWeek->at(0)+')+1',
       |'isodow('+$dayOfWeek->at(0)+')'                           // (Monday = 1, Sunday = 7).

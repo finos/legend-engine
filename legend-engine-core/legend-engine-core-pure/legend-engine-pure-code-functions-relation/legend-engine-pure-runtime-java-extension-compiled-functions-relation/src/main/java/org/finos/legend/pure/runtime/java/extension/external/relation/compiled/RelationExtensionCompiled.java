@@ -58,6 +58,7 @@ public class RelationExtensionCompiled implements CompiledExtension
                 new ExtendWindowFunc(),
                 new ExtendWindowFuncArray(),
                 new First(),
+                new Last(),
                 new Drop(),
                 new Sort(),
                 new Rename(),
