@@ -193,6 +193,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         ingestor = RelationalMultiDatasetIngestor.builder()
             .relationalSink(H2Sink.get())
             .lockInfoDataset(lockInfoDataset)
+            .batchErrorDataset(batchErrorDataset)
             .ingestRequestId(requestId2)
             .executionTimestampClock(fixedClock_2000_01_02)
             .build();
@@ -392,6 +393,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         ingestor = RelationalMultiDatasetIngestor.builder()
             .relationalSink(H2Sink.get())
             .lockInfoDataset(lockInfoDataset)
+            .batchErrorDataset(batchErrorDataset)
             .ingestRequestId(requestId2)
             .caseConversion(CaseConversion.TO_UPPER)
             .executionTimestampClock(fixedClock_2000_01_02)
@@ -445,6 +447,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         ingestor = RelationalMultiDatasetIngestor.builder()
             .relationalSink(H2Sink.get())
             .lockInfoDataset(lockInfoDataset)
+            .batchErrorDataset(batchErrorDataset)
             .ingestRequestId(requestId3)
             .caseConversion(CaseConversion.TO_UPPER)
             .executionTimestampClock(fixedClock_2000_01_03)
