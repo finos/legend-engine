@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.h2.sql.visitor;
 
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetReference;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.h2.logicalplan.datasets.H2StagedFilesDatasetProperties;
@@ -21,6 +22,7 @@ import org.finos.legend.engine.persistence.components.relational.h2.sqldom.schem
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
+import java.util.stream.Collectors;
 
 public class StagedFilesDatasetReferenceVisitor implements LogicalPlanVisitor<StagedFilesDatasetReference>
 {
@@ -32,7 +34,7 @@ public class StagedFilesDatasetReferenceVisitor implements LogicalPlanVisitor<St
             throw new IllegalStateException("Only H2StagedFilesDatasetProperties are supported for H2 Sink");
         }
         H2StagedFilesDatasetProperties datasetProperties = (H2StagedFilesDatasetProperties) current.properties();
-        CsvRead csvRead = new CsvRead(datasetProperties.filePaths().get(0), String.join(",", current.columns()), null);
+        CsvRead csvRead = new CsvRead(datasetProperties.filePaths().get(0), String.join(",", current.columns().stream().map(Field::name).collect(Collectors.toList())), null);
         prev.push(csvRead);
         return new VisitorResult(null);
     }
