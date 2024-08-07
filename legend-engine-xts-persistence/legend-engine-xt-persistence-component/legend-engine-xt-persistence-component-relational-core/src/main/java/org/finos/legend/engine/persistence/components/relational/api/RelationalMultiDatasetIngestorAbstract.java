@@ -83,7 +83,9 @@ public abstract class RelationalMultiDatasetIngestorAbstract
 
     public abstract RelationalSink relationalSink();
 
-    abstract LockInfoDataset lockInfoDataset();
+    public abstract LockInfoDataset lockInfoDataset();
+
+    public abstract BatchErrorDataset batchErrorDataset();
 
     //-------------------- FLAGS --------------------
 
@@ -322,6 +324,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
             }
         }
         createLockDataset();
+        createBatchErrorDataset();
     }
 
     private void createLockDataset()
@@ -330,6 +333,15 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         operations.add(Create.of(true, lockInfoDataset().get()));
         LogicalPlan createLockDataset = LogicalPlan.of(operations);
         SqlPlan createLockDatasetSqlPlan = transformer.generatePhysicalPlan(createLockDataset);
+        executor.executePhysicalPlan(createLockDatasetSqlPlan);
+    }
+
+    private void createBatchErrorDataset()
+    {
+        List<Operation> operations = new ArrayList<>();
+        operations.add(Create.of(true, batchErrorDataset().get()));
+        LogicalPlan createDataset = LogicalPlan.of(operations);
+        SqlPlan createLockDatasetSqlPlan = transformer.generatePhysicalPlan(createDataset);
         executor.executePhysicalPlan(createLockDatasetSqlPlan);
     }
 

@@ -45,6 +45,7 @@ import org.finos.legend.engine.persistence.components.relational.h2.H2DigestUtil
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.h2.logicalplan.datasets.H2StagedFilesDatasetProperties;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
+import org.finos.legend.engine.persistence.components.util.BatchErrorDataset;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
@@ -96,6 +97,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
     private static final String requestId2 = "REQUEST_2";
     private static final String requestId3 = "REQUEST_3";
     private static final String lockDataset = "LOCK_DATASET";
+    private static final String batchErrorDatasetName = "BATCH_ERROR_DATASET";
 
     private static final MetadataDataset metadataDataset1 = MetadataDataset.builder()
         .metadataDatasetDatabaseName(testDatabaseName)
@@ -115,6 +117,12 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         .name(lockDataset)
         .build();
 
+    private static final BatchErrorDataset batchErrorDataset = BatchErrorDataset.builder()
+            .database(testDatabaseName)
+            .group(testSchemaName)
+            .name(batchErrorDatasetName)
+            .build();
+
     /*
     Test Case:
         - [Dataset1: [BulkLoad, UnitemporalDelta],
@@ -132,6 +140,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         RelationalMultiDatasetIngestor ingestor = RelationalMultiDatasetIngestor.builder()
             .relationalSink(H2Sink.get())
             .lockInfoDataset(lockInfoDataset)
+            .batchErrorDataset(batchErrorDataset)
             .ingestRequestId(requestId1)
             .executionTimestampClock(fixedClock_2000_01_01)
             .build();
@@ -329,6 +338,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         RelationalMultiDatasetIngestor ingestor = RelationalMultiDatasetIngestor.builder()
             .relationalSink(H2Sink.get())
             .lockInfoDataset(lockInfoDataset)
+            .batchErrorDataset(batchErrorDataset)
             .ingestRequestId(requestId1)
             .caseConversion(CaseConversion.TO_UPPER)
             .executionTimestampClock(fixedClock_2000_01_01)
@@ -648,6 +658,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         RelationalMultiDatasetIngestor ingestor = RelationalMultiDatasetIngestor.builder()
             .relationalSink(H2Sink.get())
             .lockInfoDataset(lockInfoDataset)
+            .batchErrorDataset(batchErrorDataset)
             .ingestRequestId(requestId1)
             .executionTimestampClock(fixedClock_2000_01_01)
             .build();
@@ -780,6 +791,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         RelationalMultiDatasetIngestor ingestor = RelationalMultiDatasetIngestor.builder()
             .relationalSink(H2Sink.get())
             .lockInfoDataset(lockInfoDataset)
+            .batchErrorDataset(batchErrorDataset)
             .ingestRequestId(requestId1)
             .executionTimestampClock(fixedClock_2000_01_01)
             .build();
