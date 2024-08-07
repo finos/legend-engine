@@ -53,10 +53,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.ADDITIONAL_METADATA_KEY_PATTERN;
@@ -93,6 +95,18 @@ public abstract class RelationalMultiDatasetIngestorAbstract
     public boolean collectStatistics()
     {
         return true;
+    }
+
+    @Value.Default
+    public boolean cleanupStagingData()
+    {
+        return false;
+    }
+
+    @Value.Default
+    public boolean skipMainAndMetadataDatasetCreation()
+    {
+        return false;
     }
 
     @Value.Default
@@ -208,9 +222,9 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         finally
         {
             executor.close();
+            cleanup();
         }
 
-        // TODO: Clean up here or create an API to clean up?
         LOGGER.info("Ingestion completed");
         return result;
     }
@@ -227,6 +241,8 @@ public abstract class RelationalMultiDatasetIngestorAbstract
 
     private void initIngestStageMetadataMap(List<DatasetIngestDetails> datasetIngestDetails)
     {
+        validateIngestStages(datasetIngestDetails);
+
         ingestStageMetadataMap = new LinkedHashMap<>();
 
         for (DatasetIngestDetails details : datasetIngestDetails)
@@ -264,11 +280,11 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 RelationalGenerator generator = RelationalGenerator.builder()
                     .ingestMode(enrichedIngestMode)
                     .relationalSink(relationalSink())
-                    .cleanupStagingData(false) // TODO: It does not make sense to be true right?
+                    .cleanupStagingData(cleanupStagingData())
                     .collectStatistics(collectStatistics())
                     .writeStatistics(collectStatistics()) // Collecting statistics will imply writing it into the batch metadata table
-                    .skipMainAndMetadataDatasetCreation(false) // TODO: Should we expose this?
-                    .enableConcurrentSafety(false) //todo(rengam) : to discuss if this works or introduce new variable
+                    .skipMainAndMetadataDatasetCreation(skipMainAndMetadataDatasetCreation())
+                    .enableConcurrentSafety(false) // Concurrency is managed by a single lock table centrally
                     .caseConversion(caseConversion())
                     .executionTimestampClock(executionTimestampClock())
                     .batchStartTimestampPattern(BATCH_START_TS_PATTERN)
@@ -454,11 +470,30 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         return results;
     }
 
+    private void cleanup()
+    {
+        LOGGER.info("Performing cleanup");
+        for (List<IngestStageMetadata> ingestStageMetadataList : ingestStageMetadataMap.values())
+        {
+            for (IngestStageMetadata ingestStageMetadata : ingestStageMetadataList)
+            {
+                RelationalGenerator generator = ingestStageMetadata.relationalGenerator();
+                Planner planner = ingestStageMetadata.planner();
+
+                GeneratorResult generatorResult = generator.generateOperationsForPostCleanup(Resources.builder().externalDatasetImported(false).build(), planner);
+                if (generatorResult.postCleanupSqlPlan().isPresent())
+                {
+                    executor.executePhysicalPlan(generatorResult.postCleanupSqlPlan().get());
+                }
+            }
+        }
+    }
+
     private IngestStageResult buildIngestStageResult(IngestorResult ingestorResult)
     {
         return IngestStageResult.builder()
             .ingestionStartTimestampUTC(ingestorResult.ingestionTimestampUTC())
-            .ingestionEndTimestampUTC("DUMMY") // TODO
+            .ingestionEndTimestampUTC(ingestorResult.ingestionEndTimestampUTC())
             .putAllStatisticByName(ingestorResult.statisticByName())
             .build();
     }
@@ -499,5 +534,18 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         DatasetDefinition mainDatasetDefinition = builder.build();
 
         return ApiUtils.deriveMainDatasetFromStaging(mainDatasetDefinition, ingestStage.stagingDataset(), enrichedIngestMode);
+    }
+
+    private void validateIngestStages(List<DatasetIngestDetails> datasetIngestDetails)
+    {
+        // Check no duplicate dataset names
+        Set<String> datasetNames = new HashSet<>();
+        for (DatasetIngestDetails dataset : datasetIngestDetails)
+        {
+            if (!datasetNames.add(dataset.dataset()))
+            {
+                throw new IllegalArgumentException("Found duplicate dataset names in datasetIngestDetails. All dataset names must be different.");
+            }
+        }
     }
 }

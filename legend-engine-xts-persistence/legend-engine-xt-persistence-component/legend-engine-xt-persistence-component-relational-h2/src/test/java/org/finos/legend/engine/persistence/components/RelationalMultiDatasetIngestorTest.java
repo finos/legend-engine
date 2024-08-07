@@ -153,10 +153,10 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         List<DatasetIngestResults> actual = ingestor.ingest();
 
         // Verify results
-        IngestStageResult ingestStageResult1ForDataset1 = buildIngestStageResultForBulkLoad("2000-01-01 00:00:00.000000", "DUMMY", 3);
-        IngestStageResult ingestStageResult2ForDataset1 = buildIngestStageResult("2000-01-01 00:00:00.000000", "DUMMY", 3, 0, 3, 0, 0);
-        IngestStageResult ingestStageResult1ForDataset2 = buildIngestStageResultForBulkLoad("2000-01-01 00:00:00.000000", "DUMMY", 4);
-        IngestStageResult ingestStageResult2ForDataset2 = buildIngestStageResult("2000-01-01 00:00:00.000000", "DUMMY", 4, 0, 4, 0, 0);
+        IngestStageResult ingestStageResult1ForDataset1 = buildIngestStageResultForBulkLoad("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 3);
+        IngestStageResult ingestStageResult2ForDataset1 = buildIngestStageResult("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 3, 0, 3, 0, 0);
+        IngestStageResult ingestStageResult1ForDataset2 = buildIngestStageResultForBulkLoad("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 4);
+        IngestStageResult ingestStageResult2ForDataset2 = buildIngestStageResult("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 4, 0, 4, 0, 0);
 
         List<DatasetIngestResults> expected = new ArrayList<>();
         expected.add(DatasetIngestResults.builder()
@@ -206,10 +206,10 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         actual = ingestor.ingest();
 
         // Verify results
-        ingestStageResult1ForDataset1 = buildIngestStageResultForBulkLoad("2000-01-02 00:00:00.123456", "DUMMY", 3);
-        ingestStageResult2ForDataset1 = buildIngestStageResult("2000-01-02 00:00:00.123456", "DUMMY", 3, 0, 1, 0, 1);
-        ingestStageResult1ForDataset2 = buildIngestStageResultForBulkLoad("2000-01-02 00:00:00.123456", "DUMMY", 3);
-        ingestStageResult2ForDataset2 = buildIngestStageResult("2000-01-02 00:00:00.123456", "DUMMY", 3, 0, 0, 0, 2);
+        ingestStageResult1ForDataset1 = buildIngestStageResultForBulkLoad("2000-01-02 00:00:00.123456", "2000-01-02 00:00:00.123456", 3);
+        ingestStageResult2ForDataset1 = buildIngestStageResult("2000-01-02 00:00:00.123456", "2000-01-02 00:00:00.123456", 3, 0, 1, 0, 1);
+        ingestStageResult1ForDataset2 = buildIngestStageResultForBulkLoad("2000-01-02 00:00:00.123456", "2000-01-02 00:00:00.123456", 3);
+        ingestStageResult2ForDataset2 = buildIngestStageResult("2000-01-02 00:00:00.123456", "2000-01-02 00:00:00.123456", 3, 0, 0, 0, 2);
 
         expected = new ArrayList<>();
         expected.add(DatasetIngestResults.builder()
@@ -353,10 +353,10 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         List<DatasetIngestResults> actual = ingestor.ingest();
 
         // Verify results
-        IngestStageResult ingestStageResult1ForDataset1 = buildIngestStageResultForBulkLoad("2000-01-01 00:00:00.000000", "DUMMY", 9);
-        IngestStageResult ingestStageResult2ForDataset1 = buildIngestStageResult("2000-01-01 00:00:00.000000", "DUMMY", 9, 0, 3, 0, 0);
-        IngestStageResult ingestStageResult1ForDataset2 = buildIngestStageResultForBulkLoad("2000-01-01 00:00:00.000000", "DUMMY", 8);
-        IngestStageResult ingestStageResult2ForDataset2 = buildIngestStageResult("2000-01-01 00:00:00.000000", "DUMMY", 8, 0, 4, 0, 0);
+        IngestStageResult ingestStageResult1ForDataset1 = buildIngestStageResultForBulkLoad("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 9);
+        IngestStageResult ingestStageResult2ForDataset1 = buildIngestStageResult("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 9, 0, 3, 0, 0);
+        IngestStageResult ingestStageResult1ForDataset2 = buildIngestStageResultForBulkLoad("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 8);
+        IngestStageResult ingestStageResult2ForDataset2 = buildIngestStageResult("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 8, 0, 4, 0, 0);
 
         List<DatasetIngestResults> expected = new ArrayList<>();
         expected.add(DatasetIngestResults.builder()
@@ -407,10 +407,10 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         actual = ingestor.ingest();
 
         // Verify results
-        ingestStageResult1ForDataset1 = buildIngestStageResultForBulkLoad("2000-01-02 00:00:00.123456", "DUMMY", 0);
-        ingestStageResult2ForDataset1 = buildIngestStageResult("2000-01-02 00:00:00.123456", "DUMMY", 0, 0, 0, 0, 0);
-        ingestStageResult1ForDataset2 = buildIngestStageResultForBulkLoad("2000-01-02 00:00:00.123456", "DUMMY", 0);
-        ingestStageResult2ForDataset2 = buildIngestStageResult("2000-01-02 00:00:00.123456", "DUMMY", 0, 0, 0, 0, 0);
+        ingestStageResult1ForDataset1 = buildIngestStageResultForBulkLoad("2000-01-02 00:00:00.123456", "2000-01-02 00:00:00.123456", 0);
+        ingestStageResult2ForDataset1 = buildIngestStageResult("2000-01-02 00:00:00.123456", "2000-01-02 00:00:00.123456", 0, 0, 0, 0, 0);
+        ingestStageResult1ForDataset2 = buildIngestStageResultForBulkLoad("2000-01-02 00:00:00.123456", "2000-01-02 00:00:00.123456", 0);
+        ingestStageResult2ForDataset2 = buildIngestStageResult("2000-01-02 00:00:00.123456", "2000-01-02 00:00:00.123456", 0, 0, 0, 0, 0);
 
         expected = new ArrayList<>();
         expected.add(DatasetIngestResults.builder()
@@ -461,10 +461,10 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         actual = ingestor.ingest();
 
         // Verify results
-        ingestStageResult1ForDataset1 = buildIngestStageResultForBulkLoad("2000-01-03 00:00:00.000000", "DUMMY", 5);
-        ingestStageResult2ForDataset1 = buildIngestStageResult("2000-01-03 00:00:00.000000", "DUMMY", 5, 0, 1, 0, 1);
-        ingestStageResult1ForDataset2 = buildIngestStageResultForBulkLoad("2000-01-03 00:00:00.000000", "DUMMY", 5);
-        ingestStageResult2ForDataset2 = buildIngestStageResult("2000-01-03 00:00:00.000000", "DUMMY", 5, 0, 0, 0, 1);
+        ingestStageResult1ForDataset1 = buildIngestStageResultForBulkLoad("2000-01-03 00:00:00.000000", "2000-01-03 00:00:00.000000", 5);
+        ingestStageResult2ForDataset1 = buildIngestStageResult("2000-01-03 00:00:00.000000", "2000-01-03 00:00:00.000000", 5, 0, 1, 0, 1);
+        ingestStageResult1ForDataset2 = buildIngestStageResultForBulkLoad("2000-01-03 00:00:00.000000", "2000-01-03 00:00:00.000000", 5);
+        ingestStageResult2ForDataset2 = buildIngestStageResult("2000-01-03 00:00:00.000000", "2000-01-03 00:00:00.000000", 5, 0, 0, 0, 1);
 
         expected = new ArrayList<>();
         expected.add(DatasetIngestResults.builder()
@@ -672,10 +672,10 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         List<DatasetIngestResults> actual = ingestor.ingest();
 
         // Verify results
-        IngestStageResult ingestStageResult1ForDataset1 = buildIngestStageResultForBulkLoad("2000-01-01 00:00:00.000000", "DUMMY", 3);
-        IngestStageResult ingestStageResult2ForDataset1 = buildIngestStageResult("2000-01-01 00:00:00.000000", "DUMMY", 3, 0, 3, 0, 0);
-        IngestStageResult ingestStageResult1ForDataset2 = buildIngestStageResultForBulkLoad("2000-01-01 00:00:00.000000", "DUMMY", 8);
-        IngestStageResult ingestStageResult2ForDataset2 = buildIngestStageResult("2000-01-01 00:00:00.000000", "DUMMY", 8, 0, 4, 0, 0);
+        IngestStageResult ingestStageResult1ForDataset1 = buildIngestStageResultForBulkLoad("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 3);
+        IngestStageResult ingestStageResult2ForDataset1 = buildIngestStageResult("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 3, 0, 3, 0, 0);
+        IngestStageResult ingestStageResult1ForDataset2 = buildIngestStageResultForBulkLoad("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 8);
+        IngestStageResult ingestStageResult2ForDataset2 = buildIngestStageResult("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 8, 0, 4, 0, 0);
 
         List<DatasetIngestResults> expected = new ArrayList<>();
         expected.add(DatasetIngestResults.builder()

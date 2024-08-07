@@ -412,6 +412,26 @@ public abstract class RelationalGeneratorAbstract
             .build();
     }
 
+    GeneratorResult generateOperationsForPostCleanup(Resources resources, Planner planner)
+    {
+        Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
+
+        LogicalPlan postCleanupLogicalPlan = planner.buildLogicalPlanForPostCleanup(resources);
+        Optional<SqlPlan> postCleanupSqlPlan = Optional.empty();
+        if (postCleanupLogicalPlan != null)
+        {
+            postCleanupSqlPlan = Optional.of(transformer.generatePhysicalPlan(postCleanupLogicalPlan));
+        }
+
+        return GeneratorResult.builder()
+            .preActionsSqlPlan(SqlPlan.builder().build())
+            .ingestSqlPlan(SqlPlan.builder().build())
+            .metadataIngestSqlPlan(SqlPlan.builder().build())
+            .postActionsSqlPlan(SqlPlan.builder().build())
+            .postCleanupSqlPlan(postCleanupSqlPlan)
+            .build();
+    }
+
     GeneratorResult generateOperationsForIngest(Resources resources, Planner planner)
     {
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());

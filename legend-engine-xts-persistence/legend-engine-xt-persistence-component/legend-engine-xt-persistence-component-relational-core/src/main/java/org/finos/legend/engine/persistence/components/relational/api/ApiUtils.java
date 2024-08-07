@@ -239,6 +239,7 @@ public class ApiUtils
             for (Map<String, Object> metadata: metadataResults)
             {
                 Timestamp ingestionTimestampUTC = (Timestamp) metadata.get(metadataDataset.batchStartTimeField());
+                Timestamp ingestionEndTimestampUTC = (Timestamp) metadata.get(metadataDataset.batchEndTimeField());
                 String batchStatus = String.valueOf(metadata.get(metadataDataset.batchStatusField()));
                 batchStatus = batchStatus.equalsIgnoreCase(batchSuccessStatusValue)  ? IngestStatus.SUCCEEDED.name() : batchStatus;
                 IngestorResult ingestorResult = IngestorResult.builder()
@@ -248,6 +249,7 @@ public class ApiUtils
                     .updatedDatasets(enrichedDatasets)
                     .schemaEvolutionSql(schemaEvolutionResult.schemaEvolutionSql())
                     .ingestionTimestampUTC(ingestionTimestampUTC.toLocalDateTime().format(DATE_TIME_FORMATTER))
+                    .ingestionEndTimestampUTC(ingestionEndTimestampUTC.toLocalDateTime().format(DATE_TIME_FORMATTER))
                     .previouslyProcessed(true)
                     .build();
                 result.add(ingestorResult);
@@ -280,6 +282,7 @@ public class ApiUtils
                 .schemaEvolutionSql(schemaEvolutionResult.schemaEvolutionSql())
                 .status(IngestStatus.SUCCEEDED)
                 .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN).value())
+                .ingestionEndTimestampUTC(placeHolderKeyValues.get(BATCH_END_TS_PATTERN).value())
                 .build();
             results.add(result);
             dataSplitIndex++;
@@ -333,14 +336,14 @@ public class ApiUtils
         Map<String, PlaceholderValue> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, Optional.empty(), additionalMetadata, executionTimestampClock, batchId);
 
         // Execute ingest SqlPlan
-        IngestorResult result = relationalSink.performBulkLoad(datasets, executor, generatorResult.ingestSqlPlan(), generatorResult.postIngestStatisticsSqlPlan(), placeHolderKeyValues);
+        IngestorResult result = relationalSink.performBulkLoad(datasets, executor, generatorResult.ingestSqlPlan(), generatorResult.postIngestStatisticsSqlPlan(), placeHolderKeyValues, executionTimestampClock);
         if (schemaEvolutionResult != null && !schemaEvolutionResult.schemaEvolutionSql().isEmpty())
         {
             result = result.withSchemaEvolutionSql(schemaEvolutionResult.schemaEvolutionSql());
         }
         // Execute metadata ingest SqlPlan
         // add batchEndTimestamp
-        placeHolderKeyValues.put(BATCH_END_TS_PATTERN, PlaceholderValue.of(LocalDateTime.now(executionTimestampClock).format(DATE_TIME_FORMATTER), false));
+        placeHolderKeyValues.put(BATCH_END_TS_PATTERN, PlaceholderValue.of(result.ingestionEndTimestampUTC(), false));
         placeHolderKeyValues.put(BULK_LOAD_BATCH_STATUS_PATTERN, PlaceholderValue.of(result.status().name(), false));
         placeHolderKeyValues.put(MetadataUtils.BATCH_STATISTICS_PATTERN, PlaceholderValue.of(writeValueAsString(result.statisticByName()), false));
         executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan(), placeHolderKeyValues);

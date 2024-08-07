@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.relational.h2;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -96,6 +98,7 @@ import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.BATCH_ID_PATTERN;
 import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.BATCH_START_TS_PATTERN;
+import static org.finos.legend.engine.persistence.components.transformer.Transformer.TransformOptionsAbstract.DATE_TIME_FORMATTER;
 import static org.finos.legend.engine.persistence.components.util.ValidationCategory.TYPE_CONVERSION;
 import static org.finos.legend.engine.persistence.components.util.ValidationCategory.NULL_VALUE;
 
@@ -211,7 +214,7 @@ public class H2Sink extends AnsiSqlSink
     }
 
     @Override
-    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, PlaceholderValue> placeHolderKeyValues)
+    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, PlaceholderValue> placeHolderKeyValues, Clock executionTimestampClock)
     {
         executor.executePhysicalPlan(ingestSqlPlan, placeHolderKeyValues);
 
@@ -239,6 +242,7 @@ public class H2Sink extends AnsiSqlSink
             .updatedDatasets(datasets)
             .putAllStatisticByName(stats)
             .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN).value())
+            .ingestionEndTimestampUTC(LocalDateTime.now(executionTimestampClock).format(DATE_TIME_FORMATTER))
             .build();
 
         return result;
