@@ -136,8 +136,7 @@ public class Client
                 String line = this.reader.readLine("> ");
                 if (line == null || line.equalsIgnoreCase("exit"))
                 {
-                    System.exit(0);
-                    this.persistHistory();
+                    this.exit();
                     break;
                 }
 
@@ -173,8 +172,7 @@ public class Client
                 String lineContent = this.reader.getBuffer().toString();
                 if (lineContent.isEmpty())
                 {
-                    System.exit(0);
-                    this.persistHistory();
+                    this.exit();
                     break;
                 }
                 else
@@ -185,8 +183,7 @@ public class Client
             // handle Ctrl + D: exit
             catch (EndOfFileException e)
             {
-                System.exit(0);
-                this.persistHistory();
+                this.exit();
                 break;
             }
             catch (Exception e)
@@ -345,5 +342,16 @@ public class Client
         {
             return null;
         }
+    }
+
+    // Separate the call to System.exit() to a separate method to make it
+    // easier to mock in test, as handling System.exit() is non-trivial
+    // See https://stackoverflow.com/questions/309396/how-to-test-methods-that-call-system-exit
+    public void exit()
+    {
+        this.persistHistory();
+        // We need to call System.exit() else the REPL will not quit completely
+        // but stuck at a state where it accepts input, but do nothing!
+        System.exit(0);
     }
 }
