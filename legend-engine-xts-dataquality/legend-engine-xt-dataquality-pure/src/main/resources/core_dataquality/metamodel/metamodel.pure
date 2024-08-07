@@ -6,6 +6,9 @@ import meta::core::runtime::*;
 
 
 Class meta::external::dataquality::DataQualityRootGraphFetchTree<T> extends RootGraphFetchTree<T>
+[
+  mustHaveAtLeastOnePropertyOrConstraint: $this.constraints->isNotEmpty() || $this.subTrees->isNotEmpty()
+]
 {
    constraints: Constraint[*]; 
    

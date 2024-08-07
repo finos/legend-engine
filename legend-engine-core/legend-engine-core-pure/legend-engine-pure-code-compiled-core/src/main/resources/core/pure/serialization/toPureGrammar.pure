@@ -256,7 +256,16 @@ function meta::pure::metamodel::serialization::grammar::printGenericType(generic
 {
     if ($genericType->instanceOf(GenericTypeOperation),
       |let go = $genericType->cast(@GenericTypeOperation);
-       $go.left->printGenericType()+if($go.type == GenericTypeOperationType.Union,|'+',|'-')+$go.right->printGenericType();,
+       if($go.left->isEmpty(),|'',|$go.left->toOne()->printGenericType()) + 
+       if(
+          [
+            pair(|$go.type == GenericTypeOperationType.Union,|'+'),
+            pair(|$go.type == GenericTypeOperationType.Difference,|'-'),
+            pair(|$go.type == GenericTypeOperationType.Subset,|'⊆')
+          ],
+          |'='
+       ) + 
+       $go.right->printGenericType();,
       |if ($genericType.rawType->isEmpty(),
             |if ($genericType.typeParameter->isEmpty(),
                   |'',

@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components.relational.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.finos.legend.engine.persistence.components.common.*;
+import org.finos.legend.engine.persistence.components.exception.JsonReadOrWriteException;
 import org.finos.legend.engine.persistence.components.executor.DigestInfo;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.importer.Importer;
@@ -548,7 +549,7 @@ public abstract class RelationalIngestorAbstract
         }
         else
         {
-            throw new RuntimeException("Dry Run not supported for this ingest Mode : " + enrichedIngestMode.getClass().getSimpleName());
+            throw new UnsupportedOperationException("Dry Run not supported for this ingest Mode : " + enrichedIngestMode.getClass().getSimpleName());
         }
     }
 
@@ -735,5 +736,114 @@ public abstract class RelationalIngestorAbstract
         resourcesBuilder.externalDatasetImported(true);
 
         return updatedDatasets;
+    }
+
+    private String writeValueAsString(Map<StatisticName, Object> statisticByName)
+    {
+        try
+        {
+            return new ObjectMapper().writeValueAsString(statisticByName);
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new JsonReadOrWriteException(e.getMessage(), e);
+        }
+    }
+
+    private Map<StatisticName, Object> readValueAsMap(String batchStatistics)
+    {
+        try
+        {
+            return new ObjectMapper().readValue(batchStatistics, new TypeReference<HashMap<StatisticName, Object>>() {});
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new JsonReadOrWriteException(e.getMessage(), e);
+        }
+    }
+
+    private boolean datasetEmpty(Dataset dataset, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor)
+    {
+        LogicalPlan checkIsDatasetEmptyLogicalPlan = LogicalPlanFactory.getLogicalPlanForIsDatasetEmpty(dataset);
+        SqlPlan physicalPlanForCheckIsDataSetEmpty = transformer.generatePhysicalPlan(checkIsDatasetEmptyLogicalPlan);
+        List<TabularData> results = executor.executePhysicalPlanAndGetResults(physicalPlanForCheckIsDataSetEmpty);
+        Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(results));
+        String value = String.valueOf(obj.orElseThrow(IllegalStateException::new));
+        return !value.equals(TABLE_IS_NON_EMPTY);
+    }
+
+    private Map<StatisticName, Object> executeStatisticsPhysicalPlan(Executor<SqlGen, TabularData, SqlPlan> executor,
+                                                                     Map<StatisticName, SqlPlan> statisticsSqlPlan,
+                                                                     Map<String, PlaceholderValue> placeHolderKeyValues)
+    {
+        Map<StatisticName, Object> results = new HashMap<>();
+        for (Map.Entry<StatisticName, SqlPlan> entry: statisticsSqlPlan.entrySet())
+        {
+            List<TabularData> result = executor.executePhysicalPlanAndGetResults(entry.getValue(), placeHolderKeyValues);
+            Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(result));
+            Object value = obj.orElse(null);
+            results.put(entry.getKey(), value);
+        }
+        return results;
+    }
+
+    private Map<String, PlaceholderValue> extractPlaceHolderKeyValues(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
+                                                            Planner planner, Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode,
+                                                            Optional<DataSplitRange> dataSplitRange)
+    {
+        Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
+
+        // Handle batch ID
+        Optional<Long> nextBatchId = ApiUtils.getNextBatchId(datasets, executor, transformer);
+        if (nextBatchId.isPresent())
+        {
+            LOGGER.info(String.format("Obtained the next Batch id: %s", nextBatchId.get()));
+            placeHolderKeyValues.put(BATCH_ID_PATTERN, PlaceholderValue.of(nextBatchId.get().toString(), false));
+        }
+
+        // Handle optimization filters
+        Optional<Map<OptimizationFilter, Pair<Object, Object>>> optimizationFilters = ApiUtils.getOptimizationFilterBounds(datasets, executor, transformer, ingestMode);
+        if (optimizationFilters.isPresent())
+        {
+            for (OptimizationFilter filter : optimizationFilters.get().keySet())
+            {
+                Object lowerBound = optimizationFilters.get().get(filter).getOne();
+                Object upperBound = optimizationFilters.get().get(filter).getTwo();
+                if (lowerBound instanceof Number)
+                {
+                    placeHolderKeyValues.put(SINGLE_QUOTE + filter.lowerBoundPattern() + SINGLE_QUOTE, PlaceholderValue.of(lowerBound.toString(), true));
+                    placeHolderKeyValues.put(SINGLE_QUOTE + filter.upperBoundPattern() + SINGLE_QUOTE, PlaceholderValue.of(upperBound.toString(), true));
+                }
+                else
+                {
+                    placeHolderKeyValues.put(filter.lowerBoundPattern(), PlaceholderValue.of(lowerBound.toString(), true));
+                    placeHolderKeyValues.put(filter.upperBoundPattern(), PlaceholderValue.of(upperBound.toString(), true));
+                }
+            }
+        }
+
+        // Handle data splits
+        if (planner.dataSplitExecutionSupported() && dataSplitRange.isPresent())
+        {
+            placeHolderKeyValues.put(SINGLE_QUOTE + LogicalPlanUtils.DATA_SPLIT_LOWER_BOUND_PLACEHOLDER + SINGLE_QUOTE, PlaceholderValue.of(String.valueOf(dataSplitRange.get().lowerBound()), false));
+            placeHolderKeyValues.put(SINGLE_QUOTE + LogicalPlanUtils.DATA_SPLIT_UPPER_BOUND_PLACEHOLDER + SINGLE_QUOTE, PlaceholderValue.of(String.valueOf(dataSplitRange.get().upperBound()), false));
+        }
+
+        // Handle additional metadata
+        try
+        {
+            ObjectMapper objectMapper = new ObjectMapper();
+            String additionalMetadataString = objectMapper.writeValueAsString(additionalMetadata());
+            placeHolderKeyValues.put(ADDITIONAL_METADATA_PLACEHOLDER_PATTERN, PlaceholderValue.of(additionalMetadataString, true));
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new JsonReadOrWriteException("Unable to parse additional metadata", e);
+        }
+
+        // Handle batch timestamp
+        placeHolderKeyValues.put(BATCH_START_TS_PATTERN, PlaceholderValue.of(LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER), false));
+
+        return placeHolderKeyValues;
     }
 }

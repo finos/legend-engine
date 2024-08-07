@@ -14,11 +14,12 @@
 
 package org.finos.legend.engine.persistence.components.relational.exception;
 
+import org.finos.legend.engine.persistence.components.exception.PersistenceException;
 import org.finos.legend.engine.persistence.components.relational.api.DataError;
 
 import java.util.List;
 
-public class DataQualityException extends RuntimeException
+public class DataQualityException extends PersistenceException
 {
     private List<DataError> dataErrors;
 
@@ -31,5 +32,11 @@ public class DataQualityException extends RuntimeException
     {
         super(message);
         this.dataErrors = dataErrors;
+    }
+
+    @Override
+    public boolean isRecoverable()
+    {
+        return false;
     }
 }

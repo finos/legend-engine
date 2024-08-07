@@ -45,6 +45,7 @@ import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.exception.DataQualityException;
+import org.finos.legend.engine.persistence.components.exception.JsonReadOrWriteException;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
@@ -703,7 +704,7 @@ public class ApiUtils
         }
         catch (JsonProcessingException e)
         {
-            throw new RuntimeException(e);
+            throw new JsonReadOrWriteException(e.getMessage(), e);
         }
     }
 

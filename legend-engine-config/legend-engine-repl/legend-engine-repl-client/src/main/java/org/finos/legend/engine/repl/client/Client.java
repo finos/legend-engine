@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.repl.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.block.predicate.checked.CheckedPredicate;
@@ -27,6 +29,7 @@ import org.finos.legend.engine.repl.core.ReplExtension;
 import org.finos.legend.engine.repl.core.commands.*;
 import org.finos.legend.engine.repl.core.legend.LegendInterface;
 import org.finos.legend.engine.repl.core.legend.LocalLegendInterface;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
@@ -37,11 +40,15 @@ import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import static org.jline.jansi.Ansi.ansi;
 import static org.jline.reader.LineReader.BLINK_MATCHING_PAREN;
 
 public class Client
 {
+    private final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private final LegendInterface legendInterface = new LocalLegendInterface();
     private final Terminal terminal;
     private final LineReader reader;
@@ -66,11 +73,14 @@ public class Client
         this.state = new ModelState(this.legendInterface, this.replExtensions);
         this.terminal = TerminalBuilder.terminal();
 
+        this.initialize();
         replExtensions.forEach(e -> e.initialize(this));
 
-        this.terminal.writer().println(ansi().fgBrightBlack().a("Welcome to the Legend REPL! Press 'Enter' or type 'help' to see the list of available commands.").reset());
-        this.terminal.writer().println("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
+        this.printDebug("Welcome to the Legend REPL! Press 'Enter' or type 'help' to see the list of available commands.");
+        this.printInfo("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
 
+        // NOTE: the order here matters, the default command 'help' should always go first
+        // and "catch-all" command 'execute' should always go last
         this.commands = replExtensions
                 .flatCollect(ReplExtension::getExtraCommands)
                 .withAll(
@@ -78,7 +88,7 @@ public class Client
                                 new Ext(this),
                                 new Debug(this),
                                 new Graph(this),
-                                new Execute(this, planExecutor)
+                                new Execute(this)
                         )
                 );
 
@@ -86,6 +96,11 @@ public class Client
 
         this.reader = LineReaderBuilder.builder()
                 .terminal(terminal)
+                // Configure history file
+                // See https://github.com/jline/jline3/wiki/History
+                .variable(LineReader.HISTORY_FILE, this.getHomeDir().resolve("history"))
+                .variable(LineReader.HISTORY_FILE_SIZE, 1_000)
+                .variable(LineReader.HISTORY_IGNORE, ": *") // make sure empty space(s) are not persisted
                 // Disable cursor jumping to opening brace when typing closing brace
                 // See https://github.com/jline/jline3/issues/216
                 .variable(BLINK_MATCHING_PAREN, false)
@@ -95,16 +110,19 @@ public class Client
                 .option(LineReader.Option.INSERT_TAB, true)
                 // Make sure word navigation works properly with Alt + (left/right) arrow key
                 .variable(LineReader.WORDCHARS, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-$")
+                // Make sure to not break the completer when exclamation sign is present
+                // Do this by disabling history expansion
+                // See https://github.com/jline/jline3/issues/246
+                .option(LineReader.Option.DISABLE_EVENT_EXPANSION, true)
                 .highlighter(new JLine3Highlighter())
                 .parser(new JLine3Parser())
                 .completer(new JLine3Completer(this.commands))
                 .build();
 
-        this.terminal.writer().println("Warming up...");
+        this.printInfo("Warming up...");
         this.terminal.flush();
         ((Execute) this.commands.getLast()).execute("1+1");
-        this.terminal.writer().println("Ready!\n");
-
+        this.printInfo("Ready!\n");
     }
 
     public void loop()
@@ -116,6 +134,8 @@ public class Client
                 String line = this.reader.readLine("> ");
                 if (line == null || line.equalsIgnoreCase("exit"))
                 {
+                    System.exit(0);
+                    this.persistHistory();
                     break;
                 }
 
@@ -126,13 +146,24 @@ public class Client
                     @Override
                     public boolean safeAccept(Command c) throws Exception
                     {
-                        return c.process(line);
+                        try
+                        {
+                            return c.process(line);
+                        }
+                        catch (RuntimeException e)
+                        {
+                            throw e;
+                        }
+                        catch (Exception e)
+                        {
+                            throw new RuntimeException(e);
+                        }
                     }
                 });
             }
             catch (EngineException e)
             {
-                printError(e, this.reader.getBuffer().toString());
+                printEngineError(e, this.reader.getBuffer().toString());
             }
             // handle Ctrl + C: if the input is not empty, start a new line; otherwise, exit
             catch (UserInterruptException e)
@@ -141,6 +172,7 @@ public class Client
                 if (lineContent.isEmpty())
                 {
                     System.exit(0);
+                    this.persistHistory();
                     break;
                 }
                 else
@@ -152,43 +184,103 @@ public class Client
             catch (EndOfFileException e)
             {
                 System.exit(0);
+                this.persistHistory();
                 break;
             }
             catch (Exception e)
             {
-                this.terminal.writer().println(ansi().fgRed().a(e.getMessage()).reset());
+                this.printError(e.getMessage());
                 if (this.debug)
                 {
                     e.printStackTrace();
                 }
             }
+            finally
+            {
+                this.persistHistory();
+            }
         }
     }
 
-    public void printError(EngineException e, String line)
+    public void printEngineError(EngineException e, String line)
     {
         int e_start = e.getSourceInformation().startColumn;
         int e_end = e.getSourceInformation().endColumn;
-        if (e_start <= line.length())
+        try
         {
-            String beg = line.substring(0, e_start - 1);
-            String mid = line.substring(e_start - 1, e_end);
-            String end = line.substring(e_end, line.length());
-            AttributedStringBuilder ab = new AttributedStringBuilder();
-            ab.style(new AttributedStyle().underlineOff().boldOff().foreground(0, 200, 0));
-            ab.append(beg);
-            ab.style(new AttributedStyle().underline().bold().foreground(200, 0, 0));
-            ab.append(mid);
-            ab.style(new AttributedStyle().underlineOff().boldOff().foreground(0, 200, 0));
-            ab.append(end);
-            this.terminal.writer().println("");
-            this.terminal.writer().println(ab.toAnsi());
+            if (e_start <= line.length())
+            {
+                String beg = line.substring(0, e_start - 1);
+                String mid = line.substring(e_start - 1, e_end);
+                String end = line.substring(e_end, line.length());
+                AttributedStringBuilder ab = new AttributedStringBuilder();
+                ab.style(new AttributedStyle().underlineOff().foregroundOff());
+                ab.append(beg);
+                ab.style(new AttributedStyle().underline().foreground(AttributedStyle.RED));
+                ab.append(mid);
+                ab.style(new AttributedStyle().underlineOff().foregroundOff());
+                ab.append(end);
+                this.printInfo("");
+                this.printInfo(ab.toAnsi());
+            }
         }
-        this.terminal.writer().println(e.getMessage());
+        catch (Exception ex)
+        {
+            // do nothing
+        }
+        this.printError(e.getMessage());
         if (this.debug)
         {
             e.printStackTrace();
         }
+    }
+
+    public void printDebug(String message)
+    {
+        this.terminal.writer().println(ansi().fgBrightBlack().a(message).reset());
+    }
+
+    public void printInfo(String message)
+    {
+        this.terminal.writer().println(message);
+    }
+
+    public void printError(String message)
+    {
+        this.terminal.writer().println(ansi().fgRed().a(message).reset());
+    }
+
+    private void initialize()
+    {
+        try
+        {
+            Path homeDir = this.getHomeDir();
+            if (Files.notExists(homeDir))
+            {
+                Files.createDirectories(homeDir);
+            }
+        }
+        catch (Exception e)
+        {
+            this.printError("Failed to create home directory at: " + this.getHomeDir().toString());
+        }
+    }
+
+    private void persistHistory()
+    {
+        try
+        {
+            this.reader.getHistory().save();
+        }
+        catch (Exception e)
+        {
+            // ignore
+        }
+    }
+
+    public Path getHomeDir()
+    {
+        return FileUtils.getUserDirectory().toPath().resolve(".legend/repl");
     }
 
     public Terminal getTerminal()
@@ -231,8 +323,25 @@ public class Client
         return this.completerExtensions;
     }
 
-    public Execute getExecuteCommand()
+    public ObjectMapper getObjectMapper()
     {
-        return (Execute) this.commands.detect(c -> c instanceof Execute);
+        return objectMapper;
+    }
+
+    public String getLastCommand()
+    {
+        return this.getLastCommand(0);
+    }
+
+    public String getLastCommand(int skip)
+    {
+        try
+        {
+            return this.reader.getHistory().get(this.reader.getHistory().last() - skip);
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
     }
 }

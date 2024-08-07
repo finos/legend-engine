@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -182,6 +182,33 @@ function test::fetch6(): String[1]
 function test::fetch7(): String[1]
 {
   test::Street.all()->graphFetch(#{test::Street{address{name}}}#)->serialize(#{test::Street{address{name}}}#)
+}
+
+function test::fetch8(): String[1]
+{
+  test::Person.all()
+    ->graphFetch(#{
+      test::Person {
+        fullName,
+        firm {
+          name,
+          address {
+            name
+          }
+        }
+      }
+    }#, 1)
+    ->serialize(#{
+      test::Person {
+        fullName,
+        firm {
+          name,
+          address {
+            name
+          }
+        }
+      }
+    }#)
 }
 
 ###Relational

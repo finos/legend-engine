@@ -36,4 +36,9 @@ public class TDSWithCursorCoreInstance extends SimpleCoreInstance
     {
         return tds.getValueAsCoreInstance(name, currentRow);
     }
+
+    public int getCurrentRow()
+    {
+        return currentRow;
+    }
 }

@@ -14,54 +14,32 @@
 
 package org.finos.legend.engine.repl.core.commands;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
-import org.finos.legend.engine.plan.generation.PlanGenerator;
-import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
-import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
-import org.finos.legend.engine.repl.autocomplete.CompletionItem;
 import org.finos.legend.engine.repl.autocomplete.CompletionResult;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
-import org.finos.legend.engine.repl.core.Helpers;
 import org.finos.legend.engine.repl.core.ReplExtension;
-import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
-import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.engine.repl.shared.ExecutionHelper;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 
-import java.util.HashMap;
-
-import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_SIGNATURE;
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.executeCode;
 
 public class Execute implements Command
 {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
     private final Client client;
-    private final PlanExecutor planExecutor;
-    private ExecuteResult lastExecuteResult;
 
-    public Execute(Client client, PlanExecutor planExecutor)
+    public Execute(Client client)
     {
         this.client = client;
-        this.planExecutor = planExecutor;
-    }
-
-    public ExecuteResult getLastExecuteResult()
-    {
-        return this.lastExecuteResult;
     }
 
     @Override
@@ -73,7 +51,7 @@ public class Execute implements Command
     @Override
     public boolean process(String line) throws Exception
     {
-        this.client.getTerminal().writer().println(execute(line));
+        this.client.printInfo(execute(line));
         return true;
     }
 
@@ -86,15 +64,15 @@ public class Execute implements Command
             CompletionResult result = new org.finos.legend.engine.repl.autocomplete.Completer(this.client.getModelState().getText(), this.client.getCompleterExtensions()).complete(inScope);
             if (result.getEngineException() == null)
             {
-                list.addAll(result.getCompletion().collect(this::buildCandidate));
+                list.addAll(result.getCompletion().collect(s -> new Candidate(s.getCompletion(), s.getDisplay(), null, null, null, null, false, 0)));
                 return list;
             }
             else
             {
-                this.client.printError(result.getEngineException(), parsedLine.line());
+                this.client.printEngineError(result.getEngineException(), parsedLine.line());
                 AttributedStringBuilder ab = new AttributedStringBuilder();
                 ab.append("> ");
-                ab.style(new AttributedStyle().underlineOff().boldOff().foreground(0, 200, 0));
+                ab.style(new AttributedStyle().foreground(AttributedStyle.GREEN));
                 ab.append(parsedLine.line());
                 this.client.getTerminal().writer().print(ab.toAnsi());
             }
@@ -106,92 +84,27 @@ public class Execute implements Command
         return null;
     }
 
-    private Candidate buildCandidate(CompletionItem s)
-    {
-        return new Candidate(s.getCompletion(), s.getDisplay(), (String) null, (String) null, (String) null, (String) null, false, 0);
-    }
-
-
     public String execute(String txt)
     {
-        String code = "###Pure\n" +
-                "function " + REPL_RUN_FUNCTION_SIGNATURE + "\n{\n" + txt + ";\n}";
-
-        PureModelContextData d = this.client.getModelState().parseWithTransient(code);
-
-        if (this.client.isDebug())
+        return executeCode(txt, this.client, (Result res, PureModelContextData pmcd, PureModel pureModel) ->
         {
-            try
+            // Show result
+            if (res instanceof ConstantResult)
             {
-                this.client.getTerminal().writer().println((objectMapper.writeValueAsString(d)));
-            }
-            catch (Exception e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
-
-        // Compile
-        PureModel pureModel = this.client.getLegendInterface().compile(d);
-        RichIterable<? extends Root_meta_pure_extension_Extension> extensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
-        if (this.client.isDebug())
-        {
-            this.client.getTerminal().writer().println(">> " + extensions.collect(Root_meta_pure_extension_Extension::_type).makeString(", "));
-        }
-
-        // Plan
-        Root_meta_pure_executionPlan_ExecutionPlan plan = this.client.getLegendInterface().generatePlan(pureModel, this.client.isDebug());
-        String planStr = PlanGenerator.serializeToJSON(plan, "vX_X_X", pureModel, extensions, LegendPlanTransformers.transformers);
-        if (this.client.isDebug())
-        {
-            this.client.getTerminal().writer().println(planStr);
-        }
-
-        // Execute
-        Identity identity = Helpers.resolveIdentityFromLocalSubject(this.client);
-        SingleExecutionPlan execPlan = (SingleExecutionPlan) PlanExecutor.readExecutionPlan(planStr);
-        Result res = this.planExecutor.execute(execPlan, new HashMap<>(), identity.getName(), identity, null);
-
-        // Store these infos for commands that need to access data from the latest execute
-        this.lastExecuteResult = new ExecuteResult(d, pureModel, res, execPlan);
-
-        // Show result
-        if (res instanceof ConstantResult)
-        {
-            return ((ConstantResult) res).getValue().toString();
-        }
-        else
-        {
-            ReplExtension extension = this.client.getReplExtensions().detect(x -> x.supports(res));
-            if (extension != null)
-            {
-                return extension.print(res);
+                return new ExecutionHelper.ExecuteResultSummary(pmcd, pureModel, res, ((ConstantResult) res).getValue().toString());
             }
             else
             {
-                throw new RuntimeException(res.getClass() + " not supported!");
+                ReplExtension extension = this.client.getReplExtensions().detect(x -> x.supports(res));
+                if (extension != null)
+                {
+                    return new ExecutionHelper.ExecuteResultSummary(pmcd, pureModel, res, extension.print(res));
+                }
+                else
+                {
+                    throw new RuntimeException(res.getClass() + " not supported!");
+                }
             }
-        }
-    }
-
-    public PlanExecutor getPlanExecutor()
-    {
-        return this.planExecutor;
-    }
-
-    public static class ExecuteResult
-    {
-        public final PureModelContextData pureModelContextData;
-        public final PureModel pureModel;
-        public final Result result;
-        public final SingleExecutionPlan plan;
-
-        public ExecuteResult(PureModelContextData pureModelContextData, PureModel pureModel, Result result, SingleExecutionPlan plan)
-        {
-            this.pureModelContextData = pureModelContextData;
-            this.pureModel = pureModel;
-            this.result = result;
-            this.plan = plan;
-        }
+        }).resultPreview;
     }
 }

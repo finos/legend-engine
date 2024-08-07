@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.relationType.Column;
 import org.finos.legend.engine.protocol.pure.v1.model.relationType.RelationType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation._package._Package;
@@ -42,6 +43,6 @@ public class RelationTypeHelper
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?> convert(RelationType src, ProcessorSupport processorSupport, SourceInformation sourceInformation)
     {
-        return _RelationType.build(ListIterate.collect(src.columns, c -> (CoreInstance) _Column.getColumnInstance(c.name, false, (GenericType) processorSupport.type_wrapGenericType(_Package.getByUserPath(c.type, processorSupport)), sourceInformation, processorSupport)).toList(), sourceInformation, processorSupport);
+        return _RelationType.build(ListIterate.collect(src.columns, c -> (CoreInstance) _Column.getColumnInstance(c.name, false, (GenericType) processorSupport.type_wrapGenericType(_Package.getByUserPath(c.type, processorSupport)), (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(0, 1, processorSupport), sourceInformation, processorSupport)).toList(), sourceInformation, processorSupport);
     }
 }

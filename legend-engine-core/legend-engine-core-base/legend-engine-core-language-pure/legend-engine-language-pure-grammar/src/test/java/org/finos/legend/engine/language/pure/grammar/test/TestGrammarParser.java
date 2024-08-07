@@ -27,6 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.*;
@@ -92,7 +93,15 @@ public class TestGrammarParser
 
         protected static PureModelContextData test(String val)
         {
-            return PureGrammarParser.newInstance().parseModel(val);
+            PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(val);
+            for (PackageableElement element : pureModelContextData.getElements())
+            {
+                if (!(element instanceof SectionIndex))
+                {
+                    Assert.assertNotNull("Missing source information: " + element.getClass().getName() + '(' + element.getPath() + ')', element.sourceInformation);
+                }
+            }
+            return pureModelContextData;
         }
 
         protected static void test(String val, String expectedErrorMsg)

@@ -32,7 +32,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 
 import java.net.URL;
 
-import static org.finos.legend.engine.repl.core.Helpers.REPL_RUN_FUNCTION_QUALIFIED_PATH;
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_QUALIFIED_PATH;
 
 public class LocalLegendInterface implements LegendInterface
 {

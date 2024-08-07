@@ -1,0 +1,100 @@
+import meta::pure::router::platform::execution::*;
+import meta::pure::graphFetch::*;
+import meta::external::dataquality::*;
+import meta::external::dataquality::tests::*;
+import meta::pure::metamodel::dataSpace::*;
+import meta::pure::mapping::*;
+import meta::core::runtime::*;
+import meta::external::store::relational::tests::*;
+import meta::relational::metamodel::*;
+import meta::pure::executionPlan::*;
+import meta::relational::tests::milestoning::*;
+import meta::pure::profiles::*;
+import meta::pure::metamodel::serialization::grammar::*;
+
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration():Boolean[1]
+{ let dqRootConstraints = meta::external::dataquality::tests::Person->getAllTypeGeneralisations()->filter(x| $x->instanceOf(ElementWithConstraints))->cast(@ElementWithConstraints).constraints->filter(x| $x.name == 'addressIDGreaterThan2');
+
+  let validationTree = ^DataQualityRootGraphFetchTree<Person>(
+    class=meta::external::dataquality::tests::Person,
+    constraints=$dqRootConstraints->at(0),
+    subTrees=meta::external::dataquality::tests::Person->hierarchicalProperties()->filter(p | $p->isPrimitiveValueProperty())->filter(p| $p.name=='age')->map(p | ^DataQualityPropertyGraphFetchTree(property=$p))
+  );
+  let filter = p:Person[1]| $p.name=='John';
+  let dataquality = ^DataQuality<Person>(validationTree=$validationTree,
+                                         context=^meta::external::dataquality::MappingAndRuntimeDataQualityExecutionContext(runtime=^meta::core::runtime::EngineRuntime(connectionStores = testDatabaseConnection(meta::relational::tests::db, [])), mapping=meta::external::dataquality::tests::dqValidationPersonMapping),
+                                         filter=$filter);
+  
+  // fetch lambda from DQ func;
+  let dqLambda = meta::external::dataquality::executeDataQualityValidation($dataquality, []);
+  assert($dqLambda->isNotEmpty());
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_OnlyStructuralConstraints():Boolean[1]
+{ let dqRootConstraints = meta::external::dataquality::tests::Person->getAllTypeGeneralisations()->filter(x| $x->instanceOf(ElementWithConstraints))->cast(@ElementWithConstraints).constraints->filter(x| $x.name == 'addressIDGreaterThan2');
+
+  let validationTree = ^DataQualityRootGraphFetchTree<Person>(
+    class=meta::external::dataquality::tests::Person,
+    constraints=[],
+    subTrees=meta::external::dataquality::tests::Person->hierarchicalProperties()->filter(p | $p->isPrimitiveValueProperty())->filter(p| $p.name=='age')->map(p | ^DataQualityPropertyGraphFetchTree(property=$p))
+  );
+  let filter = p:Person[1]| $p.name=='John';
+  let dataquality = ^DataQuality<Person>(validationTree=$validationTree,
+                                         context=^meta::external::dataquality::MappingAndRuntimeDataQualityExecutionContext(runtime=^meta::core::runtime::EngineRuntime(connectionStores = testDatabaseConnection(meta::relational::tests::db, [])), mapping=meta::external::dataquality::tests::dqValidationPersonMapping),
+                                         filter=$filter);
+  
+  let dqLambda = meta::external::dataquality::executeDataQualityValidation($dataquality, []);
+  assert($dqLambda->isNotEmpty());
+}
+
+
+
+
+// -------------------------------------- Test Setup -------------------------------------------------------------------------//
+// relational mappings
+Class meta::external::dataquality::tests::Person
+[
+  nameMustNotBeBlank: $this.name->length() > 0,
+  ageMustBePositive: $this.age > 0,
+  nameAtLeast4Chars: $this.name->length() > 4,
+  ageMustBeGreaterThan10: $this.age > 100,
+  //addressIDGreaterThan1: $this.addresses->filter(a | $a.addressId > 1)->isNotEmpty(),
+  addressIDGreaterThan2: $this.addresses->filter(a | $a.addressId > 2)->isNotEmpty()
+]
+{
+   name : String[1];
+   age : Integer[1];
+   addresses : meta::external::dataquality::tests::Address[*];
+}
+
+Class meta::external::dataquality::tests::Address
+[
+  addressIDMustNotBeBlank: $this.addressId > 0
+]
+{
+   // location: Location[1];
+   // locationStreet: String[1];
+   addressId: Integer[1];
+}
+
+###Mapping
+import meta::relational::validation::complex::*;
+
+Mapping meta::external::dataquality::tests::dqValidationPersonMapping
+(
+   meta::external::dataquality::tests::Person : Relational
+   {
+      // ~filter [db] (INNER)@Address_Person | [db] ActiveAddressFilter
+      name : [db]personTable.FIRSTNAME,
+      age : [db]personTable.AGE,
+      addresses : [db]@Address_Person
+   }
+   meta::external::dataquality::tests::Address : Relational
+   {
+      // ~filter [db] (INNER)@Address_Location | [db] LocationStreetLengthLessThan10
+      addressId : [db]addressTable.ID
+      // location : [db]@Address_Location
+   }
+
+)

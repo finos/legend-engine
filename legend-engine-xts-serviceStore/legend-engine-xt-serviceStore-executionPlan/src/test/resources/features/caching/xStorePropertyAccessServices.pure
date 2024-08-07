@@ -1,0 +1,354 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class test::Person
+{
+  fullName: String[1];
+  firmName : String[0..1];
+
+  // multiplicity here should be [0..1] but there will be a param multiplicity error if querying by this attrib
+  // this implies that firmName String[0..1] would also fail for a similar query - implies that servicestore
+  // may not accept 0..1 in the model. Services return a JSON and currently need to return empty string
+  // implication is that model does/can not fully capture multiplicity of result.
+  // Error - Parameter multiplicity is not compatible with transform multiplicity - Multiplicity error: [1] doesn't subsume [0..1]
+  addressName : String[1];
+}
+
+Class test::Firm
+{
+  name: String[1];
+  addressName : String[0..1];
+}
+
+Class test::Address
+{
+  name: String[1];
+  streetName: String[0..1];
+}
+
+Class test::Street
+{
+  streetId: String[1];
+}
+
+Association test::Person_Firm
+{
+  employees: test::Person[*];
+  firm: test::Firm[0..1];
+}
+
+Association test::Person_Address
+{
+  persons: test::Person[*];
+  address: test::Address[0..1];
+}
+
+Association test::Firm_Address
+{
+  firms: test::Firm[*];
+  address: test::Address[0..1];
+}
+
+Association test::Address_Street
+{
+  street: test::Street[0..1];
+  addresses: test::Address[*];
+}
+
+// Define schema bindings
+###ExternalFormat
+Binding test::personServiceStoreSchemaBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    test::Person
+  ];
+}
+
+Binding test::firmServiceStoreSchemaBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    test::Firm
+  ];
+}
+
+Binding test::addressServiceStoreSchemaBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    test::Address
+  ];
+}
+
+Binding test::streetServiceStoreSchemaBinding
+{
+    contentType: 'application/json';
+    modelIncludes: [
+        test::Street
+    ];
+}
+
+###ServiceStore
+ServiceStore test::serviceStore::caching::store::PersonService
+(
+    ServiceGroup PersonService
+    (
+        path : '/persons';
+
+        Service AllPersonsService
+        (
+            path : '/allPersons';
+            method : GET;
+            response : [test::Person <- test::personServiceStoreSchemaBinding];
+            security : [];
+        )
+
+        Service PersonByNameService
+        (
+            path : '/personByName/{fullName}';
+            method : GET;
+            parameters :
+            (
+                "fullName" : String ( location = path )
+            );
+            response : [test::Person <- test::personServiceStoreSchemaBinding];
+            security : [];
+        )
+
+        Service PersonsByAddressNameService
+        (
+            path : '/personsByAddressName';
+            method : GET;
+            parameters :
+            (
+                "addressName" : String ( location = query, required = false )
+            );
+            response : [test::Person <- test::personServiceStoreSchemaBinding];
+            security : [];
+        )
+    )
+)
+
+ServiceStore test::serviceStore::caching::store::FirmService
+(
+    ServiceGroup FirmService
+    (
+        path : '/firms';
+
+        Service AllFirmsService
+        (
+            path : '/allFirms';
+            method : GET;
+            response : [test::Firm <- test::firmServiceStoreSchemaBinding];
+            security : [];
+        )
+
+        Service FirmByNameService
+        (
+            path : '/firmByName';
+            method : GET;
+            parameters :
+            (
+                "name" : String ( location = query )
+            );
+            response : [test::Firm <- test::firmServiceStoreSchemaBinding];
+            security : [];
+        )
+    )
+)
+
+ServiceStore test::serviceStore::caching::store::AddressService
+(
+    ServiceGroup AddressService
+    (
+        path : '/addresses';
+
+        Service AllAddressesService
+        (
+            path : '/allAddresses';
+            method : GET;
+            response : [test::Address <- test::addressServiceStoreSchemaBinding];
+            security : [];
+        )
+
+        Service AddressByNameService
+        (
+            path : '/addressByName';
+            method : GET;
+            parameters :
+            (
+                "name" : String ( location = query )
+            );
+            response : [test::Address <- test::addressServiceStoreSchemaBinding];
+            security : [];
+        )
+    )
+)
+
+ServiceStore test::serviceStore::caching::store::StreetService
+(
+    ServiceGroup StreetService
+    (
+        path : '/streets';
+
+        Service AllStreetsService
+        (
+            path : '/allStreets';
+            method : GET;
+            response : [test::Street <- test::streetServiceStoreSchemaBinding];
+            security : [];
+        )
+
+        Service StreetByIDService
+        (
+            path : '/streetByID';
+            method : GET;
+            parameters :
+            (
+                "streetId" : String ( location = query )
+            );
+            response : [test::Street <- test::streetServiceStoreSchemaBinding];
+            security : [];
+        )
+    )
+)
+
+###Mapping
+Mapping test::serviceStore::caching::Map
+(
+  test::Person[person_set] : ServiceStore {
+    ~service [test::serviceStore::caching::store::PersonService] PersonService.AllPersonsService
+
+    ~service [test::serviceStore::caching::store::PersonService] PersonService.PersonByNameService
+    (
+        ~request
+        (
+            parameters
+            (
+                fullName = $this.fullName
+            )
+        )
+    )
+
+    ~service [test::serviceStore::caching::store::PersonService] PersonService.PersonsByAddressNameService
+    (
+        ~request
+        (
+            parameters
+            (
+                addressName = $this.addressName
+            )
+        )
+    )
+  }
+
+  // Need to create ServiceSet to enable querying
+  test::Firm[firm_set] : ServiceStore {
+    +addressName : String[0..1];
+
+    ~service [test::serviceStore::caching::store::FirmService] FirmService.AllFirmsService
+
+    ~service [test::serviceStore::caching::store::FirmService] FirmService.FirmByNameService
+    (
+        ~request
+        (
+            parameters
+            (
+                name = $this.name
+            )
+        )
+    )
+  }
+
+  test::Address[address_set] : ServiceStore {
+    ~service [test::serviceStore::caching::store::AddressService] AddressService.AllAddressesService
+
+    ~service [test::serviceStore::caching::store::AddressService] AddressService.AddressByNameService
+    (
+        ~request
+        (
+            parameters
+            (
+                name = $this.name
+            )
+        )
+    )
+  }
+
+  test::Street[street_set] : ServiceStore {
+    ~service [test::serviceStore::caching::store::StreetService] StreetService.AllStreetsService
+
+    ~service [test::serviceStore::caching::store::StreetService] StreetService.StreetByIDService
+    (
+        ~request
+        (
+            parameters
+            (
+                streetId = $this.streetId
+            )
+        )
+    )
+  }
+
+  test::Person_Firm : XStore {
+    employees[firm_set, person_set]: $this.name == $that.firmName,
+    firm[person_set, firm_set]: $this.firmName == $that.name
+  }
+
+  test::Person_Address : XStore {
+    persons[address_set, person_set]: $this.name == $that.addressName,
+    address[person_set, address_set]: $this.addressName == $that.name
+  }
+
+  test::Firm_Address : XStore {
+    firms[address_set, firm_set]: $this.name == $that.addressName,
+    address[firm_set, address_set]: $this.addressName == $that.name
+  }
+
+  test::Address_Street : XStore {
+    street[address_set, street_set]: $this.streetName == $that.streetId,
+    addresses[street_set, address_set]: $this.streetId == $that.streetName
+  }
+
+)
+
+###Runtime
+Runtime test::serviceStore::caching::Runtime
+{
+  mappings:
+  [
+    test::serviceStore::caching::Map
+  ];
+  connections:
+  [
+    test::serviceStore::caching::store::PersonService:
+    [
+      c1: test::serviceStore::caching::connection::PersonConnection
+    ],
+    test::serviceStore::caching::store::FirmService:
+    [
+      c2: test::serviceStore::caching::connection::FirmConnection
+    ],
+    test::serviceStore::caching::store::AddressService:
+    [
+      c3: test::serviceStore::caching::connection::AddressConnection
+    ],
+    test::serviceStore::caching::store::StreetService:
+    [
+      c4: test::serviceStore::caching::connection::StreetConnection
+    ]
+  ];
+}

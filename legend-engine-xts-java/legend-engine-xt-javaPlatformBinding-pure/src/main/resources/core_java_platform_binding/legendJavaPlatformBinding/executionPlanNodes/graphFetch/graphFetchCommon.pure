@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -422,4 +422,10 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
                                   ),
       v : ValueSpecification[1] | $v
    ])
+}
+
+/* Adding common method(s) shared between GraphFetchInMemory and RelationalGraphFetch*/
+function meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::buildParentCrossKeyGettersOrderedByTargetPropertiesMethod(class: meta::external::language::java::metamodel::Class[1], modifiers: String[*], code: Code[*]):meta::external::language::java::metamodel::Method[1]
+{
+   javaMethod($modifiers, javaList(javaReflectMethod()), 'parentCrossKeyGettersOrderedByTargetProperties', [], $code)
 }

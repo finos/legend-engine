@@ -105,10 +105,14 @@ public class DataQualityTreeWalker
     {
         List<GraphFetchTree> subTrees = new ArrayList<>();
         List<SubTypeGraphFetchTree> subTypeTrees = new ArrayList<>();
-        for (DataQualityParserGrammar.GraphPathContext graphPathContext : graphDefinitionContext.graphPaths().graphPath())
+        if (Objects.nonNull(graphDefinitionContext.graphPaths()))
         {
-            subTrees.add(this.visitGraphPathContext(graphPathContext));
+            for (DataQualityParserGrammar.GraphPathContext graphPathContext : graphDefinitionContext.graphPaths().graphPath())
+            {
+                subTrees.add(this.visitGraphPathContext(graphPathContext));
+            }
         }
+
 //        for (GraphFetchTreeParserGrammar.SubTypeGraphPathContext subTypeGraphPathContext : graphDefinitionContext.graphPaths().subTypeGraphPath())
 //        {
 //            subTypeTrees.add(this.visitSubTypeGraphPathContext(subTypeGraphPathContext));
@@ -124,16 +128,21 @@ public class DataQualityTreeWalker
             result.constraints = new ArrayList<>();
             for (DataQualityParserGrammar.DqConstraintNameContext dqConstraintNameContext : validationDefinitionContext.constraintList().dqConstraintName())
             {
-                result.constraints.add(dqConstraintNameContext.getText());
+                result.constraints.add(visitConstraintName(dqConstraintNameContext));
             }
         }
         return result;
     }
 
+    private String visitConstraintName(DataQualityParserGrammar.DqConstraintNameContext dqConstraintNameContext)
+    {
+        return PureGrammarParserUtility.fromIdentifier(dqConstraintNameContext.identifier());
+    }
+
     private PropertyGraphFetchTree visitGraphPathContext(DataQualityParserGrammar.GraphPathContext graphPathContext)
     {
         List<GraphFetchTree> subTrees = new ArrayList<>();
-        if (graphPathContext.graphDefinition() != null)
+        if (graphPathContext.graphDefinition() != null && graphPathContext.graphDefinition().graphPaths() != null)
         {
             // validationForSubTypeTrees(graphPathContext.graphDefinition());
             for (DataQualityParserGrammar.GraphPathContext subGraphPathContext : graphPathContext.graphDefinition().graphPaths().graphPath())

@@ -21,10 +21,19 @@ public class RowContainer implements Function<String, Object>
     private int row;
     private TestTDSCompiled tds;
 
+    public RowContainer()
+    {
+    }
+
     public RowContainer(TestTDSCompiled tds, int row)
     {
         this.tds = tds;
         this.row = row;
+    }
+
+    public int getRow()
+    {
+        return row;
     }
 
     @Override
