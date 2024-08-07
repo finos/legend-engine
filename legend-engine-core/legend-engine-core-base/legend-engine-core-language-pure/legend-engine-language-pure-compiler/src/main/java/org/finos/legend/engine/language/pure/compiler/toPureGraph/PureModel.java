@@ -158,7 +158,6 @@ public class PureModel implements IPureModel
     final ConcurrentHashMap<String, Root_meta_pure_runtime_PackageableRuntime> packageableRuntimesIndex = new ConcurrentHashMap<>();
     final ConcurrentHashMap<String, Root_meta_core_runtime_Runtime> runtimesIndex = new ConcurrentHashMap<>();
     private final ConcurrentLinkedQueue<EngineException> engineExceptions = new ConcurrentLinkedQueue<>();
-    private final ForkJoinPool forkJoinPool;
 
     public PureModel(PureModelContextData pure, String user, DeploymentMode deploymentMode)
     {
@@ -188,15 +187,6 @@ public class PureModel implements IPureModel
         if (classLoader == null)
         {
             classLoader = Thread.currentThread().getContextClassLoader();
-        }
-
-        if (pureModelProcessParameter.getForkJoinPool() == null)
-        {
-            forkJoinPool = createForkJoinPool(classLoader);
-        }
-        else
-        {
-            forkJoinPool = pureModelProcessParameter.getForkJoinPool();
         }
 
         this.extensions = extensions;
@@ -269,10 +259,9 @@ public class PureModel implements IPureModel
                         return x.getClass();
                     });
 
-            CompletableFuture<Void> pureModelCompilationFuture = CompletableFuture.runAsync(() ->
+            Runnable runPasses = () ->
             {
-                Stream.concat(classToElements.removeAll(SectionIndex.class).stream(), classToElements.removeAll(Profile.class).stream())
-                        .parallel()
+                this.maybeParallel(Stream.concat(classToElements.removeAll(SectionIndex.class).stream(), classToElements.removeAll(Profile.class).stream()))
                         .forEach(handleEngineExceptions(this::processFirstPass));
 
                 MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, Collection<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>>> dependencyGraph = Maps.mutable.empty();
@@ -288,7 +277,7 @@ public class PureModel implements IPureModel
                 MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, Collection<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>>> dependentToDependencies = dependencyManagement.getDependentToDependencies();
                 dependencyManagement.detectCircularDependency();
                 MutableSet<MutableSet<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>>> disjointDependencyGraphs = dependencyManagement.getDisjointDependencyGraphs();
-                disjointDependencyGraphs.parallelStream().forEach(disjointDependencyGraph ->
+                this.maybeParallel(disjointDependencyGraphs.stream()).forEach(disjointDependencyGraph ->
                 {
                     processPass("firstPass", classToElements, dependentToDependencies, handleEngineExceptions(this::processElementFirstPass), disjointDependencyGraph);
                     processPass("secondPass", classToElements, dependentToDependencies, handleEngineExceptions(this::processSecondPass), disjointDependencyGraph);
@@ -297,34 +286,45 @@ public class PureModel implements IPureModel
                     processPass("fifthPass", classToElements, dependentToDependencies, handleEngineExceptions(this::processFifthPass), disjointDependencyGraph);
                     processPass("sixthPass", classToElements, dependentToDependencies, handleEngineExceptions(this::processSixthPass), disjointDependencyGraph);
                 });
-            }, forkJoinPool);
-            try
+            };
+
+            ForkJoinPool forkJoinPool = pureModelProcessParameter.getForkJoinPool();
+            if (forkJoinPool != null)
             {
-                pureModelCompilationFuture.get(10, TimeUnit.MINUTES);
+                CompletableFuture<Void> pureModelCompilationFuture = CompletableFuture.runAsync(runPasses, forkJoinPool);
+                try
+                {
+                    pureModelCompilationFuture.get(10, TimeUnit.MINUTES);
+                }
+                catch (InterruptedException | TimeoutException e)
+                {
+                    String threadDump = Stream.of(ManagementFactory.getThreadMXBean().dumpAllThreads(true, true))
+                            .map(ThreadInfo::toString)
+                            .collect(Collectors.joining("\n\t\t"));
+                    throw new RuntimeException("Failure while waiting for compiler to finish.\n\nPool state: " + forkJoinPool.toString() + "\n\nThread Dump: " + threadDump, e);
+                }
+                catch (ExecutionException | CompletionException e)
+                {
+                    Throwable cause = e.getCause();
+                    if (cause instanceof Error)
+                    {
+                        throw (Error) cause;
+                    }
+                    else if (cause instanceof RuntimeException)
+                    {
+                        throw (RuntimeException) cause;
+                    }
+                    else
+                    {
+                        throw new RuntimeException(cause);
+                    }
+                }
             }
-            catch (InterruptedException | TimeoutException e)
+            else
             {
-                String threadDump = Stream.of(ManagementFactory.getThreadMXBean().dumpAllThreads(true, true))
-                        .map(ThreadInfo::toString)
-                        .collect(Collectors.joining("\n\t\t"));
-                throw new RuntimeException("Failure while waiting for compiler to finish.\n\nPool state: " + forkJoinPool.toString() + "\n\nThread Dump: " + threadDump, e);
+                runPasses.run();
             }
-            catch (ExecutionException | CompletionException e)
-            {
-                Throwable cause = e.getCause();
-                if (cause instanceof Error)
-                {
-                    throw (Error) cause;
-                }
-                else if (cause instanceof RuntimeException)
-                {
-                    throw (RuntimeException) cause;
-                }
-                else
-                {
-                    throw new RuntimeException(cause);
-                }
-            }
+
 
             // Post Validation
             long postValidationStart = System.nanoTime();
@@ -362,23 +362,19 @@ public class PureModel implements IPureModel
         finally
         {
             span.finish();
-            if (this.pureModelProcessParameter.getForkJoinPool() == null)
-            {
-                forkJoinPool.shutdown();
-            }
         }
     }
 
-    private ForkJoinPool createForkJoinPool(ClassLoader classLoader)
+    private <T> Stream<T> maybeParallel(Stream<T> stream)
     {
-        return new ForkJoinPool(1, x ->
+        if (Thread.currentThread() instanceof ForkJoinWorkerThread)
         {
-            ForkJoinWorkerThread forkJoinWorkerThread = new ForkJoinWorkerThread(x)
-            {
-            };
-            forkJoinWorkerThread.setContextClassLoader(classLoader);
-            return forkJoinWorkerThread;
-        }, null, false);
+            return stream.parallel();
+        }
+        else
+        {
+            return stream.sequential();
+        }
     }
 
     private void processPostValidation(PureModelContextData pureModelContextData, CompilerExtensions extensions)
@@ -458,14 +454,17 @@ public class PureModel implements IPureModel
 
     private void registerElementForPathToElement(String pack, List<String> children)
     {
-        org.finos.legend.pure.m3.coreinstance.Package newPkg = getOrCreatePackage(root, pack);
-        org.finos.legend.pure.m3.coreinstance.Package oldPkg = getPackage((org.finos.legend.pure.m3.coreinstance.Package) METADATA_LAZY.getMetadata(M3Paths.Package, M3Paths.Root), pack);
-        for (String child : children)
+        try (AutoCloseableLock ignored = this.pureModelProcessParameter.writeLock())
         {
-            // allow duplicated registration, but only the first one will actually get registered
-            if (newPkg._children().detect(c -> child.equals(c._name())) == null)
+            org.finos.legend.pure.m3.coreinstance.Package newPkg = getOrCreatePackage(root, pack);
+            org.finos.legend.pure.m3.coreinstance.Package oldPkg = getPackage((org.finos.legend.pure.m3.coreinstance.Package) METADATA_LAZY.getMetadata(M3Paths.Package, M3Paths.Root), pack);
+            for (String child : children)
             {
-                newPkg._childrenAdd(Objects.requireNonNull(oldPkg._children().detect(c -> child.equals(c._name())), "Can't find child element '" + child + "' in package '" + pack + "' for path registration"));
+                // allow duplicated registration, but only the first one will actually get registered
+                if (newPkg._children().detect(c -> child.equals(c._name())) == null)
+                {
+                    newPkg._childrenAdd(Objects.requireNonNull(oldPkg._children().detect(c -> child.equals(c._name())), "Can't find child element '" + child + "' in package '" + pack + "' for path registration"));
+                }
             }
         }
     }
@@ -519,7 +518,7 @@ public class PureModel implements IPureModel
     {
         MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, CompletableFuture<Void>> tracker = Maps.mutable.empty();
         disjointDependencyGraph.forEach(dependent -> tracker.put(dependent, new CompletableFuture<>()));
-        disjointDependencyGraph.parallelStream().forEach(dependent ->
+        this.maybeParallel(disjointDependencyGraph.stream()).forEach(dependent ->
         {
             MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> elementsToCompile = classToElements.get(dependent);
 
@@ -531,7 +530,7 @@ public class PureModel implements IPureModel
                     {
                         try
                         {
-                            elementsToCompile.parallelStream().forEach(passConsumer);
+                            this.maybeParallel(elementsToCompile.stream()).forEach(passConsumer);
                             tracker.get(dependent).complete(null);
                             LOGGER.debug("{} - Completed {}", name, dependent);
                         }
@@ -641,6 +640,11 @@ public class PureModel implements IPureModel
 
     // ------------------------------------------ GETTER -----------------------------------------
 
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement getPackageableElement(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    {
+        return this.getPackageableElement(element.getPath(), element.sourceInformation);
+    }
+
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement getPackageableElement(String fullPath)
     {
         return getPackageableElement(fullPath, SourceInformation.getUnknownSourceInformation());
@@ -701,22 +705,25 @@ public class PureModel implements IPureModel
             return this.root;
         }
 
-        org.finos.legend.pure.m3.coreinstance.Package currentPackage = this.root;
-        int start = 0;
-        int end;
-        while ((end = fullPath.indexOf(':', start)) != -1)
+        try (AutoCloseableLock ignored = this.pureModelProcessParameter.readLock())
         {
-            String name = fullPath.substring(start, end);
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement child = currentPackage._children().detect(c -> name.equals(c._name()));
-            if (!(child instanceof org.finos.legend.pure.m3.coreinstance.Package))
+            org.finos.legend.pure.m3.coreinstance.Package currentPackage = this.root;
+            int start = 0;
+            int end;
+            while ((end = fullPath.indexOf(':', start)) != -1)
             {
-                return null;
+                String name = fullPath.substring(start, end);
+                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement child = currentPackage._children().detect(c -> name.equals(c._name()));
+                if (!(child instanceof org.finos.legend.pure.m3.coreinstance.Package))
+                {
+                    return null;
+                }
+                currentPackage = (org.finos.legend.pure.m3.coreinstance.Package) child;
+                start = end + 2;
             }
-            currentPackage = (org.finos.legend.pure.m3.coreinstance.Package) child;
-            start = end + 2;
+            String name = fullPath.substring(start);
+            return currentPackage._children().detect(c -> name.equals(c._name()));
         }
-        String name = fullPath.substring(start);
-        return currentPackage._children().detect(c -> name.equals(c._name()));
     }
 
 
@@ -1313,7 +1320,7 @@ public class PureModel implements IPureModel
                 throw new EngineException("Can't create package with reserved name '" + name + "'");
             }
 
-            synchronized (parent)
+            try (AutoCloseableLock ignored1 = this.pureModelProcessParameter.writeLock())
             {
                 child = findChildPackage(parent, name);
                 if (child == null)
@@ -1329,15 +1336,18 @@ public class PureModel implements IPureModel
 
     private org.finos.legend.pure.m3.coreinstance.Package findChildPackage(org.finos.legend.pure.m3.coreinstance.Package parent, String childName)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement child = parent._children().detect(c -> childName.equals(c.getName()));
-        if ((child != null) && !(child instanceof org.finos.legend.pure.m3.coreinstance.Package))
+        try (AutoCloseableLock ignored = this.pureModelProcessParameter.readLock())
         {
-            StringBuilder builder = new StringBuilder("Element ").append(childName).append(" in ");
-            PackageableElement.writeUserPathForPackageableElement(builder, parent);
-            builder.append(" is not a package");
-            throw new RuntimeException(builder.toString());
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement child = parent._children().detect(c -> childName.equals(c.getName()));
+            if ((child != null) && !(child instanceof org.finos.legend.pure.m3.coreinstance.Package))
+            {
+                StringBuilder builder = new StringBuilder("Element ").append(childName).append(" in ");
+                PackageableElement.writeUserPathForPackageableElement(builder, parent);
+                builder.append(" is not a package");
+                throw new RuntimeException(builder.toString());
+            }
+            return (org.finos.legend.pure.m3.coreinstance.Package) child;
         }
-        return (org.finos.legend.pure.m3.coreinstance.Package) child;
     }
 
     public CompiledExecutionSupport getExecutionSupport()
@@ -1385,11 +1395,11 @@ public class PureModel implements IPureModel
     {
         if (!(f instanceof UserDefinedFunctionHandler))
         {
-            String pkg = HelperModelBuilder.getElementFullPath(((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) f.getFunc())._package(), this.getExecutionSupport());
-            org.finos.legend.pure.m3.coreinstance.Package n = getOrCreatePackage(root, pkg);
-            org.finos.legend.pure.m3.coreinstance.Package o = getPackage((org.finos.legend.pure.m3.coreinstance.Package) METADATA_LAZY.getMetadata(M3Paths.Package, M3Paths.Root), pkg);
-            synchronized (n)
+            try (AutoCloseableLock ignored = this.pureModelProcessParameter.writeLock())
             {
+                String pkg = HelperModelBuilder.getElementFullPath(((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) f.getFunc())._package(), this.getExecutionSupport());
+                org.finos.legend.pure.m3.coreinstance.Package n = getOrCreatePackage(root, pkg);
+                org.finos.legend.pure.m3.coreinstance.Package o = getPackage((org.finos.legend.pure.m3.coreinstance.Package) METADATA_LAZY.getMetadata(M3Paths.Package, M3Paths.Root), pkg);
                 n._childrenAdd(o._children().detect(c -> f.getFunctionSignature().equals(c._name())));
             }
         }
@@ -1522,5 +1532,33 @@ public class PureModel implements IPureModel
     private static double nanosDurationToMillis(long startNanos, long endNanos)
     {
         return (endNanos - startNanos) / 1_000_000.0d;
+    }
+
+    protected <T extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> T setNameAndPackage(T pureElement, String name, String packagePath, SourceInformation sourceInformation)
+    {
+        // Validate and set name
+        if ((name == null) || name.isEmpty())
+        {
+            throw new EngineException("PackageableElement name may not be null or empty", sourceInformation, EngineErrorType.COMPILATION);
+        }
+        if (!name.equals(pureElement.getName()))
+        {
+            throw new EngineException("PackageableElement name '" + name + "' must match CoreInstance name '" + pureElement.getName() + "'", sourceInformation, EngineErrorType.COMPILATION);
+        }
+        pureElement._name(name);
+
+        try (AutoCloseableLock ignored = this.pureModelProcessParameter.writeLock())
+        {
+            // Validate and set package
+            Package pack = this.getOrCreatePackage(packagePath);
+            if (pack._children().anySatisfy(c -> name.equals(c._name())))
+            {
+                throw new EngineException("An element named '" + name + "' already exists in the package '" + packagePath + "'", sourceInformation, EngineErrorType.COMPILATION);
+            }
+            pureElement._package(pack);
+            pureElement.setSourceInformation(SourceInformationHelper.toM3SourceInformation(sourceInformation));
+            pack._childrenAdd(pureElement);
+        }
+        return pureElement;
     }
 }

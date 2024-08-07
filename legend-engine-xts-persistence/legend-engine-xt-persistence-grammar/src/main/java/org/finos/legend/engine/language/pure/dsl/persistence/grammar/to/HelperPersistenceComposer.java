@@ -141,7 +141,7 @@ public class HelperPersistenceComposer
                 "{\n" +
                 renderDocumentation(persistence.documentation, indentLevel) +
                 renderTrigger(persistence.trigger, indentLevel, context) +
-                renderService(persistence.service, indentLevel) +
+                renderService(persistence.service.path, indentLevel) +
                 renderServiceOutputTargets(persistence.serviceOutputTargets, indentLevel, context) +
                 //TODO: ledav -- remove once v2 is rolled out | START
                 renderPersister(persistence.persister, indentLevel, context) +
@@ -729,7 +729,7 @@ public class HelperPersistenceComposer
         {
             return getTabString(indentLevel) + "sink: Relational\n" +
                     getTabString(indentLevel) + "{\n" +
-                    renderDatabasePointer(val.database, indentLevel + 1) +
+                    renderDatabasePointer(val.database.path, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -738,7 +738,7 @@ public class HelperPersistenceComposer
         {
             return getTabString(indentLevel) + "sink: ObjectStorage\n" +
                     getTabString(indentLevel) + "{\n" +
-                    renderBindingPointer(val.binding, indentLevel + 1) +
+                    renderBindingPointer(val.binding.path, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
 

@@ -14,8 +14,16 @@
 
 package org.finos.legend.engine.persistence.components.relational.sqldom;
 
-public class SqlDomException extends RuntimeException
+import org.finos.legend.engine.persistence.components.exception.PersistenceException;
+
+public class SqlDomException extends PersistenceException
 {
+
+    @Override
+    public boolean isRecoverable()
+    {
+        return false;
+    }
 
     public SqlDomException(String e)
     {

@@ -56,6 +56,47 @@ public class TestTDS
         return new TestTDS();
     }
 
+    public TestTDS newEmptyTDS()
+    {
+        return newTDS(columnsOrdered, columnType, 0);
+    }
+
+    public TestTDS newNullTDS()
+    {
+        TestTDS testTDS = newTDS(columnsOrdered, columnType, 1);
+        for (String col : columnsOrdered)
+        {
+            testTDS.isNullByColumn.put(col, new boolean[]{true});
+            switch (columnType.get(col))
+            {
+                case INT:
+                {
+                    testTDS.dataByColumnName.put(col, new int[(int) testTDS.rowCount]);
+                    break;
+                }
+                case CHAR:
+                {
+                    testTDS.dataByColumnName.put(col, new char[(int) this.rowCount]);
+                    break;
+                }
+                case STRING:
+                {
+                    testTDS.dataByColumnName.put(col, new String[(int) this.rowCount]);
+                    break;
+                }
+                case FLOAT:
+                case DOUBLE:
+                {
+                    testTDS.dataByColumnName.put(col, new double[(int) this.rowCount]);
+                    break;
+                }
+                default:
+                    throw new RuntimeException("ERROR " + columnType.get(col) + " not supported yet!");
+            }
+        }
+        return testTDS;
+    }
+
     public TestTDS newTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, int rows)
     {
         return new TestTDS(columnOrdered, columnType, rows);
@@ -489,7 +530,31 @@ public class TestTDS
         return _copy;
     }
 
+    public TestTDS addColumn(ColumnValue columnValue)
+    {
+        if (columnValue.nulls == null)
+        {
+            return addColumn(columnValue.name, columnValue.type, columnValue.result);
+        }
+        else
+        {
+            return addColumn(columnValue.name, columnValue.type, columnValue.result, columnValue.nulls);
+        }
+    }
+
+    public Pair<TestTDS, MutableList<Pair<Integer, Integer>>> wrapFullTDS()
+    {
+        return Tuples.pair(this.copy(), org.eclipse.collections.impl.factory.Lists.mutable.with(Tuples.pair(0, (int) this.getRowCount())));
+    }
+
     public TestTDS addColumn(String name, DataType dataType, Object res)
+    {
+        boolean[] array = new boolean[Array.getLength(res)];
+        Arrays.fill(array, Boolean.FALSE);
+        return addColumn(name, dataType, res, array);
+    }
+
+    public TestTDS addColumn(String name, DataType dataType, Object res, Object nulls)
     {
         int size = Array.getLength(res);
         if (this.rowCount == 0)
@@ -509,9 +574,7 @@ public class TestTDS
             case CHAR:
             case FLOAT:
             case DOUBLE:
-                boolean[] array = new boolean[(int) this.rowCount];
-                Arrays.fill(array, Boolean.FALSE);
-                isNullByColumn.put(name, array);
+                isNullByColumn.put(name, nulls);
         }
         return this;
     }
@@ -1013,5 +1076,20 @@ public class TestTDS
     public MutableList<String> getColumnNames()
     {
         return this.columnsOrdered;
+    }
+
+    public static Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortPartitions(MutableList<SortInfo> transformedSort, Pair<TestTDS, MutableList<Pair<Integer, Integer>>> source)
+    {
+        if (!transformedSort.isEmpty())
+        {
+            TestTDS res = source.getOne().newEmptyTDS();
+            for (int j = 0; j < source.getTwo().size(); j++)
+            {
+                Pair<Integer, Integer> r = source.getTwo().get(j);
+                res = res.concatenate(source.getOne().slice(r.getOne(), r.getTwo()).sort(transformedSort).getOne());
+            }
+            source = Tuples.pair(res, source.getTwo());
+        }
+        return source;
     }
 }

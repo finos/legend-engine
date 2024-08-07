@@ -159,7 +159,7 @@ public class RelationalParseTreeWalker
             stereotypePtr.profile = PureGrammarParserUtility.fromQualifiedName(stereotypeContext.qualifiedName().packagePath() == null ? Collections.emptyList() : stereotypeContext.qualifiedName().packagePath().identifier(), stereotypeContext.qualifiedName().identifier());
             stereotypePtr.value = PureGrammarParserUtility.fromIdentifier(stereotypeContext.identifier());
             stereotypePtr.profileSourceInformation = this.walkerSourceInformation.getSourceInformation(stereotypeContext.qualifiedName());
-            stereotypePtr.sourceInformation = this.walkerSourceInformation.getSourceInformation(stereotypeContext);
+            stereotypePtr.sourceInformation = this.walkerSourceInformation.getSourceInformation(stereotypeContext.identifier());
             return stereotypePtr;
         });
     }
@@ -826,7 +826,7 @@ public class RelationalParseTreeWalker
     private RelationalOperationElement visitTableAliasColumnOperationWithTarget(RelationalParserGrammar.TableAliasColumnOperationWithTargetContext ctx, String database)
     {
         TableAliasColumn operation = new TableAliasColumn();
-        operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.relationalIdentifier());
         operation.column = ctx.relationalIdentifier().QUOTED_STRING() == null ? ctx.relationalIdentifier().unquotedIdentifier().getText() : ctx.relationalIdentifier().QUOTED_STRING().getText();
         TablePtr tablePtr = this.generateTableAlias(ScopeInfo.Builder.newInstance()
                 .withDatabase(database)

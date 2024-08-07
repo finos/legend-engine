@@ -38,6 +38,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.FieldVa
 import org.finos.legend.engine.persistence.components.planner.Planner;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
+import org.finos.legend.engine.persistence.components.exception.JsonReadOrWriteException;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
@@ -361,7 +362,7 @@ public class ApiUtils
         }
         catch (JsonProcessingException e)
         {
-            throw new RuntimeException(e);
+            throw new JsonReadOrWriteException(e.getMessage(), e);
         }
     }
 

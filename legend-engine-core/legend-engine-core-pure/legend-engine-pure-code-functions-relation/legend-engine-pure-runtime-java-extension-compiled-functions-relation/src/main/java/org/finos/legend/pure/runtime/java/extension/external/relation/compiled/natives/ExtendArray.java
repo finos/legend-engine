@@ -20,8 +20,6 @@ import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.AbstractNative;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.Native;
 
-import static org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Extend.buildCode;
-
 public class ExtendArray extends AbstractNative implements Native
 {
     public ExtendArray()
@@ -32,7 +30,7 @@ public class ExtendArray extends AbstractNative implements Native
     @Override
     public String build(CoreInstance topLevelElement, CoreInstance functionExpression, ListIterable<String> transformedParams, ProcessorContext processorContext)
     {
-        StringBuilder result = buildCode(transformedParams, s -> "Lists.mutable.withAll(" + transformedParams.get(1) + "._funcSpecs())");
+        StringBuilder result = Extend.buildCode(transformedParams, s -> "Lists.mutable.withAll(" + transformedParams.get(1) + "._funcSpecs())");
         return result.toString();
     }
 }

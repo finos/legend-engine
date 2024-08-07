@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -738,6 +738,38 @@ public class TestServiceRunner
     }
 
     @Test
+    public void testXStoreServiceExecutionWithDeepCrossPropertyAccessNoSharedCaches() throws JavaCompileException
+    {
+        XStoreServiceRunnerWithDeepCrossPropertyAccessNoSharedCaches xStoreServiceRunner = new XStoreServiceRunnerWithDeepCrossPropertyAccessNoSharedCaches();
+        Assert.assertEquals(2, xStoreServiceRunner.getGraphFetchCrossAssociationKeys().size());
+        Assert.assertEquals(Sets.mutable.of("<default, root.firm@test_Firm>", "<default, root.firm@test_Firm.address@test_Address>"), xStoreServiceRunner.getGraphFetchCrossAssociationKeys().stream().map(GraphFetchCrossAssociationKeys::getName).collect(Collectors.toSet()));
+
+        ExecutionCache<GraphFetchCacheKey, List<Object>> firmCache = ExecutionCacheBuilder.buildExecutionCacheFromGuavaCache(CacheBuilder.newBuilder().recordStats().build());
+        ExecutionCache<GraphFetchCacheKey, List<Object>> addressCache = ExecutionCacheBuilder.buildExecutionCacheFromGuavaCache(CacheBuilder.newBuilder().recordStats().build());
+        OperationalContext operationalContext = OperationalContext
+                .newInstance()
+                .withGraphFetchCrossAssociationKeysCacheConfig(Maps.mutable.of(
+                        xStoreServiceRunner.getGraphFetchCrossAssociationKeys().stream().filter(x -> "<default, root.firm@test_Firm>".equals(x.getName())).findFirst().orElse(null), firmCache,
+                        xStoreServiceRunner.getGraphFetchCrossAssociationKeys().stream().filter(x -> "<default, root.firm@test_Firm.address@test_Address>".equals(x.getName())).findFirst().orElse(null), addressCache
+                ));
+
+        String expectedRes = "[" +
+                "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\",\"address\":{\"name\":\"A4\"}}}," +
+                "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\",\"address\":{\"name\":\"A3\"}}}," +
+                "{\"fullName\":\"P3\",\"firm\":null}," +
+                "{\"fullName\":\"P4\",\"firm\":null}," +
+                "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\",\"address\":{\"name\":\"A4\"}}}" +
+                "]";
+
+        Assert.assertEquals(expectedRes, xStoreServiceRunner.run(ServiceRunnerInput.newInstance().withOperationalContext(operationalContext).withSerializationFormat(SerializationFormat.PURE)));
+        assertCacheStats(firmCache, 3, 5, 2, 3);
+        assertCacheStats(addressCache, 2, 2, 0, 2);
+        Assert.assertEquals(expectedRes, xStoreServiceRunner.run(ServiceRunnerInput.newInstance().withOperationalContext(operationalContext).withSerializationFormat(SerializationFormat.PURE)));
+        assertCacheStats(firmCache, 3, 10, 7, 3);
+        assertCacheStats(addressCache, 2, 2, 0, 2);
+    }
+
+    @Test
     public void testXStoreServiceRunnerWithGraphFetchChecked() throws JavaCompileException
     {
         XStoreServiceRunnerWithGraphFetchChecked xStoreServiceRunner = new XStoreServiceRunnerWithGraphFetchChecked();
@@ -1124,6 +1156,16 @@ public class TestServiceRunner
         private static final SingleExecutionPlan plan = buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/xStorePropertyAccessServices.pure", "test::fetch5__String_1_");
 
         XStoreServiceRunnerWithDeepCrossPropertyAccess() throws JavaCompileException
+        {
+            super("test::Service", plan);
+        }
+    }
+
+    private static class XStoreServiceRunnerWithDeepCrossPropertyAccessNoSharedCaches extends AbstractXStoreServiceRunner
+    {
+        private static final SingleExecutionPlan plan = buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/xStorePropertyAccessServices.pure", "test::fetch8__String_1_");
+
+        XStoreServiceRunnerWithDeepCrossPropertyAccessNoSharedCaches() throws JavaCompileException
         {
             super("test::Service", plan);
         }

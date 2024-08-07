@@ -23,8 +23,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authent
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 public class AuthenticationDemo extends PackageableElement
 {
-    public SourceInformation sourceInformation;
-
     public AuthenticationSpecification authenticationSpecification;
 
     public <T> T accept(PackageableElementVisitor<T> visitor)

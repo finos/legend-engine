@@ -235,7 +235,7 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
             "      isTestDataFromServiceOutput: false;\n" +
             "    }\n" +
             "  ]\n" +
-            "}\n", "COMPILATION error at [63:7-69:7]: Database 'test::Database' is not defined");
+            "}\n", "COMPILATION error at [64:7-31]: Can't find the packageable element 'test::Database'");
     }
 
     @Test

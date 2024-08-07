@@ -40,23 +40,25 @@ public class Extend extends AbstractNative implements Native
         StringBuilder result = new StringBuilder("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.extend(");
         result.append(transformedParams.get(0) + ", ");
         result.append(collection.valueOf(transformedParams.get(1)));
-        buildCollectFuncSpec(result);
+        buildCollectFuncSpec(result, false);
         result.append(", es)");
         return result;
     }
 
-    static void buildCollectFuncSpec(StringBuilder result)
+    static void buildCollectFuncSpec(StringBuilder result, boolean twoArgs)
     {
+        String className = "ColFuncSpecTrans" + (twoArgs ? "2" : "1");
+        String functionType = "org.eclipse.collections.api.block.function.Function" + (twoArgs ? "3" : "2");
         result.append(".collect(");
-        result.append("new DefendedFunction<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.FuncColSpec<? extends Object, ? extends Object>, org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.ColFuncSpecTrans>()\n" +
+        result.append("new DefendedFunction<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.FuncColSpec<? extends Object, ? extends Object>, org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation." + className + ">()\n" +
                 "{\n" +
                 "    @Override\n" +
-                "    public  org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.ColFuncSpecTrans valueOf(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.FuncColSpec<?, ?> c)\n" +
+                "    public  org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation." + className + " valueOf(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.FuncColSpec<?, ?> c)\n" +
                 "    {\n");
 
-        result.append("return new org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.ColFuncSpecTrans(");
+        result.append("return new org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation." + className + "(");
         result.append("c._name(),");
-        result.append("(Function2)PureCompiledLambda.getPureFunction(c._function(),es),");
+        result.append("(" + functionType + ")PureCompiledLambda.getPureFunction(c._function(),es),");
         result.append(" ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType)c._function()._classifierGenericType()._typeArguments().toList().get(0)._rawType())._returnType()._rawType()._name()\n");
         result.append(");\n");
 

@@ -49,14 +49,19 @@ public class Sort extends Shared
     {
         CoreInstance returnGenericType = getReturnGenericType(resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionToUseInStack, processorSupport);
         TestTDS tds = getTDS(params, 0, processorSupport);
-        ListIterable<? extends CoreInstance> sortInfo = Instance.getValueForMetaPropertyToManyResolved(params.get(1), M3Properties.values, processorSupport);
+        ListIterable<SortInfo> sortInfos = getSortInfos(Instance.getValueForMetaPropertyToManyResolved(params.get(1), M3Properties.values, processorSupport), processorSupport);
+        return ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(tds.sort(sortInfos).getOne(), returnGenericType, repository, processorSupport), false, processorSupport);
+    }
+
+    public static ListIterable<SortInfo> getSortInfos(ListIterable<? extends CoreInstance> sortInfo, ProcessorSupport processorSupport)
+    {
         ListIterable<SortInfo> sortInfos = sortInfo.collect(c ->
         {
             String name = c.getValueForMetaPropertyToOne("column").getValueForMetaPropertyToOne("name").getName();
             SortDirection direction = SortDirection.valueOf(c.getValueForMetaPropertyToOne("direction").getName());
             return new SortInfo(name, direction);
         });
-        return ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(tds.sort(sortInfos).getOne(), returnGenericType, repository, processorSupport), false, processorSupport);
+        return sortInfos;
     }
 }
 

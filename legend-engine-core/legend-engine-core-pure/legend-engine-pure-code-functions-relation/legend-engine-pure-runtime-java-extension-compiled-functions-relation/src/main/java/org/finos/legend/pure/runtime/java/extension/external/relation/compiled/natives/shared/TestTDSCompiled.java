@@ -20,6 +20,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.pure.m2.inlinedsl.tds.M2TDSPaths;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
@@ -137,7 +138,7 @@ public class TestTDSCompiled extends TestTDS
         Class<?> relationDatabaseAccessorType = (Class<?>) processorSupport.package_getByUserPath(M2TDSPaths.TDS);
         GenericType genericType = (GenericType) processorSupport.type_wrapGenericType(relationDatabaseAccessorType);
         GenericType typeParam = (GenericType) processorSupport.newGenericType(null, relationDatabaseAccessorType, false);
-        MutableList<CoreInstance> columns = columnsOrdered.collect(c -> (CoreInstance) _Column.getColumnInstance(c,false, (GenericType) processorSupport.type_wrapGenericType(_Package.getByUserPath(convert(columnType.get(c)), processorSupport)), null, processorSupport)).toList();
+        MutableList<CoreInstance> columns = columnsOrdered.collect(c -> (CoreInstance) _Column.getColumnInstance(c, false, (GenericType) processorSupport.type_wrapGenericType(_Package.getByUserPath(convert(columnType.get(c)), processorSupport)), (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(0, 1, processorSupport), null, processorSupport)).toList();
         typeParam._rawType(_RelationType.build(columns, null, processorSupport));
         genericType._typeArguments(Lists.mutable.with(typeParam));
         this.classifierGenericType = genericType;

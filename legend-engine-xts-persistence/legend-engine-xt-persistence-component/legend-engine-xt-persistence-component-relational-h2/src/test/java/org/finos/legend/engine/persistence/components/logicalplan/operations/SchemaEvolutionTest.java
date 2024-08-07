@@ -167,7 +167,7 @@ class SchemaEvolutionTest extends BaseTest
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
-        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
@@ -331,7 +331,8 @@ class SchemaEvolutionTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_CONVERSION);
-        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};

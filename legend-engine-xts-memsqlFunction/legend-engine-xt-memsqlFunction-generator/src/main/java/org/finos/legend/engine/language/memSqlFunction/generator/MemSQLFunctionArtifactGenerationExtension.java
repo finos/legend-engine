@@ -72,9 +72,13 @@ public class MemSQLFunctionArtifactGenerationExtension implements ArtifactGenera
             MemSqlFunctionArtifact artifact  = MemSqlFunctionGenerator.generateArtifact(pureModel, (Root_meta_external_function_activator_memSqlFunction_MemSqlFunction) element, data, routerExtensions);
             String content = mapper.writeValueAsString(artifact);
             result.add((new Artifact(content, FILE_NAME, "json")));
-            LOGGER.info("Generating memsqlFunction lineage artifact for " + element.getName());
-            String lineage = MemSqlFunctionGenerator.generateLineage(pureModel, (Root_meta_external_function_activator_memSqlFunction_MemSqlFunction) element, data, routerExtensions);
-            result.add(new Artifact(lineage, LINEAGE_FILE_NAME, "json"));
+            if (!(element._stereotypes().anySatisfy(stereotype ->
+                    stereotype._profile()._name().equals("devStatus") && stereotype._profile()._p_stereotypes().anySatisfy(s -> s._value().equals("inProgress")))))
+            {
+                LOGGER.info("Generating memsqlFunction lineage artifact for " + element.getName());
+                String lineage = MemSqlFunctionGenerator.generateLineage(pureModel, (Root_meta_external_function_activator_memSqlFunction_MemSqlFunction) element, data, routerExtensions);
+                result.add(new Artifact(lineage, LINEAGE_FILE_NAME, "json"));
+            }
             LOGGER.info("Generated artifacts for " + element.getName());
 
         }

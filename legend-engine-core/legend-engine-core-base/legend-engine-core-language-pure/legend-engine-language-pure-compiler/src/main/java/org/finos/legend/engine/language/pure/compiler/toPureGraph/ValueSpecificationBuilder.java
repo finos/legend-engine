@@ -304,7 +304,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
                                                         cols.collect(c ->
                                                         {
                                                             Column<?, ?> theCol = ((RelationType<?>) c._genericType()._typeArguments().getLast()._rawType())._columns().getFirst();
-                                                            return _Column.getColumnInstance(theCol._name(), false, _Column.getColumnType(theCol), null, processorSupport);
+                                                            return _Column.getColumnInstance(theCol._name(), false, _Column.getColumnType(theCol), _Column.getColumnMultiplicity(theCol), null, processorSupport);
                                                         }),
                                                         null,
                                                         processorSupport
@@ -351,7 +351,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         ProcessorSupport processorSupport = context.pureModel.getExecutionSupport().getProcessorSupport();
         if (colSpec.function1 == null)
         {
-            return wrapInstanceValue(buildColSpec(colSpec.name, colSpec.type == null ? null : context.pureModel.getGenericType(colSpec.type, colSpec.sourceInformation), context.pureModel, context.pureModel.getExecutionSupport().getProcessorSupport()), context.pureModel);
+            return wrapInstanceValue(buildColSpec(colSpec.name, colSpec.type == null ? null : context.pureModel.getGenericType(colSpec.type, colSpec.sourceInformation), (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(0, 1, processorSupport), context.pureModel, context.pureModel.getExecutionSupport().getProcessorSupport()), context.pureModel);
         }
         else if (colSpec.function2 == null)
         {
@@ -365,7 +365,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
                                     new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                                             ._rawType(
                                                     _RelationType.build(
-                                                            Lists.mutable.with(_Column.getColumnInstance(colSpec.name, false, funcReturnType(funcVS, context.pureModel), null, processorSupport)),
+                                                            Lists.mutable.with(_Column.getColumnInstance(colSpec.name, false, funcReturnType(funcVS, context.pureModel), funcReturnMul(funcVS, context.pureModel), null, processorSupport)),
                                                             null,
                                                             processorSupport
                                                     )
@@ -405,7 +405,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
                                     new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                                             ._rawType(
                                                     _RelationType.build(
-                                                            Lists.mutable.with(_Column.getColumnInstance(colSpec.name, false, funcReturnType(func2VS, context.pureModel), null, processorSupport)),
+                                                            Lists.mutable.with(_Column.getColumnInstance(colSpec.name, false, funcReturnType(func2VS, context.pureModel), funcReturnMul(func2VS, context.pureModel), null, processorSupport)),
                                                             null,
                                                             processorSupport
                                                     )
@@ -590,7 +590,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
                     ._name(variable.name);
             GenericType genericType = variable.relationType != null ?
                     new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(RelationTypeHelper.convert(variable.relationType, context.pureModel.getExecutionSupport().getProcessorSupport(), null)) :
-                    this.context.resolveGenericType(this.context.pureModel.addPrefixToTypeReference(variable._class), variable.sourceInformation);
+                    this.context.resolveGenericType(this.context.pureModel.addPrefixToTypeReference(variable._class.path), variable.sourceInformation);
             ve._genericType(genericType);
             ve._multiplicity(this.context.pureModel.getMultiplicity(variable.multiplicity));
             processingContext.addInferredVariables(variable.name, ve);
@@ -712,9 +712,9 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree tree = HelperValueSpecificationBuilder.buildGraphFetchTree(rootGraphFetchTree, this.context, null, openVariables, processingContext);
         GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
-                                      ._rawType(this.context.pureModel.getType("meta::pure::graphFetch::RootGraphFetchTree"))
-                                      ._typeArguments(FastList.newListWith(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
-                                      ._rawType(context.resolveClass(rootGraphFetchTree._class, rootGraphFetchTree.sourceInformation))));
+                ._rawType(this.context.pureModel.getType("meta::pure::graphFetch::RootGraphFetchTree"))
+                ._typeArguments(FastList.newListWith(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
+                        ._rawType(context.resolveClass(rootGraphFetchTree._class, rootGraphFetchTree.sourceInformation))));
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(rootGraphFetchTree.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(genericType)
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))

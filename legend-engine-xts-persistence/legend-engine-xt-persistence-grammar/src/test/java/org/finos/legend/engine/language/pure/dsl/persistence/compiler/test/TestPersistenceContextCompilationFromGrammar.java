@@ -58,7 +58,7 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
                 "PersistenceContext test::TestPersistenceContext\n" +
                 "{\n" +
                 "  persistence: test::TestPersistence;\n" +
-                "}\n", "COMPILATION error at [3:1-6:1]: Persistence 'test::TestPersistence' is not defined");
+                "}\n", "COMPILATION error at [5:3-37]: Can't find the packageable element 'test::TestPersistence'");
     }
 
     @Test

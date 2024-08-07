@@ -46,7 +46,7 @@ public class JLine3Highlighter implements Highlighter
 
     public static void drawCommand(AttributedStringBuilder ab, String command)
     {
-        ab.style(new AttributedStyle().foreground(0, 200, 0).italic());
+        ab.style(new AttributedStyle().foreground(AttributedStyle.GREEN).italic());
         ab.append(command);
     }
 }

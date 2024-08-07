@@ -51,6 +51,13 @@ public class RelationExtensionCompiled implements CompiledExtension
                 new Join(),
                 new Extend(),
                 new ExtendArray(),
+                new ExtendAgg(),
+                new ExtendAggArray(),
+                new ExtendWindowAgg(),
+                new ExtendWindowAggArray(),
+                new ExtendWindowFunc(),
+                new ExtendWindowFuncArray(),
+                new First(),
                 new Drop(),
                 new Sort(),
                 new Rename(),
@@ -60,7 +67,8 @@ public class RelationExtensionCompiled implements CompiledExtension
                 new Slice(),
                 new Distinct(),
                 new Select(),
-                new SelectArray()
+                new SelectArray(),
+                new Offset()
         );
     }
 

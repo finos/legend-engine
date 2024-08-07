@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
@@ -24,7 +26,8 @@ import java.util.List;
 
 public class PersistenceContext extends PackageableElement
 {
-    public String persistence;
+    @JsonSerialize(converter = PackageableElementPointer.ToPathSerializerConverter.class)
+    public PackageableElementPointer persistence;
     public PersistencePlatform platform;
     public List<ServiceParameter> serviceParameters;
     public Connection sinkConnection;

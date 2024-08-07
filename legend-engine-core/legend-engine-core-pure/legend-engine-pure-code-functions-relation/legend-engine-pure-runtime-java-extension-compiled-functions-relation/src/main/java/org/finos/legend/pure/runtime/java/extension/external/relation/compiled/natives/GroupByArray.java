@@ -38,7 +38,7 @@ public class GroupByArray extends AbstractNative implements Native
         result.append(transformedParams.get(1));
         result.append(", ");
         result.append("Lists.mutable.withAll(" + transformedParams.get(2) + "._aggSpecs())");
-        processAggColSpec(transformedParams, result);
+        processAggColSpec(result, false);
         result.append(", es)");
         return result.toString();
     }

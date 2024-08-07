@@ -146,7 +146,7 @@ public class TestPersistenceV2CompilationFromGrammar extends TestCompilationFrom
             "    {\n" +
             "    }\n" +
             "  ];" +
-            "}\n", "COMPILATION error at [2:1-33:5]: Service 'test::Service' is not defined");
+            "}\n", "COMPILATION error at [6:3-25]: Can't find the packageable element 'test::Service'");
     }
 
     @Test
