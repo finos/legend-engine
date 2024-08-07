@@ -406,7 +406,7 @@ public class ApiUtils
         }
         catch (JsonProcessingException e)
         {
-            throw new IllegalStateException("Unable to parse additional metadata");
+            throw new JsonReadOrWriteException("Unable to parse additional metadata", e);
         }
 
         // Handle batch timestamp
@@ -594,7 +594,7 @@ public class ApiUtils
         }
         catch (JsonProcessingException e)
         {
-            throw new RuntimeException(e);
+            throw new JsonReadOrWriteException(e.getMessage(), e);
         }
     }
 
@@ -619,7 +619,7 @@ public class ApiUtils
         }
         catch (JsonProcessingException e)
         {
-            throw new RuntimeException(e);
+            throw new JsonReadOrWriteException(e.getMessage(), e);
         }
     }
 
