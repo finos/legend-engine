@@ -30,6 +30,7 @@ import org.finos.legend.engine.repl.core.commands.*;
 import org.finos.legend.engine.repl.core.legend.LegendInterface;
 import org.finos.legend.engine.repl.core.legend.LocalLegendInterface;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
@@ -76,7 +77,8 @@ public class Client
         this.initialize();
         replExtensions.forEach(e -> e.initialize(this));
 
-        this.printDebug("Welcome to the Legend REPL! Press 'Enter' or type 'help' to see the list of available commands.");
+        this.printDebug("Legend REPL v" + DeploymentStateAndVersions.sdlc.buildVersion + " (" + DeploymentStateAndVersions.sdlc.commitIdAbbreviated + ")");
+        this.printDebug("Press 'Enter' or type 'help' to see the list of available commands.");
         this.printInfo("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
 
         // NOTE: the order here matters, the default command 'help' should always go first
@@ -134,8 +136,7 @@ public class Client
                 String line = this.reader.readLine("> ");
                 if (line == null || line.equalsIgnoreCase("exit"))
                 {
-                    System.exit(0);
-                    this.persistHistory();
+                    this.exit();
                     break;
                 }
 
@@ -171,8 +172,7 @@ public class Client
                 String lineContent = this.reader.getBuffer().toString();
                 if (lineContent.isEmpty())
                 {
-                    System.exit(0);
-                    this.persistHistory();
+                    this.exit();
                     break;
                 }
                 else
@@ -183,8 +183,7 @@ public class Client
             // handle Ctrl + D: exit
             catch (EndOfFileException e)
             {
-                System.exit(0);
-                this.persistHistory();
+                this.exit();
                 break;
             }
             catch (Exception e)
@@ -343,5 +342,16 @@ public class Client
         {
             return null;
         }
+    }
+
+    // Separate the call to System.exit() to a separate method to make it
+    // easier to mock in test, as handling System.exit() is non-trivial
+    // See https://stackoverflow.com/questions/309396/how-to-test-methods-that-call-system-exit
+    public void exit()
+    {
+        this.persistHistory();
+        // We need to call System.exit() else the REPL will not quit completely
+        // but stuck at a state where it accepts input, but do nothing!
+        System.exit(0);
     }
 }
