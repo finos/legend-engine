@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-code-functions-relation</artifactId>
-        <version>4.53.4-SNAPSHOT</version>
+        <version>4.53.4</version>
     </parent>
 
     <name>Legend Pure - Base - M2 Functions - Relation - Pure</name>
