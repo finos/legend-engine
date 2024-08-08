@@ -24,6 +24,8 @@ public class RClient
 {
     public static void main(String[] args) throws Exception
     {
-        new Client(Lists.mutable.with(new RelationalReplExtension()), Lists.mutable.with(new RelationalCompleterExtension()), PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build()).loop();
+        Client client = new Client(Lists.mutable.with(new RelationalReplExtension()), Lists.mutable.with(new RelationalCompleterExtension()), PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build());
+        client.loop();
+        client.forceExit();
     }
 }
