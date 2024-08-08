@@ -192,7 +192,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
      * Ingest multi datasets in a transaction. Each dataset can have multiple stages
      * @return List of DatasetIngestResults
      */
-    public List<DatasetIngestResults> ingest()
+    public List<DatasetIngestResults> ingestInTransaction()
     {
         // 1. Validate initialization has been performed
         validateInitialization();
@@ -222,11 +222,36 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         finally
         {
             executor.close();
-            cleanup();
+            performCleanup();
         }
 
         LOGGER.info("Ingestion completed");
         return result;
+    }
+
+    public List<DatasetIngestResults> ingest()
+    {
+        // 1. Validate initialization has been performed
+        validateInitialization();
+
+        // 2. Acquire lock for all ingest stages and get the latest batch ID
+        long batchId = acquireLock();
+
+        // 3. Put batch ID into placeholder map - this is needed to handle DerivedDataset whose filter was built using placeholders
+        Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
+        placeHolderKeyValues.put(BATCH_ID_PATTERN, PlaceholderValue.of(String.valueOf(batchId), false));
+
+        // 4. Perform ingestion
+        List<DatasetIngestResults> result = performIngestionForAllStages(batchId, placeHolderKeyValues);
+        LOGGER.info("Ingestion completed");
+
+        return result;
+    }
+
+    public void cleanup()
+    {
+        validateInitialization();
+        performCleanup();
     }
 
 
@@ -470,7 +495,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         return results;
     }
 
-    private void cleanup()
+    private void performCleanup()
     {
         LOGGER.info("Performing cleanup");
         for (List<IngestStageMetadata> ingestStageMetadataList : ingestStageMetadataMap.values())

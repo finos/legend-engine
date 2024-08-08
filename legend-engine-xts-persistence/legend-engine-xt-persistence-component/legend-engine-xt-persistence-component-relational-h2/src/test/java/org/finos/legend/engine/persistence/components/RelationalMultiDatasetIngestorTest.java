@@ -150,7 +150,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         // Run ingestion
         ingestor.init(datasetIngestDetails, JdbcConnection.of(h2Sink.connection()));
         ingestor.create();
-        List<DatasetIngestResults> actual = ingestor.ingest();
+        List<DatasetIngestResults> actual = ingestor.ingestInTransaction();
 
         // Verify results
         IngestStageResult ingestStageResult1ForDataset1 = buildIngestStageResultForBulkLoad("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 3);
@@ -203,7 +203,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         // Run ingestion
         ingestor.init(datasetIngestDetails, JdbcConnection.of(h2Sink.connection()));
         ingestor.create();
-        actual = ingestor.ingest();
+        actual = ingestor.ingestInTransaction();
 
         // Verify results
         ingestStageResult1ForDataset1 = buildIngestStageResultForBulkLoad("2000-01-02 00:00:00.123456", "2000-01-02 00:00:00.123456", 3);
@@ -350,7 +350,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         // Run ingestion
         ingestor.init(datasetIngestDetails, JdbcConnection.of(h2Sink.connection()));
         ingestor.create();
-        List<DatasetIngestResults> actual = ingestor.ingest();
+        List<DatasetIngestResults> actual = ingestor.ingestInTransaction();
 
         // Verify results
         IngestStageResult ingestStageResult1ForDataset1 = buildIngestStageResultForBulkLoad("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 9);
@@ -404,7 +404,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         // Run ingestion
         ingestor.init(datasetIngestDetails, JdbcConnection.of(h2Sink.connection()));
         ingestor.create();
-        actual = ingestor.ingest();
+        actual = ingestor.ingestInTransaction();
 
         // Verify results
         ingestStageResult1ForDataset1 = buildIngestStageResultForBulkLoad("2000-01-02 00:00:00.123456", "2000-01-02 00:00:00.123456", 0);
@@ -458,7 +458,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         // Run ingestion
         ingestor.init(datasetIngestDetails, JdbcConnection.of(h2Sink.connection()));
         ingestor.create();
-        actual = ingestor.ingest();
+        actual = ingestor.ingestInTransaction();
 
         // Verify results
         ingestStageResult1ForDataset1 = buildIngestStageResultForBulkLoad("2000-01-03 00:00:00.000000", "2000-01-03 00:00:00.000000", 5);
@@ -669,7 +669,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         // Run ingestion
         ingestor.init(datasetIngestDetails, JdbcConnection.of(h2Sink.connection()));
         ingestor.create();
-        List<DatasetIngestResults> actual = ingestor.ingest();
+        List<DatasetIngestResults> actual = ingestor.ingestInTransaction();
 
         // Verify results
         IngestStageResult ingestStageResult1ForDataset1 = buildIngestStageResultForBulkLoad("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 3);
@@ -804,7 +804,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         ingestor.create();
         try
         {
-            List<DatasetIngestResults> actual = ingestor.ingest();
+            List<DatasetIngestResults> actual = ingestor.ingestInTransaction();
             Assertions.fail("Exception was not thrown");
         }
         catch (Exception e)
