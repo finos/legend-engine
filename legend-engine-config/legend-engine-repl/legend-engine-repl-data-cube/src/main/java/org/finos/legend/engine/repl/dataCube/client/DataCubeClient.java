@@ -25,7 +25,7 @@ public class DataCubeClient
 {
     public static void main(String[] args) throws Exception
     {
-        new Client(
+        Client client = new Client(
                 Lists.mutable.with(
                         new DataCubeReplExtension(),
                         new RelationalReplExtension()
@@ -34,6 +34,8 @@ public class DataCubeClient
                         new RelationalCompleterExtension()
                 ),
                 PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build()
-        ).loop();
+        );
+        client.loop();
+        client.forceExit();
     }
 }

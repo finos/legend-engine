@@ -53,15 +53,18 @@ public class Client
     private final LegendInterface legendInterface = new LocalLegendInterface();
     private final Terminal terminal;
     private final LineReader reader;
-    private boolean debug = false;
-    private MutableList<ReplExtension> replExtensions = Lists.mutable.empty();
-    private MutableList<CompleterExtension> completerExtensions = Lists.mutable.empty();
-    private ModelState state;
+    private final MutableList<ReplExtension> replExtensions;
+    private final MutableList<CompleterExtension> completerExtensions;
+    private final ModelState state;
     private final PlanExecutor planExecutor;
+
+    private boolean debug = false;
 
     public static void main(String[] args) throws Exception
     {
-        new Client(Lists.mutable.empty(), Lists.mutable.empty(), PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build()).loop();
+        Client client = new Client(Lists.mutable.empty(), Lists.mutable.empty(), PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build());
+        client.loop();
+        client.forceExit();
     }
 
     public MutableList<Command> commands;
@@ -136,7 +139,7 @@ public class Client
                 String line = this.reader.readLine("> ");
                 if (line == null || line.equalsIgnoreCase("exit"))
                 {
-                    this.exit();
+                    this.persistHistory();
                     break;
                 }
 
@@ -172,7 +175,7 @@ public class Client
                 String lineContent = this.reader.getBuffer().toString();
                 if (lineContent.isEmpty())
                 {
-                    this.exit();
+                    this.persistHistory();
                     break;
                 }
                 else
@@ -183,7 +186,7 @@ public class Client
             // handle Ctrl + D: exit
             catch (EndOfFileException e)
             {
-                this.exit();
+                this.persistHistory();
                 break;
             }
             catch (Exception e)
@@ -344,14 +347,12 @@ public class Client
         }
     }
 
-    // Separate the call to System.exit() to a separate method to make it
-    // easier to mock in test, as handling System.exit() is non-trivial
-    // See https://stackoverflow.com/questions/309396/how-to-test-methods-that-call-system-exit
-    public void exit()
+    // Force exit (using System.exit()) will make sure the REPL quit completely
+    // when "exit" command is called or terminate signal with Ctrl+D/Ctrl+C in invoked
+    // otherwise, after the REPL input loop is exited, it will get stuck at a state where
+    // it still accepts input, but do nothing.
+    public void forceExit()
     {
-        this.persistHistory();
-        // We need to call System.exit() else the REPL will not quit completely
-        // but stuck at a state where it accepts input, but do nothing!
         System.exit(0);
     }
 }
