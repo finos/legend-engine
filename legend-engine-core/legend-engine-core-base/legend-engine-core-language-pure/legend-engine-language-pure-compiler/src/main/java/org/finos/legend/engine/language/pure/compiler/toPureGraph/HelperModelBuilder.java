@@ -479,6 +479,11 @@ public class HelperModelBuilder
             AbstractProperty<?> property = getCompatibleProperty(orderedGeneralizations, name);
             if (property != null)
             {
+                AbstractProperty<?> clashingQualifiedProperty = getCompatibleDerivedProperty(type._qualifiedProperties(), name, parameters);
+                if (clashingQualifiedProperty != null && parameters.isPresent())
+                {
+                    return clashingQualifiedProperty;
+                }
                 return property;
             }
             property = type._propertiesFromAssociations().detect(p -> name.equals(p.getName()));
