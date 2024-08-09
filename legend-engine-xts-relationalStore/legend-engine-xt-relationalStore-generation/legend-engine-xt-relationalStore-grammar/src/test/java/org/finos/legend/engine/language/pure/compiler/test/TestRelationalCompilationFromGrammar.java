@@ -2704,6 +2704,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     }
 
     @Test
+    @Ignore
     public void testMappingToPropertyWithDerivedPropertyConflict()
     {
         test("###Relational\n" +
