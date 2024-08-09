@@ -2127,4 +2127,91 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::ownerInPropertySubTree::M
   }
 )
 
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::withFunction::*;
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFunction::A
+{
+   a: String[1];
+   b: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFunction::_A
+{
+   b : _B[1];
+   c : _C[1];
+   s1 : String[1];
+   s2 : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFunction::_B
+{
+   d: _D[1];
+}
+
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFunction::_C
+{
+   b: _B[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFunction::_D
+{
+   val: String[1];
+}
+
+function <<access.private>> meta::pure::graphFetch::tests::sourceTreeCalc::withFunction::func(d: _D[1], s:String[1]):String[1]
+{
+  $d.val + $s;
+}
+
+###Mapping
+import meta::pure::graphFetch::tests::sourceTreeCalc::withFunction::*;
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withFunction::testMappingWithFunction
+(
+   A: Pure
+      {
+         ~src _A
+         a: $src.b.d->func($src.s1),
+         b: $src.c.b.d->func($src.s2)
+      }
+)
+
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::withFunction::*;
+
+function <<test.Test, test.ToFix>> meta::pure::graphFetch::tests::sourceTreeCalc::withFunction::testsourceTreeCalculationWithFunction():Boolean[1]
+{
+   let tree = #{
+      A {
+         a,
+         b
+       }
+   }#;
+
+   let sourceTree = calculateSourceTree($tree, meta::pure::graphFetch::tests::sourceTreeCalc::withFunction::testMappingWithFunction, meta::pure::extension::defaultExtensions())->sortTree();
+   let expected = #{
+      _A {
+        b {
+            d {
+                val
+            }
+        
+        }, 
+        c {
+            b {
+                d {
+                    val
+                }
+              }
+          }, 
+        s1, 
+        s2
+          }
+   }#;
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
 
