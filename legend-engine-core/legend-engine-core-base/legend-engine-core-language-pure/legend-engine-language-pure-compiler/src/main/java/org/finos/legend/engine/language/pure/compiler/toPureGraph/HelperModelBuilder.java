@@ -475,8 +475,9 @@ public class HelperModelBuilder
         for (CoreInstance c_type : org.finos.legend.pure.m3.navigation.type.Type.getGeneralizationResolutionOrder(_class, context.pureModel.getExecutionSupport().getProcessorSupport()))
         {
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) c_type;
-            ListIterable<CoreInstance> orderedGeneralizations = C3Linearization.getTypeGeneralizationLinearization(type, context.pureModel.getExecutionSupport().getProcessorSupport());
-            AbstractProperty<?> property = getCompatibleProperty(orderedGeneralizations, name);
+            // ListIterable<CoreInstance> orderedGeneralizations = C3Linearization.getTypeGeneralizationLinearization(type, context.pureModel.getExecutionSupport().getProcessorSupport());
+            // AbstractProperty<?> property = getCompatibleProperty(orderedGeneralizations, name);
+            AbstractProperty<?> property = type._properties().detect(p -> name.equals(p.getName()));
             if (property != null)
             {
                 return property;
