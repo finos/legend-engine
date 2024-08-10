@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-json</artifactId>
-        <version>4.53.6</version>
+        <version>4.53.7-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-json-http-api</artifactId>
