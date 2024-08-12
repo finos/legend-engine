@@ -30,6 +30,7 @@ import org.finos.legend.engine.repl.core.commands.*;
 import org.finos.legend.engine.repl.core.legend.LegendInterface;
 import org.finos.legend.engine.repl.core.legend.LocalLegendInterface;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
@@ -52,15 +53,18 @@ public class Client
     private final LegendInterface legendInterface = new LocalLegendInterface();
     private final Terminal terminal;
     private final LineReader reader;
-    private boolean debug = false;
-    private MutableList<ReplExtension> replExtensions = Lists.mutable.empty();
-    private MutableList<CompleterExtension> completerExtensions = Lists.mutable.empty();
-    private ModelState state;
+    private final MutableList<ReplExtension> replExtensions;
+    private final MutableList<CompleterExtension> completerExtensions;
+    private final ModelState state;
     private final PlanExecutor planExecutor;
+
+    private boolean debug = false;
 
     public static void main(String[] args) throws Exception
     {
-        new Client(Lists.mutable.empty(), Lists.mutable.empty(), PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build()).loop();
+        Client client = new Client(Lists.mutable.empty(), Lists.mutable.empty(), PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build());
+        client.loop();
+        client.forceExit();
     }
 
     public MutableList<Command> commands;
@@ -76,7 +80,8 @@ public class Client
         this.initialize();
         replExtensions.forEach(e -> e.initialize(this));
 
-        this.printDebug("Welcome to the Legend REPL! Press 'Enter' or type 'help' to see the list of available commands.");
+        this.printDebug("Legend REPL v" + DeploymentStateAndVersions.sdlc.buildVersion + " (" + DeploymentStateAndVersions.sdlc.commitIdAbbreviated + ")");
+        this.printDebug("Press 'Enter' or type 'help' to see the list of available commands.");
         this.printInfo("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
 
         // NOTE: the order here matters, the default command 'help' should always go first
@@ -134,7 +139,6 @@ public class Client
                 String line = this.reader.readLine("> ");
                 if (line == null || line.equalsIgnoreCase("exit"))
                 {
-                    System.exit(0);
                     this.persistHistory();
                     break;
                 }
@@ -171,7 +175,6 @@ public class Client
                 String lineContent = this.reader.getBuffer().toString();
                 if (lineContent.isEmpty())
                 {
-                    System.exit(0);
                     this.persistHistory();
                     break;
                 }
@@ -183,7 +186,6 @@ public class Client
             // handle Ctrl + D: exit
             catch (EndOfFileException e)
             {
-                System.exit(0);
                 this.persistHistory();
                 break;
             }
@@ -343,5 +345,14 @@ public class Client
         {
             return null;
         }
+    }
+
+    // Force exit (using System.exit()) will make sure the REPL quit completely
+    // when "exit" command is called or terminate signal with Ctrl+D/Ctrl+C in invoked
+    // otherwise, after the REPL input loop is exited, it will get stuck at a state where
+    // it still accepts input, but do nothing.
+    public void forceExit()
+    {
+        System.exit(0);
     }
 }

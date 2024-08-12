@@ -30,5 +30,5 @@ public interface StagedFilesDatasetReferenceAbstract extends DatasetReference
 {
     StagedFilesDatasetProperties properties();
 
-    List<String> columns();
+    List<Field> columns();
 }

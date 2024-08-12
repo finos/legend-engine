@@ -136,30 +136,21 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting2():Boo
   assertRoundTrip($input, $expected);
 }
 
-
 function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting2b():Boolean[1]
 {
   let input = {|
-      let x = firstDayOfThisYear()->adjust(1, DurationUnit.DAYS);
-      let y = firstDayOfThisMonth();
-      let z = firstDayOfThisQuarter()->adjust(2, DurationUnit.DAYS);
-
       let a = mostRecentDayOfWeek(DayOfWeek.Monday);
-      let b= previousDayOfWeek(DayOfWeek.Monday);
+      let b = previousDayOfWeek(DayOfWeek.Monday)->adjust(2, DurationUnit.DAYS);
 
       true;
     };
 
   let expected = {|
-      let x = today()->firstDayOfYear()->adjust(1, DurationUnit.DAYS);
-      let y = today()->firstDayOfMonth();
-      let z = today()->firstDayOfQuarter()->adjust(2, DurationUnit.DAYS);
-
       let a = today()->mostRecentDayOfWeek(DayOfWeek.Monday);
-      let b = today()->previousDayOfWeek(DayOfWeek.Monday);
+      let b = today()->previousDayOfWeek(DayOfWeek.Monday)->adjust(2, DurationUnit.DAYS);
 
       true;
-      };
+    };
 
   assertRoundTrip($input, $expected);
 }

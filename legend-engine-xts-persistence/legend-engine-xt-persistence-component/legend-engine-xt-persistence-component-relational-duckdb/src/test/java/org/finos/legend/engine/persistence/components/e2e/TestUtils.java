@@ -126,6 +126,7 @@ public class TestUtils
     }};
 
     public static Field id = Field.builder().name(idName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(idName).build();
+    public static Field idNonPk = Field.builder().name(idName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).fieldAlias(idName).build();
     public static Field tinyIntId = Field.builder().name(idName).type(FieldType.of(DataType.TINYINT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(idName).build();
     public static Field name = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).nullable(false).fieldAlias(nameName).build();
     public static Field nullableName = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).fieldAlias(nameName).build();
@@ -135,6 +136,7 @@ public class TestUtils
     public static Field nullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
     public static Field decimalIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.DECIMAL, 10, 2)).fieldAlias(incomeName).build();
     public static Field startTime = Field.builder().name(startTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(startTimeName).build();
+    public static Field startTimeNonPk = Field.builder().name(startTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(startTimeName).build();
     public static Field startTimeTimestamp = Field.builder().name(startTimeName).type(FieldType.of(DataType.TIMESTAMP, 6, null)).primaryKey(true).fieldAlias(startTimeName).build();
     public static Field expiryDate = Field.builder().name(expiryDateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).fieldAlias(expiryDateName).build();
     public static Field expiryDatePk = Field.builder().name(expiryDateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(expiryDateName).build();

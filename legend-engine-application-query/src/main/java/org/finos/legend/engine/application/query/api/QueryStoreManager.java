@@ -34,6 +34,8 @@ import org.eclipse.collections.api.set.sorted.MutableSortedSet;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.application.query.model.*;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.vault.Vault;
 
 import javax.lang.model.SourceVersion;
@@ -252,18 +254,47 @@ public class QueryStoreManager
         }
 
         List<Query> queries = new ArrayList<>();
+        List<Bson> aggregateLists = new ArrayList<>();
+        aggregateLists.add(Aggregates.addFields(new Field<>("isCurrentUser", new Document("$eq", Arrays.asList("$owner", currentUser)))));
+        aggregateLists.add(Aggregates.match(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters)));
+        aggregateLists.add(Aggregates.sort(Sorts.descending("isCurrentUser")));
+        if (searchSpecification.sortByOption != null)
+        {
+            aggregateLists.add(Aggregates.sort(Sorts.descending(getSortByField(searchSpecification.sortByOption))));
+        }
+        aggregateLists.add(Aggregates.project(Projections.include(LIGHT_QUERY_PROJECTION)));
+        aggregateLists.add(Aggregates.limit(Math.min(MAX_NUMBER_OF_QUERIES, searchSpecification.limit == null ? Integer.MAX_VALUE : searchSpecification.limit)));
         AggregateIterable<Document> documents = this.getQueryCollection()
-                .aggregate(Arrays.asList(
-                        Aggregates.addFields(new Field("isCurrentUser", new Document("$eq", Arrays.asList("$owner", currentUser)))),
-                        Aggregates.match(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters)),
-                        Aggregates.sort(Sorts.descending("isCurrentUser")),
-                        Aggregates.project(Projections.include(LIGHT_QUERY_PROJECTION)),
-                        Aggregates.limit(Math.min(MAX_NUMBER_OF_QUERIES, searchSpecification.limit == null ? Integer.MAX_VALUE : searchSpecification.limit))));
+                .aggregate(aggregateLists);
+
         for (Document doc : documents)
         {
             queries.add(documentToQuery(doc));
         }
         return queries;
+    }
+
+    public String getSortByField(QuerySearchSortBy sortBy)
+    {
+        switch (sortBy)
+        {
+            case SORT_BY_CREATE:
+            {
+                return "createdAt";
+            }
+            case SORT_BY_VIEW:
+            {
+                return "lastOpenAt";
+            }
+            case SORT_BY_UPDATE:
+            {
+                return "lastUpdatedAt";
+            }
+            default:
+            {
+                throw new EngineException("Fail to understand sort-by value", EngineErrorType.COMPILATION);
+            }
+        }
     }
 
     public List<Query> getQueries(List<String> queryIds)

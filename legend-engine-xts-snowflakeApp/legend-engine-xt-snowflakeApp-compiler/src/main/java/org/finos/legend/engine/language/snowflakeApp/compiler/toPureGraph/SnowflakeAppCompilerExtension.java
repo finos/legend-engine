@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.snowflakeApp.compiler.toPureGraph;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.code.core.CoreFunctionActivatorCodeRepositoryProvider;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper;
@@ -70,6 +71,8 @@ public class SnowflakeAppCompilerExtension implements CompilerExtension
                     SourceInformationHelper.toM3SourceInformation(app.sourceInformation),
                     context.pureModel.getClass("meta::external::function::activator::snowflakeApp::SnowflakeApp")
             )
+                    ._stereotypes(ListIterate.collect(app.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
+                    ._taggedValues(ListIterate.collect(app.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)))
                     ._applicationName(app.applicationName)
                     ._function(func)
                     ._description(app.description)
@@ -88,6 +91,5 @@ public class SnowflakeAppCompilerExtension implements CompilerExtension
     {
         return new Root_meta_external_function_activator_snowflakeApp_SnowflakeDeploymentConfiguration_Impl("")
                 ._target((Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) context.resolveConnection(configuration.activationConnection.connection, configuration.sourceInformation));
-        // ._stage(context.pureModel.getEnumValue("meta::external::function::activator::DeploymentStage", configuration.stage.name()));
     }
 }
