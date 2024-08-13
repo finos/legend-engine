@@ -27,6 +27,7 @@ import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.ingestmode.*;
+import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetDeduplicationHandler;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DeriveDataErrorRowsLogicalPlan;
@@ -259,6 +260,22 @@ public class ApiUtils
         return result;
     }
 
+    public static List<DataError> performDryRun(IngestMode enrichedIngestMode, Datasets enrichedDatasets, GeneratorResult generatorResult,
+                                                Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor,
+                                                RelationalSink relationalSink, int sampleRowCount, CaseConversion caseConversion)
+    {
+        if (enrichedIngestMode instanceof BulkLoad)
+        {
+            executor.executePhysicalPlan(generatorResult.dryRunPreActionsSqlPlan().orElseThrow(IllegalStateException::new));
+            List<DataError> results = relationalSink.performDryRun(enrichedDatasets, transformer, executor, generatorResult.dryRunSqlPlan().orElseThrow(IllegalStateException::new), generatorResult.dryRunValidationSqlPlan(), sampleRowCount, caseConversion);
+            executor.executePhysicalPlan(generatorResult.dryRunPostCleanupSqlPlan().orElseThrow(IllegalStateException::new));
+            return results;
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Dry Run not supported for this ingest Mode : " + enrichedIngestMode.getClass().getSimpleName());
+        }
+    }
 
     public static List<IngestorResult> performIngestion(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Planner planner, Executor<SqlGen,
         TabularData, SqlPlan> executor, GeneratorResult generatorResult, List<DataSplitRange> dataSplitRanges, IngestMode ingestMode,
@@ -601,7 +618,7 @@ public class ApiUtils
         }
     }
 
-    private static Optional<Long> retrieveValueAsLong(Object obj)
+    public static Optional<Long> retrieveValueAsLong(Object obj)
     {
         if (obj instanceof Integer)
         {

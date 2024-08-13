@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components;
 
 import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
+import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
@@ -36,11 +37,16 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReferenceImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
+import org.finos.legend.engine.persistence.components.relational.api.DataError;
 import org.finos.legend.engine.persistence.components.relational.api.DatasetIngestDetails;
 import org.finos.legend.engine.persistence.components.relational.api.DatasetIngestResults;
+import org.finos.legend.engine.persistence.components.relational.api.DryRunResult;
+import org.finos.legend.engine.persistence.components.relational.api.ErrorCategory;
 import org.finos.legend.engine.persistence.components.relational.api.IngestStage;
 import org.finos.legend.engine.persistence.components.relational.api.IngestStageResult;
+import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalMultiDatasetIngestor;
+import org.finos.legend.engine.persistence.components.relational.exception.MultiDatasetException;
 import org.finos.legend.engine.persistence.components.relational.h2.H2DigestUtil;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.h2.logicalplan.datasets.H2StagedFilesDatasetProperties;
@@ -55,6 +61,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -809,7 +817,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         }
         catch (Exception e)
         {
-            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
+            Assertions.assertEquals("Encountered exception for dataset: {DATASET_2}", e.getMessage());
             List<Map<String, Object>> tableData1 = h2Sink.executeQuery("select * from \"TEST\".\"" + dataset1 + suffixForAppendTable + "\"");
             List<Map<String, Object>> tableData2 = h2Sink.executeQuery("select * from \"TEST\".\"" + dataset1 + suffixForFinalTable + "\"");
             List<Map<String, Object>> tableData3 = h2Sink.executeQuery("select * from \"TEST\".\"" + dataset1 + suffixForBatchMetadataTable + "\"");
@@ -822,6 +830,142 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
             Assertions.assertTrue(tableData4.isEmpty());
             Assertions.assertTrue(tableData5.isEmpty());
             Assertions.assertTrue(tableData6.isEmpty());
+        }
+    }
+
+    /*
+    Test Case:
+        - [Dataset1: [BulkLoad, UnitemporalDelta],
+           Dataset2: [BulkLoad, UnitemporalDelta]]
+       - Execution fails at first stage of Dataset2
+       - Dry run is triggered
+     */
+    @Test
+    public void testDryRun()
+    {
+        // Register UDF
+        H2DigestUtil.registerMD5Udf(h2Sink, digestUDF);
+
+        // Configure ingest modes
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(digestUDF).digestField(digestName).build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(appendTimeName).build())
+            .batchIdField(batchIdName)
+            .build();
+
+        UnitemporalDelta unitemporalDelta = UnitemporalDelta.builder()
+            .digestField(digestName)
+            .transactionMilestoning(TransactionDateTime.builder()
+                .dateTimeInName(batchTimeInName)
+                .dateTimeOutName(batchTimeOutName)
+                .build())
+            .build();
+
+        // Configure dataset 1
+        StagedFilesDataset bulkLoadStageTableForDataset1 = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                H2StagedFilesDatasetProperties.builder()
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(Collections.singletonList("src/test/resources/data/multi-dataset/set5/input/file1_for_dataset1.csv")).build())
+            .schema(getStagingSchemaWithoutPkWithoutDigest())
+            .build();
+        DatasetReference bulkLoadMainTableForDataset1 = DatasetReferenceImpl.builder()
+            .database(testDatabaseName)
+            .group(testSchemaName)
+            .name(dataset1 + suffixForAppendTable)
+            .build();
+        DatasetDefinition unitemporalDeltaStageTableForDataset1 = DatasetDefinition.builder()
+            .database(testDatabaseName)
+            .group(testSchemaName)
+            .name(dataset1 + suffixForAppendTable)
+            .schema(getStagingSchema())
+            .build();
+        DatasetReference unitemporalDeltaMainTableForDataset1 = DatasetReferenceImpl.builder()
+            .database(testDatabaseName)
+            .group(testSchemaName)
+            .name(dataset1 + suffixForFinalTable)
+            .build();
+
+        // Configure dataset 2
+        StagedFilesDataset bulkLoadStageTableForDataset2 = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                H2StagedFilesDatasetProperties.builder()
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(Collections.singletonList("src/test/resources/data/multi-dataset/set5/input/file1_for_dataset2.csv")).build())
+            .schema(getStagingSchema2WithoutPkWithoutDigest())
+            .build();
+        DatasetReference bulkLoadMainTableForDataset2 = DatasetReferenceImpl.builder()
+            .database(testDatabaseName)
+            .group(testSchemaName)
+            .name(dataset2 + suffixForAppendTable)
+            .build();
+        DatasetDefinition unitemporalDeltaStageTableForDataset2 = DatasetDefinition.builder()
+            .database(testDatabaseName)
+            .group(testSchemaName)
+            .name(dataset2 + suffixForAppendTable)
+            .schema(getStagingSchema2())
+            .build();
+        DatasetReference unitemporalDeltaMainTableForDataset2 = DatasetReferenceImpl.builder()
+            .database(testDatabaseName)
+            .group(testSchemaName)
+            .name(dataset2 + suffixForFinalTable)
+            .build();
+
+        // Configure ingest stages
+        IngestStage ingestStage1ForDataset1 = IngestStage.builder().ingestMode(bulkLoad).stagingDataset(bulkLoadStageTableForDataset1).mainDataset(bulkLoadMainTableForDataset1).build();
+        IngestStage ingestStage2ForDataset1 = IngestStage.builder().ingestMode(unitemporalDelta).stagingDataset(unitemporalDeltaStageTableForDataset1).mainDataset(unitemporalDeltaMainTableForDataset1).stagingDatasetBatchIdField(batchIdName).build();
+        IngestStage ingestStage1ForDataset2 = IngestStage.builder().ingestMode(bulkLoad).stagingDataset(bulkLoadStageTableForDataset2).mainDataset(bulkLoadMainTableForDataset2).build();
+        IngestStage ingestStage2ForDataset2 = IngestStage.builder().ingestMode(unitemporalDelta).stagingDataset(unitemporalDeltaStageTableForDataset2).mainDataset(unitemporalDeltaMainTableForDataset2).stagingDatasetBatchIdField(batchIdName).build();
+
+        List<DatasetIngestDetails> datasetIngestDetails = buildDatasetIngestDetails(Arrays.asList(ingestStage1ForDataset1, ingestStage2ForDataset1), Arrays.asList(ingestStage1ForDataset2, ingestStage2ForDataset2));
+
+        RelationalMultiDatasetIngestor ingestor = RelationalMultiDatasetIngestor.builder()
+            .relationalSink(H2Sink.get())
+            .lockInfoDataset(lockInfoDataset)
+            .batchErrorDataset(batchErrorDataset)
+            .ingestRequestId(requestId1)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .build();
+
+        // Run ingestion
+
+        Executor executor = ingestor.init(datasetIngestDetails, JdbcConnection.of(h2Sink.connection()));
+        ingestor.create();
+
+        try
+        {
+            executor.begin();
+            List<DatasetIngestResults> actual = ingestor.ingest();
+            executor.commit();
+
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (MultiDatasetException mde)
+        {
+            executor.revert();
+            Assertions.assertTrue(mde.getIngestStageMetadata().ingestMode() instanceof BulkLoad);
+            Assertions.assertEquals("Encountered exception for dataset: {DATASET_2}", mde.getMessage());
+
+            // Trigger dry run
+            DryRunResult dryRunResult = ingestor.dryRun(mde.getDataset());
+            List<DataError> expectedErrorRecords = Arrays.asList(DataError.builder()
+                .errorCategory(ErrorCategory.TYPE_CONVERSION)
+                .errorRecord("{\"start_time\":\"2020-01-01 00:00:00.0\",\"name\":\"HARRY\",\"rating\":\"10\",\"id\":\"???\"}")
+                .errorMessage("Unable to type cast column")
+                .putAllErrorDetails(buildErrorDetails("src/test/resources/data/multi-dataset/set5/input/file1_for_dataset2.csv", idName, 1L))
+                .build(), DataError.builder()
+                .errorCategory(ErrorCategory.TYPE_CONVERSION)
+                .errorRecord("{\"start_time\":\"2020-01-99 00:00:00.0\",\"name\":\"ANDY\",\"rating\":\"8\",\"id\":\"3\"}")
+                .errorMessage("Unable to type cast column")
+                .putAllErrorDetails(buildErrorDetails("src/test/resources/data/multi-dataset/set5/input/file1_for_dataset2.csv", startTimeName, 3L))
+                .build());
+            Assertions.assertEquals(IngestStatus.FAILED, dryRunResult.status());
+            Assertions.assertEquals(new HashSet<>(expectedErrorRecords), new HashSet<>(dryRunResult.errorRecords()));
+        }
+        finally
+        {
+            executor.close();
+            ingestor.cleanup();
         }
     }
 
@@ -900,5 +1044,14 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
     {
         Map<String, Object> expectedStatsWithStringKey = expectedStats.keySet().stream().collect(Collectors.toMap(Enum::name, expectedStats::get));
         verifyStats(expectedStatsWithStringKey, actualStats);
+    }
+
+    private Map<String, Object> buildErrorDetails(String fileName, String columnName, Long recordNumber)
+    {
+        Map<String, Object> errorDetails = new HashMap<>();
+        errorDetails.put(DataError.FILE_NAME, fileName);
+        errorDetails.put(DataError.COLUMN_NAME, columnName);
+        errorDetails.put(DataError.RECORD_NUMBER, recordNumber);
+        return errorDetails;
     }
 }

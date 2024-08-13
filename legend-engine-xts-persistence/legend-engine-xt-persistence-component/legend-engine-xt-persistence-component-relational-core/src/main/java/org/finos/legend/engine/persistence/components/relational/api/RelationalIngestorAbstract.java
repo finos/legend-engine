@@ -301,7 +301,7 @@ public abstract class RelationalIngestorAbstract
     {
         LOGGER.info("Invoked dryRun method, will perform the dryRun");
         validateDatasetsInitialization();
-        List<DataError> dataErrors = performDryRun();
+        List<DataError> dataErrors = ApiUtils.performDryRun(enrichedIngestMode, enrichedDatasets, generatorResult, transformer, executor, relationalSink(), sampleRowCount(), caseConversion());
         IngestStatus ingestStatus = dataErrors.isEmpty() ? IngestStatus.SUCCEEDED : IngestStatus.FAILED;
         DryRunResult dryRunResult = DryRunResult.builder().status(ingestStatus).addAllErrorRecords(dataErrors).build();
         LOGGER.info("DryRun completed");
@@ -534,21 +534,6 @@ public abstract class RelationalIngestorAbstract
         {
             LOGGER.info(String.format("Starting Ingestion with IngestMode: {%s}", enrichedIngestMode.getClass().getSimpleName()));
             return ApiUtils.performIngestion(enrichedDatasets, transformer, planner, executor, generatorResult, dataSplitRanges, enrichedIngestMode, schemaEvolutionResult, additionalMetadata(), executionTimestampClock(), Optional.empty());
-        }
-    }
-
-    private List<DataError> performDryRun()
-    {
-        if (enrichedIngestMode instanceof BulkLoad)
-        {
-            executor.executePhysicalPlan(generatorResult.dryRunPreActionsSqlPlan().orElseThrow(IllegalStateException::new));
-            List<DataError> results = relationalSink().performDryRun(enrichedDatasets, transformer, executor, generatorResult.dryRunSqlPlan().orElseThrow(IllegalStateException::new), generatorResult.dryRunValidationSqlPlan(), sampleRowCount(), caseConversion());
-            executor.executePhysicalPlan(generatorResult.dryRunPostCleanupSqlPlan().orElseThrow(IllegalStateException::new));
-            return results;
-        }
-        else
-        {
-            throw new UnsupportedOperationException("Dry Run not supported for this ingest Mode : " + enrichedIngestMode.getClass().getSimpleName());
         }
     }
 

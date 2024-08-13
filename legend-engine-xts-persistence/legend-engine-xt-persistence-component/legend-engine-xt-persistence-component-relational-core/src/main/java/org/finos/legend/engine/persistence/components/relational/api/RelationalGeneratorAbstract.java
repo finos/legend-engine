@@ -490,4 +490,57 @@ public abstract class RelationalGeneratorAbstract
             .preActionsSqlPlan(SqlPlan.builder().build())
             .build();
     }
+
+    GeneratorResult generateOperationsForDryRun(Resources resources, Planner planner)
+    {
+        Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
+
+        // dry-run pre-actions
+        LogicalPlan dryRunPreActionsLogicalPlan = planner.buildLogicalPlanForDryRunPreActions(resources);
+        Optional<SqlPlan> dryRunPreActionsSqlPlan = Optional.empty();
+        if (dryRunPreActionsLogicalPlan != null)
+        {
+            dryRunPreActionsSqlPlan = Optional.of(transformer.generatePhysicalPlan(dryRunPreActionsLogicalPlan));
+        }
+
+        // dry-run
+        LogicalPlan dryRunLogicalPlan = planner.buildLogicalPlanForDryRun(resources);
+        Optional<SqlPlan> dryRunSqlPlan = Optional.empty();
+        if (dryRunLogicalPlan != null)
+        {
+            dryRunSqlPlan = Optional.of(transformer.generatePhysicalPlan(dryRunLogicalPlan));
+        }
+
+        // dry-run validations
+        Map<ValidationCategory, List<Pair<Set<FieldValue>, LogicalPlan>>> dryRunValidationLogicalPlan = planner.buildLogicalPlanForDryRunValidation(resources);
+        Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan = new HashMap<>();
+        for (ValidationCategory validationCategory : dryRunValidationLogicalPlan.keySet())
+        {
+            dryRunValidationSqlPlan.put(validationCategory, new ArrayList<>());
+            for (Pair<Set<FieldValue>, LogicalPlan> pair : dryRunValidationLogicalPlan.get(validationCategory))
+            {
+                SqlPlan sqlplan = transformer.generatePhysicalPlan(pair.getTwo());
+                dryRunValidationSqlPlan.get(validationCategory).add(Tuples.pair(pair.getOne(), sqlplan));
+            }
+        }
+
+        // dry-run post-cleanup
+        LogicalPlan dryRunPostCleanupLogicalPlan = planner.buildLogicalPlanForDryRunPostCleanup(resources);
+        Optional<SqlPlan> dryRunPostCleanupSqlPlan = Optional.empty();
+        if (dryRunPostCleanupLogicalPlan != null)
+        {
+            dryRunPostCleanupSqlPlan = Optional.of(transformer.generatePhysicalPlan(dryRunPostCleanupLogicalPlan));
+        }
+
+        return GeneratorResult.builder()
+            .preActionsSqlPlan(SqlPlan.builder().build())
+            .ingestSqlPlan(SqlPlan.builder().build())
+            .metadataIngestSqlPlan(SqlPlan.builder().build())
+            .postActionsSqlPlan(SqlPlan.builder().build())
+            .dryRunPreActionsSqlPlan(dryRunPreActionsSqlPlan)
+            .dryRunSqlPlan(dryRunSqlPlan)
+            .putAllDryRunValidationSqlPlan(dryRunValidationSqlPlan)
+            .dryRunPostCleanupSqlPlan(dryRunPostCleanupSqlPlan)
+            .build();
+    }
 }

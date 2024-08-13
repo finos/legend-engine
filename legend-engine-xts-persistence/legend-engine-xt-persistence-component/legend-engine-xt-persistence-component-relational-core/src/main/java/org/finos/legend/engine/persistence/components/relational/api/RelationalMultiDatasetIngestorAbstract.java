@@ -18,6 +18,7 @@ import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.FilterType;
 import org.finos.legend.engine.persistence.components.common.Resources;
+import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
@@ -38,6 +39,8 @@ import org.finos.legend.engine.persistence.components.planner.Planners;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
+import org.finos.legend.engine.persistence.components.relational.exception.BulkLoadException;
+import org.finos.legend.engine.persistence.components.relational.exception.MultiDatasetException;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
@@ -254,6 +257,39 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         performCleanup();
     }
 
+    public DryRunResult dryRun(String dataset)
+    {
+        LOGGER.info("Invoked dryRun method, will perform the dryRun");
+
+        // 1. Validate initialization has been performed
+        validateInitialization();
+
+        // 2. Find the Bulk Load stage of the given dataset
+        List<IngestStageMetadata> ingestStageMetadataList = ingestStageMetadataMap.get(dataset);
+        Optional<IngestStageMetadata> ingestStageMetadata = ingestStageMetadataList.stream().filter(stage -> stage.ingestMode() instanceof BulkLoad).findFirst();
+
+        // 3. Perform dry run
+        if (ingestStageMetadata.isPresent())
+        {
+            IngestMode enrichedIngestMode = ingestStageMetadata.get().ingestMode();
+            Datasets enrichedDatasets = ingestStageMetadata.get().datasets();
+            RelationalGenerator generator = ingestStageMetadata.get().relationalGenerator();
+            Planner planner = ingestStageMetadata.get().planner();
+
+            GeneratorResult generatorResult = generator.generateOperationsForDryRun(Resources.builder().build(), planner);
+
+            List<DataError> dataErrors = ApiUtils.performDryRun(enrichedIngestMode, enrichedDatasets, generatorResult, transformer, executor, relationalSink(), sampleDataErrorRowCount(), caseConversion());
+            IngestStatus ingestStatus = dataErrors.isEmpty() ? IngestStatus.SUCCEEDED : IngestStatus.FAILED;
+            DryRunResult dryRunResult = DryRunResult.builder().status(ingestStatus).addAllErrorRecords(dataErrors).build();
+            LOGGER.info("DryRun completed");
+            return dryRunResult;
+        }
+        else
+        {
+            throw new IllegalArgumentException("Unable to perform dry run - no Bulk Load stage exists for given dataset");
+        }
+    }
+
 
     //-------------------- Helper Methods --------------------
     private Executor initExecutor(RelationalConnection connection)
@@ -431,57 +467,75 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 RelationalGenerator generator = ingestStageMetadata.relationalGenerator();
                 Planner planner = ingestStageMetadata.planner();
 
-                // 1. Perform idempotency check
-                if (enableIdempotencyCheck())
+                try
                 {
-                    List<IngestorResult> previouslyProcessedResults = ApiUtils.verifyIfRequestAlreadyProcessedPreviously(SchemaEvolutionResult.builder().updatedDatasets(enrichedDatasets).build(),
-                        enrichedDatasets, ingestRequestId(), transformer, executor, IngestStatus.SUCCEEDED.name());
-                    if (!previouslyProcessedResults.isEmpty())
+                    // 1. Perform idempotency check
+                    if (enableIdempotencyCheck())
                     {
-                        ingestStageResults.addAll(previouslyProcessedResults.stream().map(this::buildIngestStageResult).collect(Collectors.toList()));
-                        continue;
+                        List<IngestorResult> previouslyProcessedResults = ApiUtils.verifyIfRequestAlreadyProcessedPreviously(SchemaEvolutionResult.builder().updatedDatasets(enrichedDatasets).build(),
+                            enrichedDatasets, ingestRequestId(), transformer, executor, IngestStatus.SUCCEEDED.name());
+                        if (!previouslyProcessedResults.isEmpty())
+                        {
+                            ingestStageResults.addAll(previouslyProcessedResults.stream().map(this::buildIngestStageResult).collect(Collectors.toList()));
+                            continue;
+                        }
                     }
-                }
 
-                // 2. Check if staging dataset is empty
-                Resources.Builder resourcesBuilder = Resources.builder();
-                if (enrichedIngestMode.accept(IngestModeVisitors.NEED_TO_CHECK_STAGING_EMPTY) && executor.datasetExists(enrichedDatasets.stagingDataset()))
+                    // 2. Check if staging dataset is empty
+                    Resources.Builder resourcesBuilder = Resources.builder();
+                    if (enrichedIngestMode.accept(IngestModeVisitors.NEED_TO_CHECK_STAGING_EMPTY) && executor.datasetExists(enrichedDatasets.stagingDataset()))
+                    {
+                        boolean isStagingDatasetEmpty = ApiUtils.datasetEmpty(enrichedDatasets.stagingDataset(), transformer, executor, placeHolderKeyValues);
+                        LOGGER.info(String.format("Checking if staging dataset is empty : {%s}", isStagingDatasetEmpty));
+                        resourcesBuilder.stagingDataSetEmpty(isStagingDatasetEmpty);
+                    }
+
+                    // 3. Generate SQLs
+                    GeneratorResult generatorResult = generator.generateOperationsForIngest(resourcesBuilder.build(), planner);
+
+                    // 4. Perform deduplication and versioning
+                    if (generatorResult.deduplicationAndVersioningSqlPlan().isPresent())
+                    {
+                        ApiUtils.dedupAndVersion(executor, generatorResult, enrichedDatasets, caseConversion(), placeHolderKeyValues);
+                    }
+
+                    // 5. Perform ingestion
+                    List<IngestorResult> ingestorResults = null;
+                    if (enrichedIngestMode instanceof BulkLoad)
+                    {
+                        LOGGER.info("Starting Bulk Load for stage");
+                        ingestorResults = ApiUtils.performBulkLoad(enrichedDatasets, transformer, planner, executor, generatorResult,
+                            enrichedIngestMode, SchemaEvolutionResult.builder().updatedDatasets(enrichedDatasets).build(),
+                            additionalMetadata(), executionTimestampClock(), relationalSink(), Optional.of(batchId));
+                        LOGGER.info("Bulk Load completed for stage");
+
+                        Optional<Long> rowsWithErrors = ApiUtils.retrieveValueAsLong(ingestorResults.get(0).statisticByName().getOrDefault(StatisticName.ROWS_WITH_ERRORS, 0));
+                        if (rowsWithErrors.isPresent() && rowsWithErrors.get() > 0)
+                        {
+                            String message = String.format("Rows load with errors in Bulk Load for dataset: {%s}, number of rows with errors: {%s}", dataset, rowsWithErrors.get());
+                            LOGGER.error(message);
+                            throw new BulkLoadException(dataset, message);
+                        }
+                    }
+                    else
+                    {
+                        LOGGER.info(String.format("Starting Ingestion for stage with IngestMode: {%s}", enrichedIngestMode.getClass().getSimpleName()));
+                        ingestorResults = ApiUtils.performIngestion(enrichedDatasets, transformer, planner, executor, generatorResult,
+                            new ArrayList<>(), enrichedIngestMode, SchemaEvolutionResult.builder().updatedDatasets(enrichedDatasets).build(),
+                            additionalMetadata(), executionTimestampClock(), Optional.of(batchId));
+                        LOGGER.info("Ingestion completed for stage");
+                    }
+
+                    // 6. Build ingest stage result
+                    List<IngestStageResult> mappedResults = ingestorResults.stream().map(this::buildIngestStageResult).collect(Collectors.toList());
+                    ingestStageResults.addAll(mappedResults);
+                }
+                catch (Exception e)
                 {
-                    boolean isStagingDatasetEmpty = ApiUtils.datasetEmpty(enrichedDatasets.stagingDataset(), transformer, executor, placeHolderKeyValues);
-                    LOGGER.info(String.format("Checking if staging dataset is empty : {%s}", isStagingDatasetEmpty));
-                    resourcesBuilder.stagingDataSetEmpty(isStagingDatasetEmpty);
+                    String message = String.format("Encountered exception for dataset: {%s}", dataset);
+                    LOGGER.error(message);
+                    throw new MultiDatasetException(e, dataset, ingestStageMetadata, message);
                 }
-
-                // 3. Generate SQLs
-                GeneratorResult generatorResult = generator.generateOperationsForIngest(resourcesBuilder.build(), planner);
-
-                // 4. Perform deduplication and versioning
-                if (generatorResult.deduplicationAndVersioningSqlPlan().isPresent())
-                {
-                    ApiUtils.dedupAndVersion(executor, generatorResult, enrichedDatasets, caseConversion(), placeHolderKeyValues);
-                }
-
-                // 5. Perform ingestion
-                List<IngestorResult> ingestorResults = null;
-                if (enrichedIngestMode instanceof BulkLoad)
-                {
-                    LOGGER.info("Starting Bulk Load for stage");
-                    ingestorResults = ApiUtils.performBulkLoad(enrichedDatasets, transformer, planner, executor, generatorResult,
-                        enrichedIngestMode, SchemaEvolutionResult.builder().updatedDatasets(enrichedDatasets).build(),
-                        additionalMetadata(), executionTimestampClock(), relationalSink(), Optional.of(batchId));
-                    LOGGER.info("Ingestion completed for stage");
-                }
-                else
-                {
-                    LOGGER.info(String.format("Starting Ingestion for stage with IngestMode: {%s}", enrichedIngestMode.getClass().getSimpleName()));
-                    ingestorResults = ApiUtils.performIngestion(enrichedDatasets, transformer, planner, executor, generatorResult,
-                        new ArrayList<>(), enrichedIngestMode, SchemaEvolutionResult.builder().updatedDatasets(enrichedDatasets).build(),
-                        additionalMetadata(), executionTimestampClock(), Optional.of(batchId));
-                    LOGGER.info("Ingestion completed for stage");
-                }
-
-                // 6. Build ingest stage result
-                ingestStageResults.addAll(ingestorResults.stream().map(this::buildIngestStageResult).collect(Collectors.toList()));
             }
 
             results.add(DatasetIngestResults.builder()
