@@ -48,6 +48,24 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
   assert($dqLambda->isNotEmpty());
 }
 
+function <<test.Test>> meta::external::dataquality::tests::testMetadataGeneration():Boolean[1]
+{ let dqRootConstraints = meta::external::dataquality::tests::Person->getAllTypeGeneralisations()->filter(x| $x->instanceOf(ElementWithConstraints))->cast(@ElementWithConstraints).constraints->filter(x| $x.name == 'addressIDGreaterThan2' || $x.name == 'nameMustNotBeBlank');
+
+  let validationTree = ^DataQualityRootGraphFetchTree<Person>(
+    class=meta::external::dataquality::tests::Person,
+    constraints=$dqRootConstraints,
+    subTrees=meta::external::dataquality::tests::Person->hierarchicalProperties()->filter(p | $p->isPrimitiveValueProperty()->not())->filter(p| $p.name=='addresses')->map(p | ^DataQualityPropertyGraphFetchTree(property=$p,
+     subTrees=meta::external::dataquality::tests::Address->hierarchicalProperties()->filter(p | $p->isPrimitiveValueProperty())->filter(p| $p.name=='addressId')->map(p | ^DataQualityPropertyGraphFetchTree(property=$p))))
+  );
+  let filter = p:Person[1]| $p.name=='John';
+  let dataquality = ^DataQuality<Person>(validationTree=$validationTree,
+                                         context=^meta::external::dataquality::MappingAndRuntimeDataQualityExecutionContext(runtime=^meta::core::runtime::EngineRuntime(connectionStores = testDatabaseConnection(meta::relational::tests::db, [])), mapping=meta::external::dataquality::tests::dqValidationPersonMapping),
+                                         filter=$filter);
+
+  let dqMetadata = meta::external::dataquality::generateDQMetaDataForDQValidation($dataquality);
+  assert($dqMetadata->isNotEmpty());
+}
+
 
 
 

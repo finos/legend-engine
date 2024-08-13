@@ -436,7 +436,7 @@ function meta::external::dataquality::generateDQMetaDataForDQValidation(dataqual
    $dqRules;
 }
 
-function meta::external::dataquality::nodeToDqRule(node:GraphFetchTree[1], processOnlyConstraints:Boolean[1], path:String[1]):DataQualityRule[*]
+function meta::external::dataquality::nodeToDqRule(node:GraphFetchTree[1], processOnlyConstraints:Boolean[1], path:String[*]):DataQualityRule[*]
 {
    let dqRules = $node->match([
       dr: DataQualityRootGraphFetchTree<Any>[1]        | $dr->rootNodeToDqRule($processOnlyConstraints),
@@ -445,7 +445,7 @@ function meta::external::dataquality::nodeToDqRule(node:GraphFetchTree[1], proce
       p : PropertyGraphFetchTree[1]                    | $p->propertyNodeToDqRule($processOnlyConstraints, $path)
    ]);
 
-   $dqRules->concatenate($node.subTrees->map(st|$st->nodeToDqRule($processOnlyConstraints, $dqRules->at(0).propertyPath)));
+   $dqRules->concatenate($node.subTrees->map(st|$st->nodeToDqRule($processOnlyConstraints, if ($dqRules->isEmpty(), | [], | $dqRules->at(0).propertyPath))));
 }
 
 function <<access.private>> meta::external::dataquality::rootNodeToDqRule(node:RootGraphFetchTree<Any>[1], processOnlyConstraints: Boolean[1]):DataQualityRule[*]
@@ -456,11 +456,11 @@ function <<access.private>> meta::external::dataquality::rootNodeToDqRule(node:R
      );
 }
 
-function <<access.private>> meta::external::dataquality::propertyNodeToDqRule(node:PropertyGraphFetchTree[1], processOnlyConstraints: Boolean[1], path:String[1]):DataQualityRule[*]
+function <<access.private>> meta::external::dataquality::propertyNodeToDqRule(node:PropertyGraphFetchTree[1], processOnlyConstraints: Boolean[1], path:String[*]):DataQualityRule[*]
 {
     if ( $processOnlyConstraints,
-         | $node->cast(@DataQualityPropertyGraphFetchTree).constraints->map(c|$c->constraintToDqRule([$path, $node.property.name->toOne()]->joinStrings('::'))),
-         | ^DataQualityRule(constraintName=$node.property.name->toOne(), constraintGrammar=$node.property.multiplicity->printMultiplicity(), constraintType='Alloy_Structural_Validation', propertyPath=[$path, $node.property.name->toOne()]->joinStrings('::'))
+         | $node->cast(@DataQualityPropertyGraphFetchTree).constraints->map(c|$c->constraintToDqRule($path->concatenate($node.property.name->toOne())->joinStrings('::'))),
+         | ^DataQualityRule(constraintName=$node.property.name->toOne(), constraintGrammar=$node.property.multiplicity->printMultiplicity(), constraintType='Alloy_Structural_Validation', propertyPath=$path->concatenate($node.property.name->toOne())->joinStrings('::'))
       );
 }
 
