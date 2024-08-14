@@ -59,7 +59,6 @@ public class PCT_to_SimpleHTML
         MutableListMultimap<String, FunctionDocumentation> ordered = Lists.mutable.withAll(doc.functionsDocumentation)
                 .groupBy(x ->
                 {
-                    System.out.println(x.functionDefinition.name);
                     String id = x.functionDefinition.sourceId;
                     return id.substring(x.reportScope.filePath.length(), id.lastIndexOf("/"));
                 });
@@ -72,12 +71,14 @@ public class PCT_to_SimpleHTML
                 .forEach(x ->
                         {
                             TreeNode node = root;
+                            //System.out.println(x.getOne());
+                           // System.out.println(x.getTwo().collect(e -> e.functionDefinition.name));
                             for (String z : x.getOne().split("/"))
                             {
                                 node = node.createOrReturnChild(z);
                             }
 
-                            for (FunctionDocumentation d : x.getTwo().toSortedListBy(v -> v.functionDefinition.name))
+                            for (FunctionDocumentation d : x.getTwo().toSortedListBy(v -> v.functionDefinition.name == null ? "" : v.functionDefinition.name))
                             {
                                 MutableList<String> row = Lists.mutable.empty();
                                 row.add("<div style='color:#AAAAAA'>" + d.reportScope.module + "</div>");

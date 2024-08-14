@@ -18,7 +18,6 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpec;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.SortDirection;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.SortInfo;
@@ -27,11 +26,18 @@ public class Win
 {
     MutableList<? extends String> partition = Lists.mutable.empty();
     MutableList<SortInfo> sorts = Lists.mutable.empty();
+    Frame frame;
 
-    public Win(MutableList<? extends String> colSpec, RichIterable<Pair<Enum, String>> sorts)
+    public Win(MutableList<? extends String> colSpec, RichIterable<Pair<Enum, String>> sorts, Frame frame)
     {
         this.partition = colSpec;
         this.sorts = sorts.toList().collect(c -> new SortInfo(c.getTwo(), SortDirection.valueOf(c.getOne()._name())));
+        this.frame = frame == null ? (this.sorts.isEmpty() ? new Frame(Frame.FrameType.rows, true, -1, true, -1) : new Frame(Frame.FrameType.rows, true, -1, false, 0)) : frame;
+    }
+
+    public Win()
+    {
+        this.frame = frame == null ? (this.sorts.isEmpty() ? new Frame(Frame.FrameType.rows, true, -1, true, -1) : new Frame(Frame.FrameType.rows, true, -1, false, 0)) : frame;
     }
 
     public MutableList<? extends String> getPartition()
@@ -42,5 +48,10 @@ public class Win
     public MutableList<SortInfo> getSorts()
     {
         return sorts;
+    }
+
+    public Frame getFrame()
+    {
+        return this.frame;
     }
 }

@@ -70,11 +70,11 @@ public class GroupBy extends AggregationShared
         CoreInstance aggSpec = Instance.getValueForMetaPropertyToOneResolved(params.get(2), M3Properties.values, processorSupport);
         if (aggSpec instanceof AggColSpec)
         {
-            result.addColumn(processOneAggColSpec(orderedSource, (AggColSpec<?, ?, ?>) aggSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionToUseInStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, true, false, null));
+            result.addColumn(processOneAggColSpec(orderedSource, null, (AggColSpec<?, ?, ?>) aggSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionToUseInStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, true, false, null));
         }
         else if (aggSpec instanceof AggColSpecArray)
         {
-            result = ((AggColSpecArray<?, ?, ?>) aggSpec)._aggSpecs().injectInto(result, (accResult, aggColSpec) -> accResult.addColumn(processOneAggColSpec(orderedSource, aggColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionToUseInStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, true, false, null)));
+            result = ((AggColSpecArray<?, ?, ?>) aggSpec)._aggSpecs().injectInto(result, (accResult, aggColSpec) -> accResult.addColumn(processOneAggColSpec(orderedSource, null, aggColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionToUseInStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, true, false, null)));
         }
         else
         {

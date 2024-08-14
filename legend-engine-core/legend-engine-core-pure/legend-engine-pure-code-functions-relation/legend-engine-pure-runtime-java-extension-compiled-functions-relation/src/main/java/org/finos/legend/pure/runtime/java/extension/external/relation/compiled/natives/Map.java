@@ -33,8 +33,8 @@ public class Map extends AbstractNative implements Native
         StringBuilder result = new StringBuilder("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.map");
         result.append('(');
         result.append(transformedParams.get(0));
-        result.append(", (org.eclipse.collections.api.block.function.Function2");
-        result.append(")(PureCompiledLambda.getPureFunction(");
+        result.append(", (org.eclipse.collections.api.block.function.Function2)");
+        result.append("(PureCompiledLambda.getPureFunction(");
         result.append(transformedParams.get(1));
         result.append(", es)), es)\n");
         return result.toString();

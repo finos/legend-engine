@@ -888,7 +888,7 @@ function meta::relational::functions::sqlQueryToString::dynaFnToSql(dynafunction
 }
 
 function meta::relational::functions::sqlQueryToString::getDynaFunctionDispatcher(dispatch: Map<String, List<DynaFunctionToSql>>[1]): meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1]->DynaFunctionToSql[1]}>[1]
-{
+{  
    { func:DynaFunction[1], sgc:SqlGenerationContext[1] |
         let result = $dispatch->get($func.name)->cast(@List<DynaFunctionToSql>).values->filter(d | $d.stateMatch->isEmpty() || $sgc.generationState->in($d.stateMatch));
         assertSize($result, 1, | '[unsupported-api] The function \''+$func.name+'\' (state: ['+$sgc.generationState.generationSide->id()+', '+if($sgc.generationState->isEmpty(),|'empty',|$sgc.generationState.withinWhenClause->toOne()->toString())+']) is not supported yet');
@@ -968,6 +968,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   exp,
   explodeSemiStructured,  
   extractFromSemiStructured,  
+  first,
   firstDayOfMonth,
   firstDayOfQuarter,
   firstDayOfThisMonth,
@@ -997,7 +998,10 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   isNumeric,
   joinStrings,
   jaroWinklerSimilarity,
+  lag,
+  last,
   levenshteinDistance,
+  lead,
   least,
   left,
   length,
