@@ -506,6 +506,15 @@ Class meta::relational::tests::model::simple::Trade
    }:Person[1..*];
 }
 
+Class meta::relational::tests::model::simple::WeightedTrade
+{
+   id : Integer[1];
+   tradeDate : StrictDate[1];
+   quantity : Float[1];
+   settlementDateTime : DateTime[0..1];
+   weight: Float[1];
+}
+
 Class meta::relational::tests::model::simple::TradeEvent
 {
    eventType : String[0..1];

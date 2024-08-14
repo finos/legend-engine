@@ -16,3 +16,17 @@ function meta::pure::tds::extensions::firstNotNull<T>(set:T[*]):T[0..1]
 {
   $set->filter(v | $v != TDSNull)->first();
 }
+
+function <<functionType.NormalizeRequiredFunction>> meta::pure::tds::extensions::groupByWithSpecialAggregation<T, U>(tds: TabularDataSet[1], columns:String[*], aggValues:  meta::pure::tds::AggregateValue<T,U>[*], specialAggregation: GroupBySpecialAggregation[1]): TabularDataSet[1]
+{
+  if ($specialAggregation->instanceOf(WavgAggregation) ,
+  | $tds->groupBy($columns, $aggValues
+                                              ->concatenate(agg('weightedQuantitySummation_1', r| $r.getNumber($specialAggregation->cast(@WavgAggregation).quantity) * $r.getNumber($specialAggregation->cast(@WavgAggregation).weight), z| $z->sum()))
+                                              ->concatenate(agg('weightSummation_1', r| $r.getNumber($specialAggregation->cast(@WavgAggregation).weight), z| $z->sum())))
+                                              ->extend([
+                                                          col(row:TDSRow[1] | $row.getNumber('weightedQuantitySummation_1')/$row.getNumber('weightSummation_1'), $specialAggregation->cast(@WavgAggregation).columnId)
+                                                        ])
+                                              ->restrict($columns->concatenate($aggValues.name)->concatenate($specialAggregation->cast(@WavgAggregation).columnId));,
+  | assert(false, 'Supported special aggregations include: wavg');
+    $tds;)
+}

@@ -200,7 +200,7 @@ Class meta::pure::tds::WindowColumnSpecification<T> extends ColumnSpecification<
 
 
 
-function 
+function
    {doc.doc = 'Helper function to create / define an aggreagation value (combination of column name and aggregation function)'}
    meta::pure::tds::agg<T,U>(name:String[1], mapFn:FunctionDefinition<{TDSRow[1]->T[0..1]}>[1], aggregateFn:FunctionDefinition<{T[*]->U[0..1]}>[1]):meta::pure::tds::AggregateValue<T,U>[1]
 {
@@ -875,4 +875,25 @@ function meta::pure::tds::groupByWithWindowSubset<K,V,U>(set:K[*], functions:met
 
    meta::pure::tds::groupBy( $set, $subSetfunctions ,$newAggValues , $newIds  );
 
+}
+
+// special aggregations
+
+Class meta::pure::tds::GroupBySpecialAggregation
+{
+  //super class for special operations
+}
+
+Class meta::pure::tds::WavgAggregation extends meta::pure::tds::GroupBySpecialAggregation
+{
+  quantity: String[1];
+  weight: String[1];
+  columnId: String[1];
+}
+
+function 
+   {doc.doc = 'Helper function to create / define a wavg aggreagation value (combination of column names)'}
+   meta::pure::tds::wavg(quantity: String[1], weight: String[1], columnId: String[1]):meta::pure::tds::GroupBySpecialAggregation[1]
+{
+   ^meta::pure::tds::WavgAggregation(quantity = $quantity, weight= $weight, columnId= $columnId);
 }
