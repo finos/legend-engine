@@ -113,6 +113,7 @@ public class ResultManager
         {
             try
             {
+                LOGGER.info("RESULT_STREAM_STARTED");
                 this.result.stream(output, this.format);
                 LOGGER.info("RESULT_STREAM_COMPLETED");
             }
