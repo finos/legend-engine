@@ -42,6 +42,7 @@ import org.finos.legend.engine.repl.autocomplete.handlers.FilterHandler;
 import org.finos.legend.engine.repl.autocomplete.handlers.FromHandler;
 import org.finos.legend.engine.repl.autocomplete.handlers.GroupByHandler;
 import org.finos.legend.engine.repl.autocomplete.handlers.JoinHandler;
+import org.finos.legend.engine.repl.autocomplete.handlers.OverHandler;
 import org.finos.legend.engine.repl.autocomplete.handlers.RenameHandler;
 import org.finos.legend.engine.repl.autocomplete.handlers.SelectHandler;
 import org.finos.legend.engine.repl.autocomplete.handlers.SortHandler;
@@ -107,7 +108,8 @@ public class Completer
                 new GroupByHandler(),
                 new SortHandler(),
                 new JoinHandler(),
-                new SelectHandler()
+                new SelectHandler(),
+                new OverHandler()
         ).toMap(FunctionHandler::functionName, x -> x);
     }
 
@@ -165,7 +167,6 @@ public class Completer
         else if (topExpression instanceof AppliedFunction)
         {
             AppliedFunction currentFunc = (AppliedFunction) topExpression;
-
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification leftCompiledVS = currentFunc.parameters.get(0).accept(new ValueSpecificationBuilder(new CompileContext.Builder(pureModel).build(), Lists.mutable.empty(), processingContext));
             GenericType leftType = leftCompiledVS._genericType();
             String currentlyTypeFunctionName = currentFunc.function.replace(ParserFixer.magicToken, "");
@@ -227,20 +228,26 @@ public class Completer
         if (currentFunc.parameters.size() == 2 && currentFunc.parameters.get(1) instanceof ClassInstance)
         {
             Object pivot = ((ClassInstance) currentFunc.parameters.get(1)).value;
-            if (pivot instanceof ColSpec)
-            {
-                return proposeColumnNamesForEditColSpec((ColSpec) pivot, leftType);
-            }
-            else if (pivot instanceof ColSpecArray)
-            {
-                List<ColSpec> colSpecList = ((ColSpecArray) pivot).colSpecs;
-                return proposeColumnNamesForEditColSpec(colSpecList.get(colSpecList.size() - 1), leftType);
-            }
+            return proposeColumnNamesForEditColSpec(pivot, leftType);
         }
         return Lists.mutable.empty();
     }
 
-    public static MutableList<CompletionItem> proposeColumnNamesForEditColSpec(ColSpec colSpec, GenericType leftType)
+    public static MutableList<CompletionItem> proposeColumnNamesForEditColSpec(Object object, GenericType leftType)
+    {
+        if (object instanceof ColSpec)
+        {
+            return proposeColumnNamesForEditColSpecOne((ColSpec) object, leftType);
+        }
+        else if (object instanceof ColSpecArray)
+        {
+            List<ColSpec> colSpecList = ((ColSpecArray) object).colSpecs;
+            return proposeColumnNamesForEditColSpecOne(colSpecList.get(colSpecList.size() - 1), leftType);
+        }
+        return Lists.mutable.empty();
+    }
+
+    private static MutableList<CompletionItem> proposeColumnNamesForEditColSpecOne(ColSpec colSpec, GenericType leftType)
     {
         RelationType<?> r = (RelationType<?>) leftType._typeArguments().getFirst()._rawType();
         String typedColName = colSpec.name.replace(ParserFixer.magicToken, "");
@@ -385,12 +392,14 @@ public class Completer
                     if (ci.value instanceof ColSpec)
                     {
                         ColSpec co = (ColSpec) ci.value;
-                        return Lists.mutable.with(co.function1, co.function2).select(Objects::nonNull).collect(c -> c.accept(this)).select(Objects::nonNull).getFirst();
+                        ValueSpecification res = Lists.mutable.with(co.function1, co.function2).select(Objects::nonNull).collect(c -> c.accept(this)).select(Objects::nonNull).getFirst();
+                        return res == null ? ci : res;
                     }
                     else if (ci.value instanceof ColSpecArray)
                     {
                         ColSpecArray coA = (ColSpecArray) ci.value;
-                        return ListIterate.flatCollect(coA.colSpecs, co -> Lists.mutable.with(co.function1, co.function2).select(Objects::nonNull).collect(c -> c.accept(this))).select(Objects::nonNull).getFirst();
+                        ValueSpecification res = ListIterate.flatCollect(coA.colSpecs, co -> Lists.mutable.with(co.function1, co.function2).select(Objects::nonNull).collect(c -> c.accept(this))).select(Objects::nonNull).getFirst();
+                        return res == null ? ci : res;
                     }
                     return ci;
                 }
