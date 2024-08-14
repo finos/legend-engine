@@ -90,7 +90,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
 
     public abstract LockInfoDataset lockInfoDataset();
 
-    public abstract BatchErrorDataset batchErrorDataset();
+    public abstract Optional<BatchErrorDataset> batchErrorDataset();
 
     //-------------------- FLAGS --------------------
 
@@ -415,11 +415,14 @@ public abstract class RelationalMultiDatasetIngestorAbstract
 
     private void createBatchErrorDataset()
     {
-        List<Operation> operations = new ArrayList<>();
-        operations.add(Create.of(true, batchErrorDataset().get()));
-        LogicalPlan createDataset = LogicalPlan.of(operations);
-        SqlPlan createLockDatasetSqlPlan = transformer.generatePhysicalPlan(createDataset);
-        executor.executePhysicalPlan(createLockDatasetSqlPlan);
+        if (batchErrorDataset().isPresent())
+        {
+            List<Operation> operations = new ArrayList<>();
+            operations.add(Create.of(true, batchErrorDataset().get().get()));
+            LogicalPlan createDataset = LogicalPlan.of(operations);
+            SqlPlan createLockDatasetSqlPlan = transformer.generatePhysicalPlan(createDataset);
+            executor.executePhysicalPlan(createLockDatasetSqlPlan);
+        }
     }
 
     private void initializeLock()
