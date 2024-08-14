@@ -64,7 +64,6 @@ public class Client
     {
         Client client = new Client(Lists.mutable.empty(), Lists.mutable.empty(), PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build());
         client.loop();
-        client.forceExit();
     }
 
     public MutableList<Command> commands;
@@ -140,6 +139,7 @@ public class Client
                 if (line == null || line.equalsIgnoreCase("exit"))
                 {
                     this.persistHistory();
+                    this.forceExit();
                     break;
                 }
 
@@ -176,6 +176,7 @@ public class Client
                 if (lineContent.isEmpty())
                 {
                     this.persistHistory();
+                    this.forceExit();
                     break;
                 }
                 else
@@ -187,6 +188,7 @@ public class Client
             catch (EndOfFileException e)
             {
                 this.persistHistory();
+                this.forceExit();
                 break;
             }
             catch (Exception e)
@@ -282,7 +284,8 @@ public class Client
 
     public Path getHomeDir()
     {
-        return FileUtils.getUserDirectory().toPath().resolve(".legend/repl");
+        String homeDir = System.getProperty("legend.repl.storageDir");
+        return FileUtils.getUserDirectory().toPath().resolve(homeDir != null ? homeDir : ".legend/repl");
     }
 
     public Terminal getTerminal()
@@ -347,12 +350,21 @@ public class Client
         }
     }
 
-    // Force exit (using System.exit()) will make sure the REPL quit completely
-    // when "exit" command is called or terminate signal with Ctrl+D/Ctrl+C in invoked
-    // otherwise, after the REPL input loop is exited, it will get stuck at a state where
-    // it still accepts input, but do nothing.
+    /**
+     * Force exit (using System.exit()) will make sure the REPL quit completely
+     * when "exit" command is called or terminate signal with Ctrl+D/Ctrl+C in invoked
+     * otherwise, after the REPL input loop is exited, it will get stuck at a state where
+     * it still accepts input, but do nothing.
+     */
     public void forceExit()
     {
+        // NOTE: usage of System.exit makes it hard to test, so we allow
+        // an escape hatch to disable it in test
+        // See https://stackoverflow.com/questions/309396/how-to-test-methods-that-call-system-exit
+        if ("true".equals(System.getProperty("legend.repl.testing.disableForceExit")))
+        {
+            return;
+        }
         System.exit(0);
     }
 }
