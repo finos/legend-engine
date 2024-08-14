@@ -17,7 +17,7 @@ function meta::pure::tds::extensions::firstNotNull<T>(set:T[*]):T[0..1]
   $set->filter(v | $v != TDSNull)->first();
 }
 
-function <<functionType.NormalizeRequiredFunction>> meta::pure::tds::extensions::groupByWithSpecialAggregation<T, U>(tds: TabularDataSet[1], columns:String[*], aggValues:  meta::pure::tds::AggregateValue<T,U>[*], specialAggregation: GroupBySpecialAggregation[1]): TabularDataSet[1]
+function <<functionType.NormalizeRequiredFunction>> meta::pure::tds::extensions::groupBy<T, U>(tds: TabularDataSet[1], columns:String[*], aggValues:  meta::pure::tds::AggregateValue<T,U>[*], specialAggregation: GroupBySpecialAggregation[1]): TabularDataSet[1]
 {
   if ($specialAggregation->instanceOf(WavgAggregation) ,
   | $tds->groupBy($columns, $aggValues

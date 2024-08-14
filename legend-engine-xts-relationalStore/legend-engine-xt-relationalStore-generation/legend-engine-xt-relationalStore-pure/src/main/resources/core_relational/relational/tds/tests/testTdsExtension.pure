@@ -545,7 +545,7 @@ function <<test.Test>>
                       col(x | $x.weight, 'Weight'),
                       col(x | $x.tradeDate->adjust(1, DurationUnit.DAYS), 'tradeDate')
                   ])
-                ->groupByWithSpecialAggregation(['tradeDate'],
+                ->groupBy(['tradeDate'],
                   [
                       agg('ID count' , x | $x.getInteger('Trade ID'), y | $y->count())
                   ],
