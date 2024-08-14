@@ -114,6 +114,7 @@ public class ResultManager
             try
             {
                 this.result.stream(output, this.format);
+                LOGGER.info("RESULT_STREAM_COMPLETED");
             }
             catch (Exception e)
             {
