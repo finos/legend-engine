@@ -23,6 +23,7 @@ Database demo::H2DemoDataBase
   Table EmployeeTable
   (
     id INTEGER PRIMARY KEY,
+    ratings DECIMAL(10,2),
     firm_id INTEGER,
     name VARCHAR(200),
     country_id INTEGER,
@@ -103,6 +104,35 @@ Service demo::H2PersonService
   }
 }
 
+Service demo::H2PersonRatings
+{
+  pattern: '/personRatings';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::employee.all()->project(
+      [
+        x|$x.id,
+        x|$x.name,
+        x|$x.ratings
+      ],
+      [
+        'Id',
+        'Name',
+        'Ratings'
+      ]
+    );
+    mapping: demo::DemoRelationalMapping;
+    runtime: demo::H2DemoRuntime;
+  }
+}
+
 Service demo::H2PersonServiceParameterized
 {
   pattern: '/personServiceForNames';
@@ -172,6 +202,7 @@ Enum demo::employeeType
 Class demo::employee
 {
   id: Integer[1];
+  ratings: Decimal[1];
   name: String[1];
   type: demo::employeeType[1];
   startDate: Date[1];
@@ -190,6 +221,7 @@ Mapping demo::DemoRelationalMapping
     )
     ~mainTable [demo::H2DemoDataBase]EmployeeTable
     id: [demo::H2DemoDataBase]EmployeeTable.id,
+    ratings: [demo::H2DemoDataBase]EmployeeTable.ratings,
     name: [demo::H2DemoDataBase]EmployeeTable.name,
     type: EnumerationMapping EmployeeType: [demo::H2DemoDataBase]EmployeeTable.type,
     startDate: [demo::H2DemoDataBase]EmployeeTable.start_date
@@ -211,7 +243,7 @@ RelationalDatabaseConnection demo::H2DemoConnection
   specification: LocalH2
   {
     testDataSetupSqls: [
-      'Drop table if exists EmployeeTable;\nCreate Table EmployeeTable(id INTEGER PRIMARY KEY,firm_id INTEGER,name VARCHAR(200),country_id INTEGER, type VARCHAR(25), start_date DATE);\nInsert into EmployeeTable (id, firm_id, name, country_id, type, start_date) values (101,202, \'Alice\', 303, \'Type1\', \'2023-08-24\');\nInsert into EmployeeTable (id, firm_id, name, country_id, type, start_date) values (102,203, \'Bob\', 304, \'Type2\', \'2022-08-24\');\nInsert into EmployeeTable (id, firm_id, name, country_id, type, start_date) values (103,204, \'Curtis\', 305, \'Type2\', \'2022-07-24\');\nInsert into EmployeeTable (id, firm_id, name, country_id, type, start_date) values (104,205, \'Danielle\', 306, \'Type1\', \'2022-07-23\');\n'
+      'Drop table if exists EmployeeTable;\nCreate Table EmployeeTable(id INTEGER PRIMARY KEY,ratings DECIMAL,firm_id INTEGER,name VARCHAR(200),country_id INTEGER, type VARCHAR(25), start_date DATE);\nInsert into EmployeeTable (id, ratings, firm_id, name, country_id, type, start_date) values (101,9.1,202, \'Alice\', 303, \'Type1\', \'2023-08-24\');\nInsert into EmployeeTable (id, ratings, firm_id, name, country_id, type, start_date) values (102,9.2,203, \'Bob\', 304, \'Type2\', \'2022-08-24\');\nInsert into EmployeeTable (id, ratings, firm_id, name, country_id, type, start_date) values (103,9.3,204, \'Curtis\', 305, \'Type2\', \'2022-07-24\');\nInsert into EmployeeTable (id, ratings, firm_id, name, country_id, type, start_date) values (104,9.4,205, \'Danielle\', 306, \'Type1\', \'2022-07-23\');\n'
       ];
   };
   auth: DefaultH2;

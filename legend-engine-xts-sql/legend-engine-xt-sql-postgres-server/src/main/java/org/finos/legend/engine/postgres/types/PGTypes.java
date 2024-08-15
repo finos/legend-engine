@@ -48,6 +48,7 @@ public class PGTypes
             .put(Types.FLOAT, RealType.INSTANCE)
             .put(Types.DOUBLE, DoubleType.INSTANCE)
             .put(Types.NUMERIC, NumericType.INSTANCE)
+            .put(Types.DECIMAL, DoubleType.INSTANCE)
             //.put(Types.TIMESTAMP_WITH_TIMEZONE, TimeTZType.INSTANCE)
             //.put(Types.TIMESTAMP, TimestampZType.INSTANCE)
             .put(Types.TIMESTAMP, TimestampType.INSTANCE)

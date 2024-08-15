@@ -61,6 +61,7 @@ public class LegendResultSetMetaData implements PostgresResultSetMetaData
                 return Types.BIGINT;
             case FLOAT:
             case NUMBER:
+            case DECIMAL:
                 return Types.DOUBLE;
             case BOOLEAN:
                 return Types.BOOLEAN;
