@@ -180,6 +180,12 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         return executor;
     }
 
+    public void setExecutor(Executor executor)
+    {
+        this.executor = executor;
+        this.executor.setSqlLogging(sqlLogging());
+    }
+
     public void create()
     {
         // 1. Validate initialization has been performed
@@ -540,7 +546,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 {
                     String message = String.format("Encountered exception for dataset: {%s}", dataset);
                     LOGGER.error(message);
-                    throw new MultiDatasetException(e, stageStartInstant, dataset, ingestStageMetadata, message);
+                    throw new MultiDatasetException(e, stageStartInstant, executionTimestampClock().instant(), dataset, ingestStageMetadata, message);
                 }
             }
 

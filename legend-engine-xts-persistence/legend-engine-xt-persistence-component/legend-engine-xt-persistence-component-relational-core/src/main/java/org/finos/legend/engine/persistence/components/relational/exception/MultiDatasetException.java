@@ -28,6 +28,8 @@ public class MultiDatasetException extends RuntimeException
 
     private Instant stageStartInstant;
 
+    private Instant stageExceptionInstant;
+
     public Exception getException()
     {
         return exception;
@@ -48,12 +50,18 @@ public class MultiDatasetException extends RuntimeException
         return stageStartInstant;
     }
 
-    public MultiDatasetException(Exception exception, Instant stageStartInstant, String dataset, IngestStageMetadata ingestStageMetadata, String message)
+    public Instant getStageExceptionInstant()
+    {
+        return stageExceptionInstant;
+    }
+
+    public MultiDatasetException(Exception exception, Instant stageStartInstant, Instant stageExceptionInstant, String dataset, IngestStageMetadata ingestStageMetadata, String message)
     {
         super(message);
         this.exception = exception;
         this.stageStartInstant = stageStartInstant;
         this.dataset = dataset;
         this.ingestStageMetadata = ingestStageMetadata;
+        this.stageExceptionInstant = stageExceptionInstant;
     }
 }
