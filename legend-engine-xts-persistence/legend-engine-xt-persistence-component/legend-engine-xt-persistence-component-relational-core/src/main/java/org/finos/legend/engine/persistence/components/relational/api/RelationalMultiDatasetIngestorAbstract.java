@@ -52,6 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -465,6 +466,8 @@ public abstract class RelationalMultiDatasetIngestorAbstract
 
             for (IngestStageMetadata ingestStageMetadata : ingestStageMetadataList)
             {
+                Instant stageStartInstant = executionTimestampClock().instant();
+
                 IngestMode enrichedIngestMode = ingestStageMetadata.ingestMode();
                 Datasets enrichedDatasets = ingestStageMetadata.datasets();
                 RelationalGenerator generator = ingestStageMetadata.relationalGenerator();
@@ -537,7 +540,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 {
                     String message = String.format("Encountered exception for dataset: {%s}", dataset);
                     LOGGER.error(message);
-                    throw new MultiDatasetException(e, dataset, ingestStageMetadata, message);
+                    throw new MultiDatasetException(e, stageStartInstant, dataset, ingestStageMetadata, message);
                 }
             }
 

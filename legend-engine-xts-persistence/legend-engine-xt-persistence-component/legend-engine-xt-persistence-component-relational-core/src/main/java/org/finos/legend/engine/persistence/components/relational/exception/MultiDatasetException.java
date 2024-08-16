@@ -16,6 +16,8 @@ package org.finos.legend.engine.persistence.components.relational.exception;
 
 import org.finos.legend.engine.persistence.components.relational.api.IngestStageMetadata;
 
+import java.time.Instant;
+
 public class MultiDatasetException extends RuntimeException
 {
     private Exception exception;
@@ -23,6 +25,8 @@ public class MultiDatasetException extends RuntimeException
     private String dataset;
 
     private IngestStageMetadata ingestStageMetadata;
+
+    private Instant stageStartInstant;
 
     public Exception getException()
     {
@@ -39,10 +43,16 @@ public class MultiDatasetException extends RuntimeException
         return ingestStageMetadata;
     }
 
-    public MultiDatasetException(Exception exception, String dataset, IngestStageMetadata ingestStageMetadata, String message)
+    public Instant getStageStartInstant()
+    {
+        return stageStartInstant;
+    }
+
+    public MultiDatasetException(Exception exception, Instant stageStartInstant, String dataset, IngestStageMetadata ingestStageMetadata, String message)
     {
         super(message);
         this.exception = exception;
+        this.stageStartInstant = stageStartInstant;
         this.dataset = dataset;
         this.ingestStageMetadata = ingestStageMetadata;
     }
