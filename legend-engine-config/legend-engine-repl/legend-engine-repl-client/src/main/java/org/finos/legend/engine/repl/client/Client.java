@@ -16,6 +16,7 @@ package org.finos.legend.engine.repl.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.block.predicate.checked.CheckedPredicate;
@@ -80,6 +81,10 @@ public class Client
         replExtensions.forEach(e -> e.initialize(this));
 
         this.printDebug("Legend REPL v" + DeploymentStateAndVersions.sdlc.buildVersion + " (" + DeploymentStateAndVersions.sdlc.commitIdAbbreviated + ")");
+        if (System.getProperty("legend.repl.initializationMessage") != null)
+        {
+            this.printDebug(StringEscapeUtils.unescapeJava(System.getProperty("legend.repl.initializationMessage")));
+        }
         this.printDebug("Press 'Enter' or type 'help' to see the list of available commands.");
         this.printInfo("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
 
