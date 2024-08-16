@@ -77,6 +77,11 @@ public class TestTDSInterpreted extends TestTDS
         return new TestTDSInterpreted(columnOrdered, columnType, rows, this.modelRepository, this.processorSupport);
     }
 
+    public Object getValue(String columnName, int rowNum)
+    {
+        return this.getValueAsCoreInstance(columnName, rowNum).getValueForMetaPropertyToOne("values").getName();
+    }
+
     public CoreInstance getValueAsCoreInstance(String columnName, int rowNum)
     {
         Object dataAsObject = dataByColumnName.get(columnName);

@@ -21,11 +21,11 @@ native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z>(r:
 native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<T+R>[1];
 native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], agg:AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<T+R>[1];
 
-native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z,W,R>(r:Relation<T>[1], window:_Window<T>[1], f:FuncColSpec<{Relation<T>[1],Frame[1],T[1]->Any[0..1]},R>[1]):Relation<T+R>[1];
-native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z,W,R>(r:Relation<T>[1], window:_Window<T>[1], f:FuncColSpecArray<{Relation<T>[1],Frame[1],T[1]->Any[*]},R>[1]):Relation<T+R>[1];
+native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z,W,R>(r:Relation<T>[1], window:_Window<T>[1], f:FuncColSpec<{Relation<T>[1],_Window<T>[1],T[1]->Any[0..1]},R>[1]):Relation<T+R>[1];
+native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z,W,R>(r:Relation<T>[1], window:_Window<T>[1], f:FuncColSpecArray<{Relation<T>[1],_Window<T>[1],T[1]->Any[*]},R>[1]):Relation<T+R>[1];
 
-native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], window:_Window<T>[1], agg:AggColSpec<{Relation<T>[1],Frame[1],T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<T+R>[1];
-native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], window:_Window<T>[1], agg:AggColSpecArray<{Relation<T>[1],Frame[1],T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<T+R>[1];
+native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], window:_Window<T>[1], agg:AggColSpec<{Relation<T>[1],_Window<T>[1],T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<T+R>[1];
+native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], window:_Window<T>[1], agg:AggColSpecArray<{Relation<T>[1],_Window<T>[1],T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<T+R>[1];
 
 
 function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimpleExtendStrShared<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
@@ -216,7 +216,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAg
                   8, 1, H
                   9, 5, I
                   10, 0, J
-                #->extend(over(~grp), ~newCol:{p,f,r|$r.id}:y|$y->plus())
+                #->extend(over(~grp), ~newCol:{p,w,r|$r.id}:y|$y->plus())
                };
 
 
@@ -252,7 +252,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAg
                   8, 1, H
                   9, 5, I
                   10, 0, J
-                #->extend(over(~grp), ~[newCol:{p,f,r|$r.id}:y|$y->plus(), other:{p,f,r|$r.grp}:y|$y->plus()])
+                #->extend(over(~grp), ~[newCol:{p,w,r|$r.id}:y|$y->plus(), other:{p,w,r|$r.grp}:y|$y->plus()])
                };
 
     let res =  $f->eval($expr);
@@ -288,7 +288,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAg
                   8, 1, H
                   9, 5, I
                   10, 0, J
-                #->extend(over(~id->descending()), ~newCol:{p,f,r|$r.id}:y|$y->plus())
+                #->extend(over(~id->descending()), ~newCol:{p,w,r|$r.id}:y|$y->plus())
                };
 
 
@@ -325,7 +325,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAg
                   8, 1, H
                   9, 5, I
                   10, 0, J
-                #->extend(over(~grp, ~id->descending()), ~newCol:{p,f,r|$r.name}:y|$y->joinStrings(''))
+                #->extend(over(~grp, ~id->descending()), ~newCol:{p,w,r|$r.name}:y|$y->joinStrings(''))
                };
 
 
@@ -361,9 +361,8 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAg
                   8, 1, H
                   9, 5, I
                   10, 0, J
-                #->extend(over(~grp, ~id->descending()), ~newCol:{p,f,r|$r.id}:y|$y->plus())
+                #->extend(over(~grp, ~id->descending()), ~newCol:{p,w,r|$r.id}:y|$y->plus())
                };
-
 
     let res =  $f->eval($expr);
 
@@ -382,42 +381,6 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAg
                   '#', $res->sort([~grp->ascending(), ~id->descending()])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndOrderWindowUsingLag<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {
-                | #TDS
-                  id, grp, name
-                  1, 2, A
-                  2, 1, B
-                  3, 3, C
-                  4, 4, D
-                  5, 2, E
-                  6, 1, F
-                  7, 3, G
-                  8, 1, H
-                  9, 5, I
-                  10, 0, J
-                #->extend(over(~grp, ~id->descending()), ~newCol:{p,f,r|$p->lag($r).name})
-               };
-
-
-    let res =  $f->eval($expr);
-
-    assertEquals( '#TDS\n'+
-                  '   id,grp,name,newCol\n'+
-                  '   10,0,J,null\n'+
-                  '   8,1,H,null\n'+
-                  '   6,1,F,H\n'+
-                  '   2,1,B,F\n'+
-                  '   5,2,E,null\n'+
-                  '   1,2,A,E\n'+
-                  '   7,3,G,null\n'+
-                  '   3,3,C,G\n'+
-                  '   4,4,D,null\n'+
-                  '   9,5,I,null\n'+
-                  '#', $res->sort([~grp->ascending(), ~id->descending()])->toString());
-}
-
 function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -433,7 +396,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAg
                   8, 1, H
                   9, 5, I
                   10, 0, J
-                #->extend(over(~grp, ~id->descending()), ~[newCol:{p,f,r|$r.name}:y|$y->joinStrings(''),other:{p,f,r|$r.id}:y|$y->plus()])
+                #->extend(over(~grp, ~id->descending()), ~[newCol:{p,w,r|$r.name}:y|$y->joinStrings(''),other:{p,w,r|$r.id}:y|$y->plus()])
                };
 
 
@@ -455,42 +418,6 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAg
 }
 
 
-function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndOrderWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {
-                | #TDS
-                  id, grp, name
-                  1, 2, A
-                  2, 1, B
-                  3, 3, C
-                  4, 4, D
-                  5, 2, E
-                  6, 1, F
-                  7, 3, G
-                  8, 1, H
-                  9, 5, I
-                  10, 0, J
-                #->extend(over(~grp, ~id->descending()), ~newCol:{p,f,r|$p->lead($r).id})
-               };
-
-
-    let res =  $f->eval($expr);
-
-    assertEquals( '#TDS\n'+
-                  '   id,grp,name,newCol\n'+
-                  '   10,0,J,null\n'+
-                  '   8,1,H,6\n'+
-                  '   6,1,F,2\n'+
-                  '   2,1,B,null\n'+
-                  '   5,2,E,1\n'+
-                  '   1,2,A,null\n'+
-                  '   7,3,G,3\n'+
-                  '   3,3,C,null\n'+
-                  '   4,4,D,null\n'+
-                  '   9,5,I,null\n'+
-                  '#', $res->sort([~grp->ascending(), ~id->descending()])->toString());
-}
-
 function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndOrderLastWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -506,7 +433,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPWi
                   8, 1, H
                   9, 5, I
                   10, 0, J
-                #->extend(over(~grp, ~id->descending()), ~newCol:{p,f,r|$p->last($f, $r).id})
+                #->extend(over(~grp, ~id->descending()), ~newCol:{p,w,r|$p->last($w, $r).id})
                };
 
 
@@ -542,7 +469,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPWi
                   8, 1, H
                   9, 5, I
                   10, 0, J
-                #->extend(over(~grp, ~id->descending()), ~[newCol:{p,f,r|$p->lead($r).id}, other:{p,f,r| $p->first($f, $r).name}])
+                #->extend(over(~grp, ~id->descending()), ~[newCol:{p,w,r|$p->lead($r).id}, other:{p,w,r| $p->first($w, $r).name}])
                };
                
 
@@ -615,7 +542,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPWi
                   8, 1, 1, H
                   9, 5, 5, I
                   10, 0, 0, J
-                #->extend(over(~[grp,grp2], ~id->descending()), ~[newCol:{p,f,r|$p->lead($r).id}, other:{p,f,r|$p->first($f,$r).name}])
+                #->extend(over(~[grp,grp2], ~id->descending()), ~[newCol:{p,w,r|$p->lead($r).id}, other:{p,w,r|$p->first($w,$r).name}])
                };
 
 

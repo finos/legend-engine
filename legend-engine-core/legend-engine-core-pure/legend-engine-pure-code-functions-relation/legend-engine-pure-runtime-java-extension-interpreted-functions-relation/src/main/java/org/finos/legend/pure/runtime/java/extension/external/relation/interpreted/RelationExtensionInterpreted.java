@@ -24,22 +24,29 @@ import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Columns;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Concatenate;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.CumulativeDistribution;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.DenseRank;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Distinct;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Drop;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Extend;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Filter;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.GroupBy;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.First;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.NTile;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Offset;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Last;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Join;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Limit;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Map;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.PercentRank;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Project;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Rank;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Rename;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.RowNumber;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Select;
-import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Size;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Slice;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Size;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Nth;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Sort;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared.TDSWithCursorCoreInstance;
 import org.finos.legend.pure.runtime.java.interpreted.ExecutionSupport;
@@ -66,9 +73,10 @@ public class RelationExtensionInterpreted extends BaseInterpretedExtension
                 Tuples.pair("extend_Relation_1___Window_1__AggColSpecArray_1__Relation_1_", Extend::new),
                 Tuples.pair("extend_Relation_1___Window_1__FuncColSpec_1__Relation_1_", Extend::new),
                 Tuples.pair("extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_", Extend::new),
-                Tuples.pair("first_Relation_1__Frame_1__T_1__T_1_", First::new),
-                Tuples.pair("last_Relation_1__Frame_1__T_1__T_1_", Last::new),
-                Tuples.pair("offset_Relation_1__T_1__Integer_1__T_1_", Offset::new),
+                Tuples.pair("first_Relation_1___Window_1__T_1__T_$0_1$_", First::new),
+                Tuples.pair("last_Relation_1___Window_1__T_1__T_$0_1$_", Last::new),
+                Tuples.pair("nth_Relation_1___Window_1__T_1__Integer_1__T_$0_1$_", Nth::new),
+                Tuples.pair("offset_Relation_1__T_1__Integer_1__T_$0_1$_", Offset::new),
                 Tuples.pair("filter_Relation_1__Function_1__Relation_1_", Filter::new),
                 Tuples.pair("map_Relation_1__Function_1__V_MANY_", Map::new),
                 Tuples.pair("size_Relation_1__Integer_1_", Size::new),
@@ -85,7 +93,13 @@ public class RelationExtensionInterpreted extends BaseInterpretedExtension
                 Tuples.pair("project_C_MANY__FuncColSpecArray_1__Relation_1_", Project::new),
                 Tuples.pair("columns_Relation_1__Column_MANY_", Columns::new),
                 Tuples.pair("select_Relation_1__ColSpec_1__Relation_1_", Select::new),
-                Tuples.pair("select_Relation_1__ColSpecArray_1__Relation_1_", Select::new)
+                Tuples.pair("select_Relation_1__ColSpecArray_1__Relation_1_", Select::new),
+                Tuples.pair("rowNumber_Relation_1__T_1__Integer_1_", RowNumber::new),
+                Tuples.pair("rank_Relation_1___Window_1__T_1__Integer_1_",Rank::new),
+                Tuples.pair("percentRank_Relation_1___Window_1__T_1__Float_1_", PercentRank::new),
+                Tuples.pair("denseRank_Relation_1___Window_1__T_1__Integer_1_", DenseRank::new),
+                Tuples.pair("ntile_Relation_1__T_1__Integer_1__Integer_1_", NTile::new),
+                Tuples.pair("cumulativeDistribution_Relation_1___Window_1__T_1__Float_1_", CumulativeDistribution::new)
         );
     }
 

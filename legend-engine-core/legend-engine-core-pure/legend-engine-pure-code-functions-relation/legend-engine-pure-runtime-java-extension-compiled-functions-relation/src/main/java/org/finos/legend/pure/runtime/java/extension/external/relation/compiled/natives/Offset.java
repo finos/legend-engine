@@ -23,6 +23,6 @@ public class Offset extends AbstractNativeFunctionGeneric
 {
     public Offset()
     {
-        super("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.offset", new Class[]{Relation.class, RowContainer.class, Integer.class, ExecutionSupport.class}, false, true, false, "offset_Relation_1__T_1__Integer_1__T_1_");
+        super("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.offset", new Class[]{Relation.class, RowContainer.class, Integer.class, ExecutionSupport.class}, false, true, false, "offset_Relation_1__T_1__Integer_1__T_$0_1$_");
     }
 }

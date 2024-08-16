@@ -68,6 +68,11 @@ public class TestTDSCompiled extends TestTDS
         return new TestTDSCompiled(columnOrdered, columnType, rows);
     }
 
+    public Object getValue(String columnName, int rowNum)
+    {
+        return this.getValueAsCoreInstance(columnName, rowNum);
+    }
+
     public Object getValueAsCoreInstance(String columnName, int rowNum)
     {
         Object dataAsObject = dataByColumnName.get(columnName);

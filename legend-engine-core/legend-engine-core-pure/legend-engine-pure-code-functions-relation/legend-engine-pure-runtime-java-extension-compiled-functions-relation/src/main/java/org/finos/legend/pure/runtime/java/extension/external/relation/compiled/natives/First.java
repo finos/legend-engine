@@ -21,12 +21,13 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.Native;
 
 import static org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.ExtendWindowFunc.buildFrame;
+import static org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.ExtendWindowFunc.processWindow;
 
 public class First extends AbstractNative implements Native
 {
     public First()
     {
-        super("first_Relation_1__Frame_1__T_1__T_1_");
+        super("first_Relation_1___Window_1__T_1__T_$0_1$_");
     }
 
     @Override
@@ -35,7 +36,7 @@ public class First extends AbstractNative implements Native
         StringBuilder result = new StringBuilder("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.first(");
         result.append(transformedParams.get(0));
         result.append(", ");
-        buildFrame(result, transformedParams.get(1));
+        processWindow(result, transformedParams.get(1));
         result.append(",");
         result.append(transformedParams.get(2));
         result.append(",es)");
