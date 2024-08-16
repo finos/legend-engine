@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
 Class meta::pure::functions::relation::_Window<T>
@@ -21,7 +22,10 @@ Class meta::pure::functions::relation::_Window<T>
   frame : Frame[0..1];
 }
 
-function meta::pure::functions::relation::over<T>(cols:String[*], sortInfo:SortInfo<(?:?)⊆T>[*], frame:Frame[0..1]):_Window<T>[1]
+function
+    <<functionType.NormalizeRequiredFunction,
+    PCT.function>>
+    meta::pure::functions::relation::over<T>(cols:String[*], sortInfo:SortInfo<(?:?)⊆T>[*], frame:Frame[0..1]):_Window<T>[1]
 {
   ^_Window<T>
   (
@@ -31,7 +35,10 @@ function meta::pure::functions::relation::over<T>(cols:String[*], sortInfo:SortI
   );
 }
 
-function meta::pure::functions::relation::over<T>(cols:ColSpec<(?:?)⊆T>[1]):_Window<T>[1]
+function
+    <<functionType.NormalizeRequiredFunction,
+    PCT.function>>
+    meta::pure::functions::relation::over<T>(cols:ColSpec<(?:?)⊆T>[1]):_Window<T>[1]
 {
   ^_Window<T>
   (
@@ -39,7 +46,10 @@ function meta::pure::functions::relation::over<T>(cols:ColSpec<(?:?)⊆T>[1]):_W
   );
 }
 
-function meta::pure::functions::relation::over<T>(cols:ColSpecArray<(?:?)⊆T>[1]):_Window<T>[1]
+function
+    <<functionType.NormalizeRequiredFunction,
+    PCT.function>>
+    meta::pure::functions::relation::over<T>(cols:ColSpecArray<(?:?)⊆T>[1]):_Window<T>[1]
 {
   ^_Window<T>
   (
@@ -48,32 +58,50 @@ function meta::pure::functions::relation::over<T>(cols:ColSpecArray<(?:?)⊆T>[1
 }
 
 
-function meta::pure::functions::relation::over<T>(sortInfo:SortInfo<(?:?)⊆T>[*]):_Window<T>[1]
+function
+    <<functionType.NormalizeRequiredFunction,
+    PCT.function>>
+    meta::pure::functions::relation::over<T>(sortInfo:SortInfo<(?:?)⊆T>[*]):_Window<T>[1]
 {
   over([],$sortInfo,[])
 }
 
-function meta::pure::functions::relation::over<T>(frame:Frame[1]):_Window<T>[1]
+function
+    <<functionType.NormalizeRequiredFunction,
+    PCT.function>>
+    meta::pure::functions::relation::over<T>(frame:Frame[1]):_Window<T>[1]
 {
   over([],[],$frame)
 }
 
-function meta::pure::functions::relation::over<T>(cols:ColSpec<(?:?)⊆T>[1], sortInfo:SortInfo<(?:?)⊆T>[*]):_Window<T>[1]
+function
+    <<functionType.NormalizeRequiredFunction,
+    PCT.function>>
+    meta::pure::functions::relation::over<T>(cols:ColSpec<(?:?)⊆T>[1], sortInfo:SortInfo<(?:?)⊆T>[*]):_Window<T>[1]
 {
   over($cols.name,$sortInfo,[])
 }
 
-function meta::pure::functions::relation::over<T>(cols:ColSpecArray<(?:?)⊆T>[1], sortInfo:SortInfo<(?:?)⊆T>[*]):_Window<T>[1]
+function
+    <<functionType.NormalizeRequiredFunction,
+    PCT.function>>
+    meta::pure::functions::relation::over<T>(cols:ColSpecArray<(?:?)⊆T>[1], sortInfo:SortInfo<(?:?)⊆T>[*]):_Window<T>[1]
 {
   over($cols.names,$sortInfo,[])
 }
 
-function meta::pure::functions::relation::over<T>(cols:ColSpec<(?:?)⊆T>[1], frame:Frame[1]):_Window<T>[1]
+function
+    <<functionType.NormalizeRequiredFunction,
+    PCT.function>>
+    meta::pure::functions::relation::over<T>(cols:ColSpec<(?:?)⊆T>[1], frame:Frame[1]):_Window<T>[1]
 {
   over($cols.name,[],$frame)
 }
 
-function meta::pure::functions::relation::over<T>(sortInfo:SortInfo<(?:?)⊆T>[*], frame:Frame[1]):_Window<T>[1]
+function
+    <<functionType.NormalizeRequiredFunction,
+    PCT.function>>
+    meta::pure::functions::relation::over<T>(sortInfo:SortInfo<(?:?)⊆T>[*], frame:Frame[1]):_Window<T>[1]
 {
   over([],$sortInfo,$frame)
 }

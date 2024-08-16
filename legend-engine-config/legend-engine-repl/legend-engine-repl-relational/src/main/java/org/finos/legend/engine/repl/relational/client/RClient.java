@@ -26,6 +26,5 @@ public class RClient
     {
         Client client = new Client(Lists.mutable.with(new RelationalReplExtension()), Lists.mutable.with(new RelationalCompleterExtension()), PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build());
         client.loop();
-        client.forceExit();
     }
 }

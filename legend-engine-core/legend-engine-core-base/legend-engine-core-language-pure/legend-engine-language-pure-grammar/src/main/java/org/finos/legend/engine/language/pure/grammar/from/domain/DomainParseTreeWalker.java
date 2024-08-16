@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RuleContext;
@@ -1281,7 +1282,7 @@ public class DomainParseTreeWalker
 
     private ValueSpecification atomicExpression(DomainParserGrammar.AtomicExpressionContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
-        ValueSpecification result;
+        ValueSpecification result = null;
         ListIterable<ValueSpecification> dsl;
         Variable expr;
         List<Variable> expressions = Lists.mutable.of();
@@ -1318,26 +1319,9 @@ public class DomainParseTreeWalker
                 result = this.typeReference(ctx.type());
             }
         }
-        else if (ctx.lambdaFunction() != null)
+        else if (ctx.anyLambda() != null)
         {
-            boolean hasLambdaParams = false;
-            if (ctx.lambdaFunction().lambdaParam() != null)
-            {
-                for (int i = 0; i < ctx.lambdaFunction().lambdaParam().size(); i++)
-                {
-                    hasLambdaParams = true;
-                    DomainParserGrammar.IdentifierContext idCtx = ctx.lambdaFunction().lambdaParam(i).identifier();
-                    expr = this.lambdaParam(ctx.lambdaFunction().lambdaParam(i), idCtx, typeParametersNames, space);
-                    expressions.add(expr);
-                }
-            }
-            result = this.lambdaPipe(ctx.lambdaFunction().lambdaPipe(), hasLambdaParams ? ctx.lambdaFunction().lambdaParam(0).getStart() : null, expressions, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
-        }
-        else if (ctx.lambdaParam() != null && ctx.lambdaPipe() != null)
-        {
-            expr = this.lambdaParam(ctx.lambdaParam(), ctx.lambdaParam().identifier(), typeParametersNames, space);
-            expressions.add(expr);
-            result = this.lambdaPipe(ctx.lambdaPipe(), ctx.lambdaParam().getStart(), expressions, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+            result = this.processLambda(ctx.anyLambda(), typeParametersNames, lambdaContext, space, addLines, wrapFlag, expressions);
         }
         else if (ctx.instanceReference() != null)
         {
@@ -1364,12 +1348,47 @@ public class DomainParseTreeWalker
                 throw new RuntimeException("No Possible");
             }
         }
+        return result;
+    }
+
+    private Lambda processLambda(DomainParserGrammar.AnyLambdaContext lambda, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean addLines, boolean wrapFlag, List<Variable> expressions)
+    {
+        if (lambda.lambdaFunction() != null)
+        {
+            return processMultiParamLambda(lambda.lambdaFunction(), typeParametersNames, lambdaContext, space, wrapFlag, addLines, expressions);
+        }
+        else if (lambda.lambdaParam() != null && lambda.lambdaPipe() != null)
+        {
+            return processSingleParamLambda(lambda.lambdaParam(), lambda.lambdaPipe(), typeParametersNames, lambdaContext, space, wrapFlag, addLines, expressions);
+        }
         else
         {
-            // lambdaPipe
-            result = this.lambdaPipe(ctx.lambdaPipe(), null, expressions, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+            //lambdaPipe
+            return this.lambdaPipe(lambda.lambdaPipe(), null, expressions, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
         }
-        return result;
+    }
+
+    private Lambda processMultiParamLambda(DomainParserGrammar.LambdaFunctionContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines, List<Variable> expressions)
+    {
+        boolean hasLambdaParams = false;
+        if (ctx.lambdaParam() != null)
+        {
+            for (int i = 0; i < ctx.lambdaParam().size(); i++)
+            {
+                hasLambdaParams = true;
+                DomainParserGrammar.IdentifierContext idCtx = ctx.lambdaParam(i).identifier();
+                Variable expr = this.lambdaParam(ctx.lambdaParam(i), idCtx, typeParametersNames, space);
+                expressions.add(expr);
+            }
+        }
+        return this.lambdaPipe(ctx.lambdaPipe(), hasLambdaParams ? ctx.lambdaParam(0).getStart() : null, expressions, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+    }
+
+    private Lambda processSingleParamLambda(DomainParserGrammar.LambdaParamContext paramCtx, DomainParserGrammar.LambdaPipeContext pipeContext, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines, List<Variable> expressions)
+    {
+        Variable expr = this.lambdaParam(paramCtx, paramCtx.identifier(), typeParametersNames, space);
+        expressions.add(expr);
+        return this.lambdaPipe(pipeContext, paramCtx.getStart(), expressions, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
     }
 
     private ColSpec processOneColSpec(DomainParserGrammar.OneColSpecContext oneColSpec, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines, List<Variable> params)
@@ -1382,15 +1401,12 @@ public class DomainParseTreeWalker
         colSpec.name = oneColSpec.identifier().getText().trim();
         colSpec.name = colSpec.name.charAt(0) == '\'' ? colSpec.name.substring(1, colSpec.name.length() - 1) : colSpec.name;
         colSpec.type = oneColSpec.type() == null ? null : oneColSpec.type().getText();
-        if (oneColSpec.lambdaParam() != null && oneColSpec.lambdaPipe() != null)
+        if (oneColSpec.anyLambda() != null)
         {
-            Variable var = this.lambdaParam(oneColSpec.lambdaParam(), oneColSpec.lambdaParam().identifier(), typeParametersNames, space);
-            params.add(var);
-            colSpec.function1 = this.lambdaPipe(oneColSpec.lambdaPipe(), oneColSpec.lambdaParam().getStart(), params, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+            colSpec.function1 = processLambda(oneColSpec.anyLambda(), typeParametersNames, lambdaContext, space, wrapFlag, addLines, Lists.mutable.empty());
             if (oneColSpec.extraFunction() != null)
             {
-                List<Variable> var2 = Lists.mutable.with(this.lambdaParam(oneColSpec.extraFunction().lambdaParam(), oneColSpec.extraFunction().lambdaParam().identifier(), typeParametersNames, space));
-                colSpec.function2 = this.lambdaPipe(oneColSpec.extraFunction().lambdaPipe(), oneColSpec.extraFunction().lambdaParam().getStart(), var2, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+                colSpec.function2 = processLambda(oneColSpec.extraFunction().anyLambda(), typeParametersNames, lambdaContext, space, wrapFlag, addLines, Lists.mutable.empty());
             }
         }
         return colSpec;
@@ -1498,23 +1514,6 @@ public class DomainParseTreeWalker
 
     private Lambda lambdaPipe(DomainParserGrammar.LambdaPipeContext ctx, Token firstToken, List<Variable> params, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
-//        List<ValueSpecification> block = this.codeBlock(ctx.codeBlock(), typeParametersNames, lambdaContext, addLines, space);
-//        ValueSpecification result;
-//
-////        if( wrapFlag)
-////            result = block.get(0);
-////        else
-////        {
-//        Lambda signature = new Lambda();  //   Applied Function??
-//        if (Iterate.notEmpty(params))
-//        {
-//            signature.parameters = (List<Variable>) params;
-//        }
-//
-//        result = signature;
-//        //  }
-//        return result;
-
         Lambda signature = new Lambda();  // Applied Function??
         signature.body = this.codeBlock(ctx.codeBlock(), typeParametersNames, lambdaContext, addLines, space);
         signature.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);

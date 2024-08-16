@@ -12,6 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::metamodel::relation::*;
+package org.finos.legend.engine.repl.autocomplete.handlers;
 
-native function meta::pure::functions::relation::first<T>(w:Relation<T>[1]):T[1];
+import org.finos.legend.engine.repl.autocomplete.FunctionHandler;
+
+public class OverHandler extends FunctionHandler
+{
+    @Override
+    public String functionName()
+    {
+        return "over";
+    }
+}

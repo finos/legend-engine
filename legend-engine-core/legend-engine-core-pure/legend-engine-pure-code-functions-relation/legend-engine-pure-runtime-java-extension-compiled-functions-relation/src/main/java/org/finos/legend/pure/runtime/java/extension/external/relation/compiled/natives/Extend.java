@@ -48,7 +48,6 @@ public class Extend extends AbstractNative implements Native
     static void buildCollectFuncSpec(StringBuilder result, boolean twoArgs)
     {
         String className = "ColFuncSpecTrans" + (twoArgs ? "2" : "1");
-        String functionType = "org.eclipse.collections.api.block.function.Function" + (twoArgs ? "3" : "2");
         result.append(".collect(");
         result.append("new DefendedFunction<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.FuncColSpec<? extends Object, ? extends Object>, org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation." + className + ">()\n" +
                 "{\n" +
@@ -58,10 +57,9 @@ public class Extend extends AbstractNative implements Native
 
         result.append("return new org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation." + className + "(");
         result.append("c._name(),");
-        result.append("(" + functionType + ")PureCompiledLambda.getPureFunction(c._function(),es),");
+        result.append("PureCompiledLambda.getPureFunction(c._function(),es),");
         result.append(" ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType)c._function()._classifierGenericType()._typeArguments().toList().get(0)._rawType())._returnType()._rawType()._name()\n");
         result.append(");\n");
-
         result.append("    }\n" +
                 "   }" +
                 ")");

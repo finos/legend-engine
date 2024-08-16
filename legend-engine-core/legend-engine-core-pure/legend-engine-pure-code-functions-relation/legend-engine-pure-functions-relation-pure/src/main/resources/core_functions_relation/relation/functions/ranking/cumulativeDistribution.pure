@@ -12,11 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-Class meta::pure::functions::relation::_Range extends Frame
-{
-}
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
 
-function meta::pure::functions::relation::_range(offsetFrom:Integer[1], offsetTo:Integer[1]):_Range[1]
-{
-  ^_Range(offsetFrom = $offsetFrom, offsetTo = $offsetTo);
-}
+native function <<PCT.function>> meta::pure::functions::relation::cumulativeDistribution<T>(w:Relation<T>[1], r:T[1]):Float[1];

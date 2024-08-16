@@ -207,8 +207,6 @@ public class Test_Relational_DuckDB_EssentialFunctions_PCT extends PCTReportConf
 
             // Floor
             one("meta::pure::functions::math::tests::floor::testDecimalFloor_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'minus_Decimal_MANY__Decimal_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
-            one("meta::pure::functions::math::tests::floor::testNegativeIntegerFloor_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.lang.Long (java.lang.Double and java.lang.Long are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::math::tests::floor::testPositiveIntegerFloor_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.lang.Long (java.lang.Double and java.lang.Long are in module java.base of loader 'bootstrap')"),
 
             // Mod
             one("meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"mod(%s,%s)\"\""),

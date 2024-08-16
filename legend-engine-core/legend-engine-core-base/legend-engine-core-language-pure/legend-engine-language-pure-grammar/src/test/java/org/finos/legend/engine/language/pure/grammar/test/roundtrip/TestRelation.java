@@ -63,6 +63,12 @@ public class TestRelation
     }
 
     @Test
+    public void testColumnWithTwoFunctionsMultiParameters()
+    {
+        testLambda("|#>{path::Store.table}#->extend(~a:{p,f,r|'ok'}:x|'YO')");
+    }
+
+    @Test
     public void testColumnArray()
     {
         testLambda("|#>{path::Store.table}#->extend(~[a, b])");

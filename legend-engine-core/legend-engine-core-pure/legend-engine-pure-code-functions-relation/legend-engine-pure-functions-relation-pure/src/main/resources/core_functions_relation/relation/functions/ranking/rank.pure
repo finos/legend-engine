@@ -12,11 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-Class meta::pure::functions::relation::Rows extends Frame
-{
-}
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
 
-function meta::pure::functions::relation::rows(offsetFrom:Integer[1], offsetTo:Integer[1]):Rows[1]
-{
-  ^Rows(offsetFrom = $offsetFrom, offsetTo = $offsetTo);
-}
+native function <<PCT.function>> meta::pure::functions::relation::rank<T>(w:Relation<T>[1],r:T[1]):Integer[1];

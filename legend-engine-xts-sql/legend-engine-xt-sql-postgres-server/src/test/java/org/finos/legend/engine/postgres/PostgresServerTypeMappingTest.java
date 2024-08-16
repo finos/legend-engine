@@ -231,6 +231,24 @@ public class PostgresServerTypeMappingTest
     }
 
     @Test
+    public void testDecimal() throws Exception
+    {
+        validate(DECIMAL, "5.5", "float8", 5.5D);
+        validate(DECIMAL, "null", "float8", null);
+        validate(DECIMAL, "2645198855588.533433343434", "float8", 2645198855588.533433343434D);
+    }
+
+
+    @Test()
+    public void testDecimalInvalidData() throws Exception
+    {
+        expectedException.expect(Exception.class);
+        expectedException.expectMessage("ERROR: Unexpected data type for value 'foooo....' in column 'column1'." +
+                " Expected data type 'java.lang.Number', actual data type 'java.lang.String'");
+        validate(DECIMAL, "\"fooooo\"", null, null);
+    }
+
+    @Test
     public void testInteger() throws Exception
     {
         validate(INTEGER, "5", "int8", 5L);
