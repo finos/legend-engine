@@ -64,10 +64,10 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/classes/web-content</outputDirectory>
+                            <outputDirectory>${project.build.directory}/classes/web-content/dist</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${project.build.directory}/web-content</directory>
+                                    <directory>${project.build.directory}/web-content/package/dist</directory>
                                 </resource>
                             </resources>
                         </configuration>
