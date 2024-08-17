@@ -107,7 +107,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.12.0</legend.pure.version>
+        <legend.pure.version>5.13.0</legend.pure.version>
         <legend.shared.version>0.25.4</legend.shared.version>
 
         <!-- SONAR -->

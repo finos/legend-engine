@@ -15,4 +15,40 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
-native function <<PCT.function>> meta::pure::functions::relation::cumulativeDistribution<T>(w:Relation<T>[1], r:T[1]):Float[1];
+native function <<PCT.function>> meta::pure::functions::relation::cumulativeDistribution<T>(rel:Relation<T>[1], w:_Window<T>[1], row:T[1]):Float[1];
+
+function <<PCT.test>> meta::pure::functions::relation::tests::cumulativeDistribution::testOLAPWithPartitionAndOrderCummulativeDistribution<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp, ~id->descending()), ~other:{p,w,r| round($p->cumulativeDistribution($w, $r),2)})
+               };
+               
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,other\n'+
+                  '   10,0,J,1.0\n'+
+                  '   8,1,H,0.33\n'+
+                  '   6,1,F,0.67\n'+
+                  '   2,1,B,1.0\n'+
+                  '   5,2,E,0.5\n'+
+                  '   1,2,A,1.0\n'+
+                  '   7,3,G,0.5\n'+
+                  '   3,3,C,1.0\n'+
+                  '   4,4,D,1.0\n'+
+                  '   9,5,I,1.0\n'+
+                  '#', $res->sort([~grp->ascending(), ~id->descending()])->toString());
+}

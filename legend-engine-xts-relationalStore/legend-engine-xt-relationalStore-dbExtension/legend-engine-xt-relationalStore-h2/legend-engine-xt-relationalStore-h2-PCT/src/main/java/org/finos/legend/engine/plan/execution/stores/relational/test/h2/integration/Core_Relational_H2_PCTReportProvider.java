@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.test.h2.integration;
 
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.pure.m3.pct.functions.model.Functions;

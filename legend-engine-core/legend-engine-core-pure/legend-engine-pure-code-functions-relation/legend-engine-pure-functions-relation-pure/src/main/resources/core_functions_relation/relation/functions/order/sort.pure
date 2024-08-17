@@ -15,17 +15,6 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
-Enum meta::pure::functions::relation::SortType
-{
-    ASC, DESC
-}
-
-Class meta::pure::functions::relation::SortInfo<T>
-{
-   column : ColSpec<T>[1];
-   direction : SortType[1];
-}
-
 function <<functionType.NormalizeRequiredFunction>> meta::pure::functions::relation::descending<T>(column:ColSpec<T>[1]):SortInfo<T>[1]
 {
    ^SortInfo<T>(column=$column, direction=SortType.DESC)

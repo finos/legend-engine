@@ -15,4 +15,40 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
-native function <<PCT.function>> meta::pure::functions::relation::denseRank<T>(w:Relation<T>[1], r:T[1]):Integer[1];
+native function <<PCT.function>> meta::pure::functions::relation::denseRank<T>(rel:Relation<T>[1], w:_Window<T>[1], row:T[1]):Integer[1];
+
+function <<PCT.test>> meta::pure::functions::relation::tests::denseRank::testOLAPWithPartitionAndOrderDenseRank<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  8, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp, ~id->descending()), ~other:{p,w,r| $p->denseRank($w, $r)})
+               };
+               
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,other\n'+
+                  '   10,0,J,1\n'+
+                  '   8,1,H,1\n'+
+                  '   8,1,F,1\n'+
+                  '   2,1,B,2\n'+
+                  '   5,2,E,1\n'+
+                  '   1,2,A,2\n'+
+                  '   7,3,G,1\n'+
+                  '   3,3,C,2\n'+
+                  '   4,4,D,1\n'+
+                  '   9,5,I,1\n'+
+                  '#', $res->sort([~grp->ascending(), ~id->descending(), ~name->descending()])->toString());
+}

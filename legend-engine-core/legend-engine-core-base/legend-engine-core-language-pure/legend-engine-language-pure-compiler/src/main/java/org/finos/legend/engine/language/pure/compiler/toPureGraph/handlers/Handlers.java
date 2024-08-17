@@ -126,10 +126,14 @@ public class Handlers
             if (params.size() > 1)
             {
                 Variable p = params.get(0);
-                updateVariableType(p, cc.pureModel.getGenericType(M3Paths.Relation));
+                GenericType gt = cc.pureModel.getGenericType(M3Paths.Relation);
+                updateVariableType(p, gt);
+                // Hack to compensate the fact that 'generics' are not supported in the type system ... we would like the relation (newGenericType) to be a typeArgument of Relation (i.e. Relation<(id:Integer)>
+                // we pack the 'relation' in the variable 'relationType' extra slot...
+                updateVariableType(p, newGenericType);
                 p.multiplicity = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1);
                 Variable f = params.get(1);
-                updateVariableType(f, cc.pureModel.getGenericType("meta::pure::functions::relation::Frame"));
+                updateVariableType(f, cc.pureModel.getGenericType("meta::pure::functions::relation::_Window"));
                 f.multiplicity = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1);
             }
             Variable variable = params.get(params.size() - 1);
@@ -906,11 +910,18 @@ public class Handlers
         register("meta::pure::functions::boolean::isTrue_Boolean_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"));
         register("meta::pure::functions::boolean::isFalse_Boolean_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"));
 
+        register("meta::pure::functions::relation::cumulativeDistribution_Relation_1___Window_1__T_1__Float_1_", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::relation::ntile_Relation_1__T_1__Integer_1__Integer_1_", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::relation::percentRank_Relation_1___Window_1__T_1__Float_1_", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::relation::lag_Relation_1__T_1__Integer_1__T_$0_1$_", false, ps -> res(ps.get(1)._genericType(), "one"));
+        register("meta::pure::functions::relation::lag_Relation_1__T_1__T_$0_1$_", false, ps -> res(ps.get(1)._genericType(), "one"));
+        register("meta::pure::functions::relation::lead_Relation_1__T_1__Integer_1__T_$0_1$_", false, ps -> res(ps.get(1)._genericType(), "one"));
+        register("meta::pure::functions::relation::lead_Relation_1__T_1__T_$0_1$_", false, ps -> res(ps.get(1)._genericType(), "one"));
+        register("meta::pure::functions::relation::nth_Relation_1___Window_1__T_1__Integer_1__T_$0_1$_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroOne"));
 
         register(m(
                         h("meta::pure::functions::relation::size_Relation_1__Integer_1_", true, ps -> res("Integer", "one"), ps -> true),
                         h("meta::pure::functions::collection::size_Any_MANY__Integer_1_", true, ps -> res("Integer", "one"), ps -> true)
-
                 )
         );
 
@@ -957,8 +968,18 @@ public class Handlers
         register(m(h("meta::pure::functions::collection::least_X_$1_MANY$__X_1_", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> matchOneMany(ps.get(0)._multiplicity())),
                 h("meta::pure::functions::collection::least_X_MANY__X_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true)));
 
-        register("meta::pure::functions::collection::first_T_MANY__T_$0_1$_", true, ps -> res(ps.get(0)._genericType(), "zeroOne"));
-        register("meta::pure::functions::collection::last_T_MANY__T_$0_1$_", true, ps -> res(ps.get(0)._genericType(), "zeroOne"));
+        register(m(
+                        m(h("meta::pure::functions::collection::first_T_MANY__T_$0_1$_", true, ps -> res(ps.get(0)._genericType(), "zeroOne"))),
+                        m(h("meta::pure::functions::relation::first_Relation_1___Window_1__T_1__T_$0_1$_", true, ps -> res(ps.get(2)._genericType(), "zeroOne")))
+                )
+        );
+
+        register(m(
+                        m(h("meta::pure::functions::collection::last_T_MANY__T_$0_1$_", true, ps -> res(ps.get(0)._genericType(), "zeroOne"))),
+                        m(h("meta::pure::functions::relation::last_Relation_1___Window_1__T_1__T_$0_1$_", true, ps -> res(ps.get(2)._genericType(), "zeroOne")))
+                )
+        );
+
         register("meta::pure::functions::meta::enumName_Enumeration_1__String_1_", true, ps -> res("String", "one"));
         register("meta::pure::functions::lang::extractEnumValue_Enumeration_1__String_1__T_1_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "one"));
         register("meta::pure::functions::meta::enumValues_Enumeration_1__T_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"));
@@ -1642,10 +1663,24 @@ public class Handlers
                         this.pureModel.getGenericType("Integer")
                 )), "one");
 
-        register("meta::pure::functions::math::olap::rank_Any_MANY__Map_1_", false, resolve);
-        register("meta::pure::functions::math::olap::averageRank_Any_MANY__Map_1_", false, resolve);
-        register("meta::pure::functions::math::olap::denseRank_Any_MANY__Map_1_", false, resolve);
-        register("meta::pure::functions::math::olap::rowNumber_Any_MANY__Map_1_", false, resolve);
+        register(m(
+                        m(h("meta::pure::functions::math::olap::rank_Any_MANY__Map_1_", false, resolve)),
+                        m(h("meta::pure::functions::relation::rank_Relation_1___Window_1__T_1__Integer_1_", true, ps -> res("Integer", "one")))
+                )
+        );
+        register(
+                m(
+                        m(h("meta::pure::functions::math::olap::denseRank_Any_MANY__Map_1_", false, resolve)),
+                        m(h("meta::pure::functions::relation::denseRank_Relation_1___Window_1__T_1__Integer_1_", true, ps -> res("Integer", "one")))
+                )
+        );
+        register(
+                m(
+                        m(h("meta::pure::functions::math::olap::rowNumber_Any_MANY__Map_1_", false, resolve)),
+                        m(h("meta::pure::functions::relation::rowNumber_Relation_1__T_1__Integer_1_", true, ps -> res("Integer", "one")))
+                )
+        );
+        register(h("meta::pure::functions::math::olap::averageRank_Any_MANY__Map_1_", false, resolve));
     }
 
     private void registerAggregations()
@@ -2741,7 +2776,19 @@ public class Handlers
         map.put("meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "FuncColSpecArray".equals(ps.get(1)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::relation::size_Relation_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()));
 
-//        map.put("meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "FuncColSpecArray".equals(ps.get(1)._genericType()._rawType()._name())));
+        map.put("meta::pure::functions::relation::cumulativeDistribution_Relation_1___Window_1__T_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","Relation","RelationElementAccessor","TDS","RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "_Window".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()));
+        map.put("meta::pure::functions::relation::denseRank_Relation_1___Window_1__T_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","Relation","RelationElementAccessor","TDS","RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "_Window".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()));
+        map.put("meta::pure::functions::relation::first_Relation_1___Window_1__T_1__T_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","Relation","RelationElementAccessor","TDS","RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "_Window".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()));
+        map.put("meta::pure::functions::relation::lag_Relation_1__T_1__Integer_1__T_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","Relation","RelationElementAccessor","TDS","RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "Integer".equals(ps.get(2)._genericType()._rawType()._name())));
+        map.put("meta::pure::functions::relation::lag_Relation_1__T_1__T_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","Relation","RelationElementAccessor","TDS","RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()));
+        map.put("meta::pure::functions::relation::last_Relation_1___Window_1__T_1__T_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","Relation","RelationElementAccessor","TDS","RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "_Window".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()));
+        map.put("meta::pure::functions::relation::lead_Relation_1__T_1__Integer_1__T_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","Relation","RelationElementAccessor","TDS","RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "Integer".equals(ps.get(2)._genericType()._rawType()._name())));
+        map.put("meta::pure::functions::relation::lead_Relation_1__T_1__T_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","Relation","RelationElementAccessor","TDS","RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()));
+        map.put("meta::pure::functions::relation::nth_Relation_1___Window_1__T_1__Integer_1__T_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 4 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","Relation","RelationElementAccessor","TDS","RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "_Window".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && isOne(ps.get(3)._multiplicity()) && ("Nil".equals(ps.get(3)._genericType()._rawType()._name()) || "Integer".equals(ps.get(3)._genericType()._rawType()._name())));
+        map.put("meta::pure::functions::relation::ntile_Relation_1__T_1__Integer_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","Relation","RelationElementAccessor","TDS","RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "Integer".equals(ps.get(2)._genericType()._rawType()._name())));
+        map.put("meta::pure::functions::relation::percentRank_Relation_1___Window_1__T_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","Relation","RelationElementAccessor","TDS","RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "_Window".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()));
+        map.put("meta::pure::functions::relation::rank_Relation_1___Window_1__T_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","Relation","RelationElementAccessor","TDS","RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "_Window".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()));
+        map.put("meta::pure::functions::relation::rowNumber_Relation_1__T_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","Relation","RelationElementAccessor","TDS","RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()));
 
         // ------------------------------------------------------------------------------------------------
         // Please do not update the following code manually! Please check with the team when introducing

@@ -205,17 +205,6 @@ public class Test_Relational_H2_EssentialFunctions_PCT extends PCTReportConfigur
             one("meta::pure::functions::string::tests::toString::testPairToString_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
             one("meta::pure::functions::string::tests::toString::testSimpleDateToString_Function_1__Boolean_1_", "\"\nexpected: '2014-01-02T01:54:27.352+0000'\nactual:   '2014-01-02 01:54:27.352'\""),
 
-
-            // Ceiling
-            one("meta::pure::functions::math::tests::ceiling::testDecimalCeiling_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'minus_Decimal_MANY__Decimal_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
-            one("meta::pure::functions::math::tests::ceiling::testNegativeFloatCeiling_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.lang.Long (java.lang.Double and java.lang.Long are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::math::tests::ceiling::testNegativeFloatWithZeroDecimalCeiling_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.lang.Long (java.lang.Double and java.lang.Long are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::math::tests::ceiling::testPositiveFloatCeiling_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.lang.Long (java.lang.Double and java.lang.Long are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::math::tests::ceiling::testPositiveFloatWithZeroDecimalCeiling_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.lang.Long (java.lang.Double and java.lang.Long are in module java.base of loader 'bootstrap')"),
-
-            // Floor
-            one("meta::pure::functions::math::tests::floor::testDecimalFloor_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'minus_Decimal_MANY__Decimal_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
-
             // Mod
             one("meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"mod(%s,%s)\"\""),
             one("meta::pure::functions::math::tests::mod::testModWithNegativeNumbers_Function_1__Boolean_1_", "\"\nexpected: 3\nactual:   -2\""),
@@ -232,22 +221,12 @@ public class Test_Relational_H2_EssentialFunctions_PCT extends PCTReportConfigur
             one("meta::pure::functions::math::tests::rem::testRemWithMixedIntegersAndFloats_Function_1__Boolean_1_", "\"\nexpected: 2.5\nactual:   3\""),
 
             // Round
-            one("meta::pure::functions::math::tests::round::testDecimalRound_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'minus_Decimal_MANY__Decimal_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
-            one("meta::pure::functions::math::tests::round::testNegativeFloatRoundDown_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.lang.Long (java.lang.Double and java.lang.Long are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::math::tests::round::testNegativeFloatRoundHalfEvenDown_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.lang.Long (java.lang.Double and java.lang.Long are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::math::tests::round::testNegativeFloatRoundHalfEvenUp_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.lang.Long (java.lang.Double and java.lang.Long are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::math::tests::round::testNegativeFloatRoundUp_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.lang.Long (java.lang.Double and java.lang.Long are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::math::tests::round::testNegativeFloatWithZeroDecimalRound_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.lang.Long (java.lang.Double and java.lang.Long are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::math::tests::round::testPositiveFloatRoundDown_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.lang.Long (java.lang.Double and java.lang.Long are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::math::tests::round::testPositiveFloatRoundHalfEvenDown_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.lang.Long (java.lang.Double and java.lang.Long are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::math::tests::round::testPositiveFloatRoundHalfEvenUp_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.lang.Long (java.lang.Double and java.lang.Long are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::math::tests::round::testPositiveFloatRoundUp_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.lang.Long (java.lang.Double and java.lang.Long are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::math::tests::round::testPositiveFloatWithZeroDecimalRound_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.lang.Long (java.lang.Double and java.lang.Long are in module java.base of loader 'bootstrap')"),
+            one("meta::pure::functions::math::tests::round::testNegativeFloatRoundHalfEvenUp_Function_1__Boolean_1_", "\"\nexpected: -16\nactual:   -17\""),
+            one("meta::pure::functions::math::tests::round::testPositiveFloatRoundHalfEvenDown_Function_1__Boolean_1_", "\"\nexpected: 16\nactual:   17\""),
 
             // ToDecimal
-            one("meta::pure::functions::math::tests::toDecimal::testDecimalToDecimal_Function_1__Boolean_1_", "class java.lang.Long cannot be cast to class java.math.BigDecimal (java.lang.Long and java.math.BigDecimal are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::math::tests::toDecimal::testDoubleToDecimal_Function_1__Boolean_1_", "class java.lang.Long cannot be cast to class java.math.BigDecimal (java.lang.Long and java.math.BigDecimal are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::math::tests::toDecimal::testIntToDecimal_Function_1__Boolean_1_", "class java.lang.Long cannot be cast to class java.math.BigDecimal (java.lang.Long and java.math.BigDecimal are in module java.base of loader 'bootstrap')"),
+            one("meta::pure::functions::math::tests::toDecimal::testDecimalToDecimal_Function_1__Boolean_1_", "\"\nexpected: 3.8D\nactual:   4D\""),
+            one("meta::pure::functions::math::tests::toDecimal::testDoubleToDecimal_Function_1__Boolean_1_", "\"\nexpected: 3.8D\nactual:   4D\""),
 
             // CubeRoot
             one("meta::pure::functions::math::tests::testCubeRootEval_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
@@ -343,7 +322,7 @@ public class Test_Relational_H2_EssentialFunctions_PCT extends PCTReportConfigur
 
             // ParseDecimal
             one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
-            one("meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_", "class java.lang.Long cannot be cast to class java.math.BigDecimal (java.lang.Long and java.math.BigDecimal are in module java.base of loader 'bootstrap')"),
+            one("meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_", "\"\nexpected: 0.0D\nactual:   0D\""),
 
             // ParseInteger
             one("meta::pure::functions::string::tests::parseInteger::testParseInteger_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\"")

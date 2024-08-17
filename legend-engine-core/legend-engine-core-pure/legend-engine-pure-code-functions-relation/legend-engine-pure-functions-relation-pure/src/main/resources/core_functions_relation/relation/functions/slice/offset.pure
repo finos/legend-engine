@@ -15,4 +15,4 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
-native function <<PCT.function>> meta::pure::functions::relation::offset<T>(w:Relation<T>[1], r:T[1], offset:Integer[1]):T[1];
+native function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::offset<T>(w:Relation<T>[1], r:T[1], offset:Integer[1]):T[0..1];

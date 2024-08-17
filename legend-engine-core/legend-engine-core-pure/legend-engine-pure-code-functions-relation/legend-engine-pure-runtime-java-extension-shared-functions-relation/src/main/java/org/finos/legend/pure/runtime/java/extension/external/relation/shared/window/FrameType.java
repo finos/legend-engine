@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,16 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.runtime.java.extension.external.relation.shared;
 
-public class SortInfo
+package org.finos.legend.pure.runtime.java.extension.external.relation.shared.window;
+
+public enum FrameType
 {
-    String columnName;
-    SortDirection direction;
-
-    public SortInfo(String name, SortDirection direction)
-    {
-        this.columnName = name;
-        this.direction = direction;
-    }
+    rows, range
 }

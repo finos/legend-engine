@@ -52,13 +52,13 @@ public class ExtendWindowFunc extends AbstractNative implements Native
 
     public static void processWindow(StringBuilder result, String param)
     {
-        result.append("Lists.mutable.with(" + param + ").collect(new DefendedFunction<Root_meta_pure_functions_relation__Window<? extends Object>, org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.Win>()\n" +
+        result.append("Lists.mutable.with(" + param + ").collect(new DefendedFunction<Root_meta_pure_functions_relation__Window<? extends Object>, org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window>()\n" +
                 "{\n" +
                 "    @Override\n" +
-                "    public org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.Win valueOf(Root_meta_pure_functions_relation__Window<?> w)\n" +
+                "    public org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window valueOf(Root_meta_pure_functions_relation__Window<?> w)\n" +
                 "    {\n" +
                 "  return ");
-        result.append("new org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.Win(" +
+        result.append("new org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window(" +
                 "w._partition().toList(),");
         Sort.processSortInfo(result, "w._sortInfo()");
         result.append(",");
@@ -72,13 +72,13 @@ public class ExtendWindowFunc extends AbstractNative implements Native
     static void buildFrame(StringBuilder result, String s)
     {
         result.append("CompiledSupport.toPureCollection(" + s + ").collect(" +
-                "new DefendedFunction<Root_meta_pure_functions_relation_Frame, org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.Frame>()\n" +
+                "new DefendedFunction<Root_meta_pure_functions_relation_Frame, org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Frame>()\n" +
                 "{\n" +
                 "    @Override\n" +
-                "    public org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.Frame valueOf(Root_meta_pure_functions_relation_Frame x)\n" +
+                "    public org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Frame valueOf(Root_meta_pure_functions_relation_Frame x)\n" +
                 "    {\n" +
-                "        return new org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.Frame(\n" +
-                "                x instanceof Root_meta_pure_functions_relation_Rows ? org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.Frame.FrameType.rows : org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.Frame.FrameType.range,\n" +
+                "        return new org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Frame(\n" +
+                "                x instanceof Root_meta_pure_functions_relation_Rows ? org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.FrameType.rows : org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.FrameType.range,\n" +
                 "                x._offsetFrom() instanceof Root_meta_pure_functions_relation_UnboundedFrameValue,\n" +
                 "                x._offsetFrom() instanceof Root_meta_pure_functions_relation_FrameIntValue ? (int)((Root_meta_pure_functions_relation_FrameIntValue) x._offsetFrom())._value() : -1,\n" +
                 "                x._offsetTo() instanceof Root_meta_pure_functions_relation_UnboundedFrameValue,\n" +

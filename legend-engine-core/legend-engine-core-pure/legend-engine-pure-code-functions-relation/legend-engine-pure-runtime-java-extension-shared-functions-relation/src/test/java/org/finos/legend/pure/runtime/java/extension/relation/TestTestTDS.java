@@ -15,8 +15,8 @@
 package org.finos.legend.pure.runtime.java.extension.relation;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.pure.runtime.java.extension.external.relation.shared.SortDirection;
-import org.finos.legend.pure.runtime.java.extension.external.relation.shared.SortInfo;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortInfo;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 import org.junit.Assert;
 
@@ -34,7 +34,7 @@ public class TestTestTDS
                 "3, Nop, E\n" +
                 "2, Neema, F\n" +
                 "1, Pierre, F";
-        TestTDS tds = new TestTDS(initialTDS);
+        TestTDS tds = new TestTDSImpl(initialTDS);
 
         TestTDS t = tds.sort(Lists.mutable.with(new SortInfo("id", SortDirection.ASC), new SortInfo("name", SortDirection.ASC))).getOne();
         Assert.assertEquals("id, name, otherOne\n" +
@@ -85,7 +85,7 @@ public class TestTestTDS
                 "3, Nop, E\n" +
                 "2, Neema, F\n" +
                 "1, Pierre, F";
-        TestTDS tds = new TestTDS(initialTDS);
+        TestTDS tds = new TestTDSImpl(initialTDS);
 
         Assert.assertEquals("[0:1, 1:2, 2:3, 3:4, 4:5, 5:6, 6:8]", tds.sort(Lists.mutable.with(new SortInfo("id", SortDirection.ASC), new SortInfo("name", SortDirection.ASC))).getTwo().toString());
     }
@@ -102,7 +102,7 @@ public class TestTestTDS
                 "3, Nop, E\n" +
                 "2, Neema, F\n" +
                 "1, Pierre, F";
-        TestTDS tds = new TestTDS(initialTDS);
+        TestTDS tds = new TestTDSImpl(initialTDS);
 
         Assert.assertEquals("id, name, otherOne\n" +
                 "1, Pierre, F\n" +
@@ -144,8 +144,8 @@ public class TestTestTDS
                 "2, Pierre\n" +
                 "4, David";
 
-        TestTDS res = new TestTDS(resTDS);
-        TestTDS left = new TestTDS(leftTDS);
+        TestTDS res = new TestTDSImpl(resTDS);
+        TestTDS left = new TestTDSImpl(leftTDS);
 
         TestTDS t = left.compensateLeft(res).sort(new SortInfo("id", SortDirection.ASC)).getOne();
         Assert.assertEquals("id, id2, extra, name, extraInt\n" +
@@ -171,7 +171,7 @@ public class TestTestTDS
                 "3, Nop, E\n" +
                 "2, Neema, F\n" +
                 "1, Pierre, F";
-        TestTDS tds = new TestTDS(initialTDS);
+        TestTDS tds = new TestTDSImpl(initialTDS);
 
         TestTDS t = tds.slice(1, 3);
         Assert.assertEquals("id, name, otherOne\n" +
@@ -195,8 +195,8 @@ public class TestTestTDS
                 "2, Pierre\n" +
                 "4, David";
 
-        TestTDS res = new TestTDS(resTDS);
-        TestTDS left = new TestTDS(leftTDS);
+        TestTDS res = new TestTDSImpl(resTDS);
+        TestTDS left = new TestTDSImpl(leftTDS);
 
         TestTDS t = left.compensateLeft(res).slice(2, 4);
         Assert.assertEquals("id, id2, extra, name, extraInt\n" +
@@ -226,8 +226,8 @@ public class TestTestTDS
                 "3, SimpleEE, A\n" +
                 "4, EphrimWW, C";
 
-        TestTDS tds1 = new TestTDS(initialTDS1);
-        TestTDS tds2 = new TestTDS(initialTDS2);
+        TestTDS tds1 = new TestTDSImpl(initialTDS1);
+        TestTDS tds2 = new TestTDSImpl(initialTDS2);
 
         TestTDS t = tds1.concatenate(tds2);
         Assert.assertEquals("id, name, otherOne\n" +
@@ -261,8 +261,8 @@ public class TestTestTDS
                 "2, Pierre\n" +
                 "4, David";
 
-        TestTDS res = new TestTDS(resTDS);
-        TestTDS left = new TestTDS(leftTDS);
+        TestTDS res = new TestTDSImpl(resTDS);
+        TestTDS left = new TestTDSImpl(leftTDS);
 
         TestTDS t = res.concatenate(left.compensateLeft(res));
 
@@ -293,8 +293,8 @@ public class TestTestTDS
                 "Y\n" +
                 "Z";
 
-        TestTDS tds1 = new TestTDS(initialTds1);
-        TestTDS tds2 = new TestTDS(initialTds2);
+        TestTDS tds1 = new TestTDSImpl(initialTds1);
+        TestTDS tds2 = new TestTDSImpl(initialTds2);
 
         TestTDS t = tds1.join(tds2);
 
@@ -328,9 +328,9 @@ public class TestTestTDS
                 "1, A1\n" +
                 "3, A3";
 
-        TestTDS res = new TestTDS(initialRes);
-        TestTDS left = new TestTDS(initialLeft);
-        TestTDS third = new TestTDS(initialThird);
+        TestTDS res = new TestTDSImpl(initialRes);
+        TestTDS left = new TestTDSImpl(initialLeft);
+        TestTDS third = new TestTDSImpl(initialThird);
 
         TestTDS t = left.compensateLeft(res).join(third);
 
@@ -361,8 +361,8 @@ public class TestTestTDS
                 "2, Pierre\n" +
                 "4, David";
 
-        TestTDS res = new TestTDS(resTDS);
-        TestTDS left = new TestTDS(leftTDS);
+        TestTDS res = new TestTDSImpl(resTDS);
+        TestTDS left = new TestTDSImpl(leftTDS);
         TestTDS t = left.compensateLeft(res);
 
         Assert.assertEquals("id, id2, extra, name, extraInt\n" +
@@ -387,7 +387,7 @@ public class TestTestTDS
                 "3,Sachin,-2147483648,null,-2147483648\n" +
                 "4,David,4,More David,1";
 
-        TestTDS res = new TestTDS(resTDS);
+        TestTDS res = new TestTDSImpl(resTDS);
 
         Assert.assertEquals("id, col, other, id2, name\n" +
                 "1, More George 1, 1, 1, George\n" +

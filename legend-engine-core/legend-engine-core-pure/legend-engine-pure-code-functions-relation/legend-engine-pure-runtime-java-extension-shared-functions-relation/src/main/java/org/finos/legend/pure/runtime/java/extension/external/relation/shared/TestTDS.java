@@ -32,6 +32,9 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.set.mutable.primitive.IntHashSet;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ArrayIterate;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortInfo;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window;
 
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Array;
@@ -39,7 +42,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class TestTDS
+public abstract class TestTDS
 {
     protected MutableMap<String, Object> dataByColumnName = Maps.mutable.empty();
     protected MutableMap<String, Object> isNullByColumn = Maps.mutable.empty();
@@ -51,10 +54,11 @@ public class TestTDS
     {
     }
 
-    public TestTDS newTDS()
-    {
-        return new TestTDS();
-    }
+    public abstract Object getValueAsCoreInstance(String columnName, int rowNum);
+
+    public abstract Object getValue(String columnName, int rowNum);
+
+    public abstract TestTDS newTDS();
 
     public TestTDS newEmptyTDS()
     {
@@ -97,10 +101,7 @@ public class TestTDS
         return testTDS;
     }
 
-    public TestTDS newTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, int rows)
-    {
-        return new TestTDS(columnOrdered, columnType, rows);
-    }
+    public abstract TestTDS newTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, int rows);
 
     public TestTDS(String csv)
     {
@@ -1091,5 +1092,87 @@ public class TestTDS
             source = Tuples.pair(res, source.getTwo());
         }
         return source;
+    }
+
+    public long rank(MutableList<SortInfo> sorts, int row)
+    {
+        MutableList<String> columns = sorts.collect(SortInfo::getColumnName);
+        MutableList<?> baseRow = fetch(this, columns, row);
+        int rank = findFirstPrecedentDifferentRow(row, this, columns, baseRow);
+        return rank + 1;
+
+    }
+
+    private static MutableList<?> fetch(TestTDS tds, MutableList<String> columns, int row)
+    {
+        return columns.collect(x -> tds.getValue(x, row));
+    }
+
+    private static int findFirstPrecedentDifferentRow(int row, TestTDS tds, MutableList<String> columns, MutableList<?> baseRow)
+    {
+        int rank = row;
+        do
+        {
+            rank--;
+        }
+        while (rank >= 0 && fetch(tds, columns, rank).equals(baseRow));
+        return rank + 1;
+    }
+
+    public long denseRank(MutableList<SortInfo> sorts, int row)
+    {
+        MutableList<String> columns = sorts.collect(SortInfo::getColumnName);
+        int maxRow = row;
+        MutableList<?> precedentRow = fetch(this, columns, 0);
+        int rank = 1;
+        for (int i = 1; i <= maxRow; i++)
+        {
+            MutableList<?> currentRow = fetch(this, columns, i);
+            if (!currentRow.equals(precedentRow))
+            {
+                rank++;
+                precedentRow = currentRow;
+            }
+        }
+        return rank;
+    }
+
+    public double percentRank(MutableList<SortInfo> sorts, int row)
+    {
+        MutableList<String> columns = sorts.collect(SortInfo::getColumnName);
+        int size = (int) this.getRowCount();
+        MutableList<?> baseRow = fetch(this, columns, row);
+        int rank = findFirstPrecedentDifferentRow(row, this, columns, baseRow);
+        return size == 1 ? 0 : (double) (rank) / (size - 1);
+    }
+
+    public long ntile(int row, long tiles)
+    {
+        int size = (int) this.getRowCount();
+        return (long)((double)row * tiles / size) + 1;
+    }
+
+    public double cumulativeDistribution(MutableList<SortInfo> sorts, int row)
+    {
+        MutableList<String> columns = sorts.collect(SortInfo::getColumnName);
+        int size = (int) this.getRowCount();
+        MutableList<?> baseRow = fetch(this, columns, row);
+        int rank = findFirstPrecedentDifferentRow(row, this, columns, baseRow);
+        return (double)(rank + 1) / size;
+    }
+
+    public int nth(int row, Window w, long l)
+    {
+        long offset = w.getFrame().getLow(row) + l - 1;
+        int high = w.getFrame().getHigh(row, (int) this.getRowCount());
+
+        if (offset <= high)
+        {
+            return (int)offset;
+        }
+        else
+        {
+            return -1;
+        }
     }
 }

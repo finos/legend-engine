@@ -588,9 +588,15 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         {
             VariableExpression ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", SourceInformationHelper.toM3SourceInformation(variable.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))
                     ._name(variable.name);
-            GenericType genericType = variable.relationType != null ?
-                    new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(RelationTypeHelper.convert(variable.relationType, context.pureModel.getExecutionSupport().getProcessorSupport(), null)) :
-                    this.context.resolveGenericType(this.context.pureModel.addPrefixToTypeReference(variable._class.path), variable.sourceInformation);
+            GenericType genericType =
+                    // Bad Hack to compensate the fact that 'generics' are not supported in the type system ...
+                    variable.relationType != null && variable._class != null ?
+                            new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
+                                    ._rawType(context.pureModel.getClass(variable._class.path))
+                                    ._typeArguments(Lists.mutable.with(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(RelationTypeHelper.convert(variable.relationType, context.pureModel.getExecutionSupport().getProcessorSupport(), null)))) :
+                            variable.relationType != null ?
+                                    new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(RelationTypeHelper.convert(variable.relationType, context.pureModel.getExecutionSupport().getProcessorSupport(), null)) :
+                                    this.context.resolveGenericType(this.context.pureModel.addPrefixToTypeReference(variable._class.path), variable.sourceInformation);
             ve._genericType(genericType);
             ve._multiplicity(this.context.pureModel.getMultiplicity(variable.multiplicity));
             processingContext.addInferredVariables(variable.name, ve);
