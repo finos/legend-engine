@@ -44,6 +44,7 @@ public class REPLServer
 
     private int port;
     private String webAppDevBaseUrl;
+    private String urlTemplate; // e.g. https://my.template:{{port}}/subApp
 
     public REPLServer(Client client)
     {
@@ -63,7 +64,16 @@ public class REPLServer
 
     public String getUrl()
     {
-        return (this.webAppDevBaseUrl != null ? this.webAppDevBaseUrl : "http://localhost:" + this.port) + "/repl/dataCube";
+        String baseUrl = "http://localhost:" + this.port;
+        if (this.webAppDevBaseUrl != null)
+        {
+            baseUrl = this.webAppDevBaseUrl;
+        }
+        else if (this.urlTemplate != null)
+        {
+            baseUrl = this.urlTemplate.replace("{{port}}", this.port + "");
+        }
+        return baseUrl + "/repl/dataCube";
     }
 
     public void initialize() throws Exception
@@ -92,6 +102,11 @@ public class REPLServer
             List<Filter> filters = Lists.mutable.empty();
             filters.add(new DEV__CORSFilter(Lists.mutable.with(this.webAppDevBaseUrl)));
             contexts.forEach(context -> context.getFilters().addAll(filters));
+        }
+
+        if (System.getProperty("legend.repl.dataCube.urlTemplate") != null)
+        {
+            this.urlTemplate = System.getProperty("legend.repl.dataCube.urlTemplate");
         }
 
         server.setExecutor(null);
