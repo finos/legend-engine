@@ -15,6 +15,7 @@
 package org.finos.legend.engine.changetoken.generation;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
@@ -23,15 +24,22 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_pure_changetoken_Versions;
+import org.finos.legend.pure.generated.Root_meta_pure_functions_collection_List_Impl;
+import org.finos.legend.pure.generated.core_pure_changetoken_cast_generation;
+import org.finos.legend.pure.generated.core_pure_changetoken_diff_generation;
+import org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.VersionControlledClassLoaderCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.empty.EmptyCodeStorage;
 import org.finos.legend.pure.m3.serialization.runtime.Message;
-import org.finos.legend.pure.runtime.java.compiled.compiler.*;
+import org.finos.legend.pure.runtime.java.compiled.compiler.JavaCompilerState;
+import org.finos.legend.pure.runtime.java.compiled.compiler.MemoryClassLoader;
+import org.finos.legend.pure.runtime.java.compiled.compiler.PureJavaCompileException;
+import org.finos.legend.pure.runtime.java.compiled.compiler.PureJavaCompiler;
+import org.finos.legend.pure.runtime.java.compiled.compiler.StringJavaSource;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
@@ -42,7 +50,10 @@ import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class GenerateDiff
@@ -68,7 +79,7 @@ public class GenerateDiff
         newEntities = ElementPathTransformer.newTransformer((e) -> newDependenciesPaths.contains(e) ? "new::dependencies::vX_X_X::".concat(e) : "new::entities::vX_X_X::".concat(e)).addElements(newEntities).transformElements();
         pureModelContextDataBuilder.addElements(newEntities);
         PureModelContextData pureModelContextData = pureModelContextDataBuilder.build();
-        executionSupport = new CompiledExecutionSupport(new JavaCompilerState(null, classLoader), new CompiledProcessorSupport(classLoader, MetadataLazy.fromClassLoader(classLoader, CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName)), Sets.mutable.empty()), null, new CompositeCodeStorage(new VersionControlledClassLoaderCodeStorage(classLoader, Lists.mutable.of(CodeRepositoryProviderHelper.findPlatformCodeRepository()), null)), null, null, new ConsoleCompiled(), new FunctionCache(), new ClassCache(), null, Sets.mutable.empty(), CompiledExtensionLoader.extensions());
+        executionSupport = new CompiledExecutionSupport(new JavaCompilerState(null, classLoader), new CompiledProcessorSupport(classLoader, MetadataLazy.fromClassLoader(classLoader, CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName)), Sets.mutable.empty()), null, new CompositeCodeStorage(new VersionControlledClassLoaderCodeStorage(classLoader, Lists.mutable.of(CodeRepositoryProviderHelper.findPlatformCodeRepository()), null)), null, null, new ConsoleCompiled(), new FunctionCache(), new ClassCache(classLoader), null, Sets.mutable.empty(), CompiledExtensionLoader.extensions());
         pureModel = new PureModel(pureModelContextData, Identity.getAnonymousIdentity().getName(), classLoader, DeploymentMode.PROD);
         JavaSourceCodeGenerator javaSourceCodeGenerator = new JavaSourceCodeGenerator(pureModel.getExecutionSupport().getProcessorSupport(), new EmptyCodeStorage(), false, null, false, pureModel.getExecutionSupport().getCompiledExtensions(), "ChangeTokens", null, false);
         MutableSet<String> allTypes = pureModel.getModelClasses().collect(a ->
@@ -92,7 +103,7 @@ public class GenerateDiff
         {
             return null;
         }
-        Map<String, Object> res = new HashMap();
+        Map<String, Object> res = Maps.mutable.empty();
         Iterator<Map.Entry<String, Object>> it = objectNode.entrySet().iterator();
         while (it.hasNext())
         {
@@ -103,8 +114,8 @@ public class GenerateDiff
             }
             else if (en.getValue() instanceof List)
             {
-                MutableList list = Lists.mutable.empty();
-                for (Object o : (List) en.getValue())
+                MutableList<Object> list = Lists.mutable.empty();
+                for (Object o : (List<?>) en.getValue())
                 {
                     list.add(o instanceof Map ? toPureMap((Map) o) : o);
                 }

@@ -15,10 +15,9 @@
 package org.finos.legend.engine.server.test.shared;
 
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.map.MutableMap;
-import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
@@ -45,6 +44,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.function.BiFunction;
 
 import static org.finos.legend.pure.generated.core_relational_relational_extensions_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_;
 
@@ -52,7 +52,6 @@ public class TestMetaDataServer
 {
     private final Server server;
     private final MutableMap<String, String> fromMappings = Maps.mutable.empty();
-    private final MutableMap<String, String> fromServices = Maps.mutable.empty();
     private final MutableMap<String, String> fromStores = Maps.mutable.empty();
 
     public static void main(String[] args) throws Exception
@@ -64,9 +63,10 @@ public class TestMetaDataServer
     public TestMetaDataServer(int port, boolean messageFromPureJAR) throws Exception
     {
         this.server = new Server(port);
+        ClassLoader classLoader = TestMetaDataServer.class.getClassLoader();
         CompiledExecutionSupport executionSupport = new CompiledExecutionSupport(
-                new JavaCompilerState(null, TestMetaDataServer.class.getClassLoader()),
-                new CompiledProcessorSupport(TestMetaDataServer.class.getClassLoader(), PureModel.METADATA_LAZY, Sets.mutable.empty()),
+                new JavaCompilerState(null, classLoader),
+                new CompiledProcessorSupport(classLoader, PureModel.METADATA_LAZY, Sets.mutable.empty()),
                 null,
                 new RepositoryCodeStorage()
                 {
@@ -164,7 +164,7 @@ public class TestMetaDataServer
                 null,
                 new ConsoleCompiled(),
                 new FunctionCache(),
-                new ClassCache(),
+                new ClassCache(classLoader),
                 null,
                 Sets.mutable.empty(),
                 CompiledExtensionLoader.extensions()
@@ -177,7 +177,7 @@ public class TestMetaDataServer
                         (_package, version) ->
                         {
                             String key = "" + _package + version;
-                            String res = fromMappings.get(key);
+                            String res = this.fromMappings.get(key);
                             System.out.println(key);
                             Assert.assertTrue(res != null, () -> key + " can't be found");
                             return res;
@@ -191,7 +191,7 @@ public class TestMetaDataServer
                         (_package, version) ->
                         {
                             String key = "" + _package + version;
-                            String res = fromStores.get(key);
+                            String res = this.fromStores.get(key);
                             System.out.println(key);
                             Assert.assertTrue(res != null, () -> key + " can't be found");
                             return res;
@@ -225,7 +225,7 @@ public class TestMetaDataServer
         this.server.stop();
     }
 
-    private static AbstractHandler registerService(String mappingBase, Function2<String, String, String> content)
+    private static AbstractHandler registerService(String mappingBase, BiFunction<String, String, String> content)
     {
         ContextHandler contextHandler = new ContextHandler(mappingBase + "/*");
         AbstractHandler handler = new AbstractHandler()
@@ -243,7 +243,7 @@ public class TestMetaDataServer
                     int end = path.indexOf("/", 1);
                     String version = path.substring(1, end);
                     String _package = path.substring(end + 1);
-                    String r = content.value(_package, version);
+                    String r = content.apply(_package, version);
                     stream.write(r.getBytes());
                     stream.flush();
                 }
