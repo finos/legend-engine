@@ -57,6 +57,14 @@
           "executable": { "path": "model::MyExecutable" }
         },
         {
+          "_type": "dataSpacePackageableElementExecutable",
+          "title": "Executable 1",
+          "id": "template_1",
+          "executionContextKey": "INT",
+          "description": "description",
+          "executable": { "path": "model::MyExecutable" }
+        },
+        {
           "_type": "dataSpaceTemplateExecutable",
           "title": "Template 1",
           "id": "1",

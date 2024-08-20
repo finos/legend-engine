@@ -622,6 +622,12 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "      executable: model::MyExecutable;\n" +
                 "    },\n" +
                 "    {\n" +
+                "      id: 1234;\n" +
+                "      title: 'Exec 2';\n" +
+                "      executable: model::MyExecutable;\n" +
+                "      executionContextKey: 'Context 1';\n" +
+                "    },\n" +
+                "    {\n" +
                 "      id: 123;\n" +
                 "      title: 'Template 1';\n" +
                 "      query: src: meta::transform::tests::Address[1]|$src.a;\n" +
