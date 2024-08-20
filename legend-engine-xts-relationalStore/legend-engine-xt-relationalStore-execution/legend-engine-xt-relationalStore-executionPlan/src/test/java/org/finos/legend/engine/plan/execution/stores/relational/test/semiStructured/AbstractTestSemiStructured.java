@@ -79,8 +79,7 @@ public abstract class AbstractTestSemiStructured
 
         return core_pure_executionPlan_executionPlan_print.Root_meta_pure_executionPlan_toString_planToString_ExecutionPlan_1__Boolean_1__Extension_MANY__String_1_(executionPlan, true, extensions, pureModel.getExecutionSupport());
     }
-
-    protected String executeFunction(String function, String mapping, String runtime)
+    protected SingleExecutionPlan generatePlan(String function, String mapping, String runtime)
     {
         Function functionObject = Objects.requireNonNull(contextData.getElementsOfType(Function.class).stream().filter(x -> function.equals(x._package + "::" + x.name)).findFirst().orElse(null));
 
@@ -96,6 +95,12 @@ public abstract class AbstractTestSemiStructured
                 getExtensions(),
                 LegendPlanTransformers.transformers
         );
+        return executionPlan;
+    }
+
+    protected String executeFunction(String function, String mapping, String runtime)
+    {
+        SingleExecutionPlan executionPlan = generatePlan(function,mapping,runtime);
 
         RelationalResult result = (RelationalResult) this.planExecutor.execute(executionPlan);
         return new String(new RelationalResultToCSVSerializer(result).flush().toByteArray(), StandardCharsets.UTF_8);

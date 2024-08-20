@@ -7425,7 +7425,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::applyJo
 
    let explodeInCurrentNode = explodeInCurrentJoinOperation($joinTreeNode.join.operation);
    let appliedJoinTreeNode = if($explodeInCurrentNode, | applyJoinWithExplodeInCondition($position, $joinTreeNode, $nodeId, $jt, $reprocess, $state, $milestoningContext, $context, $extensions), | applyOneJoin($position, $joinTreeNode, $nodeId, $jt, $reprocess, $state, $milestoningContext, $context, $extensions));
-
+   
    let positionAliasWithExtraJoinCols = $position.alias->addExtraJoinColumns($appliedJoinTreeNode.join); //subselect may not have all cols required for join (prev isolation if applied may take care of this)
    let uniqueAppliedJoinTreeNode =  if($position.childrenData->filter(c|$c->cast(@JoinTreeNode).joinName==$appliedJoinTreeNode.joinName)->isEmpty()
                                       ,|^$appliedJoinTreeNode(join = reprocessJoin($appliedJoinTreeNode.join, [^OldAliasToNewAlias(first = $position.alias.name, second = $positionAliasWithExtraJoinCols)], []))
@@ -7533,6 +7533,7 @@ function meta::relational::functions::pureToSqlQuery::applyJoinWithExplodeInCond
   let pathToExplode   = $explodeOp.parameters->at(1)->cast(@Literal).value->cast(@String);
   let pureReturnType  = $explodeOp.parameters->at(2)->cast(@Literal).value->cast(@String)->explodeReturnType();
   let tableToExplodeAlias = $columnToExplode.alias;  
+                   
   assert($tableToExplodeAlias.relationalElement->instanceOf(Table) || $tableToExplodeAlias.relationalElement->instanceOf(View), 'element to explode: ' + $tableToExplodeAlias.name +  ' in join ' + $join.name + ' is not a table/view');
   assert($sourceAliasInJoin.relationalElement->instanceOf(Table) || $sourceAliasInJoin.relationalElement->instanceOf(View), 'source ' + $sourceAliasInJoin.name + ' in join ' + $join.name + ' is not a table/view');
   let srcPrimaryKeys = if($sourceAliasInJoin.relationalElement->instanceOf(Table), | $sourceAliasInJoin.relationalElement->cast(@Table).primaryKey, | $sourceAliasInJoin.relationalElement->cast(@View).primaryKey);
@@ -7563,7 +7564,7 @@ function meta::relational::functions::pureToSqlQuery::applyJoinWithExplodeInCond
   );
   let explodedRootTreeNode = ^$toExplodeRootTreeNode(childrenData = $lateralJoinNode);
   let flattenOutputAlias            = ^Alias(name = 'flattened_prop', relationalElement = ^SemiStructuredArrayFlattenOutput(tableAliasColumn = ^TableAliasColumn(alias = $lateralJoinNode.alias->toOne(), column = ^Column(name = 'VALUE', type = ^meta::relational::metamodel::datatype::SemiStructured())), returnType = $pureReturnType));
-  let columnsForInnerJoin           = $join.operation->extractTableAliasColumns()->filter(tac|$tac.alias == $tableToExplodeAlias && $tac != $columnToExplode)->map(c|^TableAliasColumn(column = $c.column, alias = $toExplodeRootTreeNode.alias));
+  let columnsForInnerJoin           = $join.operation->extractTableAliasColumns()->filter(tac|$tac.alias == $tableToExplodeAlias )->map(c|^TableAliasColumn(column = $c.column, alias = $toExplodeRootTreeNode.alias))->removeDuplicates();  
   let additionalColumnsToFetch      = if($tableToExplodeAlias == $sourceAliasInJoin,
                                         | $srcPrimaryKeys->map(c|^Alias(name = 'leftJoinKey_' + $srcPrimaryKeys->indexOf($c)->toString(), relationalElement = ^TableAliasColumn(column=$c, alias=$toExplodeRootTreeNode.alias))),  // fetch only pks from source
                                         | 
@@ -7571,6 +7572,7 @@ function meta::relational::functions::pureToSqlQuery::applyJoinWithExplodeInCond
                                                                     | $tableToExplodeAlias.relationalElement->cast(@Table).columns->map(c|^TableAliasColumn(alias = $toExplodeRootTreeNode.alias, column = $c->cast(@Column))), 
                                                                     | $tableToExplodeAlias.relationalElement->cast(@View).columns->map(c |^TableAliasColumn(alias = $toExplodeRootTreeNode.alias, column = $c->cast(@Column)));
                                         ));
+
   let columnsToFetchInExploded      = [$flattenOutputAlias]->concatenate($columnsForInnerJoin)->concatenate($additionalColumnsToFetch)->removeDuplicates();
   let explodedSubQuery = ^TableAlias(name='exploded', relationalElement=^SelectSQLQuery(columns=$columnsToFetchInExploded, data=$explodedRootTreeNode, preIsolationCurrentTreeNode=$explodedRootTreeNode)); // mainTable should point to the root table, not flatten
 
