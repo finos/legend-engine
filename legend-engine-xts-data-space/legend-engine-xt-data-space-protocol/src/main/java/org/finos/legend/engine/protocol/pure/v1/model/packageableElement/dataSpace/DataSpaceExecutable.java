@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
@@ -23,6 +24,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
         @JsonSubTypes.Type(value = DataSpacePackageableElementExecutable.class, name = "dataSpacePackageableElementExecutable"),
         @JsonSubTypes.Type(value = DataSpaceTemplateExecutable.class, name = "dataSpaceTemplateExecutable"),
 })
+@JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class DataSpaceExecutable
 {
     // NOTE: this is subjected to change depending on how we want to embed executables information
