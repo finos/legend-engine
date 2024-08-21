@@ -43,7 +43,7 @@ public class LocalConnectionManagement
                         "###Connection\n" +
                                 "RelationalDatabaseConnection local::" + name + "Connection\n" +
                                 "{\n" +
-                                "   specification: DuckDB{path:'~/duck';};" +
+                                "   specification: DuckDB{path:'" + this.client.getHomeDir().resolve("duck") + "';};" +
                                 "   type: DuckDB;" +
                                 "   auth: Test;" +
                                 "}\n" :
