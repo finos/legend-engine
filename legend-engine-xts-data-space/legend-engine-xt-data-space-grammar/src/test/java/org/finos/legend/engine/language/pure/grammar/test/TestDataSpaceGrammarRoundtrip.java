@@ -571,6 +571,14 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "          \"executable\": { \"path\": \"model::MyExecutable\" }\n" +
                 "        },\n" +
                 "        {\n" +
+                "          \"_type\": \"dataSpacePackageableElementExecutable\",\n" +
+                "          \"title\": \"Executable 3\",\n" +
+                "          \"id\": \"2\",\n" +
+                "          \"description\": \"description\",\n" +
+                "          \"executable\": { \"path\": \"domain::COVIDData_QueryFunction():TabularDataSet[1]\" },\n" +
+                "          \"executionContextKey\": \"INT\"\n" +
+                "        },\n" +
+                "        {\n" +
                 "          \"_type\": \"dataSpaceTemplateExecutable\",\n" +
                 "          \"id\": \"1\",\n" +
                 "          \"title\": \"Template 1\",\n" +
@@ -732,6 +740,13 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "      title: 'Executable 2';\n" +
                 "      description: 'description';\n" +
                 "      executable: model::MyExecutable;\n" +
+                "    },\n" +
+                "    {\n" +
+                "      id: 2;\n" +
+                "      title: 'Executable 3';\n" +
+                "      description: 'description';\n" +
+                "      executable: domain::COVIDData_QueryFunction():TabularDataSet[1];\n" +
+                "      executionContextKey: 'INT';\n" +
                 "    },\n" +
                 "    {\n" +
                 "      id: 1;\n" +
