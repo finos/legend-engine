@@ -221,15 +221,15 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::ceiling::t
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::floor::testProject():Boolean[1]
 {
     let result = execute(|SqlFunctionDemo.all()->project([s | $s.float1Floor ], ['floor']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
-    assertEquals([1.0,1.0], $result.values->at(0).rows.values);
-    assertEquals('select floor("root".float1) as "floor" from dataTable as "root"',$result->sqlRemoveFormatting());
+    assertEquals([1,1], $result.values->at(0).rows.values);
+    assertEquals('select cast(floor("root".float1) as INTEGER) as "floor" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::floor::testFilter():Boolean[1]
 {
     let result = execute(|SqlFunctionDemo.all()->filter(s | $s.float1Floor == 1)->project([s | $s.float1Floor], ['floor']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
-    assertEquals([1.0,1.0], $result.values->at(0).rows.values);
-    assertEquals('select floor("root".float1) as "floor" from dataTable as "root" where floor("root".float1) = 1',$result->sqlRemoveFormatting());
+    assertEquals([1,1], $result.values->at(0).rows.values);
+    assertEquals('select cast(floor("root".float1) as INTEGER) as "floor" from dataTable as "root" where cast(floor("root".float1) as INTEGER) = 1',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stddev::sample::testProject():Boolean[1]

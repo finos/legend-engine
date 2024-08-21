@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-repl</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.53.6-SNAPSHOT</version>
+        <version>4.53.9-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -64,10 +64,10 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/classes/web-content</outputDirectory>
+                            <outputDirectory>${project.build.directory}/classes/web-content/dist</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${project.build.directory}/web-content</directory>
+                                    <directory>${project.build.directory}/web-content/package/dist</directory>
                                 </resource>
                             </resources>
                         </configuration>

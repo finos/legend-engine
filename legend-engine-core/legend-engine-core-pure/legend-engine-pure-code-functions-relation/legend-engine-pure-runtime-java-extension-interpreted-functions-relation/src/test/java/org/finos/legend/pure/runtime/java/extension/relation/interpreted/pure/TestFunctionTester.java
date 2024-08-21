@@ -108,7 +108,7 @@ public class TestFunctionTester extends PureExpressionTest
         compileTestSource("fromString.pure",
                 "function test():Any[*]\n" +
                         "{" +
-                        "print(                 #TDS\n" +
+                        "print(                #TDS\n" +
                         "                  id, grp, name\n" +
                         "                  1, 2, A\n" +
                         "                  2, 1, B\n" +
@@ -120,7 +120,7 @@ public class TestFunctionTester extends PureExpressionTest
                         "                  8, 1, H\n" +
                         "                  9, 5, I\n" +
                         "                  10, 0, J\n" +
-                        "                #->extend(over(~grp), ~newCol:{w,c|$c.id}:y|$y->plus())" +
+                        "                #->extend(over(~grp, ~id->descending()), ~[newCol:{p,f,r|$r.name}:y|$y->joinStrings(''),other:{p,f,r|$r.id}:y|$y->plus()])" +
                         "     ->toString(),1);\n" +
                         "}");
         this.execute("test():Any[*]");

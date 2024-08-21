@@ -14,14 +14,32 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives;
 
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Relation;
-import org.finos.legend.pure.m3.execution.ExecutionSupport;
-import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.AbstractNativeFunctionGeneric;
+import org.eclipse.collections.api.list.ListIterable;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.AbstractNative;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.Native;
 
-public class First extends AbstractNativeFunctionGeneric
+import static org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.ExtendWindowFunc.buildFrame;
+import static org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.ExtendWindowFunc.processWindow;
+
+public class First extends AbstractNative implements Native
 {
     public First()
     {
-        super("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.first", new Class[]{Relation.class, ExecutionSupport.class}, false, true, false, "first_Relation_1__T_1_");
+        super("first_Relation_1___Window_1__T_1__T_$0_1$_");
+    }
+
+    @Override
+    public String build(CoreInstance topLevelElement, CoreInstance functionExpression, ListIterable<String> transformedParams, ProcessorContext processorContext)
+    {
+        StringBuilder result = new StringBuilder("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.first(");
+        result.append(transformedParams.get(0));
+        result.append(", ");
+        processWindow(result, transformedParams.get(1));
+        result.append(",");
+        result.append(transformedParams.get(2));
+        result.append(",es)");
+        return result.toString();
     }
 }

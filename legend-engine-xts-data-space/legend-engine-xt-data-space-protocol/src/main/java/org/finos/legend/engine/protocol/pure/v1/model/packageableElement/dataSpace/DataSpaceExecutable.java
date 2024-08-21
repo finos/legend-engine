@@ -26,6 +26,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 public abstract class DataSpaceExecutable
 {
     // NOTE: this is subjected to change depending on how we want to embed executables information
+    public String id;
+    public String executionContextKey;
     public String title;
     public String description;
     public SourceInformation sourceInformation;

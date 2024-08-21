@@ -12,18 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::test::pct::*;
-import meta::pure::metamodel::relation::*;
+package org.finos.legend.pure.runtime.java.extension.external.relation.shared.window;
 
-native function <<PCT.function>> meta::pure::functions::relation::map<T,V>(rel:Relation<T>[1], f:Function<{T[1]->V[*]}>[1]):V[*];
-
-function <<test.Test>> meta::pure::functions::relation::tests::map::testSimpleMap():Boolean[1]
+public class SortInfo
 {
-    let res = #TDS
-                val
-                1
-                3
-                4
-              #->map(x|$x.val->toOne() + 1);
-    assertEquals([2,4,5], $res);
+    public String columnName;
+    public SortDirection direction;
+
+    public SortInfo(String name, SortDirection direction)
+    {
+        this.columnName = name;
+        this.direction = direction;
+    }
+
+    public String getColumnName()
+    {
+        return columnName;
+    }
+
+    public SortDirection getDirection()
+    {
+        return direction;
+    }
 }

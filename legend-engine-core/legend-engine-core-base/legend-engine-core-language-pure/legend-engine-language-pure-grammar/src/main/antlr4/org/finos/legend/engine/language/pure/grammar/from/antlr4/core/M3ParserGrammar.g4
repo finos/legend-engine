@@ -101,19 +101,20 @@ atomicExpression:                               dsl
                                                 | variable
                                                 | columnBuilders
                                                 | (AT type)
-                                                | lambdaPipe
-                                                | lambdaFunction
+                                                | anyLambda
                                                 | instanceReference
-                                                | (lambdaParam lambdaPipe)
 ;
 
 columnBuilders: TILDE (oneColSpec | colSpecArray)
 ;
-oneColSpec: identifier ((COLON (type | lambdaParam lambdaPipe) extraFunction? ))?
+oneColSpec: identifier ((COLON (type | anyLambda) extraFunction? ))?
 ;
 colSpecArray: (BRACKET_OPEN (oneColSpec(COMMA oneColSpec)*)? BRACKET_CLOSE)
 ;
-extraFunction: (COLON lambdaParam lambdaPipe)
+extraFunction: (COLON anyLambda)
+;
+
+anyLambda : lambdaPipe | lambdaFunction | lambdaParam lambdaPipe
 ;
 
 instanceReference:                              (PATH_SEPARATOR | qualifiedName | unitName) allOrFunction?

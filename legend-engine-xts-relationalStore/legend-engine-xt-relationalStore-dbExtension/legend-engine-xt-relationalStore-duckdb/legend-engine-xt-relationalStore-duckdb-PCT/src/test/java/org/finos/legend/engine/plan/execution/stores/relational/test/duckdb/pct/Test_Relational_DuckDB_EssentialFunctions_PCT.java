@@ -200,16 +200,6 @@ public class Test_Relational_DuckDB_EssentialFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::string::tests::toString::testPersonToString_Function_1__Boolean_1_", "\"Assert failed\""),
             one("meta::pure::functions::string::tests::toString::testSimpleDateToString_Function_1__Boolean_1_", "\"\nexpected: '2014-01-02T01:54:27.352+0000'\nactual:   '2014-01-02 01:54:27.352'\""),
 
-            // Ceiling
-            one("meta::pure::functions::math::tests::ceiling::testDecimalCeiling_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'minus_Decimal_MANY__Decimal_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
-            one("meta::pure::functions::math::tests::ceiling::testNegativeIntegerCeiling_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.lang.Long (java.lang.Double and java.lang.Long are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::math::tests::ceiling::testPositiveIntegerCeiling_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.lang.Long (java.lang.Double and java.lang.Long are in module java.base of loader 'bootstrap')"),
-
-            // Floor
-            one("meta::pure::functions::math::tests::floor::testDecimalFloor_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'minus_Decimal_MANY__Decimal_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
-            one("meta::pure::functions::math::tests::floor::testNegativeIntegerFloor_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.lang.Long (java.lang.Double and java.lang.Long are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::math::tests::floor::testPositiveIntegerFloor_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.lang.Long (java.lang.Double and java.lang.Long are in module java.base of loader 'bootstrap')"),
-
             // Mod
             one("meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"mod(%s,%s)\"\""),
             one("meta::pure::functions::math::tests::mod::testModWithNegativeNumbers_Function_1__Boolean_1_", "\"\nexpected: 3\nactual:   -2\""),
@@ -223,20 +213,8 @@ public class Test_Relational_DuckDB_EssentialFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_", "\"\nexpected: 0.14D\nactual:   0.14\""),
 
             // Round
-            one("meta::pure::functions::math::tests::round::testDecimalRound_Function_1__Boolean_1_", "\"[unsupported-api] The function 'round' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::math::tests::round::testFloatRoundWithScale_Function_1__Boolean_1_", "\"[unsupported-api] The function 'round' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::math::tests::round::testNegativeFloatRoundDown_Function_1__Boolean_1_", "\"[unsupported-api] The function 'round' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::math::tests::round::testNegativeFloatRoundHalfEvenDown_Function_1__Boolean_1_", "\"[unsupported-api] The function 'round' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::math::tests::round::testNegativeFloatRoundHalfEvenUp_Function_1__Boolean_1_", "\"[unsupported-api] The function 'round' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::math::tests::round::testNegativeFloatRoundUp_Function_1__Boolean_1_", "\"[unsupported-api] The function 'round' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::math::tests::round::testNegativeFloatWithZeroDecimalRound_Function_1__Boolean_1_", "\"[unsupported-api] The function 'round' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::math::tests::round::testNegativeIntegerRound_Function_1__Boolean_1_", "\"[unsupported-api] The function 'round' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::math::tests::round::testPositiveFloatRoundDown_Function_1__Boolean_1_", "\"[unsupported-api] The function 'round' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::math::tests::round::testPositiveFloatRoundHalfEvenDown_Function_1__Boolean_1_", "\"[unsupported-api] The function 'round' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::math::tests::round::testPositiveFloatRoundHalfEvenUp_Function_1__Boolean_1_", "\"[unsupported-api] The function 'round' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::math::tests::round::testPositiveFloatRoundUp_Function_1__Boolean_1_", "\"[unsupported-api] The function 'round' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::math::tests::round::testPositiveFloatWithZeroDecimalRound_Function_1__Boolean_1_", "\"[unsupported-api] The function 'round' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::math::tests::round::testPositiveIntegerRound_Function_1__Boolean_1_", "\"[unsupported-api] The function 'round' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::math::tests::round::testPositiveFloatRoundHalfEvenDown_Function_1__Boolean_1_", "\"\nexpected: 16\nactual:   17\""),
+            one("meta::pure::functions::math::tests::round::testNegativeFloatRoundHalfEvenUp_Function_1__Boolean_1_", "\"\nexpected: -16\nactual:   -17\""),
 
             // toDecimal
             one("meta::pure::functions::math::tests::toDecimal::testDecimalToDecimal_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toDecimal' (state: [Select, false]) is not supported yet\""),
@@ -338,7 +316,7 @@ public class Test_Relational_DuckDB_EssentialFunctions_PCT extends PCTReportConf
 
             // ParseDecimal
             one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
-            one("meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_", "class java.lang.Double cannot be cast to class java.math.BigDecimal (java.lang.Double and java.math.BigDecimal are in module java.base of loader 'bootstrap')"),
+            one("meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_", "\"\nexpected: 0.000D\nactual:   0.0D\""),
 
             // ParseInteger
             one("meta::pure::functions::string::tests::parseInteger::testParseInteger_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),

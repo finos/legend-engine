@@ -989,7 +989,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
     }
 
     @Test
-    public void testDataSpaceWithTemplateExecutableWithFunctionPointer()
+    public void testDataSpaceWithExecutableWithFunctionPointer()
     {
         String model = "Class model::element {}\n" +
                 "Class model::sub::element\n" +
@@ -1055,19 +1055,19 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    {\n" +
                 "      id: 1;\n" +
                 "      title: 'Template 1';\n" +
-                "      query: model::templateFunc():TabularDataSet[1];\n" +
+                "      executable: model::templateFunc():TabularDataSet[1];\n" +
                 "      executionContextKey: 'Context 1';\n" +
                 "    },\n" +
                 "    {\n" +
                 "      id: 2;\n" +
                 "      title: 'Template 2';\n" +
-                "      query: model::templateFunc():TabularDataSet[1];\n" +
+                "      executable: model::templateFunc():TabularDataSet[1];\n" +
                 "    },\n" +
                 "    {\n" +
                 "      id: 3;\n" +
                 "      title: 'Template 3';\n" +
                 "      description: 'an example of a template query';\n" +
-                "      query: model::templateFunc():TabularDataSet[1];\n" +
+                "      executable: model::templateFunc():TabularDataSet[1];\n" +
                 "    }\n" +
                 "  ];\n" +
                 "}\n");
@@ -1092,7 +1092,38 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    {\n" +
                 "      id: 1;\n" +
                 "      title: 'Template 1';\n" +
-                "      query: model::templateFunc1():TabularDataSet[1];\n" +
+                "      executable: model::templateFunc():TabularDataSet[1];\n" +
+                "      executionContextKey: 'Context 1';\n" +
+                "    },\n" +
+                "    {\n" +
+                "      id: 1;\n" +
+                "      title: 'Template 2';\n" +
+                "      executable: model::templateFunc():TabularDataSet[1];\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n","COMPILATION error at [44:1-70:1]: Data space executable id, 1, is not unique");
+
+        test(model +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  elements: [model::element, model, model::sub];\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      id: 1;\n" +
+                "      title: 'Template 1';\n" +
+                "      executable: model::templateFunc1():TabularDataSet[1];\n" +
                 "      executionContextKey: 'Context 1';\n" +
                 "    }\n" +
                 "  ];\n" +
@@ -1118,7 +1149,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    {\n" +
                 "      id: 1;\n" +
                 "      title: 'Template 1';\n" +
-                "      query: model::templateFunc2():TabularDataSet[1];\n" +
+                "      executable: model::templateFunc2():TabularDataSet[1];\n" +
                 "      executionContextKey: 'Context 1';\n" +
                 "    }\n" +
                 "  ];\n" +
@@ -1377,6 +1408,6 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
                 "  executables: [{ title: 'MyExec'; executable: model::MyService; }, { title: 'MyExec1'; executable: model::Mine; }];\n" +
-                "}\n", "COMPILATION error at [53:89-112]: Can't find the packageable element 'model::Mine'");
+                "}\n", "COMPILATION error at [42:1-54:1]: Error in 'model::dataSpace': Can't find the packageable element 'model::Mine'");
     }
 }

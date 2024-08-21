@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-function meta::pure::functions::relation::s(a:Any[0..1]):String[1]
+import meta::pure::test::pct::*;
+
+function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::s(a:Any[0..1]):String[1]
 {
   if ($a->isEmpty(),|'null',|$a->toOne()->toString());
 }

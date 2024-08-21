@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
-native function meta::pure::functions::relation::columns<T>(rel:Relation<T>[1]):Column<Nil,Any|*>[*];
+native function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::columns<T>(rel:Relation<T>[1]):Column<Nil,Any|*>[*];
 
 function <<test.Test>> meta::pure::functions::relation::tests::columns::testSimpleColumns():Boolean[1]
 {

@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-Class meta::pure::functions::relation::Rows extends Frame
-{
-}
+package org.finos.legend.engine.generation.analytics.model;
 
-function meta::pure::functions::relation::rows(offsetFrom:Integer[1], offsetTo:Integer[1]):Rows[1]
+public class DataSpaceFunctionPointerExecutableInfo extends DataSpaceExecutableInfo
 {
-  ^Rows(offsetFrom = $offsetFrom, offsetTo = $offsetTo);
+    public String id;
+    public String executionContextKey;
+    public String function;
 }

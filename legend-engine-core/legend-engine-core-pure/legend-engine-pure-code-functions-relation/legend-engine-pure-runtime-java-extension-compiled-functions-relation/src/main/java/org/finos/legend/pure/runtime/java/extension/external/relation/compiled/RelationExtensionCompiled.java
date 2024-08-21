@@ -58,6 +58,7 @@ public class RelationExtensionCompiled implements CompiledExtension
                 new ExtendWindowFunc(),
                 new ExtendWindowFuncArray(),
                 new First(),
+                new Last(),
                 new Drop(),
                 new Sort(),
                 new Rename(),
@@ -68,7 +69,14 @@ public class RelationExtensionCompiled implements CompiledExtension
                 new Distinct(),
                 new Select(),
                 new SelectArray(),
-                new Offset()
+                new Offset(),
+                new RowNumber(),
+                new Rank(),
+                new NTile(),
+                new CumulativeDistribution(),
+                new Nth(),
+                new DenseRank(),
+                new PercentRank()
         );
     }
 

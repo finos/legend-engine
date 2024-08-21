@@ -36,6 +36,5 @@ public class DataCubeClient
                 PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build()
         );
         client.loop();
-        client.forceExit();
     }
 }

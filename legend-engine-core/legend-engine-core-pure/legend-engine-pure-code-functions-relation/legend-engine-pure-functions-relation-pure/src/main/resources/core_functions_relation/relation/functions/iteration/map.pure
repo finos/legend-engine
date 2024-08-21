@@ -1,4 +1,4 @@
-// Copyright 2024 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
-native function meta::pure::functions::relation::offset<T>(w:Relation<T>[1], r:T[1], offset:Integer[1]):T[1];
+native function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::map<T,V>(rel:Relation<T>[1], f:Function<{T[1]->V[*]}>[1]):V[*];
+
+function <<test.Test>> meta::pure::functions::relation::tests::map::testSimpleMap():Boolean[1]
+{
+    let res = #TDS
+                val
+                1
+                3
+                4
+              #->map(x|$x.val->toOne() + 1);
+    assertEquals([2,4,5], $res);
+}

@@ -87,10 +87,15 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
 
     if ($resultType->toOne()->instanceOf(PrimitiveType),
       | let preResultFinal = $res.result.rows->at(0).values->at(0);
-        let resultFinal = if ($resultType->toOne()->subTypeOf(Date),
-          | buildDate($preResultFinal->toString()),
-          | $preResultFinal->toOne()
-        );
+        let resultFinal = 
+          if ([
+                pair(|$resultType->toOne()->subTypeOf(Date), |buildDate($preResultFinal->toString())),
+                pair(|$resultType->toOne()->subTypeOf(Decimal), |$preResultFinal->cast(@Number)->toDecimal()),
+                pair(|$resultType->toOne()->subTypeOf(Integer), |$preResultFinal->cast(@Number)->round()),
+                pair(|$resultType->toOne()->subTypeOf(Float), |$preResultFinal->cast(@Number)->toFloat())
+              ],
+            | $preResultFinal->toOne()
+          );
         print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->makeString(','),|''));
         $resultFinal;,
       | let tdsString = $res.result.columns->joinStrings(',') + '\n' +
@@ -309,9 +314,13 @@ function meta::relational::tests::pct::process::reprocess(a:Any[1], state:Proces
                                 | if (!$z.func->in(
                                               [
                                                   meta::pure::functions::relation::funcColSpecArray_FuncColSpec_MANY__P_1__FuncColSpecArray_1_,
+                                                  meta::pure::functions::relation::funcColSpecArray2_FuncColSpec_MANY__P_1__FuncColSpecArray_1_,
                                                   meta::pure::functions::relation::funcColSpec_Function_1__String_1__T_1__FuncColSpec_1_,
+                                                  meta::pure::functions::relation::funcColSpec2_Function_1__String_1__T_1__FuncColSpec_1_,
                                                   meta::pure::functions::relation::aggColSpecArray_AggColSpec_MANY__P_1__AggColSpecArray_1_,
-                                                  meta::pure::functions::relation::aggColSpec_Function_1__Function_1__String_1__T_1__AggColSpec_1_
+                                                  meta::pure::functions::relation::aggColSpecArray2_AggColSpec_MANY__P_1__AggColSpecArray_1_,
+                                                  meta::pure::functions::relation::aggColSpec_Function_1__Function_1__String_1__T_1__AggColSpec_1_,
+                                                  meta::pure::functions::relation::aggColSpec2_Function_1__Function_1__String_1__T_1__AggColSpec_1_
                                               ]),
                                     | let repro = $z.parametersValues->evaluateAndDeactivate()->map(x|$x->reprocess($state));
                                       ^$state

@@ -674,6 +674,21 @@ public class TestQueryStoreManager
     }
 
     @Test
+    public void testGetDataSpaceQueriesWithExecutionContext() throws Exception
+    {
+        String currentUser = "testUser";
+        String dataspacePath = "test::Dataspace";
+        TaggedValue taggedValue = createTestTaggedValue("meta::pure::profiles::query", "dataSpace", dataspacePath);
+        Query testQuery1 = TestQueryBuilder.create("1", "query1", currentUser).withDataSpaceExecution(dataspacePath).build();
+        Query testQuery2 = TestQueryBuilder.create("2", "query2", currentUser).withTaggedValues(Lists.fixedSize.of(taggedValue)).withDataSpaceExecution(dataspacePath).build();
+        queryStoreManager.createQuery(testQuery1, currentUser);
+        queryStoreManager.createQuery(testQuery2, currentUser);
+
+        Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue)).build(), currentUser).size());
+    }
+
+    @Test
     public void testGetQueriesWithGridConfigs() throws Exception
     {
         String currentUser = "testUser";
