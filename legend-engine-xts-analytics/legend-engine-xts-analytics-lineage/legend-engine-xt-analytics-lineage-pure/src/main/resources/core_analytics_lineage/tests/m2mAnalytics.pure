@@ -1,0 +1,75 @@
+import meta::analytics::lineage::*;
+import meta::pure::extension::*;
+import meta::core::runtime::*;
+import meta::pure::graphFetch::execution::*;
+import meta::analytics::lineage::test::*;
+
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::testSimpleM2M() : Boolean[1]
+{
+  let result = computeLineage({| TargetClass.all()->graphFetch(#{TargetClass{value1}}#)->serialize(#{TargetClass{value1}}#)},
+                                mappingForTestPropertyLineage,
+                                ^Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(
+                                                                                    connection=^meta::external::store::model::ModelConnection(instances = newMap(pair(TargetClass, list([])))),
+                                                                                    element=^meta::external::store::model::ModelStore())),
+                                defaultExtensions()
+                );
+
+  let expectedDatabaseNodesId = [];
+  let expectedDatabaseEdgesId = [];
+
+  let expectedClassNodesId = [
+    'Lambda',
+    'meta::analytics::lineage::test::TargetClass',
+    'meta::analytics::lineage::test::SourceClass',
+    'pack_meta::analytics::lineage::test'
+  ];
+  
+  let expectedClassEdgesId = [
+    'Lambda -> meta::analytics::lineage::test::TargetClass',
+    'meta::analytics::lineage::test::TargetClass -> pack_meta::analytics::lineage::test',
+    'meta::analytics::lineage::test::TargetClass -> meta::analytics::lineage::test::SourceClass',
+    'meta::analytics::lineage::test::SourceClass -> pack_meta::analytics::lineage::test'
+  ];
+
+  let expectedPropertyTrees = [
+    ['root\n',
+     ' c_TargetClass\n',
+     '  p_TargetClass.value1\n']->joinStrings()
+    // ['root\n',
+    //  ' c_TargetClass\n',
+    //  '  p_TargetClass.value1\n']->joinStrings()
+  ];
+
+  assertSameElements($expectedDatabaseNodesId, $result.databaseLineage.nodes);
+  assertSameElements($expectedDatabaseEdgesId, $result.databaseLineage.edges);
+  assertSameElements($expectedClassNodesId, $result.classLineage.nodes.data.id);
+  assertSameElements($expectedClassEdgesId, $result.classLineage.edges.data->map(m | $m.target.data.id + ' -> ' + $m.source.data.id));
+  assertSameElements($expectedPropertyTrees, $result.functionTrees->map(ft | $ft->meta::pure::lineage::scanProperties::propertyTree::printTree('')));
+}
+
+Class meta::analytics::lineage::test::TargetClass
+{
+  value1 : String[1];
+}
+
+Class meta::analytics::lineage::test::SourceClass
+{
+  src1 : SourceClass1[1];
+  src2: String[1];
+}
+
+Class meta::analytics::lineage::test::SourceClass1
+{
+  value : String[1];
+}
+
+###Mapping 
+import meta::analytics::lineage::test::*;
+Mapping meta::analytics::lineage::test::mappingForTestPropertyLineage
+(
+  TargetClass : Pure
+  {
+    ~src SourceClass
+    value1: $src.src1.value + '_' + $src.src2
+  }
+)
