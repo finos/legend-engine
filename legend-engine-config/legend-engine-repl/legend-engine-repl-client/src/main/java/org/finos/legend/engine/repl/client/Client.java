@@ -58,6 +58,7 @@ public class Client
     private final MutableList<CompleterExtension> completerExtensions;
     private final ModelState state;
     private final PlanExecutor planExecutor;
+    private final Path homeDirectory;
 
     private boolean debug = false;
 
@@ -71,11 +72,17 @@ public class Client
 
     public Client(MutableList<ReplExtension> replExtensions, MutableList<CompleterExtension> completerExtensions, PlanExecutor planExecutor) throws Exception
     {
+        this(replExtensions, completerExtensions, planExecutor, FileUtils.getUserDirectory().toPath().resolve(".legend/repl"));
+    }
+
+    public Client(MutableList<ReplExtension> replExtensions, MutableList<CompleterExtension> completerExtensions, PlanExecutor planExecutor, Path homeDirectory) throws Exception
+    {
         this.replExtensions = replExtensions;
         this.completerExtensions = completerExtensions;
         this.planExecutor = planExecutor;
         this.state = new ModelState(this.legendInterface, this.replExtensions);
         this.terminal = TerminalBuilder.terminal();
+        this.homeDirectory = homeDirectory;
 
         this.initialize();
         replExtensions.forEach(e -> e.initialize(this));
@@ -289,8 +296,7 @@ public class Client
 
     public Path getHomeDir()
     {
-        String homeDir = System.getProperty("legend.repl.storageDir");
-        return FileUtils.getUserDirectory().toPath().resolve(homeDir != null ? homeDir : ".legend/repl");
+        return this.homeDirectory;
     }
 
     public Terminal getTerminal()
