@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-execution</artifactId>
-        <version>4.53.9-SNAPSHOT</version>
+        <version>4.54.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
