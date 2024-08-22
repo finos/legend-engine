@@ -300,7 +300,7 @@ public class HelperValueSpecificationBuilder
     {
         try
         {
-            return HelperModelBuilder.getAppliedProperty(context, aClass, java.util.Optional.of(parameters), name, sourceInformation);
+            return HelperModelBuilder.getAppliedProperty(context, aClass, java.util.Optional.of(parameters), name, false, sourceInformation);
         }
         catch (Exception e)
         {
@@ -353,7 +353,7 @@ public class HelperValueSpecificationBuilder
 
         Variable thisVariable = new Variable("this", HelperModelBuilder.getElementFullPath(parentClass, context.pureModel.getExecutionSupport()), new Multiplicity(1, 1));
         MutableList<ValueSpecification> originalParams = Lists.mutable.<ValueSpecification>with(thisVariable).withAll(propertyGraphFetchTree.parameters);
-        property = HelperModelBuilder.getAppliedProperty(context, parentClass, Optional.of(originalParams), propertyGraphFetchTree.property, propertyGraphFetchTree.sourceInformation);
+        property = HelperModelBuilder.getAppliedProperty(context, parentClass, Optional.of(originalParams), propertyGraphFetchTree.property, false, propertyGraphFetchTree.sourceInformation);
         processingContext.push("PropertyTree");
         processingContext.addInferredVariables("this", HelperModelBuilder.createThisVariableForClass(context, HelperModelBuilder.getElementFullPath(parentClass, context.pureModel.getExecutionSupport())));
         MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> originalPureParameters = ListIterate.collect(originalParams, x -> x.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)));

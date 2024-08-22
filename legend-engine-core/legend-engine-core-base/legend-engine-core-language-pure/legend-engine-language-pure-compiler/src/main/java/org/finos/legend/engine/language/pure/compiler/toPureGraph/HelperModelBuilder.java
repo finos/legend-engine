@@ -449,10 +449,15 @@ public class HelperModelBuilder
      */
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getPropertyOrResolvedEdgePointProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
     {
-        AbstractProperty<?> abstractProperty = HelperModelBuilder.getAppliedProperty(context, _class, parameters, name, sourceInformation);
+        return getPropertyOrResolvedEdgePointProperty(context, _class, parameters, name, false, sourceInformation);
+    }
+
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getPropertyOrResolvedEdgePointProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters,  String name, boolean excludeQualified, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
+    {
+        AbstractProperty<?> abstractProperty = HelperModelBuilder.getAppliedProperty(context, _class, parameters, name, excludeQualified, sourceInformation);
         if ((abstractProperty instanceof QualifiedProperty) && Milestoning.temporalStereotypes(((PackageableElement) abstractProperty._genericType()._rawType())._stereotypes()) != null)
         {
-            return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>) HelperModelBuilder.getAppliedProperty(context, _class, parameters, MilestoningFunctions.getEdgePointPropertyName(name), sourceInformation);
+            return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>) HelperModelBuilder.getAppliedProperty(context, _class, parameters, MilestoningFunctions.getEdgePointPropertyName(name), excludeQualified, sourceInformation);
         }
         return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>) abstractProperty;
     }
@@ -462,13 +467,18 @@ public class HelperModelBuilder
      */
     public static AbstractProperty<?> getAppliedProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters, String name)
     {
-        return getAppliedProperty(context, _class, parameters, name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation.getUnknownSourceInformation());
+        return getAppliedProperty(context, _class, parameters, name, false, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation.getUnknownSourceInformation());
+    }
+
+    public static AbstractProperty<?> getAppliedProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
+    {
+        return getAppliedProperty(context, _class, parameters, name, false, sourceInformation);
     }
 
     /**
      * Recursively go through hierarchical/generalization chain and find the property.
      */
-    public static AbstractProperty<?> getAppliedProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
+    public static AbstractProperty<?> getAppliedProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters, String name, boolean excludeQualified, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
     {
         for (CoreInstance c_type : org.finos.legend.pure.m3.navigation.type.Type.getGeneralizationResolutionOrder(_class, context.pureModel.getExecutionSupport().getProcessorSupport()))
         {
@@ -483,7 +493,7 @@ public class HelperModelBuilder
             {
                 return property;
             }
-            property = getCompatibleDerivedProperty(type._qualifiedProperties(), name, parameters);
+            property = getCompatibleDerivedProperty(type._qualifiedProperties(), name, parameters, excludeQualified);
             if (property != null)
             {
                 return property;
@@ -497,7 +507,7 @@ public class HelperModelBuilder
         throw new EngineException("Can't find property '" + name + "' in [" + org.finos.legend.pure.m3.navigation.type.Type.getGeneralizationResolutionOrder(_class, context.pureModel.getExecutionSupport().getProcessorSupport()).makeString(", ") + "]", sourceInformation, EngineErrorType.COMPILATION);
     }
 
-    public static QualifiedProperty<?> getCompatibleDerivedProperty(RichIterable<? extends QualifiedProperty<?>> qualifiedProperties, String name, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters)
+    public static QualifiedProperty<?> getCompatibleDerivedProperty(RichIterable<? extends QualifiedProperty<?>> qualifiedProperties, String name, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters, boolean excludeQualified)
     {
         RichIterable<? extends QualifiedProperty<?>> propertiesWithSameName = qualifiedProperties.select(p -> name.equals(p._name()));
         RichIterable<? extends QualifiedProperty<?>> milestoningProperties = propertiesWithSameName.select(Milestoning::isDateArgGeneratedMilestoningQualifiedProperty);                             //dont pick NoArg Milestoned Property
@@ -505,6 +515,10 @@ public class HelperModelBuilder
         if (!milestoningProperties.isEmpty())
         {
             return milestoningProperties.getFirst();
+        }
+        else if (excludeQualified)
+        {
+            return null;
         }
         else
         {
