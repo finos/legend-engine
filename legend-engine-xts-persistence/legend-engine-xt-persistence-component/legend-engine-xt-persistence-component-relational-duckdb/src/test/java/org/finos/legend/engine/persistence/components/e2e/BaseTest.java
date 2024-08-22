@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.e2e;
 
+import java.nio.file.Files;
 import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
@@ -60,7 +61,6 @@ public class BaseTest
 {
     public static final String TEST_SCHEMA = "TEST";
     public static final String TEST_DATABASE = "TEST_DB";
-    protected static final String JDBC_URL = "jdbc:duckdb:" + TEST_DATABASE;
     protected static final String USER_NAME = "sa";
     protected static final String PASSWORD = "";
     public static JdbcHelper duckDBSink;
@@ -77,12 +77,13 @@ public class BaseTest
     protected RelationalExecutor executor = new RelationalExecutor(DuckDBSink.get(), duckDBSink);
 
     @BeforeAll
-    public static void initialize()
+    public static void initialize() throws Exception
     {
-        duckDBSink = JdbcHelper.of(DuckDBSink.createConnection(USER_NAME, PASSWORD, JDBC_URL));
+        String jdbc = "jdbc:duckdb:" + Files.createTempDirectory("persistence-duckdb-test").resolve(TEST_DATABASE);
+        duckDBSink = JdbcHelper.of(DuckDBSink.createConnection(USER_NAME, PASSWORD, jdbc));
         // Closing connection pool created by other tests.
         duckDBSink.close();
-        duckDBSink = JdbcHelper.of(DuckDBSink.createConnection(USER_NAME, PASSWORD, JDBC_URL));
+        duckDBSink = JdbcHelper.of(DuckDBSink.createConnection(USER_NAME, PASSWORD, jdbc));
     }
 
     @AfterAll
