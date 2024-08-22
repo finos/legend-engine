@@ -69,6 +69,7 @@ public class RelationExtensionCompiled implements CompiledExtension
                 new Distinct(),
                 new Select(),
                 new SelectArray(),
+                new SelectAll(),
                 new Offset(),
                 new RowNumber(),
                 new Rank(),

@@ -115,6 +115,12 @@ public class RelationNativeImplementation
         return new TDSContainer((TestTDSCompiled) RelationNativeImplementation.getTDS(r).rename(old._name(), aNew._name()), ps);
     }
 
+    public static <T> Relation<? extends Object> select(Relation<? extends T> r, ExecutionSupport es)
+    {
+        ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
+        return new TDSContainer((TestTDSCompiled) RelationNativeImplementation.getTDS(r).select(Sets.mutable.withAll(RelationNativeImplementation.getTDS(r).getColumnNames())), ps);
+    }
+
     public static <T> Relation<? extends Object> select(Relation<? extends T> r, ColSpec<?> col, ExecutionSupport es)
     {
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();

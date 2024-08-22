@@ -96,6 +96,7 @@ public class Test_JAVA_RelationFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::relation::tests::select::testMultiColsSelectShared_Function_1__Boolean_1_", "\"meta::pure::functions::relation::select_Relation_1__ColSpecArray_1__Relation_1_ is not supported yet!\""),
             one("meta::pure::functions::relation::tests::select::testSingleColSelectShared_Function_1__Boolean_1_", "\"meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_ is not supported yet!\""),
             one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "\"meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::select::testSelectAll_Function_1__Boolean_1_", "\"meta::pure::functions::relation::select_Relation_1__Relation_1_ is not supported yet!\""),
 
             // Size
             pack("meta::pure::functions::relation::tests::size", "\"meta::pure::functions::relation::size_Relation_1__Integer_1_ is not supported yet!\""),
