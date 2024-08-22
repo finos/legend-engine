@@ -60,7 +60,7 @@ public class BaseTest
 {
     public static final String TEST_SCHEMA = "TEST";
     public static final String TEST_DATABASE = "TEST_DB";
-    protected static final String JDBC_URL = "jdbc:duckdb:" + TEST_DATABASE;
+    protected static final String JDBC_URL = "jdbc:duckdb:";
     protected static final String USER_NAME = "sa";
     protected static final String PASSWORD = "";
     public static JdbcHelper duckDBSink;
