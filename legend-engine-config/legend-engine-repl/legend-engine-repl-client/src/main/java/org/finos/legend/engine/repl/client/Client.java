@@ -72,7 +72,7 @@ public class Client
 
     public Client(MutableList<ReplExtension> replExtensions, MutableList<CompleterExtension> completerExtensions, PlanExecutor planExecutor) throws Exception
     {
-        this(replExtensions, completerExtensions, planExecutor, FileUtils.getUserDirectory().toPath());
+        this(replExtensions, completerExtensions, planExecutor, FileUtils.getUserDirectory().toPath().resolve(".legend/repl"));
     }
 
     public Client(MutableList<ReplExtension> replExtensions, MutableList<CompleterExtension> completerExtensions, PlanExecutor planExecutor, Path homeDirectory) throws Exception

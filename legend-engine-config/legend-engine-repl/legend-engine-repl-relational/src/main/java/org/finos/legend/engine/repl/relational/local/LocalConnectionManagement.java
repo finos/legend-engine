@@ -16,6 +16,7 @@ package org.finos.legend.engine.repl.relational.local;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.repl.client.Client;
@@ -43,7 +44,7 @@ public class LocalConnectionManagement
                         "###Connection\n" +
                                 "RelationalDatabaseConnection local::" + name + "Connection\n" +
                                 "{\n" +
-                                "   specification: DuckDB{path:'" + this.client.getHomeDir().resolve("duck") + "';};" +
+                                "   specification: DuckDB{path:" + PureGrammarComposerUtility.convertString(this.client.getHomeDir().resolve("duck").toString(), true) + ";};" +
                                 "   type: DuckDB;" +
                                 "   auth: Test;" +
                                 "}\n" :
