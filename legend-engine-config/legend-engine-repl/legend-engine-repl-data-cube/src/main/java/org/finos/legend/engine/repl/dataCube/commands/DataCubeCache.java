@@ -121,7 +121,7 @@ public class DataCubeCache implements Command
                                     statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().load(tableName, tempFile.getTemporaryPathForFile()));
                                     this.client.printInfo("Cached into table: '" + tableName + "'. Launching DataCube...");
 
-                                    String functionBodyCode = "#>{" + DataCube.getLocalDatabasePath() + "." + tableName + "}#->sort([])->from(" + DataCube.getLocalRuntimePath() + ")";
+                                    String functionBodyCode = "#>{" + DataCube.getLocalDatabasePath() + "." + tableName + "}#->select()->from(" + DataCube.getLocalRuntimePath() + ")";
                                     String functionCode = "###Pure\n" +
                                             "function " + REPL_RUN_FUNCTION_SIGNATURE + "\n{\n" + functionBodyCode + ";\n}";
                                     PureModelContextData pureModelContextData = client.getModelState().parseWithTransient(functionCode);

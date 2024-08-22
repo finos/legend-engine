@@ -14,7 +14,7 @@ help # to see the list of commands
 # first load a CSV file into local DuckDB
 load data.csv local::DuckDuckConnection test1
 # then show the data
-#>{local::DuckDuckDatabase.test1}#->sort([])->from(local::DuckDuckRuntime)
+#>{local::DuckDuckDatabase.test1}#->select()->from(local::DuckDuckRuntime)
 
 # to show the result grid in DataCube
 show
