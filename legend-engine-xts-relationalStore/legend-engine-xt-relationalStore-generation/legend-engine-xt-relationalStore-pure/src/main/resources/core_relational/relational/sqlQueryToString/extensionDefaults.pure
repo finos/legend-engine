@@ -310,7 +310,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::defau
 {
    $ctes->map(cte |
      $cte.name + ' AS (' + $sgc.dbConfig.selectSQLQueryProcessor($cte->cast(@SelectCommonTableExpression).selectSQLQuery->cast(@SelectSQLQuery), $sgc, $isSubSelect) + ')'
-   )->joinStrings(', \n') + '\n ';
+   )->joinStrings(', \n') + ' \n';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::default::processSelectSQLQueryDefault(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
