@@ -89,7 +89,7 @@ function <<access.private>> meta::relational::postProcessor::cteExtraction::extr
             let cteReference = ^CommonTableExpressionReference(name = $cteName);
             ^$agg
             (
-               currentSelect = ^$currentSelect(data = $currentSelect.data->toOne()->replaceTreeNode($node, ^$node(alias = ^$nodeAlias(relationalElement = $cteReference)))->cast(@RootJoinTreeNode)),
+               currentSelect = ^$currentSelect(data = $currentSelect.data->toOne()->replaceTreeNode($node->meta::relational::functions::pureToSqlQuery::findOneNode($select.data->toOne(), $currentSelect.data->toOne()), ^$node(alias = ^$nodeAlias(relationalElement = $cteReference)))->cast(@RootJoinTreeNode)),
                extractedCTEs = $processedCteResult.extractedCTEs->concatenate($cte),
                levelIndexMap = $processedCteResult.levelIndexMap->put($level, $processedCteResult.levelIndexMap->get($level)->toOne() + 1)  
             );
