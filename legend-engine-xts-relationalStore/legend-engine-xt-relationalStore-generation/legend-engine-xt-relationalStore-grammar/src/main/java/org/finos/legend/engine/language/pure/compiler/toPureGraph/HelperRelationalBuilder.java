@@ -1184,7 +1184,7 @@ public class HelperRelationalBuilder
         else
         {
             Class<?> _class = getPropertyOwnerForRelationalPropertyMapping(context, propertyMapping, immediateParent);
-            return HelperModelBuilder.getPropertyOrResolvedEdgePointProperty(context, _class, Optional.empty(), propertyName, propertyMapping.sourceInformation);
+            return HelperModelBuilder.getPropertyOrResolvedEdgePointProperty(context, _class, Optional.empty(), propertyName, true, propertyMapping.sourceInformation);
         }
     }
 

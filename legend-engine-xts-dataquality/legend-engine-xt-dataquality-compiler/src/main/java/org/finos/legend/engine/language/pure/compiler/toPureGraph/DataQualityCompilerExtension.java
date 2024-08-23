@@ -176,7 +176,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
 
         Variable thisVariable = new Variable("this", HelperModelBuilder.getElementFullPath(parentClass, context.pureModel.getExecutionSupport()), new Multiplicity(1, 1));
         MutableList<ValueSpecification> originalParams = org.eclipse.collections.impl.factory.Lists.mutable.<ValueSpecification>with(thisVariable).withAll(propertyGraphFetchTree.parameters);
-        property = HelperModelBuilder.getAppliedProperty(context, parentClass, Optional.of(originalParams), propertyGraphFetchTree.property, propertyGraphFetchTree.sourceInformation);
+        property = HelperModelBuilder.getAppliedProperty(context, parentClass, Optional.of(originalParams), propertyGraphFetchTree.property, false, propertyGraphFetchTree.sourceInformation);
         processingContext.push("PropertyTree");
         processingContext.addInferredVariables("this", HelperModelBuilder.createThisVariableForClass(context, HelperModelBuilder.getElementFullPath(parentClass, context.pureModel.getExecutionSupport())));
         Class<?> subType = propertyGraphFetchTree.subType == null ? null : context.resolveClass(propertyGraphFetchTree.subType, propertyGraphFetchTree.sourceInformation);
