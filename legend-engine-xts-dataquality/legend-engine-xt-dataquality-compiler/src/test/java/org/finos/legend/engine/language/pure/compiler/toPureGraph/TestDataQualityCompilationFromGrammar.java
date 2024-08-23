@@ -92,21 +92,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "}");
     }
 
-    @Test
-    public void testRootClassEmptyTree()
-    {
-        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
-                "###DataQualityValidation\n" +
-                "DataQualityValidation meta::dataquality::PersonDataQualityValidation\n" +
-                "{\n" +
-                "    context: fromMappingAndRuntime(meta::dataquality::dataqualitymappings, meta::dataquality::DataQualityRuntime);\n" +
-                "    filter: p:meta::dataquality::Person[1] | $p.name=='John';\n" +
-                "    validationTree: $[\n" +
-                "      meta::dataquality::Person{\n" +
-                "      }\n" +
-                "    ]$;\n" +
-                "}", " at [92:1-100:1]: Error in 'meta::dataquality::PersonDataQualityValidation': Execution error at (resource: lines:92c1-100c1), \"Constraint :[mustHaveAtLeastOnePropertyOrConstraint] violated in the Class DataQualityRootGraphFetchTree\"");
-    }
+
 
 
 

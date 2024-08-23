@@ -20,10 +20,13 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.exception.PureAssertFailException;
+import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 
 public class TestDataQualityLambdaGenerator
@@ -53,6 +56,50 @@ public class TestDataQualityLambdaGenerator
 
     }
 
+
+    @Test
+    public void testEmptyTree()
+    {
+        String validation = COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityValidation meta::dataquality::PersonDataQualityValidation\n" +
+                "{\n" +
+                "    context: fromMappingAndRuntime(meta::dataquality::dataqualitymappings, meta::dataquality::DataQualityRuntime);\n" +
+                "    filter: p:meta::dataquality::Person[1] | $p.name=='John';\n" +
+                "    validationTree: $[\n" +
+                "      meta::dataquality::Person{\n" +
+                "      }\n" +
+                "    ]$;\n" +
+                "}";
+        PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(validation);
+        PureModel model = Compiler.compile(modelData, DeploymentMode.TEST_IGNORE_FUNCTION_MATCH, Identity.getAnonymousIdentity().getName());
+        assertEquals("Constraint :[mustHaveAtLeastOnePropertyOrConstraint] violated in the Class DataQualityRootGraphFetchTree",
+                assertThrows(PureExecutionException.class, () -> DataQualityLambdaGenerator.generateLambdaForTrial(model, "meta::dataquality::PersonDataQualityValidation", null)).getInfo());
+    }
+
+    @Test
+    public void testLambdaGeneration()
+    {
+        String validation = COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityValidation meta::dataquality::PersonDataQualityValidation\n" +
+                "{\n" +
+                "    context: fromMappingAndRuntime(meta::dataquality::dataqualitymappings, meta::dataquality::DataQualityRuntime);\n" +
+                "    filter: p:meta::dataquality::Person[1] | $p.name=='John';\n" +
+                "    validationTree: $[\n" +
+                "      meta::dataquality::Person<mustBeOfLegalAge>{\n" +
+                "        name,\n" +
+                "        addresses{\n" +
+                "         addressId\n" +
+                "        }\n" +
+                "      }\n" +
+                "    ]$;\n" +
+                "}";
+        PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(validation);
+        PureModel model = Compiler.compile(modelData, DeploymentMode.TEST_IGNORE_FUNCTION_MATCH, Identity.getAnonymousIdentity().getName());
+        LambdaFunction dqLambda = DataQualityLambdaGenerator.generateLambdaForTrial(model, "meta::dataquality::PersonDataQualityValidation", null);
+        assertNotNull(dqLambda);
+    }
 
     private static final String COMPILATION_PREREQUISITE_CODE = "###Connection\n" +
             "RelationalDatabaseConnection meta::dataquality::H2\n" +

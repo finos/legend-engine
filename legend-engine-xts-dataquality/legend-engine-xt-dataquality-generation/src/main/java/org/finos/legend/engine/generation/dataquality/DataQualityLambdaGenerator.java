@@ -25,7 +25,6 @@ import java.util.Objects;
 
 public class DataQualityLambdaGenerator
 {
-    public static final int DEFAULT_QUERY_LIMIT = 100;
 
     public static LambdaFunction generateLambda(PureModel pureModel, String qualifiedPath)
     {
@@ -35,17 +34,16 @@ public class DataQualityLambdaGenerator
 
     public static LambdaFunction generateLambda(PureModel pureModel, PackageableElement packageableElement)
     {
-        return core_dataquality_generation_dataquality.Root_meta_external_dataquality_executeDataQualityValidation_DataQuality_1__Integer_MANY__LambdaFunction_1_((Root_meta_external_dataquality_DataQuality)packageableElement, Lists.immutable.empty(), pureModel.getExecutionSupport());
+        Root_meta_external_dataquality_DataQuality dataqualityElement = (Root_meta_external_dataquality_DataQuality) packageableElement;
+        dataqualityElement._validationTree()._validate(true, null, null);
+        return core_dataquality_generation_dataquality.Root_meta_external_dataquality_executeDataQualityValidation_DataQuality_1__Integer_MANY__LambdaFunction_1_(dataqualityElement, Lists.immutable.empty(), pureModel.getExecutionSupport());
     }
 
     public static LambdaFunction generateLambdaForTrial(PureModel pureModel, String qualifiedPath, Integer queryLimit)
     {
         PackageableElement packageableElement = pureModel.getPackageableElement(qualifiedPath);
-        int trialQueryLimit = DEFAULT_QUERY_LIMIT;
-        if (Objects.nonNull(queryLimit))
-        {
-            trialQueryLimit = queryLimit;
-        }
-        return core_dataquality_generation_dataquality.Root_meta_external_dataquality_executeDataQualityValidation_DataQuality_1__Integer_MANY__LambdaFunction_1_((Root_meta_external_dataquality_DataQuality)packageableElement, Lists.immutable.of((long)trialQueryLimit), pureModel.getExecutionSupport());
+        Root_meta_external_dataquality_DataQuality dataqualityElement = (Root_meta_external_dataquality_DataQuality) packageableElement;
+        dataqualityElement._validationTree()._validate(true, null, null);
+        return core_dataquality_generation_dataquality.Root_meta_external_dataquality_executeDataQualityValidation_DataQuality_1__Integer_MANY__LambdaFunction_1_(dataqualityElement, Objects.nonNull(queryLimit) ? Lists.immutable.of((long)queryLimit) : Lists.immutable.empty(), pureModel.getExecutionSupport());
     }
 }
