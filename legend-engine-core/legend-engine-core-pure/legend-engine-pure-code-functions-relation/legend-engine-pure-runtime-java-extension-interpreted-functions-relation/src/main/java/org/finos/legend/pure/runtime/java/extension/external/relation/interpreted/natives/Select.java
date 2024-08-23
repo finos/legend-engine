@@ -52,19 +52,26 @@ public class Select extends Shared
 
         TestTDS tds = getTDS(params, 0, processorSupport);
 
-        Object cols = Instance.getValueForMetaPropertyToOneResolved(params.get(1), M3Properties.values, processorSupport);
         ListIterable<String> ids;
-        if (cols instanceof ColSpec)
+        if (params.size() == 1)
         {
-            ids = Lists.mutable.with(((ColSpec<?>) cols)._name());
-        }
-        else if (cols instanceof ColSpecArray)
-        {
-            ids = ((ColSpecArray<?>) cols)._names().collect(c -> (String) c).toList();
+            ids = tds.getColumnNames();
         }
         else
         {
-            throw new RuntimeException("Not Possible");
+            Object cols = Instance.getValueForMetaPropertyToOneResolved(params.get(1), M3Properties.values, processorSupport);
+            if (cols instanceof ColSpec)
+            {
+                ids = Lists.mutable.with(((ColSpec<?>) cols)._name());
+            }
+            else if (cols instanceof ColSpecArray)
+            {
+                ids = ((ColSpecArray<?>) cols)._names().collect(c -> (String) c).toList();
+            }
+            else
+            {
+                throw new RuntimeException("Not Possible");
+            }
         }
 
         return ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(tds.select(ids.toSet()), returnGenericType, repository, processorSupport), false, processorSupport);

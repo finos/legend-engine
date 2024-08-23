@@ -19,6 +19,8 @@ native function <<PCT.function>> meta::pure::functions::relation::select<T,Z>(r:
 
 native function <<PCT.function>> meta::pure::functions::relation::select<T,Z>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1]):Relation<Z>[1];
 
+native function <<PCT.function>> meta::pure::functions::relation::select<T>(r:Relation<T>[1]):Relation<T>[1];
+
 function <<PCT.test>> meta::pure::functions::relation::tests::select::testMultiColsSelectShared<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -91,5 +93,30 @@ function <<PCT.test>> meta::pure::functions::relation::tests::select::testSingle
                   '   c\n'+
                   '   d\n'+
                   '   e\n'+
+                  '#', $res->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::select::testSelectAll<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                      val, str, other
+                      1, a,  a
+                      3, ewe, b
+                      4, qw, c
+                      5, wwe, d
+                      6, weq, e
+                  #->select();
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,str,other\n'+
+                  '   1,a,a\n'+
+                  '   3,ewe,b\n'+
+                  '   4,qw,c\n'+
+                  '   5,wwe,d\n'+
+                  '   6,weq,e\n'+
                   '#', $res->toString());
 }

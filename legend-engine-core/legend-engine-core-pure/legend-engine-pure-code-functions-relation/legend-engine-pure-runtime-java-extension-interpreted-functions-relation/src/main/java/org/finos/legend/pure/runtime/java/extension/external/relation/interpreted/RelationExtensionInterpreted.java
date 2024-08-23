@@ -92,6 +92,7 @@ public class RelationExtensionInterpreted extends BaseInterpretedExtension
                 Tuples.pair("groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_", GroupBy::new),
                 Tuples.pair("project_C_MANY__FuncColSpecArray_1__Relation_1_", Project::new),
                 Tuples.pair("columns_Relation_1__Column_MANY_", Columns::new),
+                Tuples.pair("select_Relation_1__Relation_1_", Select::new),
                 Tuples.pair("select_Relation_1__ColSpec_1__Relation_1_", Select::new),
                 Tuples.pair("select_Relation_1__ColSpecArray_1__Relation_1_", Select::new),
                 Tuples.pair("rowNumber_Relation_1__T_1__Integer_1_", RowNumber::new),

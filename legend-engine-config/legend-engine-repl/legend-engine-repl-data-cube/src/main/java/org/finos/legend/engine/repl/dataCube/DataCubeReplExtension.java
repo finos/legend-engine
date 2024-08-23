@@ -36,11 +36,6 @@ public class DataCubeReplExtension implements ReplExtension
         return "relational";
     }
 
-    private boolean canShowGrid()
-    {
-        return Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
-    }
-
     public void initialize(Client client)
     {
         this.client = client;
