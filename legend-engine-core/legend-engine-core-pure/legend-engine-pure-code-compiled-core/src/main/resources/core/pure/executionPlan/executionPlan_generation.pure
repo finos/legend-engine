@@ -111,7 +111,7 @@ function <<access.private>> meta::pure::executionPlan::collectionMultiExecutionC
 
 Class meta::pure::executionPlan::ExecutionOptionContext extends MultiExecutionContext
 {
-   executionOptions : ExecutionOption[*];
+   <<equality.Key>> executionOptions : ExecutionOption[*];
 }
 
 // Move to platform
