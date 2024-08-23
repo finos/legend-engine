@@ -1,0 +1,246 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::core::runtime::*;
+import meta::pure::functions::collection::*;
+import meta::pure::mapping::*;
+import meta::relational::mapping::*;
+import meta::relational::metamodel::*;
+import meta::relational::runtime::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::postProcessor::cteExtraction::*;
+
+Class meta::relational::postProcessor::cteExtraction::ExtractSubQueriesAsCTEsPostProcessor extends meta::pure::alloy::connections::PostProcessor {}
+
+function meta::relational::postProcessor::cteExtraction::extractSubQueriesAsCTEsPostProcessor(s: ExtractSubQueriesAsCTEsPostProcessor[1]): PostProcessorWithParameter[1]
+{
+   ^PostProcessorWithParameter(parameters = [], postProcessor = extractSubQueriesAsCTEsPostProcessor__PostProcessor_1_);
+}
+
+function meta::relational::postProcessor::cteExtraction::extractSubQueriesAsCTEsPostProcessor(): PostProcessor[1]
+{
+   ^PostProcessor
+   (
+      sqlQueryPostProcessorForExecution = {|''},
+      sqlQueryPostProcessorForPlan = extractSubQueriesAsCTEsPostProcessor_SQLQuery_1__Mapping_$0_1$__Runtime_1__Database_$0_1$__ExecutionContext_1__PostProcessorParameter_MANY__PostProcessorResult_1_
+   )
+}
+
+function meta::relational::postProcessor::cteExtraction::extractSubQueriesAsCTEsPostProcessor(sql: SQLQuery[1], m: Mapping[0..1], runtime: Runtime[1], store: Database[0..1], exeCtx: meta::pure::runtime::ExecutionContext[1], params:	meta::relational::runtime::PostProcessorParameter[*]): PostProcessorResult[1]
+{
+  ^PostProcessorResult(query = $sql->match([select: SelectSQLQuery[1] | $select->extractSubqueriesAsCTEs(), a: Any[*] | $sql]))
+}
+
+function meta::relational::postProcessor::cteExtraction::extractSubqueriesAsCTEs(select: SelectSQLQuery[1]): SelectSQLQuery[1]
+{
+   let levelCountMap = $select->countSubqueriesAtDifferentLevels(1, ^Map<Integer, Integer>());
+   let subQueryTotalCount = $levelCountMap->keyValues().second->sum();
+
+   if ($subQueryTotalCount == 0,
+       | $select,
+       | let cteResultHolder = ^CTEExtractionResultHolder(currentSelect = $select, levelIndexMap = $levelCountMap->keyValues()->map(p | pair($p.first, 0))->newMap());
+         let processedResult = $cteResultHolder->extractSubqueriesAsCTEsRecursively(1);
+         let transformedSelect = $processedResult.currentSelect->convertToSelectWithCTEs();
+         ^$transformedSelect(commonTableExpressions = $processedResult.extractedCTEs);
+   );
+}
+
+function <<access.private>> meta::relational::postProcessor::cteExtraction::countSubqueriesAtDifferentLevels(select: SelectSQLQuery[1], level: Integer[1], levelCountMap: Map<Integer, Integer>[1]): Map<Integer, Integer>[1]
+{
+   if ($select.data->isNotEmpty(),
+       | let subSelects = $select.data->toOne()->allNodes()->map(n | $n.alias.relationalElement->match([s: SelectSQLQuery[1] | $s, a: Any[*] | []]));
+         let updatedLevelCountMap = $levelCountMap->put($level, $levelCountMap->get($level)->defaultIfEmpty(0)->toOne() + $subSelects->size());
+         $subSelects->fold({sub, agg | $sub->countSubqueriesAtDifferentLevels($level + 1, $agg)}, $updatedLevelCountMap);,
+       | $levelCountMap
+   )
+}
+
+Class <<access.private>> meta::relational::postProcessor::cteExtraction::CTEExtractionResultHolder
+{
+   currentSelect: SelectSQLQuery[1];
+   levelIndexMap: Map<Integer, Integer>[1];
+   extractedCTEs: CommonTableExpression[*];
+}
+
+function <<access.private>> meta::relational::postProcessor::cteExtraction::extractSubqueriesAsCTEsRecursively(input: CTEExtractionResultHolder[1], level: Integer[1]): CTEExtractionResultHolder[1]
+{
+   let select = $input.currentSelect;
+   if ($select.data->isNotEmpty(),
+       | let subSelectNodes = $select.data->toOne()->allNodes()->filter(n | $n.alias.relationalElement->instanceOf(SelectSQLQuery));
+         $subSelectNodes->fold({node, agg |
+            let currentSelect = $agg.currentSelect;
+            let nodeAlias = $node.alias;
+            let cteName = 'subquery_cte_' + toString($level) + '_' + toString($agg.levelIndexMap->get($level)->toOne() + 1);
+            let processedCteResult  = ^$agg(currentSelect = $nodeAlias.relationalElement->cast(@SelectSQLQuery))->extractSubqueriesAsCTEsRecursively($level + 1);
+            let cte = ^SelectCommonTableExpression(name = $cteName, sqlQuery = $processedCteResult.currentSelect);
+            let cteReference = ^CommonTableExpressionReference(name = $cteName);
+            ^$agg
+            (
+               currentSelect = ^$currentSelect(data = $currentSelect.data->toOne()->replaceTreeNode($node->meta::relational::functions::pureToSqlQuery::findOneNode($select.data->toOne(), $currentSelect.data->toOne()), ^$node(alias = ^$nodeAlias(relationalElement = $cteReference)))->cast(@RootJoinTreeNode)),
+               extractedCTEs = $processedCteResult.extractedCTEs->concatenate($cte),
+               levelIndexMap = $processedCteResult.levelIndexMap->put($level, $processedCteResult.levelIndexMap->get($level)->toOne() + 1)  
+            );
+         }, $input);,
+       | $input
+   );
+}
+
+function <<access.private>> meta::relational::postProcessor::cteExtraction::convertToSelectWithCTEs(s: SelectSQLQuery[1]): SelectSQLQueryWithCommonTableExpressions[1]
+{
+   $s->match([
+      withCTE: SelectSQLQueryWithCommonTableExpressions[1] | $withCTE,
+      select : SelectSQLQuery[1] | let targetClass = if($s->instanceOf(TdsSelectSqlQuery), | TdsSelectSQLQueryWithCommonTableExpressions, | SelectSQLQueryWithCommonTableExpressions);
+                                   let properties = $select->genericType().rawType->toOne()->cast(@Class<Any>)->hierarchicalAllProperties()->filter(p | $p->instanceOf(Property))->cast(@Property<Nil,Any|*>);
+                                   $targetClass->dynamicNew($properties->map(p | ^KeyValue(key = $p.name->toOne(), value = $p->eval($select))))->cast(@SelectSQLQueryWithCommonTableExpressions);
+   ])
+}
+
+function <<access.private>> meta::relational::postProcessor::cteExtraction::allNodes(r: RelationalTreeNode[1]): RelationalTreeNode[*]
+{
+   $r->concatenate($r->children()->map(x | $x->allNodes()))
+}
+
+
+
+###Pure
+import meta::core::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::external::store::relational::tests::*;
+import meta::pure::alloy::connections::alloy::specification::*;
+import meta::pure::alloy::connections::alloy::authentication::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::toString::*;
+import meta::relational::extension::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::postProcessor::cteExtraction::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::*;
+import meta::relational::tests::csv::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::postProcessor::cteExtraction::*;
+
+function <<test.BeforePackage>> meta::relational::tests::postProcessor::cteExtraction::setup(): Boolean[1]
+{
+   meta::relational::tests::createTablesAndFillDb();
+}
+
+function <<access.private>> meta::relational::tests::postProcessor::cteExtraction::testRuntimeWithCTEPP(): Runtime[1]
+{
+   ^Runtime
+   (
+      connectionStores = ^ConnectionStore(
+        element = meta::relational::tests::db,
+        connection = ^TestDatabaseConnection(
+           type = DatabaseType.H2,
+           sqlQueryPostProcessors = {s: SelectSQLQuery[1] | ^meta::pure::mapping::Result<SelectSQLQuery|1>(values = $s->extractSubqueriesAsCTEs())},
+           queryPostProcessorsWithParameter = [extractSubQueriesAsCTEsPostProcessor(^ExtractSubQueriesAsCTEsPostProcessor())]
+        )
+      )
+   )
+}
+
+function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::testNoSubQueries(): Boolean[1]
+{
+   let func = {|Trade.all()->filter(x | $x.id == 100)->project([x|$x.id, x|$x.quantity], ['TradeID', 'Quantity'])};
+   let result = execute($func, simpleRelationalMapping, testRuntimeWithCTEPP(), relationalExtensions());
+   assertSameSQL('select "root".ID as "TradeID", "root".quantity as "Quantity" from tradeTable as "root" where "root".ID = 100', $result);
+   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, testRuntime(), relationalExtensions());
+   assertEquals($resultWithoutCTEPP.values->toCSV(), $result.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::testSingleSubQueryFromView(): Boolean[1]
+{
+   let func = {|Trade.all()->filter(x | $x.id == 100)->project([x|$x.id, x|$x.quantity, x|$x.latestEventDate], ['TradeID', 'Quantity', 'LatestEventDate'])};
+   let result = execute($func, simpleRelationalMapping, testRuntimeWithCTEPP(), relationalExtensions());
+   assertSameSQL(
+      'WITH subquery_cte_1_1 AS (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" where "root".trade_id = 100 group by "root".trade_id) ' +
+      'select "root".ID as "TradeID", "root".quantity as "Quantity", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "LatestEventDate" from tradeTable as "root" left outer join subquery_cte_1_1 as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id and "tradeeventviewmaxtradeeventdate_0".trade_id = 100) where "root".ID = 100',
+      $result
+   );
+   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, testRuntime(), relationalExtensions());
+   assertEquals($resultWithoutCTEPP.values->toCSV(), $result.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::testSingleSubQueryFromOperations(): Boolean[1]
+{
+   let func = {|Trade.all()->project([x|$x.id, x|$x.quantity], ['TradeID', 'Quantity'])->limit(10)->filter(x | $x.getInteger('TradeID') == 100)};
+   let result = execute($func, simpleRelationalMapping, testRuntimeWithCTEPP(), relationalExtensions());
+   assertSameSQL(
+     'WITH subquery_cte_1_1 AS (select top 10 "root".ID as "TradeID", "root".quantity as "Quantity" from tradeTable as "root") ' +
+     'select "TradeID" as "TradeID", "Quantity" as "Quantity" from subquery_cte_1_1 as "subselect" where "TradeID" = 100',
+      $result
+   );
+   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, testRuntime(), relationalExtensions());
+   assertEquals($resultWithoutCTEPP.values->toCSV(), $result.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::testDeepSubQueries(): Boolean[1]
+{
+   let func = {|Trade.all()->project([x|$x.id, x|$x.quantity], ['TradeID', 'Quantity'])->limit(10)->filter(x | $x.getInteger('TradeID') < 100)->limit(5)->filter(x | $x.getInteger('TradeID') < 50)};
+   let result = execute($func, simpleRelationalMapping, testRuntimeWithCTEPP(), relationalExtensions());
+   assertSameSQL(
+     'WITH subquery_cte_2_1 AS (select top 10 "root".ID as "TradeID", "root".quantity as "Quantity" from tradeTable as "root"), ' +
+     'subquery_cte_1_1 AS (select top 5 "TradeID" as "TradeID", "Quantity" as "Quantity" from subquery_cte_2_1 as "subselect" where "TradeID" < 100) ' +
+     'select "TradeID" as "TradeID", "Quantity" as "Quantity" from subquery_cte_1_1 as "subselect" where "TradeID" < 50',
+      $result
+   );
+   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, testRuntime(), relationalExtensions());
+   assertEquals($resultWithoutCTEPP.values->toCSV(), $result.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::testMultipleSubQueries(): Boolean[1]
+{
+   let func = {|
+      Trade.all()->project([x|$x.id, x|$x.quantity], ['TradeID', 'Quantity'])->join(
+         Trade.all()->project([x|$x.id, x|$x.product.name], ['TradeID', 'ProductName']),
+         meta::relational::metamodel::join::JoinType.INNER,
+         ['TradeID']
+      )
+   };
+   let result = execute($func, simpleRelationalMapping, testRuntimeWithCTEPP(), relationalExtensions());
+   assertSameSQL(
+     'WITH subquery_cte_2_1 AS (select "root".ID as "TradeID", "root".quantity as "Quantity" from tradeTable as "root"), ' +
+     'subquery_cte_2_2 AS (select "root".ID as "TradeID", "producttable_0".NAME as "ProductName" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID)), ' +
+     'subquery_cte_1_1 AS (select "tradetable_1"."TradeID" as "TradeID", "tradetable_1"."Quantity" as "Quantity", "tradetable_3"."ProductName" as "ProductName" from subquery_cte_2_1 as "tradetable_1" inner join subquery_cte_2_2 as "tradetable_3" on ("tradetable_1"."TradeID" = "tradetable_3"."TradeID")) ' +
+     'select "tradetable_0"."TradeID" as "TradeID", "tradetable_0"."Quantity" as "Quantity", "tradetable_0"."ProductName" as "ProductName" from subquery_cte_1_1 as "tradetable_0"',
+      $result
+   );
+   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, testRuntime(), relationalExtensions());
+   assertEquals($resultWithoutCTEPP.values->toCSV(), $result.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::testComplexSubQueries(): Boolean[1]
+{
+   let func = {|
+      Trade.all()->project([x|$x.id, x|$x.quantity], ['TradeID', 'Quantity'])->limit(10)->filter(x | $x.getInteger('TradeID') < 100)->join(
+         Trade.all()->project([x|$x.id, x|$x.product.name], ['TradeID', 'ProductName']),
+         meta::relational::metamodel::join::JoinType.INNER,
+         ['TradeID']
+      )
+   };
+   let result = execute($func, simpleRelationalMapping, testRuntimeWithCTEPP(), relationalExtensions());
+   assertSameSQL(
+     'WITH subquery_cte_3_1 AS (select top 10 "root".ID as "TradeID", "root".quantity as "Quantity" from tradeTable as "root"), ' +
+     'subquery_cte_2_1 AS (select "TradeID" as "TradeID", "Quantity" as "Quantity" from subquery_cte_3_1 as "subselect" where "TradeID" < 100), ' +
+     'subquery_cte_2_2 AS (select "root".ID as "TradeID", "producttable_0".NAME as "ProductName" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID)), ' +
+     'subquery_cte_1_1 AS (select "tradetable_1"."TradeID" as "TradeID", "tradetable_1"."Quantity" as "Quantity", "tradetable_4"."ProductName" as "ProductName" from subquery_cte_2_1 as "tradetable_1" inner join subquery_cte_2_2 as "tradetable_4" on ("tradetable_1"."TradeID" = "tradetable_4"."TradeID")) ' +
+     'select "tradetable_0"."TradeID" as "TradeID", "tradetable_0"."Quantity" as "Quantity", "tradetable_0"."ProductName" as "ProductName" from subquery_cte_1_1 as "tradetable_0"',
+      $result
+   );
+   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, testRuntime(), relationalExtensions());
+   assertEquals($resultWithoutCTEPP.values->toCSV(), $result.values->toCSV());
+}

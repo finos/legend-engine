@@ -392,3 +392,5 @@ Class meta::protocols::pure::v1_33_0::metamodel::store::relational::SchemaNameMa
    in:String[1];
    out:String[1];
 }
+
+Class meta::protocols::pure::v1_33_0::metamodel::store::relational::postProcessor::ExtractSubQueriesAsCTEsPostProcessor extends meta::protocols::pure::v1_33_0::metamodel::store::relational::postProcessor::PostProcessor {}

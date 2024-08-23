@@ -57,6 +57,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.MiddleTierUserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.ExtractSubQueriesAsCTEsPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.RelationalMapperPostProcessor;
@@ -186,6 +187,7 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                 ProtocolSubTypeInfo.newBuilder(PostProcessor.class)
                         .withSubtype(MapperPostProcessor.class, "mapper")
                         .withSubtype(RelationalMapperPostProcessor.class, "relationalMapper")
+                        .withSubtype(ExtractSubQueriesAsCTEsPostProcessor.class, "ExtractSubQueriesAsCTEsPostProcessor")
                         .build(),
 
                 //Post Processor Parameter

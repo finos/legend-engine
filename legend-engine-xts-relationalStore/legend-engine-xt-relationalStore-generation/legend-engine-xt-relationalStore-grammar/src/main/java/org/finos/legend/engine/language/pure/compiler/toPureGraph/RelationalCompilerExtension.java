@@ -66,6 +66,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.flows.DatabaseAuthenticationFlowKey;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.ExtractSubQueriesAsCTEsPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.RelationalMapperPostProcessor;
@@ -112,7 +113,10 @@ import org.finos.legend.pure.generated.Root_meta_relational_metamodel_Relational
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_DatabaseMapper_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_SchemaMapper_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_TableMapper_Impl;
+import org.finos.legend.pure.generated.Root_meta_relational_postProcessor_cteExtraction_ExtractSubQueriesAsCTEsPostProcessor;
+import org.finos.legend.pure.generated.Root_meta_relational_postProcessor_cteExtraction_ExtractSubQueriesAsCTEsPostProcessor_Impl;
 import org.finos.legend.pure.generated.core_relational_relational_runtime_connection_postprocessor;
+import org.finos.legend.pure.generated.core_relational_relational_postprocessor_cteExtractionPostProcessor;
 import org.finos.legend.pure.m2.dsl.store.M2StorePaths;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
@@ -684,6 +688,13 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                 Root_meta_relational_runtime_PostProcessorWithParameter f =
                         core_relational_relational_runtime_connection_postprocessor.Root_meta_pure_alloy_connections_relationalMapperPostProcessor_RelationalMapperPostProcessor_1__PostProcessorWithParameter_1_(p, context.pureModel.getExecutionSupport());
 
+                return Tuples.pair(p, f);
+            }
+            else if (processor instanceof ExtractSubQueriesAsCTEsPostProcessor)
+            {
+                Root_meta_relational_postProcessor_cteExtraction_ExtractSubQueriesAsCTEsPostProcessor p = new Root_meta_relational_postProcessor_cteExtraction_ExtractSubQueriesAsCTEsPostProcessor_Impl("", null, context.pureModel.getClass("meta::relational::postProcessor::cteExtraction::ExtractSubQueriesAsCTEsPostProcessor"));
+                Root_meta_relational_runtime_PostProcessorWithParameter f =
+                        core_relational_relational_postprocessor_cteExtractionPostProcessor.Root_meta_relational_postProcessor_cteExtraction_extractSubQueriesAsCTEsPostProcessor_ExtractSubQueriesAsCTEsPostProcessor_1__PostProcessorWithParameter_1_(p, context.pureModel.getExecutionSupport());
                 return Tuples.pair(p, f);
             }
             return null;

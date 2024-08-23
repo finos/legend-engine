@@ -27,6 +27,7 @@ function meta::relational::functions::sqlQueryToString::h2::v1_4_200::createDbEx
       semiStructuredElementProcessor = processSemiStructuredElementForH2_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationForH2_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryDefault_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      selectSQLQueryWithCTEsProcessor = processSelectSQLQueryWithCTEsDefault_SelectSQLQueryWithCommonTableExpressions_1__SqlGenerationContext_1__Boolean_1__String_1_,
       upsertSQLQueryProcessor = processUpsertSQLQueryForH2_UpsertSQLQuery_1__SqlGenerationContext_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
