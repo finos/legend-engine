@@ -138,7 +138,7 @@ function <<test.BeforePackage>> meta::relational::tests::postProcessor::cteExtra
    meta::relational::tests::createTablesAndFillDb();
 }
 
-function <<access.private>> meta::relational::tests::postProcessor::cteExtraction::testRuntimeWithCTEPP(): Runtime[1]
+function meta::relational::tests::postProcessor::cteExtraction::testRuntimeWithCTEPP(): Runtime[1]
 {
    ^Runtime
    (
@@ -239,6 +239,21 @@ function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::te
      'subquery_cte_2_2 AS (select "root".ID as "TradeID", "producttable_0".NAME as "ProductName" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID)), ' +
      'subquery_cte_1_1 AS (select "tradetable_1"."TradeID" as "TradeID", "tradetable_1"."Quantity" as "Quantity", "tradetable_4"."ProductName" as "ProductName" from subquery_cte_2_1 as "tradetable_1" inner join subquery_cte_2_2 as "tradetable_4" on ("tradetable_1"."TradeID" = "tradetable_4"."TradeID")) ' +
      'select "tradetable_0"."TradeID" as "TradeID", "tradetable_0"."Quantity" as "Quantity", "tradetable_0"."ProductName" as "ProductName" from subquery_cte_1_1 as "tradetable_0"',
+      $result
+   );
+   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, testRuntime(), relationalExtensions());
+   assertEquals($resultWithoutCTEPP.values->toCSV(), $result.values->toCSV());
+}
+
+function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::testCorrelatedSubQueryIsolationStrategy(): Boolean[1]
+{
+   let func = {|
+      Person.all()->project([x|$x.firm.legalName, x|$x.firm.employeeByLastName('Smith').firstName], ['Legal Name','Employee Name'])
+   };
+   let result = execute($func, simpleRelationalMapping, testRuntimeWithCTEPP(), relationalExtensions());
+   assertSameSQL(
+     'WITH subquery_cte_1_1 AS (select "persontable_2".FIRMID as FIRMID, "persontable_2".FIRSTNAME as FIRSTNAME from personTable as "persontable_2" where "persontable_2".LASTNAME = \'Smith\') ' +
+     'select "firmtable_0".LEGALNAME as "Legal Name", "persontable_1".FIRSTNAME as "Employee Name" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join subquery_cte_1_1 as "persontable_1" on ("firmtable_0".ID = "persontable_1".FIRMID)',
       $result
    );
    let resultWithoutCTEPP = execute($func, simpleRelationalMapping, testRuntime(), relationalExtensions());
