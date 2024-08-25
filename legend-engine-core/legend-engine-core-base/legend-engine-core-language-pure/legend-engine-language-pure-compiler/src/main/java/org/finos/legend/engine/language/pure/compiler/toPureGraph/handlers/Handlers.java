@@ -646,6 +646,51 @@ public class Handlers
 
     };
 
+    public static final ParametersInference DistinctInference = (parameters, ov, cc, pc) ->
+    {
+        ValueSpecification firstProcessedParameter = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        MutableList<ValueSpecification> result = Lists.mutable.with(firstProcessedParameter);
+        GenericType gt = firstProcessedParameter._genericType();
+
+        if (Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(gt._rawType().getName()))
+        {
+            processColumn(parameters.get(1), gt, cc);
+            result.with(parameters.get(1).accept(new ValueSpecificationBuilder(cc, ov, pc)));
+        }
+        else
+        {
+            throw new RuntimeException("Not possible!");
+        }
+        return result;
+    };
+
+    public static TypeAndMultiplicity DistinctReturnInference(List<ValueSpecification> ps, PureModel pureModel)
+    {
+        ProcessorSupport processorSupport = pureModel.getExecutionSupport().getProcessorSupport();
+        try
+        {
+            RelationType<?> relType = _RelationType.build(
+                    Lists.mutable
+                            .withAll((RichIterable<Column<?, ?>>) ((RelationType<?>) ps.get(1)._genericType()._typeArguments().getFirst()._rawType())._columns())
+                            .collect(c -> (CoreInstance) _Column.getColumnInstance(c._name(), false, _Column.getColumnType(c), _Column.getColumnMultiplicity(c), null, processorSupport)),
+                    null,
+                    processorSupport
+            );
+            return res(
+                    new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType))
+                            ._rawType(pureModel.getType(M3Paths.Relation))
+                            ._typeArguments(Lists.fixedSize.of(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType))._rawType(relType))),
+                    "one",
+                    pureModel
+            );
+        }
+        catch (PureCompilationException e)
+        {
+            throw new EngineException(e.getInfo(), null, EngineErrorType.COMPILATION);
+        }
+
+    }
+
     private static void processColumn(Object parameter, GenericType gt, CompileContext cc)
     {
         if (parameter instanceof ClassInstance)
@@ -1001,7 +1046,7 @@ public class Handlers
         register("meta::pure::functions::collection::getAllForEachDate_Class_1__Date_MANY__T_MANY_", false, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"));
 
         register(m(
-                        m(h("meta::pure::functions::relation::distinct_Relation_1__ColSpecArray_1__Relation_1_", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> true)),
+                        grp(DistinctInference, h("meta::pure::functions::relation::distinct_Relation_1__ColSpecArray_1__Relation_1_", true, ps -> DistinctReturnInference(ps, this.pureModel), ps -> ps.size() == 2)),
                         m(
                                 h("meta::pure::tds::distinct_TabularDataSet_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name())),
                                 h("meta::pure::functions::collection::distinct_T_MANY__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true)

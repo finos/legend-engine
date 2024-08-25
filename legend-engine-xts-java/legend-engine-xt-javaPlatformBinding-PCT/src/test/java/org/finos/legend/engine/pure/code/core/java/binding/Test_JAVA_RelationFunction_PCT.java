@@ -71,6 +71,11 @@ public class Test_JAVA_RelationFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::relation::tests::rank::testOLAPWithPartitionAndOrderRank_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpec_1__Relation_1_ is not supported yet!\""),
             one("meta::pure::functions::relation::tests::rowNumber::testOLAPWithPartitionAndRowNumber_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpec_1__Relation_1_ is not supported yet!\""),
 
+            // Distinct
+            one("meta::pure::functions::relation::tests::distinct::testDistinctAll_Function_1__Boolean_1_", "\"meta::pure::functions::relation::distinct_Relation_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::distinct::testDistinctMultiple_Function_1__Boolean_1_", "\"meta::pure::functions::relation::distinct_Relation_1__ColSpecArray_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::distinct::testDistinctSingle_Function_1__Boolean_1_", "\"meta::pure::functions::relation::distinct_Relation_1__ColSpecArray_1__Relation_1_ is not supported yet!\""),
+
             // Filter
             pack("meta::pure::functions::relation::tests::filter", "\"meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_ is not supported yet!\""),
 

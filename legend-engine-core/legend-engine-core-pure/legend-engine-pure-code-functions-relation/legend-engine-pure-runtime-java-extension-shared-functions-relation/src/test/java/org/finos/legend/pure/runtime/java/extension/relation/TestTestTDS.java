@@ -104,20 +104,20 @@ public class TestTestTDS
                 "1, Pierre, F";
         TestTDS tds = new TestTDSImpl(initialTDS);
 
-        Assert.assertEquals("id, name, otherOne\n" +
-                "1, Pierre, F\n" +
-                "2, Bla, B\n" +
-                "3, Ephrim, C\n" +
-                "4, Simple, D", tds.distinct(Lists.mutable.with("id")).toString());
+        Assert.assertEquals("id\n" +
+                "1\n" +
+                "2\n" +
+                "3\n" +
+                "4", tds.distinct(Lists.mutable.with("id")).toString());
 
-        Assert.assertEquals("id, name, otherOne\n" +
-                "1, Pierre, F\n" +
-                "2, Bla, B\n" +
-                "2, Neema, F\n" +
-                "3, Ephrim, C\n" +
-                "3, Nop, E\n" +
-                "3, Ok, D\n" +
-                "4, Simple, D", tds.distinct(Lists.mutable.with("id", "name")).toString());
+        Assert.assertEquals("id, name\n" +
+                "1, Pierre\n" +
+                "2, Bla\n" +
+                "2, Neema\n" +
+                "3, Ephrim\n" +
+                "3, Nop\n" +
+                "3, Ok\n" +
+                "4, Simple", tds.distinct(Lists.mutable.with("id", "name")).toString());
 
         Assert.assertEquals("id, name, otherOne\n" +
                 "4, Simple, D\n" +
