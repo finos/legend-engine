@@ -48,7 +48,7 @@ public class Distinct extends Shared
     {
         CoreInstance returnGenericType = getReturnGenericType(resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionToUseInStack, processorSupport);
         TestTDS tds = getTDS(params, 0, processorSupport);
-        MutableList<String> columns = Instance.getValueForMetaPropertyToManyResolved(params.get(1), M3Properties.values, processorSupport).flatCollect(c -> c.getValueForMetaPropertyToMany("names")).collect(CoreInstance::getName).toList();
+        MutableList<String> columns = params.size() == 1 ? tds.getColumnNames() : Instance.getValueForMetaPropertyToManyResolved(params.get(1), M3Properties.values, processorSupport).flatCollect(c -> c.getValueForMetaPropertyToMany("names")).collect(CoreInstance::getName).toList();
         return ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(tds.distinct(columns), returnGenericType, repository, processorSupport), false, processorSupport);
     }
 }

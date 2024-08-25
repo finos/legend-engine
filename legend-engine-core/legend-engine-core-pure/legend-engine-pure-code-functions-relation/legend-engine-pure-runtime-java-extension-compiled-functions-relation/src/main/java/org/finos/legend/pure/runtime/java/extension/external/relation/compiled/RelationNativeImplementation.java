@@ -79,6 +79,12 @@ public class RelationNativeImplementation
         return list;
     }
 
+    public static <T> Relation<? extends T> distinct(Relation<? extends T> rel, ExecutionSupport es)
+    {
+        ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
+        return new TDSContainer((TestTDSCompiled) RelationNativeImplementation.getTDS(rel).distinct(RelationNativeImplementation.getTDS(rel).getColumnNames()), ps);
+    }
+
     public static <T> Relation<? extends T> distinct(Relation<? extends T> rel, ColSpecArray<?> columns, ExecutionSupport es)
     {
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();

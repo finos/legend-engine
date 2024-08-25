@@ -671,7 +671,8 @@ public abstract class TestTDS
     public TestTDS distinct(MutableList<String> columns)
     {
         Pair<TestTDS, MutableList<Pair<Integer, Integer>>> res = this.sort(columns.collect(c -> new SortInfo(c, SortDirection.ASC)));
-        return res.getOne()._distinct(res.getTwo());
+        TestTDS result = res.getOne()._distinct(res.getTwo());
+        return result.select(columns.toSet());
     }
 
     public TestTDS _distinct(MutableList<Pair<Integer, Integer>> ranges)
@@ -1149,7 +1150,7 @@ public abstract class TestTDS
     public long ntile(int row, long tiles)
     {
         int size = (int) this.getRowCount();
-        return (long)((double)row * tiles / size) + 1;
+        return (long) ((double) row * tiles / size) + 1;
     }
 
     public double cumulativeDistribution(MutableList<SortInfo> sorts, int row)
@@ -1158,7 +1159,7 @@ public abstract class TestTDS
         int size = (int) this.getRowCount();
         MutableList<?> baseRow = fetch(this, columns, row);
         int rank = findFirstPrecedentDifferentRow(row, this, columns, baseRow);
-        return (double)(rank + 1) / size;
+        return (double) (rank + 1) / size;
     }
 
     public int nth(int row, Window w, long l)
@@ -1168,7 +1169,7 @@ public abstract class TestTDS
 
         if (offset <= high)
         {
-            return (int)offset;
+            return (int) offset;
         }
         else
         {

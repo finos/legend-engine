@@ -67,6 +67,7 @@ public class RelationExtensionCompiled implements CompiledExtension
                 new GroupByArray(),
                 new Slice(),
                 new Distinct(),
+                new DistinctAll(),
                 new Select(),
                 new SelectArray(),
                 new SelectAll(),
