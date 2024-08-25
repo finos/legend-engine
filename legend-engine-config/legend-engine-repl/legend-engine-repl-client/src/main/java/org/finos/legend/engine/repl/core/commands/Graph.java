@@ -108,21 +108,4 @@ public class Graph implements Command
         }
         return null;
     }
-
-    public static void drawPath(AttributedStringBuilder ab, String path)
-    {
-        MutableList<String> spl = Lists.mutable.with(path.split("::"));
-        if (path.endsWith("::"))
-        {
-            spl.add("");
-        }
-        if (spl.size() == 1)
-        {
-            drawPath(ab, null, spl.get(0));
-        }
-        else
-        {
-            drawPath(ab, spl.subList(0, spl.size() - 1).makeString("::"), spl.getLast());
-        }
-    }
 }

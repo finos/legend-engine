@@ -18,8 +18,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.block.predicate.checked.CheckedPredicate;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.repl.autocomplete.CompleterExtension;
 import org.finos.legend.engine.repl.client.jline3.JLine3Completer;
@@ -33,6 +36,9 @@ import org.finos.legend.engine.repl.core.legend.LocalLegendInterface;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.m3.pct.aggregate.generation.DocumentationGeneration;
+import org.finos.legend.pure.m3.pct.aggregate.model.Documentation;
+import org.finos.legend.pure.m3.pct.aggregate.model.FunctionDocumentation;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
@@ -44,6 +50,7 @@ import org.jline.utils.AttributedStyle;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.jline.jansi.Ansi.ansi;
 import static org.jline.reader.LineReader.BLINK_MATCHING_PAREN;
@@ -59,6 +66,8 @@ public class Client
     private final ModelState state;
     private final PlanExecutor planExecutor;
     private final Path homeDirectory;
+    private final Documentation documentation;
+    private final MutableMap<String, FunctionDocumentation> functionDocIndex = Maps.mutable.empty();
 
     private boolean debug = false;
 
@@ -84,10 +93,11 @@ public class Client
         this.terminal = TerminalBuilder.terminal();
         this.homeDirectory = homeDirectory;
 
+        this.documentation = DocumentationGeneration.buildDocumentation();
         this.initialize();
         replExtensions.forEach(e -> e.initialize(this));
 
-        this.printDebug("Legend REPL v" + DeploymentStateAndVersions.sdlc.buildVersion + " (" + DeploymentStateAndVersions.sdlc.commitIdAbbreviated + ")");
+        this.printDebug("[DEV] Legend REPL v" + DeploymentStateAndVersions.sdlc.buildVersion + " (" + DeploymentStateAndVersions.sdlc.commitIdAbbreviated + ")");
         if (System.getProperty("legend.repl.initializationMessage") != null)
         {
             this.printDebug(StringEscapeUtils.unescapeJava(System.getProperty("legend.repl.initializationMessage")));
@@ -103,6 +113,7 @@ public class Client
                         Lists.mutable.with(
                                 new Ext(this),
                                 new Debug(this),
+                                new Doc(this),
                                 new Graph(this),
                                 new Execute(this)
                         )
@@ -139,6 +150,29 @@ public class Client
         this.terminal.flush();
         ((Execute) this.commands.getLast()).execute("1+1");
         this.printInfo("Ready!\n");
+    }
+
+    private void initialize()
+    {
+        // Index function documentation by path and remove platform only function
+        this.documentation.functionsDocumentation.forEach(doc ->
+                doc.functionDefinition.signatures = ListIterate.select(doc.functionDefinition.signatures, signature -> !signature.platformOnly));
+        this.documentation.functionsDocumentation = ListIterate.reject(this.documentation.functionsDocumentation, (doc) -> doc.functionDefinition.signatures.isEmpty());
+        this.documentation.functionsDocumentation.forEach(doc ->
+                this.functionDocIndex.put(doc.functionDefinition._package + "::" + doc.functionDefinition.name, doc));
+
+        try
+        {
+            Path homeDir = this.getHomeDir();
+            if (Files.notExists(homeDir))
+            {
+                Files.createDirectories(homeDir);
+            }
+        }
+        catch (Exception e)
+        {
+            this.printError("Failed to create home directory at: " + this.getHomeDir().toString());
+        }
     }
 
     public void loop()
@@ -266,22 +300,6 @@ public class Client
         this.terminal.writer().println(ansi().fgRed().a(message).reset());
     }
 
-    private void initialize()
-    {
-        try
-        {
-            Path homeDir = this.getHomeDir();
-            if (Files.notExists(homeDir))
-            {
-                Files.createDirectories(homeDir);
-            }
-        }
-        catch (Exception e)
-        {
-            this.printError("Failed to create home directory at: " + this.getHomeDir().toString());
-        }
-    }
-
     private void persistHistory()
     {
         try
@@ -292,6 +310,16 @@ public class Client
         {
             // ignore
         }
+    }
+
+    public List<String> getDocumentedFunctions()
+    {
+        return this.functionDocIndex.keysView().toSortedList();
+    }
+
+    public FunctionDocumentation getFunctionDocumentation(String path)
+    {
+        return this.functionDocIndex.get(path);
     }
 
     public Path getHomeDir()
