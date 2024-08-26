@@ -30,5 +30,6 @@
         <module>legend-engine-repl-client</module>
         <module>legend-engine-repl-relational</module>
         <module>legend-engine-repl-data-cube</module>
+        <module>legend-engine-repl-app-assembly</module>
     </modules>
 </project>
