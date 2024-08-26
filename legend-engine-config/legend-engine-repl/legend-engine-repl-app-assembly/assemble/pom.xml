@@ -26,6 +26,15 @@
     <version>local-pom</version>
     <packaging>pom</packaging>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <scope>runtime</scope>
+            <version>${slf4j.version}</version>
+        </dependency>
+    </dependencies>
+
     <profiles>
         <profile>
             <id>relational</id>
