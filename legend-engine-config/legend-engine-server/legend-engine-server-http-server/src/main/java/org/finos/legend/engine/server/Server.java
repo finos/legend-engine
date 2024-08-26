@@ -56,6 +56,7 @@ import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticatio
 import org.finos.legend.engine.entitlement.services.EntitlementModelObjectMapperFactory;
 import org.finos.legend.engine.entitlement.services.EntitlementServiceExtension;
 import org.finos.legend.engine.entitlement.services.EntitlementServiceExtensionLoader;
+import org.finos.legend.engine.execution.test.data.generation.api.TestDataGenerationAPI;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.loaders.CodeGenerators;
@@ -431,6 +432,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         //TestData Generation
         environment.jersey().register(new TestDataGeneration(modelManager));
+        environment.jersey().register(new TestDataGenerationAPI(modelManager, planExecutor));
 
         enableCors(environment, serverConfiguration);
     }
