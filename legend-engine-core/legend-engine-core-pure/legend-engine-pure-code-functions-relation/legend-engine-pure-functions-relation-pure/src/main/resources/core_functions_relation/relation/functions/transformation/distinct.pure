@@ -62,7 +62,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::distinct::testDist
                   '   1,qw\n'+
                   '   3,ewe\n'+
                   '   5,weq\n'+
-                  '#', $res->sort(~val->ascending())->toString());
+                  '#', $res->sort([ascending(~val), ascending(~str)])->toString());
 }
 
 function <<PCT.test>> meta::pure::functions::relation::tests::distinct::testDistinctAll<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
