@@ -80,8 +80,8 @@ public class RelationalReplExtension implements ReplExtension
     public MutableList<Command> getExtraCommands()
     {
         return Lists.mutable.with(
-                new DB(this.client, this),
-                new Load(this.client, this),
+                new DB(this.client),
+                new Load(this.client),
                 new Drop(this.client),
                 new Cache(this.client)
         );

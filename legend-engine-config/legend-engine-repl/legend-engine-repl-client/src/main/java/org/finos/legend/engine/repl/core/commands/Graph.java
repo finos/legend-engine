@@ -30,8 +30,6 @@ import org.finos.legend.engine.repl.core.Command;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
-import org.jline.utils.AttributedStringBuilder;
-import org.jline.utils.AttributedStyle;
 
 public class Graph implements Command
 {
@@ -67,15 +65,9 @@ public class Graph implements Command
                 ListIterate.forEach(
                         ListIterate.collect(
                                 ListIterate.select(d.getElements(), c -> !c._package.equals("__internal__")),
-                                c ->
-                                {
-                                    AttributedStringBuilder ab = new AttributedStringBuilder();
-                                    ab.append("   ");
-                                    drawPath(ab, c._package, c.name);
-                                    return ab.toAnsi();
-                                }
+                                c -> "  " + (c._package == null || c._package.isEmpty() ? "" : c._package + "::") + c.name
                         ),
-                        e -> this.client.printInfo(e));
+                        this.client::println);
             }
             else
             {
@@ -83,19 +75,11 @@ public class Graph implements Command
                 PackageableElement element = ListIterate.select(d.getElements(), c -> c.getPath().equals(showArgs.getFirst())).getFirst();
                 Section section = LazyIterate.selectInstancesOf(d.getElements(), SectionIndex.class).flatCollect(c -> c.sections).select(c -> c.elements.contains(PureGrammarComposerUtility.convertPath(element.getPath()))).getFirst();
                 PureGrammarComposer composer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
-                this.client.printInfo(composer.render(element, section.parserName));
+                this.client.println(composer.render(element, section.parserName));
             }
             return true;
         }
         return false;
-    }
-
-    public static void drawPath(AttributedStringBuilder ab, String _package, String name)
-    {
-        ab.style(new AttributedStyle().foreground(AttributedStyle.WHITE).italic());
-        ab.append(_package == null || _package.isEmpty() ? "" : _package + "::");
-        ab.style(new AttributedStyle().foreground(AttributedStyle.WHITE).italic());
-        ab.append(name);
     }
 
     @Override

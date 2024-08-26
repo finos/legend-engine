@@ -23,7 +23,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
-import org.finos.legend.engine.repl.relational.RelationalReplExtension;
 import org.finos.legend.engine.repl.relational.shared.ConnectionHelper;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
@@ -36,12 +35,10 @@ import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getT
 public class DB implements Command
 {
     private final Client client;
-    private final RelationalReplExtension relationalReplExtension;
 
-    public DB(Client client, RelationalReplExtension relationalReplExtension)
+    public DB(Client client)
     {
         this.client = client;
-        this.relationalReplExtension = relationalReplExtension;
     }
 
     @Override
@@ -72,7 +69,7 @@ public class DB implements Command
 
             try (Connection connection = ConnectionHelper.getConnection(databaseConnection, client.getPlanExecutor()))
             {
-                this.client.printInfo(
+                this.client.println(
                         getTables(connection).collect(c -> c.schema + "." + c.name + "(" + c.columns.collect(col -> col.name + " " + col.type).makeString(", ") + ")").makeString("\n")
                 );
             }

@@ -55,7 +55,7 @@ public class Doc implements Command
             FunctionDocumentation functionDocumentation = this.client.getFunctionDocumentation(path);
             if (functionDocumentation != null)
             {
-                client.printInfo(DocumentationHelper.generateANSIFunctionDocumentation(functionDocumentation));
+                client.println(DocumentationHelper.generateANSIFunctionDocumentation(functionDocumentation));
             }
             else
             {

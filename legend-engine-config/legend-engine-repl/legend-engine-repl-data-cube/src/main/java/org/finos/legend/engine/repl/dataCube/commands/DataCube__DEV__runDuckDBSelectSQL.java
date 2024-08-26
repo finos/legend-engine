@@ -87,8 +87,8 @@ public class DataCube__DEV__runDuckDBSelectSQL implements Command
                         columnNames.add(result.getMetaData().getColumnLabel(i));
                         columnTypes.add(result.getMetaData().getColumnTypeName(i));
                     }
-                    this.client.printInfo("Executed SELECT SQL: '" + expression + "'");
-                    this.client.printInfo(prettyGridPrint(result, columnNames, columnNames, 40, 60));
+                    this.client.println("Executed SELECT SQL: '" + expression + "'");
+                    this.client.println(prettyGridPrint(result, columnNames, columnNames, 40, 60));
                 }
             }
 

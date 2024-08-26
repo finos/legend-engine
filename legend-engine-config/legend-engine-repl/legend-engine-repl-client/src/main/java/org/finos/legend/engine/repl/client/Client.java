@@ -47,12 +47,14 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
+import org.jline.utils.InfoCmp;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import static org.jline.jansi.Ansi.ansi;
+import static org.finos.legend.engine.repl.shared.REPLHelper.ansiDim;
+import static org.finos.legend.engine.repl.shared.REPLHelper.ansiRed;
 import static org.jline.reader.LineReader.BLINK_MATCHING_PAREN;
 
 public class Client
@@ -103,7 +105,7 @@ public class Client
             this.printDebug(StringEscapeUtils.unescapeJava(System.getProperty("legend.repl.initializationMessage")));
         }
         this.printDebug("Press 'Enter' or type 'help' to see the list of available commands.");
-        this.printInfo("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
+        this.println("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
 
         // NOTE: the order here matters, the default command 'help' should always go first
         // and "catch-all" command 'execute' should always go last
@@ -146,10 +148,10 @@ public class Client
                 .completer(new JLine3Completer(this.commands))
                 .build();
 
-        this.printInfo("Warming up...");
+        this.println("Warming up...");
         this.terminal.flush();
         ((Execute) this.commands.getLast()).execute("1+1");
-        this.printInfo("Ready!\n");
+        this.println("Ready!\n");
     }
 
     private void initialize()
@@ -188,28 +190,33 @@ public class Client
                     this.forceExit();
                     break;
                 }
-
-                this.reader.getHistory().add(line);
-
-                this.commands.detect(new CheckedPredicate<Command>()
+                else if (line.equalsIgnoreCase("clear"))
                 {
-                    @Override
-                    public boolean safeAccept(Command c) throws Exception
+                    this.clearScreen();
+                }
+                else
+                {
+                    this.reader.getHistory().add(line);
+                    this.commands.detect(new CheckedPredicate<Command>()
                     {
-                        try
+                        @Override
+                        public boolean safeAccept(Command c) throws Exception
                         {
-                            return c.process(line);
+                            try
+                            {
+                                return c.process(line);
+                            }
+                            catch (RuntimeException e)
+                            {
+                                throw e;
+                            }
+                            catch (Exception e)
+                            {
+                                throw new RuntimeException(e);
+                            }
                         }
-                        catch (RuntimeException e)
-                        {
-                            throw e;
-                        }
-                        catch (Exception e)
-                        {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                });
+                    });
+                }
             }
             catch (EngineException e)
             {
@@ -262,16 +269,13 @@ public class Client
             {
                 String beg = line.substring(0, e_start - 1);
                 String mid = line.substring(e_start - 1, e_end);
-                String end = line.substring(e_end, line.length());
+                String end = line.substring(e_end);
                 AttributedStringBuilder ab = new AttributedStringBuilder();
-                ab.style(new AttributedStyle().underlineOff().foregroundOff());
                 ab.append(beg);
-                ab.style(new AttributedStyle().underline().foreground(AttributedStyle.RED));
-                ab.append(mid);
-                ab.style(new AttributedStyle().underlineOff().foregroundOff());
+                ab.style(new AttributedStyle().underline());
+                ab.append(ansiRed(mid));
                 ab.append(end);
-                this.printInfo("");
-                this.printInfo(ab.toAnsi());
+                this.println(ab.toAnsi());
             }
         }
         catch (Exception ex)
@@ -285,19 +289,31 @@ public class Client
         }
     }
 
-    public void printDebug(String message)
+    public void clearScreen()
     {
-        this.terminal.writer().println(ansi().fgBrightBlack().a(message).reset());
+        // See https://github.com/jline/jline3/issues/418
+        this.terminal.puts(InfoCmp.Capability.clear_screen);
+        this.terminal.flush();
     }
 
-    public void printInfo(String message)
+    public void print(String message)
+    {
+        this.terminal.writer().print(message);
+    }
+
+    public void println(String message)
     {
         this.terminal.writer().println(message);
     }
 
+    public void printDebug(String message)
+    {
+        this.terminal.writer().println(ansiDim(message));
+    }
+
     public void printError(String message)
     {
-        this.terminal.writer().println(ansi().fgRed().a(message).reset());
+        this.terminal.writer().println(ansiRed(message));
     }
 
     private void persistHistory()
@@ -370,6 +386,11 @@ public class Client
     public ObjectMapper getObjectMapper()
     {
         return objectMapper;
+    }
+
+    public void runCommandInBackground(String command)
+    {
+        this.reader.addCommandsInBuffer(Lists.mutable.with(command));
     }
 
     public String getLastCommand()

@@ -111,7 +111,7 @@ public class Show implements Command
     {
         try
         {
-            client.printInfo(replServer.getUrl());
+            client.println(replServer.getUrl());
             if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
             {
                 Desktop.getDesktop().browse(URI.create(replServer.getUrl()));
