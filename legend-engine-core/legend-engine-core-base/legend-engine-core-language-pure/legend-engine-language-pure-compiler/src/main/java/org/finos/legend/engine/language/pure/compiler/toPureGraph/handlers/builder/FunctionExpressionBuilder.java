@@ -28,10 +28,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CSt
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
+import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.type.Type;
 
 import java.util.List;
@@ -62,15 +64,32 @@ public abstract class FunctionExpressionBuilder
     private boolean comp(VariableExpression vv, org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification vs, PureModel pureModel, ProcessingContext processingContext)
     {
         boolean isSignatureFunction = vv._genericType()._rawType() != null && Type.subTypeOf(vv._genericType()._rawType(), pureModel.getType("meta::pure::metamodel::function::Function"), pureModel.getExecutionSupport().getProcessorSupport());
-        boolean isParamFunction = vs instanceof Lambda || (vs instanceof ClassInstance && ((ClassInstance) vs).type.equals("path")) || isVariableSubtypeOfFunction(vs, processingContext, pureModel) || (vs instanceof Collection && ((Collection) vs).values.stream().allMatch(v -> v instanceof Lambda || (v instanceof ClassInstance && ((ClassInstance) v).type.equals("path")) || isVariableSubtypeOfFunction(v, processingContext, pureModel)));
-
+        boolean isParamFunction = vs instanceof Lambda ||
+                                  (vs instanceof ClassInstance && ((ClassInstance) vs).type.equals("path")) ||
+                                  isPackageableElementSubtypeOfFunction(vs, processingContext, pureModel) ||
+                                  isVariableSubtypeOfFunction(vs, processingContext, pureModel) ||
+                                  (vs instanceof Collection && ((Collection) vs).values.stream().allMatch(v -> v instanceof Lambda || (v instanceof ClassInstance && ((ClassInstance) v).type.equals("path")) || isVariableSubtypeOfFunction(v, processingContext, pureModel)));
         boolean isParamEmpty = vs instanceof Collection && ((Collection) vs).values.isEmpty();
         return isParamEmpty || (isSignatureFunction && isParamFunction) || (!isSignatureFunction && !isParamFunction);
     }
 
+    private boolean isPackageableElementSubtypeOfFunction(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification valueSpecification, ProcessingContext processingContext, PureModel pureModel)
+    {
+        return (valueSpecification instanceof PackageableElementPtr
+                    && pureModel.getExecutionSupport().getProcessorSupport().package_getByUserPath(((PackageableElementPtr) valueSpecification).fullPath) != null
+                    && Type.subTypeOf(
+                            pureModel.getExecutionSupport().getProcessorSupport().package_getByUserPath(((PackageableElementPtr) valueSpecification).fullPath).getClassifier(),
+                            pureModel.getExecutionSupport().getProcessorSupport().package_getByUserPath(M3Paths.Function),
+                            pureModel.getExecutionSupport().getProcessorSupport()
+                    )
+                );
+    }
+
     private boolean isVariableSubtypeOfFunction(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification valueSpecification, ProcessingContext processingContext, PureModel pureModel)
     {
-        return (valueSpecification instanceof Variable && Type.subTypeOf(processingContext.getInferredVariable(((Variable) valueSpecification).name)._genericType()._rawType(), pureModel.getType("meta::pure::metamodel::function::Function"), pureModel.getExecutionSupport().getProcessorSupport()));
+        return (valueSpecification instanceof Variable
+                && processingContext.getInferredVariable(((Variable) valueSpecification).name) != null
+                && Type.subTypeOf(processingContext.getInferredVariable(((Variable) valueSpecification).name)._genericType()._rawType(), pureModel.getType("meta::pure::metamodel::function::Function"), pureModel.getExecutionSupport().getProcessorSupport()));
     }
 
     public abstract MutableList<FunctionHandler> handlers();

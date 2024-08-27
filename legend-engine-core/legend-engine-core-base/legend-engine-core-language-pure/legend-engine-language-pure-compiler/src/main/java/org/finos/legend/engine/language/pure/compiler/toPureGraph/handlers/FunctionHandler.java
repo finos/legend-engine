@@ -31,12 +31,14 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.G
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
+import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.type.Type;
 
 import java.util.List;
 
 public class FunctionHandler
 {
+    private final String _package;
     private final String fullName;
     private final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object> func;
     private final String functionSignature;
@@ -65,6 +67,7 @@ public class FunctionHandler
     public FunctionHandler(PureModel pureModel, String name, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object> func, ReturnInference returnInference, ResolveTypeParameterInference resolvedTypeParametersInference, Dispatch dispatch)
     {
         this.pureModel = pureModel;
+        this._package = PackageableElement.getUserPathForPackageableElement(((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) func)._package());
         this.func = func;
         this.functionSignature = func._name();
         this.fullName = name;
@@ -114,6 +117,11 @@ public class FunctionHandler
     public Dispatch getDispatch()
     {
         return dispatch;
+    }
+
+    public String getPackage()
+    {
+        return this._package;
     }
 
     public String getFunctionSignature()

@@ -962,6 +962,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   denseRank,
   distinct,
   divide,
+  divideRound,
   encodeBase64,
   endsWith,
   equal,

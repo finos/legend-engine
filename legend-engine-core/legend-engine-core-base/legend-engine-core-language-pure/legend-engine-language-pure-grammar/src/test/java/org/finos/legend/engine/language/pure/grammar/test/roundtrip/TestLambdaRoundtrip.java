@@ -212,6 +212,19 @@ public class TestLambdaRoundtrip
     }
 
     @Test
+    public void testLambdaGroupingLeftSide()
+    {
+        testLambda("|(1+2)->process();","|process(1 + 2)");
+    }
+
+
+    @Test
+    public void testGroup()
+    {
+        testLambda("|5 * (1 + 2)");
+    }
+
+    @Test
     public void testLambdaWithAnd()
     {
         testLambda("|(1 < 2) && (2 < 3)");

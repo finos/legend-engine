@@ -109,6 +109,7 @@ import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_P
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_Table_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_View_Impl;
 import org.finos.legend.pure.generated.core_pure_model_modelUnit;
+import org.finos.legend.pure.m2.relational.M2RelationalPaths;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningFunctions;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningStereotype;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.Pair;
@@ -157,6 +158,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Relation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.View;
+import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
@@ -610,7 +612,7 @@ public class HelperRelationalBuilder
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasColumn> selfJoinTargets = Lists.mutable.empty();
         Operation op = (Operation) processRelationalOperationElement(srcJoin.operation, context, aliasMap, selfJoinTargets);
         MutableList<TableAlias> aliases = Lists.mutable.withAll(aliasMap.values());
-        Join join = new Root_meta_relational_metamodel_join_Join_Impl(srcJoin.name, SourceInformationHelper.toM3SourceInformation(srcJoin.sourceInformation), null)
+        Join join = new Root_meta_relational_metamodel_join_Join_Impl(srcJoin.name, SourceInformationHelper.toM3SourceInformation(srcJoin.sourceInformation), context.pureModel.getClass(M2RelationalPaths.Join))
                 ._name(srcJoin.name);
         if (aliases.size() == 2)
         {
@@ -657,9 +659,20 @@ public class HelperRelationalBuilder
                 selfJoinTarget._column(col);
             }
         }
-        join._aliases(Lists.fixedSize.of(new Root_meta_pure_functions_collection_Pair_Impl<TableAlias, TableAlias>("")._first(aliases.get(0))._second(aliases.get(1)),
-                        new Root_meta_pure_functions_collection_Pair_Impl<TableAlias, TableAlias>("")._first(aliases.get(1))._second(aliases.get(0))))
-                ._database(database)
+        GenericType gt = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass(M3Paths.GenericType))
+                                ._rawType(context.pureModel.getType(M3Paths.Pair))
+                                ._typeArguments(Lists.mutable.with(context.pureModel.getGenericType(M2RelationalPaths.TableAlias),context.pureModel.getGenericType(M2RelationalPaths.TableAlias)));
+        join._aliases(Lists.fixedSize.of(
+                    new Root_meta_pure_functions_collection_Pair_Impl<TableAlias, TableAlias>("", null, context.pureModel.getClass(M3Paths.Pair))
+                                ._classifierGenericType(gt)
+                                ._first(aliases.get(0))
+                                ._second(aliases.get(1)),
+                    new Root_meta_pure_functions_collection_Pair_Impl<TableAlias, TableAlias>("", null, context.pureModel.getClass(M3Paths.Pair))
+                                ._classifierGenericType(gt)
+                                ._first(aliases.get(1))
+                                ._second(aliases.get(0))
+                      )
+                )._database(database)
                 ._operation(op);
         return join;
     }
@@ -822,18 +835,18 @@ public class HelperRelationalBuilder
         MutableList<JoinWithJoinType> newJoins = ListIterate.collect(joins, joinPointer -> new JoinWithJoinType(
                 getJoin(joinPointer, context), joinPointer.joinType == null
                 ? null : context.pureModel.getEnumValue("meta::relational::metamodel::join::JoinType", "INNER".equals(joinPointer.joinType) ? "INNER" : "LEFT_OUTER")));
-        return processElementWithJoinsJoins(newJoins);
+        return processElementWithJoinsJoins(newJoins, context);
     }
 
-    private static JoinTreeNode processElementWithJoinsJoins(MutableList<JoinWithJoinType> joins)
+    private static JoinTreeNode processElementWithJoinsJoins(MutableList<JoinWithJoinType> joins, CompileContext context)
     {
         Join j = joins.getFirst().join;
-        JoinTreeNode res = new Root_meta_relational_metamodel_join_JoinTreeNode_Impl(j._name())
+        JoinTreeNode res = new Root_meta_relational_metamodel_join_JoinTreeNode_Impl(j._name(), null, context.pureModel.getClass(M2RelationalPaths.JoinTreeNode))
                 ._joinName(j._name())
                 ._database(j._database())
                 ._join(j);
         res = joins.getFirst().joinType == null ? res : res._joinType(joins.getFirst().joinType);
-        return joins.size() == 1 ? res : res._childrenData(Lists.fixedSize.of(processElementWithJoinsJoins(joins.subList(1, joins.size()))));
+        return joins.size() == 1 ? res : res._childrenData(Lists.fixedSize.of(processElementWithJoinsJoins(joins.subList(1, joins.size()), context)));
     }
 
     private static class JoinWithJoinType

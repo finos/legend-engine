@@ -37,8 +37,17 @@ public class Test_Relational_Snowflake_RelationFunctions_PCT extends PCTReportCo
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             // Extend - OLAP
-            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\"")
-    );
+            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "Error while executing: Create Table leSchema.tb"),
+
+            // Snowflake doesn't support ListAgg as an olap aggregation
+            one("meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_Function_1__Boolean_1_", "Cumulative window frame unsupported for function LISTAGG"),
+            one("meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_Function_1__Boolean_1_", "Cumulative window frame unsupported for function LISTAGG"),
+
+            // Snowflake doesn't seem to comply to the specification for first, last, nth (they should be bound to the frame)
+            one("meta::pure::functions::relation::tests::last::testOLAPWithPartitionAndOrderLastWindow_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,grp,name,newCol\n   10,0,J,10\n   8,1,H,8\n   6,1,F,6\n   2,1,B,2\n   5,2,E,5\n   1,2,A,1\n   7,3,G,7\n   3,3,C,3\n   4,4,D,4\n   9,5,I,9\n#'\nactual:   '#TDS\n   id,grp,name,newCol\n   10,0,J,10\n   8,1,H,2\n   6,1,F,2\n   2,1,B,2\n   5,2,E,1\n   1,2,A,1\n   7,3,G,3\n   3,3,C,3\n   4,4,D,4\n   9,5,I,9\n#'\""),
+            one("meta::pure::functions::relation::tests::nth::testOLAPWithPartitionAndOrderNthWindow2_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,grp,name,newCol\n   10,0,J,null\n   8,1,H,null\n   6,1,F,6\n   2,1,B,6\n   5,2,E,null\n   1,2,A,1\n   7,3,G,null\n   3,3,C,3\n   4,4,D,null\n   9,5,I,null\n#'\nactual:   '#TDS\n   id,grp,name,newCol\n   10,0,J,null\n   8,1,H,6\n   6,1,F,6\n   2,1,B,6\n   5,2,E,1\n   1,2,A,1\n   7,3,G,3\n   3,3,C,3\n   4,4,D,null\n   9,5,I,null\n#'\"")
+
+            );
 
     public static Test suite()
     {

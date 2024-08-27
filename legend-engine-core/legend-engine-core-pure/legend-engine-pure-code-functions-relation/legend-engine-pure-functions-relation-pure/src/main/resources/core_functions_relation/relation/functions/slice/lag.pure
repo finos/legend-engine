@@ -16,12 +16,14 @@ import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::functions::relation::*;
 
-function <<PCT.function>> meta::pure::functions::relation::lag<T>(w:Relation<T>[1],r:T[1]):T[0..1]
+function <<functionType.NormalizeRequiredFunction,
+           PCT.function>> meta::pure::functions::relation::lag<T>(w:Relation<T>[1],r:T[1]):T[0..1]
 {
   lag($w, $r, 1);
 }
 
-function <<PCT.function>> meta::pure::functions::relation::lag<T>(w:Relation<T>[1],r:T[1], offset:Integer[1]):T[0..1]
+function <<functionType.NormalizeRequiredFunction,
+           PCT.function>> meta::pure::functions::relation::lag<T>(w:Relation<T>[1],r:T[1], offset:Integer[1]):T[0..1]
 {
   offset($w, $r, -$offset);
 }

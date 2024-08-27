@@ -1608,7 +1608,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testEval()
+    public void testEval1Param()
     {
         test("Class test::A" +
                 "{" +
@@ -1629,6 +1629,30 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   z(){ {a|$a+'1'}->eval(1);}:Integer[1];\n" +
                 "}", "COMPILATION error at [1:63-66]: Can't find a match for function 'plus(Any[2])'");
     }
+
+    @Test
+    public void testEval2Param()
+    {
+        test("Class test::A" +
+                "{" +
+                "   name : String[1];" +
+                "}" +
+                "" +
+                "Class test::B" +
+                "{" +
+                "   z(){ {a,b|$a+$b}->eval(1,2);}:Integer[1];\n" +
+                "}");
+        test("Class test::A" +
+                "{" +
+                "   name : String[1];" +
+                "}" +
+                "" +
+                "Class test::B" +
+                "{" +
+                "   z(){ {a,b|$a+$b}->eval(1,'a');}:Integer[1];\n" +
+                "}", "COMPILATION error at [1:65-67]: Can't find a match for function 'plus(Any[2])'");
+    }
+
 
     @Test
     public void testPropertyPostFunction()

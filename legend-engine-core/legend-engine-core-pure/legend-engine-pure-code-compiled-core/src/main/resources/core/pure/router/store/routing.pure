@@ -344,7 +344,6 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                                                                                                                      f:FunctionExpression[1] |let r = $f->meta::pure::router::preeval::preval($inScopeVars, $extensions, $debug);
                                                                                                                                               $r->reactivate($inScopeVars);,
                                                                                                                      i:InstanceValue[1]      |$i.values]));
-
                 let fromRuntime            = $resolvedParameters->at(0)->cast(@Runtime);
                 routeFunctionExpression(
                     $fe.parametersValues->at(0)->cast(@FunctionExpression),
