@@ -85,7 +85,19 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                         (service, context) -> processserviceFirstPass(service, context),
                         (service, context) ->
                         {
-                            Root_meta_legend_service_metamodel_Service pureService = (Root_meta_legend_service_metamodel_Service) context.pureModel.getOrCreatePackage(service._package)._children().detect(c -> service.name.equals(c._name()));
+
+                        },
+                        (service, context) ->
+                        {
+
+                        },
+                        (service, context) ->
+                        {
+
+                        },
+                        (service, context) ->
+                        {
+                            Root_meta_legend_service_metamodel_Service pureService = (Root_meta_legend_service_metamodel_Service) context.pureModel.getPackageableElement(service);
 
                             pureService._execution(HelperServiceBuilder.processServiceExecution(service.execution, context));
 
@@ -201,7 +213,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                                 ._name(execEnv.name),
                         (execEnv, context) ->
                         {
-                            Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance pureExecEnv = (Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance) context.pureModel.getOrCreatePackage(execEnv._package)._children().detect(c -> execEnv.name.equals(c._name()));
+                            Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance pureExecEnv = (Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance) context.pureModel.getPackageableElement(execEnv);
                             pureExecEnv._executionParameters(ListIterate.collect(execEnv.executionParameters, params -> HelperServiceBuilder.processExecutionParameters(params, context)));
                         })
         );
@@ -320,7 +332,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
         return Maps.mutable.with("executionEnvironmentInstance", (obj, context, processingContext) ->
                 {
                     ExecutionEnvironmentInstance execEnv = (ExecutionEnvironmentInstance) obj;
-                    Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance pureExecEnv = (Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance) context.pureModel.getOrCreatePackage(execEnv._package)._children().detect(c -> execEnv.name.equals(c._name()));
+                    Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance pureExecEnv = (Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance) context.pureModel.getPackageableElement(execEnv);
                     pureExecEnv._executionParameters(ListIterate.collect(execEnv.executionParameters, params -> HelperServiceBuilder.processExecutionParameters(params, context)));
                     GenericType execEnvGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::legend::service::metamodel::ExecutionEnvironmentInstance"));
                     return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))

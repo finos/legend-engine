@@ -19,15 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.engine.application.query.model.Query;
-import org.finos.legend.engine.application.query.model.QueryEvent;
-import org.finos.legend.engine.application.query.model.QueryParameterValue;
-import org.finos.legend.engine.application.query.model.QueryProjectCoordinates;
-import org.finos.legend.engine.application.query.model.QuerySearchSpecification;
-import org.finos.legend.engine.application.query.model.QuerySearchTermSpecification;
-import org.finos.legend.engine.application.query.model.QueryExplicitExecutionContext;
-import org.finos.legend.engine.application.query.model.QueryDataSpaceExecutionContext;
-import org.finos.legend.engine.application.query.model.QueryExecutionContext;
+import org.finos.legend.engine.application.query.model.*;
 import org.finos.legend.engine.application.query.utils.TestMongoClientProvider;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
@@ -42,10 +34,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.time.Instant;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class TestQueryStoreManager
 {
@@ -58,6 +48,7 @@ public class TestQueryStoreManager
         public Integer limit;
         public Boolean showCurrentUserQueriesOnly;
         public Boolean combineTaggedValuesCondition;
+        public QuerySearchSortBy sortByOption;
 
         TestQuerySearchSpecificationBuilder withSearchTerm(String searchTerm)
         {
@@ -125,6 +116,12 @@ public class TestQueryStoreManager
             return this;
         }
 
+        TestQuerySearchSpecificationBuilder withSortByOption(QuerySearchSortBy sortByOption)
+        {
+            this.sortByOption = sortByOption;
+            return this;
+        }
+
         QuerySearchSpecification build()
         {
             QuerySearchSpecification searchSpecification = new QuerySearchSpecification();
@@ -135,6 +132,7 @@ public class TestQueryStoreManager
             searchSpecification.limit = this.limit;
             searchSpecification.showCurrentUserQueriesOnly = this.showCurrentUserQueriesOnly;
             searchSpecification.combineTaggedValuesCondition = this.combineTaggedValuesCondition;
+            searchSpecification.sortByOption = this.sortByOption;
             return searchSpecification;
         }
     }
@@ -534,6 +532,31 @@ public class TestQueryStoreManager
     }
 
     @Test
+    public void testGetQueriesWithSortBy() throws Exception
+    {
+        String currentUser = "testUser";
+        Query testQuery1 = TestQueryBuilder.create("1", "query1", currentUser).withGroupId("test").withArtifactId("test").withLegacyExecutionContext().build();
+        Query testQuery2 = TestQueryBuilder.create("2", "query2", currentUser).withGroupId("test").withArtifactId("test").withLegacyExecutionContext().build();
+        Query testQuery3 = TestQueryBuilder.create("3", "query3", currentUser).withGroupId("something").withArtifactId("something").withLegacyExecutionContext().build();
+        Query testQuery4 = TestQueryBuilder.create("4", "query4", currentUser).withGroupId("something.another").withArtifactId("something-another").withVersionId("1.0.0").withLegacyExecutionContext().build();
+
+        // create in order 1 -> 4 -> 2 -> 3
+        queryStoreManager.createQuery(testQuery1, currentUser);
+        queryStoreManager.createQuery(testQuery4, currentUser);
+        queryStoreManager.createQuery(testQuery2, currentUser);
+        queryStoreManager.createQuery(testQuery3, currentUser);
+
+        Assert.assertEquals(4, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_CREATE).build(), currentUser).size());
+        Assert.assertEquals(Arrays.asList("3", "2", "4", "1"), queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_CREATE).build(), currentUser).stream().map(q -> q.id).collect(Collectors.toList()));
+
+        queryStoreManager.updateQuery("2", TestQueryBuilder.create("2", "query2NewlyUpdated", currentUser).withLegacyExecutionContext().build(), currentUser);
+        Assert.assertEquals(Arrays.asList("2", "3", "4", "1"), queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_UPDATE).build(), currentUser).stream().map(q -> q.id).collect(Collectors.toList()));
+
+        queryStoreManager.getQuery("1");
+        Assert.assertEquals(Arrays.asList("1", "2", "3", "4"), queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_VIEW).build(), currentUser).stream().map(q -> q.id).collect(Collectors.toList()));
+    }
+
+    @Test
     public void testGetQueriesWithStereotypes() throws Exception
     {
         String currentUser = "testUser";
@@ -648,6 +671,21 @@ public class TestQueryStoreManager
         Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue2)).build(), currentUser).size());
         Assert.assertEquals(3, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2)).build(), currentUser).size());
         Assert.assertEquals(3, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2, taggedValue3)).build(), currentUser).size());
+    }
+
+    @Test
+    public void testGetDataSpaceQueriesWithExecutionContext() throws Exception
+    {
+        String currentUser = "testUser";
+        String dataspacePath = "test::Dataspace";
+        TaggedValue taggedValue = createTestTaggedValue("meta::pure::profiles::query", "dataSpace", dataspacePath);
+        Query testQuery1 = TestQueryBuilder.create("1", "query1", currentUser).withDataSpaceExecution(dataspacePath).build();
+        Query testQuery2 = TestQueryBuilder.create("2", "query2", currentUser).withTaggedValues(Lists.fixedSize.of(taggedValue)).withDataSpaceExecution(dataspacePath).build();
+        queryStoreManager.createQuery(testQuery1, currentUser);
+        queryStoreManager.createQuery(testQuery2, currentUser);
+
+        Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue)).build(), currentUser).size());
     }
 
     @Test

@@ -15,6 +15,7 @@
 import meta::pure::functions::cipher::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::graphFetch::*;
+import meta::pure::metamodel::constraint::*;
 import meta::pure::metamodel::treepath::*;
 import meta::pure::metamodel::serialization::json::*;
 import meta::pure::mapping::*;
@@ -341,6 +342,7 @@ function <<access.private>> meta::json::buildLambdas(extraSerializers:Function<{
          {g:GenericType[1], state:JSONState[1]  | $g->genericTypeToJSON()},
          {p:Property<Nil,Any|*>[1], state:JSONState[1]  | $p->propertyToJSON()},
          {q:QualifiedProperty<Any>[1], state:JSONState[1]  | $q->qualifiedPropertyToJSON()},
+         {c:Constraint[1], state:JSONState[1] | $c->constraintToJSON()},
          {s:Stereotype[1], state:JSONState[1]  | $s->stereotypeToJSON()},
          {t:TaggedValue[1], state:JSONState[1]  | $t->taggedValueToJSON()},
          {t:Tag[1], state:JSONState[1]  | $t->tagToJSON()},

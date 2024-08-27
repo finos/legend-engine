@@ -58,7 +58,7 @@ class FunctionParametersNormalizer
         {
             return null;
         }
-        switch (parameter._class)
+        switch (parameter._class.path)
         {
             case "StrictDate":
             {

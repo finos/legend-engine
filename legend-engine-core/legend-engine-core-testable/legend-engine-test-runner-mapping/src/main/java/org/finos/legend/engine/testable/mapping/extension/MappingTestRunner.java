@@ -25,11 +25,13 @@ import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
+import org.finos.legend.engine.plan.generation.PlanWithDebug;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.data.*;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedDataHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
@@ -41,6 +43,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.Asse
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestDebug;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionPlanDebug;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
@@ -83,17 +87,18 @@ public class MappingTestRunner implements TestRunner
     }
 
     @Override
+    public TestDebug debugAtomicTest(Root_meta_pure_test_AtomicTest atomicTest, PureModel pureModel, PureModelContextData pmcd)
+    {
+        throw new UnsupportedOperationException("Mapping Test should be executed in context of Mapping Test Suite only");
+    }
+
+    @Override
     public List<TestResult> executeTestSuite(Root_meta_pure_test_TestSuite testSuite, List<String> atomicTestIds, PureModel pureModel, PureModelContextData pureModelContextData)
     {
         List<org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult> results = Lists.mutable.empty();
-        String testablePath = getElementFullPath(this.pureMapping, pureModel.getExecutionSupport());
-        Assert.assertTrue(testSuite instanceof Root_meta_pure_mapping_metamodel_MappingTestSuite, () -> "Test Suite in Mapping expected to be of type Mapping Test Suite");
-        Root_meta_pure_mapping_metamodel_MappingTestSuite compiledMappingTestSuite = (Root_meta_pure_mapping_metamodel_MappingTestSuite) testSuite;
-        try
+        MappingTestRunnerContext context = buildMappingContext(testSuite, pureModel, pureModelContextData);        try
         {
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping mapping = ListIterate.detect(pureModelContextData.getElementsOfType(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class), ele -> ele.getPath().equals(testablePath));
-            MappingTestSuite mappingTestSuite = ListIterate.detect(mapping.testSuites, ts -> ts.id.equals(testSuite._id()));
-            MappingTestRunnerContext context = new MappingTestRunnerContext(compiledMappingTestSuite, mapping, pureModel, pureModelContextData, extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), new ConnectionFirstPassBuilder(pureModel.getContext()), PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport())));
+            MappingTestSuite mappingTestSuite = ListIterate.detect(context.getMapping().testSuites, ts -> ts.id.equals(testSuite._id()));
             // build plan, executor args
             List<MappingTest> mappingTests = mappingTestSuite.tests.stream().filter(t -> t instanceof MappingTest).map(t -> (MappingTest)t).collect(Collectors.toList());
             // running of each test is catchable and put under a test error
@@ -102,8 +107,8 @@ public class MappingTestRunner implements TestRunner
                 if (atomicTestIds.contains(mappingTest.id))
                 {
                     org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult testResult = executeMappingTest(mappingTest, context);
-                    testResult.testable = testablePath;
-                    testResult.testSuiteId = compiledMappingTestSuite._id();
+                    testResult.testable = context.getMapping().getPath();
+                    testResult.testSuiteId = context.getMetamodelTestSuite()._id();
                     results.add(testResult);
                 }
             }
@@ -112,7 +117,7 @@ public class MappingTestRunner implements TestRunner
         catch (Exception e)
         {
             // this is to catch any error for the setup of the test suite. we return test error for each test run
-            for (Root_meta_pure_test_AtomicTest testedError: compiledMappingTestSuite._tests())
+            for (Root_meta_pure_test_AtomicTest testedError: context.getMetamodelTestSuite()._tests())
             {
                 if (atomicTestIds.contains(testedError._id()) && results.stream().noneMatch(t -> t.atomicTestId.equals(testedError._id())))
                 {
@@ -126,27 +131,60 @@ public class MappingTestRunner implements TestRunner
         return results;
     }
 
+    @Override
+    public List<TestDebug> debugTestSuite(Root_meta_pure_test_TestSuite testSuite, List<String> atomicTestIds, PureModel pureModel, PureModelContextData pureModelContextData)
+    {
+        List<org.finos.legend.engine.protocol.pure.v1.model.test.result.TestDebug> results = Lists.mutable.empty();
+        MappingTestRunnerContext context = buildMappingContext(testSuite, pureModel, pureModelContextData);
+        try
+        {
+            MappingTestSuite mappingTestSuite = ListIterate.detect(context.getMapping().testSuites, ts -> ts.id.equals(testSuite._id()));
+            // build plan, executor args
+            List<MappingTest> mappingTests = mappingTestSuite.tests.stream().filter(t -> t instanceof MappingTest).map(t -> (MappingTest)t).collect(Collectors.toList());
+            // running of each test is catchable and put under a test error
+            for (MappingTest mappingTest : mappingTests)
+            {
+                if (atomicTestIds.contains(mappingTest.id))
+                {
+                    org.finos.legend.engine.protocol.pure.v1.model.test.result.TestDebug testResult = debugMappingTest(mappingTest, context);
+                    testResult.testable = context.getMapping().getPath();
+                    testResult.testSuiteId = context.getMetamodelTestSuite()._id();
+                    results.add(testResult);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            // this is to catch any error for the setup of the test suite. we return test error for each test run
+            for (Root_meta_pure_test_AtomicTest testedError: context.getMetamodelTestSuite()._tests())
+            {
+                if (atomicTestIds.contains(testedError._id()) && results.stream().noneMatch(t -> t.atomicTestId.equals(testedError._id())))
+                {
+                    TestExecutionPlanDebug testError = new TestExecutionPlanDebug();
+                    testError.atomicTestId = testedError._id();
+                    testError.error = e.toString();
+                    results.add(testError);
+                }
+            }
+        }
+        return results;
+    }
+
+    private MappingTestRunnerContext buildMappingContext(Root_meta_pure_test_TestSuite testSuite, PureModel pureModel, PureModelContextData pureModelContextData)
+    {
+        String testablePath = getElementFullPath(this.pureMapping, pureModel.getExecutionSupport());
+        Assert.assertTrue(testSuite instanceof Root_meta_pure_mapping_metamodel_MappingTestSuite, () -> "Test Suite in Mapping expected to be of type Mapping Test Suite");
+        Root_meta_pure_mapping_metamodel_MappingTestSuite compiledMappingTestSuite = (Root_meta_pure_mapping_metamodel_MappingTestSuite) testSuite;
+        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping mapping = ListIterate.detect(pureModelContextData.getElementsOfType(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class), ele -> ele.getPath().equals(testablePath));
+        return new MappingTestRunnerContext(compiledMappingTestSuite, mapping, pureModel, pureModelContextData, extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), new ConnectionFirstPassBuilder(pureModel.getContext()), PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport())));
+    }
+
     private TestResult executeMappingTest(MappingTest mappingTest,  MappingTestRunnerContext context)
     {
         List<Pair<Connection, List<Closeable>>> connections = Lists.mutable.empty();
         try
         {
-            Root_meta_core_runtime_Runtime_Impl runtime = new Root_meta_core_runtime_Runtime_Impl("");
-            List<Pair<String, EmbeddedData>> connectionInfo = mappingTest.storeTestData.stream().map(testData -> Tuples.pair(testData.store, EmbeddedDataHelper.resolveEmbeddedDataInPMCD(context.getPureModelContextData(), testData.data))).collect(Collectors.toList());
-            connections = connectionInfo.stream()
-                    .map(pair -> this.factories.collect(f -> f.tryBuildTestConnectionsForStore(context.getDataElementIndex(), resolveStore(context.getPureModelContextData(), pair.getOne()), pair.getTwo())).select(Objects::nonNull).select(Optional::isPresent)
-                            .collect(Optional::get).getFirstOptional().orElseThrow(() -> new UnsupportedOperationException("Unsupported store type for:'" + pair.getOne() + "' mentioned while running the mapping tests"))).collect(Collectors.toList());
-            connections.forEach(connection ->
-            {
-                Connection conn = connection.getOne();
-                org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store element = getStore(conn.element, conn.elementSourceInformation, context.getPureModel().getContext());
-                Root_meta_core_runtime_ConnectionStore connectionStore =
-                        new Root_meta_core_runtime_ConnectionStore_Impl("")
-                                ._connection(conn.accept(context.getConnectionVisitor()))
-                                ._element(element);
-                runtime._connectionStoresAdd(connectionStore);
-            });
-            handleGenerationOfPlan(connections.stream().map(Pair::getOne).collect(Collectors.toList()), runtime, context);
+            connections = generateExecutionPlan(mappingTest, context, false);
             // execute assertion
             TestAssertion assertion = mappingTest.assertions.get(0);
             PlanExecutor.ExecuteArgs executeArgs = context.getExecuteBuilder().build();
@@ -169,7 +207,55 @@ public class MappingTestRunner implements TestRunner
         }
     }
 
-    private void handleGenerationOfPlan(List<Connection> incomingConnections, Root_meta_core_runtime_Runtime_Impl runtime, MappingTestRunnerContext context)
+    private TestDebug debugMappingTest(MappingTest mappingTest,  MappingTestRunnerContext context)
+    {
+        List<Pair<Connection, List<Closeable>>> connections = Lists.mutable.empty();
+
+        try
+        {
+            TestExecutionPlanDebug executionPlanDebug = new TestExecutionPlanDebug();
+            connections = generateExecutionPlan(mappingTest, context, true);
+            executionPlanDebug.executionPlan = context.getPlan();
+            executionPlanDebug.debug = context.getDebug();
+            executionPlanDebug.atomicTestId = mappingTest.id;
+            return executionPlanDebug;
+        }
+        catch (Exception e)
+        {
+            TestExecutionPlanDebug executionPlanDebug = new TestExecutionPlanDebug();
+            executionPlanDebug.atomicTestId = mappingTest.id;
+            executionPlanDebug.error = e.toString();
+            return executionPlanDebug;
+        }
+        finally
+        {
+            this.closeConnections(connections);
+        }
+    }
+
+    private List<Pair<Connection, List<Closeable>>> generateExecutionPlan(MappingTest mappingTest,  MappingTestRunnerContext context, boolean debug)
+    {
+
+        Root_meta_core_runtime_Runtime_Impl runtime = new Root_meta_core_runtime_Runtime_Impl("");
+        List<Pair<String, EmbeddedData>> connectionInfo = mappingTest.storeTestData.stream().map(testData -> Tuples.pair(testData.store.path, EmbeddedDataHelper.resolveEmbeddedDataInPMCD(context.getPureModelContextData(), testData.data))).collect(Collectors.toList());
+        List<Pair<Connection, List<Closeable>>> connections = connectionInfo.stream()
+                .map(pair -> this.factories.collect(f -> f.tryBuildTestConnectionsForStore(context.getDataElementIndex(), resolveStore(context.getPureModelContextData(), pair.getOne()), pair.getTwo())).select(Objects::nonNull).select(Optional::isPresent)
+                        .collect(Optional::get).getFirstOptional().orElseThrow(() -> new UnsupportedOperationException("Unsupported store type for:'" + pair.getOne() + "' mentioned while running the mapping tests"))).collect(Collectors.toList());
+        connections.forEach(connection ->
+        {
+            Connection conn = connection.getOne();
+            org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store element = getStore(conn.element, conn.elementSourceInformation, context.getPureModel().getContext());
+            Root_meta_core_runtime_ConnectionStore connectionStore =
+                    new Root_meta_core_runtime_ConnectionStore_Impl("")
+                            ._connection(conn.accept(context.getConnectionVisitor()))
+                            ._element(element);
+            runtime._connectionStoresAdd(connectionStore);
+        });
+        handleGenerationOfPlan(connections.stream().map(Pair::getOne).collect(Collectors.toList()), runtime, context, debug);
+        return connections;
+    }
+
+    private void handleGenerationOfPlan(List<Connection> incomingConnections, Root_meta_core_runtime_Runtime_Impl runtime, MappingTestRunnerContext context, boolean debug)
     {
         SingleExecutionPlan executionPlan = context.getPlan();
         boolean reusePlan = false;
@@ -183,8 +269,18 @@ public class MappingTestRunner implements TestRunner
         }
         if (executionPlan == null || !reusePlan)
         {
-            executionPlan = PlanGenerator.generateExecutionPlan(context.getMetamodelTestSuite()._query(), pureMapping, runtime, null, context.getPureModel(), this.pureVersion, PlanPlatform.JAVA, null, context.getRouterExtensions(), context.getExecutionPlanTransformers());
-            context.withPlan(executionPlan);
+            List<String> debugger = null;
+            if (debug)
+            {
+                PlanWithDebug plan = PlanGenerator.generateExecutionPlanDebug(context.getMetamodelTestSuite()._query(), pureMapping, runtime, null, context.getPureModel(), this.pureVersion, PlanPlatform.JAVA, null, context.getRouterExtensions(), context.getExecutionPlanTransformers());
+                executionPlan = plan.plan;
+                debugger = Arrays.asList(plan.debug);
+            }
+            else
+            {
+                executionPlan = PlanGenerator.generateExecutionPlan(context.getMetamodelTestSuite()._query(), pureMapping, runtime, null, context.getPureModel(), this.pureVersion, PlanPlatform.JAVA, null, context.getRouterExtensions(), context.getExecutionPlanTransformers());
+            }
+            context.withPlan(executionPlan, debugger);
         }
         // set new connections
         context.withConnections(incomingConnections);

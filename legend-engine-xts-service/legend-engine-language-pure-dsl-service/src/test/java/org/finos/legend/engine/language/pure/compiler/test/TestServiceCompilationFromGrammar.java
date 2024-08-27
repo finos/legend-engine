@@ -235,7 +235,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    [\n" +
                 "    ];\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [28:20-31]: Can't find type 'test::class2'");
+                "}\n", "COMPILATION error at [28:12-34]: Can't find type 'test::class2'");
         // test service execution mapping
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -303,7 +303,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      { [], res:   Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
                 "    ];\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [37:20-32]: Can't find type 'Result<Any|*>'");
+                "}\n", "COMPILATION error at [37:13-35]: Can't find type 'Result<Any|*>'");
         // check service execution embedded runtime
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -640,7 +640,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      data: 'testData';\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [28:20-31]: Can't find type 'test::class2'");
+                "}\n", "COMPILATION error at [28:12-34]: Can't find type 'test::class2'");
         // check service execution mapping
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -749,7 +749,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      asserts: [{ [], res:   Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }];\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [50:30-42]: Can't find type 'Result<Any|*>'");
+                "}\n", "COMPILATION error at [50:23-45]: Can't find type 'Result<Any|*>'");
 
         test(resource + "###Service\n" +
                 "Service meta::pure::myServiceMulti\n" +
@@ -881,6 +881,41 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "  execution: Single\n" +
                 "  {\n" +
                 "    query: |test::class.all()->graphFetch(#{test::class{prop1}}#);\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "        { [], res: meta::pure::mapping::Result[1]|$res.values->toOne()->size() == 1 }\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testServiceCompilationWithMilestoningElements()
+    {
+        String resource = "" +
+                "Class <<temporal.businesstemporal>> test::class\n" +
+                "{\n" +
+                "  prop1 : test::class2[0..1];\n" +
+                "}\n" +
+                "Class <<temporal.businesstemporal>> test::class2\n" +
+                "{\n" +
+                "  prop1 : Integer[0..1];\n" +
+                "}\n";
+
+        test(resource + "###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName', 'ownerName2'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::class.allVersions()->project(x | $x.prop1AllVersions.prop1, 'hello');\n" +
                 "  }\n" +
                 "  test: Single\n" +
                 "  {\n" +

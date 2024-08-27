@@ -14,8 +14,16 @@
 
 package org.finos.legend.engine.persistence.components.schemaevolution;
 
-public class IncompatibleSchemaChangeException extends RuntimeException
+import org.finos.legend.engine.persistence.components.exception.PersistenceException;
+
+public class IncompatibleSchemaChangeException extends PersistenceException
 {
+    @Override
+    public boolean isRecoverable()
+    {
+        return false;
+    }
+
     public IncompatibleSchemaChangeException(String message)
     {
         super(message);

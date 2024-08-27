@@ -231,7 +231,7 @@ public class SchemaEvolution
             if (!Objects.equals(mainDataField.type().length(), newField.type().length()))
             {
                 if (!sink.capabilities().contains(Capability.DATA_TYPE_LENGTH_CHANGE)
-                        || (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE)))
+                        || (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE)))
                 {
                     throw new IncompatibleSchemaChangeException(String.format("Data type length changes couldn't be performed on column \"%s\" since sink/user capability does not allow it", newField.name()));
                 }
@@ -240,7 +240,7 @@ public class SchemaEvolution
             if (!Objects.equals(mainDataField.type().scale(), newField.type().scale()))
             {
                 if (!sink.capabilities().contains(Capability.DATA_TYPE_SCALE_CHANGE)
-                        || (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE)))
+                        || (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE)))
                 {
                     throw new IncompatibleSchemaChangeException(String.format("Data type scale changes couldn't be performed on column \"%s\" since sink/user capability does not allow it", newField.name()));
                 }

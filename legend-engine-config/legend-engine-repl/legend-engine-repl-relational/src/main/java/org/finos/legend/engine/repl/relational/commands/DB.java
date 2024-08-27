@@ -51,6 +51,12 @@ public class DB implements Command
     }
 
     @Override
+    public String description()
+    {
+        return "show schema summary of the database";
+    }
+
+    @Override
     public boolean process(String line) throws Exception
     {
         if (line.startsWith("db"))
@@ -58,7 +64,7 @@ public class DB implements Command
             String[] tokens = line.split(" ");
             if (tokens.length != 2)
             {
-                throw new RuntimeException("Error, load should be used as 'db <connection>'");
+                throw new RuntimeException("Command should be used as '" + this.documentation() + "'");
             }
 
             PureModelContextData d = this.client.getModelState().parse();
@@ -66,7 +72,7 @@ public class DB implements Command
 
             try (Connection connection = ConnectionHelper.getConnection(databaseConnection, client.getPlanExecutor()))
             {
-                this.client.getTerminal().writer().println(
+                this.client.printInfo(
                         getTables(connection).collect(c -> c.schema + "." + c.name + "(" + c.columns.collect(col -> col.name + " " + col.type).makeString(", ") + ")").makeString("\n")
                 );
             }

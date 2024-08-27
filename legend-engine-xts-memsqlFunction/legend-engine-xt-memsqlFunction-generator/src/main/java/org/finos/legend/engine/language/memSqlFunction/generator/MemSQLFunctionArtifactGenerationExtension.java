@@ -40,6 +40,7 @@ public class MemSQLFunctionArtifactGenerationExtension implements ArtifactGenera
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(MemSQLFunctionArtifactGenerationExtension.class);
     private static final String ROOT_PATH = "memSqlFunction";
     private static final String FILE_NAME = "memSqlFunctionArtifact.json";
+    private static final String LINEAGE_FILE_NAME = "memSqlFunctionLineageArtifact.json";
 
     @Override
     public MutableList<String> group()
@@ -65,13 +66,20 @@ public class MemSQLFunctionArtifactGenerationExtension implements ArtifactGenera
     {
         List<Artifact> result = Lists.mutable.empty();
         Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel p) -> PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(p.getExecutionSupport()));
-        MemSqlFunctionArtifact artifact  = MemSqlFunctionGenerator.generateArtifact(pureModel, (Root_meta_external_function_activator_memSqlFunction_MemSqlFunction) element, data, routerExtensions);
         try
         {
-            LOGGER.info("Generating memsql artifact for " + element.getName());
+            LOGGER.info("Generating memsqlFunction deploy artifact for " + element.getName());
+            MemSqlFunctionArtifact artifact  = MemSqlFunctionGenerator.generateArtifact(pureModel, (Root_meta_external_function_activator_memSqlFunction_MemSqlFunction) element, data, routerExtensions);
             String content = mapper.writeValueAsString(artifact);
             result.add((new Artifact(content, FILE_NAME, "json")));
-            LOGGER.info("Generated memsql artifact for " + element.getName());
+            if (!(element._stereotypes().anySatisfy(stereotype ->
+                    stereotype._profile()._name().equals("devStatus") && stereotype._profile()._p_stereotypes().anySatisfy(s -> s._value().equals("inProgress")))))
+            {
+                LOGGER.info("Generating memsqlFunction lineage artifact for " + element.getName());
+                String lineage = MemSqlFunctionGenerator.generateLineage(pureModel, (Root_meta_external_function_activator_memSqlFunction_MemSqlFunction) element, data, routerExtensions);
+                result.add(new Artifact(lineage, LINEAGE_FILE_NAME, "json"));
+            }
+            LOGGER.info("Generated artifacts for " + element.getName());
 
         }
         catch (Exception e)

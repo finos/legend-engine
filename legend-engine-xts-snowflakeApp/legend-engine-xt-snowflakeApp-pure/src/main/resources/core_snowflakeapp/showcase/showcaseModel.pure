@@ -15,6 +15,7 @@ Class meta::external::function::activator::snowflakeApp::tests::model::simple::P
     extraInformation : String[0..1];
     manager : PersonX[0..1];
     gender: Gender[0..1];
+    genderFromInt: Gender[0..1];
     age : Integer[0..1];
     nickName : String[0..1];    
     activeEmployment: Boolean[0..1];
@@ -80,7 +81,8 @@ Mapping meta::external::function::activator::snowflakeApp::tests::simpleRelation
                 (
                     firstName : personTable.FIRSTNAME,
                     age : personTable.AGE,
-                    gender:  EnumerationMapping genderEnum: personTable.GENDER
+                    gender:  EnumerationMapping genderEnum: personTable.GENDER,
+                    genderFromInt:  EnumerationMapping genderEnum2: personTable.GENDER2
                 ),
                 scope([dbInc]default.personTable)
                 (
@@ -94,6 +96,12 @@ Mapping meta::external::function::activator::snowflakeApp::tests::simpleRelation
     {
           M:  'male',
           F: ['female', 'Female']
+    }
+
+    Gender: EnumerationMapping genderEnum2
+    {
+          M:  1,
+          F: 2
     }
 )
 
@@ -123,7 +131,7 @@ Mapping meta::external::function::activator::snowflakeApp::tests::simpleRelation
 ###Relational
 Database meta::external::function::activator::snowflakeApp::tests::dbInc
 (
-    Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT, GENDER VARCHAR(200), LAST_UPDATED TIMESTAMP)
+    Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT, GENDER VARCHAR(200), GENDER2 INT,LAST_UPDATED TIMESTAMP)
     Table validPersonTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
     Table PersonTableExtension (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT, birthDate DATE)
     Table differentPersonTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)

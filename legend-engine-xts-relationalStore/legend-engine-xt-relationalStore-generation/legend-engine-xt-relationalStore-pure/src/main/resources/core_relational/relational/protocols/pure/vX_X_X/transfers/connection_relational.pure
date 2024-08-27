@@ -72,7 +72,8 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connectio
 {
    $processors->map(processor | $processor->match([
                                                     m:meta::pure::alloy::connections::MapperPostProcessor[1] | ^meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::MapperPostProcessor(_type = 'mapper', mappers = transformPostProcessorMappers($m.mappers)),
-                                                    rm:meta::pure::alloy::connections::RelationalMapperPostProcessor[1] | ^meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::RelationalMapperPostProcessor(_type = 'relationalMapper', relationalMappers = $rm.relationalMappers->map(relationalMapper | $relationalMapper->elementToPath()))
+                                                    rm:meta::pure::alloy::connections::RelationalMapperPostProcessor[1] | ^meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::RelationalMapperPostProcessor(_type = 'relationalMapper', relationalMappers = $rm.relationalMappers->map(relationalMapper | $relationalMapper->elementToPath())),
+                                                    cte:meta::relational::postProcessor::cteExtraction::ExtractSubQueriesAsCTEsPostProcessor[1] | ^meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::ExtractSubQueriesAsCTEsPostProcessor(_type = 'ExtractSubQueriesAsCTEsPostProcessor')
                                                   ]->concatenate($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).moduleSerializerExtension('relational')->cast(@meta::protocols::pure::vX_X_X::extension::RelationalModuleSerializerExtension).transfers_connection_transformPostProcessors)->toOneMany())
                                               );
 }

@@ -1,0 +1,93 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+native function meta::pure::functions::meta::newAssociation(name:String[1], p1:Property<Nil,Any|*>[1], p2:Property<Nil,Any|*>[1]):Association[1];
+
+
+
+
+function <<test.Test>> meta::pure::functions::meta::tests::newAssociation::testNewAssociation():Boolean[1]
+{
+    let classA = newClass('test::pkg::ClassA');
+    let classB = newClass('test::pkg::ClassB');
+    let aToB = newProperty('aToB', ^GenericType(rawType=$classA), ^GenericType(rawType=$classB), ZeroMany);
+    let bToA = newProperty('bToA', ^GenericType(rawType=$classB), ^GenericType(rawType=$classA), ZeroMany);
+
+    let myAssociation = newAssociation('pkg1::pkg2::pkg3::MyAssociation', $aToB, $bToA);
+    assertInstanceOf($myAssociation, Association);
+    assertEquals('MyAssociation', $myAssociation.name);
+    assertIs($aToB, $myAssociation.properties->at(0));
+    assertIs($bToA, $myAssociation.properties->at(1));
+
+    let pkg3 = $myAssociation.package->toOne();
+    assertInstanceOf($pkg3, Package);
+    assertEquals('pkg3', $pkg3.name);
+    assertFalse($pkg3.children->contains($myAssociation));
+
+    let pkg2 = $pkg3.package->toOne();
+    assertInstanceOf($pkg2, Package);
+    assertEquals('pkg2', $pkg2.name);
+
+    let pkg1 = $pkg2.package->toOne();
+    assertInstanceOf($pkg1, Package);
+    assertEquals('pkg1', $pkg1.name);
+
+    let rootPkg = $pkg1.package->toOne();
+    assertInstanceOf($rootPkg, Package);
+    assertEquals('Root', $rootPkg.name);
+
+    let noPackage = newAssociation('AssociationWithNoPackage', $aToB, $bToA);
+    assertInstanceOf($noPackage, Association);
+    assertEquals('AssociationWithNoPackage', $noPackage.name);
+    assertEquals('Root', $noPackage.package->toOne().name);
+    assertFalse($noPackage.package->toOne().children->contains($noPackage));
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::newAssociation::testNewAssociationElementToPath():Boolean[1]
+{
+    let classA = newClass('test::pkg::ClassA');
+    let classB = newClass('test::pkg::ClassB');
+    let aToB = newProperty('aToB', ^GenericType(rawType=$classA), ^GenericType(rawType=$classB), ZeroMany);
+    let bToA = newProperty('bToA', ^GenericType(rawType=$classB), ^GenericType(rawType=$classA), ZeroMany);
+
+    let myAssociation = newAssociation('test::pkg::MyAssociation', $aToB, $bToA);
+    assertEquals('test::pkg::MyAssociation', $myAssociation->elementToPath());
+    assertEquals('Root::test::pkg::MyAssociation', $myAssociation->elementToPath(true));
+
+    let otherAssociation = newAssociation('pkg1::pkg2::pkg3::OtherAssociation', $aToB, $bToA);
+    assertEquals('pkg1::pkg2::pkg3::OtherAssociation', $otherAssociation->elementToPath());
+    assertEquals('Root::pkg1::pkg2::pkg3::OtherAssociation', $otherAssociation->elementToPath(true));
+
+    let noPackage = newAssociation('AssociationWithNoPackage', $aToB, $bToA);
+    assertEquals('AssociationWithNoPackage', $noPackage->elementToPath());
+    assertEquals('Root::AssociationWithNoPackage', $noPackage->elementToPath(true));
+}
+
+function <<test.Test>> meta::pure::functions::meta::tests::newAssociation::testNewAssociationElementPath():Boolean[1]
+{
+    let classA = newClass('test::pkg::ClassA');
+    let classB = newClass('test::pkg::ClassB');
+    let aToB = newProperty('aToB', ^GenericType(rawType=$classA), ^GenericType(rawType=$classB), ZeroMany);
+    let bToA = newProperty('bToA', ^GenericType(rawType=$classB), ^GenericType(rawType=$classA), ZeroMany);
+
+    let myAssociation = newAssociation('pkg1::pkg2::pkg3::MyAssociation', $aToB, $bToA);
+    let pkg3 = $myAssociation.package->toOne();
+    let pkg2 = $pkg3.package->toOne();
+    let pkg1 = $pkg2.package->toOne();
+    let rootPkg = $pkg1.package->toOne();
+    assertEquals([$rootPkg, $pkg1, $pkg2, $pkg3, $myAssociation], $myAssociation->elementPath());
+
+    let noPackage = newAssociation('AssociationWithNoPackage', $aToB, $bToA);
+    assertEquals([$noPackage.package->toOne(), $noPackage], $noPackage->elementPath());
+}

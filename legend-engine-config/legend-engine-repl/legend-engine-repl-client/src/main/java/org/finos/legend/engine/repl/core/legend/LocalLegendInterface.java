@@ -14,10 +14,12 @@
 
 package org.finos.legend.engine.repl.core.legend;
 
+import java.util.concurrent.ForkJoinPool;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProcessParameter;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
@@ -30,8 +32,12 @@ import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 
 import java.net.URL;
 
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_QUALIFIED_PATH;
+
 public class LocalLegendInterface implements LegendInterface
 {
+    private final ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+
     @Override
     public PureModelContextData parse(String txt)
     {
@@ -75,14 +81,14 @@ public class LocalLegendInterface implements LegendInterface
     @Override
     public PureModel compile(PureModelContextData pureModelContextData)
     {
-        return Compiler.compile(pureModelContextData, DeploymentMode.PROD, Identity.getAnonymousIdentity().getName());
+        return Compiler.compile(pureModelContextData, DeploymentMode.PROD, Identity.getAnonymousIdentity().getName(), null, PureModelProcessParameter.newBuilder().withForkJoinPool(this.forkJoinPool).build());
     }
 
     @Override
     public Root_meta_pure_executionPlan_ExecutionPlan generatePlan(PureModel pureModel, boolean debug)
     {
         RichIterable<? extends Root_meta_pure_extension_Extension> extensions =  PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
-        Pair<Root_meta_pure_executionPlan_ExecutionPlan, String> res = PlanGenerator.generateExecutionPlanAsPure(pureModel.getConcreteFunctionDefinition_safe("a::b::c::d__Any_MANY_"), null, pureModel, PlanPlatform.JAVA, "", debug, extensions);
+        Pair<Root_meta_pure_executionPlan_ExecutionPlan, String> res = PlanGenerator.generateExecutionPlanAsPure(pureModel.getConcreteFunctionDefinition_safe(REPL_RUN_FUNCTION_QUALIFIED_PATH), null, pureModel, PlanPlatform.JAVA, "", debug, extensions);
         if (debug)
         {
             System.out.println(res.getTwo());

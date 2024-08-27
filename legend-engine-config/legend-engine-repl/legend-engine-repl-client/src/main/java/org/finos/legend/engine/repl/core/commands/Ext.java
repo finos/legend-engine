@@ -19,7 +19,7 @@ import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.shared.core.extension.Extensions;
 import org.finos.legend.engine.shared.core.extension.LegendExtension;
-import org.finos.legend.engine.shared.core.extension.TreeNode;
+import org.finos.legend.shared.stuctures.TreeNode;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
@@ -40,13 +40,19 @@ public class Ext implements Command
     }
 
     @Override
+    public String description()
+    {
+        return "show loaded extensions";
+    }
+
+    @Override
     public boolean process(String line) throws Exception
     {
         if (line.equals("ext"))
         {
             MutableList<LegendExtension> extensionList = Extensions.get();
             TreeNode extensions = Extensions.buildTree(extensionList);
-            this.client.getTerminal().writer().println(extensions.print());
+            this.client.printInfo(extensions.print());
             return true;
         }
         return false;

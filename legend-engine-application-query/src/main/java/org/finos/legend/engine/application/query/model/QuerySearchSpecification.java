@@ -31,4 +31,5 @@ public class QuerySearchSpecification
     // so that we can search if a query contains all the taggedValues specified in the
     // search specification
     public Boolean combineTaggedValuesCondition;
+    public QuerySearchSortBy sortByOption;
 }

@@ -155,7 +155,7 @@ public class TestSDLCLoader
         configureWireMockForRetries();
         SDLCLoader sdlcLoader = createSDLCLoader();
 
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST, tracer, sdlcLoader);
+        ModelManager modelManager = new ModelManager(DeploymentMode.TEST, null, tracer, sdlcLoader);
 
         PureModelContextData pmcdLoaded = modelManager.loadData(pointer, CLIENT_VERSION, Identity.getAnonymousIdentity());
 

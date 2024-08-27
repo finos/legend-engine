@@ -22,6 +22,7 @@ import org.eclipse.collections.impl.set.mutable.UnifiedSet;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.sink.RelationalPersistenceTarget;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.Bitemporal;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.Nontemporal;
@@ -98,12 +99,9 @@ public class HelperPersistenceRelationalBuilder
             ._milestoning(buildMilestoning(persistenceTarget.temporality, context, table));
     }
 
-    public static Database buildDatabase(String database, SourceInformation sourceInformation, CompileContext context)
+    public static Database buildDatabase(PackageableElementPointer database, SourceInformation sourceInformation, CompileContext context)
     {
-        String databasePath = database.substring(0, database.lastIndexOf("::"));
-        String databaseName = database.substring(database.lastIndexOf("::") + 2);
-
-        PackageableElement packageableElement = context.pureModel.getOrCreatePackage(databasePath)._children().detect(c -> databaseName.equals(c._name()));
+        PackageableElement packageableElement = context.resolvePackageableElement(database);
         if (packageableElement instanceof Database)
         {
             return (Database) packageableElement;

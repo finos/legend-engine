@@ -21,12 +21,16 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
    let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
    let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
                               getDynaFunctionToSqlForDuckDB()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
+
    ^DbExtension(
       isBooleanLiteralSupported = true,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords); },                                          // check case insensitive
+      windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
       literalProcessor = $literalProcessor,
       selectSQLQueryProcessor = processSelectSQLQueryForDuckDB_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      selectSQLQueryWithCTEsProcessor = processSelectSQLQueryWithCTEsDefault_SelectSQLQueryWithCommonTableExpressions_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      columnNameToIdentifier = columnNameToIdentifierForDuckDB_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslator()
@@ -94,6 +98,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     // dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_decode(%s)')),
     // dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_encode(%s)')),
     // dynaFnToSql('extractFromSemiStructured', $allStates,         ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsForH2()})),
+    dynaFnToSql('first',                  $allStates,            ^ToSql(format='first(%s)')),
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='date_trunc(\'month\', %s)', transform={p:String[1] | $p->repeat(1)})),
     dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='date_trunc(\'quarter\', %s)', transform={p:String[1] | $p->repeat(1)})),
     dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='date_trunc(\'month\', now())')),
@@ -110,6 +115,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format='regexp_matches(%s,\'^[a-zA-Z0-9]*$\')', transform={p:String[1]|$p})),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='string_agg(%s,%s)')),
+    dynaFnToSql('last',                   $allStates,            ^ToSql(format='last(%s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('lpad',                   $allStates,            ^ToSql(format='lpad(%s,%s,%s)', transform=processPaddingParams_String_MANY__String_MANY_)),
     dynaFnToSql('matches',                $allStates,            ^ToSql(format= 'regexp_matches(%s,%s)', transform={p:String[2]|$p})),
@@ -147,7 +153,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
     dynaFnToSql('jaroWinklerSimilarity',  $allStates,            ^ToSql(format='jaro_winkler_similarity(%s, %s)')),
-    dynaFnToSql('levenshteinDistance',    $allStates,            ^ToSql(format='levenshtein(%s, %s)'))
+    dynaFnToSql('levenshteinDistance',    $allStates,            ^ToSql(format='levenshtein(%s, %s)')),
+    dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='%s', transform={p:String[*] | if($p->size() == 1,|'var_samp('+$p->toOne()+')',|'list_var_samp('+$p->joinStrings('[',',',']')+')'); })),
+    dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='%s', transform={p:String[*] | if($p->size() == 1,|'var_pop('+$p->toOne()+')',|'list_var_pop('+$p->joinStrings('[',',',']')+')'); })),
+    dynaFnToSql('variance',               $allStates,            ^ToSql(format='%s', transform={p:String[*]| if ($p->last() == 'true', | 'list_var_samp', |'list_var_pop') + '('+$p->init()->joinStrings('[', ',', ']')+')'}))
   ];
 }
 
@@ -155,8 +164,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 {
   if($dayOfWeek->size()==1,
    | 'dayofweek('+$dayOfWeek->at(0)+') +1',            //dayofweek(date) gives (Sunday = 0, Saturday = 6) >> we need from 1 to 7
-   | println($dayOfWeek);
-     assert(or($dayOfWeek->at(1)=='\'Sunday\'',$dayOfWeek->at(1)=='\'Monday\''),'DayOfWeekNumber Function requires either Sunday or Monday as First Day of Week');
+   | assert(or($dayOfWeek->at(1)=='\'Sunday\'',$dayOfWeek->at(1)=='\'Monday\''),'DayOfWeekNumber Function requires either Sunday or Monday as First Day of Week');
      if($dayOfWeek->at(1)=='\'Sunday\'',
       |'dayofweek('+$dayOfWeek->at(0)+')+1',
       |'isodow('+$dayOfWeek->at(0)+')'                           // (Monday = 1, Sunday = 7).
@@ -218,6 +226,22 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processSliceOrDropForDuckDB(s:SelectSQLQuery[1], format:Format[1],dbConfig : DbConfig[1], extensions:Extension[*], size:Any[1]):String[1]
 {
    '%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake($format, $dbConfig, $extensions)]) + if ($size == -1, | '', | ' limit %s'->format($size));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::columnNameToIdentifierForDuckDB(columnName: String[1], dbConfig: DbConfig[1]): String[1]
+{
+   if(
+    $dbConfig.isDbReservedIdentifier($columnName->toLower()) ||
+    // TODO: the way we handle quoting right now is not systematic, i.e. we allow so many way to interject custom logic
+    // as such, for duckdb, to keep it simple, we will not use the default implementation of converting column name to identifier
+    (!$columnName->startsWith('"') && (
+      $columnName->contains(' ') ||
+      $columnName->contains('/') ||
+      $columnName->contains('|')
+    )),
+    |'"' + $columnName->toLower() + '"',
+    |$columnName
+  );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::duckDBReservedWords():String[*]

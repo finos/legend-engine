@@ -23,6 +23,8 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
@@ -245,13 +247,21 @@ public class HelperValueSpecificationBuilder
                 Variable automaLambdaparam = new Variable();
                 automapvar.name = automapName;
                 appliedProperty.parameters = Lists.mutable.of(automapvar);
+                appliedProperty.sourceInformation = sourceInformation;
                 if (!localParameters.isEmpty())
                 {
                     localParameters.remove(0);
                 }
                 appliedProperty.parameters.addAll(localParameters);
                 automaLambdaparam.name = automapName;
-                automaLambdaparam._class = HelperModelBuilder.getElementFullPath((PackageableElement) inferredVariable._genericType()._rawType(), context.pureModel.getExecutionSupport());
+                if (inferredVariable._genericType()._rawType() instanceof PackageableElement)
+                {
+                    automaLambdaparam._class = new PackageableElementPointer(PackageableElementType.CLASS, HelperModelBuilder.getElementFullPath((PackageableElement) inferredVariable._genericType()._rawType(), context.pureModel.getExecutionSupport()));
+                }
+                else
+                {
+                    automaLambdaparam.relationType = RelationTypeHelper.convert((RelationType<?>) inferredVariable._genericType()._rawType());
+                }
                 automaLambdaparam.multiplicity = Multiplicity.PURE_ONE;
                 automapLambda.body = Lists.mutable.of(appliedProperty);
 
@@ -290,7 +300,7 @@ public class HelperValueSpecificationBuilder
     {
         try
         {
-            return HelperModelBuilder.getAppliedProperty(context, aClass, java.util.Optional.of(parameters), name, sourceInformation);
+            return HelperModelBuilder.getAppliedProperty(context, aClass, java.util.Optional.of(parameters), name, false, sourceInformation);
         }
         catch (Exception e)
         {
@@ -343,7 +353,7 @@ public class HelperValueSpecificationBuilder
 
         Variable thisVariable = new Variable("this", HelperModelBuilder.getElementFullPath(parentClass, context.pureModel.getExecutionSupport()), new Multiplicity(1, 1));
         MutableList<ValueSpecification> originalParams = Lists.mutable.<ValueSpecification>with(thisVariable).withAll(propertyGraphFetchTree.parameters);
-        property = HelperModelBuilder.getAppliedProperty(context, parentClass, Optional.of(originalParams), propertyGraphFetchTree.property, propertyGraphFetchTree.sourceInformation);
+        property = HelperModelBuilder.getAppliedProperty(context, parentClass, Optional.of(originalParams), propertyGraphFetchTree.property, false, propertyGraphFetchTree.sourceInformation);
         processingContext.push("PropertyTree");
         processingContext.addInferredVariables("this", HelperModelBuilder.createThisVariableForClass(context, HelperModelBuilder.getElementFullPath(parentClass, context.pureModel.getExecutionSupport())));
         MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> originalPureParameters = ListIterate.collect(originalParams, x -> x.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)));

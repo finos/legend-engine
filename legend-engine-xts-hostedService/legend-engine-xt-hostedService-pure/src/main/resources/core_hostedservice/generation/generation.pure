@@ -11,6 +11,7 @@ import meta::external::function::activator::hostedService::generation::*;
 import meta::pure::extension::*;
 import meta::external::function::activator::hostedService::*;
 import meta::pure::metamodel::dataSpace::*;
+import meta::analytics::lineage::*;
 
 
 function meta::external::function::activator::hostedService::generation::printPlan(h:HostedService[1]): Any[*]
@@ -281,4 +282,11 @@ function meta::external::function::activator::hostedService::validator::allowedR
     String,
     Byte
   ]
+}
+
+// For multiexecution  services , we need to first rewrite the service using  before we can call this 
+function meta::external::function::activator::hostedService::generation::computeLineage(h: HostedService[1], extensions:meta::pure::extension::Extension[*]): String[1]
+{
+  let fullAnalytics  = meta::external::function::activator::lineage::computeLineage($h.function, $extensions);
+  meta::alloy::metadataServer::alloyToJSON($fullAnalytics);
 }

@@ -142,7 +142,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [5:1-27:1]: Service 'test::Service' is not defined");
+                "}\n", "COMPILATION error at [9:3-25]: Can't find the packageable element 'test::Service'");
     }
 
     @Test
@@ -203,7 +203,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [41:11-44:5]: Binding 'test::Binding' is not defined");
+                "}\n", "COMPILATION error at [43:7-29]: Can't find the packageable element 'test::Binding'");
     }
 
     @Test
@@ -264,7 +264,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [41:11-43:36]: Database 'test::Database' is not defined");
+                "}\n", "COMPILATION error at [43:7-31]: Can't find the packageable element 'test::Database'");
     }
 
     @Test

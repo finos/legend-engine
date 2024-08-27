@@ -92,6 +92,9 @@ public class ServiceProtocolExtension implements PureProtocolExtension
     @Override
     public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
-        return Maps.mutable.with(Service.class, SERVICE_CLASSIFIER_PATH);
+        return Maps.mutable.with(
+                Service.class, SERVICE_CLASSIFIER_PATH,
+                ExecutionEnvironmentInstance.class, "meta::legend::service::metamodel::ExecutionEnvironmentInstance"
+        );
     }
 }

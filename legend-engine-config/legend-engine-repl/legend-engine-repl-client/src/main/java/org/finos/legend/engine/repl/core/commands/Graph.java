@@ -45,7 +45,13 @@ public class Graph implements Command
     @Override
     public String documentation()
     {
-        return "graph (<Packageable Element>)";
+        return "graph (<element path>)";
+    }
+
+    @Override
+    public String description()
+    {
+        return "show graph element definition in Pure";
     }
 
     @Override
@@ -69,7 +75,7 @@ public class Graph implements Command
                                     return ab.toAnsi();
                                 }
                         ),
-                        e -> this.client.getTerminal().writer().println(e));
+                        e -> this.client.printInfo(e));
             }
             else
             {
@@ -77,7 +83,7 @@ public class Graph implements Command
                 PackageableElement element = ListIterate.select(d.getElements(), c -> c.getPath().equals(showArgs.getFirst())).getFirst();
                 Section section = LazyIterate.selectInstancesOf(d.getElements(), SectionIndex.class).flatCollect(c -> c.sections).select(c -> c.elements.contains(PureGrammarComposerUtility.convertPath(element.getPath()))).getFirst();
                 PureGrammarComposer composer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
-                this.client.getTerminal().writer().println(composer.render(element, section.parserName));
+                this.client.printInfo(composer.render(element, section.parserName));
             }
             return true;
         }
@@ -86,9 +92,9 @@ public class Graph implements Command
 
     public static void drawPath(AttributedStringBuilder ab, String _package, String name)
     {
-        ab.style(new AttributedStyle().foreground(100, 100, 100).italic());
+        ab.style(new AttributedStyle().foreground(AttributedStyle.WHITE).italic());
         ab.append(_package == null || _package.isEmpty() ? "" : _package + "::");
-        ab.style(new AttributedStyle().foreground(200, 200, 200).italic());
+        ab.style(new AttributedStyle().foreground(AttributedStyle.WHITE).italic());
         ab.append(name);
     }
 

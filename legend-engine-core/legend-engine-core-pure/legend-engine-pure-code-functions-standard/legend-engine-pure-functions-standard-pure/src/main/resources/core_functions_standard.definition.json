@@ -1,0 +1,8 @@
+{
+  "name": "core_functions_standard",
+  "pattern": "(meta::pure::milestoning|meta::pure::functions)(::.*)?",
+  "dependencies": [
+    "platform",
+    "core_functions_relation"
+  ]
+}

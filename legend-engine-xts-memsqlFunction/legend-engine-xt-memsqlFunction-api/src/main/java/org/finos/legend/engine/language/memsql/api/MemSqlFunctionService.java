@@ -39,7 +39,11 @@ import java.util.List;
 
 public class MemSqlFunctionService implements FunctionActivatorService<Root_meta_external_function_activator_memSqlFunction_MemSqlFunction, MemSqlFunctionDeploymentConfiguration, MemSqlFunctionDeploymentResult>
 {
-    private final MemSqlFunctionDeploymentManager memSqlFunctionDeploymentManager;
+    private MemSqlFunctionDeploymentManager memSqlFunctionDeploymentManager;
+
+    public MemSqlFunctionService()
+    {
+    }
 
     public MemSqlFunctionService(PlanExecutor planExecutor)
     {
@@ -87,6 +91,12 @@ public class MemSqlFunctionService implements FunctionActivatorService<Root_meta
     public MemSqlFunctionArtifact renderArtifact(PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         return MemSqlFunctionGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
+    }
+
+    @Override
+    public String generateLineage(PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    {
+        return MemSqlFunctionGenerator.generateLineage(pureModel, activator, inputModel, routerExtensions);
     }
 
     @Override

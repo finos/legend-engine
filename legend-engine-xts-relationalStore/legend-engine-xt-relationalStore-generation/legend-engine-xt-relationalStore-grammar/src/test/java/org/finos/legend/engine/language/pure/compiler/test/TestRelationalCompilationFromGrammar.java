@@ -367,7 +367,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                         "    ProductID VARCHAR(30) PRIMARY KEY\n" +
                         "  )\n" +
                         ")",
-                "COMPILATION error at [8:12-48]: Can't find stereotype 'type3' in profile 'meta::pure::profiles::storeType'"
+                "COMPILATION error at [8:44-48]: Can't find stereotype 'type3' in profile 'meta::pure::profiles::storeType'"
         );
     }
 
@@ -378,6 +378,289 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "(\n" +
                 "    Table personTable (ID INT PRIMARY KEY, MANAGERID INT)\n" +
                 "    Join Person_Manager(personTable.MANAGERID = {target}.ID)\n" +
+                ")");
+    }
+
+    @Test
+    public void testSuperMappingMainTableAlias()
+    {
+        test("###Relational\n" +
+                "Database store::test::testDatabase\n" +
+                "(\n" +
+                "  Table ABC\n" +
+                "  (\n" +
+                "    id INTEGER PRIMARY KEY,\n" +
+                "    aName VARCHAR(20),\n" +
+                "    bName VARCHAR(20),\n" +
+                "    cName VARCHAR(20),\n" +
+                "    m1Id INTEGER,\n" +
+                "    m2Id INTEGER,\n" +
+                "    m3Id INTEGER,\n" +
+                "    m4Id INTEGER,\n" +
+                "    n1Id INTEGER,\n" +
+                "    n2Id INTEGER,\n" +
+                "    n3Id INTEGER,\n" +
+                "    o1Id INTEGER,\n" +
+                "    o2Id INTEGER\n" +
+                "  )\n" +
+                "  Table DEF\n" +
+                "  (\n" +
+                "    id INTEGER PRIMARY KEY,\n" +
+                "    dName VARCHAR(20),\n" +
+                "    eName VARCHAR(20),\n" +
+                "    fName VARCHAR(20)\n" +
+                "  )\n" +
+                "  Table GHI\n" +
+                "  (\n" +
+                "    id INTEGER PRIMARY KEY,\n" +
+                "    gName VARCHAR(20),\n" +
+                "    hName VARCHAR(20),\n" +
+                "    iName VARCHAR(20)\n" +
+                "  )\n" +
+                "  Table JKL\n" +
+                "  (\n" +
+                "    id INTEGER PRIMARY KEY,\n" +
+                "    jName VARCHAR(20),\n" +
+                "    kName VARCHAR(20),\n" +
+                "    lName VARCHAR(20)\n" +
+                "  )\n" +
+                "  Table ABC2\n" +
+                "  (\n" +
+                "    id INTEGER PRIMARY KEY,\n" +
+                "    aName VARCHAR(20),\n" +
+                "    bName VARCHAR(20),\n" +
+                "    cName VARCHAR(20),\n" +
+                "    m1Id INTEGER,\n" +
+                "    m2Id INTEGER,\n" +
+                "    m3Id INTEGER,\n" +
+                "    m4Id INTEGER,\n" +
+                "    n1Id INTEGER,\n" +
+                "    n2Id INTEGER,\n" +
+                "    n3Id INTEGER,\n" +
+                "    o1Id INTEGER,\n" +
+                "    o2Id INTEGER\n" +
+                "  )\n" +
+                "  Table DEF2\n" +
+                "  (\n" +
+                "    id INTEGER PRIMARY KEY,\n" +
+                "    dName VARCHAR(20),\n" +
+                "    eName VARCHAR(20),\n" +
+                "    fName VARCHAR(20)\n" +
+                "  )\n" +
+                "  Table GHI2\n" +
+                "  (\n" +
+                "    id INTEGER PRIMARY KEY,\n" +
+                "    gName VARCHAR(20),\n" +
+                "    hName VARCHAR(20),\n" +
+                "    iName VARCHAR(20)\n" +
+                "  )\n" +
+                "  Table JKL2\n" +
+                "  (\n" +
+                "    id INTEGER PRIMARY KEY,\n" +
+                "    jName VARCHAR(20),\n" +
+                "    kName VARCHAR(20),\n" +
+                "    lName VARCHAR(20)\n" +
+                "  )\n" +
+                "\n" +
+                "  Join AE(ABC.id = DEF.id)\n" +
+                "  Join BH(ABC.id = GHI.id)\n" +
+                "  Join CK(ABC.id = JKL.id)\n" +
+                "  Join A2E2(ABC2.id = DEF2.id)\n" +
+                "  Join B2H2(ABC2.id = GHI2.id)\n" +
+                "  Join C2K2(ABC2.id = JKL2.id)\n" +
+                "\n" +
+                "  Filter AFilter(ABC.aName = 'aName1')\n" +
+                "  Filter CFilter(ABC.cName = 'cName1')\n" +
+                ")\n" +
+                "\n" +
+                "Database my::db\n" +
+                "(\n" +
+                "  Table PersonTable\n" +
+                "  (\n" +
+                "    NAME CHAR(200) PRIMARY KEY\n" +
+                "  )\n" +
+                "  Table EmployeeTable\n" +
+                "  (\n" +
+                "    FIRMNAME CHAR(200) PRIMARY KEY\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class model::test::A\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  aName: String[1];\n" +
+                "  m1: model::test::M[1];\n" +
+                "  m2: model::test::M[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::test::B extends model::test::A\n" +
+                "{\n" +
+                "  bName: String[1];\n" +
+                "  n1: model::test::N[1];\n" +
+                "  n2: model::test::N[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::test::C extends model::test::B\n" +
+                "{\n" +
+                "  cName: String[1];\n" +
+                "  o1: model::test::O[1];\n" +
+                "  o2: model::test::O[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::test::D\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  dName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::test::E extends model::test::D\n" +
+                "{\n" +
+                "  eName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::test::F extends model::test::E\n" +
+                "{\n" +
+                "  fName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::test::G\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  gName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::test::H extends model::test::G\n" +
+                "{\n" +
+                "  hName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::test::I extends model::test::H\n" +
+                "{\n" +
+                "  iName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::test::J\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  jName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::test::K extends model::test::J\n" +
+                "{\n" +
+                "  kName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::test::L extends model::test::K\n" +
+                "{\n" +
+                "  lName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::test::M\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  mName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::test::N\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  nName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::test::O\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  oName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::Employee extends model::Person\n" +
+                "{\n" +
+                "  firmName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping mapping::testAMapping\n" +
+                "(\n" +
+                "  model::test::A[a]: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey\n" +
+                "    (\n" +
+                "      [store::test::testDatabase]ABC.id\n" +
+                "    )\n" +
+                "    ~mainTable [store::test::testDatabase]ABC\n" +
+                "    id: [store::test::testDatabase]ABC.id,\n" +
+                "    aName: [store::test::testDatabase]ABC.aName\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "Mapping mapping::testB1Mapping\n" +
+                "(\n" +
+                "  include mapping mapping::testAMapping\n" +
+                "\n" +
+                "  model::test::B[b1] extends [a]: Relational\n" +
+                "  {\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "Mapping mapping::testB2Mapping\n" +
+                "(\n" +
+                "  include mapping mapping::testAMapping\n" +
+                "\n" +
+                "  model::test::B[b2] extends [a]: Relational\n" +
+                "  {\n" +
+                "    aName: concat('bName_', [store::test::testDatabase]ABC.aName),\n" +
+                "    bName: [store::test::testDatabase]ABC.bName\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "Mapping mapping::testC1Mapping\n" +
+                "(\n" +
+                "  include mapping mapping::testB1Mapping\n" +
+                "\n" +
+                "  model::test::C[c1] extends [b1]: Relational\n" +
+                "  {\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "Mapping mapping::testC2Mapping\n" +
+                "(\n" +
+                "  include mapping mapping::testB2Mapping\n" +
+                "\n" +
+                "  model::test::C[c2] extends [b2]: Relational\n" +
+                "  {\n" +
+                "    aName: concat('cName_', [store::test::testDatabase]ABC.aName),\n" +
+                "    bName: concat('cName_', [store::test::testDatabase]ABC.bName),\n" +
+                "    cName: [store::test::testDatabase]ABC.cName\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "Mapping model::map\n" +
+                "(\n" +
+                "  *model::Person[id]: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey\n" +
+                "    (\n" +
+                "      [my::db]PersonTable.NAME\n" +
+                "    )\n" +
+                "    ~mainTable [my::db]PersonTable\n" +
+                "  }\n" +
+                "  *model::Employee extends [id]: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey\n" +
+                "    (\n" +
+                "      [my::db]EmployeeTable.FIRMNAME\n" +
+                "    )\n" +
+                "    ~mainTable [my::db]EmployeeTable\n" +
+                "    firmName: [my::db]EmployeeTable.FIRMNAME\n" +
+                "  }\n" +
                 ")");
     }
 
@@ -2418,5 +2701,64 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
         MutableList<Warning> warnings = res.getTwo().getWarnings();
         Assert.assertEquals(1, warnings.size());
         Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":24,\"startColumn\":9,\"endLine\":24,\"endColumn\":33},\"message\":\"Missing an EnumerationMapping for the enum property 'type'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum.\"}", new ObjectMapper().writeValueAsString(warnings.get(0)));
+    }
+
+    @Test
+    public void testMappingToPropertyWithDerivedPropertyConflict()
+    {
+        test("###Relational\n" +
+
+                "Database demo::stores::Db\n" +
+                "(\n" +
+                "  Schema First\n" +
+                "  (\n" +
+                "    Table Source\n" +
+                "    (\n" +
+                "      accountNumber INTEGER PRIMARY KEY,\n" +
+                "      name VARCHAR(200)\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class demo::model::ChildClass extends demo::model::BaseClass, demo::model::BaseClass2 \n" +
+                "{\n" +
+                "  Name: String[1];\n" +
+                "  accountNumber(num: Integer[1],name: String[1]) {$num + $name->size()}: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class demo::model::BaseClass2 extends demo::model::BaseClass2Parent\n" +
+                "{\n" +
+                "}\n" +
+                "\n" +
+                "Class demo::model::BaseClass extends demo::model::BaseClassParent\n" +
+                "{\n" +
+                "}\n" +
+                "\n" +
+                "Class demo::model::BaseClassParent\n" +
+                "{\n" +
+                "}\n" +
+                "\n" +
+                "Class demo::model::BaseClass2Parent\n" +
+                "{\n" +
+                "  accountNumber: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping demo::mapping::Map1\n" +
+                "(\n" +
+                "  *demo::model::ChildClass: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey\n" +
+                "    (\n" +
+                "      [demo::stores::Db]First.Source.accountNumber\n" +
+                "    )\n" +
+                "    ~mainTable [demo::stores::Db]First.Source\n" +
+                "    Name: [demo::stores::Db]First.Source.name,\n" +
+                "    accountNumber: [demo::stores::Db]First.Source.accountNumber\n" +
+                "  }\n" +
+                ")\n");
     }
 }

@@ -325,18 +325,6 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_55(
-        type=meta::pure::metamodel::ReferenceUsage,
-        position=(-213.37716, 415.31502),
-        width=148.35840,
-        height=110.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView cview_37(
         type=meta::pure::metamodel::function::Function,
         position=(-223.19332, 571.19788),
@@ -667,14 +655,6 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_14(
-        source=cview_30,
-        target=cview_23,
-        points=[(-1147.89617,613.72055),(-1147.48392,444.07123)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
     GeneralizationView gview_15(
         source=cview_31,
@@ -1201,62 +1181,6 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         source=cview_50,
         target=cview_25,
         points=[(-193.12497,846.71735),(-339.37716,846.31502),(-337.87716,1033.81502),(-2498.37716,1035.31502),(-2498.00251,360.14562),(-2200.31561,361.75474),(-2190.83107,364.29456)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
-
-    PropertyView pview_24(
-        property=meta::pure::metamodel::PackageableElement.referenceUsages,
-        source=cview_2,
-        target=cview_55,
-        points=[(660.12409,438.00000),(-74.37716,439.31502)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
-
-    PropertyView pview_25(
-        property=meta::pure::metamodel::type::generics::GenericType.referenceUsages,
-        source=cview_25,
-        target=cview_55,
-        points=[(-1977.37716,371.31502),(-1921.37716,371.31502),(-1921.37716,293.31502),(-336.37716,300.31502),(-335.37716,434.31502),(-193.37716,433.31502)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
-
-    PropertyView pview_26(
-        property=meta::pure::metamodel::type::FunctionType.referenceUsages,
-        source=cview_34,
-        target=cview_55,
-        points=[(-452.37716,575.31502),(-334.37716,575.31502),(-334.37716,501.31502),(-206.37716,501.31502)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
-
-    PropertyView pview_27(
-        property=meta::pure::metamodel::function::Function.referenceUsages,
-        source=cview_37,
-        target=cview_55,
-        points=[(-4.28524,607.25645),(230.62284,613.31502),(230.62284,504.31502),(-68.37716,503.31502)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),

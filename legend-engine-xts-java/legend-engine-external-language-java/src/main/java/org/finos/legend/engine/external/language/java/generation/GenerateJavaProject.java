@@ -16,7 +16,12 @@ package org.finos.legend.engine.external.language.java.generation;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_external_language_java_metamodel_Class;
+import org.finos.legend.pure.generated.Root_meta_external_language_java_metamodel_project_Project;
+import org.finos.legend.pure.generated.Root_meta_external_language_java_metamodel_project_ProjectDirectory;
+import org.finos.legend.pure.generated.Root_meta_external_language_java_serialization_Stringifier;
+import org.finos.legend.pure.generated.core_external_language_java_metamodel_factories;
+import org.finos.legend.pure.generated.core_external_language_java_metamodel_serialization;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.VersionControlledClassLoaderCodeStorage;
@@ -59,7 +64,7 @@ public abstract class GenerateJavaProject
                 null,
                 new ConsoleCompiled(),
                 new FunctionCache(),
-                new ClassCache(),
+                new ClassCache(classLoader),
                 null,
                 Sets.mutable.empty(),
                 CompiledExtensionLoader.extensions()

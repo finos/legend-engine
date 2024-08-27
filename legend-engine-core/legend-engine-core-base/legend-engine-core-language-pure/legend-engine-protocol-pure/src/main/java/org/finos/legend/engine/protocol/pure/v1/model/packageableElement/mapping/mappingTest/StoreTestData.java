@@ -15,13 +15,17 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
 
 public class StoreTestData
 {
     public String doc;
-    public String store;
+    @JsonSerialize(converter = PackageableElementPointer.ToPathSerializerConverter.class)
+    public StoreProviderPointer store;
     public EmbeddedData data;
     public SourceInformation sourceInformation;
 }

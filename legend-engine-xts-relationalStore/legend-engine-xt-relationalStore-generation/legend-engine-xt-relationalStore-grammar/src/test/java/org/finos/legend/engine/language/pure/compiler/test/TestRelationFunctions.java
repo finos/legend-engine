@@ -218,6 +218,283 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
         );
     }
 
+    @Test
+    public void testExtendAggregation()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(~nid:x|$x.id->toOne()+1:y|$y->sum())\n" +
+                        "}"
+        );
+    }
+
+    @Test
+    public void testExtendAggregationArray()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(~[nid:x|$x.id->toOne()+1:y|$y->sum()])\n" +
+                        "}"
+        );
+    }
+
+    @Test
+    public void testExtendAggregationError()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(~nid:x|$x.id->toOne()+1:y|$y->joinStrings(','))\n" +
+                        "}",
+                "COMPILATION error at [7:55-65]: Can't find a match for function 'joinStrings(Integer[*],String[1])'"
+        );
+    }
+
+    @Test
+    public void testExtendAggregationWithWindowPartition()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(over(~id), ~nid:{p,w,r|$r.id}:y|$y->sum())\n" +
+                        "}"
+        );
+    }
+
+    @Test
+    public void testExtendAggregationWithWindowPartitionError()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(over(~ide), ~nid:{p,w,r|$r.id}:y|$y->sum())\n" +
+                        "}", "COMPILATION error at [7:31-33]: The column 'ide' can't be found in the relation (id:Integer)"
+        );
+    }
+
+    @Test
+    public void testExtendAggregationWithWindowSort()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(over(~id->ascending()), ~nid:{p,w,r|$r.id}:y|$y->sum())\n" +
+                        "}"
+        );
+    }
+
+    @Test
+    public void testExtendAggregationWithWindowSortError()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(over(~ids->ascending()), ~nid:{p,w,r|$r.id}:y|$y->sum())\n" +
+                        "}",
+                "COMPILATION error at [7:31-33]: The column 'ids' can't be found in the relation (id:Integer)"
+        );
+    }
+
+
+    @Test
+    public void testExtendAggregationWithWindowLambdaError()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(over(~id), ~nid:{p,w,r|$r.ide}:y|$y->sum())\n" +
+                        "}",
+                "COMPILATION error at [7:51-53]: The column 'ide' can't be found in the relation (id:Integer)");
+    }
+
+
+    @Test
+    public void testExtendWithWindowCumulativeDistribution()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(over(~id->descending()), ~nid:{p,w,r|$p->cumulativeDistribution($w,$r)})\n" +
+                        "}");
+    }
+
+    @Test
+    public void testExtendWithWindowNtile()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(over(~id->descending()), ~nid:{p,w,r|$p->ntile($r,2)})\n" +
+                        "}");
+    }
+
+    @Test
+    public void testExtendWithWindowRank()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(over(~id->descending()), ~nid:{p,w,r|$p->rank($w,$r)})\n" +
+                        "}");
+    }
+
+    @Test
+    public void testExtendWithWindowDenseRank()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(over(~id->descending()), ~nid:{p,w,r|$p->denseRank($w,$r)})\n" +
+                        "}");
+    }
+
+    @Test
+    public void testExtendWithWindowPercentRank()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(over(~id->descending()), ~nid:{p,w,r|$p->percentRank($w,$r)})\n" +
+                        "}");
+    }
+
+    @Test
+    public void testExtendWithWindowRowNumber()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(over(~id->descending()), ~nid:{p,w,r|$p->rowNumber($r)})\n" +
+                        "}");
+    }
+
+    @Test
+    public void testExtendWithWindowLag()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(over(~id->descending()), ~nid:{p,w,r|$p->lag($r).id})\n" +
+                        "}");
+    }
+
+    @Test
+    public void testExtendWithWindowLead()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(over(~id->descending()), ~nid:{p,w,r|$p->lead($r).id})\n" +
+                        "}");
+    }
+
+    @Test
+    public void testExtendWithWindowNth()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(over(~id->descending()), ~nid:{p,w,r|$p->nth($w,$r,1).id})\n" +
+                        "}");
+    }
+
+    @Test
+    public void testExtendWithFirst()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(over(~id->descending()), ~nid:{p,w,r|$p->first($w,$r).id})\n" +
+                        "}");
+    }
+
+    @Test
+    public void testExtendWithLast()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(over(~id->descending()), ~nid:{p,w,r|$p->last($w,$r).id})\n" +
+                        "}");
+    }
 
     @Test
     public void testSort()
@@ -353,8 +630,6 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                 "COMPILATION error at [7:104-107]: The column 'eid2' can't be found in the relation (id2:Integer, errr:String)"
         );
     }
-
-
 
 
     @Test

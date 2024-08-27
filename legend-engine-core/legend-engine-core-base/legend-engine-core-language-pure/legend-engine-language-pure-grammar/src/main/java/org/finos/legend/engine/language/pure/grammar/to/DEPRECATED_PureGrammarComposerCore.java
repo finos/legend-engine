@@ -319,11 +319,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         builder.append("Profile ").append(PureGrammarComposerUtility.convertPath(profile.getPath())).append("\n").append("{\n");
         if (profile.stereotypes != null && !profile.stereotypes.isEmpty())
         {
-            builder.append(getTabString()).append("stereotypes: [").append(Lists.mutable.withAll(profile.stereotypes).collect(PureGrammarComposerUtility::convertIdentifier).makeString(", ")).append("];\n");
+            builder.append(getTabString()).append("stereotypes: [").append(Lists.mutable.withAll(profile.stereotypes).collect(profileStereoType -> PureGrammarComposerUtility.convertIdentifier(profileStereoType.value)).makeString(", ")).append("];\n");
         }
         if (profile.tags != null && !profile.tags.isEmpty())
         {
-            builder.append(getTabString()).append("tags: [").append(Lists.mutable.withAll(profile.tags).collect(PureGrammarComposerUtility::convertIdentifier).makeString(", ")).append("];\n");
+            builder.append(getTabString()).append("tags: [").append(Lists.mutable.withAll(profile.tags).collect(profileTag -> PureGrammarComposerUtility.convertIdentifier(profileTag.value)).makeString(", ")).append("];\n");
         }
         return builder.append("}").toString();
     }
@@ -677,7 +677,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                 (this.isVariableInFunctionSignature ? "" : "$") +
                 PureGrammarComposerUtility.convertIdentifier(variable.name) +
                 (this.isRenderingHTML() ? "</span>" : "") +
-                (variable._class != null ? ": " + HelperValueSpecificationGrammarComposer.printFullPath(variable._class, this) + "[" + HelperDomainGrammarComposer.renderMultiplicity(variable.multiplicity) + "]" : "");
+                (variable._class != null ? ": " + HelperValueSpecificationGrammarComposer.printFullPath(variable._class.path, this) + "[" + HelperDomainGrammarComposer.renderMultiplicity(variable.multiplicity) + "]" : "");
     }
 
     @Override

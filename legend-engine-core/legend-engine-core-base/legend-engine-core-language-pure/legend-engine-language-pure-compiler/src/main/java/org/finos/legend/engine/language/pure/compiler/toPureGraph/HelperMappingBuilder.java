@@ -29,6 +29,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handl
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestBuilderHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
@@ -104,7 +105,7 @@ import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
 import static org.finos.legend.pure.generated.platform_dsl_mapping_functions_Mapping.Root_meta_pure_mapping__allClassMappingsRecursive_Mapping_1__SetImplementation_MANY_;
-import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
+import static org.finos.legend.pure.generated.platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
 
 public class HelperMappingBuilder
 {
@@ -441,7 +442,7 @@ public class HelperMappingBuilder
         if (aggregateFunction.aggregateFn.parameters.size() > 0)
         {
             Variable variable = aggregateFunction.aggregateFn.parameters.get(0);
-            variable._class = PackageableElement.getUserPathForPackageableElement(Handlers.funcReturnType(processed, context.pureModel)._rawType());
+            variable._class = new PackageableElementPointer(PackageableElementType.CLASS, PackageableElement.getUserPathForPackageableElement(Handlers.funcReturnType(processed, context.pureModel)._rawType()));
             variable.multiplicity = new Multiplicity(1, 1);
         }
         afs._aggregateFn((LambdaFunction) ((InstanceValue) aggregateFunction.aggregateFn.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)))._values().getFirst());
@@ -556,13 +557,13 @@ public class HelperMappingBuilder
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElseThrow(() -> new UnsupportedOperationException("Unsupported data")));
-        if (testData.store.equals("ModelStore"))
+        if (testData.store.path.equals("ModelStore"))
         {
             mappingStoreTestData._store(new Root_meta_external_store_model_ModelStore_Impl(""));
         }
         else
         {
-            mappingStoreTestData._store(context.resolveStore(testData.store));
+            mappingStoreTestData._store(context.resolveStore(testData.store.path, testData.store.sourceInformation));
         }
         return mappingStoreTestData;
     }

@@ -201,7 +201,9 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('endsWith',               $allStates,            ^ToSql(format=likePattern('%%%s'), transform={p:String[2]|$p->transformLikeParamsDefault()})),
     dynaFnToSql('exists',                 $allStates,            ^ToSql(format='exists(%s)')),
     dynaFnToSql('exp',                    $allStates,            ^ToSql(format='exp(%s)')),
-    dynaFnToSql('floor',                  $allStates,            ^ToSql(format='floor(%s)')),
+    dynaFnToSql('first',                  $allStates,            ^ToSql(format='first_value(%s)')),
+    dynaFnToSql('nth',                    $allStates,            ^ToSql(format='nth_value(%s,%s)')),    
+    dynaFnToSql('floor',                  $allStates,            ^ToSql(format='cast(floor(%s) as INTEGER)')),
     dynaFnToSql('greaterThan',            $allStates,            ^ToSql(format='%s > %s')),
     dynaFnToSql('greaterThanEqual',       $allStates,            ^ToSql(format='%s >= %s')),
     dynaFnToSql('greatest',               $allStates,            ^ToSql(format='greatest(%s)', transform={p:String[*]|$p->joinStrings(', ')})),
@@ -214,6 +216,9 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('isNotEmpty',             $allStates,            ^ToSql(format='%s is not null')),
     dynaFnToSql('isNotNull',              $allStates,            ^ToSql(format='%s is not null')),
     dynaFnToSql('isNull',                 $allStates,            ^ToSql(format='%s is null')),
+    dynaFnToSql('lag',                    $allStates,            ^ToSql(format='lag(%s)', transform={p:String[*]|$p->joinStrings(', ')})),
+    dynaFnToSql('last',                   $allStates,            ^ToSql(format='last_value(%s)')),
+    dynaFnToSql('lead',                   $allStates,            ^ToSql(format='lead(%s)', transform={p:String[*]|$p->joinStrings(', ')})),
     dynaFnToSql('least',                  $allStates,            ^ToSql(format='least(%s)', transform={p:String[*]|$p->joinStrings(', ')})),
     dynaFnToSql('left',                   $allStates,            ^ToSql(format='left(%s,%s)')),
     dynaFnToSql('lessThan',               $allStates,            ^ToSql(format='%s < %s')),
@@ -229,10 +234,12 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
     dynaFnToSql('notEqual',               $allStates,            ^ToSql(format='%s != %s')),
     dynaFnToSql('notEqualAnsi',           $allStates,            ^ToSql(format='%s <> %s')),
+    dynaFnToSql('ntile',                  $allStates,            ^ToSql(format='ntile(%s)')),
     dynaFnToSql('or',                     $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->makeString(' or ')})),
     dynaFnToSql('plus',                   $allStates,            ^ToSql(format='%s', transform=getTransformForAddPlus())),
     dynaFnToSql('pow',                    $allStates,            ^ToSql(format='power(%s, %s)')),
     dynaFnToSql('percentile',             $allStates,            ^ToSql(format='%s', transform = {p:String[*] | $p->transformPercentile($literalProcessor)})),
+    dynaFnToSql('percentRank',            $allStates,            ^ToSql(format='percent_rank()')),    
     dynaFnToSql('rank',                   $allStates,            ^ToSql(format='rank()')),
     dynaFnToSql('rem',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
     dynaFnToSql('repeatString',           $allStates,            ^ToSql(format='repeat(%s, %s)')),
@@ -242,6 +249,8 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('rpad',                   $allStates,            ^ToSql(format='rpad(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
     dynaFnToSql('rtrim',                  $allStates,            ^ToSql(format='rtrim(%s)')),
     dynaFnToSql('rowNumber',              $allStates,            ^ToSql(format='row_number()')),
+    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
+    dynaFnToSql('cumulativeDistribution', $allStates,            ^ToSql(format='cume_dist()')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='sha1(%s)')),
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='sha256(%s)')),
     dynaFnToSql('sign',                   $allStates,            ^ToSql(format='sign(%s)')),
@@ -261,8 +270,9 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('toOne',                  $allStates,            ^ToSql(format='%s')),
     dynaFnToSql('toUpper',                $allStates,            ^ToSql(format='upper(%s)')),
     dynaFnToSql('trim',                   $allStates,            ^ToSql(format='trim(%s)')),
-    dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='var_samp(%s)')),
-    dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='var_pop(%s)'))
+    dynaFnToSql('variance',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|if ($p->last() == 'true', | 'var_samp', |'var_pop') + '('+$p->init()->joinStrings('[', ',', ']')+')'})),
+    dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='var_samp(%s)', transform={p:String[*]|if($p->size() == 1, | $p->toOne() , | $p->joinStrings('[', ',', ']'))})),
+    dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='var_pop(%s)', transform={p:String[*]|if($p->size() == 1, | $p->toOne() , | $p->joinStrings('[', ',', ']'))}))
   ];
 }
 
@@ -299,8 +309,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::defau
 ): String[1]
 {
    $ctes->map(cte |
-     $cte.name + ' AS (' + $sgc.dbConfig.selectSQLQueryProcessor($cte->cast(@SelectCommonTableExpression).selectSQLQuery->cast(@SelectSQLQuery), $sgc, $isSubSelect) + ')'
-   )->joinStrings(',\n') + '\n';
+     $cte.name + ' AS (' + $sgc.dbConfig.selectSQLQueryProcessor($cte->cast(@SelectCommonTableExpression).selectSQLQuery->cast(@SelectSQLQuery), ^$sgc(format = $sgc.format->indent()), $isSubSelect) + ')'
+   )->joinStrings(', \n') + ' \n';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::default::processSelectSQLQueryDefault(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]

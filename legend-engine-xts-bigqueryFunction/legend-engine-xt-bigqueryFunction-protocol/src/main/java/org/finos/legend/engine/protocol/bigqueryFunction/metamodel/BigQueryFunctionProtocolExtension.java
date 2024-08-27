@@ -46,8 +46,6 @@ public class BigQueryFunctionProtocolExtension implements PureProtocolExtension
         return Lists.fixedSize.with(() -> Lists.mutable.with(
                 ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
                         .withSubtype(BigQueryFunction.class, packageJSONType)
-                        .build(),
-                ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
                         .withSubtype(BigQueryFunctionDeploymentConfiguration.class, packageJSONType + "Config")
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(FunctionActivatorDeploymentConfiguration.class)
@@ -65,6 +63,9 @@ public class BigQueryFunctionProtocolExtension implements PureProtocolExtension
     @Override
     public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
-        return Maps.mutable.with(BigQueryFunction.class, "meta::external::function::activator::bigQueryFunction::BigQueryFunction");
+        return Maps.mutable.with(
+                BigQueryFunction.class, "meta::external::function::activator::bigQueryFunction::BigQueryFunction",
+                BigQueryFunctionDeploymentConfiguration.class, "meta::external::function::activator::bigQueryFunction::BigQueryFunctionDeploymentConfiguration"
+        );
     }
 }

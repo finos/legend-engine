@@ -1,5 +1,11 @@
 {
-  "name" : "core_relational_sybase",
-  "pattern" : "(meta::relational::functions::sqlQueryToString::sybaseASE|meta::relational::functions::sqlQueryToString::sybase|meta::pure::alloy::connections::tests::sybase|meta::relational::tests::sqlQueryToString::sybase|meta::pure::executionPlan::tests::sybase|meta::relational::tests::tds::sybase|meta::relational::tests::ddl::sybase|meta::relational::tests::functions::sqlstring::sybase|meta::relational::tests::mapping::sqlFunction::sybase|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
-  "dependencies" : ["platform", "platform_functions", "platform_store_relational", "core_functions", "core", "core_relational"]
+  "name": "core_relational_sybase",
+  "pattern": "(meta::relational::functions::sqlQueryToString::sybaseASE|meta::relational::functions::sqlQueryToString::sybase|meta::pure::alloy::connections::tests::sybase|meta::relational::tests::sqlQueryToString::sybase|meta::pure::executionPlan::tests::sybase|meta::relational::tests::tds::sybase|meta::relational::tests::ddl::sybase|meta::relational::tests::functions::sqlstring::sybase|meta::relational::tests::mapping::sqlFunction::sybase|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_store_relational",
+    "core_functions_unclassified",
+    "core",
+    "core_relational"
+  ]
 }

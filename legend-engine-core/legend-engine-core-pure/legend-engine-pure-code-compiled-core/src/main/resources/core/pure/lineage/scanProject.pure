@@ -100,9 +100,12 @@ function <<access.private>> meta::pure::lineage::scanProject::scanProjectRecursi
 
 function <<access.private>> meta::pure::lineage::scanProject::scanAggregateValue(val:Any[*]):FunctionDefinition<Any>[*]
 {
-  $val->match([
-    s:InstanceValue[*]|$s.values->scanAggregateValue(),
-    se: FunctionExpression[*]| $se->map(x| $x.parametersValues->at(0))->scanAggregateValue(),
-    f: FunctionDefinition<Any>[*]|$f,
-    a:Any[*]|[]]);
+  if ($val->isEmpty(),
+      | [],
+      | $val->match([
+                      s: InstanceValue[*]|$s.values->scanAggregateValue(),
+                      se: FunctionExpression[*]| $se->map(x| $x.parametersValues->at(0))->scanAggregateValue(),
+                      f: FunctionDefinition<Any>[*]|$f,
+                      a: Any[*]|[]]);
+    );  
 }

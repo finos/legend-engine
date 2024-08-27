@@ -19,16 +19,20 @@ public class SqlGenUtils
 
     public static final String WHITE_SPACE = " ";
     public static final String COMMA = ",";
+    public static final String SINGLE_QUOTE = "'";
     public static final String OPEN_PARENTHESIS = "(";
     public static final String CLOSING_PARENTHESIS = ")";
     public static final String OPEN_SQUARE_BRACKET = "[";
     public static final String CLOSING_SQUARE_BRACKET = "]";
+    public static final String OPEN_CURLY_BRACKET = "{";
+    public static final String CLOSING_CURLY_BRACKET = "}";
     public static final String EMPTY = "";
     public static final String QUOTE_IDENTIFIER = "\"%s\"";
     public static final String SINGLE_QUOTE_IDENTIFIER = "'%s'";
     public static final String BACK_QUOTE_IDENTIFIER = "`%s`";
     public static final String ASSIGNMENT_OPERATOR = "=";
     public static final String DOT = ".";
+    public static final String COLON = ":";
     public static final String FORWARD_SLASH = "/";
 
     public static String getQuotedField(String columnName, String quoteIdentifier)

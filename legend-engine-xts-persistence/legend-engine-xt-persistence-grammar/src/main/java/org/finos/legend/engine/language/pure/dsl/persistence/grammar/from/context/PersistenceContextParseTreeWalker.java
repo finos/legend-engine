@@ -23,6 +23,8 @@ import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionP
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
@@ -64,7 +66,11 @@ public class PersistenceContextParseTreeWalker
 
         // persistence
         PersistenceParserGrammar.ContextPersistenceContext persistenceContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.contextPersistence(), "persistence", context.sourceInformation);
-        context.persistence = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : persistenceContext.qualifiedName().packagePath().identifier(), persistenceContext.qualifiedName().identifier());
+        context.persistence = new PackageableElementPointer(
+                PackageableElementType.PERSISTENCE,
+                PureGrammarParserUtility.fromQualifiedName(persistenceContext.qualifiedName().packagePath() == null ? Collections.emptyList() : persistenceContext.qualifiedName().packagePath().identifier(), persistenceContext.qualifiedName().identifier())
+        );
+        context.persistence.sourceInformation = walkerSourceInformation.getSourceInformation(persistenceContext);
 
         // persistence platform
         PersistenceParserGrammar.ContextPlatformContext platformContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.contextPlatform(), "platform", context.sourceInformation);

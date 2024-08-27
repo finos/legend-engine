@@ -23,11 +23,10 @@ import junit.framework.TestSuite;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.block.function.checked.ThrowingFunction0;
-import org.eclipse.collections.impl.factory.Sets;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
@@ -43,10 +42,7 @@ import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeSto
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.RepositoryCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.VersionControlledClassLoaderCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
-import org.finos.legend.pure.m3.serialization.grammar.Parser;
-import org.finos.legend.pure.m3.serialization.grammar.m3parser.inlinedsl.InlineDSL;
 import org.finos.legend.pure.m3.serialization.runtime.Message;
-import org.finos.legend.pure.m3.serialization.runtime.ParserService;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.compiler.JavaCompilerState;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
@@ -182,9 +178,10 @@ public class PureTestHelperFramework
 
     public static CompiledExecutionSupport getExecutionSupport()
     {
+        ClassLoader classLoader = PureTestHelperFramework.class.getClassLoader();
         return new CompiledExecutionSupport(
-                new JavaCompilerState(null, PureTestHelperFramework.class.getClassLoader()),
-                new CompiledProcessorSupport(PureTestHelperFramework.class.getClassLoader(), PureModel.METADATA_LAZY, Sets.mutable.empty()),
+                new JavaCompilerState(null, classLoader),
+                new CompiledProcessorSupport(classLoader, PureModel.METADATA_LAZY, Sets.mutable.empty()),
                 null,
                 new RepositoryCodeStorage()
                 {
@@ -282,7 +279,7 @@ public class PureTestHelperFramework
                 null,
                 new ConsoleCompiled(),
                 new FunctionCache(),
-                new ClassCache(),
+                new ClassCache(classLoader),
                 null,
                 Sets.mutable.empty(),
                 CompiledExtensionLoader.extensions()
@@ -296,12 +293,8 @@ public class PureTestHelperFramework
 
     public static CompiledExecutionSupport getClassLoaderExecutionSupport(boolean enableConsole)
     {
-        ParserService loader = new ParserService();
-        ListIterable<Parser> parsers = loader.parsers();
-        ListIterable<InlineDSL> inlineDSLs = loader.inlineDSLs();
-
         ConsoleCompiled console = new ConsoleCompiled();
-        if (enableConsole == true)
+        if (enableConsole)
         {
             console.enable();
         }
@@ -310,16 +303,17 @@ public class PureTestHelperFramework
             console.disable();
         }
 
+        ClassLoader classLoader = PureTestHelperFramework.class.getClassLoader();
         return new CompiledExecutionSupport(
-                new JavaCompilerState(null, PureTestHelperFramework.class.getClassLoader()),
-                new CompiledProcessorSupport(PureTestHelperFramework.class.getClassLoader(), PureModel.METADATA_LAZY, Sets.mutable.empty()),
+                new JavaCompilerState(null, classLoader),
+                new CompiledProcessorSupport(classLoader, PureModel.METADATA_LAZY, Sets.mutable.empty()),
                 null,
-                new CompositeCodeStorage(new VersionControlledClassLoaderCodeStorage(PureTestHelperFramework.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories(true), null)),
+                new CompositeCodeStorage(new VersionControlledClassLoaderCodeStorage(classLoader, CodeRepositoryProviderHelper.findCodeRepositories(true), null)),
                 null,
                 null,
                 console,
                 new FunctionCache(),
-                new ClassCache(),
+                new ClassCache(classLoader),
                 null,
                 Sets.mutable.empty(),
                 CompiledExtensionLoader.extensions()
@@ -415,7 +409,7 @@ public class PureTestHelperFramework
 
     public static TestSuite buildSuite(TestCollection testCollection, ExecutionSupport executionSupport)
     {
-        MutableList<TestSuite> subSuites = new FastList<>();
+        MutableList<TestSuite> subSuites = Lists.mutable.empty();
         for (TestCollection collection : testCollection.getSubCollections().toSortedList(Comparator.comparing(a -> a.getPackage().getName())))
         {
             subSuites.add(buildSuite(collection, executionSupport));
@@ -450,7 +444,7 @@ public class PureTestHelperFramework
 
     public static TestSuite buildJavaPureTestSuite(TestCollection testCollection, ExecutionSupport executionSupport, CoreInstance runner)
     {
-        MutableList<TestSuite> subSuites = new FastList<>();
+        MutableList<TestSuite> subSuites = Lists.mutable.empty();
         for (TestCollection collection : testCollection.getSubCollections().toSortedList(Comparator.comparing(a -> a.getPackage().getName())))
         {
             subSuites.add(buildJavaPureTestSuite(collection, executionSupport, runner));

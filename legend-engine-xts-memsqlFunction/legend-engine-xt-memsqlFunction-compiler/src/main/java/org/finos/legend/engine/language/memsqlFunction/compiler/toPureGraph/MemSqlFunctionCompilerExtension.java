@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.memsqlFunction.compiler.toPureGraph;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.code.core.CoreFunctionActivatorCodeRepositoryProvider;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
@@ -62,6 +63,8 @@ public class MemSqlFunctionCompilerExtension implements CompilerExtension
                     memSqlFunction.name,
                     null,
                     context.pureModel.getClass("meta::external::function::activator::memSqlFunction::MemSqlFunction"))
+                    ._stereotypes(ListIterate.collect(memSqlFunction.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
+                    ._taggedValues(ListIterate.collect(memSqlFunction.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)))
                     ._functionName(memSqlFunction.functionName)
                     ._function(func)
                     ._description(memSqlFunction.description)

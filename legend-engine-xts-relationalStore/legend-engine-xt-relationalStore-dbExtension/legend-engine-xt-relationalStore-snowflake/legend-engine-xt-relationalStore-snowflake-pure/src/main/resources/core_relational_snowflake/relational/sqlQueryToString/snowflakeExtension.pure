@@ -178,7 +178,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='dateadd(DAY, case when %s - DAYOFWEEK(%s) +1  >= 0 then %s  - DAYOFWEEK(%s) -1 - 7 else %s - DAYOFWEEK(%s) -1 end, %s)', transform={p:String[1..2] | $p->formatMostRecentSnowflake('current_date')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
     dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
-    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round((%s)::numeric, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
     dynaFnToSql('startsWith',             $allStates,            ^ToSql(format='startswith(%s,%s)', transform={p:String[2]|$p})),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='sha2(%s, 256)')),
@@ -329,9 +329,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 {
    if($type == String, | '::varchar', |
    if($type == StrictDate, | '::date', |
+   if($type == Integer, | '::number', |
+   if($type == Float, | '::float', |
+   if($type == Boolean, | '::boolean', |
    if($type->isNotEmpty() && $type->toOne()->_subTypeOf(Date), | '::timestamp', |
    if($type->isNotEmpty() && $type->toOne()->instanceOf(Enumeration), | '::varchar', |
-   ''))));
+   '')))))));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processJoinStringsOperationForSnowflake(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]

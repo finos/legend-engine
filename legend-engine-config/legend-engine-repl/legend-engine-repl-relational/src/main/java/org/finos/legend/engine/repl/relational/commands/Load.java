@@ -53,7 +53,13 @@ public class Load implements Command
     @Override
     public String documentation()
     {
-        return "load <path> <connection>";
+        return "load <path> <connection> (<table name>)";
+    }
+
+    @Override
+    public String description()
+    {
+        return "load CSV file into table";
     }
 
     @Override
@@ -62,21 +68,21 @@ public class Load implements Command
         if (line.startsWith("load"))
         {
             String[] tokens = line.split(" ");
-            if (tokens.length != 3)
+            if (tokens.length != 3 && tokens.length != 4)
             {
-                throw new RuntimeException("Error, load should be used as 'load <path> <connection>'");
+                throw new RuntimeException("Command should be used as '" + this.documentation() + "'");
             }
 
             DatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(this.client.getModelState().parse(), tokens[2]);
 
             try (Connection connection = ConnectionHelper.getConnection(databaseConnection, client.getPlanExecutor()))
             {
-                String tableName = "test" + (getTables(connection).size() + 1);
+                String tableName = tokens.length == 4 ? tokens[3] : ("test" + (getTables(connection).size() + 1));
 
                 try (Statement statement = connection.createStatement())
                 {
                     statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().load(tableName, tokens[1]));
-                    this.client.getTerminal().writer().println("Loaded into table: '" + tableName + "'");
+                    this.client.printInfo("Loaded into table: '" + tableName + "'");
                 }
             }
 
@@ -99,7 +105,7 @@ public class Load implements Command
                 MutableList<Candidate> ca = ListIterate.collect(list, c ->
                 {
                     String val = compressed.length() == 1 ? c.value() : c.value().substring(1);
-                    return new Candidate(val, val, (String) null, (String) null, (String) null, (String) null, false, 0);
+                    return new Candidate(val, val, null, null, null, null, false, 0);
                 });
                 list.clear();
                 list.addAll(ca);

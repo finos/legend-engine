@@ -142,7 +142,7 @@ public class HostedServiceTreeWalker
             stereotypePtr.profile = PureGrammarParserUtility.fromQualifiedName(stereotypeContext.qualifiedName().packagePath() == null ? Collections.emptyList() : stereotypeContext.qualifiedName().packagePath().identifier(), stereotypeContext.qualifiedName().identifier());
             stereotypePtr.value = PureGrammarParserUtility.fromIdentifier(stereotypeContext.identifier());
             stereotypePtr.profileSourceInformation = this.walkerSourceInformation.getSourceInformation(stereotypeContext.qualifiedName());
-            stereotypePtr.sourceInformation = this.walkerSourceInformation.getSourceInformation(stereotypeContext);
+            stereotypePtr.sourceInformation = this.walkerSourceInformation.getSourceInformation(stereotypeContext.identifier());
             return stereotypePtr;
         });
     }
@@ -159,6 +159,7 @@ public class HostedServiceTreeWalker
         ExecutionEnvironmentInstance execEnv = new ExecutionEnvironmentInstance();
         execEnv.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
         execEnv._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
+        execEnv.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         List<HostedServiceParserGrammar.ExecParamsContext> execEnvCtxList = PureGrammarParserUtility.validateRequiredListField(ctx.executions().execParams(), "executions", walkerSourceInformation.getSourceInformation(ctx.executions()));
         if (execEnvCtxList.stream().anyMatch(x -> x.singleExecEnv() != null))
         {

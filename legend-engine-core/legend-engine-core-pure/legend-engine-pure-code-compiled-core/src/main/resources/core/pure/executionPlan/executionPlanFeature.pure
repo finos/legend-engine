@@ -30,7 +30,7 @@ function  meta::pure::executionPlan::featureFlag::withFeatureFlags<T>(object:T[*
 
 Class meta::pure::executionPlan::featureFlag::FeatureFlagOption  extends meta::pure::executionPlan::ExecutionOption
 {
-  flags:Enum[*];
+  <<equality.Key>> flags:Enum[*];
 }
 
 

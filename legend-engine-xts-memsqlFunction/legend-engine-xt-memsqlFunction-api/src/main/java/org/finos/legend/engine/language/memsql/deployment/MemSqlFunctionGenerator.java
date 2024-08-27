@@ -48,13 +48,18 @@ public class MemSqlFunctionGenerator
         {
             //identify connection
             MemSqlFunction protocolActivator = org.eclipse.collections.impl.factory.Lists.mutable.withAll(((PureModelContextData) inputModel).getElementsOfType(MemSqlFunction.class))
-                    .select(c -> c.getPath().equals(platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(activator, pureModel.getExecutionSupport())))
+                    .select(c -> c.getPath().equals(platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(activator, pureModel.getExecutionSupport())))
                     .getFirst();
             connection = (RelationalDatabaseConnection) org.eclipse.collections.impl.factory.Lists.mutable.withAll(((PureModelContextData) inputModel).getElementsOfType(PackageableConnection.class))
                     .select(c -> c.getPath().equals(((org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionDeploymentConfiguration) protocolActivator.activationConfiguration).activationConnection.connection)).getFirst().connectionValue;
             return new MemSqlFunctionArtifact(activator._functionName(), Lists.mutable.of(sqlExpressions), new MemSqlFunctionDeploymentConfiguration(connection));
         }
         return new MemSqlFunctionArtifact(activator._functionName(), Lists.mutable.of(sqlExpressions));
+    }
+
+    public static String generateLineage(PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    {
+        return core_memsqlfunction_generation_generation.Root_meta_external_function_activator_memSqlFunction_generation_computeLineage_MemSqlFunction_1__Extension_MANY__String_1_(activator, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
     }
 
     private static Pair<Root_meta_pure_alloy_connections_alloy_specification_StaticDatasourceSpecification_Impl, RichIterable<String>> extractArtifactDetails(PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)

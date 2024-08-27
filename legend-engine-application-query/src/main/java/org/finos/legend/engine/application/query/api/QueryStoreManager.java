@@ -34,6 +34,8 @@ import org.eclipse.collections.api.set.sorted.MutableSortedSet;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.application.query.model.*;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.vault.Vault;
 
 import javax.lang.model.SourceVersion;
@@ -41,8 +43,10 @@ import javax.ws.rs.core.Response;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class QueryStoreManager
 {
@@ -58,7 +62,7 @@ public class QueryStoreManager
     // so that it records the dataSpace it is created from
     private static final String QUERY_PROFILE_PATH = "meta::pure::profiles::query";
     private static final String QUERY_PROFILE_TAG_DATA_SPACE = "dataSpace";
-    private static final List<String> LIGHT_QUERY_PROJECTION = Arrays.asList("id", "name", "versionId", "originalVersionId", "groupId", "artifactId", "owner", "createdAt", "lastUpdatedAt");
+    private static final List<String> LIGHT_QUERY_PROJECTION = Arrays.asList("id", "name", "versionId", "originalVersionId", "groupId", "artifactId", "owner", "createdAt", "lastUpdatedAt", "lastOpenAt");
     private static final int GET_QUERIES_LIMIT = 50;
     private final MongoClient mongoClient;
 
@@ -240,9 +244,37 @@ public class QueryStoreManager
         }
         if (searchSpecification.taggedValues != null && !searchSpecification.taggedValues.isEmpty())
         {
-            List taggedValueFilters = ListIterate.collect(searchSpecification.taggedValues, taggedValue ->
-                    Filters.and(Filters.eq("taggedValues.tag.profile", taggedValue.tag.profile), Filters.eq("taggedValues.tag.value", taggedValue.tag.value), Filters.eq("taggedValues.value", taggedValue.value)));
-            filters.add(searchSpecification.combineTaggedValuesCondition != null && searchSpecification.combineTaggedValuesCondition ? Filters.and(taggedValueFilters) : Filters.or(taggedValueFilters));
+            List<Bson> taggedValueFilters = ListIterate.collect(searchSpecification.taggedValues, taggedValue ->
+                    Filters.and(
+                            Filters.eq("taggedValues.tag.profile", taggedValue.tag.profile),
+                            Filters.eq("taggedValues.tag.value", taggedValue.tag.value),
+                            Filters.eq("taggedValues.value", taggedValue.value)
+                    )
+            );
+            Bson taggedValuesFilter = searchSpecification.combineTaggedValuesCondition != null && searchSpecification.combineTaggedValuesCondition
+                    ? Filters.and(taggedValueFilters)
+                    : Filters.or(taggedValueFilters);
+
+            List<String> dataspaceTaggedValues = searchSpecification.taggedValues != null
+                    ? searchSpecification.taggedValues.stream()
+                    .filter(taggedValue -> QUERY_PROFILE_PATH.equals(taggedValue.tag.profile) &&
+                            QUERY_PROFILE_TAG_DATA_SPACE.equals(taggedValue.tag.value))
+                    .map(taggedValue ->  taggedValue.value)
+                    .collect(Collectors.toList())
+                    : Collections.emptyList();
+
+            if (!dataspaceTaggedValues.isEmpty())
+            {
+                Bson executionContextFilter = Filters.and(
+                        Filters.eq("executionContext._type", "dataSpaceExecutionContext"),
+                        Filters.in("executionContext.dataSpacePath", dataspaceTaggedValues)
+                );
+                filters.add(Filters.or(taggedValuesFilter, executionContextFilter));
+            }
+            else
+            {
+                filters.add(taggedValuesFilter);
+            }
         }
         if (searchSpecification.stereotypes != null && !searchSpecification.stereotypes.isEmpty())
         {
@@ -252,18 +284,47 @@ public class QueryStoreManager
         }
 
         List<Query> queries = new ArrayList<>();
+        List<Bson> aggregateLists = new ArrayList<>();
+        aggregateLists.add(Aggregates.addFields(new Field<>("isCurrentUser", new Document("$eq", Arrays.asList("$owner", currentUser)))));
+        aggregateLists.add(Aggregates.match(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters)));
+        aggregateLists.add(Aggregates.sort(Sorts.descending("isCurrentUser")));
+        if (searchSpecification.sortByOption != null)
+        {
+            aggregateLists.add(Aggregates.sort(Sorts.descending(getSortByField(searchSpecification.sortByOption))));
+        }
+        aggregateLists.add(Aggregates.project(Projections.include(LIGHT_QUERY_PROJECTION)));
+        aggregateLists.add(Aggregates.limit(Math.min(MAX_NUMBER_OF_QUERIES, searchSpecification.limit == null ? Integer.MAX_VALUE : searchSpecification.limit)));
         AggregateIterable<Document> documents = this.getQueryCollection()
-                .aggregate(Arrays.asList(
-                        Aggregates.addFields(new Field("isCurrentUser", new Document("$eq", Arrays.asList("$owner", currentUser)))),
-                        Aggregates.match(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters)),
-                        Aggregates.sort(Sorts.descending("isCurrentUser")),
-                        Aggregates.project(Projections.include(LIGHT_QUERY_PROJECTION)),
-                        Aggregates.limit(Math.min(MAX_NUMBER_OF_QUERIES, searchSpecification.limit == null ? Integer.MAX_VALUE : searchSpecification.limit))));
+                .aggregate(aggregateLists);
+
         for (Document doc : documents)
         {
             queries.add(documentToQuery(doc));
         }
         return queries;
+    }
+
+    public String getSortByField(QuerySearchSortBy sortBy)
+    {
+        switch (sortBy)
+        {
+            case SORT_BY_CREATE:
+            {
+                return "createdAt";
+            }
+            case SORT_BY_VIEW:
+            {
+                return "lastOpenAt";
+            }
+            case SORT_BY_UPDATE:
+            {
+                return "lastUpdatedAt";
+            }
+            default:
+            {
+                throw new EngineException("Fail to understand sort-by value", EngineErrorType.COMPILATION);
+            }
+        }
     }
 
     public List<Query> getQueries(List<String> queryIds)

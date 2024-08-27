@@ -72,6 +72,20 @@ Class simple::model::Product
   version: String[1];
 }
 
+Class simple::model::Manufacturer
+{
+  manufacturerId: Integer[1];
+  manufacturerDetails: simple::model::ManufacturerDetails[1];
+}
+
+Class simple::model::ManufacturerDetails {
+  dateFounded: StrictDate[1];
+  name: String[1];
+  isTaxExempt: Boolean[1];
+  annualTaxRate: Float[1];
+  hourlyRate: Decimal[1];
+}
+
 ###ExternalFormat
 Binding simple::binding::binding
 {
@@ -82,6 +96,15 @@ Binding simple::binding::binding
     simple::model::blockData
   ];
 }
+
+Binding simple::binding::ManufacturerBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    simple::model::ManufacturerDetails
+  ];
+}
+
 
 ###Relational
 Database simple::store::semistructured
@@ -113,6 +136,11 @@ Database simple::store::semistructured
       IDENTIFIER VARCHAR(100) PRIMARY KEY,
       VERSION VARCHAR(100) PRIMARY KEY,
       PRODUCT VARCHAR(100)
+    )
+    Table Manufacturers
+    (
+      MANUFACTURER_ID INTEGER PRIMARY KEY,
+      MANUFACTURER_DETAILS SEMISTRUCTURED
     )
   )
 
@@ -253,6 +281,17 @@ Mapping simple::mapping::semistructured
     version: [simple::store::semistructured]Semistructured.Product.VERSION,
     product: [simple::store::semistructured]Semistructured.Product.PRODUCT
   }
+   *simple::model::Manufacturer: Relational
+    {
+     ~primaryKey
+      (
+        [simple::store::semistructured]Semistructured.Manufacturers.MANUFACTURER_ID
+      )
+      ~mainTable [simple::store::semistructured]Semistructured.Manufacturers
+      manufacturerId: [simple::store::semistructured]Semistructured.Manufacturers.MANUFACTURER_ID,
+      manufacturerDetails: Binding simple::binding::ManufacturerBinding : [simple::store::semistructured]Semistructured.Manufacturers.MANUFACTURER_DETAILS
+
+    }
 )
 
 Mapping view::mapping::semistructured
@@ -311,7 +350,7 @@ Mapping view::mapping::semistructured
     version: [view::store::semistructured]Semistructured.Product.VERSION,
     product: [view::store::semistructured]Semistructured.Product.PRODUCT
   }
-)
+ )
 
 ###Connection
 RelationalDatabaseConnection simple::connection::snowflake
@@ -613,4 +652,31 @@ function simple::query::getProductsForOrdersInBlock():TabularDataSet[1]
       ]
     );
 }
+
+function simple::query::semiStructuredWithDifferentJsonTypes(): TabularDataSet[1]
+{
+    simple::model::Manufacturer.all()
+        ->filter(
+            x | $x.manufacturerDetails.isTaxExempt
+        )
+        ->project(
+            [
+                x | $x.manufacturerId,
+                x | $x.manufacturerDetails.isTaxExempt,
+                x | $x.manufacturerDetails.dateFounded,
+                x | $x.manufacturerDetails.name,
+                x | $x.manufacturerDetails.annualTaxRate,
+                x | $x.manufacturerDetails.hourlyRate
+            ],
+            [
+                'Manufacturer Id',
+                'Is Tax Exempt',
+                'Date Foudned',
+                'Name',
+                'Annual Tax Rate',
+                'Hourly Rate'
+            ]
+        );
+}
+
 

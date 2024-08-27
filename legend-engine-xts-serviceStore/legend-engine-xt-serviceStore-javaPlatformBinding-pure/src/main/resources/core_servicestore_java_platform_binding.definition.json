@@ -3,7 +3,6 @@
   "pattern": "(meta::external::store::service::executionPlan::platformBinding::legendJava)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
     "platform_dsl_mapping",
     "core",
     "core_external_format_json",

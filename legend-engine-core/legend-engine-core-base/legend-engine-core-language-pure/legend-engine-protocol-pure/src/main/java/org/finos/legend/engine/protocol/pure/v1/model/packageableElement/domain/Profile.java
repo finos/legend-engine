@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 
@@ -22,8 +23,10 @@ import java.util.List;
 
 public class Profile extends PackageableElement
 {
-    public List<String> stereotypes = Collections.emptyList();
-    public List<String> tags = Collections.emptyList();
+    @JsonSerialize(contentConverter = ProfileStereotype.ToPathSerializerConverter.class)
+    public List<ProfileStereotype> stereotypes = Collections.emptyList();
+    @JsonSerialize(contentConverter = ProfileTag.ToPathSerializerConverter.class)
+    public List<ProfileTag> tags = Collections.emptyList();
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)

@@ -46,6 +46,7 @@ public class HostedServiceArtifactGenerationExtension implements ArtifactGenerat
     public final String ROOT_PATH = "Hosted-Service-Artifact-Generation";
 
     private static final String FILE_NAME = "hostedServiceArtifact.json";
+    private static final String LINEAGE_FILE_NAME = "hostedServiceLineageArtifact.json";
 
     @Override
     public MutableList<String> group()
@@ -72,16 +73,26 @@ public class HostedServiceArtifactGenerationExtension implements ArtifactGenerat
         List<Artifact> result = Lists.mutable.empty();
         try
         {
+            LOGGER.info("Generating hostedService deploy artifact for " + element.getName());
             Root_meta_external_function_activator_hostedService_HostedService activator = (Root_meta_external_function_activator_hostedService_HostedService) element;
-           // MutableList<PlanGeneratorExtension> extensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
             Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel p) -> PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(p.getExecutionSupport()));
             GenerationInfoData info = HostedServiceArtifactGenerator.renderArtifact(pureModel, activator, data, clientVersion, routerExtensions);
-            PureModelContextData s = HostedServiceArtifactGenerator.fetchHostedService(activator, data, pureModel);
-            result.add(new Artifact(mapper.writeValueAsString(new HostedServiceArtifact(activator._pattern(), info, generatePointerForActivator(s, data), (AlloySDLC) data.origin.sdlcInfo)), FILE_NAME, "json"));
+            PureModelContextData serviceData = HostedServiceArtifactGenerator.fetchHostedService(activator, data, pureModel);
+            result.add(new Artifact(mapper.writeValueAsString(new HostedServiceArtifact(activator._pattern(), info, generatePointerForActivator(serviceData, data), (AlloySDLC) data.origin.sdlcInfo)), FILE_NAME, "json"));
+            if (!(element._stereotypes().anySatisfy(stereotype ->
+                    stereotype._profile()._name().equals("devStatus") && stereotype._profile()._p_stereotypes().anySatisfy(s -> s._value().equals("inProgress")))))
+            {
+                //lineage
+                LOGGER.info("Generating hostedService lineage artifacts for " + element.getName());
+                String lineage = HostedServiceArtifactGenerator.generateLineage(pureModel, activator, data, routerExtensions);
+                result.add(new Artifact(lineage, LINEAGE_FILE_NAME, "json"));
+            }
+            LOGGER.info("Generated artifacts for " + element.getName());
+
         }
         catch (Exception e)
         {
-            LOGGER.error("Error generating Hosted Service ", e);
+            LOGGER.error("Error generating hostedService artifacts ", e);
         }
         return result;
     }

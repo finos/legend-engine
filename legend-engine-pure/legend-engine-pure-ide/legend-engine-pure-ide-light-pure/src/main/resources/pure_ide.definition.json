@@ -3,11 +3,10 @@
   "pattern": "(meta::pure::ide)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
-    "platform_functions_json",
     "platform_dsl_mapping",
     "platform_dsl_diagram",
-    "core_functions",
+    "core_functions_unclassified",
+    "core_functions_json",
     "core"
   ]
 }

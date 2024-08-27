@@ -242,7 +242,11 @@ function meta::pure::router::routing::routeFunctionExpressionColumn(c:Column<Nil
 function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
   if ($fe.parametersValues->isEmpty(),
-      | $state,
+      | if ($f->instanceOf(NativeFunction) || $f->shouldStop($extensions),
+          | $state,
+          | assert($f->cast(@FunctionDefinition<Any>).expressionSequence->size() <= 1, | 'Function ' +$f->cast(@FunctionDefinition<Any>)->elementToPath() + ' is not yet supported as functions with more than one expression can not be routed');
+            ^$state(value=$f->cast(@FunctionDefinition<Any>).expressionSequence->at(0))->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug);
+        );,
       | // First pass (everything but lambda, AggregateValue & ColumnSpecification)
         let firstPassResults  = processCollection($state,
                                                   $fe.parametersValues->evaluateAndDeactivate(),
@@ -544,18 +548,21 @@ function meta::pure::router::routing::processColumnSpecification(v:ValueSpecific
 
 function meta::pure::router::routing::processColSpecParams(fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Any[*]
 {
-   let routedFe  = ^$state(value=$fe)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug);
-   let parametersValues = $routedFe.value->evaluateAndDeactivate()->cast(@FunctionExpression)->toOne().parametersValues->map(x | $x->byPassRouterInfo()->match([
-      i: InstanceValue[1] | $i.values->match([
-        // workaround a compile execution behavior that check for open variables and cause expressions to fail reactivation (does not happen on interpreted)
-        l: LambdaFunction<Any>[1] | ^$i(values = ^$l(openVariables = [])),
-        a: Any[*] | $i
-      ]),
-      a: ValueSpecification[*] | $a
+   let routedFe = ^$state(value=$fe)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug);
+   let newFe = $routedFe.value->evaluateAndDeactivate()->match([i: InstanceValue[1] | $i.values, a: Any[1] | $a])->cast(@FunctionExpression);
+   $newFe->map(fe|
+      let parametersValues = $fe.parametersValues->map(x | $x->byPassRouterInfo()->match([
+        i: InstanceValue[1] | $i.values->match([
+          // workaround a compile execution behavior that check for open variables and cause expressions to fail reactivation (does not happen on interpreted)
+          l: LambdaFunction<Any>[1] | ^$i(values = ^$l(openVariables = [])),
+          a: Any[*] | $i
+        ]),
+        a: ValueSpecification[*] | $a
     ]))->cast(@ValueSpecification);
 
-   let nfe = ^$fe(parametersValues = $parametersValues);
-   $nfe->reactivate($inScopeVars)->evaluateAndDeactivate()->cast(@ColumnSpecification<Any>);
+    let nfe = ^$fe(parametersValues = $parametersValues);
+    $nfe->reactivate($inScopeVars)->evaluateAndDeactivate()->cast(@ColumnSpecification<Any>);
+   );
 }
 
 
@@ -696,6 +703,10 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     firstDayOfYear_Date_1__Date_1_,
     firstDayOfQuarter_Date_1__StrictDate_1_,
     firstDayOfWeek_Date_1__Date_1_,
+    firstDayOfThisMonth__Date_1_,
+    firstDayOfThisYear__Date_1_,
+    firstDayOfThisQuarter__StrictDate_1_,
+    firstDayOfThisWeek__Date_1_,
     firstHourOfDay_Date_1__DateTime_1_,
     firstMinuteOfHour_Date_1__DateTime_1_,
     firstSecondOfMinute_Date_1__DateTime_1_,
@@ -733,6 +744,7 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     least_X_$1_MANY$__X_1_,
     variancePopulation_Number_MANY__Number_1_,
     varianceSample_Number_MANY__Number_1_,
+    variance_Number_MANY__Boolean_1__Number_1_,
     makeString_Any_MANY__String_1__String_1_,
     repeatString_String_$0_1$__Integer_1__String_$0_1$_,
     agg_FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_,
@@ -756,6 +768,7 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     whenSubType_Any_MANY__T_1__T_MANY_,
     stdDevSample_Number_MANY__Number_1_,
     stdDevPopulation_Number_MANY__Number_1_,
+    stdDev_Number_$1_MANY$__Boolean_1__Number_1_,
     extend_TabularDataSet_1__BasicColumnSpecification_MANY__TabularDataSet_1_,
     project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_,
     restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_,
@@ -788,6 +801,7 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     typeName_Any_1__String_1_,
     levenshteinDistance_String_1__String_1__Integer_1_,
     jaroWinklerSimilarity_String_1__String_1__Float_1_,
+
     meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_,
     meta::pure::functions::date::calendar::annualized_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,
     meta::pure::functions::date::calendar::cme_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,
@@ -844,7 +858,14 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     meta::pure::functions::math::percentile_Number_MANY__Float_1__Number_$0_1$_,
     meta::pure::functions::math::percentile_Number_MANY__Float_1__Boolean_1__Boolean_1__Number_$0_1$_,
     meta::pure::functions::collection::isDistinct_T_MANY__Boolean_1_,
-    meta::json::toJSON_T_MANY__LambdaFunction_MANY__String_1_
+    meta::json::toJSON_T_MANY__LambdaFunction_MANY__String_1_,
+    removeDuplicates_T_MANY__T_MANY_,
+    removeDuplicates_T_MANY__Function_1__T_MANY_,
+    removeDuplicatesBy_T_MANY__Function_1__T_MANY_,
+    sort_T_m__T_m_,
+    sort_T_m__Function_$0_1$__T_m_,
+    sortBy_T_m__Function_$0_1$__T_m_,
+    sort_T_m__Function_$0_1$__Function_$0_1$__T_m_
   ]->concatenate($extensions.routerExtensions().shouldStopRouting)
 }
 
