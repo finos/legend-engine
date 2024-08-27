@@ -67,7 +67,7 @@ public class HelperRelationalDatabaseConnectionBuilder
     public static Root_meta_pure_alloy_connections_RelationalMapperPostProcessor createRelationalMapperPostProcessor(List<PackageableElementPointer> relationalMappers, CompileContext context)
     {
         Root_meta_pure_alloy_connections_RelationalMapperPostProcessor p = new Root_meta_pure_alloy_connections_RelationalMapperPostProcessor_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::RelationalMapperPostProcessor"));
-        MutableList<Root_meta_relational_metamodel_RelationalMapper> rm = ListIterate.collect(relationalMappers, r -> (Root_meta_relational_metamodel_RelationalMapper) context.pureModel.getPackageableElement_safe(r.path));
+        MutableList<Root_meta_relational_metamodel_RelationalMapper> rm = ListIterate.collect(relationalMappers, r -> (Root_meta_relational_metamodel_RelationalMapper) context.pureModel.getPackageableElement(r.path));
         p._relationalMappers(rm);
         return p;
     }
