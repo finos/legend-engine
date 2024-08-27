@@ -67,9 +67,9 @@ public class DataCubeHelpers
 
         if (client != null && debug)
         {
-            client.printInfo("Debugging query execution...");
+            client.println("Debugging query execution...");
             client.printDebug("---------------------------------------- INPUT ----------------------------------------");
-            client.printInfo("Function: " + queryCode);
+            client.println("Function: " + queryCode);
         }
 
         PureModel pureModel = legendInterface.compile(data);
@@ -84,7 +84,7 @@ public class DataCubeHelpers
         String planStr = PlanGenerator.serializeToJSON(_plan, "vX_X_X", pureModel, extensions, LegendPlanTransformers.transformers);
         if (client != null && debug)
         {
-            client.printInfo("Generated Plan: " + planStr);
+            client.println("Generated Plan: " + planStr);
         }
 
         // Execute
@@ -108,7 +108,7 @@ public class DataCubeHelpers
                 if (client != null && debug)
                 {
                     client.printDebug("---------------------------------------- RESULT ----------------------------------------");
-                    client.printInfo("Executed SQL: " + ((RelationalResult) execResult).executedSQl);
+                    client.println("Executed SQL: " + ((RelationalResult) execResult).executedSQl);
                 }
 
                 DataCubeExecutionResult result = new DataCubeExecutionResult();

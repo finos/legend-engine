@@ -15,20 +15,20 @@
 package org.finos.legend.engine.repl.core.commands;
 
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
-import org.finos.legend.engine.shared.core.extension.Extensions;
-import org.finos.legend.engine.shared.core.extension.LegendExtension;
-import org.finos.legend.shared.stuctures.TreeNode;
+import org.finos.legend.engine.repl.shared.DocumentationHelper;
+import org.finos.legend.pure.m3.pct.aggregate.model.FunctionDocumentation;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 
-public class Ext implements Command
+public class Doc implements Command
 {
     private final Client client;
 
-    public Ext(Client client)
+    public Doc(Client client)
     {
         this.client = client;
     }
@@ -36,31 +36,43 @@ public class Ext implements Command
     @Override
     public String documentation()
     {
-        return "ext";
+        return "doc <function>";
     }
 
     @Override
     public String description()
     {
-        return "show loaded extensions";
+        return "show documentation of the specified Pure function";
     }
 
     @Override
     public boolean process(String line) throws Exception
     {
-        if (line.equals("ext"))
+        if (line.startsWith("doc"))
         {
-            MutableList<LegendExtension> extensionList = Extensions.get();
-            TreeNode extensions = Extensions.buildTree(extensionList);
-            this.client.println(extensions.print());
+            String[] tokens = line.split(" ");
+            String path = tokens[1];
+            FunctionDocumentation functionDocumentation = this.client.getFunctionDocumentation(path);
+            if (functionDocumentation != null)
+            {
+                client.println(DocumentationHelper.generateANSIFunctionDocumentation(functionDocumentation));
+            }
+            else
+            {
+                client.printError("No documentation found for function: " + path);
+            }
             return true;
         }
         return false;
     }
 
     @Override
-    public MutableList<Candidate> complete(String cmd, LineReader lineReader, ParsedLine parsedLine)
+    public MutableList<Candidate> complete(String inScope, LineReader lineReader, ParsedLine parsedLine)
     {
+        if (inScope.startsWith("doc"))
+        {
+            return ListIterate.collect(client.getDocumentedFunctions(), Candidate::new);
+        }
         return null;
     }
 }

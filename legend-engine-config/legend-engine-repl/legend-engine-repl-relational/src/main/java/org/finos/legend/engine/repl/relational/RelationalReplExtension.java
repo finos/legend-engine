@@ -30,7 +30,6 @@ import org.finos.legend.engine.repl.relational.commands.Load;
 import org.finos.legend.engine.repl.relational.local.LocalConnectionManagement;
 import org.finos.legend.engine.repl.relational.local.LocalConnectionType;
 
-import java.awt.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -38,10 +37,7 @@ import static org.finos.legend.engine.repl.relational.shared.ResultHelper.pretty
 
 public class RelationalReplExtension implements ReplExtension
 {
-    private Client client;
     public static String DUCKDB_LOCAL_CONNECTION_BASE_NAME = "DuckDuck";
-
-    private LocalConnectionManagement localConnectionManagement;
 
     static
     {
@@ -56,12 +52,17 @@ public class RelationalReplExtension implements ReplExtension
         }
     }
 
+    private Client client;
+    private int maxRowSize = 40;
+    private LocalConnectionManagement localConnectionManagement;
+
     @Override
     public String type()
     {
         return "relational";
     }
 
+    @Override
     public void initialize(Client client)
     {
         this.client = client;
@@ -80,8 +81,8 @@ public class RelationalReplExtension implements ReplExtension
     public MutableList<Command> getExtraCommands()
     {
         return Lists.mutable.with(
-                new DB(this.client, this),
-                new Load(this.client, this),
+                new DB(this.client),
+                new Load(this.client),
                 new Drop(this.client),
                 new Cache(this.client)
         );
@@ -99,11 +100,21 @@ public class RelationalReplExtension implements ReplExtension
         RelationalResult relationalResult = (RelationalResult) res;
         try (ResultSet rs = relationalResult.resultSet)
         {
-            return prettyGridPrint(rs, relationalResult.sqlColumns, ListIterate.collect(relationalResult.getSQLResultColumns(), col -> col.dataType), 40, 60);
+            return prettyGridPrint(rs, relationalResult.sqlColumns, ListIterate.collect(relationalResult.getSQLResultColumns(), col -> col.dataType), maxRowSize, 60);
         }
         catch (Exception e)
         {
             throw new RuntimeException(e);
         }
+    }
+
+    public int getMaxRowSize()
+    {
+        return maxRowSize;
+    }
+
+    public void setMaxRowSize(int maxRowSize)
+    {
+        this.maxRowSize = maxRowSize;
     }
 }

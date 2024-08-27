@@ -18,8 +18,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.block.predicate.checked.CheckedPredicate;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.repl.autocomplete.CompleterExtension;
 import org.finos.legend.engine.repl.client.jline3.JLine3Completer;
@@ -33,6 +36,9 @@ import org.finos.legend.engine.repl.core.legend.LocalLegendInterface;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.m3.pct.aggregate.generation.DocumentationGeneration;
+import org.finos.legend.pure.m3.pct.aggregate.model.Documentation;
+import org.finos.legend.pure.m3.pct.aggregate.model.FunctionDocumentation;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
@@ -41,11 +47,14 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
+import org.jline.utils.InfoCmp;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
-import static org.jline.jansi.Ansi.ansi;
+import static org.finos.legend.engine.repl.shared.REPLHelper.ansiDim;
+import static org.finos.legend.engine.repl.shared.REPLHelper.ansiRed;
 import static org.jline.reader.LineReader.BLINK_MATCHING_PAREN;
 
 public class Client
@@ -59,6 +68,8 @@ public class Client
     private final ModelState state;
     private final PlanExecutor planExecutor;
     private final Path homeDirectory;
+    private final Documentation documentation;
+    private final MutableMap<String, FunctionDocumentation> functionDocIndex = Maps.mutable.empty();
 
     private boolean debug = false;
 
@@ -84,16 +95,17 @@ public class Client
         this.terminal = TerminalBuilder.terminal();
         this.homeDirectory = homeDirectory;
 
+        this.documentation = DocumentationGeneration.buildDocumentation();
         this.initialize();
         replExtensions.forEach(e -> e.initialize(this));
 
-        this.printDebug("Legend REPL v" + DeploymentStateAndVersions.sdlc.buildVersion + " (" + DeploymentStateAndVersions.sdlc.commitIdAbbreviated + ")");
+        this.printDebug("[DEV] Legend REPL v" + DeploymentStateAndVersions.sdlc.buildVersion + " (" + DeploymentStateAndVersions.sdlc.commitIdAbbreviated + ")");
         if (System.getProperty("legend.repl.initializationMessage") != null)
         {
             this.printDebug(StringEscapeUtils.unescapeJava(System.getProperty("legend.repl.initializationMessage")));
         }
         this.printDebug("Press 'Enter' or type 'help' to see the list of available commands.");
-        this.printInfo("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
+        this.println("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
 
         // NOTE: the order here matters, the default command 'help' should always go first
         // and "catch-all" command 'execute' should always go last
@@ -103,6 +115,7 @@ public class Client
                         Lists.mutable.with(
                                 new Ext(this),
                                 new Debug(this),
+                                new Doc(this),
                                 new Graph(this),
                                 new Execute(this)
                         )
@@ -135,10 +148,33 @@ public class Client
                 .completer(new JLine3Completer(this.commands))
                 .build();
 
-        this.printInfo("Warming up...");
+        this.println("Warming up...");
         this.terminal.flush();
         ((Execute) this.commands.getLast()).execute("1+1");
-        this.printInfo("Ready!\n");
+        this.println("Ready!\n");
+    }
+
+    private void initialize()
+    {
+        // Index function documentation by path and remove platform only function
+        this.documentation.functionsDocumentation.forEach(doc ->
+                doc.functionDefinition.signatures = ListIterate.select(doc.functionDefinition.signatures, signature -> !signature.platformOnly));
+        this.documentation.functionsDocumentation = ListIterate.reject(this.documentation.functionsDocumentation, (doc) -> doc.functionDefinition.signatures.isEmpty());
+        this.documentation.functionsDocumentation.forEach(doc ->
+                this.functionDocIndex.put(doc.functionDefinition._package + "::" + doc.functionDefinition.name, doc));
+
+        try
+        {
+            Path homeDir = this.getHomeDir();
+            if (Files.notExists(homeDir))
+            {
+                Files.createDirectories(homeDir);
+            }
+        }
+        catch (Exception e)
+        {
+            this.printError("Failed to create home directory at: " + this.getHomeDir().toString());
+        }
     }
 
     public void loop()
@@ -154,28 +190,33 @@ public class Client
                     this.forceExit();
                     break;
                 }
-
-                this.reader.getHistory().add(line);
-
-                this.commands.detect(new CheckedPredicate<Command>()
+                else if (line.equalsIgnoreCase("clear"))
                 {
-                    @Override
-                    public boolean safeAccept(Command c) throws Exception
+                    this.clearScreen();
+                }
+                else
+                {
+                    this.reader.getHistory().add(line);
+                    this.commands.detect(new CheckedPredicate<Command>()
                     {
-                        try
+                        @Override
+                        public boolean safeAccept(Command c) throws Exception
                         {
-                            return c.process(line);
+                            try
+                            {
+                                return c.process(line);
+                            }
+                            catch (RuntimeException e)
+                            {
+                                throw e;
+                            }
+                            catch (Exception e)
+                            {
+                                throw new RuntimeException(e);
+                            }
                         }
-                        catch (RuntimeException e)
-                        {
-                            throw e;
-                        }
-                        catch (Exception e)
-                        {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                });
+                    });
+                }
             }
             catch (EngineException e)
             {
@@ -228,16 +269,13 @@ public class Client
             {
                 String beg = line.substring(0, e_start - 1);
                 String mid = line.substring(e_start - 1, e_end);
-                String end = line.substring(e_end, line.length());
+                String end = line.substring(e_end);
                 AttributedStringBuilder ab = new AttributedStringBuilder();
-                ab.style(new AttributedStyle().underlineOff().foregroundOff());
                 ab.append(beg);
-                ab.style(new AttributedStyle().underline().foreground(AttributedStyle.RED));
-                ab.append(mid);
-                ab.style(new AttributedStyle().underlineOff().foregroundOff());
+                ab.style(new AttributedStyle().underline());
+                ab.append(ansiRed(mid));
                 ab.append(end);
-                this.printInfo("");
-                this.printInfo(ab.toAnsi());
+                this.println(ab.toAnsi());
             }
         }
         catch (Exception ex)
@@ -251,35 +289,31 @@ public class Client
         }
     }
 
-    public void printDebug(String message)
+    public void clearScreen()
     {
-        this.terminal.writer().println(ansi().fgBrightBlack().a(message).reset());
+        // See https://github.com/jline/jline3/issues/418
+        this.terminal.puts(InfoCmp.Capability.clear_screen);
+        this.terminal.flush();
     }
 
-    public void printInfo(String message)
+    public void print(String message)
+    {
+        this.terminal.writer().print(message);
+    }
+
+    public void println(String message)
     {
         this.terminal.writer().println(message);
     }
 
-    public void printError(String message)
+    public void printDebug(String message)
     {
-        this.terminal.writer().println(ansi().fgRed().a(message).reset());
+        this.terminal.writer().println(ansiDim(message));
     }
 
-    private void initialize()
+    public void printError(String message)
     {
-        try
-        {
-            Path homeDir = this.getHomeDir();
-            if (Files.notExists(homeDir))
-            {
-                Files.createDirectories(homeDir);
-            }
-        }
-        catch (Exception e)
-        {
-            this.printError("Failed to create home directory at: " + this.getHomeDir().toString());
-        }
+        this.terminal.writer().println(ansiRed(message));
     }
 
     private void persistHistory()
@@ -292,6 +326,16 @@ public class Client
         {
             // ignore
         }
+    }
+
+    public List<String> getDocumentedFunctions()
+    {
+        return this.functionDocIndex.keysView().toSortedList();
+    }
+
+    public FunctionDocumentation getFunctionDocumentation(String path)
+    {
+        return this.functionDocIndex.get(path);
     }
 
     public Path getHomeDir()
@@ -359,6 +403,12 @@ public class Client
         {
             return null;
         }
+    }
+
+    public void addCommandToHistory(String command)
+    {
+        this.reader.getHistory().add(command);
+        this.persistHistory();
     }
 
     /**
