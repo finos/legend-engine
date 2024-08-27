@@ -15,7 +15,9 @@
 package org.finos.legend.pure.generated;
 
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.Pair;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Any;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.ConstraintsOverride;
@@ -36,7 +38,6 @@ import org.finos.legend.pure.runtime.java.extension.external.json.shared.JsonDes
 import org.finos.legend.pure.runtime.java.extension.external.shared.conversion.ObjectFactory;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Map;
 
 public class JsonGen
@@ -81,12 +82,10 @@ public class JsonGen
 
     public static <T> T _fromJson(String json, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<T> clazz, String _typeKeyName, boolean _failOnUnknownProperties, final SourceInformation si, final ExecutionSupport es, final ConstraintsOverride constraintsHandler, RichIterable<? extends Pair<? extends String, ? extends String>> _typeLookup)
     {
-        java.lang.Class c;
-        String targetClassName = null;
+        String targetClassName = JavaPackageAndImportBuilder.buildInterfaceReferenceFromType(clazz);
         try
         {
-            targetClassName = JavaPackageAndImportBuilder.platformJavaPackage() + ".Root_" + Pure.elementToPath(clazz, "_");
-            c = ((CompiledExecutionSupport) es).getClassLoader().loadClass(targetClassName);
+            ((CompiledExecutionSupport) es).getClassLoader().loadClass(targetClassName);
         }
         catch (ClassNotFoundException e)
         {
@@ -94,7 +93,7 @@ public class JsonGen
         }
 
 
-        Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class> typeLookup = new HashMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class>();
+        Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class> typeLookup = Maps.mutable.empty();
         for (Pair<? extends String, ? extends String> pair : _typeLookup)
         {
             typeLookup.put(pair._first(), ((CompiledExecutionSupport) es).getMetadataAccessor().getClass("Root::" + pair._second()));
@@ -104,7 +103,7 @@ public class JsonGen
         {
             public <U extends Any> U newObject(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<U> clazz, Map<String, RichIterable<?>> properties)
             {
-                FastList<Root_meta_pure_functions_lang_KeyValue> keyValues = new FastList<>();
+                MutableList<Root_meta_pure_functions_lang_KeyValue> keyValues = Lists.mutable.empty();
                 for (Map.Entry<String, RichIterable<?>> property : properties.entrySet())
                 {
                     Root_meta_pure_functions_lang_KeyValue keyValue = new Root_meta_pure_functions_lang_KeyValue_Impl("Anonymous");
@@ -132,9 +131,8 @@ public class JsonGen
 
                 java.lang.Class c = ((CompiledExecutionSupport) es).getClassLoader().loadClass("org.finos.legend.pure.generated." + unitClassName);
 
-                java.lang.Class paramClasses[] = new java.lang.Class[]{String.class, ExecutionSupport.class};
                 Method method = c.getMethod("_val", Number.class);
-                Object classInstance = c.getConstructor(paramClasses).newInstance("Anonymous_NoCounter", es);
+                Object classInstance = c.getConstructor(String.class, ExecutionSupport.class).newInstance("Anonymous_NoCounter", es);
                 method.invoke(classInstance, unitValue);
                 return (T) classInstance;
             }
