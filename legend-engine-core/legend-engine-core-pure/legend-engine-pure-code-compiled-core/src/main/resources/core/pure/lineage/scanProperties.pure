@@ -32,11 +32,16 @@ Class meta::pure::lineage::scanProperties::PropertyPathNode
    nestedQualifierReturn : List<PropertyPathNode>[0..1];
 }
 
-Class meta::pure::lineage::scanProperties::Res
+Class meta::pure::lineage::scanProperties::ScanPropertiesState
 {
    current : List<PropertyPathNode>[1];
    result : List<PropertyPathNode>[*];
-   visitedFunctions:Map<String,Res>[1];
+   visitedFunctions:Map<String,ScanPropertiesState>[1];
+}
+
+Class meta::pure::lineage::scanProperties::DummyPropertyPathNode extends PropertyPathNode
+{
+  <<equality.Key>> id : Integer[1];
 }
 
 Class meta::pure::lineage::scanProperties::propertyTree::PropertyPathTree
@@ -92,27 +97,42 @@ function <<access.private>> meta::pure::lineage::scanProperties::test::dummy():A
    'To ensure integration build does not fail on meta::pure::lineage::scanProperties::test package'
 }
 
+function meta::pure::lineage::scanProperties::getVisitedFunctions(maybeRes:ScanPropertiesState[0..1]):Map<String,ScanPropertiesState>[1]
+{
+   $maybeRes->match([
+      r0:ScanPropertiesState[0] | ^Map<String,ScanPropertiesState>(),
+      r1:ScanPropertiesState[1] | $r1.visitedFunctions
+   ]);
+}
+
+function meta::pure::lineage::scanProperties::makeScanPropertiesState(maybeRes:ScanPropertiesState[0..1]):Map<String,ScanPropertiesState>[1]
+{
+   $maybeRes->match([
+      r0:ScanPropertiesState[0] | ^Map<String,ScanPropertiesState>(),
+      r1:ScanPropertiesState[1] | $r1.visitedFunctions
+   ]);
+}
 
 function <<doc.deprecated>> {doc.doc = 'Use scanProperties_ValueSpecification_1__List_MANY_ instead'}
-meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1], list:List<PropertyPathNode>[1], processed:Function<Any>[*], vars:Map<String,List<PropertyPathNode>>[0..1]):Res[0..1]
+meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1], list:List<PropertyPathNode>[1], processed:Function<Any>[*], vars:Map<String,List<PropertyPathNode>>[0..1]):ScanPropertiesState[0..1]
 {
   scanProperties($vs, $list, $processed, $vars, defaultScanConfig(), noDebug());
 } 
 
 function <<doc.deprecated>> {doc.doc = 'Use scanProperties_ValueSpecification_1__List_MANY_ instead'}
-meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1], list:List<PropertyPathNode>[1], processed:Function<Any>[*], vars:Map<String,List<PropertyPathNode>>[0..1], config:ScanConfig[1]):Res[0..1]
+meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1], list:List<PropertyPathNode>[1], processed:Function<Any>[*], vars:Map<String,List<PropertyPathNode>>[0..1], config:ScanConfig[1]):ScanPropertiesState[0..1]
 {
    scanProperties($vs, $list, $processed, $vars, $config, noDebug());
 }
 
 function <<doc.deprecated>> {doc.doc = 'Use scanProperties_ValueSpecification_1__DebugContext_1__List_MANY_ instead'}
-meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1], list:List<PropertyPathNode>[1], processed:Function<Any>[*], vars:Map<String,List<PropertyPathNode>>[0..1] , debug: meta::pure::tools::DebugContext[1]):Res[0..1]
+meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1], list:List<PropertyPathNode>[1], processed:Function<Any>[*], vars:Map<String,List<PropertyPathNode>>[0..1] , debug: meta::pure::tools::DebugContext[1]):ScanPropertiesState[0..1]
 {
   scanProperties($vs, $list, $processed, $vars, defaultScanConfig(), $debug);
 } 
 
 function <<doc.deprecated>> {doc.doc = 'Use scanProperties_ValueSpecification_1__DebugContext_1__List_MANY_ instead'}
-meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1], list:List<PropertyPathNode>[1], processed:Function<Any>[*], vars:Map<String,List<PropertyPathNode>>[0..1], config:ScanConfig[1],  debug: meta::pure::tools::DebugContext[1]):Res[0..1]
+meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1], list:List<PropertyPathNode>[1], processed:Function<Any>[*], vars:Map<String,List<PropertyPathNode>>[0..1], config:ScanConfig[1], debug: meta::pure::tools::DebugContext[1]):ScanPropertiesState[0..1]
 {
    assert($list.values->isEmpty(),                               |'Do not supply base path.  Use scanProperties_ValueSpecification_1__List_MANY_ instead');
    assert($processed->isEmpty(),                                 |'Do not supply processed.  Use scanProperties_ValueSpecification_1__List_MANY_ instead');
@@ -122,35 +142,33 @@ meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1], li
 }
 
 
-function meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1]):Res[0..1]
+function meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1]):ScanPropertiesState[0..1]
 {
    scanProperties($vs, noDebug(), defaultScanConfig());
 }
 
-function meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1],config:ScanConfig[1]):Res[0..1]
+function meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1],config:ScanConfig[1]):ScanPropertiesState[0..1]
 {
    scanProperties($vs, noDebug(), $config);
 }
 
-function meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1], debug:DebugContext[1]):Res[0..1]
+function meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1], debug:DebugContext[1]):ScanPropertiesState[0..1]
 { 
    scanProperties($vs, $debug, defaultScanConfig());
 }
 
-function meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1], de:DebugContext[1], config:ScanConfig[1]):Res[0..1]
-{ 
-  let debug = debug();
+function meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1], debug:DebugContext[1], config:ScanConfig[1]):ScanPropertiesState[0..1]
+{
    print(if($debug.debug,|$debug.space+'>>> ScanProperties in : ' +$vs->printValueSpecification('') + ' \n',|''));
-   internal_scanProperties($vs, [], noVars(), $config, ^Map<String,Res>(), ^$debug(space=$debug.space+'    '));
+   internal_scanProperties($vs, [], noVars(), $config, ^Map<String,ScanPropertiesState>(), ^$debug(space=$debug.space+'    '));
 }
 
-function meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1], debug:DebugContext[1], config:ScanConfig[1], processedFunctionMap:Map<String,Res>[1]):Res[0..1]
+function meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1], debug:DebugContext[1], config:ScanConfig[1], processedFunctionMap:Map<String,ScanPropertiesState>[1]):ScanPropertiesState[0..1]
 { 
    internal_scanProperties($vs, [], noVars(), $config, $processedFunctionMap, ^$debug(space=$debug.space+'    '));
-
 }
 
-function <<access.private>> meta::pure::lineage::scanProperties::internal_scanProperties(vs:ValueSpecification[1], processed:Function<Any>[*], vars:Map<String,List<PropertyPathNode>>[1], config:ScanConfig[1], processedFunctionMap:Map<String,Res>[1], debug: meta::pure::tools::DebugContext[1]):Res[0..1]
+function <<access.private>> meta::pure::lineage::scanProperties::internal_scanProperties(vs:ValueSpecification[1], processed:Function<Any>[*], vars:Map<String,List<PropertyPathNode>>[1], config:ScanConfig[1], processedFunctionMap:Map<String,ScanPropertiesState>[1], debug: meta::pure::tools::DebugContext[1]):ScanPropertiesState[0..1]
 {
   
   print(if($debug.debug,|$vars->keyValues()->map(kv | '{' + $kv.first + ' : ' + $kv.second->printPropertyNodeLists('') + '}')->makeString($debug.space + 'Context : ', ', ', '\n'),|''));
@@ -165,10 +183,10 @@ function <<access.private>> meta::pure::lineage::scanProperties::internal_scanPr
                                                                                         {|
                                                                                            let srcClass = $params->at(0)->extractType()->cast(@Class<Any>);
                                                                                            let nlist = $p->processProperty($srcClass, $leftSide.current->orElseEmptyPath(), true);
-                                                                                           ^Res(
+                                                                                           ^ScanPropertiesState(
                                                                                               current= $nlist->at(0),
-                                                                                              result = $nlist->concatenate($leftSide.result->filter(x | $x.values->isNotEmpty())),
-                                                                                              visitedFunctions = $leftSide->getVisitedFunctionMap()
+                                                                                              result = $nlist->concatenate($leftSide.result->filter(x | $x.values->isNotEmpty()))->removeDuplicates(),
+                                                                                              visitedFunctions = $leftSide->getVisitedFunctions()
                                                                                            );
                                                                                         },
                                                                                         | $leftSide
@@ -178,10 +196,10 @@ function <<access.private>> meta::pure::lineage::scanProperties::internal_scanPr
                                                                                         let leftSide = $params->at(0)->map(v|$v->internal_scanProperties($processed->concatenate($q), $vars, $config, $processedFunctionMap, ^$debug(space=$debug.space+'    ')));
                                                                                         if(!$processed->contains($q),
                                                                                            {|
-                                                                                              let nlist = $q->processQualifier($srcClass, $params->tail(), $leftSide.current->orElseEmptyPath(), $processed, $vars, true, $config, $leftSide->getVisitedFunctionMap(), $debug);
-                                                                                              ^Res(current= $nlist, result = $nlist, visitedFunctions = $leftSide->getVisitedFunctionMap());
+                                                                                              let nlist = $q->processQualifier($srcClass, $params->tail(), $leftSide.current->orElseEmptyPath(), $processed, $vars, true, $config, $leftSide->getVisitedFunctions(), $debug);
+                                                                                              ^ScanPropertiesState(current= $nlist, result = $nlist, visitedFunctions = $leftSide->getVisitedFunctions());
                                                                                            },
-                                                                                           | ^Res(current = emptyPath(), result = [], visitedFunctions= $leftSide->getVisitedFunctionMap())
+                                                                                           | ^ScanPropertiesState(current = emptyPath(), result = [], visitedFunctions= $leftSide->getVisitedFunctions())
                                                                                         );,
                                                             z:Any[1]|print(if($debug.debug,|$debug.space+'  function: \''+$fe.func.name->toOne()+'\'\n',|''));
                                                                          if($fe.func.name->in(['eval_Function_1__T_n__V_m_']),
@@ -207,9 +225,9 @@ function <<access.private>> meta::pure::lineage::scanProperties::internal_scanPr
                                                                                let comparator     = $params->at(2)->findFunction();
                                                                                let keyFuncResult  = $keyFunc->processFunction($collectionPath, $vars, $processed, $config,  $collectionPath.visitedFunctions, ^$debug(space=$debug.space+'    '));
                                                                                let compResult     = $comparator->processFunction([$keyFuncResult, $keyFuncResult], $vars, $processed, $config, $keyFuncResult.visitedFunctions, ^$debug(space=$debug.space+'    '));
-                                                                               ^Res(
+                                                                               ^ScanPropertiesState(
                                                                                   current = $collectionPath.current,
-                                                                                  result  = $compResult.result->concatenate($keyFuncResult.result),
+                                                                                  result  = $compResult.result->concatenate($keyFuncResult.result)->removeDuplicates(),
                                                                                   visitedFunctions = $compResult.visitedFunctions
                                                                                );
                                                                             },
@@ -221,9 +239,9 @@ function <<access.private>> meta::pure::lineage::scanProperties::internal_scanPr
                                                                                let predicate      = $params->at(2)->findFunction();
                                                                                let keyFuncResult  = $keyFunc->processFunction($collectionPath, $vars, $processed, $config,  $collectionPath.visitedFunctions, ^$debug(space=$debug.space+'    '));
                                                                                let predResult     = $predicate->processFunction($keyFuncResult, $vars, $processed, $config, $keyFuncResult.visitedFunctions,^$debug(space=$debug.space+'    '));
-                                                                               ^Res(
+                                                                               ^ScanPropertiesState(
                                                                                   current = $collectionPath.current,
-                                                                                  result  = $predResult.result->concatenate($keyFuncResult.result),
+                                                                                  result  = $predResult.result->concatenate($keyFuncResult.result)->removeDuplicates(),
                                                                                   visitedFunctions = $predResult.visitedFunctions
                                                                                );
                                                                             },
@@ -242,9 +260,9 @@ function <<access.private>> meta::pure::lineage::scanProperties::internal_scanPr
                                                                                let thenPath = $params->at(1)->findFunction()->processFunction([], $vars, $processed,  $config, $testPath.visitedFunctions, ^$debug(space=$debug.space+'    '));
                                                                                print(if($debug.debug,|$debug.space+'  - param 2\n',|''));
                                                                                let elsePath = $params->at(2)->findFunction()->processFunction([], $vars, $processed,  $config, $thenPath.visitedFunctions, ^$debug(space=$debug.space+'    '));
-                                                                               ^Res(
+                                                                               ^ScanPropertiesState(
                                                                                   current = $thenPath.current->concatenate($elsePath.current)->removeEmptyPaths()->first()->orElseEmptyPath(),  // TODO handle when both paths are relevant 
-                                                                                  result  = $testPath.result->concatenate($thenPath.result)->concatenate($elsePath.result),
+                                                                                  result  = $testPath.result->concatenate($thenPath.result)->concatenate($elsePath.result)->removeDuplicates(),
                                                                                   visitedFunctions = $elsePath.visitedFunctions
                                                                                );
                                                                             },
@@ -264,12 +282,12 @@ function <<access.private>> meta::pure::lineage::scanProperties::internal_scanPr
                                                                                 let matchLambdas= $params->at(1)->findFunctions();
                                                                                 let funcResults = $matchLambdas->fold({f, r| 
                                                                                                                             let res = $f->processFunction($inputPath, $vars, $processed, $config, $r.visitedFunctions, ^$debug(space=$debug.space+'    '+'    '), $addMatchConditionClasses);
-                                                                                                                            ^Res(result = $r.result->concatenate($res.result), 
-                                                                                                                                current = $r.current->concatenate($res.current)->removeEmptyPaths()->first()->orElseEmptyPath(),
-                                                                                                                                visitedFunctions = $res.visitedFunctions
-                                                                                                                                );
+                                                                                                                            ^ScanPropertiesState(result = $r.result->concatenate($res.result)->removeDuplicates(), 
+                                                                                                                                                 current = $r.current->concatenate($res.current)->removeEmptyPaths()->first()->orElseEmptyPath(),
+                                                                                                                                                 visitedFunctions = $res.visitedFunctions
+                                                                                                                                                );
                                                                                                                       },
-                                                                                                                      ^Res(current=emptyPath(), visitedFunctions = $inputPath.visitedFunctions)
+                                                                                                                      ^ScanPropertiesState(current=emptyPath(), visitedFunctions = $inputPath.visitedFunctions)
                                                                                                                     );
                                                                                 $funcResults;
                                                                             },
@@ -343,9 +361,9 @@ function <<access.private>> meta::pure::lineage::scanProperties::internal_scanPr
                                                                                let col1 = $params->at(0)->internal_scanProperties($processed, $vars, $config,  $processedFunctionMap, ^$debug(space=$debug.space+'    '))->orElseEmptyPath();
                                                                                print(if($debug.debug,|$debug.space+'  - param 1\n',|''));
                                                                                let col2 = $params->at(1)->internal_scanProperties($processed, $vars, $config,  $col1.visitedFunctions, ^$debug(space=$debug.space+'    '))->orElseEmptyPath();
-                                                                               ^Res(
+                                                                               ^ScanPropertiesState(
                                                                                   current = $col1.current->concatenate($col2.current)->removeEmptyPaths()->first()->orElseEmptyPath(),  // TODO handle when both paths are relevant 
-                                                                                  result  = $col1.result->concatenate($col2.result),
+                                                                                  result  = $col1.result->concatenate($col2.result)->removeDuplicates(),
                                                                                   visitedFunctions = $col2.visitedFunctions
                                                                                );
                                                                             },
@@ -366,35 +384,38 @@ function <<access.private>> meta::pure::lineage::scanProperties::internal_scanPr
                                        $v->match([
                                           a: ValueSpecification[1]                                             | $a->internal_scanProperties($processed, $vars, $config, $processedFunctionMap, ^$debug(space=$debug.space+'    '));,
                                           k: KeyExpression[1]                                                  | $k.expression->internal_scanProperties($processed, $vars, $config, $processedFunctionMap, ^$debug(space=$debug.space+'    '));,
-                                          a: meta::pure::functions::collection::AggregateValue<Any,Any,Any>[1] | ^Res(current=emptyPath(), result=$a.mapFn.expressionSequence->map(e | $e->internal_scanProperties($processed, $vars, $config, $processedFunctionMap, ^$debug(space=$debug.space+'    '))).result, visitedFunctions = $processedFunctionMap),
-                                          a: meta::pure::tds::BasicColumnSpecification<Any>[1]                 | ^Res(current=emptyPath(), result=$a.func->cast(@FunctionDefinition<Any>).expressionSequence->map(e | $e->internal_scanProperties($processed, $vars, $config, $processedFunctionMap, ^$debug(space=$debug.space+'    '))).result, visitedFunctions = $processedFunctionMap),
+                                          a: meta::pure::functions::collection::AggregateValue<Any,Any,Any>[1] | ^ScanPropertiesState(current=emptyPath(), result=$a.mapFn.expressionSequence->map(e | $e->internal_scanProperties($processed, $vars, $config, $processedFunctionMap, ^$debug(space=$debug.space+'    '))).result, visitedFunctions = $processedFunctionMap),
+                                          a: meta::pure::tds::BasicColumnSpecification<Any>[1]                 | ^ScanPropertiesState(current=emptyPath(), result=$a.func->cast(@FunctionDefinition<Any>).expressionSequence->map(e | $e->internal_scanProperties($processed, $vars, $config, $processedFunctionMap, ^$debug(space=$debug.space+'    '))).result, visitedFunctions = $processedFunctionMap),
                                           l: LambdaFunction<Any>[1]                                            | $l.expressionSequence->map(e | $e->internal_scanProperties($processed, $vars, $config, $processedFunctionMap, ^$debug(space=$debug.space+'    ')));,
                                           l: ConcreteFunctionDefinition<Any>[1]                                | $l.expressionSequence->map(e | $e->internal_scanProperties($processed, $vars, $config, $processedFunctionMap, ^$debug(space=$debug.space+'    ')));,
-                                          a: String[1]                                                         | ^Res(current=emptyPath(), visitedFunctions = $processedFunctionMap),
-                                          p: Path<Nil,Any|*>[1]                                                | ^Res(current=emptyPath(), result=$p->scanPath(emptyPath(), $processed, $vars, $config, $processedFunctionMap, $debug), visitedFunctions = $processedFunctionMap),
-                                          r: RootGraphFetchTree<Any>[1]                                        | ^Res(current=emptyPath(), result=$r->scanGraphFetchTree($r->typeFromGraphFetchTree()->cast(@Class<Any>), emptyPath(), $processed, $vars, $config, $processedFunctionMap, $debug), visitedFunctions = $processedFunctionMap),
+                                          a: String[1]                                                         | ^ScanPropertiesState(current=emptyPath(), visitedFunctions = $processedFunctionMap),
+                                          p: Path<Nil,Any|*>[1]                                                | ^ScanPropertiesState(current=emptyPath(), result=$p->scanPath(emptyPath(), $processed, $vars, $config, $processedFunctionMap, $debug), visitedFunctions = $processedFunctionMap),
+                                          r: RootGraphFetchTree<Any>[1]                                        | ^ScanPropertiesState(current=emptyPath(), result=$r->scanGraphFetchTree($r->typeFromGraphFetchTree()->cast(@Class<Any>), emptyPath(), $processed, $vars, $config, $processedFunctionMap, $debug), visitedFunctions = $processedFunctionMap),
                                           c: Class<Any>[1]                                                      | if($config.scanClasses->toOne(),
                                                                                                                     |   print(if($debug.debug,|$debug.space+'  Class : '+ $c.name->toOne()+ '\n',|''));
                                                                                                                         let v=  list(meta::pure::lineage::scanProperties::dummyNodeForClass($c));
-                                                                                                                        ^Res(current = $v, result = $v, visitedFunctions = $processedFunctionMap);    ,                    
+                                                                                                                        ^ScanPropertiesState(current = $v, result = $v, visitedFunctions = $processedFunctionMap);    ,                    
                                                                                                                   | []
                                                                                                                   );,
                                           a: Any[1]                                                            | print(if($debug.debug,|$debug.space+'  Unknown\n',|''));[];
                                     ]));
-                                    ^Res(
+                                    ^ScanPropertiesState(
                                        current = $instanceRes.current->removeEmptyPaths()->first()->orElseEmptyPath(), 
-                                       result = $instanceRes.result,
+                                       result = $instanceRes.result->removeDuplicates(),
                                        visitedFunctions = $processedFunctionMap
                                     );,
                ve:VariableExpression[1] | print(if($debug.debug,|$debug.space+'Processing Variable '+$ve.name+'\n',|''));
                                           let v = $vars->get($ve.name)->orElseEmptyPath();
-                                          ^Res(current = $v, result = $v, visitedFunctions = $processedFunctionMap);,
+                                          ^ScanPropertiesState(current = $v, result = $v, visitedFunctions = $processedFunctionMap);,
                ervs:ExtendedRoutedValueSpecification[1] | print(if($debug.debug,|$debug.space+'Bypassing ExtendedRoutedValueSpecification\n',|''));
                                                           $ervs.value->internal_scanProperties($processed, $vars, $config,$processedFunctionMap, ^$debug(space=$debug.space+'    '));,
                frvs:FunctionRoutedValueSpecification[1] | print(if($debug.debug,|$debug.space+'Bypassing FunctionRoutedValueSpecification\n',|''));
                                                           $frvs.value->internal_scanProperties($processed, $vars, $config, $processedFunctionMap, ^$debug(space=$debug.space+'    '));
              ]
           )->removeEmptyResults();
+
+   print(if($debug.debug,|$debug.space+'Current:'+$res.current->printPropertyNodeLists($debug.space+'          ')+'\n',|''));
+   print(if($debug.debug,|$debug.space+'Results:'+$res.result->printPropertyNodeLists($debug.space+'          ')+'\n',|''));
    $res;
 }
 
@@ -413,61 +434,92 @@ function <<access.private>> meta::pure::lineage::scanProperties::extractType(vs:
    ]);
 }
 
-function <<access.private>> meta::pure::lineage::scanProperties::processFunction(fn:Function<Any>[0..1], paramPaths:Res[*], vars:Map<String,List<PropertyPathNode>>[1], processed:Function<Any>[*], config:ScanConfig[1], processedFunctionMap:Map<String,Res>[1], debug:DebugContext[1]):Res[1]
+function <<access.private>> meta::pure::lineage::scanProperties::processFunction(fn:Function<Any>[0..1], paramPaths:ScanPropertiesState[*], vars:Map<String,List<PropertyPathNode>>[1], processed:Function<Any>[*], config:ScanConfig[1], processedFunctionMap:Map<String,ScanPropertiesState>[1], debug:DebugContext[1]):ScanPropertiesState[1]
 {
    processFunction($fn, $paramPaths, $vars, $processed, $config, $processedFunctionMap, $debug,  false);
 } 
 
-
-function <<access.private>> meta::pure::lineage::scanProperties::processFunction(fn:Function<Any>[0..1], paramPaths:Res[*], vars:Map<String,List<PropertyPathNode>>[1], processed:Function<Any>[*], config:ScanConfig[1], processedFunctionMap:Map<String,Res>[1], deug:DebugContext[1] , addFunctionParamClasses : Boolean[1]):Res[1]
+function <<access.private>> meta::pure::lineage::scanProperties::processNativeFunction(fn:Function<Any>[1], paramPaths:ScanPropertiesState[*], vars:Map<String,List<PropertyPathNode>>[1], processed:Function<Any>[*], config:ScanConfig[1],processedFunctionMap:Map<String,ScanPropertiesState>[1], debug:DebugContext[1] , addFunctionParamClasses : Boolean[1]):ScanPropertiesState[1]
 {
-  let debug = debug();
-   print(if($debug.debug,|$debug.space+'  - func '+ if($fn->isEmpty(), |'not found or excuded', |if($fn.name->isEmpty(), |$fn->toOne()->type().name->toOne(), |$fn.name->toOne()))+'\n',|''));
+  let fromParams = ^ScanPropertiesState(current=emptyPath(), result=$paramPaths.result, visitedFunctions = $processedFunctionMap);
 
-    let fromParams = ^Res(current=emptyPath(), result=$paramPaths.result, visitedFunctions = $processedFunctionMap);
+  let funcParamNodes=   if($addFunctionParamClasses,
+    |  let funcParamClasses = $fn->functionType().parameters.genericType.rawType ->cast(@Class<Any>);
+        list($funcParamClasses -> map(c|$c->dummyNodeForClass()));,
+    | [] 
+    );
 
+  let newVars     = $fn->functionType().parameters.name->zip($paramPaths.current)->newMap();
+  let allVars     = $vars->putAll($newVars);
+  let expressions = $fn->match([l:FunctionDefinition<Any>[1]| $l.expressionSequence, n:NativeFunction<Any>[1]| []]);
 
+  let body = $expressions->processExpressionSequence($allVars, $processed->concatenate($fn), $config, $processedFunctionMap, $debug);
+  ^$body(result=$fromParams.result->concatenate($body.result)->concatenate($funcParamNodes));
 
-      $fn->match([
-          {f0:Function<Any>[0] | $fromParams},
-          { f :Function<Any>[1] |
-
-            let funcParamNodes=   if($addFunctionParamClasses,
-              |  let funcParamClasses = $f->functionType().parameters.genericType.rawType ->cast(@Class<Any>);
-                  list($funcParamClasses -> map(c|$c->dummyNodeForClass()));,
-              | [] 
-              );
-
-
-            let newVars     = $f->functionType().parameters.name->zip($paramPaths.current)->newMap();
-            let allVars     = $vars->putAll($newVars);
-            let expressions = $f->match([l:FunctionDefinition<Any>[1]| $l.expressionSequence, n:NativeFunction<Any>[1]| []]);
-
-            
-
-            let body        = if(!$fn->isEmpty() && !$fn.name->isEmpty() && !$processedFunctionMap->get($fn.name->toOne())->isEmpty() && !$f->isWithinPackage(meta),
-                              |
-                              $processedFunctionMap->get($fn.name->toOne())
-                               ,
-                              | 
-                               let body = $expressions->processExpressionSequence($allVars, $processed->concatenate($f), $config, $processedFunctionMap, $debug);
-                                $body;
-                              )->toOne();
-                                 
-            
-            let result = $fromParams.result->concatenate($body.result)->concatenate($funcParamNodes);
-            let updatedMap = if(!$f.name->isEmpty() && $body->isNotEmpty() && !$f->isWithinPackage(meta),
-                               | //println('put function in map');
-                                 $processedFunctionMap->put($f.name->toOne(), $body->toOne());,
-                               | $processedFunctionMap
-            );
-            
-            ^$body(result=$result, visitedFunctions = $updatedMap);
-          }
-      ]);
 }
 
-function <<access.private>> meta::pure::lineage::scanProperties::processExpressionSequence(expressions:ValueSpecification[*], vars:Map<String,List<PropertyPathNode>>[1], processed:Function<Any>[*], config:ScanConfig[1], visitedFunctions:Map<String, Res>[1],  debug:DebugContext[1]):Res[1]
+function <<access.private>> meta::pure::lineage::scanProperties::processFunction(fn:Function<Any>[0..1], paramPaths:ScanPropertiesState[*], vars:Map<String,List<PropertyPathNode>>[1], processed:Function<Any>[*], config:ScanConfig[1], processedFunctionMap:Map<String,ScanPropertiesState>[1], debug:DebugContext[1] , addFunctionParamClasses : Boolean[1]):ScanPropertiesState[1]
+{
+  print(if($debug.debug,|$debug.space+'  - func '+ if($fn->isEmpty(), |'not found or excuded', |if($fn.name->isEmpty(), |$fn->toOne()->type().name->toOne(), |$fn.name->toOne()))+'\n',|''));
+  
+  let fromParams = ^ScanPropertiesState(current=emptyPath(), result=$paramPaths.result, visitedFunctions = $processedFunctionMap);
+      $fn->match([
+          {f0:Function<Any>[0] | $fromParams},
+          {f:Function<Any>[1] |
+
+               if($f.name->isEmpty() || $f->isWithinPackage(meta),
+                |
+                  processNativeFunction($f, $paramPaths, $vars, $processed, $config, $processedFunctionMap, $debug, $addFunctionParamClasses);,
+                |
+                  let funcParamNodes =  if($addFunctionParamClasses,
+                                          |  let funcParamClasses = $f->functionType().parameters.genericType.rawType ->cast(@Class<Any>);
+                                              list($funcParamClasses -> map(c|$c->dummyNodeForClass()));,
+                                          | [] 
+                                        );
+
+                  if($processedFunctionMap->get($f->meta::pure::functions::meta::elementToPath())->isNotEmpty(),
+                  |
+                    let acutalBodyResult = resolveDummyNodes($processedFunctionMap->get($f->meta::pure::functions::meta::elementToPath())->toOne(), $paramPaths);
+                    ^ScanPropertiesState(current = $acutalBodyResult.current, result = $paramPaths.result->concatenate($acutalBodyResult.result)->concatenate($funcParamNodes)->removeDuplicates(), visitedFunctions = $processedFunctionMap);,
+                  |
+                    let dummyPaths = range($paramPaths->size())->map(ind | list(^DummyPropertyPathNode(id = $ind, class = meta::pure::lineage::scanProperties::DummyClass, property = getDummyProperty())->cast(@PropertyPathNode)));
+
+                    let newVars     = $f->functionType().parameters.name->zip($dummyPaths)->newMap();
+                    let allVars     = $vars->putAll($newVars)->cast(@Map<String, List<PropertyPathNode>>);
+                    let expressions = $f->match([l:FunctionDefinition<Any>[1]| $l.expressionSequence, n:NativeFunction<Any>[1]| []]);
+
+                    let body = $expressions->processExpressionSequence($allVars, $processed->concatenate($f), $config, $processedFunctionMap, $debug);
+                    let updatedMap = $processedFunctionMap->put($f->meta::pure::functions::meta::elementToPath(), ^$body(visitedFunctions = ^Map<String,ScanPropertiesState>()));
+
+                    let acutalResult = resolveDummyNodes($body, $paramPaths);
+                                      
+                    ^ScanPropertiesState(current = $acutalResult.current, result=$paramPaths.result->concatenate($acutalResult.result)->concatenate($funcParamNodes)->removeDuplicates(), visitedFunctions = $updatedMap);
+                  );
+               ); 
+          }
+      ]);
+
+}
+
+function <<access.private>> meta::pure::lineage::scanProperties::replaceDummyNodesWithParamsPropertyPathNodes(propertyPathNode: PropertyPathNode[0..1], paramPaths:ScanPropertiesState[*]):PropertyPathNode[*]
+{
+  if(!$propertyPathNode->isEmpty() && $propertyPathNode->toOne()->instanceOf(DummyPropertyPathNode),
+  |
+    let paramIndex = $propertyPathNode->toOne()->cast(@DummyPropertyPathNode).id;
+    $paramPaths->at($paramIndex).current.values;,
+  | $propertyPathNode;
+  );
+}
+
+function <<access.private>> meta::pure::lineage::scanProperties::resolveDummyNodes(dummyRes:ScanPropertiesState[1], paramPaths:ScanPropertiesState[*]):ScanPropertiesState[1]
+{
+    let currentPropertyPathNodes = $dummyRes.current.values;
+    let current = list(replaceDummyNodesWithParamsPropertyPathNodes($currentPropertyPathNodes->first(), $paramPaths)->concatenate($currentPropertyPathNodes->slice(1, $currentPropertyPathNodes->size())));
+    let result = $dummyRes.result->map(list | list(replaceDummyNodesWithParamsPropertyPathNodes($list.values->first(), $paramPaths)->concatenate($list.values->slice(1,$list.values->size()))););
+    ^ScanPropertiesState(current = $current, result = $result, visitedFunctions = ^Map<String,ScanPropertiesState>());
+}
+
+function <<access.private>> meta::pure::lineage::scanProperties::processExpressionSequence(expressions:ValueSpecification[*], vars:Map<String,List<PropertyPathNode>>[1], processed:Function<Any>[*], config:ScanConfig[1], visitedFunctions:Map<String, ScanPropertiesState>[1],  debug:DebugContext[1]):ScanPropertiesState[1]
 {
    print(if($debug.debug,|$debug.space+'  - vars '+$vars->varsToString()+'\n',|''));
 
@@ -486,14 +538,14 @@ function <<access.private>> meta::pure::lineage::scanProperties::processExpressi
                           },
                           | $v
                        );
-         let newRes  = ^Res(
+         let newRes  = ^ScanPropertiesState(
                           current = if($ePaths->isEmpty(), |emptyPath(), |$ePaths->toOne().current),
-                          result  = $r.result->concatenate($ePaths.result),
-                          visitedFunctions = $ePaths->getVisitedFunctionMap()
+                          result  = $r.result->concatenate($ePaths.result)->removeDuplicates(),
+                          visitedFunctions = $ePaths->getVisitedFunctions()
                        );
          pair($newRes, $newVars);
       },
-      pair(^Res(current=emptyPath(), visitedFunctions = $visitedFunctions), $vars)
+      pair(^ScanPropertiesState(current=emptyPath(), visitedFunctions = $visitedFunctions), $vars)
    ).first;
 }
 
@@ -516,7 +568,7 @@ function <<access.private>> meta::pure::lineage::scanProperties::processProperty
    if($append,|^$list(values = $list.values->concatenate($property)),|^$list(values = $property->concatenate($list.values)));
 }
 
-function <<access.private>> meta::pure::lineage::scanProperties::processQualifier(q:QualifiedProperty<Any>[1], srcClass:Class<Any>[1], parameters:ValueSpecification[*], list:List<PropertyPathNode>[1], processed:Function<Any>[*], vars:Map<String,List<PropertyPathNode>>[1], append:Boolean[1], config:ScanConfig[1], visitedFunctions:Map<String,Res>[1], debug:DebugContext[1]):List<PropertyPathNode>[1]
+function <<access.private>> meta::pure::lineage::scanProperties::processQualifier(q:QualifiedProperty<Any>[1], srcClass:Class<Any>[1], parameters:ValueSpecification[*], list:List<PropertyPathNode>[1], processed:Function<Any>[*], vars:Map<String,List<PropertyPathNode>>[1], append:Boolean[1], config:ScanConfig[1], visitedFunctions:Map<String,ScanPropertiesState>[1], debug:DebugContext[1]):List<PropertyPathNode>[1]
 {
    let paramPaths    = $parameters->map(v|$v->internal_scanProperties($processed, $vars, $config, $visitedFunctions, ^$debug(space=$debug.space+'    ')));
    let qualifierVars = $q->functionType().parameters->tail().name->zip($paramPaths.current)->newMap();
@@ -555,7 +607,7 @@ function <<access.private>> meta::pure::lineage::scanProperties::hasSufficientVa
    $q->functionType().parameters->evaluateAndDeactivate()->tail()->size()  ==  $parameters->size();
 }
 
-function <<access.private>> meta::pure::lineage::scanProperties::scanPath(p:Path<Nil,Any|*>[1], list:List<PropertyPathNode>[1], processed:Function<Any>[*], vars:Map<String,List<PropertyPathNode>>[1], config:ScanConfig[1], processedFunctionMap:Map<String,Res>[1], debug:DebugContext[1]):List<PropertyPathNode>[*]
+function <<access.private>> meta::pure::lineage::scanProperties::scanPath(p:Path<Nil,Any|*>[1], list:List<PropertyPathNode>[1], processed:Function<Any>[*], vars:Map<String,List<PropertyPathNode>>[1], config:ScanConfig[1], processedFunctionMap:Map<String,ScanPropertiesState>[1], debug:DebugContext[1]):List<PropertyPathNode>[*]
 {
    $p.path->fold({pe,s|$pe->match([
                                     p:PropertyPathElement[1]|pair($p.property->functionReturnType().rawType->toOne(),
@@ -574,7 +626,7 @@ function <<access.private>> meta::pure::lineage::scanProperties::scanPath(p:Path
 }
 
 
-function <<access.private>> meta::pure::lineage::scanProperties::scanGraphFetchTree(g:GraphFetchTree[1], type: Class<Any>[1], list:List<PropertyPathNode>[1], processed:Function<Any>[*], vars:Map<String,List<PropertyPathNode>>[1],config:ScanConfig[1],  processedFunctionMap:Map<String,Res>[1], debug:DebugContext[1]):List<PropertyPathNode>[*]
+function <<access.private>> meta::pure::lineage::scanProperties::scanGraphFetchTree(g:GraphFetchTree[1], type: Class<Any>[1], list:List<PropertyPathNode>[1], processed:Function<Any>[*], vars:Map<String,List<PropertyPathNode>>[1],config:ScanConfig[1],  processedFunctionMap:Map<String,ScanPropertiesState>[1], debug:DebugContext[1]):List<PropertyPathNode>[*]
 {
    $g.subTrees->cast(@PropertyGraphFetchTree)->map({st | 
       let res = $st.property->match([
@@ -608,7 +660,7 @@ function <<access.private>> meta::pure::lineage::scanProperties::noVars():Map<St
    ^Map<String,List<PropertyPathNode>>();
 }
 
-function <<access.private>> meta::pure::lineage::scanProperties::removeEmptyResults(res:Res[0..1]):Res[0..1]
+function <<access.private>> meta::pure::lineage::scanProperties::removeEmptyResults(res:ScanPropertiesState[0..1]):ScanPropertiesState[0..1]
 {
    $res->map(r| ^$r(result=$r.result->removeEmptyPaths()));
 }
@@ -618,19 +670,11 @@ function <<access.private>> meta::pure::lineage::scanProperties::removeEmptyPath
    $paths->filter(l| $l.values->isNotEmpty());
 }
 
-function <<access.private>> meta::pure::lineage::scanProperties::orElseEmptyPath(maybeRes:Res[0..1]):Res[1]
+function <<access.private>> meta::pure::lineage::scanProperties::orElseEmptyPath(maybeRes:ScanPropertiesState[0..1]):ScanPropertiesState[1]
 {
    $maybeRes->match([
-      r0:Res[0] | ^Res(current=emptyPath(), visitedFunctions = ^Map<String, Res>()),
-      r1:Res[1] | $r1
-   ]);
-}
-
-function meta::pure::lineage::scanProperties::getVisitedFunctionMap(maybeRes:Res[0..1]):Map<String,Res>[1]
-{
-   $maybeRes->match([
-      r0:Res[0] | ^Map<String,Res>(),
-      r1:Res[1] | $r1.visitedFunctions
+      r0:ScanPropertiesState[0] | ^ScanPropertiesState(current=emptyPath(), visitedFunctions = ^Map<String, ScanPropertiesState>()),
+      r1:ScanPropertiesState[1] | $r1
    ]);
 }
 
@@ -654,6 +698,7 @@ function meta::pure::lineage::scanProperties::printPropertyNodeLists(properyList
 
 function meta::pure::lineage::scanProperties::printPropertyNodeLists(properyLists:List<PropertyPathNode>[*], space:String[1]):String[1]
 {
+  //println($properyLists);
    $properyLists->map(l|$l.values->map(v|$v.class.name->toOne()+'->'+$v.property.name->toOne())->joinStrings(', '))->sort()->removeDuplicates()->joinStrings('\n'+$space);
 }
 
@@ -732,7 +777,7 @@ function <<access.private>> meta::pure::lineage::scanProperties::recurse_inlineQ
                            | $p.qualifierSubTree.children.children,
                            {| 
                               let qual = $p.value->cast(@PropertyPathNode).property->cast(@QualifiedProperty<Any>);
-                              let qualifierTreeCurrent = $qual.expressionSequence->evaluateAndDeactivate()->toOne()->internal_scanProperties([], noVars(), $config,^Map<String,Res>(), noDebug()).current;
+                              let qualifierTreeCurrent = $qual.expressionSequence->evaluateAndDeactivate()->toOne()->internal_scanProperties([], noVars(), $config,^Map<String,ScanPropertiesState>(), noDebug()).current;
                               let qualifierTree = $p.qualifierSubTree.children->toOne();
                               findAndAddChildrenAtTheEnd($qualifierTree, $qualifierTreeCurrent.values, $p.children).children;
                            }
