@@ -16,7 +16,6 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
@@ -30,8 +29,6 @@ import java.util.Collections;
 
 public class DiagramCompilerExtension implements CompilerExtension
 {
-    protected final ConcurrentHashMap<String, Root_meta_pure_metamodel_diagram_Diagram> diagramsIndex = new ConcurrentHashMap<>();
-
     @Override
     public MutableList<String> group()
     {
@@ -46,12 +43,11 @@ public class DiagramCompilerExtension implements CompilerExtension
                 (diagram, context) ->
                 {
                     Root_meta_pure_metamodel_diagram_Diagram metamodel = new Root_meta_pure_metamodel_diagram_Diagram_Impl(diagram.name, null, context.pureModel.getClass("meta::pure::metamodel::diagram::Diagram"))._name(diagram.name);
-                    this.diagramsIndex.put(context.pureModel.buildPackageString(diagram._package, diagram.name), metamodel);
                     return metamodel;
                 },
                 (diagram, context) ->
                 {
-                    Root_meta_pure_metamodel_diagram_Diagram metamodel = this.diagramsIndex.get(context.pureModel.buildPackageString(diagram._package, diagram.name));
+                    Root_meta_pure_metamodel_diagram_Diagram metamodel = (Root_meta_pure_metamodel_diagram_Diagram) context.pureModel.getPackageableElement(context.pureModel.buildPackageString(diagram._package, diagram.name));
                     metamodel._classViews(ListIterate.collect(diagram.classViews, view -> HelperDiagramBuilder.buildClassView(view, context)));
                     metamodel._propertyViews(ListIterate.collect(diagram.propertyViews, view -> HelperDiagramBuilder.buildPropertyView(view, context, metamodel)));
                     metamodel._generalizationViews(ListIterate.collect(diagram.generalizationViews, view -> HelperDiagramBuilder.buildGeneralizationView(view, metamodel, context)));
