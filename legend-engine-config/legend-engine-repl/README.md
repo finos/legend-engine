@@ -2,7 +2,12 @@
 
 ## Quick Start
 
-Run the REPL either in IDE (IntelliJ) or assembling a JAR and run the JAR. Within the REPL, to start
+Run the REPL either in IDE (IntelliJ) or run the script in legend-engine-repl-app-assembly module.
+
+The legend-engine-repl-app-assembly allow you to pick which REPL to run: default, relational, or datacube.
+
+The script also allow developers to enable debug on a given port.  This allows to run the REPL on an OS native terminal, 
+and still be able to debug it through an IDE.
 
 > For autocomplete to work properly, it is recommended to run the REPL in a terminal; integrated terminal
 > in IDE often override hotkeys / keybindings that are used by the REPL. _Developers are also recommended
