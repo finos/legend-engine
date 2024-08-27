@@ -18,9 +18,9 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Any;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
@@ -63,7 +63,7 @@ public class FunctionsGen extends org.finos.legend.pure.runtime.java.extension.f
     public static RichIterable<Root_meta_pure_functions_meta_CompilationResult> compileCodeBlocks(RichIterable<? extends String> sources, ExecutionSupport es)
     {
         RichIterable<CodeBlockDeltaCompiler.CompilationResult> compilationResults = CodeBlockDeltaCompiler.compileCodeBlocks(sources, ((CompiledExecutionSupport) es));
-        MutableList<Root_meta_pure_functions_meta_CompilationResult> results = FastList.newList(sources.size());
+        MutableList<Root_meta_pure_functions_meta_CompilationResult> results = Lists.mutable.ofInitialCapacity(sources.size());
 
         for (CodeBlockDeltaCompiler.CompilationResult compilationResult : compilationResults)
         {
@@ -105,14 +105,14 @@ public class FunctionsGen extends org.finos.legend.pure.runtime.java.extension.f
         return result;
     }
 
-    public static Object alloyTest(ExecutionSupport es, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function alloyTest, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function regular)
+    public static Object alloyTest(ExecutionSupport es, Function<?> alloyTest, Function<?> regular)
     {
         return alloyTest(es, alloyTest, regular, CoreGen.bridge);
     }
 
-    public static Object legendTest(ExecutionSupport es, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function alloyTest, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function regular)
+    public static Object legendTest(ExecutionSupport es, Function<?> alloyTest, Function<?> regular)
     {
-        return legendTest(es, alloyTest, regular,  CoreGen.bridge);
+        return legendTest(es, alloyTest, regular, CoreGen.bridge);
     }
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Any> newClass(String fullPathString, MetadataAccessor ma, SourceInformation si)
@@ -200,8 +200,8 @@ public class FunctionsGen extends org.finos.legend.pure.runtime.java.extension.f
     }
 
 
-    public static Object traceSpan(ExecutionSupport es, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function function, String operationName, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function funcToGetTags, boolean tagsCritical)
+    public static Object traceSpan(ExecutionSupport es, Function<?> function, String operationName, Function<?> funcToGetTags, boolean tagsCritical)
     {
-        return FunctionsGen.traceSpan(es, function, operationName, funcToGetTags, tagsCritical, CoreGen.bridge);
+        return traceSpan(es, function, operationName, funcToGetTags, tagsCritical, CoreGen.bridge);
     }
 }
