@@ -37,12 +37,12 @@ public class Show implements Command
 {
     private final Client client;
 
-    public REPLServer REPLServer;
+    public REPLServer replServer;
 
-    public Show(Client client, REPLServer REPLServer)
+    public Show(Client client, REPLServer replServer)
     {
         this.client = client;
-        this.REPLServer = REPLServer;
+        this.replServer = replServer;
     }
 
     @Override
@@ -68,23 +68,9 @@ public class Show implements Command
                 this.client.printError("Failed to retrieve the last command");
                 return true;
             }
-
-            ExecutionHelper.ExecuteResultSummary lastExecuteResultSummary;
-
             try
             {
-                lastExecuteResultSummary = executeCode(expression, this.client, (Result res, PureModelContextData pmcd, PureModel pureModel) ->
-                {
-                    ReplExtension extension = this.client.getReplExtensions().detect(x -> x.supports(res));
-                    if (extension != null)
-                    {
-                        return new ExecutionHelper.ExecuteResultSummary(pmcd, pureModel, res, null);
-                    }
-                    else
-                    {
-                        throw new RuntimeException(res.getClass() + " not supported!");
-                    }
-                });
+                run(expression, this.client, this.replServer);
             }
             catch (Exception e)
             {
@@ -99,12 +85,28 @@ public class Show implements Command
                     throw e;
                 }
             }
-
-            this.REPLServer.initializeStateWithREPLExecutedQuery(lastExecuteResultSummary);
-            launchDataCube(this.client, this.REPLServer);
             return true;
         }
         return false;
+    }
+
+    public static void run(String expression, Client client, REPLServer replServer)
+    {
+        ExecutionHelper.ExecuteResultSummary lastExecuteResultSummary;
+        lastExecuteResultSummary = executeCode(expression, client, (Result res, PureModelContextData pmcd, PureModel pureModel) ->
+        {
+            ReplExtension extension = client.getReplExtensions().detect(x -> x.supports(res));
+            if (extension != null)
+            {
+                return new ExecutionHelper.ExecuteResultSummary(pmcd, pureModel, res, null);
+            }
+            else
+            {
+                throw new RuntimeException(res.getClass() + " not supported!");
+            }
+        });
+        replServer.initializeStateWithREPLExecutedQuery(lastExecuteResultSummary);
+        launchDataCube(client, replServer);
     }
 
     public static void launchDataCube(Client client, REPLServer replServer)

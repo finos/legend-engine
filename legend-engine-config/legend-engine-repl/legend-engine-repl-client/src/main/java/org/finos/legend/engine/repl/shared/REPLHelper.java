@@ -56,9 +56,9 @@ public class REPLHelper
                 .makeString("\n");
     }
 
-    public static String horizontalRule(String label)
+    public static int getLineWidth()
     {
-        return StringUtils.rightPad(label != null ? ("-- " + label + " ") : "", LINE_WIDTH, "-");
+        return LINE_WIDTH;
     }
 
     public static String wrap(String text)

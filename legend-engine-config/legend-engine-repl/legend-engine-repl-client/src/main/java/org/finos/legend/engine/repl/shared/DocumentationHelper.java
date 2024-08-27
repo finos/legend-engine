@@ -15,6 +15,8 @@
 package org.finos.legend.engine.repl.shared;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.collections.api.block.function.Function0;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.pure.m3.pct.aggregate.model.FunctionDocumentation;
@@ -53,16 +55,21 @@ public class DocumentationHelper
                 builder.append("\n").append(ansiAttr(""));
             }
             builder.append(ansiGreen(signature.simple)).append("\n");
-            builder.append(ansiAttr("  [id]")).append(ansiDim(signature.id)).append("\n");
+            builder.append(ansiAttr("  [id]")).append(ansiDim(signature.id));
             if (signature.documentation != null)
             {
-                builder.append(ansiAttr("  [doc]")).append(signature.documentation).append("\n");
+                builder.append("\n");
+                builder.append(ansiAttr("  [doc]")).append(signature.documentation);
             }
             if (signature.grammarDoc != null)
             {
-                builder.append(ansiAttr("  [usage]")).append(signature.grammarDoc).append("\n");
+                builder.append("\n");
+                builder.append(ansiAttr("  [usage]")).append(signature.grammarDoc);
             }
-            builder.append("\n");
+            if (i != functionDocumentation.functionDefinition.signatures.size() - 1)
+            {
+                builder.append("\n");
+            }
         }
         return builder.toString();
     }
@@ -87,50 +94,57 @@ public class DocumentationHelper
             this.client = client;
         }
 
-        protected abstract String getCommand(int step);
+        protected abstract void beforeStep();
 
-        protected abstract void run(int step);
+        protected abstract void afterStep();
 
-        protected abstract void prepare();
+        protected abstract MutableList<Function0<Void>> getSteps();
 
-        protected abstract int getStepCount();
+        public int getCurrentStep()
+        {
+            return currentStep;
+        }
+
+        public int getStepCount()
+        {
+            return getSteps().size();
+        }
+
+        private void run(int step)
+        {
+            getSteps().get(step).value();
+        }
 
         public void current()
         {
             try
             {
-                this.prepare();
+                this.beforeStep();
             }
             catch (Exception ex)
             {
                 throw new RuntimeException(ex);
             }
-
             this.client.clearScreen();
             this.run(currentStep);
-        }
 
-        public void runCommand(String command)
-        {
-            try
-            {
-                this.prepare();
-            }
-            catch (Exception ex)
-            {
-                throw new RuntimeException(ex);
-            }
-
-            if (command != null)
-            {
-                client.runCommandInBackground(command);
-            }
+            this.afterStep();
         }
 
         public void next()
         {
             currentStep++;
-            if (currentStep >= getStepCount())
+            if (currentStep >= this.getStepCount())
+            {
+                currentStep = 0;
+            }
+            this.current();
+        }
+
+        public void prev()
+        {
+            currentStep--;
+            if (currentStep < 0)
             {
                 currentStep = 0;
             }

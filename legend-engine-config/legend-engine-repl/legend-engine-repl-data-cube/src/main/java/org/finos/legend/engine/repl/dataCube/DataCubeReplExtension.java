@@ -23,12 +23,10 @@ import org.finos.legend.engine.repl.core.ReplExtension;
 import org.finos.legend.engine.repl.dataCube.commands.*;
 import org.finos.legend.engine.repl.dataCube.server.REPLServer;
 
-import java.awt.*;
-
 public class DataCubeReplExtension implements ReplExtension
 {
     private Client client;
-    public REPLServer REPLServer;
+    public REPLServer replServer;
 
     @Override
     public String type()
@@ -42,8 +40,8 @@ public class DataCubeReplExtension implements ReplExtension
 
         try
         {
-            this.REPLServer = new REPLServer(this.client);
-            this.REPLServer.initialize();
+            this.replServer = new REPLServer(this.client);
+            this.replServer.initialize();
         }
         catch (Exception e)
         {
@@ -56,11 +54,12 @@ public class DataCubeReplExtension implements ReplExtension
     {
         DataCube dataCubeCommand = new DataCube(this.client);
         return Lists.mutable.with(
-                new Show(this.client, this.REPLServer),
-                new DataCubeCache(dataCubeCommand, this.client, this.REPLServer),
-                new DataCubeTable(dataCubeCommand, this.client, this.REPLServer),
-                new DataCubeLoadCSV(dataCubeCommand, this.client, this.REPLServer),
-                new DataCubeRun(dataCubeCommand, this.client, this.REPLServer),
+                new Show(this.client, this.replServer),
+                new DataCubeCache(dataCubeCommand, this.client, this.replServer),
+                new DataCubeTable(dataCubeCommand, this.client, this.replServer),
+                new DataCubeLoadCSV(dataCubeCommand, this.client, this.replServer),
+                new DataCubeRun(dataCubeCommand, this.client, this.replServer),
+                new DataCubeWalkthrough(dataCubeCommand, this.client, this.replServer),
                 new DataCube__DEV__runDuckDBSelectSQL(dataCubeCommand, this.client),
                 new DataCube__DEV__runDuckDBUpdateSQL(dataCubeCommand, this.client),
                 dataCubeCommand // NOTE: this has to be the last datacube command to ensure autocomplete works properly

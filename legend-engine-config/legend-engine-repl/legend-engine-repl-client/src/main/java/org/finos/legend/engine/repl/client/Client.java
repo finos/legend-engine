@@ -388,11 +388,6 @@ public class Client
         return objectMapper;
     }
 
-    public void runCommandInBackground(String command)
-    {
-        this.reader.addCommandsInBuffer(Lists.mutable.with(command));
-    }
-
     public String getLastCommand()
     {
         return this.getLastCommand(0);
@@ -408,6 +403,12 @@ public class Client
         {
             return null;
         }
+    }
+
+    public void addCommandToHistory(String command)
+    {
+        this.reader.getHistory().add(command);
+        this.persistHistory();
     }
 
     /**
