@@ -682,7 +682,7 @@ public class PureModel implements IPureModel
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement;
 
-        packageableElement = lookupAndCastPackageableElement(packagePrefix(fullPath), org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement.class);
+        packageableElement = this.packageableElementsIndex.get(packagePrefix(fullPath));
         if (packageableElement != null)
         {
             return packageableElement;
