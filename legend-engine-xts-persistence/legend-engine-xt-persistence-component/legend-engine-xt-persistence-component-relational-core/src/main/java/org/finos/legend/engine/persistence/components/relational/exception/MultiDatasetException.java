@@ -60,8 +60,8 @@ public class MultiDatasetException extends RuntimeException
         super(message);
         this.exception = exception;
         this.stageStartInstant = stageStartInstant;
+        this.stageExceptionInstant = stageExceptionInstant;
         this.dataset = dataset;
         this.ingestStageMetadata = ingestStageMetadata;
-        this.stageExceptionInstant = stageExceptionInstant;
     }
 }

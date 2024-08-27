@@ -30,6 +30,8 @@ import org.finos.legend.engine.persistence.components.planner.Planners;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
+import org.finos.legend.engine.persistence.components.relational.api.utils.ApiUtils;
+import org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
@@ -54,11 +56,11 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.ADDITIONAL_METADATA_KEY_PATTERN;
-import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.ADDITIONAL_METADATA_VALUE_PATTERN;
-import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.BATCH_END_TS_PATTERN;
-import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.BATCH_ID_PATTERN;
-import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.BATCH_START_TS_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.ADDITIONAL_METADATA_KEY_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.ADDITIONAL_METADATA_VALUE_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.BATCH_END_TS_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.BATCH_ID_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.BATCH_START_TS_PATTERN;
 import static org.finos.legend.engine.persistence.components.transformer.Transformer.TransformOptionsAbstract.DATE_TIME_FORMATTER;
 
 @Immutable
@@ -301,7 +303,7 @@ public abstract class RelationalIngestorAbstract
     {
         LOGGER.info("Invoked dryRun method, will perform the dryRun");
         validateDatasetsInitialization();
-        List<DataError> dataErrors = ApiUtils.performDryRun(enrichedIngestMode, enrichedDatasets, generatorResult, transformer, executor, relationalSink(), sampleRowCount(), caseConversion());
+        List<DataError> dataErrors = IngestionUtils.performDryRun(enrichedIngestMode, enrichedDatasets, generatorResult, transformer, executor, relationalSink(), sampleRowCount(), caseConversion());
         IngestStatus ingestStatus = dataErrors.isEmpty() ? IngestStatus.SUCCEEDED : IngestStatus.FAILED;
         DryRunResult dryRunResult = DryRunResult.builder().status(ingestStatus).addAllErrorRecords(dataErrors).build();
         LOGGER.info("DryRun completed");
@@ -324,7 +326,7 @@ public abstract class RelationalIngestorAbstract
         if (result.isEmpty())
         {
             dedupAndVersion();
-            List<DataSplitRange> dataSplitRanges = ApiUtils.getDataSplitRanges(executor, planner, transformer, ingestMode());
+            List<DataSplitRange> dataSplitRanges = IngestionUtils.getDataSplitRanges(executor, planner, transformer, ingestMode());
             result = ingest(dataSplitRanges, schemaEvolutionResult);
             LOGGER.info("Ingestion completed");
         }
@@ -392,7 +394,7 @@ public abstract class RelationalIngestorAbstract
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
         Executor<SqlGen, TabularData, SqlPlan> executor = relationalSink().getRelationalExecutor(connection);
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
-        return ApiUtils.extractDatasetFilters(metadataDataset, executor, physicalPlan);
+        return IngestionUtils.extractDatasetFilters(metadataDataset, executor, physicalPlan);
     }
 
     // ---------- UTILITY METHODS ----------
@@ -471,7 +473,7 @@ public abstract class RelationalIngestorAbstract
         if (generatorResult.deduplicationAndVersioningSqlPlan().isPresent())
         {
             LOGGER.info("Executing Deduplication and Versioning");
-            ApiUtils.dedupAndVersion(executor, generatorResult, enrichedDatasets, caseConversion(), new HashMap<>());
+            IngestionUtils.dedupAndVersion(executor, generatorResult, enrichedDatasets, caseConversion(), new HashMap<>());
         }
     }
 
@@ -509,7 +511,7 @@ public abstract class RelationalIngestorAbstract
     {
         if (enableConcurrentSafety() && enableIdempotencyCheck())
         {
-            return ApiUtils.verifyIfRequestAlreadyProcessedPreviously(schemaEvolutionResult, enrichedDatasets, ingestRequestId(), transformer, executor, batchSuccessStatusValue());
+            return IngestionUtils.verifyIfRequestAlreadyProcessedPreviously(schemaEvolutionResult, enrichedDatasets, ingestRequestId(), transformer, executor, batchSuccessStatusValue());
         }
         return new ArrayList<>();
     }
@@ -528,12 +530,12 @@ public abstract class RelationalIngestorAbstract
         if (enrichedIngestMode instanceof BulkLoad)
         {
             LOGGER.info("Starting Bulk Load");
-            return ApiUtils.performBulkLoad(enrichedDatasets, transformer, planner, executor, generatorResult, enrichedIngestMode, schemaEvolutionResult, additionalMetadata(), executionTimestampClock(), relationalSink(), Optional.empty());
+            return IngestionUtils.performBulkLoad(enrichedDatasets, transformer, planner, executor, generatorResult, enrichedIngestMode, schemaEvolutionResult, additionalMetadata(), executionTimestampClock(), relationalSink(), Optional.empty());
         }
         else
         {
             LOGGER.info(String.format("Starting Ingestion with IngestMode: {%s}", enrichedIngestMode.getClass().getSimpleName()));
-            return ApiUtils.performIngestion(enrichedDatasets, transformer, planner, executor, generatorResult, dataSplitRanges, enrichedIngestMode, schemaEvolutionResult, additionalMetadata(), executionTimestampClock(), Optional.empty());
+            return IngestionUtils.performIngestion(enrichedDatasets, transformer, planner, executor, generatorResult, dataSplitRanges, enrichedIngestMode, schemaEvolutionResult, additionalMetadata(), executionTimestampClock(), Optional.empty());
         }
     }
 
@@ -568,7 +570,7 @@ public abstract class RelationalIngestorAbstract
                 // Find the data split ranges based on the result of dedup and versioning
                 if (dataSplitRanges.isEmpty())
                 {
-                    dataSplitRanges = ApiUtils.getDataSplitRanges(executor, planner, transformer, ingestMode());
+                    dataSplitRanges = IngestionUtils.getDataSplitRanges(executor, planner, transformer, ingestMode());
                 }
 
                 // Perform Ingestion
@@ -619,7 +621,7 @@ public abstract class RelationalIngestorAbstract
         // 4. Check if staging dataset is empty
         if (ingestMode().accept(IngestModeVisitors.NEED_TO_CHECK_STAGING_EMPTY) && executor.datasetExists(enrichedDatasets.stagingDataset()))
         {
-            boolean isStagingDatasetEmpty = ApiUtils.datasetEmpty(enrichedDatasets.stagingDataset(), transformer, executor, new HashMap<>());
+            boolean isStagingDatasetEmpty = IngestionUtils.datasetEmpty(enrichedDatasets.stagingDataset(), transformer, executor, new HashMap<>());
             LOGGER.info(String.format("Checking if staging dataset is empty : {%s}", isStagingDatasetEmpty));
             resourcesBuilder.stagingDataSetEmpty(isStagingDatasetEmpty);
         }

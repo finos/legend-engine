@@ -39,6 +39,8 @@ import org.finos.legend.engine.persistence.components.planner.Planners;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
+import org.finos.legend.engine.persistence.components.relational.api.utils.ApiUtils;
+import org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils;
 import org.finos.legend.engine.persistence.components.relational.exception.BulkLoadException;
 import org.finos.legend.engine.persistence.components.relational.exception.MultiDatasetException;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
@@ -65,11 +67,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.ADDITIONAL_METADATA_KEY_PATTERN;
-import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.ADDITIONAL_METADATA_VALUE_PATTERN;
-import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.BATCH_END_TS_PATTERN;
-import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.BATCH_ID_PATTERN;
-import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.BATCH_START_TS_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.ADDITIONAL_METADATA_KEY_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.ADDITIONAL_METADATA_VALUE_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.BATCH_END_TS_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.BATCH_ID_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.BATCH_START_TS_PATTERN;
 import static org.finos.legend.engine.persistence.components.transformer.Transformer.TransformOptionsAbstract.DATE_TIME_FORMATTER;
 
 @Value.Immutable
@@ -199,29 +201,17 @@ public abstract class RelationalMultiDatasetIngestorAbstract
     }
 
     /**
-     * Ingest multi datasets in a transaction. Each dataset can have multiple stages
+     * Ingest multi datasets. Transaction boundaries are controlled by this method.
+     * Each dataset can have multiple stages
      * @return List of DatasetIngestResults
      */
-    public List<DatasetIngestResults> ingestInTransaction()
+    public List<DatasetIngestResults> ingest()
     {
-        // 1. Validate initialization has been performed
-        validateInitialization();
-
         List<DatasetIngestResults> result;
         try
         {
             executor.begin();
-
-            // 2. Acquire lock for all ingest stages and get the latest batch ID
-            long batchId = acquireLock();
-
-            // 3. Put batch ID into placeholder map - this is needed to handle DerivedDataset whose filter was built using placeholders
-            Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
-            placeHolderKeyValues.put(BATCH_ID_PATTERN, PlaceholderValue.of(String.valueOf(batchId), false));
-
-            // 4. Perform ingestion
-            result = performIngestionForAllStages(batchId, placeHolderKeyValues);
-
+            result = ingestInCurrentTransaction();
             executor.commit();
         }
         catch (Exception e)
@@ -239,7 +229,13 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         return result;
     }
 
-    public List<DatasetIngestResults> ingest()
+
+    /**
+     * Ingest multi datasets. Transaction boundaries are controlled by the caller
+     * Each dataset can have multiple stages
+     * @return List of DatasetIngestResults
+     */
+    public List<DatasetIngestResults> ingestInCurrentTransaction()
     {
         // 1. Validate initialization has been performed
         validateInitialization();
@@ -247,12 +243,8 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         // 2. Acquire lock for all ingest stages and get the latest batch ID
         long batchId = acquireLock();
 
-        // 3. Put batch ID into placeholder map - this is needed to handle DerivedDataset whose filter was built using placeholders
-        Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
-        placeHolderKeyValues.put(BATCH_ID_PATTERN, PlaceholderValue.of(String.valueOf(batchId), false));
-
-        // 4. Perform ingestion
-        List<DatasetIngestResults> result = performIngestionForAllStages(batchId, placeHolderKeyValues);
+        // 3. Perform ingestion
+        List<DatasetIngestResults> result = performIngestionForMultiDatasets(batchId);
         LOGGER.info("Ingestion completed");
 
         return result;
@@ -285,7 +277,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
 
             GeneratorResult generatorResult = generator.generateOperationsForDryRun(Resources.builder().build(), planner);
 
-            List<DataError> dataErrors = ApiUtils.performDryRun(enrichedIngestMode, enrichedDatasets, generatorResult, transformer, executor, relationalSink(), sampleDataErrorRowCount(), caseConversion());
+            List<DataError> dataErrors = IngestionUtils.performDryRun(enrichedIngestMode, enrichedDatasets, generatorResult, transformer, executor, relationalSink(), sampleDataErrorRowCount(), caseConversion());
             IngestStatus ingestStatus = dataErrors.isEmpty() ? IngestStatus.SUCCEEDED : IngestStatus.FAILED;
             DryRunResult dryRunResult = DryRunResult.builder().status(ingestStatus).addAllErrorRecords(dataErrors).build();
             LOGGER.info("DryRun completed");
@@ -403,7 +395,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 RelationalGenerator generator = ingestStageMetadata.relationalGenerator();
                 Planner planner = ingestStageMetadata.planner();
 
-                GeneratorResult generatorResult = generator.generateOperationsForCreate(Resources.builder().build(), planner); // Resources are not used in pre-actions
+                GeneratorResult generatorResult = generator.generateOperationsForCreate(planner);
                 executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
             }
         }
@@ -458,98 +450,18 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         LockInfoUtils lockInfoUtils = new LockInfoUtils(lockInfoDataset());
         SqlPlan acquireLockSqlPlan = transformer.generatePhysicalPlan(LogicalPlan.of(Collections.singleton(lockInfoUtils.updateLockInfoForMultiIngest(BatchStartTimestampAbstract.INSTANCE))));
         executor.executePhysicalPlan(acquireLockSqlPlan, placeHolderKeyValues);
-        return ApiUtils.getBatchIdFromLockTable(lockInfoUtils.getLogicalPlanForBatchIdValue(),executor, transformer);
+        return IngestionUtils.getBatchIdFromLockTable(lockInfoUtils.getLogicalPlanForBatchIdValue(),executor, transformer);
     }
 
-    private List<DatasetIngestResults> performIngestionForAllStages(long batchId, Map<String, PlaceholderValue> placeHolderKeyValues)
+    private List<DatasetIngestResults> performIngestionForMultiDatasets(long batchId)
     {
+        Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
+        placeHolderKeyValues.put(BATCH_ID_PATTERN, PlaceholderValue.of(String.valueOf(batchId), false));
         List<DatasetIngestResults> results = new ArrayList<>();
 
         for (String dataset : ingestStageMetadataMap.keySet())
         {
-            List<IngestStageMetadata> ingestStageMetadataList = ingestStageMetadataMap.get(dataset);
-            List<IngestStageResult> ingestStageResults = new ArrayList<>();
-
-            for (IngestStageMetadata ingestStageMetadata : ingestStageMetadataList)
-            {
-                Instant stageStartInstant = executionTimestampClock().instant();
-
-                IngestMode enrichedIngestMode = ingestStageMetadata.ingestMode();
-                Datasets enrichedDatasets = ingestStageMetadata.datasets();
-                RelationalGenerator generator = ingestStageMetadata.relationalGenerator();
-                Planner planner = ingestStageMetadata.planner();
-
-                try
-                {
-                    // 1. Perform idempotency check
-                    if (enableIdempotencyCheck())
-                    {
-                        List<IngestorResult> previouslyProcessedResults = ApiUtils.verifyIfRequestAlreadyProcessedPreviously(SchemaEvolutionResult.builder().updatedDatasets(enrichedDatasets).build(),
-                            enrichedDatasets, ingestRequestId(), transformer, executor, IngestStatus.SUCCEEDED.name());
-                        if (!previouslyProcessedResults.isEmpty())
-                        {
-                            ingestStageResults.addAll(previouslyProcessedResults.stream().map(this::buildIngestStageResult).collect(Collectors.toList()));
-                            continue;
-                        }
-                    }
-
-                    // 2. Check if staging dataset is empty
-                    Resources.Builder resourcesBuilder = Resources.builder();
-                    if (enrichedIngestMode.accept(IngestModeVisitors.NEED_TO_CHECK_STAGING_EMPTY) && executor.datasetExists(enrichedDatasets.stagingDataset()))
-                    {
-                        boolean isStagingDatasetEmpty = ApiUtils.datasetEmpty(enrichedDatasets.stagingDataset(), transformer, executor, placeHolderKeyValues);
-                        LOGGER.info(String.format("Checking if staging dataset is empty : {%s}", isStagingDatasetEmpty));
-                        resourcesBuilder.stagingDataSetEmpty(isStagingDatasetEmpty);
-                    }
-
-                    // 3. Generate SQLs
-                    GeneratorResult generatorResult = generator.generateOperationsForIngest(resourcesBuilder.build(), planner);
-
-                    // 4. Perform deduplication and versioning
-                    if (generatorResult.deduplicationAndVersioningSqlPlan().isPresent())
-                    {
-                        ApiUtils.dedupAndVersion(executor, generatorResult, enrichedDatasets, caseConversion(), placeHolderKeyValues);
-                    }
-
-                    // 5. Perform ingestion
-                    List<IngestorResult> ingestorResults = null;
-                    if (enrichedIngestMode instanceof BulkLoad)
-                    {
-                        LOGGER.info("Starting Bulk Load for stage");
-                        ingestorResults = ApiUtils.performBulkLoad(enrichedDatasets, transformer, planner, executor, generatorResult,
-                            enrichedIngestMode, SchemaEvolutionResult.builder().updatedDatasets(enrichedDatasets).build(),
-                            additionalMetadata(), executionTimestampClock(), relationalSink(), Optional.of(batchId));
-                        LOGGER.info("Bulk Load completed for stage");
-
-                        Optional<Long> rowsWithErrors = ApiUtils.retrieveValueAsLong(ingestorResults.get(0).statisticByName().getOrDefault(StatisticName.ROWS_WITH_ERRORS, 0));
-                        if (rowsWithErrors.isPresent() && rowsWithErrors.get() > 0)
-                        {
-                            String message = String.format("Rows load with errors in Bulk Load for dataset: {%s}, number of rows with errors: {%s}", dataset, rowsWithErrors.get());
-                            LOGGER.error(message);
-                            throw new BulkLoadException(dataset, message);
-                        }
-                    }
-                    else
-                    {
-                        LOGGER.info(String.format("Starting Ingestion for stage with IngestMode: {%s}", enrichedIngestMode.getClass().getSimpleName()));
-                        ingestorResults = ApiUtils.performIngestion(enrichedDatasets, transformer, planner, executor, generatorResult,
-                            new ArrayList<>(), enrichedIngestMode, SchemaEvolutionResult.builder().updatedDatasets(enrichedDatasets).build(),
-                            additionalMetadata(), executionTimestampClock(), Optional.of(batchId));
-                        LOGGER.info("Ingestion completed for stage");
-                    }
-
-                    // 6. Build ingest stage result
-                    List<IngestStageResult> mappedResults = ingestorResults.stream().map(this::buildIngestStageResult).collect(Collectors.toList());
-                    ingestStageResults.addAll(mappedResults);
-                }
-                catch (Exception e)
-                {
-                    String message = String.format("Encountered exception for dataset: {%s}", dataset);
-                    LOGGER.error(message);
-                    throw new MultiDatasetException(e, stageStartInstant, executionTimestampClock().instant(), dataset, ingestStageMetadata, message);
-                }
-            }
-
+            List<IngestStageResult> ingestStageResults = performIngestionForDataset(batchId, placeHolderKeyValues, dataset);
             results.add(DatasetIngestResults.builder()
                 .dataset(dataset)
                 .ingestRequestId(ingestRequestId())
@@ -559,6 +471,93 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         }
 
         return results;
+    }
+
+    private List<IngestStageResult> performIngestionForDataset(long batchId, Map<String, PlaceholderValue> placeHolderKeyValues, String dataset)
+    {
+        List<IngestStageMetadata> ingestStageMetadataList = ingestStageMetadataMap.get(dataset);
+        List<IngestStageResult> ingestStageResults = new ArrayList<>();
+        // Run all the stages
+        for (IngestStageMetadata ingestStageMetadata : ingestStageMetadataList)
+        {
+            Instant stageStartInstant = executionTimestampClock().instant();
+
+            IngestMode enrichedIngestMode = ingestStageMetadata.ingestMode();
+            Datasets enrichedDatasets = ingestStageMetadata.datasets();
+            RelationalGenerator generator = ingestStageMetadata.relationalGenerator();
+            Planner planner = ingestStageMetadata.planner();
+
+            try
+            {
+                // 1. Perform idempotency check
+                if (enableIdempotencyCheck())
+                {
+                    List<IngestorResult> previouslyProcessedResults = IngestionUtils.verifyIfRequestAlreadyProcessedPreviously(SchemaEvolutionResult.builder().updatedDatasets(enrichedDatasets).build(),
+                        enrichedDatasets, ingestRequestId(), transformer, executor, IngestStatus.SUCCEEDED.name());
+                    if (!previouslyProcessedResults.isEmpty())
+                    {
+                        ingestStageResults.addAll(previouslyProcessedResults.stream().map(this::buildIngestStageResult).collect(Collectors.toList()));
+                        continue;
+                    }
+                }
+
+                // 2. Check if staging dataset is empty
+                Resources.Builder resourcesBuilder = Resources.builder();
+                if (enrichedIngestMode.accept(IngestModeVisitors.NEED_TO_CHECK_STAGING_EMPTY) && executor.datasetExists(enrichedDatasets.stagingDataset()))
+                {
+                    boolean isStagingDatasetEmpty = IngestionUtils.datasetEmpty(enrichedDatasets.stagingDataset(), transformer, executor, placeHolderKeyValues);
+                    LOGGER.info(String.format("Checking if staging dataset is empty : {%s}", isStagingDatasetEmpty));
+                    resourcesBuilder.stagingDataSetEmpty(isStagingDatasetEmpty);
+                }
+
+                // 3. Generate SQLs
+                GeneratorResult generatorResult = generator.generateOperationsForIngest(resourcesBuilder.build(), planner);
+
+                // 4. Perform deduplication and versioning
+                if (generatorResult.deduplicationAndVersioningSqlPlan().isPresent())
+                {
+                    IngestionUtils.dedupAndVersion(executor, generatorResult, enrichedDatasets, caseConversion(), placeHolderKeyValues);
+                }
+
+                // 5. Perform ingestion
+                List<IngestorResult> ingestorResults = null;
+                if (enrichedIngestMode instanceof BulkLoad)
+                {
+                    LOGGER.info("Starting Bulk Load for stage");
+                    ingestorResults = IngestionUtils.performBulkLoad(enrichedDatasets, transformer, planner, executor, generatorResult,
+                        enrichedIngestMode, SchemaEvolutionResult.builder().updatedDatasets(enrichedDatasets).build(),
+                        additionalMetadata(), executionTimestampClock(), relationalSink(), Optional.of(batchId));
+                    LOGGER.info("Bulk Load completed for stage");
+
+                    Optional<Long> rowsWithErrors = IngestionUtils.retrieveValueAsLong(ingestorResults.get(0).statisticByName().getOrDefault(StatisticName.ROWS_WITH_ERRORS, 0));
+                    if (rowsWithErrors.isPresent() && rowsWithErrors.get() > 0)
+                    {
+                        String message = String.format("Rows load with errors in Bulk Load for dataset: {%s}, number of rows with errors: {%s}", dataset, rowsWithErrors.get());
+                        LOGGER.error(message);
+                        throw new BulkLoadException(dataset, message);
+                    }
+                }
+                else
+                {
+                    LOGGER.info(String.format("Starting Ingestion for stage with IngestMode: {%s}", enrichedIngestMode.getClass().getSimpleName()));
+                    ingestorResults = IngestionUtils.performIngestion(enrichedDatasets, transformer, planner, executor, generatorResult,
+                        new ArrayList<>(), enrichedIngestMode, SchemaEvolutionResult.builder().updatedDatasets(enrichedDatasets).build(),
+                        additionalMetadata(), executionTimestampClock(), Optional.of(batchId));
+                    LOGGER.info("Ingestion completed for stage");
+                }
+
+                // 6. Build ingest stage result
+                List<IngestStageResult> mappedResults = ingestorResults.stream().map(this::buildIngestStageResult).collect(Collectors.toList());
+                ingestStageResults.addAll(mappedResults);
+            }
+            catch (Exception e)
+            {
+                String message = String.format("Encountered exception for dataset: {%s}", dataset);
+                LOGGER.error(message);
+                throw new MultiDatasetException(e, stageStartInstant, executionTimestampClock().instant(), dataset, ingestStageMetadata, message);
+            }
+        }
+        return ingestStageResults;
     }
 
     private void performCleanup()

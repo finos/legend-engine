@@ -57,7 +57,7 @@ import org.finos.legend.engine.persistence.components.relational.api.ErrorCatego
 import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
-import org.finos.legend.engine.persistence.components.relational.api.ApiUtils;
+import org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
@@ -119,8 +119,8 @@ import java.util.Set;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.BATCH_ID_PATTERN;
-import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.BATCH_START_TS_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.BATCH_ID_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.BATCH_START_TS_PATTERN;
 import static org.finos.legend.engine.persistence.components.transformer.Transformer.TransformOptionsAbstract.DATE_TIME_FORMATTER;
 import static org.finos.legend.engine.persistence.components.util.ValidationCategory.NULL_VALUE;
 import static org.finos.legend.engine.persistence.components.util.ValidationCategory.TYPE_CONVERSION;
@@ -311,7 +311,7 @@ public class SnowflakeSink extends AnsiSqlSink
     private List<DataError> parseSnowflakeExceptions(Exception e)
     {
         String errorMessage = e.getMessage();
-        String errorMessageWithoutLineBreaks = ApiUtils.removeLineBreaks(e.getMessage());
+        String errorMessageWithoutLineBreaks = IngestionUtils.removeLineBreaks(e.getMessage());
 
         if (errorMessage.contains("Error parsing"))
         {
@@ -320,7 +320,7 @@ public class SnowflakeSink extends AnsiSqlSink
 
         if (errorMessage.contains("file") && errorMessage.contains("was not found"))
         {
-            Optional<String> fileName = ApiUtils.findToken(errorMessage, "file '(.*)' was not found", 1);
+            Optional<String> fileName = IngestionUtils.findToken(errorMessage, "file '(.*)' was not found", 1);
             Map<String, Object> errorDetails = buildErrorDetails(fileName, Optional.empty(), Optional.empty());
             return Collections.singletonList(DataError.builder().errorCategory(ErrorCategory.FILE_NOT_FOUND).errorMessage(errorMessageWithoutLineBreaks).putAllErrorDetails(errorDetails).build());
         }

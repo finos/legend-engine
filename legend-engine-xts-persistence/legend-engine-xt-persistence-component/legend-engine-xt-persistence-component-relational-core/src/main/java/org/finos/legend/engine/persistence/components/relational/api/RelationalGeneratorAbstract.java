@@ -30,6 +30,8 @@ import org.finos.legend.engine.persistence.components.planner.Planners;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
+import org.finos.legend.engine.persistence.components.relational.api.utils.ApiUtils;
+import org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvolution;
@@ -259,7 +261,7 @@ public abstract class RelationalGeneratorAbstract
         }
 
         // pre-actions
-        LogicalPlan preActionsLogicalPlan = planner.buildLogicalPlanForPreActions(resources);
+        LogicalPlan preActionsLogicalPlan = planner.buildLogicalPlanForPreActions();
         SqlPlan preActionsSqlPlan = transformer.generatePhysicalPlan(preActionsLogicalPlan);
 
         // dry-run pre-actions
@@ -396,12 +398,12 @@ public abstract class RelationalGeneratorAbstract
             .build();
     }
 
-    GeneratorResult generateOperationsForCreate(Resources resources, Planner planner)
+    GeneratorResult generateOperationsForCreate(Planner planner)
     {
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
 
         // pre-actions
-        LogicalPlan preActionsLogicalPlan = planner.buildLogicalPlanForPreActions(resources);
+        LogicalPlan preActionsLogicalPlan = planner.buildLogicalPlanForPreActions();
         SqlPlan preActionsSqlPlan = transformer.generatePhysicalPlan(preActionsLogicalPlan);
 
         return GeneratorResult.builder()

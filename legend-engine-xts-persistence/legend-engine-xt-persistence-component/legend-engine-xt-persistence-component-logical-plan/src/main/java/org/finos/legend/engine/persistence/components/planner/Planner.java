@@ -366,7 +366,7 @@ public abstract class Planner
         return null;
     }
 
-    public LogicalPlan buildLogicalPlanForPreActions(Resources resources)
+    public LogicalPlan buildLogicalPlanForPreActions()
     {
         List<Operation> operations = new ArrayList<>();
         if (!options().skipMainAndMetadataDatasetCreation())

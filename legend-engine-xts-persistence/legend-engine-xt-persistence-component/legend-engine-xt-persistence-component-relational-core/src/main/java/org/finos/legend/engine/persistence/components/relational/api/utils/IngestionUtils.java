@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.relational.api;
+package org.finos.legend.engine.persistence.components.relational.api.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -35,22 +35,17 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.Deri
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetCaseConverter;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetsCaseConverter;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.planner.Planner;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
+import org.finos.legend.engine.persistence.components.relational.api.*;
 import org.finos.legend.engine.persistence.components.relational.exception.DataQualityException;
 import org.finos.legend.engine.persistence.components.exception.JsonReadOrWriteException;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
-import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataUtils;
@@ -62,7 +57,6 @@ import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -80,10 +74,11 @@ import static org.finos.legend.engine.persistence.components.relational.api.Data
 import static org.finos.legend.engine.persistence.components.relational.api.DataErrorAbstract.NUM_DUPLICATES;
 import static org.finos.legend.engine.persistence.components.relational.api.DataErrorAbstract.NUM_PK_DUPLICATES;
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalGeneratorAbstract.BULK_LOAD_BATCH_STATUS_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.utils.ApiUtils.convertCase;
 import static org.finos.legend.engine.persistence.components.transformer.Transformer.TransformOptionsAbstract.DATE_TIME_FORMATTER;
 import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_STAGING_FILTERS;
 
-public class ApiUtils
+public class IngestionUtils
 {
     public static final String BATCH_ID_PATTERN = "{NEXT_BATCH_ID_PATTERN}";
     public static final String BATCH_START_TS_PATTERN = "{BATCH_START_TIMESTAMP_PLACEHOLDER}";
@@ -91,134 +86,8 @@ public class ApiUtils
     public static final String ADDITIONAL_METADATA_KEY_PATTERN = "{ADDITIONAL_METADATA_KEY_PLACEHOLDER}";
     public static final String ADDITIONAL_METADATA_VALUE_PATTERN = "{ADDITIONAL_METADATA_VALUE_PLACEHOLDER}";
     public static final String ADDITIONAL_METADATA_PLACEHOLDER_PATTERN = "{\"" + ADDITIONAL_METADATA_KEY_PATTERN + "\":\"" + ADDITIONAL_METADATA_VALUE_PATTERN + "\"}";
-    public static final String LOCK_INFO_DATASET_SUFFIX = "_legend_persistence_lock";
     private static final String SINGLE_QUOTE = "'";
-    private static final Logger LOGGER = LoggerFactory.getLogger(ApiUtils.class);
-
-    public static Dataset deriveMainDatasetFromStaging(Dataset mainDataset, Dataset stagingDataset, IngestMode ingestMode)
-    {
-        Dataset enrichedMainDataset = mainDataset;
-        if (mainDataset instanceof DatasetReference ||
-                (mainDataset instanceof DatasetDefinition && mainDataset.schema().fields() == null || mainDataset.schema().fields().isEmpty()))
-        {
-            enrichedMainDataset = ingestMode.accept(new DeriveMainDatasetSchemaFromStaging(mainDataset, stagingDataset));
-        }
-        return enrichedMainDataset;
-    }
-
-    public static Datasets enrichAndApplyCase(Datasets datasets, CaseConversion caseConversion)
-    {
-        DatasetsCaseConverter converter = new DatasetsCaseConverter();
-        MetadataDataset metadataDataset = datasets.metadataDataset().orElse(MetadataDataset.builder().build());
-        LockInfoDataset lockInfoDataset = getLockInfoDataset(datasets);
-        Datasets enrichedDatasets = datasets
-                .withMetadataDataset(metadataDataset)
-                .withLockInfoDataset(lockInfoDataset);
-        if (caseConversion == CaseConversion.TO_UPPER)
-        {
-            return converter.applyCase(enrichedDatasets, String::toUpperCase);
-        }
-        if (caseConversion == CaseConversion.TO_LOWER)
-        {
-            return converter.applyCase(enrichedDatasets, String::toLowerCase);
-        }
-        return enrichedDatasets;
-    }
-
-    public static DatasetReference applyCase(DatasetReference datasetReference, CaseConversion caseConversion)
-    {
-        Function<String, String> strategy;
-        if (caseConversion == CaseConversion.TO_UPPER)
-        {
-            strategy = String::toUpperCase;
-        }
-        else if (caseConversion == CaseConversion.TO_LOWER)
-        {
-            strategy = String::toLowerCase;
-        }
-        else
-        {
-            return datasetReference;
-        }
-
-        datasetReference = datasetReference.withName(strategy.apply(datasetReference.name().orElseThrow(IllegalAccessError::new)));
-        if (datasetReference.database().isPresent())
-        {
-            datasetReference = datasetReference.withDatabase(strategy.apply(datasetReference.database().get()));
-        }
-        if (datasetReference.group().isPresent())
-        {
-            datasetReference = datasetReference.withGroup(strategy.apply(datasetReference.group().get()));
-        }
-
-        return datasetReference;
-    }
-
-    public static LockInfoDataset applyCase(LockInfoDataset lockInfoDataset, CaseConversion caseConversion)
-    {
-        Function<String, String> strategy;
-        if (caseConversion == CaseConversion.TO_UPPER)
-        {
-            strategy = String::toUpperCase;
-        }
-        else if (caseConversion == CaseConversion.TO_LOWER)
-        {
-            strategy = String::toLowerCase;
-        }
-        else
-        {
-            return lockInfoDataset;
-        }
-        return new DatasetCaseConverter().applyCaseOnLockInfoDataset(lockInfoDataset, strategy);
-    }
-
-    public static SchemaDefinition applyCase(SchemaDefinition schema, CaseConversion caseConversion)
-    {
-        DatasetCaseConverter converter = new DatasetCaseConverter();
-        if (caseConversion == CaseConversion.TO_UPPER)
-        {
-            return converter.applyCaseOnSchemaDefinition(schema, String::toUpperCase);
-        }
-        if (caseConversion == CaseConversion.TO_LOWER)
-        {
-            return converter.applyCaseOnSchemaDefinition(schema, String::toLowerCase);
-        }
-        return schema;
-    }
-
-    public static IngestMode applyCase(IngestMode ingestMode, CaseConversion caseConversion)
-    {
-        if (caseConversion == CaseConversion.TO_UPPER)
-        {
-            return ingestMode.accept(new IngestModeCaseConverter(String::toUpperCase));
-        }
-        if (caseConversion == CaseConversion.TO_LOWER)
-        {
-            return ingestMode.accept(new IngestModeCaseConverter(String::toLowerCase));
-        }
-        return ingestMode;
-    }
-
-    private static LockInfoDataset getLockInfoDataset(Datasets datasets)
-    {
-        Dataset main = datasets.mainDataset();
-        LockInfoDataset lockInfoDataset;
-        if (datasets.lockInfoDataset().isPresent())
-        {
-            lockInfoDataset = datasets.lockInfoDataset().get();
-        }
-        else
-        {
-            String datasetName = main.datasetReference().name().orElseThrow(IllegalStateException::new);
-            String lockDatasetName = datasetName + LOCK_INFO_DATASET_SUFFIX;
-            lockInfoDataset = LockInfoDataset.builder()
-                    .database(main.datasetReference().database())
-                    .group(main.datasetReference().group())
-                    .name(lockDatasetName)
-                    .build();
-        }
-        return lockInfoDataset;
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngestionUtils.class);
 
     public static List<IngestorResult> verifyIfRequestAlreadyProcessedPreviously(SchemaEvolutionResult schemaEvolutionResult, Datasets enrichedDatasets,
                                                                                  Optional<String> ingestRequestId, Transformer<SqlGen, SqlPlan> transformer,
@@ -381,7 +250,7 @@ public class ApiUtils
         // Handle batch ID
         if (!nextBatchId.isPresent())
         {
-            nextBatchId = ApiUtils.getNextBatchId(datasets, executor, transformer);
+            nextBatchId = IngestionUtils.getNextBatchId(datasets, executor, transformer);
         }
         if (nextBatchId.isPresent())
         {
@@ -390,7 +259,7 @@ public class ApiUtils
         }
 
         // Handle optimization filters
-        Optional<Map<OptimizationFilter, Pair<Object, Object>>> optimizationFilters = ApiUtils.getOptimizationFilterBounds(datasets, executor, transformer, ingestMode, placeHolderKeyValues);
+        Optional<Map<OptimizationFilter, Pair<Object, Object>>> optimizationFilters = IngestionUtils.getOptimizationFilterBounds(datasets, executor, transformer, ingestMode, placeHolderKeyValues);
         if (optimizationFilters.isPresent())
         {
             for (OptimizationFilter filter : optimizationFilters.get().keySet())
@@ -581,7 +450,7 @@ public class ApiUtils
                 TabularData duplicatePkRows = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(PK_DUPLICATE_ROWS), placeHolderKeyValues).get(0);
                 String errorMessage = "Encountered multiple rows with duplicate primary keys, Failing the batch as Fail on Duplicate Primary Keys is selected";
                 LOGGER.error(errorMessage);
-                List<DataError> dataErrors = ApiUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), duplicatePkRows.getData(),
+                List<DataError> dataErrors = IngestionUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), duplicatePkRows.getData(),
                     ErrorCategory.DUPLICATE_PRIMARY_KEYS, caseConversion, DeriveDuplicatePkRowsLogicalPlan.DUPLICATE_PK_COUNT, NUM_PK_DUPLICATES);
                 throw new DataQualityException(errorMessage, dataErrors);
             }
@@ -599,7 +468,7 @@ public class ApiUtils
                 TabularData errors = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(DATA_ERROR_ROWS), placeHolderKeyValues).get(0);
                 String errorMessage = "Encountered Data errors (same PK, same version but different data), hence failing the batch";
                 LOGGER.error(errorMessage);
-                List<DataError> dataErrors = ApiUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), errors.getData(),
+                List<DataError> dataErrors = IngestionUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), errors.getData(),
                     ErrorCategory.DATA_VERSION_ERROR, caseConversion, DeriveDataErrorRowsLogicalPlan.DATA_VERSION_ERROR_COUNT, NUM_DATA_VERSION_ERRORS);
                 throw new DataQualityException(errorMessage, dataErrors);
             }
@@ -689,20 +558,6 @@ public class ApiUtils
         Object errorDetailsValue = dataError.get(errorField);
         errorDetails.put(errorDetailsKey, errorDetailsValue);
         return errorDetails;
-    }
-
-
-    public static String convertCase(CaseConversion caseConversion, String value)
-    {
-        switch (caseConversion)
-        {
-            case TO_UPPER:
-                return value.toUpperCase();
-            case TO_LOWER:
-                return value.toLowerCase();
-            default:
-                return value;
-        }
     }
 
     public static String buildErrorRecord(List<String> allColumns, Map<String, Object> row)

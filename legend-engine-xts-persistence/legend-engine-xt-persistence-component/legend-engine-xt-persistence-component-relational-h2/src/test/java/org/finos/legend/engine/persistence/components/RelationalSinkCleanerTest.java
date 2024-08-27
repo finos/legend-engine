@@ -17,6 +17,8 @@ package org.finos.legend.engine.persistence.components;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.relational.api.*;
+import org.finos.legend.engine.persistence.components.relational.api.utils.ApiUtils;
+import org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;

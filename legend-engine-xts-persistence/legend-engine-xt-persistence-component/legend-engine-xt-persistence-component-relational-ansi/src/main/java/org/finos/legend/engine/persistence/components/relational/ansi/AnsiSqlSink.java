@@ -150,7 +150,8 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.UdfVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.WindowFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.api.DataError;
-import org.finos.legend.engine.persistence.components.relational.api.ApiUtils;
+import org.finos.legend.engine.persistence.components.relational.api.utils.ApiUtils;
+import org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils;
 import org.finos.legend.engine.persistence.components.relational.api.ErrorCategory;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
@@ -167,7 +168,7 @@ import java.time.Clock;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.buildErrorRecord;
+import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.buildErrorRecord;
 import static org.finos.legend.engine.persistence.components.util.ValidationCategory.NULL_VALUE;
 
 public class AnsiSqlSink extends RelationalSink
