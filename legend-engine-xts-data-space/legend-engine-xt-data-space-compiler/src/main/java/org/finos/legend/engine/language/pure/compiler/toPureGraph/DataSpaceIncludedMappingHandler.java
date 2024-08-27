@@ -25,7 +25,7 @@ public class DataSpaceIncludedMappingHandler implements IncludedMappingHandler
     @Override
     public Mapping resolveMapping(MappingInclude mappingInclude, CompileContext context)
     {
-        Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace = (Root_meta_pure_metamodel_dataSpace_DataSpace) context.pureModel.getPackageableElement_safe(mappingInclude.getFullName());
+        Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace = (Root_meta_pure_metamodel_dataSpace_DataSpace) context.pureModel.getPackageableElement(mappingInclude.getFullName());
         return dataSpace._defaultExecutionContext()._mapping();
     }
 
