@@ -756,3 +756,21 @@ function meta::pure::functions::meta::typePath(any:Any[1]):String[1]
 {
     $any->type()->elementToPath();
 }
+
+function meta::pure::functions::meta::removeAutomap(v:ValueSpecification[1]):ValueSpecification[1]
+{
+   $v->match([fe:FunctionExpression[1] | if($fe.functionName=='map' 
+                                            ,| let left = $fe.parametersValues->at(0);
+                                               let prop = $fe.parametersValues->at(1)->match([x:FunctionRoutedValueSpecification[1]|$x.value,a:Any[1]|$a])->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<Any>).expressionSequence->at(0)->cast(@FunctionExpression);
+                                              if($prop.parametersValues->at(0)->instanceOf(VariableExpression) && $prop.parametersValues->at(0)->cast(@VariableExpression).name=='v_automap',
+                                                 |  let leftUnMapped = $left->meta::pure::functions::meta::removeAutomap();
+                                                   ^$prop(parametersValues=$leftUnMapped);,
+                                                 |  ^$fe(parametersValues=$fe.parametersValues->at(0)->meta::pure::functions::meta::removeAutomap()->concatenate( $fe.parametersValues->tail()))
+                                                );
+
+                                           ,| if ($fe.parametersValues->isNotEmpty(),
+                                                | ^$fe(parametersValues=$fe.parametersValues->at(0)->meta::pure::functions::meta::removeAutomap()->concatenate( $fe.parametersValues->tail())),
+                                                | $fe)
+                                      ),
+               v:ValueSpecification[1] |  $v]);
+}

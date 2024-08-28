@@ -59,7 +59,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime_Impl;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime_Impl;
-import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Tag;
@@ -70,7 +69,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 
 import java.util.List;
-import java.util.Objects;
 
 public class PackageableElementFirstPassBuilder implements PackageableElementVisitor<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement>
 {
@@ -212,7 +210,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(Mapping mapping)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping pureMapping = new Root_meta_pure_mapping_Mapping_Impl(mapping.name, SourceInformationHelper.toM3SourceInformation(mapping.sourceInformation), null);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping pureMapping = new Root_meta_pure_mapping_Mapping_Impl(mapping.name, SourceInformationHelper.toM3SourceInformation(mapping.sourceInformation), this.context.pureModel.getClass("meta::pure::mapping::Mapping"));
         this.context.pureModel.mappingsIndex.put(this.context.pureModel.buildPackageString(mapping._package, mapping.name), pureMapping);
         GenericType mappingGenericType = newGenericType(this.context.pureModel.getType("meta::pure::mapping::Mapping"));
         pureMapping._classifierGenericType(mappingGenericType);

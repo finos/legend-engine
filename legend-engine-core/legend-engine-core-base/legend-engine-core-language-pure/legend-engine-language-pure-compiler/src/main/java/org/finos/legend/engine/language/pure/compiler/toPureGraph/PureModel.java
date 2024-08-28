@@ -79,6 +79,8 @@ import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnect
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.NativeFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.PackageableMultiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
@@ -665,6 +667,11 @@ public class PureModel implements IPureModel
         {
             return packageableElement;
         }
+        packageableElement = getGraphFunctions(fullPath);
+        if (packageableElement != null)
+        {
+            return packageableElement;
+        }
         packageableElement = getAssociation_safe(fullPath);
         if (packageableElement != null)
         {
@@ -925,6 +932,26 @@ public class PureModel implements IPureModel
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = this.getAssociation_safe(fullPath);
         Assert.assertTrue(association != null, () -> "Can't find association '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return association;
+    }
+
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction<?> getGraphFunctions(String fullPath)
+    {
+        try
+        {
+            return  (ConcreteFunctionDefinition<?>) this.executionSupport.getMetadata("meta::pure::metamodel::function::ConcreteFunctionDefinition", "Root::" + fullPath);
+        }
+        catch (Exception e)
+        {
+            try
+            {
+                return  (NativeFunction<?>) this.executionSupport.getMetadata("meta::pure::metamodel::function::NativeFunction", "Root::" + fullPath);
+            }
+            catch (Exception ee)
+            {
+                // do nothing
+            }
+        }
+        return null;
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association getAssociation_safe(String fullPath)
@@ -1268,7 +1295,7 @@ public class PureModel implements IPureModel
 
     public static GenericType buildFunctionType(MutableList<VariableExpression> parameters, GenericType returnType, Multiplicity returnMultiplicity, PureModel pureModel)
     {
-        return new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(new Root_meta_pure_metamodel_type_FunctionType_Impl("", null, pureModel.getClass("meta::pure::metamodel::type::FunctionType"))._parameters(parameters)._returnType(returnType)._returnMultiplicity(returnMultiplicity));
+        return new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType))._rawType(new Root_meta_pure_metamodel_type_FunctionType_Impl("", null, pureModel.getClass(M3Paths.FunctionType))._parameters(parameters)._returnType(returnType)._returnMultiplicity(returnMultiplicity));
     }
 
     public String buildPackageString(String pack, String name)

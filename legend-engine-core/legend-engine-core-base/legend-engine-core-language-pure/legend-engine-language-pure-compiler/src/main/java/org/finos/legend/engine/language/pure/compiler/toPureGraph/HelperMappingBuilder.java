@@ -165,7 +165,7 @@ public class HelperMappingBuilder
                 ._name(id)
                 ._parent(pureMapping)
                 ._enumeration(context.resolveEnumeration(em.enumeration.path, em.enumeration.sourceInformation))
-                ._enumValueMappings(ListIterate.collect(em.enumValueMappings, v -> new Root_meta_pure_mapping_EnumValueMapping_Impl(null, SourceInformationHelper.toM3SourceInformation(v.sourceInformation), null)
+                ._enumValueMappings(ListIterate.collect(em.enumValueMappings, v -> new Root_meta_pure_mapping_EnumValueMapping_Impl(null, SourceInformationHelper.toM3SourceInformation(v.sourceInformation), context.pureModel.getClass("meta::pure::mapping::EnumValueMapping"))
                         ._enum(context.resolveEnumValue(em.enumeration.path, v.enumValue))
                         ._sourceValues(convertSourceValues(em, v.sourceValues, context))
                 ));

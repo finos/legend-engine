@@ -338,7 +338,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                     return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                             ._genericType(execEnvGenericType)
                             ._multiplicity(context.pureModel.getMultiplicity("one"))
-                            ._values(processingContext.peek().equals("Applying new") ? FastList.newList() : FastList.newListWith(pureExecEnv));
+                            ._values(FastList.newListWith(pureExecEnv));
                 }
         );
     }
@@ -354,7 +354,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                 return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                         ._genericType(execEnvGenericType)
                         ._multiplicity(context.pureModel.getMultiplicity("one"))
-                        ._values(processingContext.peek().equals("Applying new") ? FastList.newList() : FastList.newListWith(packageableElement));
+                        ._values(FastList.newListWith(packageableElement));
             }
             return null;
         });

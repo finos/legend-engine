@@ -50,12 +50,12 @@ public class Test_JAVA_GrammarFunction_PCT extends PCTReportConfiguration
 
                 // First
                 one("meta::pure::functions::collection::tests::first::testFirstComplex_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::model::CO_Firm\""),
-                one("meta::pure::functions::collection::tests::first::testFirstOnEmptySet_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
+                one("meta::pure::functions::collection::tests::first::testFirstOnEmptySet_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 2 errors compiling /_pure/plan/root/Execute.java"),
 
                 // Let
                 one("meta::pure::functions::lang::tests::letFn::testAssignLiteralToVariable_Function_1__Boolean_1_", "\"Cast exception: VariableExpression cannot be cast to FunctionExpression\""),
                 one("meta::pure::functions::lang::tests::letFn::testAssignNewInstance_Function_1__Boolean_1_", "\"Cast exception: VariableExpression cannot be cast to FunctionExpression\""),
-                one("meta::pure::functions::lang::tests::letFn::testLetChainedWithAnotherFunction_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
+                one("meta::pure::functions::lang::tests::letFn::testLetChainedWithAnotherFunction_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 2 errors compiling /_pure/plan/root/n1/Execute.java\n/_pure/plan/root/n1/Execute.java"),
 
                 // Map
                 one("meta::pure::functions::collection::tests::map::testMapInstance_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Person\""),
@@ -64,12 +64,12 @@ public class Test_JAVA_GrammarFunction_PCT extends PCTReportConfiguration
                 one("meta::pure::functions::collection::tests::map::testMapRelationshipFromOneToOne_Function_1__Boolean_1_", "\"Match failure: NoSetRoutedValueSpecificationObject instanceOf NoSetRoutedValueSpecification\""),
 
                 // Minus
-            one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4.0\""),
+                one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4.0\""),
                 one("meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_", "\"Match failure: NoSetRoutedValueSpecificationObject instanceOf NoSetRoutedValueSpecification\""),
-                one("meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
+            one("meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 1 error compiling /_pure/plan/root/Execute.java\n/_pure/plan/root/Execute.java:11: error: unexpected type\n            return --1L;\n                     ^\n  required: variable\n  found:    value\n\n/_pure/plan/root/Execute.java\n0001 package _pure.plan.root;\n0002 \n0003 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;\n0004 \n0005 public class Execute\n0006 {\n0007     public static long execute(IExecutionNodeContext context)\n0008     {\n0009         try\n0010         {\n0011             return --1L;\n0012         }\n0013         catch (Exception e)\n0014         {\n0015             throw new RuntimeException(\"Failed in node: root\", e);\n0016         }\n0017     }"),
 
                 // Plus
-            one("meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_", "\"\nexpected: 6.0D\nactual:   6.0\""),
+                one("meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_", "\"\nexpected: 6.0D\nactual:   6.0\""),
                 one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "\"\nexpected: -1\nactual:   -9223372036854775790\""),
                 one("meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_", "\"Match failure: NoSetRoutedValueSpecificationObject instanceOf NoSetRoutedValueSpecification\""),
 
