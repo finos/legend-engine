@@ -54,29 +54,21 @@ public class LockInfoUtils
     {
         List<Operation> operations = new ArrayList<>();
         DatasetReference metaTableRef = this.dataset.datasetReference();
-        NumericalValue batchIdValue = NumericalValue.of(0L);
-        if (batchId.isPresent())
-        {
-            batchIdValue = NumericalValue.of(batchId);
-        }
+        NumericalValue batchIdValue = NumericalValue.of(batchId.orElse(0L));
         FieldValue insertTimeField = FieldValue.builder().datasetRef(metaTableRef).fieldName(lockInfoDataset.insertTimeField()).build();
         FieldValue batchIdField = FieldValue.builder().datasetRef(metaTableRef).fieldName(lockInfoDataset.batchIdField()).build();
         List<Value> insertFields = Arrays.asList(insertTimeField, batchIdField);
         List<Value> selectFields = Arrays.asList(batchStartTimestamp, batchIdValue);
+        Condition updateCondition = IsNull.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.batchIdField()).build());
         Condition existsCondition = Exists.of(Selection.builder().addFields(All.INSTANCE).source(dataset).build());
-
-        List<Condition> updateConditionList = new ArrayList<>();
-        Condition nullCondition = IsNull.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.batchIdField()).build());
-        updateConditionList.add(existsCondition);
-        updateConditionList.add(nullCondition);
-        Condition updateCondition = And.of(updateConditionList);
-
         Condition notExistsCondition = Not.of(existsCondition);
         Pair<FieldValue, Value> keyValuePairs = Pair.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.batchIdField()).build(), batchIdValue);
 
-        operations.add(Update.builder().dataset(dataset).addKeyValuePairs(keyValuePairs).whereCondition(updateCondition).build());
         operations.add(Insert.of(dataset, Selection.builder().addAllFields(selectFields).condition(notExistsCondition).build(), insertFields));
-
+        if (batchId.isPresent())
+        {
+            operations.add(Update.builder().dataset(dataset).addKeyValuePairs(keyValuePairs).whereCondition(updateCondition).build());
+        }
         return operations;
     }
 

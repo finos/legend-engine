@@ -35,8 +35,7 @@ public class ApiUtils
     public static Dataset deriveMainDatasetFromStaging(Dataset mainDataset, Dataset stagingDataset, IngestMode ingestMode)
     {
         Dataset enrichedMainDataset = mainDataset;
-        if (mainDataset instanceof DatasetReference ||
-                (mainDataset instanceof DatasetDefinition && (mainDataset.schema().fields() == null || mainDataset.schema().fields().isEmpty())))
+        if (mainDataset instanceof DatasetDefinition && (mainDataset.schema().fields() == null || mainDataset.schema().fields().isEmpty()))
         {
             enrichedMainDataset = ingestMode.accept(new DeriveMainDatasetSchemaFromStaging(mainDataset, stagingDataset));
         }

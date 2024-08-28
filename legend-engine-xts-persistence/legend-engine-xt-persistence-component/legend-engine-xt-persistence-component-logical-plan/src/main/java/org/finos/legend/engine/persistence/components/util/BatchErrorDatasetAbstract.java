@@ -75,7 +75,7 @@ public interface BatchErrorDatasetAbstract
                 .schema(SchemaDefinition.builder()
                         .addFields(Field.builder().name(requestIdField()).type(FieldType.of(DataType.VARCHAR, 255, null)).build())
                         .addFields(Field.builder().name(tableNameField()).type(FieldType.of(DataType.VARCHAR, 255, null)).build())
-                        .addFields(Field.builder().name(errorMessageField()).type(FieldType.of(DataType.VARCHAR, 255, null)).build())
+                        .addFields(Field.builder().name(errorMessageField()).type(FieldType.of(DataType.VARCHAR,Optional.empty(), Optional.empty())).build())
                         .addFields(Field.builder().name(errorCategoryField()).type(FieldType.of(DataType.VARCHAR, 32, null)).build())
                         .addFields(Field.builder().name(createdOnField()).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build())
                         .build())

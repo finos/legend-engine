@@ -64,12 +64,9 @@ public class LockInfoUtilsTest
         LogicalPlan logicalPlan = LogicalPlan.builder().addAllOps(operation).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expectedUpdateSql = "UPDATE main_table_lock as main_table_lock SET main_table_lock.\"batch_id\" = 0 WHERE " +
-                "(EXISTS (SELECT * FROM main_table_lock as main_table_lock)) AND (main_table_lock.\"batch_id\" IS NULL)";
         String expectedInsertSql = "INSERT INTO main_table_lock (\"insert_ts_utc\", \"batch_id\") " +
                 "(SELECT '2000-01-01 00:00:00.000000',0 WHERE NOT (EXISTS (SELECT * FROM main_table_lock as main_table_lock)))";
-        Assertions.assertEquals(expectedUpdateSql, list.get(0));
-        Assertions.assertEquals(expectedInsertSql, list.get(1));
+        Assertions.assertEquals(expectedInsertSql, list.get(0));
     }
 
     @Test
@@ -81,11 +78,11 @@ public class LockInfoUtilsTest
         LogicalPlan logicalPlan = LogicalPlan.builder().addAllOps(operation).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expectedUpdateSql = "UPDATE main_table_lock as main_table_lock SET main_table_lock.\"batch_id\" = 50 WHERE (EXISTS (SELECT * FROM main_table_lock as main_table_lock)) AND (main_table_lock.\"batch_id\" IS NULL)";
+        String expectedUpdateSql = "UPDATE main_table_lock as main_table_lock SET main_table_lock.\"batch_id\" = 50 WHERE main_table_lock.\"batch_id\" IS NULL";
         String expectedInsertSql = "INSERT INTO main_table_lock (\"insert_ts_utc\", \"batch_id\") " +
                 "(SELECT '2000-01-01 00:00:00.000000',50 WHERE NOT (EXISTS (SELECT * FROM main_table_lock as main_table_lock)))";
-        Assertions.assertEquals(expectedUpdateSql, list.get(0));
-        Assertions.assertEquals(expectedInsertSql, list.get(1));
+        Assertions.assertEquals(expectedInsertSql, list.get(0));
+        Assertions.assertEquals(expectedUpdateSql, list.get(1));
     }
 
     @Test
