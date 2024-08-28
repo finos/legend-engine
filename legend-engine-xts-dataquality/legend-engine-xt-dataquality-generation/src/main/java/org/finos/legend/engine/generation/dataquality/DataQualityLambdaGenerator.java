@@ -25,7 +25,7 @@ import java.util.Objects;
 
 public class DataQualityLambdaGenerator
 {
-    public static final int DEFAULT_QUERY_LIMIT = Integer.MAX_VALUE;
+    public static final int DEFAULT_QUERY_LIMIT = 100;
 
     public static LambdaFunction generateLambda(PureModel pureModel, String qualifiedPath)
     {
