@@ -27,6 +27,7 @@ import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityRootGra
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataSpaceDataQualityExecutionContext;
 import org.finos.legend.engine.protocol.dataquality.metamodel.MappingAndRuntimeDataQualityExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
@@ -87,7 +88,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
         return Lists.fixedSize.of(
                 Processor.newProcessor(
                         DataQuality.class,
-                        org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class.class),
+                        org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class.class, DataSpace.class),
                         (dataquality, compileContext) ->
                         {
                             Root_meta_external_dataquality_DataQuality_Impl<Object> metamodel = new Root_meta_external_dataquality_DataQuality_Impl<>(

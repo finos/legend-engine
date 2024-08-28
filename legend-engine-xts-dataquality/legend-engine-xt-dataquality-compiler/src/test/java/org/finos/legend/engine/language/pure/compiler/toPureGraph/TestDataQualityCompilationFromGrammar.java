@@ -39,7 +39,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [92:1-101:1]: Duplicated element 'meta::dataquality::Person'";
+        return "COMPILATION error at [104:1-113:1]: Duplicated element 'meta::dataquality::Person'";
     }
 
     @Test
@@ -50,6 +50,23 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "DataQualityValidation meta::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
                 "    context: fromMappingAndRuntime(meta::dataquality::dataqualitymappings, meta::dataquality::DataQualityRuntime);\n" +
+                "    filter: p:meta::dataquality::Person[1] | $p.name=='John';\n" +
+                "    validationTree: $[\n" +
+                "      meta::dataquality::Person<mustBeOfLegalAge>{\n" +
+                "        name\n" +
+                "      }\n" +
+                "    ]$;\n" +
+                "}");
+    }
+
+    @Test
+    public void testHappyPath_withDataspace()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityValidation meta::dataquality::PersonDataQualityValidation\n" +
+                "{\n" +
+                "    context: fromDataSpace(meta::dataquality::PersonDataspace, 'default');\n" +
                 "    filter: p:meta::dataquality::Person[1] | $p.name=='John';\n" +
                 "    validationTree: $[\n" +
                 "      meta::dataquality::Person<mustBeOfLegalAge>{\n" +
@@ -105,7 +122,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "      meta::dataquality::Person{\n" +
                 "      }\n" +
                 "    ]$;\n" +
-                "}", " at [92:1-100:1]: Error in 'meta::dataquality::PersonDataQualityValidation': Execution error at (resource: lines:92c1-100c1), \"Constraint :[mustHaveAtLeastOnePropertyOrConstraint] violated in the Class DataQualityRootGraphFetchTree\"");
+                "}", " at [104:1-112:1]: Error in 'meta::dataquality::PersonDataQualityValidation': Execution error at (resource: lines:104c1-112c1), \"Constraint :[mustHaveAtLeastOnePropertyOrConstraint] violated in the Class DataQualityRootGraphFetchTree\"");
     }
 
 
@@ -200,6 +217,18 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
             "   street: String[1];\n" +
             "   locality: String[1];\n" +
             "}\n" +
-            "\n";
+            "###DataSpace\n" +
+            "DataSpace meta::dataquality::PersonDataspace\n" +
+            "{\n" +
+            "  executionContexts:\n" +
+            "  [\n" +
+            "    {\n" +
+            "      name: 'default';\n" +
+            "      mapping: meta::dataquality::dataqualitymappings;\n" +
+            "      defaultRuntime: meta::dataquality::DataQualityRuntime;\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  defaultExecutionContext: 'default';\n" +
+            "}\n";
 
 }
