@@ -467,7 +467,7 @@ function <<access.private>> meta::pure::lineage::scanProperties::processFunction
           {f0:Function<Any>[0] | $fromParams},
           {f:Function<Any>[1] |
 
-               if($f.name->isEmpty() || $f->isWithinPackage(meta),
+               if($f.name->isEmpty() || ($f->isWithinPackage(meta) && !$f->isWithinPackage(meta::pure::lineage::scanProperties::test)),
                 |
                   processNativeFunction($f, $paramPaths, $vars, $processed, $config, $processedFunctionMap, $debug, $addFunctionParamClasses);,
                 |
