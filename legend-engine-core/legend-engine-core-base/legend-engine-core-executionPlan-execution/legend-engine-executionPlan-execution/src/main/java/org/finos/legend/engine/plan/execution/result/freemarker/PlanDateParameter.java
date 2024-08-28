@@ -37,9 +37,10 @@ class PlanDateParameter implements freemarker.template.TemplateDateModel
 
     public PlanDateParameter(LocalDateTime date, DateTimeFormatter dateTimeFormatter, String targetTz)
     {
-        LocalDateTime dateTimeAdjustedForTargetTz = getTargetZonedDateTime(date, targetTz);
+        String validTargetTz = targetTz.replaceAll("^['\"]+|['\"]+$", ""); // Sanitize the targetTz input by trimming any leading or trailing quotes before processing it
+        LocalDateTime dateTimeAdjustedForTargetTz = getTargetZonedDateTime(date, validTargetTz);
         formattedDate = dateTimeAdjustedForTargetTz.format(dateTimeFormatter);
-        processedDate = Date.from(dateTimeAdjustedForTargetTz.atZone(ZoneId.of(targetTz)).toInstant());
+        processedDate = Date.from(dateTimeAdjustedForTargetTz.atZone(ZoneId.of(validTargetTz)).toInstant());
     }
 
     private LocalDateTime getTargetZonedDateTime(LocalDateTime dateTime, String targetTz)

@@ -53,6 +53,29 @@ public class TestRelationalConnectionGrammarParser extends TestGrammarParser.Tes
                 "}\n\n";
     }
 
+    private String getTemplateConnectionWithTz(String offsetOrCode)
+    {
+        return "###Connection\n" +
+            "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+            "{\n" +
+            "  store: model::firm::Person;\n" +
+            "  timezone: " + offsetOrCode + ";\n" +
+            "  type: H2;\n" +
+            "  specification: LocalH2 { testDataSetupCSV: 'testCSV'; };\n" +
+            "  auth: DefaultH2;\n" +
+            "}\n\n";
+    }
+
+    @Test
+    public void testTimezoneConfiguration()
+    {
+        // With Offset
+        test(getTemplateConnectionWithTz("+0700"), null);
+        // With zone id
+        test(getTemplateConnectionWithTz("'EST'"), null);
+        test(getTemplateConnectionWithTz("'US/Arizona'"), null);
+    }
+
     @Test
     public void testRelationalDatabaseConnection()
     {
