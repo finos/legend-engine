@@ -135,6 +135,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
     Test Case:
         - [Dataset1: [BulkLoad, UnitemporalDelta],
            Dataset2: [BulkLoad, UnitemporalDelta]]
+           Also tests idempotency
      */
     @Test
     public void testSameIngestMode() throws IOException
@@ -150,6 +151,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
             .lockInfoDataset(lockInfoDataset)
             .ingestRequestId(requestId1)
             .executionTimestampClock(fixedClock_2000_01_01)
+            .enableIdempotencyCheck(true)
             .build();
 
         List<DatasetIngestDetails> datasetIngestDetails = configureForTest1("src/test/resources/data/multi-dataset/set1/input/file1_for_dataset1.csv", "src/test/resources/data/multi-dataset/set1/input/file1_for_dataset2.csv");
@@ -195,6 +197,22 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
                 new String[]{idName, nameName, ratingName, startTimeName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName}));
 
 
+        // Test Idempotency - trigger with same batch id again
+        List<DatasetIngestResults> rerunResults = ingestor.ingest();
+        verifyResults(
+                rerunResults, expected,
+                Arrays.asList("src/test/resources/data/multi-dataset/set1/expected/expected_pass1_for_dataset1_append.csv",
+                        "src/test/resources/data/multi-dataset/set1/expected/expected_pass1_for_dataset1_final.csv",
+                        "src/test/resources/data/multi-dataset/set1/expected/expected_pass1_for_dataset2_append.csv",
+                        "src/test/resources/data/multi-dataset/set1/expected/expected_pass1_for_dataset2_final.csv"),
+                Arrays.asList(dataset1 + suffixForAppendTable,
+                        dataset1 + suffixForFinalTable,
+                        dataset2 + suffixForAppendTable,
+                        dataset2 + suffixForFinalTable),
+                Arrays.asList(new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName},
+                        new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName},
+                        new String[]{idName, nameName, ratingName, startTimeName, digestName, batchIdName},
+                        new String[]{idName, nameName, ratingName, startTimeName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName}));
 
         // Batch 2
         ingestor = RelationalMultiDatasetIngestor.builder()
@@ -812,7 +830,12 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         }
         catch (Exception e)
         {
-            Assertions.assertEquals("Encountered exception for dataset: {DATASET_2}", e.getMessage());
+            Assertions.assertTrue(e instanceof MultiDatasetException);
+            MultiDatasetException multiDatasetException = (MultiDatasetException) e;
+            Assertions.assertEquals("Encountered exception for dataset: {DATASET_2}", multiDatasetException.getMessage());
+            Assertions.assertEquals("DATASET_2", multiDatasetException.getDataset());
+            Assertions.assertEquals("UnitemporalDelta", multiDatasetException.getIngestStageMetadata().ingestMode().getClass().getSimpleName());
+
             List<Map<String, Object>> tableData1 = h2Sink.executeQuery("select * from \"TEST\".\"" + dataset1 + suffixForAppendTable + "\"");
             List<Map<String, Object>> tableData2 = h2Sink.executeQuery("select * from \"TEST\".\"" + dataset1 + suffixForFinalTable + "\"");
             List<Map<String, Object>> tableData3 = h2Sink.executeQuery("select * from \"TEST\".\"" + dataset1 + suffixForBatchMetadataTable + "\"");

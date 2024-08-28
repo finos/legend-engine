@@ -91,6 +91,17 @@ public class LockInfoUtils
         return update;
     }
 
+    public Update decrementBatchIdForMultiIngest(BatchStartTimestamp batchStartTimestamp)
+    {
+        List<Pair<FieldValue, Value>> keyValuePairs = new ArrayList<>();
+        FieldValue batchIdField = FieldValue.builder().datasetRef(this.dataset.datasetReference()).fieldName(lockInfoDataset.batchIdField()).build();
+        SelectValue batchIdValue = SelectValue.of(Selection.builder().source(dataset).addFields(DiffBinaryValueOperator.of(batchIdField, NumericalValue.of(1L))).build());
+        keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.lastUsedTimeField()).build(), batchStartTimestamp));
+        keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.batchIdField()).build(), batchIdValue));
+        Update update = Update.builder().dataset(dataset).addAllKeyValuePairs(keyValuePairs).build();
+        return update;
+    }
+
     public LogicalPlan getLogicalPlanForBatchIdValue()
     {
         FieldValue batchIdField = FieldValue.builder().datasetRef(this.dataset.datasetReference()).fieldName(lockInfoDataset.batchIdField()).build();
