@@ -113,7 +113,7 @@ public class IngestionUtils
                 String batchStatus = String.valueOf(metadata.get(metadataDataset.batchStatusField()));
                 batchStatus = batchStatus.equalsIgnoreCase(batchSuccessStatusValue)  ? IngestStatus.SUCCEEDED.name() : batchStatus;
                 IngestorResult ingestorResult = IngestorResult.builder()
-                    .batchId((int) metadata.get(metadataDataset.tableBatchIdField()))
+                    .batchId(retrieveValueAsLong(metadata.get(metadataDataset.tableBatchIdField())).orElseThrow(IllegalStateException::new).intValue())
                     .putAllStatisticByName(readValueAsMap(String.valueOf(metadata.get(metadataDataset.batchStatisticsField()))))
                     .status(IngestStatus.valueOf(batchStatus))
                     .updatedDatasets(enrichedDatasets)

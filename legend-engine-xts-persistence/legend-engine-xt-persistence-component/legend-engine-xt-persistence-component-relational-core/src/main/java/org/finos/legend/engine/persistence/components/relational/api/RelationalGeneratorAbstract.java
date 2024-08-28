@@ -240,7 +240,7 @@ public abstract class RelationalGeneratorAbstract
     GeneratorResult generateOperations(Datasets datasets, Resources resources)
     {
         IngestMode ingestModeWithCaseConversion = ApiUtils.applyCase(ingestMode(), caseConversion());
-        Datasets datasetsWithCaseConversion = ApiUtils.enrichAndApplyCase(datasets, caseConversion());
+        Datasets datasetsWithCaseConversion = ApiUtils.enrichAndApplyCase(datasets, caseConversion(), enableConcurrentSafety());
         Dataset enrichedMainDataset = ApiUtils.deriveMainDatasetFromStaging(datasetsWithCaseConversion.mainDataset(),
                 datasetsWithCaseConversion.stagingDataset(), ingestModeWithCaseConversion);
         Datasets enrichedDatasets = datasetsWithCaseConversion.withMainDataset(enrichedMainDataset);

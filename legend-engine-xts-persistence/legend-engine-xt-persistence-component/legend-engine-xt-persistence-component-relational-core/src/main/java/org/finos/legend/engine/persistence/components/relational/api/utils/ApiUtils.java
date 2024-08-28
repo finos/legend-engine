@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -42,14 +42,25 @@ public class ApiUtils
         return enrichedMainDataset;
     }
 
-    public static Datasets enrichAndApplyCase(Datasets datasets, CaseConversion caseConversion)
+    public static Datasets enrichAndApplyCase(Datasets datasets, CaseConversion caseConversion, boolean enableConcurrentSafety)
     {
         DatasetsCaseConverter converter = new DatasetsCaseConverter();
         MetadataDataset metadataDataset = datasets.metadataDataset().orElse(MetadataDataset.builder().build());
-        LockInfoDataset lockInfoDataset = getLockInfoDataset(datasets);
-        Datasets enrichedDatasets = datasets
+
+        Datasets enrichedDatasets;
+        if (enableConcurrentSafety)
+        {
+            LockInfoDataset lockInfoDataset = getLockInfoDataset(datasets);
+            enrichedDatasets = datasets
                 .withMetadataDataset(metadataDataset)
                 .withLockInfoDataset(lockInfoDataset);
+        }
+        else
+        {
+            enrichedDatasets = datasets
+                .withMetadataDataset(metadataDataset);
+        }
+
         if (caseConversion == CaseConversion.TO_UPPER)
         {
             return converter.applyCase(enrichedDatasets, String::toUpperCase);

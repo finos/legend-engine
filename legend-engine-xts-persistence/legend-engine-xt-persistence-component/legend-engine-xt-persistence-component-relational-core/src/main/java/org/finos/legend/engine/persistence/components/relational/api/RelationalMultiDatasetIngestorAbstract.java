@@ -321,7 +321,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 IngestMode enrichedIngestMode = ApiUtils.applyCase(ingestStage.ingestMode(), caseConversion());
 
                 // 3. Enrich the datasets with case conversion
-                enrichedDatasets = ApiUtils.enrichAndApplyCase(enrichedDatasets, caseConversion());
+                enrichedDatasets = ApiUtils.enrichAndApplyCase(enrichedDatasets, caseConversion(), false);
 
                 // 4. Add optimization columns if needed
                 enrichedIngestMode = enrichedIngestMode.accept(new IngestModeOptimizationColumnHandler(enrichedDatasets));
@@ -465,8 +465,10 @@ public abstract class RelationalMultiDatasetIngestorAbstract
 
     private List<DatasetIngestResults> performIngestionForMultiDatasets(long batchId)
     {
+        // Put batch ID into placeholder map - this is needed to handled DerivedDataset whose filter was built using placeholders
         Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
         placeHolderKeyValues.put(BATCH_ID_PATTERN, PlaceholderValue.of(String.valueOf(batchId), false));
+
         List<DatasetIngestResults> results = new ArrayList<>();
 
         if (enableIdempotencyCheck())

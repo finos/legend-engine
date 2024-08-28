@@ -606,7 +606,7 @@ public abstract class RelationalIngestorAbstract
 
         // 1. Case handling
         enrichedIngestMode = ApiUtils.applyCase(ingestMode(), caseConversion());
-        enrichedDatasets = ApiUtils.enrichAndApplyCase(datasets, caseConversion());
+        enrichedDatasets = ApiUtils.enrichAndApplyCase(datasets, caseConversion(), enableConcurrentSafety());
 
         // 2. Initialize transformer
         transformer = new RelationalTransformer(relationalSink(), transformOptions());
