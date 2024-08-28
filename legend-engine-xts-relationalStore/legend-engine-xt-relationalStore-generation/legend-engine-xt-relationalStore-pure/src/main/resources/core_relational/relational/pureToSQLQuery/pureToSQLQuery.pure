@@ -2161,6 +2161,7 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
                          savedFilteringOperation = [],
                          leftSideOfFilter = if($firstSel.leftSideOfFilter->isEmpty(),|[],|$newRoot),
                          filteringOperation = [],
+                         havingOperation = [],
                          groupBy = []
                    ),
          currentTreeNode = $newRoot
