@@ -491,11 +491,11 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
                );
             },
             {pms:PurePropertyMapping[*] |
-              let result = $pms->fold({pm, prevRes | let result = $pm.transform.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(noDebug(), ^ScanConfig(scanClasses=true, explodeMilestonedProperties=false), $prevRes->last()->getVisitedFunctions());  //$prevRes->last()->getVisitedFunctionMap()
-                                                    $prevRes->concatenate($result);
-                                    },
-                                    [^ScanPropertiesState(current = emptyPath(), result = [], visitedFunctions = $visitedFunctions)]
-                                  );
+              let result = $pms->fold({pm, prevRes | let result = $pm.transform.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(noDebug(), ^ScanConfig(scanClasses=true, explodeMilestonedProperties=false), $prevRes->last()->getVisitedFunctions());
+                                                     $prevRes->concatenate($result);
+                                      },
+                                      [^ScanPropertiesState(current = emptyPath(), result = [], visitedFunctions = $visitedFunctions)]
+                                    );
 
               $result->slice(1, $result->size());
             }
@@ -563,10 +563,10 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
                                                         ->fold({path, gt| $gt->recordQualifiedProperties($path)}, $withPassThruSubTrees);
 
 
-         let lastVisitedFunction = $propertyPaths->last()->getVisitedFunctions();
+         let lastVisitedFunctions = $propertyPaths->last()->getVisitedFunctions();
          if($isPropertyTemporalMilestoned,
-            | pair(^$withQPsRecorded(subTrees=$withQPsRecorded.subTrees->map(st| $st->switchToMilestoneProperties($tgtPgft.parameters->evaluateAndDeactivate()))), $lastVisitedFunction),
-            | pair($withQPsRecorded, $lastVisitedFunction)
+            | pair(^$withQPsRecorded(subTrees=$withQPsRecorded.subTrees->map(st| $st->switchToMilestoneProperties($tgtPgft.parameters->evaluateAndDeactivate()))), $lastVisitedFunctions),
+            | pair($withQPsRecorded, $lastVisitedFunctions)
          );
       },
       | pair($srcNode, ^Map<String,ScanPropertiesState>())
@@ -612,9 +612,9 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNode(srcNode
                                                                                                                                                                                                                   |^PropertyGraphFetchTree(property = $p),
                                                                                                                                                                                                                   |[])),
                                                                                                      |[]));
-   let subTrees = $requiredTgtSubTrees->fold({st,n |  $n.first->enrichSourceTreeNodeForProperty($setImplementation, $st, $extensions, $n.second);}, 
+   let subTrees = $requiredTgtSubTrees->fold({st,n | $n.first->enrichSourceTreeNodeForProperty($setImplementation, $st, $extensions, $n.second)}, 
                                               pair($srcNode, ^Map<String,ScanPropertiesState>())
-                                            ).first;   //require changes
+                                            ).first;
 
    let srcClass = $setImplementation.srcClass->toOne()->cast(@Class<Any>);
    let srcNodeOwner = $srcNode->typeFromGraphFetchTree();
