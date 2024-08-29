@@ -108,7 +108,7 @@
     <properties>
         <!-- Legend -->
         <legend.pure.version>5.15.0</legend.pure.version>
-        <legend.shared.version>0.25.4</legend.shared.version>
+        <legend.shared.version>0.25.6</legend.shared.version>
 
         <!-- SONAR -->
         <sonar.projectKey>legend-engine</sonar.projectKey>
@@ -2976,6 +2976,13 @@
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-functions-json-pure</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-functions-json-pure</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>

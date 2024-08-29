@@ -12,13 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.runtime.java.extension.external.json.compiled.natives.test;
+package org.finos.legend.pure.runtime.java.extension.external.json.compiled.natives;
 
+import org.finos.legend.engine.runtime.java.extension.external.json.natives.AbstractTestFromJson;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
-import org.finos.legend.pure.m3.tests.function.base.json.AbstractTestFromJson;
 import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
 import org.finos.legend.pure.runtime.java.compiled.factory.JavaModelFactoryRegistryLoader;
-import org.junit.After;
 import org.junit.BeforeClass;
 
 public class TestFromJsonCompiled extends AbstractTestFromJson
@@ -27,13 +26,6 @@ public class TestFromJsonCompiled extends AbstractTestFromJson
     public static void setUp()
     {
         setUpRuntime(getFunctionExecution(), JavaModelFactoryRegistryLoader.loader());
-    }
-
-    @After
-    public void cleanRuntime()
-    {
-        runtime.delete("fromString.pure");
-        runtime.compile();
     }
 
     protected static FunctionExecution getFunctionExecution()

@@ -12,20 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.runtime.java.extension.external.json.compiled.natives.test;
+package org.finos.legend.pure.runtime.java.extension.external.json.compiled.natives;
 
+import org.finos.legend.engine.runtime.java.extension.external.json.natives.AbstractTestEqualJsonStrings;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
-import org.finos.legend.pure.m3.tests.function.base.json.AbstractTestToJson;
 import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
 import org.finos.legend.pure.runtime.java.compiled.factory.JavaModelFactoryRegistryLoader;
 import org.junit.BeforeClass;
 
-public class TestToJsonCompiled extends AbstractTestToJson
+public class TestAssertJsonStringsEqual extends AbstractTestEqualJsonStrings
 {
     @BeforeClass
     public static void setUp()
     {
-        setUpRuntime(getFunctionExecution(), getCodeStorage(), JavaModelFactoryRegistryLoader.loader(), getExtra());
+        setUpRuntime(getFunctionExecution(), JavaModelFactoryRegistryLoader.loader());
     }
 
     protected static FunctionExecution getFunctionExecution()
