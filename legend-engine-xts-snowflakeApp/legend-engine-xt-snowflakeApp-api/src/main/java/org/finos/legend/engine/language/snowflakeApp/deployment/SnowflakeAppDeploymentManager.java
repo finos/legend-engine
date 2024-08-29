@@ -166,7 +166,10 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
         else
         {
             statements.add(String.format(content.createStatement, catalogName));
-            statements.add(String.format(content.grantStatement, catalogName));
+            if (content.grantStatement != null)
+            {
+                statements.add(String.format(content.grantStatement, catalogName));
+            }
         }
         return statements;
     }
