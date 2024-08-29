@@ -895,7 +895,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
             MultiDatasetException multiDatasetException = (MultiDatasetException) e;
             Assertions.assertTrue(multiDatasetException.getMessage().contains("Encountered exception for dataset: [DATASET_2] : Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy"));
             Assertions.assertEquals("DATASET_2", multiDatasetException.getDataset());
-            Assertions.assertEquals("UnitemporalDelta", multiDatasetException.getIngestStageMetadata().ingestMode().getClass().getSimpleName());
+            Assertions.assertEquals(1, multiDatasetException.getStageIndex());
 
             List<Map<String, Object>> tableData1 = h2Sink.executeQuery("select * from \"TEST\".\"" + dataset1 + suffixForAppendTable + "\"");
             List<Map<String, Object>> tableData2 = h2Sink.executeQuery("select * from \"TEST\".\"" + dataset1 + suffixForFinalTable + "\"");
@@ -1022,7 +1022,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         catch (MultiDatasetException mde)
         {
             executor.revert();
-            Assertions.assertTrue(mde.getIngestStageMetadata().ingestMode() instanceof BulkLoad);
+            Assertions.assertEquals(0, mde.getStageIndex());
             Assertions.assertTrue(mde.getMessage().contains("Encountered exception for dataset: [DATASET_2] : Data conversion error converting"));
 
             // Trigger dry run

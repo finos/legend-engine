@@ -503,8 +503,9 @@ public abstract class RelationalMultiDatasetIngestorAbstract
             Long batchId = null;
 
             // Check for all the stages
-            for (IngestStageMetadata ingestStageMetadata : ingestStageMetadataList)
+            for (int i = 0; i < ingestStageMetadataList.size(); i++)
             {
+                IngestStageMetadata ingestStageMetadata = ingestStageMetadataList.get(i);
                 Instant stageStartInstant = executionTimestampClock().instant();
                 Datasets enrichedDatasets = ingestStageMetadata.datasets();
                 try
@@ -521,7 +522,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 {
                     String message = String.format("Encountered exception for dataset: {%s}", dataset);
                     LOGGER.error(message);
-                    throw new MultiDatasetException(e, stageStartInstant, executionTimestampClock().instant(), dataset, ingestStageMetadata, message);
+                    throw new MultiDatasetException(e, stageStartInstant, executionTimestampClock().instant(), dataset, i, message);
                 }
             }
             if (!ingestStageResults.isEmpty())
@@ -544,8 +545,9 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         List<IngestStageResult> ingestStageResults = new ArrayList<>();
 
         // Run all the stages
-        for (IngestStageMetadata ingestStageMetadata : ingestStageMetadataList)
+        for (int i = 0; i < ingestStageMetadataList.size(); i++)
         {
+            IngestStageMetadata ingestStageMetadata = ingestStageMetadataList.get(i);
             Instant stageStartInstant = executionTimestampClock().instant();
 
             IngestMode enrichedIngestMode = ingestStageMetadata.ingestMode();
@@ -608,7 +610,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
             {
                 String message = String.format("Encountered exception for dataset: [%s] : %s", dataset, e.getMessage());
                 LOGGER.error(message, e);
-                throw new MultiDatasetException(e, stageStartInstant, executionTimestampClock().instant(), dataset, ingestStageMetadata, message);
+                throw new MultiDatasetException(e, stageStartInstant, executionTimestampClock().instant(), dataset, i, message);
             }
         }
         return DatasetIngestResults.builder()
