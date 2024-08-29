@@ -3227,33 +3227,7 @@ function meta::relational::functions::pureToSqlQuery::processAggregation(f:Funct
 
 function meta::relational::functions::pureToSqlQuery::processWavgRowMapper(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-   let mergedSQL = $f.parametersValues->map(pv|$pv->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$state(shouldIsolateNestedFilter=true), $joinType, $nodeId, $aggFromMap, $context, $extensions))->map(x | extractSelectSQLQuery($x))->mergeSQLQueryData($nodeId, $state, $context, $extensions);
-   let mergedResult = if($state.inFilter,|$mergedSQL.filteringOperation,|$mergedSQL.columns);
-
-   //add the primary key for the last variable if we dont have a groupBy in the query
-   let aggregationColumnsReferToCurrentNode = $mergedResult->extractTableAliasColumns().alias->removeDuplicates() == $operation.currentTreeNode.alias;
-   let processingAggregationWithoutMapWithinQualifier = $operation.select.groupBy->isEmpty() && $aggFromMap.values->isEmpty() && $state.inProject && $state.functionReferenceScope->isNotEmpty();
-
-   let moreAggregationKeys = if( $processingAggregationWithoutMapWithinQualifier && !$aggregationColumnsReferToCurrentNode,
-                        | $state.functionReferenceScope.varToSelect->toOne()->keyValues().second
-                           ->map(swc|
-                                 let keys = $swc.currentTreeNode.alias.relationalElement
-                                    ->match([
-                                             t:Table[1]| $t.primaryKey,
-                                             s:SelectSQLQuery[1]| $s.data.alias.relation->cast(@Table).primaryKey,
-                                             u:Union[1]| assert(false,'Union query not supported'); $u.queries->first()->cast(@SelectSQLQuery).data.alias.relation->cast(@Table).primaryKey;
-                                          ]);
-                                 ^ColumnGroup(columns = $keys->map(k|^TableAliasColumn(column  =$k ,alias = findOneNode($swc.select.data->toOne(), $swc.currentTreeNode->toOne(), $mergedSQL.data->toOne()).alias)));
-                                 )
-
-                        ,|[]);
-
-   //decide if we want to flatten out nested dynafunctions e.g we need to flatten out when a property is mapped to a plus operation and then is used in another plus operation.
-   let dynaFunction = if(($mergedResult->size() == 1 && $mergedResult->toOne()->instanceOf(DynaFunction) && $mergedResult->toOne()->cast(@DynaFunction).name == $f.func.functionName) && $moreAggregationKeys->isEmpty(),
-                          | $mergedResult->toOne() ,
-                          | newDynaFunction($f.func.functionName->toOne(), if($state.inFilter,|$mergedSQL.filteringOperation,|$mergedSQL.columns)));
-   
-   manageAggregation($mergedSQL, $dynaFunction, $operation, $state, $nodeId, list($moreAggregationKeys), $context, $extensions);
+   processAggregation($f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, list([]), $context, $extensions);
 }
 
 function meta::relational::functions::pureToSqlQuery::manageAggregation(leftSql:SelectSQLQuery[1], relationalOperation:RelationalOperationElement[1], operation:SelectWithCursor[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
