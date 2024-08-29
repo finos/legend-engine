@@ -101,6 +101,10 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
     {
         MutableList<FunctionActivatorError> errors = Lists.mutable.empty();
         SnowflakeAppContent content = (SnowflakeAppContent)artifact.content;
+        if (content.applicationName.trim().equals(""))
+        {
+           errors.add(new SnowflakeAppError("Application name cannot be empty"));
+        }
         if (!content.sqlExpressions.isEmpty())
         {
             int size = content.sqlExpressions.select(e -> !e.toLowerCase().endsWith("to role public;")).size();
