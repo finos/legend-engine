@@ -1748,8 +1748,8 @@ public class Handlers
                 h("meta::pure::functions::math::sum_Integer_MANY__Integer_1_", false, ps -> res("Integer", "one"), ps -> typeMany(ps.get(0), "Integer")),
                 h("meta::pure::functions::math::sum_Number_MANY__Number_1_", false, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), "Number")));
 
-        register(h("meta::pure::functions::math::wavg_Number_MANY__Number_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number")),
-                 h("meta::pure::functions::math::wavg_WavgRowMapper_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::wavgUtility::WavgRowMapper")));
+        register(m(m(h("meta::pure::functions::math::wavg_Number_MANY__Number_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number"))),
+                 m(h("meta::pure::functions::math::wavg_WavgRowMapper_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::wavgUtility::WavgRowMapper")))));
 
         register(h("meta::pure::functions::math::wavgUtility::wavgRowMapper_Number_$0_1$__Number_$0_1$__WavgRowMapper_1_", false, ps -> res("meta::pure::functions::math::wavgUtility::WavgRowMapper", "one"), ps -> typeZeroOne(ps.get(0), "Number")));
 
