@@ -80,33 +80,21 @@ public class LockInfoUtils
         return update;
     }
 
-    public Update updateLockInfoForMultiIngest(BatchStartTimestamp batchStartTimestamp)
-    {
-        List<Pair<FieldValue, Value>> keyValuePairs = new ArrayList<>();
-        FieldValue batchIdField = FieldValue.builder().datasetRef(this.dataset.datasetReference()).fieldName(lockInfoDataset.batchIdField()).build();
-        SelectValue batchIdValue = SelectValue.of(Selection.builder().source(dataset).addFields(SumBinaryValueOperator.of(batchIdField, NumericalValue.of(1L))).build());
-        keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.lastUsedTimeField()).build(), batchStartTimestamp));
-        keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.batchIdField()).build(), batchIdValue));
-        Update update = Update.builder().dataset(dataset).addAllKeyValuePairs(keyValuePairs).build();
-        return update;
-    }
-
-    public Update decrementBatchIdForMultiIngest(BatchStartTimestamp batchStartTimestamp)
-    {
-        List<Pair<FieldValue, Value>> keyValuePairs = new ArrayList<>();
-        FieldValue batchIdField = FieldValue.builder().datasetRef(this.dataset.datasetReference()).fieldName(lockInfoDataset.batchIdField()).build();
-        SelectValue batchIdValue = SelectValue.of(Selection.builder().source(dataset).addFields(DiffBinaryValueOperator.of(batchIdField, NumericalValue.of(1L))).build());
-        keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.lastUsedTimeField()).build(), batchStartTimestamp));
-        keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.batchIdField()).build(), batchIdValue));
-        Update update = Update.builder().dataset(dataset).addAllKeyValuePairs(keyValuePairs).build();
-        return update;
-    }
-
-    public LogicalPlan getLogicalPlanForBatchIdValue()
+    public LogicalPlan getLogicalPlanForNextBatchIdValue()
     {
         FieldValue batchIdField = FieldValue.builder().datasetRef(this.dataset.datasetReference()).fieldName(lockInfoDataset.batchIdField()).build();
-        Selection selection = Selection.builder().source(dataset).addFields(batchIdField).build();
+        FunctionImpl maxBatchId = FunctionImpl.builder().functionName(FunctionName.MAX).addValue(batchIdField).build();
+        Selection selection = Selection.builder().source(dataset).addFields(SumBinaryValueOperator.of(maxBatchId, NumericalValue.of(1L))).build();
         return LogicalPlan.builder().addOps(selection).build();
+    }
+
+    public LogicalPlan updateBatchId(long batchId)
+    {
+        List<Pair<FieldValue, Value>> keyValuePairs = new ArrayList<>();
+        NumericalValue batchIdValue = NumericalValue.of(batchId);
+        keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.batchIdField()).build(), batchIdValue));
+        Update update = Update.builder().dataset(dataset).addAllKeyValuePairs(keyValuePairs).build();
+        return LogicalPlan.of(Arrays.asList(update));
     }
 
 }

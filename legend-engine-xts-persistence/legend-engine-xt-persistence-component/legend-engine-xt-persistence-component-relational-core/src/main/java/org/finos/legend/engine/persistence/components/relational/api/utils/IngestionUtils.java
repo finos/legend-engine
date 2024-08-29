@@ -317,8 +317,8 @@ public class IngestionUtils
         return Optional.empty();
     }
 
-    public static long getBatchIdFromLockTable(LogicalPlan plan, Executor<SqlGen, TabularData, SqlPlan> executor,
-                                                Transformer<SqlGen, SqlPlan> transformer)
+    public static long getNextBatchIdFromLockTable(LogicalPlan plan, Executor<SqlGen, TabularData, SqlPlan> executor,
+                                                   Transformer<SqlGen, SqlPlan> transformer)
     {
         List<TabularData> tabularData = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(plan));
         Optional<Object> nextBatchId = getFirstColumnValue(getFirstRowForFirstResult(tabularData));
@@ -328,7 +328,7 @@ public class IngestionUtils
         }
         else
         {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Lock Table is not properly initialized");
         }
     }
 

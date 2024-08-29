@@ -241,7 +241,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         validateInitialization();
 
         // 2. Acquire lock for all ingest stages and get the latest batch ID
-        long batchId = incrementBatchIdAndAcquireLock();
+        long batchId = acquireLockAndGetNextBatchId();
 
         // 3. Perform ingestion
         List<DatasetIngestResults> result = performIngestionForMultiDatasets(batchId);
@@ -442,25 +442,23 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         }
     }
 
-    private long incrementBatchIdAndAcquireLock()
+    private long acquireLockAndGetNextBatchId()
     {
         LOGGER.info("Concurrent safety is enabled, Acquiring lock");
         Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
         placeHolderKeyValues.put(BATCH_START_TS_PATTERN, PlaceholderValue.of(LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER), false));
         LockInfoUtils lockInfoUtils = new LockInfoUtils(lockInfoDataset());
-        SqlPlan acquireLockSqlPlan = transformer.generatePhysicalPlan(LogicalPlan.of(Collections.singleton(lockInfoUtils.updateLockInfoForMultiIngest(BatchStartTimestampAbstract.INSTANCE))));
+        SqlPlan acquireLockSqlPlan = transformer.generatePhysicalPlan(LogicalPlan.of(Collections.singleton(lockInfoUtils.updateLockInfo(BatchStartTimestampAbstract.INSTANCE))));
         executor.executePhysicalPlan(acquireLockSqlPlan, placeHolderKeyValues);
-        return IngestionUtils.getBatchIdFromLockTable(lockInfoUtils.getLogicalPlanForBatchIdValue(),executor, transformer);
+        return IngestionUtils.getNextBatchIdFromLockTable(lockInfoUtils.getLogicalPlanForNextBatchIdValue(),executor, transformer);
     }
 
-    private void decrementBatchIdInLockTable()
+    private void updateBachIdInLockTable(long batchId)
     {
-        LOGGER.info("Decrementing the batch id in lock table");
-        Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
-        placeHolderKeyValues.put(BATCH_START_TS_PATTERN, PlaceholderValue.of(LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER), false));
+        LOGGER.info("Set the batch id in lock table");
         LockInfoUtils lockInfoUtils = new LockInfoUtils(lockInfoDataset());
-        SqlPlan acquireLockSqlPlan = transformer.generatePhysicalPlan(LogicalPlan.of(Collections.singleton(lockInfoUtils.decrementBatchIdForMultiIngest(BatchStartTimestampAbstract.INSTANCE))));
-        executor.executePhysicalPlan(acquireLockSqlPlan, placeHolderKeyValues);
+        SqlPlan acquireLockSqlPlan = transformer.generatePhysicalPlan(lockInfoUtils.updateBatchId(batchId));
+        executor.executePhysicalPlan(acquireLockSqlPlan);
     }
 
     private List<DatasetIngestResults> performIngestionForMultiDatasets(long batchId)
@@ -476,8 +474,6 @@ public abstract class RelationalMultiDatasetIngestorAbstract
             results = performIdempotencyCheck();
             if (!results.isEmpty())
             {
-                // Set the batch id in lock table to it's original value and return results
-                decrementBatchIdInLockTable();
                 return results;
             }
         }
@@ -489,6 +485,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
             results.add(ingestStageResults);
         }
 
+        updateBachIdInLockTable(batchId);
         return results;
     }
 

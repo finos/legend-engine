@@ -99,27 +99,26 @@ public class LockInfoUtilsTest
     }
 
     @Test
-    public void testUpdateLockInfoForMultiIngest()
+    public void testUpdateBatchId()
     {
         LockInfoUtils store = new LockInfoUtils(lockInfoDataset);
-        Update operation = store.updateLockInfoForMultiIngest(BatchStartTimestamp.INSTANCE);
+        LogicalPlan logicalPlan = store.updateBatchId(10);
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions);
-        LogicalPlan logicalPlan = LogicalPlan.builder().addOps(operation).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expectedSql = "UPDATE main_table_lock as main_table_lock SET main_table_lock.\"last_used_ts_utc\" = '2000-01-01 00:00:00.000000',main_table_lock.\"batch_id\" = (SELECT main_table_lock.\"batch_id\"+1 FROM main_table_lock as main_table_lock)";
+        String expectedSql = "UPDATE main_table_lock as main_table_lock SET main_table_lock.\"batch_id\" = 10";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 
     @Test
-    public void testGetLogicalPlanForBatchIdValue()
+    public void testGetLogicalPlanForNextBatchIdValue()
     {
         LockInfoUtils store = new LockInfoUtils(lockInfoDataset);
-        LogicalPlan logicalPlan = store.getLogicalPlanForBatchIdValue();
+        LogicalPlan logicalPlan = store.getLogicalPlanForNextBatchIdValue();
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions);
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expectedSql = "SELECT main_table_lock.\"batch_id\" FROM main_table_lock as main_table_lock";
+        String expectedSql = "SELECT MAX(main_table_lock.\"batch_id\")+1 FROM main_table_lock as main_table_lock";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 }

@@ -95,7 +95,7 @@ import static org.finos.legend.engine.persistence.components.TestUtils.testDatab
 import static org.finos.legend.engine.persistence.components.TestUtils.testSchemaName;
 import static org.finos.legend.engine.persistence.components.TestUtils.versionName;
 
-class RelationalMultiDatasetIngestorTest extends BaseTest
+public class RelationalMultiDatasetIngestorTest extends BaseTest
 {
     private static final String suffixForAppendTable = "_APPEND";
     private static final String suffixForFinalTable = "_FINAL";
@@ -273,7 +273,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
                 new String[]{idName, nameName, ratingName, startTimeName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName}));
     }
 
-    private List<DatasetIngestDetails> configureForTest1(String filePathForBulkLoad1, String filePathForBulkLoad2)
+    public static List<DatasetIngestDetails> configureForTest1(String filePathForBulkLoad1, String filePathForBulkLoad2)
     {
         // Configure ingest modes
         BulkLoad bulkLoad = BulkLoad.builder()
@@ -1048,7 +1048,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         }
     }
 
-    private List<DatasetIngestDetails> buildDatasetIngestDetails(List<IngestStage> ingestStages1, List<IngestStage> ingestStages2)
+    private static List<DatasetIngestDetails> buildDatasetIngestDetails(List<IngestStage> ingestStages1, List<IngestStage> ingestStages2)
     {
         List<DatasetIngestDetails> datasetIngestDetails = new ArrayList<>();
         datasetIngestDetails.add(DatasetIngestDetails.builder()
