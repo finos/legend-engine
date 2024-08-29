@@ -255,7 +255,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                         {
                             throw new EngineException("Data space executables could only be template or executable", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                         }
-                    }) : null);
+                    }) : Lists.immutable.empty());
 
                     // diagrams
                     if (dataSpace.featuredDiagrams != null)
@@ -281,7 +281,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                             new Root_meta_pure_metamodel_dataSpace_DataSpaceDiagram_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceDiagram"))
                                     ._title(diagram.title)
                                     ._description(diagram.description)
-                                    ._diagram(HelperDiagramBuilder.resolveDiagram(diagram.diagram.path, diagram.diagram.sourceInformation, context))) : null);
+                                    ._diagram(HelperDiagramBuilder.resolveDiagram(diagram.diagram.path, diagram.diagram.sourceInformation, context))) : Lists.immutable.empty());
 
                     // support info
                     if (dataSpace.supportInfo != null)
