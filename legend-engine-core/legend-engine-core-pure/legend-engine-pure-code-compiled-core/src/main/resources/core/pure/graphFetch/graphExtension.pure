@@ -589,7 +589,7 @@ function <<access.private>> meta::pure::graphFetch::getSubTreeNodesAtPath(srcNod
 
 function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForExpression(srcNode:GraphFetchTree[1], exprThisClass:Class<Any>[1], expression:ValueSpecification[1]): GraphFetchTree[1]
 {
-   let propertyPath = $expression->evaluateAndDeactivate()->scanProperties(^List<PropertyPathNode>(), [], []);
+   let propertyPath = $expression->evaluateAndDeactivate()->scanProperties(^List<PropertyPathNode>(), [], [], noDebug());
    $srcNode->enrichSourceTreeNodeForPropertyPath($exprThisClass, $propertyPath);
 }
 
