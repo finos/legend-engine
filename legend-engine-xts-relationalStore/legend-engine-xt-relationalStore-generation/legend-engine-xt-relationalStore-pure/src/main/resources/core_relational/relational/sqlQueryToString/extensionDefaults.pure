@@ -147,7 +147,11 @@ function meta::relational::functions::sqlQueryToString::default::convertDateToSq
       | if ($date->hasSubsecond(),
             | format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss.SSSSSS}', $date),
             | format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss}', $date)),
-      | format('%t{[' + $timeZone + ']yyyy-MM-dd}', $date));
+      | if ($date->hasMonth() || $date->hasDay(),
+          | format('%t{[' + $timeZone + ']yyyy-MM-dd}', $date),
+          | fail('Ensure the target system understands Year or Year-month semantic.'); '';
+      )
+   );
 }
 
 function meta::relational::functions::sqlQueryToString::default::convertGreatestLeastToCaseStatement(func:String[1], params:String[*]):String[1]
@@ -196,6 +200,7 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('count',                  $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
     dynaFnToSql('denseRank',              $allStates,            ^ToSql(format='dense_rank()')),
     dynaFnToSql('distinct',               $allStates,            ^ToSql(format='distinct(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
+    dynaFnToSql('divideRound',            $allStates,            ^ToSql(format='round(((1.0 * %s) / %s),%s)')),
     dynaFnToSql('divide',                 $allStates,            ^ToSql(format='((1.0 * %s) / %s)')),
     dynaFnToSql('equal',                  $allStates,            ^ToSql(format='%s = %s')),
     dynaFnToSql('endsWith',               $allStates,            ^ToSql(format=likePattern('%%%s'), transform={p:String[2]|$p->transformLikeParamsDefault()})),

@@ -25,7 +25,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.client.jline3.JLine3Parser;
 import org.finos.legend.engine.repl.core.Command;
-import org.finos.legend.engine.repl.relational.RelationalReplExtension;
 import org.finos.legend.engine.repl.relational.shared.ConnectionHelper;
 import org.jline.builtins.Completers;
 import org.jline.reader.Candidate;
@@ -42,12 +41,10 @@ public class Load implements Command
 {
     private final Client client;
     private final Completers.FilesCompleter completer = new Completers.FilesCompleter(new File("/"));
-    private final RelationalReplExtension relationalReplExtension;
 
-    public Load(Client client, RelationalReplExtension relationalReplExtension)
+    public Load(Client client)
     {
         this.client = client;
-        this.relationalReplExtension = relationalReplExtension;
     }
 
     @Override
@@ -82,7 +79,7 @@ public class Load implements Command
                 try (Statement statement = connection.createStatement())
                 {
                     statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().load(tableName, tokens[1]));
-                    this.client.printInfo("Loaded into table: '" + tableName + "'");
+                    this.client.println("Loaded into table: '" + tableName + "'");
                 }
             }
 

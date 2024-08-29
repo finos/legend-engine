@@ -47,7 +47,7 @@ public class ExecutionHelper
         {
             if (client.isDebug())
             {
-                client.printInfo("Error: Couldn't resolve identity from local subject");
+                client.println("Error: Couldn't resolve identity from local subject");
             }
             return Identity.getAnonymousIdentity();
         }
@@ -61,7 +61,7 @@ public class ExecutionHelper
         if (client.isDebug())
         {
             client.printDebug("---------------------------------------- INPUT ----------------------------------------");
-            client.printInfo("Function: " + code);
+            client.println("Function: " + code);
         }
 
         PureModelContextData pmcd = client.getModelState().parseWithTransient(code);
@@ -70,7 +70,7 @@ public class ExecutionHelper
         {
             try
             {
-                client.printInfo("PMCD: " + client.getObjectMapper().writeValueAsString(pmcd));
+                client.println("PMCD: " + client.getObjectMapper().writeValueAsString(pmcd));
             }
             catch (Exception e)
             {
@@ -89,8 +89,8 @@ public class ExecutionHelper
         if (client.isDebug())
         {
             client.printDebug("---------------------------------------- PLAN ----------------------------------------");
-            client.printInfo("Extensions: " + extensions.collect(Root_meta_pure_extension_Extension::_type).makeString(", "));
-            client.printInfo("Generated Plan: " + planStr);
+            client.println("Extensions: " + extensions.collect(Root_meta_pure_extension_Extension::_type).makeString(", "));
+            client.println("Generated Plan: " + planStr);
         }
 
         // Execute

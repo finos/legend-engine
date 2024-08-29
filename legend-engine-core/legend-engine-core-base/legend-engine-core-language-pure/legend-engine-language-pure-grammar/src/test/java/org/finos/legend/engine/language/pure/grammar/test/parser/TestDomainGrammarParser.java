@@ -21,7 +21,6 @@ import org.antlr.v4.runtime.Vocabulary;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.domain.DomainParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;

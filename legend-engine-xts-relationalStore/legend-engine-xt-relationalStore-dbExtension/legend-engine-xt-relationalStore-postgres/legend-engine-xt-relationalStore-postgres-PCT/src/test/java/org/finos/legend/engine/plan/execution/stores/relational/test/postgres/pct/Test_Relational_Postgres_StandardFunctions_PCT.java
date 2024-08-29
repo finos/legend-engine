@@ -37,17 +37,17 @@ public class Test_Relational_Postgres_StandardFunctions_PCT extends PCTReportCon
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             // StD Dev
-            one("meta::pure::functions::math::tests::stdDev::testFloatStdDev_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
-            one("meta::pure::functions::math::tests::stdDev::testIntStdDev_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
-            one("meta::pure::functions::math::tests::stdDev::testMixedStdDev_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
-            one("meta::pure::functions::math::tests::stdDev::testNegativeNumberStdDev_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
-            one("meta::pure::functions::math::tests::stdDev::testPopulationStandardDeviation_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
+            one("meta::pure::functions::math::tests::stdDev::testFloatStdDev_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: syntax error at or near \"[\"\n  Position: 21"),
+            one("meta::pure::functions::math::tests::stdDev::testIntStdDev_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: syntax error at or near \"[\"\n  Position: 21"),
+            one("meta::pure::functions::math::tests::stdDev::testMixedStdDev_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: syntax error at or near \"[\"\n  Position: 21"),
+            one("meta::pure::functions::math::tests::stdDev::testNegativeNumberStdDev_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: syntax error at or near \"[\"\n  Position: 21"),
+            one("meta::pure::functions::math::tests::stdDev::testPopulationStandardDeviation_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: syntax error at or near \"[\"\n  Position: 21"),
 
             // Variance
-            one("meta::pure::functions::math::tests::variance::testVariancePopulation_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
-            one("meta::pure::functions::math::tests::variance::testVarianceSample_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
-            one("meta::pure::functions::math::tests::variance::testVariance_Population_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\""),
-            one("meta::pure::functions::math::tests::variance::testVariance_Sample_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\"")
+            one("meta::pure::functions::math::tests::variance::testVariancePopulation_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: syntax error at or near \"[\"\n  Position: 16"),
+            one("meta::pure::functions::math::tests::variance::testVarianceSample_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: syntax error at or near \"[\"\n  Position: 17"),
+            one("meta::pure::functions::math::tests::variance::testVariance_Population_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: syntax error at or near \"[\"\n  Position: 16"),
+            one("meta::pure::functions::math::tests::variance::testVariance_Sample_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: syntax error at or near \"[\"\n  Position: 16")
     );
 
     public static Test suite()

@@ -37,7 +37,7 @@ public class Test_Relational_Postgres_RelationFunctions_PCT extends PCTReportCon
     private static final Adapter adapter = CoreExternalTestConnectionCodeRepositoryProvider.postgresAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "\"Unexpected error executing function with params [Anonymous_Lambda]\"")
+            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "Error while executing: Create Table leSchema.")
     );
 
     public static Test suite()

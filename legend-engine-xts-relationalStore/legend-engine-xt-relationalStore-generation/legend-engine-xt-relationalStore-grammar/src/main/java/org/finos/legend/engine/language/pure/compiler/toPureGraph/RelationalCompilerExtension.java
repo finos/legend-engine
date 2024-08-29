@@ -137,6 +137,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAlia
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.*;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Double;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Float;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Integer;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.NamedRelation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Relation;
@@ -847,7 +848,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         {
             primitiveType = "Boolean";
         }
-        else if (c instanceof Double)
+        else if (c instanceof Double || c instanceof Float)
         {
             primitiveType = "Float";
         }

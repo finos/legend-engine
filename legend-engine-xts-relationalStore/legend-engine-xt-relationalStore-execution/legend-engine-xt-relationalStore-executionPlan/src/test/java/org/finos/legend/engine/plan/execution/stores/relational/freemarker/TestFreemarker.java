@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 
 public class TestFreemarker
 {
@@ -239,12 +240,37 @@ public class TestFreemarker
         Assert.assertEquals("select case when 'EMEA' = 'EMEA' then \"root\".COUNTY else \"root\".COUNTY end as \"county\", \"root\".FIPS as \"fips\" from testTable as \"root\"", result4);
     }
 
+    @Test
+    public void testTimeZoneOffsetAndCode()
+    {
+        Map<String, Result> vars = new HashMap<>();
+        vars.put("startTime", new ConstantResult("2024-08-22T14:38:14.684"));
+        ExecutionState state = new ExecutionState(vars, Collections.singletonList(functionTemplates()), Lists.mutable.empty());
+
+        String testQueryWithTimeZoneOffset = "select \"root\".FIRSTNAME as \"FIRSTNAME\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" where '${GMTtoTZ( \"[-0700]\" startTime)}'::timestamp is null";
+        String result1 = FreeMarkerExecutor.process(testQueryWithTimeZoneOffset, state);
+        Assert.assertEquals("select \"root\".FIRSTNAME as \"FIRSTNAME\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" where '2024-08-22T07:38:14.684'::timestamp is null", result1);
+
+        String testQueryWithTimeZoneCode = "select \"root\".FIRSTNAME as \"FIRSTNAME\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" where '${GMTtoTZ( \"[US/Arizona]\" startTime)}'::timestamp is null";
+        String result2 = FreeMarkerExecutor.process(testQueryWithTimeZoneCode, state);
+        Assert.assertEquals("select \"root\".FIRSTNAME as \"FIRSTNAME\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" where '2024-08-22T07:38:14.684'::timestamp is null", result2);
+    }
+
     public static String functionTemplates()
     {
-        return collectionTemplate() + "\n" + collectionSizeTemplate() + "\n" + renderCollectionWithDefaultTemplate() + "\n" + enumMap_test_Map_CaseTypeMapping() + "\n" +  enumMap_test_Map_CountryMapping() + "\n" + equalEnumOperationSelector();
+        return collectionTemplate() + "\n" + GMTtoTZTemplate() + "\n" + collectionSizeTemplate() + "\n" + renderCollectionWithDefaultTemplate() + "\n" + enumMap_test_Map_CaseTypeMapping() + "\n" +  enumMap_test_Map_CountryMapping() + "\n" + equalEnumOperationSelector();
     }
-//corresponds to function templates coming with plan
+    //corresponds to function templates coming with plan
 
+    public static String GMTtoTZTemplate()
+    {
+        return "<#function GMTtoTZ tz paramDate>" +
+                "<#if paramDate?is_enumerable && !paramDate?has_content>" +
+                "<#return paramDate>" +
+                "<#else>" +
+                "<#return (tz+\" \"+paramDate)?date.@alloyDate></#if>" +
+                "</#function>";
+    }
 
     public static String collectionTemplate()
     {

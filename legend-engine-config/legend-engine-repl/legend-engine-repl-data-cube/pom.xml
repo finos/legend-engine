@@ -28,7 +28,7 @@
 
     <properties>
         <skip.yarn>false</skip.yarn>
-        <repl.web-application.version>12.11.0</repl.web-application.version>
+        <repl.web-application.version>12.28.0</repl.web-application.version>
         <repl.web-application.url>${npm.registry.url}/@finos/legend-application-repl-deployment/-/legend-application-repl-deployment-${repl.web-application.version}.tgz</repl.web-application.url>
     </properties>
 
@@ -258,6 +258,53 @@
                         </executions>
                     </plugin>
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default</id>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <requireJavaVersion>
+                                            <version>${maven.enforcer.requireJavaVersion}</version>
+                                        </requireJavaVersion>
+                                        <requireMavenVersion>
+                                            <version>${maven.enforcer.requireMavenVersion}</version>
+                                        </requireMavenVersion>
+                                        <dependencyConvergence />
+                                        <bannedDependencies>
+                                            <excludes>
+                                                <!-- Default -->
+                                                <exclude>log4j:*:*:*:compile</exclude>
+                                                <exclude>log4j:*:*:*:runtime</exclude>
+                                                <exclude>org.slf4j:*:*:*:compile</exclude>
+                                                <exclude>org.slf4j:*:*:*:runtime</exclude>
+                                                <exclude>commons-logging</exclude>
+                                                <exclude>javax.mail</exclude>
+                                                <!-- Default -->
+                                            </excludes>
+                                            <includes>
+                                                <!--only the specific included logging jars are allowed -->
+                                                <include>org.slf4j:slf4j-nop:${slf4j.version}</include> <!-- include this since there is no need for logging in REPL -->
+                                                <include>org.slf4j:jul-to-slf4j:${slf4j.version}</include>
+                                                <include>org.slf4j:slf4j-api:${slf4j.version}</include>
+                                                <include>org.slf4j:jcl-over-slf4j:${slf4j.version}</include>
+                                                <include>org.slf4j:slf4j-jdk14:${slf4j.version}</include>
+                                                <include>org.slf4j:slf4j-log4j12:${slf4j.version}</include>
+                                                <include>org.slf4j:slf4j-ext:${slf4j.version}</include>
+                                                <include>log4j:log4j:${log4j.version}</include>
+                                                <include>log4j:apache-log4j-extras:${log4j.version}</include>
+                                            </includes>
+                                        </bannedDependencies>
+                                    </rules>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <artifactId>maven-shade-plugin</artifactId>
                         <executions>
                             <execution>
@@ -293,6 +340,15 @@
                     </plugin>
                 </plugins>
             </build>
+            <dependencies>
+                <!-- Make sure to mute the warning about missing SLF4J implementation -->
+                <dependency>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-nop</artifactId>
+                    <scope>runtime</scope>
+                    <version>${slf4j.version}</version>
+                </dependency>
+            </dependencies>
         </profile>
     </profiles>
 </project>

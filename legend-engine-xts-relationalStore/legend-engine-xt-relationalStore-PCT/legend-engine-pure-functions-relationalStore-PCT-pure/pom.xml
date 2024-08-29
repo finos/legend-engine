@@ -60,6 +60,11 @@
                         <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                 </dependencies>
             </plugin>
         </plugins>

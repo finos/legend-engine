@@ -141,6 +141,12 @@ public class TestCompleter
         Assert.assertEquals("[count , count(], [joinStrings , joinStrings(]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->extend(over(~col->ascending()), ~nc:{p,f,r|$r.col}:y|$y->")));
     }
 
+    @Test
+    public void testExtendWithOverError()
+    {
+        Assert.assertEquals("COMPILATION error at [6:55-56]: Can't find variable class for variable 'p' in the graph", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->extend(over(~Name->descending()), {p,f,r|$p->lead($r).").getEngineException().toPretty());
+    }
+
     //---------
     // GroupBy
     //---------

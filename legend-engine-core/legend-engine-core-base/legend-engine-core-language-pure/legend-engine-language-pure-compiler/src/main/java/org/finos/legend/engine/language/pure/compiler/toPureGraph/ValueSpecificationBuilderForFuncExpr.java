@@ -51,7 +51,7 @@ public class ValueSpecificationBuilderForFuncExpr extends ValueSpecificationBuil
             return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(packageableElementPtr.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                     ._genericType(runtimeGenericType)
                     ._multiplicity(this.context.pureModel.getMultiplicity("one"))
-                    ._values(this.processingContext.peek().equals("Applying new") ? FastList.newList() : FastList.newListWith(resolvedRuntime));
+                    ._values(FastList.newListWith(resolvedRuntime));
         }
 
         ImmutableList<InstanceValue> values = this.context.getCompilerExtensions().getExtraValueSpecificationBuilderForFuncExpr().collect(x -> x.value(packageableElement, context, processingContext)).select(Objects::nonNull);
@@ -60,7 +60,7 @@ public class ValueSpecificationBuilderForFuncExpr extends ValueSpecificationBuil
             return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(packageableElementPtr.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                     ._genericType(packageableElement._classifierGenericType())
                     ._multiplicity(this.context.pureModel.getMultiplicity("one"))
-                    ._values(this.processingContext.peek().equals("Applying new") ? FastList.newList() : FastList.newListWith(packageableElement));
+                    ._values(FastList.newListWith(packageableElement));
         }
         else
         {

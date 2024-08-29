@@ -89,7 +89,6 @@ function <<access.public>> meta::pure::router::preeval::preval(f : FunctionDefin
          let res = $r.value->toOne();
          $state->printDebug('Transformed To:');
          $state->printDebug(|$res->meta::pure::metamodel::serialization::grammar::printFunctionDefinition(''));
-         $state->printDebug($res);
     );
     $r;  
   }, 'preval');
@@ -132,8 +131,7 @@ function <<access.private>> meta::pure::router::preeval::prevalInternal(item : A
                      ->match([
                         {lambda : LambdaFunction<Any>[1]|
                             let fnArgNames      = $lambda->functionType().parameters.name;
-                            let fnOpenVariables = $lambda->openVariableValues()->putAll($state.inScopeVars->keyValues()->filter(kv | !$kv.first->in($fnArgNames))->newMap());
-
+                            let fnOpenVariables = $lambda->openVariableValues()->putAll($state.inScopeVars->keyValues()->filter(kv | !$kv.first->in($fnArgNames))->newMap());                      
                             $lambda->prevalFunctionDefinition(^$state(inScopeVars = $fnOpenVariables), $extensions);
                         },
                         {fd : FunctionDefinition<Any>[1]|
@@ -900,8 +898,7 @@ function <<access.private>> meta::pure::router::preeval::resolveGenericType(in :
            );  
       );
       ,
-    |
-      let value = $state.inScopeTypeParams->get($in.typeParameter->toOne().name);
+    | let value = $state.inScopeTypeParams->get($in.typeParameter->toOne().name);
       if($value->isEmpty(),
         | ^PrevalWrapper<GenericType>(value = $in, canPreval=true, modified = false),
         | ^PrevalWrapper<GenericType>(value = $value->toOne(), canPreval=true, modified = true)

@@ -130,6 +130,7 @@ public class TestSnowflakeConnectionGrammarParser extends TestGrammarParser.Test
                 "{\n" +
                 "  store: store::Store;\n" +
                 "  type: Snowflake;\n" +
+                "  timezone: 'US/Arizona';\n" +
                 "  specification: Snowflake\n" +
                 "  {\n" +
                 "    name: 'test';\n" +
@@ -154,6 +155,7 @@ public class TestSnowflakeConnectionGrammarParser extends TestGrammarParser.Test
                 "{\n" +
                 "  store: store::Store;\n" +
                 "  type: Snowflake;\n" +
+                "  timezone: +3000;\n" +
                 "  specification: Snowflake\n" +
                 "  {\n" +
                 "    name: 'test';\n" +

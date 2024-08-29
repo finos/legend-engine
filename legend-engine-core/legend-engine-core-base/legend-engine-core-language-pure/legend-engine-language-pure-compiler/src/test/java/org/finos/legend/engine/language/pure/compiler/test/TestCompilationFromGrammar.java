@@ -282,6 +282,15 @@ public class TestCompilationFromGrammar
     }
 
     @Test
+    public void testCompileEvalUsingPackageableElement()
+    {
+        TestCompilationFromGrammarTestSuite.test("function test::func(): Any[*]\n" +
+                "{\n" +
+                "  meta::pure::functions::math::acos_Number_1__Float_1_->meta::pure::functions::lang::eval(0.5);\n" +
+                "} ", null);
+    }
+
+    @Test
     public void testCompilationFromGrammarWithMergeOperation()
     {
         TestCompilationFromGrammarTestSuite.test("Class  example::SourcePersonWithFirstName\n" +
@@ -1051,6 +1060,17 @@ public class TestCompilationFromGrammar
                         "[p|$p.hireDate]," +
                         "[ agg(p | ytd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
                         "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationDate()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "function example::testYtd(): Any[*]\n" +
+                        "{" +
+                        "   |(%2014 == %2014);" +
                         "}");
     }
 

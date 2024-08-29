@@ -17,12 +17,10 @@ package org.finos.legend.engine.repl.core.commands;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
+import org.finos.legend.engine.repl.shared.REPLHelper;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
-
-import java.util.Collections;
-import java.util.Comparator;
 
 public class Help implements Command
 {
@@ -53,12 +51,7 @@ public class Help implements Command
         if (cmd.trim().isEmpty() || cmd.trim().equals("help"))
         {
             MutableList<Command> commands = this.commands.select(c -> c.parentCommand() == null);
-            int maxDocLength = commands.maxBy(c -> c.documentation().length()).documentation().length();
-            this.client.printInfo(commands
-                    .toSortedList(Comparator.comparing(Command::documentation))
-                    // pad right to align the command description
-                    .collect(c -> "  " + c.documentation() + String.join("", Collections.nCopies(maxDocLength - c.documentation().length() + 2, " ")) + c.description())
-                    .makeString("\n"));
+            this.client.println(REPLHelper.generateCommandsHelp(commands));
             return true;
         }
         return false;

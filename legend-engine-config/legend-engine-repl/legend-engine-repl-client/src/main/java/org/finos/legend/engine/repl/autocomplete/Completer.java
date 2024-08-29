@@ -37,15 +37,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Col
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
-import org.finos.legend.engine.repl.autocomplete.handlers.ExtendHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.FilterHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.FromHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.GroupByHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.JoinHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.OverHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.RenameHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.SelectHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.SortHandler;
+import org.finos.legend.engine.repl.autocomplete.handlers.*;
 import org.finos.legend.engine.repl.autocomplete.parser.ParserFixer;
 import org.finos.legend.engine.repl.core.legend.LegendInterface;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -109,6 +101,7 @@ public class Completer
                 new SortHandler(),
                 new JoinHandler(),
                 new SelectHandler(),
+                new DistinctHandler(),
                 new OverHandler()
         ).toMap(FunctionHandler::functionName, x -> x);
     }

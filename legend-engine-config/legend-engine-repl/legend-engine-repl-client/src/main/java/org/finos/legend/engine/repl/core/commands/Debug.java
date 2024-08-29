@@ -56,7 +56,7 @@ public class Debug implements Command
             {
                 this.client.setDebug(Boolean.parseBoolean(cmd[1]));
             }
-            this.client.printInfo("debug: " + this.client.isDebug());
+            this.client.println("debug: " + this.client.isDebug());
             return true;
         }
         return false;
