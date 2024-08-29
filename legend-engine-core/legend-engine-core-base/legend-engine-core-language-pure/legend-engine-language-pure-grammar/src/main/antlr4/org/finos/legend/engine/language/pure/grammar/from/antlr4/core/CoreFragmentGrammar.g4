@@ -49,7 +49,7 @@ fragment EscAny:	                    Esc .
 
 // -------------------------------------- SPECIFICS --------------------------------------
 
-fragment TimeZone:                      (('+' | '-')(Digit)(Digit)(Digit)(Digit))
+fragment TimeZone:                      String | (('+' | '-')(Digit)(Digit)(Digit)(Digit))
 ;
 fragment ValidString:                   (Letter | Digit | '_' ) (Letter | Digit | '_' | '$')*
 ;
