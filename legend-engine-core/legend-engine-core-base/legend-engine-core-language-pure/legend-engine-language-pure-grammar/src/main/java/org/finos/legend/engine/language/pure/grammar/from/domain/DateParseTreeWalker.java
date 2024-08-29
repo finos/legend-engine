@@ -137,9 +137,7 @@ public class DateParseTreeWalker
         }
         if (index == end && day != -1)
         {
-            CStrictDate cStrictDate = new CStrictDate(value.substring(value.lastIndexOf(DATE_PREFIX) + 1));
-            cStrictDate.sourceInformation = walkerSourceInformation.getSourceInformation(this.dateToken.getSymbol());
-            return cStrictDate;
+            return createStrictDate(value.substring(value.lastIndexOf(DATE_PREFIX) + 1));
         }
         if (value.charAt(index++) != DATE_TIME_SEPARATOR)
         {
@@ -153,6 +151,13 @@ public class DateParseTreeWalker
         CDateTime cDateTime = new CDateTime(value);
         cDateTime.sourceInformation = walkerSourceInformation.getSourceInformation(this.dateToken.getSymbol());
         return cDateTime;
+    }
+
+    private CStrictDate createStrictDate(String value)
+    {
+        CStrictDate cStrictDate = new CStrictDate(value);
+        cStrictDate.sourceInformation = walkerSourceInformation.getSourceInformation(this.dateToken.getSymbol());
+        return cStrictDate;
     }
 
     private void throwInvalidDateString(String string)

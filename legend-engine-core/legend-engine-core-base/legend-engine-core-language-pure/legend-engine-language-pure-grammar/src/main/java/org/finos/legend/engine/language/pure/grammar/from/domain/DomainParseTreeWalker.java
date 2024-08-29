@@ -770,7 +770,7 @@ public class DomainParseTreeWalker
 
     public ValueSpecification combinedExpression(DomainParserGrammar.CombinedExpressionContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
-        ValueSpecification result = this.expressionOrExpressionGroup(ctx.expressionOrExpressionGroup(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+        ValueSpecification result = this.expressionOrExpressionGroup(ctx.expression(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
         ValueSpecification boolResult = result;
         ValueSpecification arithResult = result;
 
@@ -943,15 +943,15 @@ public class DomainParseTreeWalker
         ValueSpecification ctx = null;
         if (rightside.expressionInstanceAtomicRightSide().combinedExpression() != null)
         {
-            ctx = expressionOrExpressionGroup(rightside.expressionInstanceAtomicRightSide().combinedExpression().expressionOrExpressionGroup(), null, typeParametersNames, lambdaContext, space, false, addLines);
+            ctx = expressionOrExpressionGroup(rightside.expressionInstanceAtomicRightSide().combinedExpression().expression(), null, typeParametersNames, lambdaContext, space, false, addLines);
         }
         return ctx;
 
     }
 
-    private ValueSpecification expressionOrExpressionGroup(DomainParserGrammar.ExpressionOrExpressionGroupContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
+    private ValueSpecification expressionOrExpressionGroup(DomainParserGrammar.ExpressionContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
-        return this.expression(ctx.expression(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+        return this.expression(ctx, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
     }
 
     private ValueSpecification expression(DomainParserGrammar.ExpressionContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
@@ -961,9 +961,9 @@ public class DomainParseTreeWalker
         List<ValueSpecification> parameters;
         if (ctx.combinedExpression() != null)
         {
-            return this.combinedExpression(ctx.combinedExpression(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+            result = this.combinedExpression(ctx.combinedExpression(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
         }
-        if (ctx.atomicExpression() != null)
+        else if (ctx.atomicExpression() != null)
         {
             result = this.atomicExpression(ctx.atomicExpression(), typeParametersNames, lambdaContext, space, wrapFlag, addLines);
         }
@@ -1167,7 +1167,7 @@ public class DomainParseTreeWalker
 
     private ValueSpecification combinedArithmeticOnly(DomainParserGrammar.CombinedArithmeticOnlyContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
-        ValueSpecification result = this.expressionOrExpressionGroup(ctx.expressionOrExpressionGroup(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+        ValueSpecification result = this.expressionOrExpressionGroup(ctx.expression(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
         if (Iterate.notEmpty(ctx.arithmeticPart()))
         {
             result = this.arithmeticPart(ctx.arithmeticPart(), result, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
@@ -1245,15 +1245,12 @@ public class DomainParseTreeWalker
                 instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
                 result = instance;
             }
-//            else if (ctx.DECIMAL() != null)
-//            {
-//                List<Double> values = new ArrayList<>();
-//                values.add(Double.parseDouble(ctx.getText()));
-//                CFloat instance = new CFloat();
-//                instance.multiplicity = this.getPureOne();
-//                instance.values = values;
-//                result = instance;
-//            }
+            else if (ctx.DECIMAL() != null)
+            {
+                CFloat instance = getInstanceFloat(ctx.getText());
+                instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+                result = instance;
+            }
             else if (ctx.DATE() != null)
             {
                 result = new DateParseTreeWalker(ctx.DATE(), this.walkerSourceInformation).visitDefinition();

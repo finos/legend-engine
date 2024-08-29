@@ -2,11 +2,11 @@
 
 ## Quick Start
 
-Run the REPL either in IDE (IntelliJ) or run the script in legend-engine-repl-app-assembly module.
+Run the REPL either in IDE (IntelliJ) or run the script in [legend-engine-repl-app-assembly](./legend-engine-repl-app-assembly/assemble) module.
 
-The legend-engine-repl-app-assembly allow you to pick which REPL to run: default, relational, or datacube.
+The `legend-engine-repl-app-assembly` allow you to pick which REPL to run: default, relational, datacube, etc.
 
-The script also allow developers to enable debug on a given port.  This allows to run the REPL on an OS native terminal, 
+> The script also allow developers to enable debug on a given port. This allows to run the REPL on an OS native terminal, 
 and still be able to debug it through an IDE.
 
 > For autocomplete to work properly, it is recommended to run the REPL in a terminal; integrated terminal
@@ -26,6 +26,8 @@ show
 # to debug when error occurs, toggle debug mode
 debug
 ```
+
+> Check out the walkthrough with `datacube walkthrough`
 
 ## Configuration
 

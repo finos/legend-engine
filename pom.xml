@@ -107,8 +107,8 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.14.0</legend.pure.version>
-        <legend.shared.version>0.25.6</legend.shared.version>
+        <legend.pure.version>5.15.0</legend.pure.version>
+        <legend.shared.version>0.25.4</legend.shared.version>
 
         <!-- SONAR -->
         <sonar.projectKey>legend-engine</sonar.projectKey>
@@ -2349,6 +2349,16 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-testDataGeneration-http-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-execution-test-data-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-execution-test-data-generation-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

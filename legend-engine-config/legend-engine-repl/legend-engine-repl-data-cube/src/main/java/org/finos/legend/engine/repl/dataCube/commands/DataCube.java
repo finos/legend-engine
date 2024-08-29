@@ -14,17 +14,13 @@
 
 package org.finos.legend.engine.repl.dataCube.commands;
 
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
+import org.finos.legend.engine.repl.shared.REPLHelper;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
-
-import java.util.Collections;
-import java.util.Comparator;
 
 import static org.finos.legend.engine.repl.relational.RelationalReplExtension.DUCKDB_LOCAL_CONNECTION_BASE_NAME;
 
@@ -55,17 +51,7 @@ public class DataCube implements Command
         if (line.trim().equals("datacube") || line.trim().equals("datacube help"))
         {
             MutableList<Command> commands = this.client.commands.select(c -> this.equals(c.parentCommand()));
-            int maxDocLength = commands.maxBy(c -> c.documentation().length()).documentation().length();
-            this.client.printInfo(commands
-                    .toSortedList(Comparator.comparing(c ->
-                    {
-                        String doc = c.documentation();
-                        // Make sure DEV commands are shown last
-                        return doc.contains("DEV__") ? "ZZZZZZ__" + doc : doc;
-                    }))
-                    // pad right to align the command description
-                    .collect(c -> "  " + c.documentation() + String.join("", Collections.nCopies(maxDocLength - c.documentation().length() + 2, " ")) + c.description())
-                    .makeString("\n"));
+            this.client.println(REPLHelper.generateCommandsHelp(commands));
             return true;
         }
         return false;
@@ -74,10 +60,6 @@ public class DataCube implements Command
     @Override
     public MutableList<Candidate> complete(String inScope, LineReader lineReader, ParsedLine parsedLine)
     {
-        if (StringUtils.stripStart(inScope, null).startsWith("datacube"))
-        {
-            return Lists.mutable.empty();
-        }
         return null;
     }
 

@@ -94,7 +94,7 @@ public class TestDataCubeHelpers
     @Test
     public void testExecuteSort()
     {
-        String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->from(test::test)->sort([~FIRSTNAME->ascending()])";
+        String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->sort([~FIRSTNAME->ascending()])->from(test::test)";
         String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\"},{\"name\":\"LASTNAME\",\"type\":\"String\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"test0_0\\\".FIRSTNAME as \\\"FIRSTNAME\\\", \\\"test0_0\\\".LASTNAME as \\\"LASTNAME\\\" from TEST0 as \\\"test0_0\\\" where (\\\"test0_0\\\".FIRSTNAME <> 'Doe' OR \\\"test0_0\\\".FIRSTNAME is null) order by \\\"FIRSTNAME\\\"\"}],\"result\":{\"columns\":[\"FIRSTNAME\",\"LASTNAME\"],\"rows\":[{\"values\":[\"John\",\"Doe\"]},{\"values\":[\"Nicole\",\"Doe\"]},{\"values\":[\"Tim\",\"Smith\"]}]}}";
         testExecuteQuery(expectedResult, lambda);
     }
@@ -103,7 +103,7 @@ public class TestDataCubeHelpers
     @Test
     public void testExecuteFilter()
     {
-        String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | ($c.FIRSTNAME != 'Doe' && $c.LASTNAME != 'Doe'))->from(test::test)->sort([~FIRSTNAME->ascending()])";
+        String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | ($c.FIRSTNAME != 'Doe' && $c.LASTNAME != 'Doe'))->sort([~FIRSTNAME->ascending()])->from(test::test)";
         String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\"},{\"name\":\"LASTNAME\",\"type\":\"String\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"test0_0\\\".FIRSTNAME as \\\"FIRSTNAME\\\", \\\"test0_0\\\".LASTNAME as \\\"LASTNAME\\\" from TEST0 as \\\"test0_0\\\" where ((\\\"test0_0\\\".FIRSTNAME <> 'Doe' OR \\\"test0_0\\\".FIRSTNAME is null) and (\\\"test0_0\\\".LASTNAME <> 'Doe' OR \\\"test0_0\\\".LASTNAME is null)) order by \\\"FIRSTNAME\\\"\"}],\"result\":{\"columns\":[\"FIRSTNAME\",\"LASTNAME\"],\"rows\":[{\"values\":[\"Tim\",\"Smith\"]}]}}";
         testExecuteQuery(expectedResult, lambda);
     }
@@ -111,7 +111,7 @@ public class TestDataCubeHelpers
     @Test
     public void testExecuteGroupBy()
     {
-        String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->from(test::test)->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])";
+        String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])->from(test::test)";
         String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\"},{\"name\":\"count\",\"type\":\"Integer\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"test0_0\\\".FIRSTNAME as \\\"FIRSTNAME\\\", count(\\\"test0_0\\\".FIRSTNAME) as \\\"count\\\" from TEST0 as \\\"test0_0\\\" where (\\\"test0_0\\\".FIRSTNAME <> 'Doe' OR \\\"test0_0\\\".FIRSTNAME is null) group by \\\"FIRSTNAME\\\"\"}],\"result\":{\"columns\":[\"FIRSTNAME\",\"count\"],\"rows\":[{\"values\":[\"John\",1]},{\"values\":[\"Nicole\",1]},{\"values\":[\"Tim\",1]}]}}";
         testExecuteQuery(expectedResult, lambda);
     }
@@ -134,16 +134,16 @@ public class TestDataCubeHelpers
     @Test
     public void testParseQuerySimple()
     {
-        String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->from(test::test)->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])";
-        String expectedQuery = "{\"_type\":\"lambda\",\"body\":[{\"_type\":\"func\",\"function\":\"groupBy\",\"parameters\":[{\"_type\":\"func\",\"function\":\"from\",\"parameters\":[{\"_type\":\"func\",\"function\":\"filter\",\"parameters\":[{\"_type\":\"classInstance\",\"type\":\">\",\"value\":{\"path\":[\"test::TestDatabase\",\"TEST0\"]}},{\"_type\":\"lambda\",\"body\":[{\"_type\":\"func\",\"function\":\"not\",\"parameters\":[{\"_type\":\"func\",\"function\":\"equal\",\"parameters\":[{\"_type\":\"property\",\"parameters\":[{\"_type\":\"var\",\"name\":\"c\"}],\"property\":\"FIRSTNAME\"},{\"_type\":\"string\",\"value\":\"Doe\"}]}]}],\"parameters\":[{\"_type\":\"var\",\"name\":\"c\"}]}]},{\"_type\":\"packageableElementPtr\",\"fullPath\":\"test::test\"}]},{\"_type\":\"classInstance\",\"type\":\"colSpecArray\",\"value\":{\"colSpecs\":[{\"name\":\"FIRSTNAME\"}]}},{\"_type\":\"classInstance\",\"type\":\"colSpecArray\",\"value\":{\"colSpecs\":[{\"function1\":{\"_type\":\"lambda\",\"body\":[{\"_type\":\"property\",\"parameters\":[{\"_type\":\"var\",\"name\":\"x\"}],\"property\":\"FIRSTNAME\"}],\"parameters\":[{\"_type\":\"var\",\"name\":\"x\"}]},\"function2\":{\"_type\":\"lambda\",\"body\":[{\"_type\":\"func\",\"function\":\"count\",\"parameters\":[{\"_type\":\"var\",\"name\":\"y\"}]}],\"parameters\":[{\"_type\":\"var\",\"name\":\"y\"}]},\"name\":\"count\"}]}}]}],\"parameters\":[]}";
+        String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])->from(test::test)";
+        String expectedQuery = "{\"_type\":\"lambda\",\"body\":[{\"_type\":\"func\",\"function\":\"from\",\"parameters\":[{\"_type\":\"func\",\"function\":\"groupBy\",\"parameters\":[{\"_type\":\"func\",\"function\":\"filter\",\"parameters\":[{\"_type\":\"classInstance\",\"type\":\">\",\"value\":{\"path\":[\"test::TestDatabase\",\"TEST0\"]}},{\"_type\":\"lambda\",\"body\":[{\"_type\":\"func\",\"function\":\"not\",\"parameters\":[{\"_type\":\"func\",\"function\":\"equal\",\"parameters\":[{\"_type\":\"property\",\"parameters\":[{\"_type\":\"var\",\"name\":\"c\"}],\"property\":\"FIRSTNAME\"},{\"_type\":\"string\",\"value\":\"Doe\"}]}]}],\"parameters\":[{\"_type\":\"var\",\"name\":\"c\"}]}]},{\"_type\":\"classInstance\",\"type\":\"colSpecArray\",\"value\":{\"colSpecs\":[{\"name\":\"FIRSTNAME\"}]}},{\"_type\":\"classInstance\",\"type\":\"colSpecArray\",\"value\":{\"colSpecs\":[{\"function1\":{\"_type\":\"lambda\",\"body\":[{\"_type\":\"property\",\"parameters\":[{\"_type\":\"var\",\"name\":\"x\"}],\"property\":\"FIRSTNAME\"}],\"parameters\":[{\"_type\":\"var\",\"name\":\"x\"}]},\"function2\":{\"_type\":\"lambda\",\"body\":[{\"_type\":\"func\",\"function\":\"count\",\"parameters\":[{\"_type\":\"var\",\"name\":\"y\"}]}],\"parameters\":[{\"_type\":\"var\",\"name\":\"y\"}]},\"name\":\"count\"}]}}]},{\"_type\":\"packageableElementPtr\",\"fullPath\":\"test::test\"}]}],\"parameters\":[]}";
         testParseQuery(expectedQuery, lambda, false);
     }
 
     @Test
     public void testParseQuerySimpleWithSourceInformationReturned()
     {
-        String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->from(test::test)->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])";
-        String expectedQuery = "{\"_type\":\"lambda\",\"body\":[{\"_type\":\"func\",\"function\":\"groupBy\",\"parameters\":[{\"_type\":\"func\",\"function\":\"from\",\"parameters\":[{\"_type\":\"func\",\"function\":\"filter\",\"parameters\":[{\"_type\":\"classInstance\",\"sourceInformation\":{\"endColumn\":30,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":2,\"startLine\":1},\"type\":\">\",\"value\":{\"path\":[\"test::TestDatabase\",\"TEST0\"],\"sourceInformation\":{\"endColumn\":30,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":2,\"startLine\":1}}},{\"_type\":\"lambda\",\"body\":[{\"_type\":\"func\",\"function\":\"not\",\"parameters\":[{\"_type\":\"func\",\"function\":\"equal\",\"parameters\":[{\"_type\":\"property\",\"parameters\":[{\"_type\":\"var\",\"name\":\"c\",\"sourceInformation\":{\"endColumn\":45,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":44,\"startLine\":1}}],\"property\":\"FIRSTNAME\",\"sourceInformation\":{\"endColumn\":55,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":47,\"startLine\":1}},{\"_type\":\"string\",\"sourceInformation\":{\"endColumn\":64,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":60,\"startLine\":1},\"value\":\"Doe\"}]}],\"sourceInformation\":{\"endColumn\":58,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":57,\"startLine\":1}}],\"parameters\":[{\"_type\":\"var\",\"name\":\"c\"}],\"sourceInformation\":{\"endColumn\":64,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":42,\"startLine\":1}}],\"sourceInformation\":{\"endColumn\":38,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":33,\"startLine\":1}},{\"_type\":\"packageableElementPtr\",\"fullPath\":\"test::test\",\"sourceInformation\":{\"endColumn\":82,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":73,\"startLine\":1}}],\"sourceInformation\":{\"endColumn\":71,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":68,\"startLine\":1}},{\"_type\":\"classInstance\",\"sourceInformation\":{\"endColumn\":105,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":95,\"startLine\":1},\"type\":\"colSpecArray\",\"value\":{\"colSpecs\":[{\"name\":\"FIRSTNAME\",\"sourceInformation\":{\"endColumn\":104,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":96,\"startLine\":1}}]}},{\"_type\":\"classInstance\",\"sourceInformation\":{\"endColumn\":151,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":109,\"startLine\":1},\"type\":\"colSpecArray\",\"value\":{\"colSpecs\":[{\"function1\":{\"_type\":\"lambda\",\"body\":[{\"_type\":\"property\",\"parameters\":[{\"_type\":\"var\",\"name\":\"x\",\"sourceInformation\":{\"endColumn\":122,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":121,\"startLine\":1}}],\"property\":\"FIRSTNAME\",\"sourceInformation\":{\"endColumn\":132,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":124,\"startLine\":1}}],\"parameters\":[{\"_type\":\"var\",\"name\":\"x\"}],\"sourceInformation\":{\"endColumn\":132,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":119,\"startLine\":1}},\"function2\":{\"_type\":\"lambda\",\"body\":[{\"_type\":\"func\",\"function\":\"count\",\"parameters\":[{\"_type\":\"var\",\"name\":\"y\",\"sourceInformation\":{\"endColumn\":141,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":140,\"startLine\":1}}],\"sourceInformation\":{\"endColumn\":148,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":144,\"startLine\":1}}],\"parameters\":[{\"_type\":\"var\",\"name\":\"y\"}],\"sourceInformation\":{\"endColumn\":150,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":138,\"startLine\":1}},\"name\":\"count\",\"sourceInformation\":{\"endColumn\":150,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":110,\"startLine\":1}}]}}],\"sourceInformation\":{\"endColumn\":92,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":86,\"startLine\":1}}],\"parameters\":[],\"sourceInformation\":{\"endColumn\":153,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":1,\"startLine\":1}}";
+        String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])->from(test::test)";
+        String expectedQuery = "{\"_type\":\"lambda\",\"body\":[{\"_type\":\"func\",\"function\":\"from\",\"parameters\":[{\"_type\":\"func\",\"function\":\"groupBy\",\"parameters\":[{\"_type\":\"func\",\"function\":\"filter\",\"parameters\":[{\"_type\":\"classInstance\",\"sourceInformation\":{\"endColumn\":30,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":2,\"startLine\":1},\"type\":\">\",\"value\":{\"path\":[\"test::TestDatabase\",\"TEST0\"],\"sourceInformation\":{\"endColumn\":30,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":2,\"startLine\":1}}},{\"_type\":\"lambda\",\"body\":[{\"_type\":\"func\",\"function\":\"not\",\"parameters\":[{\"_type\":\"func\",\"function\":\"equal\",\"parameters\":[{\"_type\":\"property\",\"parameters\":[{\"_type\":\"var\",\"name\":\"c\",\"sourceInformation\":{\"endColumn\":45,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":44,\"startLine\":1}}],\"property\":\"FIRSTNAME\",\"sourceInformation\":{\"endColumn\":55,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":47,\"startLine\":1}},{\"_type\":\"string\",\"sourceInformation\":{\"endColumn\":64,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":60,\"startLine\":1},\"value\":\"Doe\"}]}],\"sourceInformation\":{\"endColumn\":58,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":57,\"startLine\":1}}],\"parameters\":[{\"_type\":\"var\",\"name\":\"c\"}],\"sourceInformation\":{\"endColumn\":64,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":42,\"startLine\":1}}],\"sourceInformation\":{\"endColumn\":38,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":33,\"startLine\":1}},{\"_type\":\"classInstance\",\"sourceInformation\":{\"endColumn\":87,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":77,\"startLine\":1},\"type\":\"colSpecArray\",\"value\":{\"colSpecs\":[{\"name\":\"FIRSTNAME\",\"sourceInformation\":{\"endColumn\":86,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":78,\"startLine\":1}}]}},{\"_type\":\"classInstance\",\"sourceInformation\":{\"endColumn\":133,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":91,\"startLine\":1},\"type\":\"colSpecArray\",\"value\":{\"colSpecs\":[{\"function1\":{\"_type\":\"lambda\",\"body\":[{\"_type\":\"property\",\"parameters\":[{\"_type\":\"var\",\"name\":\"x\",\"sourceInformation\":{\"endColumn\":104,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":103,\"startLine\":1}}],\"property\":\"FIRSTNAME\",\"sourceInformation\":{\"endColumn\":114,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":106,\"startLine\":1}}],\"parameters\":[{\"_type\":\"var\",\"name\":\"x\"}],\"sourceInformation\":{\"endColumn\":114,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":101,\"startLine\":1}},\"function2\":{\"_type\":\"lambda\",\"body\":[{\"_type\":\"func\",\"function\":\"count\",\"parameters\":[{\"_type\":\"var\",\"name\":\"y\",\"sourceInformation\":{\"endColumn\":123,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":122,\"startLine\":1}}],\"sourceInformation\":{\"endColumn\":130,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":126,\"startLine\":1}}],\"parameters\":[{\"_type\":\"var\",\"name\":\"y\"}],\"sourceInformation\":{\"endColumn\":132,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":120,\"startLine\":1}},\"name\":\"count\",\"sourceInformation\":{\"endColumn\":132,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":92,\"startLine\":1}}]}}],\"sourceInformation\":{\"endColumn\":74,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":68,\"startLine\":1}},{\"_type\":\"packageableElementPtr\",\"fullPath\":\"test::test\",\"sourceInformation\":{\"endColumn\":151,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":142,\"startLine\":1}}],\"sourceInformation\":{\"endColumn\":140,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":137,\"startLine\":1}}],\"parameters\":[],\"sourceInformation\":{\"endColumn\":153,\"endLine\":1,\"sourceId\":\"\",\"startColumn\":1,\"startLine\":1}}";
         testParseQuery(expectedQuery, lambda, true);
     }
 
@@ -162,19 +162,17 @@ public class TestDataCubeHelpers
     @Test
     public void testGetQueryCodeStandard()
     {
-        String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->from(test::test)->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])";
-        String expectedQuery = "|#>{test::TestDatabase.TEST0}#->filter(c|!($c.FIRSTNAME == 'Doe'))->from(test::test)->groupBy(~[FIRSTNAME], ~[count:x|$x.FIRSTNAME:y|$y->count()])";
+        String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])->from(test::test)";
+        String expectedQuery = "|#>{test::TestDatabase.TEST0}#->filter(c|!($c.FIRSTNAME == 'Doe'))->groupBy(~[FIRSTNAME], ~[count:x|$x.FIRSTNAME:y|$y->count()])->from(test::test)";
         testGetQueryCode(expectedQuery, lambda, false);
     }
 
     @Test
     public void testGetQueryCodePretty()
     {
-        String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->from(test::test)->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])";
+        String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])->from(test::test)";
         String expectedQuery = "|#>{test::TestDatabase.TEST0}#->filter(\n" +
                 "  c|!($c.FIRSTNAME == 'Doe')\n" +
-                ")->from(\n" +
-                "  test::test\n" +
                 ")->groupBy(\n" +
                 "  ~[\n" +
                 "     FIRSTNAME\n" +
@@ -182,6 +180,8 @@ public class TestDataCubeHelpers
                 "  ~[\n" +
                 "     count: x|$x.FIRSTNAME:y|$y->count()\n" +
                 "   ]\n" +
+                ")->from(\n" +
+                "  test::test\n" +
                 ")";
         testGetQueryCode(expectedQuery, lambda, true);
     }
@@ -231,7 +231,7 @@ public class TestDataCubeHelpers
     @Test
     public void testExtractRelationReturnTypeGroupBy()
     {
-        String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->from(test::test)->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])";
+        String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])->from(test::test)";
         String expectedResult = "{\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\"},{\"name\":\"count\",\"type\":\"Integer\"}]}";
         testExtractRelationReturnType(expectedResult, lambda);
     }

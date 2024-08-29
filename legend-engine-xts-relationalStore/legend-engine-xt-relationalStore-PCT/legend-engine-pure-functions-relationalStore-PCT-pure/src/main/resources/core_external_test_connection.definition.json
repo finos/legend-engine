@@ -7,6 +7,7 @@
     "platform_dsl_store",
     "platform_dsl_tds",
     "platform_store_relational",
+    "core_external_compiler",
     "core_functions_relation",
     "core_functions_json",
     "core",

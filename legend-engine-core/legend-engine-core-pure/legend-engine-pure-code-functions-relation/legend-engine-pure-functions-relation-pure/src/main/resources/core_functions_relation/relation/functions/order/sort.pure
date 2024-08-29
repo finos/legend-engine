@@ -15,16 +15,6 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
-function <<functionType.NormalizeRequiredFunction>> meta::pure::functions::relation::descending<T>(column:ColSpec<T>[1]):SortInfo<T>[1]
-{
-   ^SortInfo<T>(column=$column, direction=SortType.DESC)
-}
-
-function <<functionType.NormalizeRequiredFunction>> meta::pure::functions::relation::ascending<T> (column:ColSpec<T>[1]):SortInfo<T>[1]
-{
-   ^SortInfo<T>(column=$column, direction=SortType.ASC)
-}
-
 native function <<PCT.function>> meta::pure::functions::relation::sort<X,T>(rel:Relation<T>[1], sortInfo:SortInfo<X⊆T>[*]):Relation<T>[1];
 
 

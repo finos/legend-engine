@@ -18,57 +18,35 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 import org.apache.commons.text.similarity.LevenshteinDistance;
-import org.eclipse.collections.api.LazyIterable;
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.block.HashingStrategy;
-import org.eclipse.collections.api.block.predicate.Predicate;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
-import org.eclipse.collections.api.ordered.ReversibleIterable;
-import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.lazy.AbstractLazyIterable;
-import org.eclipse.collections.impl.map.strategy.mutable.UnifiedMapWithHashingStrategy;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.TreeNode;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Tag;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Any;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Nil;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
-import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.function.FunctionDescriptor;
 import org.finos.legend.pure.m3.navigation.function.InvalidFunctionDescriptorException;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.RepositoryCodeStorage;
 import org.finos.legend.pure.m3.serialization.runtime.SourceRegistry;
-import org.finos.legend.pure.m3.tools.StatisticsUtil;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFunctions;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateTime;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.StrictDate;
-import org.finos.legend.pure.m4.coreinstance.primitive.date.Year;
-import org.finos.legend.pure.m4.coreinstance.primitive.date.YearMonth;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.Bridge;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.CompiledSupport;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.Pure;
-import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureEqualsHashingStrategy;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
-import org.finos.legend.pure.runtime.java.compiled.generation.processors.type.FullJavaPaths;
 import org.finos.legend.pure.runtime.java.extension.functions.shared.cipher.AESCipherUtil;
 import org.finos.legend.pure.runtime.java.shared.hash.HashType;
 import org.finos.legend.pure.runtime.java.shared.hash.HashingUtil;
@@ -76,17 +54,12 @@ import org.finos.legend.pure.runtime.java.shared.identity.IdentityManager;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Calendar;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -333,7 +306,7 @@ public class FunctionsHelper
 
     public static long ascii(String str)
     {
-        return str.length() > 0 ? (int) str.charAt(0) : 0;
+        return str.isEmpty() ? 0 : (int) str.charAt(0);
     }
 
     public static String character(Number number)
@@ -356,14 +329,7 @@ public class FunctionsHelper
     public static Long levenshteinDistance(String str1, String str2)
     {
         Integer integerValue = new LevenshteinDistance().apply(str1, str2);
-        if (integerValue != null)
-        {
-            return integerValue.longValue();
-        }
-        else
-        {
-            return 0L;
-        }
+        return (integerValue == null) ? 0L : integerValue.longValue();
     }
 
     public static RichIterable<String> chunk(String text, long size, SourceInformation sourceInformation)
@@ -485,7 +451,7 @@ public class FunctionsHelper
 
 
     // Lang ---------------------------------------------------------------------
-    public static <T> T mutateAdd(T val, String property, RichIterable<? extends Object> vals, SourceInformation sourceInformation)
+    public static <T> T mutateAdd(T val, String property, RichIterable<?> vals, SourceInformation sourceInformation)
     {
         try
         {
@@ -542,12 +508,7 @@ public class FunctionsHelper
         }
     });
 
-    public static Object traceSpan(ExecutionSupport es,
-                                   org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> function,
-                                   String operationName,
-                                   org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> funcToGetTags,
-                                   boolean tagsCritical,
-                                   Bridge bridge)
+    public static Object traceSpan(ExecutionSupport es, Function<?> function, String operationName, Function<?> funcToGetTags, boolean tagsCritical, Bridge bridge)
     {
         if (!GlobalTracer.isRegistered())
         {
@@ -602,7 +563,7 @@ public class FunctionsHelper
 
 
 
-    public static Object alloyTest(ExecutionSupport es, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> alloyTest, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> regular, Bridge bridge)
+    public static Object alloyTest(ExecutionSupport es, Function<?> alloyTest, Function<?> regular, Bridge bridge)
     {
         String host = System.getProperty("alloy.test.server.host");
         long port = System.getProperty("alloy.test.server.port") == null ? -1 : Long.parseLong(System.getProperty("alloy.test.server.port"));
@@ -615,7 +576,7 @@ public class FunctionsHelper
         return host != null ? Pure.evaluate(es, alloyTest, bridge, clientVersion, serverVersion, host, port) : Pure.evaluate(es, regular, bridge);
     }
 
-    public static Object legendTest(ExecutionSupport es, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> alloyTest, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> regular, Bridge bridge)
+    public static Object legendTest(ExecutionSupport es, Function<?> alloyTest, Function<?> regular, Bridge bridge)
     {
         String host = System.getProperty("legend.test.server.host");
         long port = System.getProperty("legend.test.server.port") == null ? -1 : Long.parseLong(System.getProperty("legend.test.server.port"));

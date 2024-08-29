@@ -119,7 +119,7 @@ public class DataCubeCache implements Command
                                 try (Statement statement = connection.createStatement())
                                 {
                                     statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().load(tableName, tempFile.getTemporaryPathForFile()));
-                                    this.client.printInfo("Cached into table: '" + tableName + "'. Launching DataCube...");
+                                    this.client.println("Cached into table: '" + tableName + "'. Launching DataCube...");
 
                                     String functionBodyCode = "#>{" + DataCube.getLocalDatabasePath() + "." + tableName + "}#->select()->from(" + DataCube.getLocalRuntimePath() + ")";
                                     String functionCode = "###Pure\n" +

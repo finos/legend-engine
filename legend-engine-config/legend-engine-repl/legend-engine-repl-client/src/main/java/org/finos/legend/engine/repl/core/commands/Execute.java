@@ -28,10 +28,9 @@ import org.finos.legend.engine.repl.shared.ExecutionHelper;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
-import org.jline.utils.AttributedStringBuilder;
-import org.jline.utils.AttributedStyle;
 
 import static org.finos.legend.engine.repl.shared.ExecutionHelper.executeCode;
+import static org.finos.legend.engine.repl.shared.REPLHelper.ansiGreen;
 
 public class Execute implements Command
 {
@@ -51,7 +50,7 @@ public class Execute implements Command
     @Override
     public boolean process(String line) throws Exception
     {
-        this.client.printInfo(execute(line));
+        this.client.println(execute(line));
         return true;
     }
 
@@ -69,12 +68,9 @@ public class Execute implements Command
             }
             else
             {
+                this.client.println("");
                 this.client.printEngineError(result.getEngineException(), parsedLine.line());
-                AttributedStringBuilder ab = new AttributedStringBuilder();
-                ab.append("> ");
-                ab.style(new AttributedStyle().foreground(AttributedStyle.GREEN));
-                ab.append(parsedLine.line());
-                this.client.getTerminal().writer().print(ab.toAnsi());
+                this.client.print("> " + ansiGreen(parsedLine.line()));
             }
         }
         catch (Exception e)

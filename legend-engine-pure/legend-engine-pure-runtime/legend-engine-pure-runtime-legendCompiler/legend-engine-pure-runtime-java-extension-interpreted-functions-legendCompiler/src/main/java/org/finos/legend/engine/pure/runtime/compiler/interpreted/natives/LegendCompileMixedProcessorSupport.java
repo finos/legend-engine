@@ -23,6 +23,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Any;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.navigation.*;
+import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -63,6 +64,7 @@ public class LegendCompileMixedProcessorSupport extends M3ProcessorSupport
                 }
             }
         }
+
         CoreInstance classifier = instance.getClassifier();
 
         if (classifier == null && instance instanceof GenericType)
@@ -95,6 +97,16 @@ public class LegendCompileMixedProcessorSupport extends M3ProcessorSupport
             map.getMap().forEachKeyValue((k, v) -> target.put(this.convertCompileToInterpretedCoreInstance(ValCoreInstance.toCoreInstance(k)), this.convertCompileToInterpretedCoreInstance(ValCoreInstance.toCoreInstance(v))));
             return mapCoreInstance;
         }
+        else if (value instanceof AbstractCompiledCoreInstance)
+        {
+            CoreInstance classifier =  ((CoreInstance) value).getClassifier();
+            CoreInstance fetched = this.package_getByUserPath(PackageableElement.getUserPathForPackageableElement((CoreInstance) value, "::"));
+            if (classifier != null && (classifier.getName().equals("Class") || classifier.getName().equals("NativeFunction") || classifier.getName().equals("PrimitiveType")))
+            {
+                return fetched == null ? (CoreInstance) value : fetched;
+            }
+           return (CoreInstance) value;
+        }
         else
         {
             return (CoreInstance) value;
@@ -121,12 +133,31 @@ public class LegendCompileMixedProcessorSupport extends M3ProcessorSupport
         if (owner instanceof AbstractCompiledCoreInstance)
         {
             CoreInstance classifier = this.getClassifier(owner);
+
+            // Avoid circular loop while fetching inheritance
+            if (classifier.getName().equals("Generalization") && "general".equals(property) ||
+                    classifier.getName().equals("Property") && "genericType".equals(property) ||
+                    classifier.getName().equals("GenericType") && "rawType".equals(property)
+            )
+            {
+                return super.instance_getValueForMetaPropertyToOneResolved(owner, property);
+            }
+
             CoreInstance prop = this.class_findPropertyUsingGeneralization(classifier, property);
 
             if (prop != null)
             {
-                CoreInstance genericType = Instance.getValueForMetaPropertyToOneResolved(prop, M3Properties.genericType, this);
-                CoreInstance type = Instance.getValueForMetaPropertyToOneResolved(genericType, M3Properties.rawType, this);
+                CoreInstance genericType = prop.getValueForMetaPropertyToOne(M3Properties.genericType);
+                if (!org.finos.legend.pure.m3.navigation.generictype.GenericType.isGenericTypeConcrete(genericType))
+                {
+                    CoreInstance classifierGenericType = owner.getValueForMetaPropertyToOne(M3Properties.classifierGenericType);
+                    if (classifierGenericType != null)
+                    {
+                        genericType = org.finos.legend.pure.m3.navigation.generictype.GenericType.resolvePropertyReturnType(classifierGenericType, prop, this);
+                    }
+                }
+                CoreInstance type = genericType.getValueForMetaPropertyToOne(M3Properties.rawType);
+
                 CoreInstance mapType = _Package.getByUserPath(M3Paths.Map, this);
 
                 if (this.type_subTypeOf(type, mapType))

@@ -19,15 +19,16 @@ expression:                                     (
                                                         | notExpression
                                                         | signedExpression
                                                         | expressionsArray
+                                                        | (PAREN_OPEN combinedExpression PAREN_CLOSE)
                                                     )
                                                     (
                                                         (propertyOrFunctionExpression)*
                                                         (equalNotEqual)?
                                                     )
                                                 )
-                                                |
-                                                (PAREN_OPEN combinedExpression PAREN_CLOSE)
 ;
+
+
 instance:                                       NEW_SYMBOL qualifiedName (LESS_THAN typeArguments? (PIPE multiplicityArguments)? GREATER_THAN)? identifier?
                                                 (FILE_NAME COLON INTEGER COMMA INTEGER COMMA INTEGER COMMA INTEGER COMMA INTEGER COMMA INTEGER FILE_NAME_END)? (AT qualifiedName)?
                                                     PAREN_OPEN
@@ -69,15 +70,13 @@ programLine:                                    combinedExpression | letExpressi
 ;
 equalNotEqual:                                  (TEST_EQUAL | TEST_NOT_EQUAL) combinedArithmeticOnly
 ;
-combinedArithmeticOnly:                         expressionOrExpressionGroup arithmeticPart*
+combinedArithmeticOnly:                         expression arithmeticPart*
 ;
 expressionPart:                                 booleanPart | arithmeticPart
 ;
 letExpression:                                  LET identifier EQUAL combinedExpression
 ;
-combinedExpression:                             expressionOrExpressionGroup expressionPart*
-;
-expressionOrExpressionGroup:                    expression
+combinedExpression:                             expression expressionPart*
 ;
 expressionsArray:                               BRACKET_OPEN ( expression (COMMA expression)* )? BRACKET_CLOSE
 ;
