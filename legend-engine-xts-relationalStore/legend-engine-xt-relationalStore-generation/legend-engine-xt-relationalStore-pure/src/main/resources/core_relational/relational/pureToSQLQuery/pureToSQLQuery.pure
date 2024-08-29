@@ -3227,7 +3227,7 @@ function meta::relational::functions::pureToSqlQuery::processAggregation(f:Funct
 
 function meta::relational::functions::pureToSqlQuery::processWavgRowMapper(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-   processAggregation($f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, list([]), $context, $extensions);
+   processAggregation($f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, list([]->cast(@ColumnGroup)), $context, $extensions);
 }
 
 function meta::relational::functions::pureToSqlQuery::manageAggregation(leftSql:SelectSQLQuery[1], relationalOperation:RelationalOperationElement[1], operation:SelectWithCursor[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
