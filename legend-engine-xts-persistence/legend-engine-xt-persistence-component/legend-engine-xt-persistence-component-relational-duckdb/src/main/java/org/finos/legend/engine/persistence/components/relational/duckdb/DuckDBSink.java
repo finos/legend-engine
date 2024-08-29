@@ -27,6 +27,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelt
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshotAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDeltaAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshotAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.NoOpAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
@@ -295,6 +296,12 @@ public class DuckDBSink extends AnsiSqlSink
 
         @Override
         public Boolean visitBulkLoad(BulkLoadAbstract bulkLoad)
+        {
+            return true;
+        }
+
+        @Override
+        public Boolean visitNoOp(NoOpAbstract noOpAbstract)
         {
             return true;
         }

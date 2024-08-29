@@ -18,6 +18,7 @@ import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
+import org.finos.legend.engine.persistence.components.ingestmode.NoOp;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
@@ -101,6 +102,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
     private static final String suffixForBatchMetadataTable = "_BATCH_METADATA";
     private static final String dataset1 = "DATASET_1";
     private static final String dataset2 = "DATASET_2";
+    private static final String dataset3 = "DATASET_3";
     private static final String requestId1 = "REQUEST_1";
     private static final String requestId2 = "REQUEST_2";
     private static final String requestId3 = "REQUEST_3";
@@ -118,6 +120,12 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         .metadataDatasetGroupName(testSchemaName)
         .metadataDatasetName(dataset2 + suffixForBatchMetadataTable)
         .build();
+
+    private static final MetadataDataset metadataDataset3 = MetadataDataset.builder()
+            .metadataDatasetDatabaseName(testDatabaseName)
+            .metadataDatasetGroupName(testSchemaName)
+            .metadataDatasetName(dataset3 + suffixForBatchMetadataTable)
+            .build();
 
     private static final LockInfoDataset lockInfoDataset = LockInfoDataset.builder()
         .database(testDatabaseName)
@@ -604,6 +612,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
     Test Case:
         - [Dataset1: [BulkLoad],
            Dataset2: [BulkLoad, NontemporalSnapshot]]
+           Dataset3: [NoOp, NoOp]]
        - FilterDuplicates
        - MaxVersioning
      */
@@ -632,6 +641,8 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
             .versioningStrategy(MaxVersionStrategy.builder().versioningField(versionName).build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .build();
+
+        NoOp noOp = NoOp.builder().build();
 
         // Configure dataset 1
         StagedFilesDataset bulkLoadStageTableForDataset1 = StagedFilesDataset.builder()
@@ -672,12 +683,38 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
             .name(dataset2 + suffixForFinalTable)
             .build();
 
+        // Configure dataset3
+        StagedFilesDataset noOpStageTable1ForDataset3 = StagedFilesDataset.builder()
+                .stagedFilesDatasetProperties(H2StagedFilesDatasetProperties.builder().fileFormat(FileFormatType.CSV).build())
+                .schema(getStagingSchema2WithVersionWithoutPk())
+                .build();
+        DatasetReference noOpMainTable1ForDataset3 = DatasetReferenceImpl.builder()
+                .database(testDatabaseName)
+                .group(testSchemaName)
+                .name(dataset3 + suffixForAppendTable)
+                .build();
+        DatasetDefinition noOpStageTable2ForDataset3 = DatasetDefinition.builder()
+                .database(testDatabaseName)
+                .group(testSchemaName)
+                .name(dataset3 + suffixForAppendTable)
+                .schema(getStagingSchema2WithVersion())
+                .build();
+        DatasetReference noOpMainTable2ForDataset3 = DatasetReferenceImpl.builder()
+                .database(testDatabaseName)
+                .group(testSchemaName)
+                .name(dataset3 + suffixForFinalTable)
+                .build();
+
         // Configure ingest stages
         IngestStage ingestStage1ForDataset1 = IngestStage.builder().ingestMode(bulkLoad1).stagingDataset(bulkLoadStageTableForDataset1).mainDataset(bulkLoadMainTableForDataset1).build();
         IngestStage ingestStage1ForDataset2 = IngestStage.builder().ingestMode(bulkLoad2).stagingDataset(bulkLoadStageTableForDataset2).mainDataset(bulkLoadMainTableForDataset2).build();
         IngestStage ingestStage2ForDataset2 = IngestStage.builder().ingestMode(nontemporalSnapshot).stagingDataset(nontemporalSnapshotStageTableForDataset2).mainDataset(nontemporalSnapshotMainTableForDataset2).stagingDatasetBatchIdField(batchIdName).build();
+        IngestStage ingestStage1ForDataset3 = IngestStage.builder().ingestMode(noOp).stagingDataset(noOpStageTable1ForDataset3).mainDataset(noOpMainTable1ForDataset3).build();
+        IngestStage ingestStage2ForDataset3 = IngestStage.builder().ingestMode(noOp).stagingDataset(noOpStageTable1ForDataset3).mainDataset(noOpMainTable2ForDataset3).build();
 
-        List<DatasetIngestDetails> datasetIngestDetails = buildDatasetIngestDetails(Collections.singletonList(ingestStage1ForDataset1), Arrays.asList(ingestStage1ForDataset2, ingestStage2ForDataset2));
+        List<DatasetIngestDetails> datasetIngestDetails = buildDatasetIngestDetails(Collections.singletonList(ingestStage1ForDataset1),
+                Arrays.asList(ingestStage1ForDataset2, ingestStage2ForDataset2),
+                Arrays.asList(ingestStage1ForDataset3, ingestStage2ForDataset3));
 
         RelationalMultiDatasetIngestor ingestor = RelationalMultiDatasetIngestor.builder()
             .relationalSink(H2Sink.get())
@@ -697,6 +734,8 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         IngestStageResult ingestStageResult2ForDataset1 = buildIngestStageResult("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 3, 0, 3, 0, 0);
         IngestStageResult ingestStageResult1ForDataset2 = buildIngestStageResultForBulkLoad("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 8);
         IngestStageResult ingestStageResult2ForDataset2 = buildIngestStageResult("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 8, 0, 4, 0, 0);
+        IngestStageResult ingestStageResult1ForDataset3 = buildIngestStageResultForNoOp("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000");
+        IngestStageResult ingestStageResult2ForDataset3 = buildIngestStageResultForNoOp("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000");
 
         List<DatasetIngestResults> expected = new ArrayList<>();
         expected.add(DatasetIngestResults.builder()
@@ -711,6 +750,12 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
             .ingestRequestId(requestId1)
             .addAllIngestStageResults(Arrays.asList(ingestStageResult1ForDataset2, ingestStageResult2ForDataset2))
             .build());
+        expected.add(DatasetIngestResults.builder()
+                .dataset(dataset3)
+                .batchId(1L)
+                .ingestRequestId(requestId1)
+                .addAllIngestStageResults(Arrays.asList(ingestStageResult1ForDataset3, ingestStageResult2ForDataset3))
+                .build());
 
         verifyResults(
             actual, expected,
@@ -723,6 +768,22 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
             Arrays.asList(new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName},
                 new String[]{idName, nameName, ratingName, startTimeName, versionName, digestName, batchIdName},
                 new String[]{idName, nameName, ratingName, startTimeName, versionName, digestName, batchIdName}));
+
+        // Verify the results of batch metadata for dataset 3
+        List<Map<String, Object>> results = h2Sink.executeQuery("select * from \"TEST\".\"" + dataset3 + suffixForBatchMetadataTable + "\"");
+        Assertions.assertEquals("2000-01-01 00:00:00.0", results.get(0).get("batch_end_ts_utc").toString());
+        Assertions.assertEquals(1, results.get(0).get("table_batch_id"));
+        Assertions.assertEquals("REQUEST_1", results.get(0).get("ingest_request_id"));
+        Assertions.assertEquals("SUCCEEDED", results.get(0).get("batch_status"));
+        Assertions.assertEquals("DATASET_3_APPEND", results.get(0).get("table_name"));
+        Assertions.assertEquals("2000-01-01 00:00:00.0", results.get(0).get("batch_start_ts_utc").toString());
+
+        Assertions.assertEquals("2000-01-01 00:00:00.0", results.get(1).get("batch_end_ts_utc").toString());
+        Assertions.assertEquals(1, results.get(1).get("table_batch_id"));
+        Assertions.assertEquals("REQUEST_1", results.get(1).get("ingest_request_id"));
+        Assertions.assertEquals("SUCCEEDED", results.get(1).get("batch_status"));
+        Assertions.assertEquals("DATASET_3_FINAL", results.get(1).get("table_name"));
+        Assertions.assertEquals("2000-01-01 00:00:00.0", results.get(1).get("batch_start_ts_utc").toString());
     }
 
     /*
@@ -832,7 +893,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         {
             Assertions.assertTrue(e instanceof MultiDatasetException);
             MultiDatasetException multiDatasetException = (MultiDatasetException) e;
-            Assertions.assertEquals("Encountered exception for dataset: {DATASET_2}", multiDatasetException.getMessage());
+            Assertions.assertTrue(multiDatasetException.getMessage().contains("Encountered exception for dataset: [DATASET_2] : Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy"));
             Assertions.assertEquals("DATASET_2", multiDatasetException.getDataset());
             Assertions.assertEquals("UnitemporalDelta", multiDatasetException.getIngestStageMetadata().ingestMode().getClass().getSimpleName());
 
@@ -962,7 +1023,7 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         {
             executor.revert();
             Assertions.assertTrue(mde.getIngestStageMetadata().ingestMode() instanceof BulkLoad);
-            Assertions.assertEquals("Encountered exception for dataset: {DATASET_2}", mde.getMessage());
+            Assertions.assertTrue(mde.getMessage().contains("Encountered exception for dataset: [DATASET_2] : Data conversion error converting"));
 
             // Trigger dry run
             DryRunResult dryRunResult = ingestor.dryRun(mde.getDataset());
@@ -1003,6 +1064,27 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
         return datasetIngestDetails;
     }
 
+    private List<DatasetIngestDetails> buildDatasetIngestDetails(List<IngestStage> ingestStages1, List<IngestStage> ingestStages2, List<IngestStage> ingestStages3)
+    {
+        List<DatasetIngestDetails> datasetIngestDetails = new ArrayList<>();
+        datasetIngestDetails.add(DatasetIngestDetails.builder()
+                .dataset(dataset1)
+                .addAllIngestStages(ingestStages1)
+                .metadataDataset(metadataDataset1)
+                .build());
+        datasetIngestDetails.add(DatasetIngestDetails.builder()
+                .dataset(dataset2)
+                .addAllIngestStages(ingestStages2)
+                .metadataDataset(metadataDataset2)
+                .build());
+        datasetIngestDetails.add(DatasetIngestDetails.builder()
+                .dataset(dataset3)
+                .addAllIngestStages(ingestStages3)
+                .metadataDataset(metadataDataset3)
+                .build());
+        return datasetIngestDetails;
+    }
+
     private IngestStageResult buildIngestStageResultForBulkLoad(String ingestionStartTimestampUTC, String ingestionEndTimestampUTC, int rowsInserted)
     {
         return IngestStageResult.builder()
@@ -1012,6 +1094,14 @@ class RelationalMultiDatasetIngestorTest extends BaseTest
             .putStatisticByName(StatisticName.ROWS_WITH_ERRORS, 0)
             .putStatisticByName(StatisticName.ROWS_INSERTED, rowsInserted)
             .build();
+    }
+
+    private IngestStageResult buildIngestStageResultForNoOp(String ingestionStartTimestampUTC, String ingestionEndTimestampUTC)
+    {
+        return IngestStageResult.builder()
+                .ingestionStartTimestampUTC(ingestionStartTimestampUTC)
+                .ingestionEndTimestampUTC(ingestionEndTimestampUTC)
+                .build();
     }
 
     private IngestStageResult buildIngestStageResult(String ingestionStartTimestampUTC, String ingestionEndTimestampUTC,

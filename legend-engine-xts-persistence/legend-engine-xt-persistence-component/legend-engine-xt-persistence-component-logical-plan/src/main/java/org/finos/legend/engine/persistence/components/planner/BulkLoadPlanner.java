@@ -90,6 +90,10 @@ class BulkLoadPlanner extends Planner
         }
 
         stagedFilesDataset = (StagedFilesDataset) datasets.stagingDataset();
+        if (stagedFilesDataset.stagedFilesDatasetProperties().filePatterns().size() == 0 && stagedFilesDataset.stagedFilesDatasetProperties().filePaths().size() == 0)
+        {
+            throw new IllegalArgumentException("Invalid stagedFilesDataset, Either one of filePatterns and filePaths must be provided");
+        }
 
         transformWhileCopy = capabilities.contains(Capability.TRANSFORM_WHILE_COPY);
         if (!transformWhileCopy)

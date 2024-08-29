@@ -606,8 +606,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
             }
             catch (Exception e)
             {
-                e.printStackTrace();
-                String message = String.format("Encountered exception for dataset: {%s}", dataset);
+                String message = String.format("Encountered exception for dataset: [%s] : %s", dataset, e.getMessage());
                 LOGGER.error(message, e);
                 throw new MultiDatasetException(e, stageStartInstant, executionTimestampClock().instant(), dataset, ingestStageMetadata, message);
             }

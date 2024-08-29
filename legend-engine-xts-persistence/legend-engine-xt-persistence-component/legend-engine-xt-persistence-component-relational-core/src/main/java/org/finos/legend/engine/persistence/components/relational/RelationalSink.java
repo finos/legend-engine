@@ -27,6 +27,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.IngestModeVisit
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDeltaAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshotAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDeltaAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.NoOpAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshotAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
@@ -258,6 +259,12 @@ public abstract class RelationalSink implements Sink
 
         @Override
         public Boolean visitBulkLoad(BulkLoadAbstract bulkLoad)
+        {
+            return true;
+        }
+
+        @Override
+        public Boolean visitNoOp(NoOpAbstract noOpAbstract)
         {
             return true;
         }

@@ -82,6 +82,12 @@ public class IngestModeVisitors
         {
             return bulkLoad.digestGenStrategy().accept(DIGEST_GEN_STRATEGY_DIGEST_REQUIRED);
         }
+
+        @Override
+        public Boolean visitNoOp(NoOpAbstract noOpAbstract)
+        {
+            return false;
+        }
     };
 
     public static final IngestModeVisitor<Optional<String>> EXTRACT_DIGEST_FIELD = new IngestModeVisitor<Optional<String>>()
@@ -132,6 +138,12 @@ public class IngestModeVisitors
         public Optional<String> visitBulkLoad(BulkLoadAbstract bulkLoad)
         {
             return bulkLoad.digestGenStrategy().accept(EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY);
+        }
+
+        @Override
+        public Optional<String> visitNoOp(NoOpAbstract noOpAbstract)
+        {
+            return Optional.empty();
         }
     };
 
@@ -207,6 +219,12 @@ public class IngestModeVisitors
             bulkLoad.digestGenStrategy().accept(EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY).ifPresent(metaFields::add);
             return metaFields;
         }
+
+        @Override
+        public Set<String> visitNoOp(NoOpAbstract noOpAbstract)
+        {
+            return Collections.emptySet();
+        }
     };
 
     public static final IngestModeVisitor<Boolean> NEED_TO_CHECK_STAGING_EMPTY = new IngestModeVisitor<Boolean>()
@@ -258,6 +276,12 @@ public class IngestModeVisitors
         {
             return false;
         }
+
+        @Override
+        public Boolean visitNoOp(NoOpAbstract noOpAbstract)
+        {
+            return false;
+        }
     };
 
     public static final IngestModeVisitor<List<OptimizationFilter>> RETRIEVE_OPTIMIZATION_FILTERS = new IngestModeVisitor<List<OptimizationFilter>>()
@@ -306,6 +330,12 @@ public class IngestModeVisitors
 
         @Override
         public List<OptimizationFilter> visitBulkLoad(BulkLoadAbstract bulkLoad)
+        {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public List<OptimizationFilter> visitNoOp(NoOpAbstract noOpAbstract)
         {
             return Collections.emptyList();
         }
