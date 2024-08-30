@@ -191,7 +191,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s' , transform={p:String[2] | $p->transformToTimestampSnowflake()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='WEEKOFYEAR(%s)')),
-    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
+    dynaFnToSql('convertTimeZone',            $allStates,           ^ToSql(format='%s', contextAwareTransform={p:String[3],s:SqlGenerationContext[1] | $p->transformConvertTimeZone($s)}))
+
+
+
   ];
 }
 
@@ -404,6 +408,21 @@ function meta::relational::functions::sqlQueryToString::snowflake::preAndFinally
   );
 }
 
+
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::transformConvertTimeZone(params:String[3],context:SqlGenerationContext[1]):String[1]
+{
+  let unWrappedfmt =  $params->at(2)->substring(1, $params->at(2)->length()-1);  $unWrappedfmt->println();
+  assert($unWrappedfmt->validateDateTimeFormat(),'Found an invalid date format');
+  let formatpairs = meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeParts();
+  let format = $formatpairs->fold( {sub, date|  $date->toOne()->replace($sub.first,$sub.second)},$params->at(2));
+  format('TO_CHAR(CONVERT_TIMEZONE(%s,%s),%s)',[$params->at(0),$params->at(1),$format]);
+}
+
+
+
+
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::snowflakeReservedWords():String[*]
 {
   // Based on https://docs.snowflake.com/en/sql-reference/reserved-keywords
@@ -493,5 +512,4 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     'with'
   ]
 }
-
 

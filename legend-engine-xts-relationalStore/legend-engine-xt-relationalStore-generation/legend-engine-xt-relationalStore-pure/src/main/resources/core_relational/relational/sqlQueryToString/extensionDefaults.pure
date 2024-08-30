@@ -769,3 +769,21 @@ function meta::relational::functions::sqlQueryToString::default::escapeLikeExprD
       ->replace('_', '\\_')
       ->replace('%', '\\%');
 }
+
+
+function   meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeParts():Pair<String,String>[*]
+{
+  let formatSubs = [
+                  pair('yyyy', 'YYYY'), // Year
+                  pair('dd', 'DD'),   // Day in month padded
+                  pair('HH', 'I1'),   // Hour in day (0-23) padded
+                  pair('H', 'FMHH24'),   // Hour in day (0-23)
+                  pair('hh', 'I2'),   // Hour in day (0-12) padded
+                  pair('h', 'FMHH12'),   // Hour in day (0-12)    
+                  pair('mm', 'MI'),   // Minute in hour
+                  pair('SSS','FF3'),
+                  pair('ss', 'SS'),   // Second in minute
+                  pair('I1', 'HH24'),   //replace intermediate placeholders
+                  pair('I2', 'HH12')
+                  ];  
+}

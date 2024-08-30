@@ -140,7 +140,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
     dynaFnToSql('toString',                  $allStates,            ^ToSql(format='cast(%s as char)')),
     dynaFnToSql('toTimestamp',               $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampMemSQL()})),
     dynaFnToSql('year',                      $allStates,            ^ToSql(format='year(%s)')),
-    dynaFnToSql('weekOfYear',                $allStates,            ^ToSql(format='weekofyear(%s)'))
+    dynaFnToSql('weekOfYear',                $allStates,            ^ToSql(format='weekofyear(%s)')),
+    dynaFnToSql('convertTimeZone',            $allStates,           ^ToSql(format='%s', contextAwareTransform={p:String[3],s:SqlGenerationContext[1] | $p->transformConvertTimeZone($s)}))
+
   ];
 }
 
@@ -178,6 +180,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
    let timestampFormat = $params->at(1);
    'to_timestamp('+$params->at(0)+','+$timestampFormat+')';
 }
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::transformConvertTimeZone(params:String[3],context:SqlGenerationContext[1]):String[1]
+{
+  let sourceTZ = if($context.dbConfig.dbTimeZone->isEmpty(),|'GMT',|$context.dbConfig.dbTimeZone->toOne());
+  let unWrappedfmt =  $params->at(2)->substring(1, $params->at(2)->length()-1);
+  assert($unWrappedfmt->validateDateTimeFormat(),'Found an invalid date format');
+  let formatpairs = meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeParts();
+  let msqlDate = $formatpairs->fold( {sub, date|  $date->toOne()->replace($sub.first,$sub.second)},$params->at(2));
+  format('TO_CHAR(CONVERT_TZ(%s,\'%s\',%s),%s)',[$params->at(0),$sourceTZ,$params->at(1),$msqlDate]);
+}
+
+
 
 function  <<access.private>> meta::relational::functions::sqlQueryToString::memsql::generateDateDiffExpressionForMemSQL(params:String[*]):String[1]
 {

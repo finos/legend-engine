@@ -110,7 +110,9 @@ public class DefaultH2AuthenticationStrategy extends AuthenticationStrategy
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_flatten_array FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_flatten_array\";",
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_split_part FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_split_part\";",
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_edit_distance FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_edit_distance\";",
-                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_jaro_winkler_similarity FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_jaro_winkler_similarity\";"
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_jaro_winkler_similarity FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_jaro_winkler_similarity\";",
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_convertTimeZone FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_convertTimeZone\";"
+
         );
     }
 
@@ -127,7 +129,9 @@ public class DefaultH2AuthenticationStrategy extends AuthenticationStrategy
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_flatten_array FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_flatten_array\";",
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_split_part FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_split_part\";",
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_edit_distance FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_edit_distance\";",
-                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_jaro_winkler_similarity FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_jaro_winkler_similarity\";"
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_jaro_winkler_similarity FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_jaro_winkler_similarity\";",
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_convertTimeZone FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_convertTimeZone\";"
+
         );
     }
 }
