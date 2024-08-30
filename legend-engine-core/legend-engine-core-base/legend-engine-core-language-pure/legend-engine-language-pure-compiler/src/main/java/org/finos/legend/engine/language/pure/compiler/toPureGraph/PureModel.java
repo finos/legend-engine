@@ -1411,6 +1411,18 @@ public class PureModel implements IPureModel
         }
     }
 
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement removePackageableElement(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement packageableElement)
+    {
+        Package pkg = getOrCreatePackage(packageableElement._package);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement existingElement = pkg._children().detect(c -> c._name().equals(packageableElement.name));
+        if (existingElement != null)
+        {
+            pkg._childrenRemove(existingElement);
+            this.packageableElementsIndex.remove(buildPackageString(packageableElement._package, packageableElement.name));
+        }
+        return existingElement;
+    }
+
     public CompiledExecutionSupport getExecutionSupport()
     {
         return this.executionSupport;
