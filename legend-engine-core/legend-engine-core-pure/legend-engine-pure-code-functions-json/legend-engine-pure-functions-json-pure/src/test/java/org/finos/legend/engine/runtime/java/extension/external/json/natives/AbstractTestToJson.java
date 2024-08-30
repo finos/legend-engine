@@ -376,7 +376,7 @@ public abstract class AbstractTestToJson extends AbstractPureTestWithCoreCompile
 
     public static Pair<String, String> getExtra()
     {
-        String code = readTextResource("org/finos/legend/pure/m3/toJson/toJson.pure", org.finos.legend.pure.m3.tests.function.base.json.AbstractTestToJson.class.getClassLoader());
+        String code = readTextResource("org/finos/legend/engine/runtime/java/extension/external/json/natives/toJson.pure", AbstractTestToJson.class.getClassLoader());
         return Tuples.pair("/test/toJson.pure", code);
     }
 }
