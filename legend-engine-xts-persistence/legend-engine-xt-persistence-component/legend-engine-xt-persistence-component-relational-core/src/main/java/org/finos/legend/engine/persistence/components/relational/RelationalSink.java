@@ -27,6 +27,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.IngestModeVisit
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDeltaAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshotAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDeltaAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.NoOpAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshotAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
@@ -48,6 +49,7 @@ import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
 import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 
+import java.time.Clock;
 import java.util.*;
 
 public abstract class RelationalSink implements Sink
@@ -202,7 +204,7 @@ public abstract class RelationalSink implements Sink
         Dataset execute(Executor<SqlGen, TabularData, SqlPlan> executor, RelationalExecutionHelper sink, Dataset dataset);
     }
 
-    public abstract IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, PlaceholderValue> placeHolderKeyValues);
+    public abstract IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, PlaceholderValue> placeHolderKeyValues, Clock executionTimestampClock);
 
     public abstract List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<Pair<Set<FieldValue>, org.finos.legend.engine.persistence.components.relational.SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount, CaseConversion caseConversion);
 
@@ -257,6 +259,12 @@ public abstract class RelationalSink implements Sink
 
         @Override
         public Boolean visitBulkLoad(BulkLoadAbstract bulkLoad)
+        {
+            return true;
+        }
+
+        @Override
+        public Boolean visitNoOp(NoOpAbstract noOpAbstract)
         {
             return true;
         }

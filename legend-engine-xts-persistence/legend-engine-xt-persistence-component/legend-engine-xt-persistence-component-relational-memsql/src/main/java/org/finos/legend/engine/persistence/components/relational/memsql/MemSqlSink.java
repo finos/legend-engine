@@ -25,6 +25,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelt
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshotAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDeltaAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshotAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.NoOpAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
@@ -324,6 +325,12 @@ public class MemSqlSink extends AnsiSqlSink
         public Boolean visitBulkLoad(BulkLoadAbstract bulkLoad)
         {
             return false;
+        }
+
+        @Override
+        public Boolean visitNoOp(NoOpAbstract noOpAbstract)
+        {
+            return true;
         }
     };
 }

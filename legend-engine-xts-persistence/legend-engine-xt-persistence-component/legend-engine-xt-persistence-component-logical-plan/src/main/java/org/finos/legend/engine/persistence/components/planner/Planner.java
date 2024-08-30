@@ -308,7 +308,7 @@ public abstract class Planner
 
     public LogicalPlan buildLogicalPlanForDryRun(Resources resources)
     {
-        return LogicalPlan.of(Collections.emptyList());
+        return null;
     }
 
     public Map<ValidationCategory, List<Pair<Set<FieldValue>, LogicalPlan>>> buildLogicalPlanForDryRunValidation(Resources resources)
@@ -318,12 +318,12 @@ public abstract class Planner
 
     public LogicalPlan buildLogicalPlanForDryRunPreActions(Resources resources)
     {
-        return LogicalPlan.of(Collections.emptyList());
+        return null;
     }
 
     public LogicalPlan buildLogicalPlanForDryRunPostCleanup(Resources resources)
     {
-        return LogicalPlan.of(Collections.emptyList());
+        return null;
     }
 
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
@@ -351,7 +351,7 @@ public abstract class Planner
         if (options().enableConcurrentSafety())
         {
             LockInfoUtils lockInfoUtils = new LockInfoUtils(datasets.lockInfoDataset().orElseThrow(IllegalStateException::new));
-            return LogicalPlan.of(Collections.singleton(lockInfoUtils.initializeLockInfo(mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new), BatchStartTimestampAbstract.INSTANCE)));
+            return LogicalPlan.of(Collections.singleton(lockInfoUtils.initializeLockInfo(BatchStartTimestampAbstract.INSTANCE)));
         }
         return null;
     }
@@ -366,7 +366,7 @@ public abstract class Planner
         return null;
     }
 
-    public LogicalPlan buildLogicalPlanForPreActions(Resources resources)
+    public LogicalPlan buildLogicalPlanForPreActions()
     {
         List<Operation> operations = new ArrayList<>();
         if (!options().skipMainAndMetadataDatasetCreation())

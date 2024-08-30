@@ -250,7 +250,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     }
 
     @Override
-    public LogicalPlan buildLogicalPlanForPreActions(Resources resources)
+    public LogicalPlan buildLogicalPlanForPreActions()
     {
         List<Operation> operations = new ArrayList<>();
 

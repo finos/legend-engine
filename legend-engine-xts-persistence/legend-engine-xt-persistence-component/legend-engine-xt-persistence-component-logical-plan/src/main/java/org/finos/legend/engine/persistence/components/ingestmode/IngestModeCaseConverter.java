@@ -180,6 +180,12 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .build();
     }
 
+    @Override
+    public IngestMode visitNoOp(NoOpAbstract noOpAbstract)
+    {
+        return noOpAbstract;
+    }
+
     private Optional<String> applyCase(Optional<String> field)
     {
         return Optional.ofNullable(field.isPresent() ? this.strategy.apply(field.get()) : null);

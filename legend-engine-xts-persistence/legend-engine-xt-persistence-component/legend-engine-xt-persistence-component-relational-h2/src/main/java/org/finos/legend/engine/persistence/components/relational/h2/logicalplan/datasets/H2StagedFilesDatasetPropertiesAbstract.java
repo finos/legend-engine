@@ -39,7 +39,7 @@ public interface H2StagedFilesDatasetPropertiesAbstract extends StagedFilesDatas
         {
             throw new IllegalStateException("Cannot build H2StagedFilesDatasetProperties, filePatterns not supported");
         }
-        if (filePaths().size() != 1)
+        if (filePaths().size() > 1)
         {
             throw new IllegalStateException("Cannot build H2StagedFilesDatasetProperties, only 1 file per load supported");
         }
