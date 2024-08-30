@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,27 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.runtime.java.extension.external.json.interpreted.natives.test;
+package org.finos.legend.pure.runtime.java.extension.external.json.interpreted.natives;
 
+import org.finos.legend.engine.runtime.java.extension.external.json.natives.AbstractTestParseJson;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
-import org.finos.legend.pure.m3.tests.function.base.json.AbstractTestFromJson;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
-import org.junit.After;
 import org.junit.BeforeClass;
 
-public class TestFromJsonInterpreted extends AbstractTestFromJson
+public class TestParseJson extends AbstractTestParseJson
 {
     @BeforeClass
     public static void setUp()
     {
-        setUpRuntime(getFunctionExecution());
-    }
-
-    @After
-    public void cleanRuntime()
-    {
-        runtime.delete("fromString.pure");
-        runtime.compile();
+        setUpRuntime(getFunctionExecution(), getCodeStorage(), getExtra());
     }
 
     protected static FunctionExecution getFunctionExecution()
