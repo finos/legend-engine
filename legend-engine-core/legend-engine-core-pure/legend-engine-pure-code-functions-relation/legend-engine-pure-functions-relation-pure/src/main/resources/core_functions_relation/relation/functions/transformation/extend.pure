@@ -18,14 +18,14 @@ import meta::pure::metamodel::relation::*;
 native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z>(r:Relation<T>[1], f:FuncColSpec<{T[1]->Any[0..1]},Z>[1]):Relation<T+Z>[1];
 native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z>(r:Relation<T>[1], fs:FuncColSpecArray<{T[1]->Any[*]},Z>[1]):Relation<T+Z>[1];
 
-native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<T+R>[1];
-native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], agg:AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<T+R>[1];
+native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<T+R>[1];
+native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], agg:AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<T+R>[1];
 
 native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z,W,R>(r:Relation<T>[1], window:_Window<T>[1], f:FuncColSpec<{Relation<T>[1],_Window<T>[1],T[1]->Any[0..1]},R>[1]):Relation<T+R>[1];
 native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z,W,R>(r:Relation<T>[1], window:_Window<T>[1], f:FuncColSpecArray<{Relation<T>[1],_Window<T>[1],T[1]->Any[*]},R>[1]):Relation<T+R>[1];
 
-native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], window:_Window<T>[1], agg:AggColSpec<{Relation<T>[1],_Window<T>[1],T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<T+R>[1];
-native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], window:_Window<T>[1], agg:AggColSpecArray<{Relation<T>[1],_Window<T>[1],T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<T+R>[1];
+native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], window:_Window<T>[1], agg:AggColSpec<{Relation<T>[1],_Window<T>[1],T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<T+R>[1];
+native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], window:_Window<T>[1], agg:AggColSpecArray<{Relation<T>[1],_Window<T>[1],T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<T+R>[1];
 
 
 function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimpleExtendStrShared<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
