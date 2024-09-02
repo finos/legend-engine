@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-memsql</artifactId>
-        <version>4.55.2-SNAPSHOT</version>
+        <version>4.55.2</version>
     </parent>
 
     <artifactId>legend-engine-xt-relationalStore-memsql-pure</artifactId>
