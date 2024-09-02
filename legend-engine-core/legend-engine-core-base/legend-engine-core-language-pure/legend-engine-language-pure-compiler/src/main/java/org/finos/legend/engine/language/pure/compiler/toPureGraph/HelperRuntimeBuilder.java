@@ -16,7 +16,6 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerHelper;
@@ -35,8 +34,6 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore_Impl;
-import org.finos.legend.pure.generated.Root_meta_core_runtime_EngineRuntime;
-import org.finos.legend.pure.generated.Root_meta_core_runtime_EngineRuntime_Impl;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_Binding;
@@ -109,22 +106,21 @@ public class HelperRuntimeBuilder
         }
     }
 
-    public static Root_meta_core_runtime_EngineRuntime buildEngineRuntime(EngineRuntime engineRuntime, CompileContext context)
+    public static Root_meta_core_runtime_Runtime buildEngineRuntime(EngineRuntime engineRuntime, CompileContext context)
     {
         // convert EngineRuntime with connection as a map indexes by store to Pure runtime which only contains an array of connections
-        Root_meta_core_runtime_EngineRuntime pureRuntime = new Root_meta_core_runtime_EngineRuntime_Impl("Root::meta::core::runtime::Runtime", SourceInformationHelper.toM3SourceInformation(engineRuntime.sourceInformation), null);
+        Root_meta_core_runtime_Runtime pureRuntime = new Root_meta_core_runtime_Runtime_Impl("Root::meta::core::runtime::Runtime", SourceInformationHelper.toM3SourceInformation(engineRuntime.sourceInformation), null);
         return buildEngineRuntime(engineRuntime, pureRuntime, context);
     }
 
-    public static Root_meta_core_runtime_EngineRuntime buildEngineRuntime(EngineRuntime engineRuntime, Root_meta_core_runtime_EngineRuntime pureRuntime, CompileContext context)
+    public static Root_meta_core_runtime_Runtime buildEngineRuntime(EngineRuntime engineRuntime, Root_meta_core_runtime_Runtime pureRuntime, CompileContext context)
     {
         if (engineRuntime.mappings.isEmpty())
         {
             context.pureModel.addWarnings(Lists.mutable.with(new Warning(engineRuntime.sourceInformation, "Runtime must cover at least one mapping")));
         }
         // verify if each mapping associated with the PackageableRuntime exists
-        MutableList<Mapping> mappings = engineRuntime.mappings.isEmpty() ? Lists.mutable.empty() : ListIterate.collect(engineRuntime.mappings, mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation));
-        pureRuntime._mappings(mappings);
+        List<Mapping> mappings = engineRuntime.mappings.isEmpty() ? Lists.mutable.empty() : ListIterate.collect(engineRuntime.mappings, mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation));
         // build connections
         List<CoreInstance> visitedSourceClasses = new ArrayList<>();
         List<CoreInstance> visitedConnectionTypes = new ArrayList<>();

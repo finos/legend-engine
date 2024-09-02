@@ -30,6 +30,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 
 public class GenerationCompilerExtensionImpl implements GenerationCompilerExtension
 {
+    final ConcurrentHashMap<String, Root_meta_pure_generation_metamodel_GenerationSpecification> generationSpecificationsIndex = new ConcurrentHashMap<>();
     final ConcurrentHashMap<String, Root_meta_pure_generation_metamodel_GenerationConfiguration> fileConfigurationsIndex = new ConcurrentHashMap<>();
 
     @Override
@@ -64,6 +65,7 @@ public class GenerationCompilerExtensionImpl implements GenerationCompilerExtens
                         (generationSpecification, context) ->
                         {
                             Root_meta_pure_generation_metamodel_GenerationSpecification genTree = new Root_meta_pure_generation_metamodel_GenerationSpecification_Impl(generationSpecification.name, null, context.pureModel.getClass("meta::pure::generation::metamodel::GenerationSpecification"))._name(generationSpecification.name);
+                            this.generationSpecificationsIndex.put(context.pureModel.buildPackageString(generationSpecification._package, generationSpecification.name), genTree);
                             return genTree;
                         },
                         HelperGenerationSpecificationBuilder::processGenerationSpecification)

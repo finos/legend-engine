@@ -36,8 +36,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_core_runtime_EngineRuntime;
-import org.finos.legend.pure.generated.Root_meta_core_runtime_EngineRuntime_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_Mapping_Impl;
@@ -90,7 +88,9 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(Profile profile)
     {
+        String fullPath = this.context.pureModel.buildPackageString(profile._package, profile.name);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile targetProfile = new Root_meta_pure_metamodel_extension_Profile_Impl(profile.name, SourceInformationHelper.toM3SourceInformation(profile.sourceInformation), this.context.pureModel.getClass("meta::pure::metamodel::extension::Profile"));
+        this.context.pureModel.profilesIndex.put(fullPath, targetProfile);
         setNameAndPackage(targetProfile, profile);
         return targetProfile
                 ._p_stereotypes(ListIterate.collect(profile.stereotypes, st -> newStereotype(targetProfile, st.value, st.sourceInformation)))
@@ -150,6 +150,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     {
         String packageString = this.context.pureModel.buildPackageString(srcAssociation._package, srcAssociation.name);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = new Root_meta_pure_metamodel_relationship_Association_Impl(srcAssociation.name, null, this.context.pureModel.getClass("meta::pure::metamodel::relationship::Association"));
+        this.context.pureModel.associationsIndex.put(packageString, association);
 
         if (srcAssociation.properties.size() != 2)
         {
@@ -168,6 +169,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         String functionFullName = this.context.pureModel.buildPackageString(function._package, functionSignature);
         String functionName = this.context.pureModel.buildPackageString(function._package, HelperModelBuilder.getFunctionNameWithoutSignature(function));
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc = new Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl<>(functionSignature, SourceInformationHelper.toM3SourceInformation(function.sourceInformation), null);
+        this.context.pureModel.functionsIndex.put(functionFullName, targetFunc);
 
         ProcessingContext ctx = new ProcessingContext("Function '" + functionFullName + "' First Pass");
 
@@ -209,6 +211,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     public PackageableElement visit(Mapping mapping)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping pureMapping = new Root_meta_pure_mapping_Mapping_Impl(mapping.name, SourceInformationHelper.toM3SourceInformation(mapping.sourceInformation), this.context.pureModel.getClass("meta::pure::mapping::Mapping"));
+        this.context.pureModel.mappingsIndex.put(this.context.pureModel.buildPackageString(mapping._package, mapping.name), pureMapping);
         GenericType mappingGenericType = newGenericType(this.context.pureModel.getType("meta::pure::mapping::Mapping"));
         pureMapping._classifierGenericType(mappingGenericType);
         return setNameAndPackage(pureMapping, mapping);
@@ -218,11 +221,13 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     public PackageableElement visit(PackageableRuntime packageableRuntime)
     {
         Root_meta_pure_runtime_PackageableRuntime metamodel = new Root_meta_pure_runtime_PackageableRuntime_Impl(packageableRuntime.name, SourceInformationHelper.toM3SourceInformation(packageableRuntime.sourceInformation), this.context.pureModel.getClass("meta::pure::runtime::PackageableRuntime"));
+        this.context.pureModel.packageableRuntimesIndex.put(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), metamodel);
         GenericType packageableRuntimeGenericType = newGenericType(this.context.pureModel.getType("meta::pure::runtime::PackageableRuntime"));
         metamodel._classifierGenericType(packageableRuntimeGenericType);
 
-        Root_meta_core_runtime_EngineRuntime pureRuntime = new Root_meta_core_runtime_EngineRuntime_Impl("Root::meta::core::runtime::Runtime", SourceInformationHelper.toM3SourceInformation(packageableRuntime.sourceInformation), this.context.pureModel.getClass("meta::core::runtime::Runtime"));
-        metamodel._runtimeValue(pureRuntime);
+        // NOTE: the whole point of this processing is to put the Pure Runtime in an index
+        Root_meta_core_runtime_Runtime pureRuntime = new Root_meta_core_runtime_Runtime_Impl("Root::meta::core::runtime::Runtime", SourceInformationHelper.toM3SourceInformation(packageableRuntime.sourceInformation), this.context.pureModel.getClass("meta::core::runtime::Runtime"));
+        this.context.pureModel.runtimesIndex.put(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), pureRuntime);
 
         return setNameAndPackage(metamodel, packageableRuntime);
     }
@@ -231,8 +236,10 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     public PackageableElement visit(PackageableConnection packageableConnection)
     {
         Root_meta_pure_runtime_PackageableConnection metamodel = new Root_meta_pure_runtime_PackageableConnection_Impl(packageableConnection.name, SourceInformationHelper.toM3SourceInformation(packageableConnection.sourceInformation), this.context.pureModel.getClass("meta::pure::runtime::PackageableConnection"));
+        this.context.pureModel.packageableConnectionsIndex.put(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), metamodel);
+        // NOTE: the whole point of this processing is to put the Pure Connection in an index
         Root_meta_core_runtime_Connection connection = packageableConnection.connectionValue.accept(new ConnectionFirstPassBuilder(this.context));
-        metamodel._connectionValue(connection);
+        this.context.pureModel.connectionsIndex.put(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), connection);
         return setNameAndPackage(metamodel, packageableConnection);
     }
 
@@ -240,6 +247,8 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     public PackageableElement visit(SectionIndex sectionIndex)
     {
         Root_meta_pure_metamodel_section_SectionIndex stub = new Root_meta_pure_metamodel_section_SectionIndex_Impl(sectionIndex.name, SourceInformationHelper.toM3SourceInformation(sectionIndex.sourceInformation), this.context.pureModel.getClass("meta::pure::metamodel::section::SectionIndex"));
+        // NOTE: we don't really need to add section index to the PURE graph
+        sectionIndex.sections.forEach(section -> section.elements.forEach(elementPath -> this.context.pureModel.sectionsIndex.putIfAbsent(elementPath, section)));
         return setNameAndPackage(stub, sectionIndex);
     }
 

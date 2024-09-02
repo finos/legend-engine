@@ -30,6 +30,7 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.set.SetIterable;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -169,6 +170,8 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "-Core");
     }
 
+    static final ConcurrentHashMap<String, Root_meta_relational_metamodel_RelationalMapper> relationalMappersIndex = new ConcurrentHashMap<>();
+
     @Override
     public CompilerExtension build()
     {
@@ -223,11 +226,12 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         (relationalMapper, context) ->
                         {
                             Root_meta_relational_metamodel_RelationalMapper metamodel = new Root_meta_relational_metamodel_RelationalMapper_Impl(relationalMapper.name, null, context.pureModel.getClass("meta::relational::metamodel::RelationalMapper"))._name(relationalMapper.name);
+                            relationalMappersIndex.put(context.pureModel.buildPackageString(relationalMapper._package, relationalMapper.name), metamodel);
                             return metamodel;
                         },
                         (relationalMapper, context) ->
                         {
-                            Root_meta_relational_metamodel_RelationalMapper metamodel = (Root_meta_relational_metamodel_RelationalMapper) context.pureModel.getPackageableElement(context.pureModel.buildPackageString(relationalMapper._package, relationalMapper.name));
+                            Root_meta_relational_metamodel_RelationalMapper metamodel = relationalMappersIndex.get(context.pureModel.buildPackageString(relationalMapper._package, relationalMapper.name));
                             metamodel._databaseMappers(ListIterate.collect(relationalMapper.databaseMappers, dbMap ->
                             {
                                 return new Root_meta_relational_metamodel_DatabaseMapper_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::DatabaseMapper"))
@@ -246,7 +250,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         },
                         (relationalMapper, context) ->
                         {
-                            Root_meta_relational_metamodel_RelationalMapper metamodel = (Root_meta_relational_metamodel_RelationalMapper) context.pureModel.getPackageableElement(context.pureModel.buildPackageString(relationalMapper._package, relationalMapper.name));
+                            Root_meta_relational_metamodel_RelationalMapper metamodel = relationalMappersIndex.get(context.pureModel.buildPackageString(relationalMapper._package, relationalMapper.name));
                             checkForDuplicates(relationalMapper.databaseMappers);
                             checkForDuplicates(relationalMapper.schemaMappers);
                             checkForDuplicates(relationalMapper.tableMappers);
@@ -438,7 +442,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) connectionValue;
 
                         Root_meta_external_store_relational_runtime_RelationalDatabaseConnection relational = new Root_meta_external_store_relational_runtime_RelationalDatabaseConnection_Impl("", SourceInformationHelper.toM3SourceInformation(relationalDatabaseConnection.sourceInformation), context.pureModel.getClass("meta::external::store::relational::runtime::RelationalDatabaseConnection"));
-                        HelperRelationalDatabaseConnectionBuilder.addDatabaseConnectionProperties(relational, relationalDatabaseConnection.type.name(), relationalDatabaseConnection.timeZone, relationalDatabaseConnection.quoteIdentifiers, context);
+                        HelperRelationalDatabaseConnectionBuilder.addDatabaseConnectionProperties(relational, relationalDatabaseConnection.element, relationalDatabaseConnection.elementSourceInformation, relationalDatabaseConnection.type.name(), relationalDatabaseConnection.timeZone, relationalDatabaseConnection.quoteIdentifiers, context);
 
                         List<IRelationalCompilerExtension> extensions = IRelationalCompilerExtension.getExtensions(context);
 
@@ -945,5 +949,10 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                 ._to(tblMap.to)
                 ._from(tbl);
         return tblMapper;
+    }
+
+    public static Root_meta_relational_metamodel_RelationalMapper getRelationalMapper(String fullPath)
+    {
+        return relationalMappersIndex.get(fullPath);
     }
 }

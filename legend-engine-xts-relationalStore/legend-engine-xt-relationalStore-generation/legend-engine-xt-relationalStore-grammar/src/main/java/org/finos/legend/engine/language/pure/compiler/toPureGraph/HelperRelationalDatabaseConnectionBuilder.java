@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.Mapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
@@ -40,11 +41,22 @@ public class HelperRelationalDatabaseConnectionBuilder
         }
     }
 
-    public static void addDatabaseConnectionProperties(Root_meta_external_store_relational_runtime_DatabaseConnection pureConnection, String connectionType, String timeZone, Boolean quoteIdentifiers, CompileContext context)
+    public static void addDatabaseConnectionProperties(Root_meta_external_store_relational_runtime_DatabaseConnection pureConnection, String element, SourceInformation elementSourceInformation, String connectionType, String timeZone, Boolean quoteIdentifiers, CompileContext context)
     {
         Root_meta_external_store_relational_runtime_DatabaseConnection connection = pureConnection._type(context.pureModel.getEnumValue("meta::relational::runtime::DatabaseType", connectionType));
         connection._timeZone(timeZone);
         connection._quoteIdentifiers(quoteIdentifiers);
+        if (element != null)
+        {
+            try
+            {
+                HelperRelationalBuilder.resolveDatabase(element, elementSourceInformation, context);
+            }
+            catch (RuntimeException e)
+            {
+                context.pureModel.storesIndex.putIfAbsent(element, new Root_meta_relational_metamodel_Database_Impl(element)._name(element));
+            }
+        }
     }
 
     public static Root_meta_pure_alloy_connections_MapperPostProcessor createMapperPostProcessor(MapperPostProcessor mapper, CompileContext context)
@@ -67,7 +79,7 @@ public class HelperRelationalDatabaseConnectionBuilder
     public static Root_meta_pure_alloy_connections_RelationalMapperPostProcessor createRelationalMapperPostProcessor(List<PackageableElementPointer> relationalMappers, CompileContext context)
     {
         Root_meta_pure_alloy_connections_RelationalMapperPostProcessor p = new Root_meta_pure_alloy_connections_RelationalMapperPostProcessor_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::RelationalMapperPostProcessor"));
-        MutableList<Root_meta_relational_metamodel_RelationalMapper> rm = ListIterate.collect(relationalMappers, r -> (Root_meta_relational_metamodel_RelationalMapper) context.pureModel.getPackageableElement(r.path));
+        MutableList<Root_meta_relational_metamodel_RelationalMapper> rm = ListIterate.collect(relationalMappers, r -> RelationalCompilerExtension.getRelationalMapper(r.path));
         p._relationalMappers(rm);
         return p;
     }
