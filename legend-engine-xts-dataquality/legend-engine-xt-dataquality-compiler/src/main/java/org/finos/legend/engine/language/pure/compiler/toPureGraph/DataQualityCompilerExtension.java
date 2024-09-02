@@ -63,6 +63,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DataQualityCompilerExtension implements CompilerExtension
 {
@@ -72,6 +73,8 @@ public class DataQualityCompilerExtension implements CompilerExtension
     {
         return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "DataQualityValidation");
     }
+
+    static final ConcurrentHashMap<String, Root_meta_external_dataquality_DataQuality<Object>> dataQualityIndex = new ConcurrentHashMap<>();
 
     @Override
     public CompilerExtension build()
@@ -93,6 +96,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
                                     SourceInformationHelper.toM3SourceInformation(dataquality.sourceInformation),
                                     compileContext.pureModel.getClass("meta::external::dataquality::DataQuality")
                             );
+                            dataQualityIndex.put(compileContext.pureModel.buildPackageString(dataquality._package, dataquality.name), metamodel);
                             return metamodel;
                         },
                         (dataquality, compileContext) ->
@@ -109,7 +113,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
                         },
                         (dataquality, compileContext) ->
                         {
-                            Root_meta_external_dataquality_DataQuality<Object> metamodel = (Root_meta_external_dataquality_DataQuality<Object>) compileContext.pureModel.getPackageableElement(compileContext.pureModel.buildPackageString(dataquality._package, dataquality.name));
+                            Root_meta_external_dataquality_DataQuality<Object> metamodel = dataQualityIndex.get(compileContext.pureModel.buildPackageString(dataquality._package, dataquality.name));
                             metamodel._context(buildDataQualityExecutionContext(dataquality, compileContext))
                                     ._filter(getFilterLambda(dataquality, compileContext))
                                     ._validationTree(buildRootGraphFetchTree(dataquality.dataQualityRootGraphFetchTree, compileContext, compileContext.pureModel.getClass(dataquality.dataQualityRootGraphFetchTree._class), null, new ProcessingContext("DataQuality")));

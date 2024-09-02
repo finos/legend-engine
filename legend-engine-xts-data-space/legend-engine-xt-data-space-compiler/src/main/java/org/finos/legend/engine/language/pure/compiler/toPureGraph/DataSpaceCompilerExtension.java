@@ -26,6 +26,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
@@ -87,6 +88,8 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
         return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "DataSpace");
     }
 
+    static final ConcurrentHashMap<String, Root_meta_pure_metamodel_dataSpace_DataSpace> dataSpacesIndex = new ConcurrentHashMap<>();
+
     @Override
     public CompilerExtension build()
     {
@@ -102,6 +105,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                 (dataSpace, context) ->
                 {
                     Root_meta_pure_metamodel_dataSpace_DataSpace metamodel = new Root_meta_pure_metamodel_dataSpace_DataSpace_Impl(dataSpace.name, null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpace"))._name(dataSpace.name);
+                    dataSpacesIndex.put(context.pureModel.buildPackageString(dataSpace._package, dataSpace.name), metamodel);
                     metamodel._stereotypes(ListIterate.collect(dataSpace.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)));
                     metamodel._taggedValues(ListIterate.collect(dataSpace.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)));
 
@@ -143,7 +147,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                 },
                 (dataSpace, context) ->
                 {
-                    Root_meta_pure_metamodel_dataSpace_DataSpace metamodel = (Root_meta_pure_metamodel_dataSpace_DataSpace) context.pureModel.getPackageableElement(context.pureModel.buildPackageString(dataSpace._package, dataSpace.name));
+                    Root_meta_pure_metamodel_dataSpace_DataSpace metamodel = dataSpacesIndex.get(context.pureModel.buildPackageString(dataSpace._package, dataSpace.name));
                     MutableMap<String, Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext> dataSpaceExecutionContextIndex = Maps.mutable.empty();
                     metamodel._executionContexts().forEach(dataSpaceExecutionContext -> dataSpaceExecutionContextIndex.put(dataSpaceExecutionContext._name(), dataSpaceExecutionContext));
                     dataSpace.executionContexts.forEach(executionContext ->
@@ -162,7 +166,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                 },
                 (dataSpace, context) ->
                 {
-                    Root_meta_pure_metamodel_dataSpace_DataSpace metamodel = (Root_meta_pure_metamodel_dataSpace_DataSpace) context.pureModel.getPackageableElement(context.pureModel.buildPackageString(dataSpace._package, dataSpace.name));
+                    Root_meta_pure_metamodel_dataSpace_DataSpace metamodel = dataSpacesIndex.get(context.pureModel.buildPackageString(dataSpace._package, dataSpace.name));
 
                     ListIterate.forEach(dataSpace.executionContexts, executionContext ->
                     {
@@ -417,12 +421,12 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
     private static Store resolveStore(StoreProviderPointer storeProviderPointer, CompileContext context)
     {
         String packageAddress = storeProviderPointer.path;
-        PackageableElement packageableElement = context.pureModel.getPackageableElement_safe(packageAddress);
-        if (packageableElement == null)
+        if (!DataSpaceCompilerExtension.dataSpacesIndex.containsKey(packageAddress))
         {
             throw new EngineException("Dataspace " + packageAddress + " cannot be found.", storeProviderPointer.sourceInformation, EngineErrorType.COMPILATION);
         }
-        Root_meta_pure_metamodel_dataSpace_DataSpace dataspace = (Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement;
+        Root_meta_pure_metamodel_dataSpace_DataSpace dataspace =
+                DataSpaceCompilerExtension.dataSpacesIndex.get(packageAddress);
         ImmutableList<Store> stores = HelperMappingBuilder.getStoresFromMappingIgnoringIncludedMappings(dataspace._defaultExecutionContext()._mapping(),context);
         String dataSpacePath = getElementFullPath(dataspace, context.pureModel.getExecutionSupport());
         String mappingPath = getElementFullPath(dataspace._defaultExecutionContext()._mapping(), context.pureModel.getExecutionSupport());
@@ -455,17 +459,14 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                 && ((DataElementReference) embeddedData).dataElement.type.equals(PackageableElementType.DATASPACE))
         {
             DataElementReference data = (DataElementReference) embeddedData;
-            String dataElementPath = data.dataElement.path;
-            PackageableElement packageableElement = compileContext.pureModel.getPackageableElement_safe(dataElementPath);
-            if (packageableElement != null)
+            if (DataSpaceCompilerExtension.dataSpacesIndex.containsKey(data.dataElement.path))
             {
-                Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace = (Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement;
                 return ((Root_meta_pure_data_DataElementReference) Optional
-                        .ofNullable(dataSpace._defaultExecutionContext()._testData())
-                        .orElseThrow(() -> new EngineException("Dataspace " + dataElementPath + " does not have test data in its default execution context.", data.sourceInformation, EngineErrorType.COMPILATION))
+                        .ofNullable(DataSpaceCompilerExtension.dataSpacesIndex.get(data.dataElement.path)._defaultExecutionContext()._testData())
+                        .orElseThrow(() -> new EngineException("Dataspace " + data.dataElement.path + " does not have test data in its default execution context.", data.sourceInformation, EngineErrorType.COMPILATION))
                 )._dataElement()._data();
             }
-            throw new EngineException("Dataspace " + dataElementPath + " cannot be found.", data.sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("Dataspace " + data.dataElement.path + " cannot be found.", data.sourceInformation, EngineErrorType.COMPILATION);
         }
         return null;
     }

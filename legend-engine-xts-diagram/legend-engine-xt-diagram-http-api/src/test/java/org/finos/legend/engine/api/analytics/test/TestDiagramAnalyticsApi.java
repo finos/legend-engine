@@ -42,7 +42,7 @@ public class TestDiagramAnalyticsApi
         {
             Response response = api.analyzeDiagramModelCoverage(new DiagramModelCoverageAnalysisInput("vX_X_X", "model::UnknownDiagram", PureModelContextData.newPureModelContextData(null, null, Lists.immutable.empty())), true, null);
         });
-        Assert.assertEquals("Can't find diagram 'model::UnknownDiagram'", exception.getMessage());
+        Assert.assertEquals(exception.getMessage(), "Can't find diagram 'model::UnknownDiagram'");
     }
 
     @Test

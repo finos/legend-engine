@@ -31,7 +31,7 @@ public class HelperDataQualityBuilder
 
     public static Root_meta_external_dataquality_DataQuality<Object> getDataQuality(String fullPath, SourceInformation sourceInformation, CompileContext context)
     {
-        Root_meta_external_dataquality_DataQuality<Object> dataQuality = (Root_meta_external_dataquality_DataQuality<Object>) context.pureModel.getPackageableElement_safe(fullPath);
+        Root_meta_external_dataquality_DataQuality<Object> dataQuality = DataQualityCompilerExtension.dataQualityIndex.get(fullPath);
         Assert.assertTrue(dataQuality != null, () -> "Can't find dataquality '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return dataQuality;
     }
