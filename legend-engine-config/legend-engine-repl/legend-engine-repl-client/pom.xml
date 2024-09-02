@@ -85,6 +85,14 @@
         </dependency>
         <!-- Pure Plan Generation / Execution -->
 
+        <!-- PCT -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-javaPlatformBinding-PCT</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- PCT -->
+
         <!-- Extensions (use by Ext) -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

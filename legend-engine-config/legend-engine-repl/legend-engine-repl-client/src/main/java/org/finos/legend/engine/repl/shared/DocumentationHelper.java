@@ -16,14 +16,24 @@ package org.finos.legend.engine.repl.shared;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.block.function.Function0;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.impl.tuple.Tuples;
+import org.eclipse.collections.impl.utility.ArrayIterate;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.eclipse.collections.impl.utility.MapIterate;
 import org.finos.legend.engine.repl.client.Client;
+import org.finos.legend.pure.m3.pct.aggregate.model.Documentation;
 import org.finos.legend.pure.m3.pct.aggregate.model.FunctionDocumentation;
-import org.finos.legend.pure.m3.pct.functions.model.Signature;
+import org.finos.legend.pure.m3.pct.functions.model.FunctionDefinition;
+import org.finos.legend.pure.m3.pct.reports.model.Adapter;
+import org.finos.legend.pure.m3.pct.reports.model.AdapterKey;
+import org.finos.legend.pure.m3.pct.reports.model.TestInfo;
 
-import static org.finos.legend.engine.repl.shared.REPLHelper.ansiDim;
-import static org.finos.legend.engine.repl.shared.REPLHelper.ansiGreen;
+import java.util.Objects;
+
+import static org.finos.legend.engine.repl.shared.REPLHelper.*;
 
 public class DocumentationHelper
 {
@@ -37,51 +47,73 @@ public class DocumentationHelper
         MODULE_URLS.put("relation", "https://github.com/finos/legend-engine/tree/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-functions-relation-pure/src/main/resources");
     }
 
-    private static final int ANSI_ATTR_WIDTH = 20;
+    private static final int ANSI_ATTR_WIDTH = 8;
 
-    public static String generateANSIFunctionDocumentation(FunctionDocumentation functionDocumentation)
+    public static String generateANSIFunctionDocumentation(FunctionDocumentation functionDocumentation, MutableList<AdapterKey> adapterKeys)
     {
         StringBuilder builder = new StringBuilder();
-        builder.append(ansiAttr("function")).append(ansiGreen(functionDocumentation.reportScope._package + "::" + functionDocumentation.functionDefinition.name + "()")).append("\n");
-        builder.append(ansiAttr("  [src]")).append(getFunctionSourceUrl(functionDocumentation)).append("\n");
-        builder.append("\n");
-        for (int i = 0; i < functionDocumentation.functionDefinition.signatures.size(); i++)
+        FunctionDefinition definition = functionDocumentation.functionDefinition;
+        String name = definition.name;
+        String path = definition._package + "::" + name;
+        String src = MODULE_URLS.get(functionDocumentation.reportScope.module) + definition.sourceId;
+        String grouping = definition.sourceId.substring(functionDocumentation.reportScope.filePath.length(), definition.sourceId.lastIndexOf("/"));
+        // NOTE: make assumption that each function has doc/usage on exactly one of the signatures
+        String syntax = ListIterate.detectOptional(definition.signatures, signature -> signature.grammarCharacter != null).map(s -> s.grammarCharacter).orElse(null);
+        String doc = ListIterate.detectOptional(definition.signatures, signature -> signature.documentation != null).map(s -> s.documentation).orElse(null);
+        String usage = ListIterate.detectOptional(definition.signatures, signature -> signature.grammarDoc != null).map(s -> s.grammarDoc).orElse(null);
+
+        Lists.mutable.with(syntax != null ? ansiGreen(syntax) : null)
+                .with(name)
+                .withAll(ListIterate.collect(definition.signatures, s -> s.simple.substring(definition._package.length() + 2)))
+                .select(Objects::nonNull)
+                .forEachWithIndex((value, idx) -> builder.append(ansiAttr(idx == 0 ? "function" : null)).append(value).append("\n"));
+        builder.append(ansiAttr("path")).append(path).append("\n");
+        builder.append(ansiAttr("grouping")).append("(" + functionDocumentation.reportScope.module + ") " + grouping).append("\n");
+        builder.append(ansiAttr("src")).append(src).append("\n");
+        if (doc != null)
         {
-            Signature signature = functionDocumentation.functionDefinition.signatures.get(i);
-            builder.append(ansiGreen(ansiAttr("#[" + (i + 1) + "]")));
-            if (signature.grammarCharacter != null)
-            {
-                builder.append(ansiGreen(signature.grammarCharacter));
-                builder.append("\n").append(ansiAttr(""));
-            }
-            builder.append(ansiGreen(signature.simple)).append("\n");
-            builder.append(ansiAttr("  [id]")).append(ansiDim(signature.id));
-            if (signature.documentation != null)
-            {
-                builder.append("\n");
-                builder.append(ansiAttr("  [doc]")).append(signature.documentation);
-            }
-            if (signature.grammarDoc != null)
-            {
-                builder.append("\n");
-                builder.append(ansiAttr("  [usage]")).append(signature.grammarDoc);
-            }
-            if (i != functionDocumentation.functionDefinition.signatures.size() - 1)
-            {
-                builder.append("\n");
-            }
+            builder.append(ansiAttr("doc")).append(ArrayIterate.makeString(wrap(doc).split("\n"), "\n" + ansiAttr(null))).append("\n");
         }
+        if (usage != null)
+        {
+            builder.append(ansiAttr("usage")).append(usage).append("\n");
+        }
+
+        // compatibility
+        MutableMap<String, String> matrix = MapIterate.collect(functionDocumentation.functionTestResults, (adapterKey, testResults) ->
+        {
+            String key = adapterKey.adapter.group + (adapterKey.adapter.group.isEmpty() ? "" : "/") + adapterKey.adapter.name;
+            MutableList<TestInfo> tests = Lists.mutable.withAll(testResults.tests);
+            String value;
+            if (tests.isEmpty())
+            {
+                value = ansiDim("∅");
+            }
+            else
+            {
+                int passedCount = tests.select(t -> t.success).size();
+                value = passedCount + "/" + tests.size();
+                value = passedCount == 0 ? ansiRed(value) : passedCount == tests.size() ? ansiGreen(value) : ansiYellow(value);
+            }
+            return Tuples.pair(key, value);
+        });
+        // NOTE: here we sort the adapter naively, and it achieves the desired order anyway,
+        // but we should consider a more methodical/intentional sort: e.g. native goes first, followed by platforms and stores
+        MutableList<String> adapters = adapterKeys.collect(adapterKey -> adapterKey.adapter.group + (adapterKey.adapter.group.isEmpty() ? "" : "/") + adapterKey.adapter.name).toSortedList();
+        int maxKeyLength = adapters.collect(String::length).max();
+
+        builder.append("\n").append(StringUtils.rightPad("compatibility", maxKeyLength + 2)).append(" :").append("\n");
+        builder.append(adapters.collect(adapter -> StringUtils.rightPad("  " + adapter, maxKeyLength + 2) + " : " + matrix.getOrDefault(adapter, "∅")).makeString("\n"));
         return builder.toString();
     }
 
     private static String ansiAttr(String attr)
     {
-        return StringUtils.rightPad(attr, ANSI_ATTR_WIDTH);
-    }
-
-    private static String getFunctionSourceUrl(FunctionDocumentation functionDocumentation)
-    {
-        return MODULE_URLS.get(functionDocumentation.reportScope.module) + functionDocumentation.functionDefinition.sourceId;
+        if (attr == null)
+        {
+            return StringUtils.rightPad("", ANSI_ATTR_WIDTH + 3);
+        }
+        return StringUtils.rightPad(attr, ANSI_ATTR_WIDTH) + " : ";
     }
 
     public abstract static class Walkthrough

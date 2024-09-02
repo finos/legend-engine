@@ -302,7 +302,7 @@ public class DataCubeWalkthrough implements Command
                                 "usages for 'filter', use the following command:"));
                         this.printCommand("doc meta::pure::functions::relation::filter");
                         this.println(ansiDim(printRule(null)));
-                        this.println(DocumentationHelper.generateANSIFunctionDocumentation(this.client.getFunctionDocumentation("meta::pure::functions::relation::filter")));
+                        this.println(DocumentationHelper.generateANSIFunctionDocumentation(this.client.getFunctionDocumentation("meta::pure::functions::relation::filter"), this.client.getDocumentationAdapterKeys()));
                         this.client.addCommandToHistory("doc meta::pure::functions::relation::filter");
                         this.println(ansiDim(printRule(null)));
                         this.println("");

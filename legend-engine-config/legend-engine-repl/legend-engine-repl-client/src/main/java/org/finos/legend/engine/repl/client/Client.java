@@ -39,6 +39,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.pure.m3.pct.aggregate.generation.DocumentationGeneration;
 import org.finos.legend.pure.m3.pct.aggregate.model.Documentation;
 import org.finos.legend.pure.m3.pct.aggregate.model.FunctionDocumentation;
+import org.finos.legend.pure.m3.pct.reports.model.AdapterKey;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
@@ -326,6 +327,11 @@ public class Client
         {
             // ignore
         }
+    }
+
+    public MutableList<AdapterKey> getDocumentationAdapterKeys()
+    {
+        return Lists.mutable.withAll(this.documentation.adapters);
     }
 
     public List<String> getDocumentedFunctions()
