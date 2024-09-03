@@ -40,6 +40,7 @@ public class DuckDBDriver extends DriverWrapper
         duckDBProperties.remove("POOL_NAME_KEY");
         duckDBProperties.remove("AUTHENTICATION_STRATEGY_KEY");
         duckDBProperties.remove("legend_duckdb_path");
+        duckDBProperties.remove("connectionInitSql");
         return duckDBProperties;
     }
 }

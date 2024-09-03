@@ -40,6 +40,7 @@ public class RelationalDatabaseConnection extends DatabaseConnection
         this.datasourceSpecification = datasourceSpecification;
         this.authenticationStrategy = authenticationStrategy;
         this.databaseType = databaseType;
+        this.type = databaseType;
     }
 
     @Override

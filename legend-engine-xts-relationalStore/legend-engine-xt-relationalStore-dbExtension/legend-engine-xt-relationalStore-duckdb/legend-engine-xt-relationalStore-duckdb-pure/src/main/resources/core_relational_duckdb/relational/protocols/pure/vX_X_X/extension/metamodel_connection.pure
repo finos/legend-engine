@@ -16,3 +16,17 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::a
 {
     path:String[0..1];
 }
+
+Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::postprocessor::IcebergDuckDBPostProcessor extends meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::PostProcessor
+{
+    rootPath: String[1];
+    allowMovedPath: Boolean[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::DuckDBS3AuthenticationStrategy extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy
+{
+    region: String[1];
+    accessKeyId: String[1];
+    secretAccessKeyVaultReference: String[1];
+    endpoint: String[0..1];
+}

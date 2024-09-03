@@ -6,6 +6,9 @@ import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
+import meta::relational::mapping::*;
+import meta::pure::mapping::*;
+import meta::core::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
 
@@ -160,7 +163,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('levenshteinDistance',    $allStates,            ^ToSql(format='levenshtein(%s, %s)')),
     dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='%s', transform={p:String[*] | if($p->size() == 1,|'var_samp('+$p->toOne()+')',|'list_var_samp('+$p->joinStrings('[',',',']')+')'); })),
     dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='%s', transform={p:String[*] | if($p->size() == 1,|'var_pop('+$p->toOne()+')',|'list_var_pop('+$p->joinStrings('[',',',']')+')'); })),
-    dynaFnToSql('variance',               $allStates,            ^ToSql(format='%s', transform={p:String[*]| if ($p->last() == 'true', | 'list_var_samp', |'list_var_pop') + '('+$p->init()->joinStrings('[', ',', ']')+')'}))
+    dynaFnToSql('variance',               $allStates,            ^ToSql(format='%s', transform={p:String[*]| if ($p->last() == 'true', | 'list_var_samp', |'list_var_pop') + '('+$p->init()->joinStrings('[', ',', ']')+')'})),
+    dynaFnToSql('iceberg_scan',           $allStates,            ^ToSql(format='iceberg_scan(%s, allow_moved_paths = %s)'))
   ];
 }
 
@@ -261,3 +265,70 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       'WHERE', 'WINDOW', 'WITH'
     ];
 }
+
+function meta::relational::functions::sqlQueryToString::duckDB::postprocessor::icebergDuckDBPostProcessor(s: meta::pure::alloy::connections::alloy::postprocessor::IcebergDuckDBPostProcessor[1]): meta::relational::runtime::PostProcessorWithParameter[1]
+{
+   ^meta::relational::runtime::PostProcessorWithParameter(
+        postProcessor = meta::relational::functions::sqlQueryToString::duckDB::postprocessor::icebergDuckDBPostProcessor__PostProcessor_1_,
+        parameters = [ $s ]
+    );
+}
+
+function meta::relational::functions::sqlQueryToString::duckDB::postprocessor::icebergDuckDBPostProcessor(): PostProcessor[1]
+{
+   ^PostProcessor
+   (
+      sqlQueryPostProcessorForExecution = {|''},
+      sqlQueryPostProcessorForPlan = meta::relational::functions::sqlQueryToString::duckDB::postprocessor::icebergDuckDBPostProcessor_SQLQuery_1__Mapping_$0_1$__Runtime_1__Database_$0_1$__ExecutionContext_1__PostProcessorParameter_MANY__PostProcessorResult_1_
+   )
+}
+
+function meta::relational::functions::sqlQueryToString::duckDB::postprocessor::icebergDuckDBPostProcessor(sql: SQLQuery[1], m: Mapping[0..1], runtime: Runtime[1], store: Database[0..1], exeCtx: meta::pure::runtime::ExecutionContext[1], params:	meta::relational::runtime::PostProcessorParameter[*]): PostProcessorResult[1]
+{
+   let pp = $params->at(0)->cast(@meta::pure::alloy::connections::alloy::postprocessor::IcebergDuckDBPostProcessor);
+
+    let transformer = {r:RelationalOperationElement[1]| $r->match([ t:meta::relational::metamodel::relation::Table[1] | if(!$t->isTemporaryTable(),
+                                                                                                        {|
+                                                                                                           // todo relation accessor does not support schema yet
+                                                                                                           // let path = $pp.rootPath + ($t.schema.name->filter(x | $x != 'default')->map(x | $x + '/')->defaultIfEmpty('')->toOne() + $t.name);
+                                                                                                           let path = $pp.rootPath + $t.name;
+
+                                                                                                           // todo iceberg_scan does not seem to like aliases when referencing column names
+                                                                                                           // todo hence inner (select * from iceberg_scan(...)) as alias
+                                                                                                           // todo to workaround this
+                                                                                                           let icebergScan = ^DynaFunction(
+                                                                                                                name = 'iceberg_scan',
+                                                                                                                parameters = [
+                                                                                                                    ^Literal(value = $path),
+                                                                                                                    ^Literal(value = $pp.allowMovedPath->defaultIfEmpty(true)->toOne())
+                                                                                                                ]
+                                                                                                            );
+
+                                                                                                           ^SelectSQLQuery(
+                                                                                                                data = ^meta::relational::metamodel::join::RootJoinTreeNode(
+                                                                                                                    alias = ^TableAlias(name = 'iceberg_scan_' + $t.name, relationalElement = $icebergScan)
+                                                                                                                )
+                                                                                                           );
+                                                                                                        },
+                                                                                                        |$t
+                                                                                                      );,
+                                                r:RelationalOperationElement[1] | $r]
+                                            );
+    };
+
+
+  ^PostProcessorResult(query = meta::relational::postProcessor::transform($sql, $transformer)->cast(@SQLQuery));
+}
+
+/*
+Class meta::relational::mapping::PostProcessorResult
+{
+   query : SQLQuery[1];
+   resultPostProcessor : meta::pure::metamodel::function::Function<{Result<Any|*>[1]->Result<Any|*>[1]}>[*];
+   executionNodes: meta::pure::executionPlan::ExecutionNode[*];  //nodes are inserted before the relational execution
+   postExecutionNodes: meta::pure::executionPlan::ExecutionNode[*];  //Nodes are inserted run after the relational execution
+   finallyExecutionNodes:  meta::pure::executionPlan::ExecutionNode[*];
+   templateFunctions : String[*];
+}
+*/
+

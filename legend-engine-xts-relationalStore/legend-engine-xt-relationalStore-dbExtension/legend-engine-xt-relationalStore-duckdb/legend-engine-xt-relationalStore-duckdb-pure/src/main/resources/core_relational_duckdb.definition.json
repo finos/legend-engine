@@ -1,11 +1,14 @@
 {
   "name": "core_relational_duckdb",
-  "pattern": "(meta::relational::functions::sqlQueryToString::duckDB|meta::relational::tests::sqlQueryToString::duckDB|meta::pure::alloy::connections|meta::external::store::relational::runtime|meta::protocols::pure|meta::relational::tests::connEquality)(::.*)?",
+  "pattern": "(meta::relational::functions::sqlQueryToString::duckDB|meta::relational::tests::sqlQueryToString::duckDB|meta::pure::alloy::connections|meta::external::store::relational::runtime|meta::protocols::pure|meta::relational::tests|meta::external::format::relation)(::.*)?",
   "dependencies": [
     "platform",
+    "platform_dsl_store",
     "platform_store_relational",
+    "platform_dsl_mapping",
     "core",
     "core_functions_unclassified",
-    "core_relational"
+    "core_relational",
+    "core_functions_relation"
   ]
 }

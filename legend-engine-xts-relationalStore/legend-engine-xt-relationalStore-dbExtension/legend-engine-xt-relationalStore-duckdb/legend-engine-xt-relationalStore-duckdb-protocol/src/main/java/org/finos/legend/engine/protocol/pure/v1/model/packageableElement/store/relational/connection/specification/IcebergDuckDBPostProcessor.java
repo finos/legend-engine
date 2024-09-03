@@ -10,11 +10,15 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License
+// limitations under the License.
+//
 
-function meta::pure::testConnection::getTestConnectionBridge(type:meta::relational::runtime::DatabaseType[1]):meta::external::store::relational::runtime::RelationalDatabaseConnection[1]
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification;
+
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
+
+public class IcebergDuckDBPostProcessor extends PostProcessor
 {
-    meta::pure::testConnection::getTestConnection($type);
+    public String rootPath;
+    public Boolean allowMovedPath = true;
 }
-
-native function meta::pure::testConnection::getTestConnection(type:meta::relational::runtime::DatabaseType[1]):meta::external::store::relational::runtime::RelationalDatabaseConnection[1];

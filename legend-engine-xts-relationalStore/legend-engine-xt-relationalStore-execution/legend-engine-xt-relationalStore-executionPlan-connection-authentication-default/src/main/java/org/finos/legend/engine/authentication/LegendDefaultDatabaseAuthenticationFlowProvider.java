@@ -33,6 +33,7 @@ import org.finos.legend.engine.authentication.flows.TrinoWithUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.middletier.PostgresStaticWithMiddletierUserNamePasswordAuthenticationFlow;
 import org.finos.legend.engine.authentication.provider.AbstractDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
+import org.finos.legend.engine.plan.execution.stores.relational.authentication.flow.DuckDBS3AuthenticationFlow;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 
@@ -60,7 +61,8 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
                 new RedshiftWithUserPasswordFlow(),
                 new MemSQLStaticWithUserPasswordFlow(),
                 new TrinoWithDelegatedKerberosFlow(),
-                new TrinoWithUserPasswordFlow()
+                new TrinoWithUserPasswordFlow(),
+                new DuckDBS3AuthenticationFlow()
         ).withAll(
                 databaseAuthenticationFlowProviderConfiguration != null ?
                         Lists.mutable.of(

@@ -16,3 +16,17 @@ Class meta::pure::alloy::connections::alloy::specification::DuckDBDatasourceSpec
 {
     <<equality.Key>> path:String[0..1];
 }
+
+Class meta::pure::alloy::connections::alloy::postprocessor::IcebergDuckDBPostProcessor extends meta::pure::alloy::connections::PostProcessor, meta::relational::runtime::PostProcessorParameter
+{
+    <<equality.Key>> rootPath: String[1];
+    <<equality.Key>> allowMovedPath: Boolean[0..1];
+}
+
+Class meta::pure::alloy::connections::alloy::authentication::DuckDBS3AuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
+{
+    <<equality.Key>> region: String[1];
+    <<equality.Key>> accessKeyId: String[1];
+    <<equality.Key>> secretAccessKeyVaultReference: String[1];
+    <<equality.Key>> endpoint: String[0..1];
+}

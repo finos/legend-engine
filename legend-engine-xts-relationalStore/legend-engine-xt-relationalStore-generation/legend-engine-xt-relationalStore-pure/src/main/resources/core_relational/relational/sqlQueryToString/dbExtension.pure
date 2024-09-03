@@ -133,7 +133,8 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
 
    dynaFuncDispatch(dynaFn:DynaFunction[1], sgc:SqlGenerationContext[1])
    {
-     assert(DynaFunctionRegistry->enumValues().name->contains($dynaFn.name), 'dyna function [' + $dynaFn.name + '] is not registered in meta::relational::functions::sqlQueryToString::DynaFunctionRegistry');
+     // todo can we let extension define "private/internal" dyna functions?
+     // assert(DynaFunctionRegistry->enumValues().name->contains($dynaFn.name), 'dyna function [' + $dynaFn.name + '] is not registered in meta::relational::functions::sqlQueryToString::DynaFunctionRegistry');
      $this.dbExtension.dynaFuncDispatch->eval($dynaFn, $sgc);
    }: DynaFunctionToSql[1];
 

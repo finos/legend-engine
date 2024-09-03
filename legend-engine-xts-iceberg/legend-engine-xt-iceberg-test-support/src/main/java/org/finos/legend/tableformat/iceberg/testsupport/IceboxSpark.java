@@ -15,13 +15,26 @@
 
 package org.finos.legend.tableformat.iceberg.testsupport;
 
+import io.minio.ListObjectsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
+import io.minio.Result;
+import io.minio.messages.Item;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.commons.compress.utils.IOUtils;
 import org.apache.iceberg.CatalogProperties;
+import org.apache.iceberg.HasTableOperations;
+import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.Catalog;
+import org.apache.iceberg.catalog.Namespace;
+import org.apache.iceberg.catalog.SupportsNamespaces;
+import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.nessie.NessieCatalog;
 import org.junit.Assert;
 import org.junit.runner.Description;
@@ -34,6 +47,9 @@ import org.testcontainers.utility.MountableFile;
 
 public class IceboxSpark extends FailureDetectingExternalResource implements AutoCloseable
 {
+    public static final String S3_REGION = "us-east-1";
+    public static final String S3_ACCESS_KEY = "admin";
+    public static final String S3_SECRET_KEY = "password";
     private Network network;
     private GenericContainer<?> nessie;
     private GenericContainer<?> minio;
@@ -123,8 +139,8 @@ public class IceboxSpark extends FailureDetectingExternalResource implements Aut
         this.minio = new GenericContainer<>("minio/minio:RELEASE.2023-08-09T23-30-22Z")
                 .withNetwork(this.network)
                 .withNetworkAliases("minio", "warehouse.minio")
-                .withEnv("MINIO_ROOT_USER", "admin")
-                .withEnv("MINIO_ROOT_PASSWORD", "password")
+                .withEnv("MINIO_ROOT_USER", S3_ACCESS_KEY)
+                .withEnv("MINIO_ROOT_PASSWORD", S3_SECRET_KEY)
                 .withEnv("MINIO_DOMAIN", "minio")
                 .withExposedPorts(9000, 9001)
                 .withCommand("server", "/data", "--console-address", ":9001")
@@ -137,9 +153,9 @@ public class IceboxSpark extends FailureDetectingExternalResource implements Aut
     {
         this.sparkIceberg = new GenericContainer<>("tabulario/spark-iceberg:3.4.1_1.3.1")
                 .withNetwork(network)
-                .withEnv("AWS_ACCESS_KEY_ID", "admin")
-                .withEnv("AWS_SECRET_ACCESS_KEY", "password")
-                .withEnv("AWS_REGION", "us-east-1")
+                .withEnv("AWS_ACCESS_KEY_ID", S3_ACCESS_KEY)
+                .withEnv("AWS_SECRET_ACCESS_KEY", S3_SECRET_KEY)
+                .withEnv("AWS_REGION", S3_REGION)
                 .withCopyFileToContainer(MountableFile.forClasspathResource("spark-defaults.conf"), "/opt/spark/conf/spark-defaults.conf")
                 .withExposedPorts(8888, 8080, 10000)
                 .dependsOn(this.minio, this.nessie)
@@ -150,8 +166,8 @@ public class IceboxSpark extends FailureDetectingExternalResource implements Aut
     {
         this.minioClient =
                 MinioClient.builder()
-                        .endpoint("http://" + minio.getHost() + ":" + minio.getMappedPort(9000))
-                        .credentials("admin", "password")
+                        .endpoint(getS3EndPoint())
+                        .credentials(S3_ACCESS_KEY, S3_SECRET_KEY)
                         .build();
 
         this.minioClient.makeBucket(MakeBucketArgs.builder().bucket(this.getBucketName()).build());
@@ -163,13 +179,18 @@ public class IceboxSpark extends FailureDetectingExternalResource implements Aut
         Map<String, String> properties = new HashMap<>();
         properties.put(CatalogProperties.FILE_IO_IMPL, "org.apache.iceberg.aws.s3.S3FileIO");
         properties.put(CatalogProperties.WAREHOUSE_LOCATION, "s3a://" + this.getBucketName() + "/wh");
-        properties.put("s3.endpoint", "http://" + minio.getHost() + ":" + minio.getMappedPort(9000));
-        properties.put("s3.access-key-id", "admin");
-        properties.put("s3.secret-access-key", "password");
+        properties.put("s3.endpoint", getS3EndPoint());
+        properties.put("s3.access-key-id", S3_ACCESS_KEY);
+        properties.put("s3.secret-access-key", S3_SECRET_KEY);
         properties.put("client.credentials-provider", "software.amazon.awssdk.auth.credentials.StaticCredentialsProvider");
-        properties.put("client.region", "us-east-1");
+        properties.put("client.region", S3_REGION);
         properties.put(CatalogProperties.URI, "http://" + nessie.getHost() + ":" + nessie.getMappedPort(19120) + "/api/v1");
         this.catalog.initialize("demo", properties);
+    }
+
+    public String getS3EndPoint()
+    {
+        return "http://" + minio.getHost() + ":" + minio.getMappedPort(9000);
     }
 
     @Override
@@ -194,5 +215,55 @@ public class IceboxSpark extends FailureDetectingExternalResource implements Aut
             throw new RuntimeException("Failed to execute sql: " + sql + ".  Err from process: " + result.getStderr());
         }
         return result.getStdout();
+    }
+
+    public Namespace createNamespace(String namespaceName)
+    {
+        Catalog catalog = this.getCatalog();
+        SupportsNamespaces supportsNamespaces = (SupportsNamespaces) catalog;
+
+        Namespace namespace = Namespace.of(namespaceName);
+        supportsNamespaces.createNamespace(namespace);
+        return namespace;
+    }
+
+    public void printBucketObjects()
+    {
+        Iterable<Result<Item>> listObjects = this.getS3().listObjects(ListObjectsArgs.builder().recursive(true).bucket(this.getBucketName()).build());
+        listObjects.forEach(x ->
+        {
+            try
+            {
+                System.out.println(x.get().objectName());
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    // todo DuckDb as of 1.0.0 needs what is the latest metadata file ib the version-hint.text
+    // todo this was inherited from hadoop
+    // todo this adds other options: https://github.com/duckdb/duckdb_iceberg/pull/63
+    public void writeHintFile(String namespace, String tableName) throws IOException
+    {
+        Table table = this.getCatalog().loadTable(TableIdentifier.of(Namespace.of(namespace), tableName));
+        String taxisMetadata = ((HasTableOperations) table).operations().current().metadataFileLocation();
+        String id = taxisMetadata.substring(taxisMetadata.lastIndexOf("/") + 1, taxisMetadata.indexOf(".metadata.json"));
+
+        try (PrintStream versionHintOutputStream = new PrintStream(table.io().newOutputFile(table.location() + "/metadata/version-hint.text").create()))
+        {
+            versionHintOutputStream.print(id);
+            versionHintOutputStream.flush();
+        }
+
+        try (OutputStream metadataFileAsExpectedByDuckDbOutputStream = table.io().newOutputFile(table.location() + "/metadata/v" + id + ".metadata.json").create();
+             InputStream originalMetadataInputStream = table.io().newInputFile(taxisMetadata).newStream()
+        )
+        {
+            IOUtils.copy(originalMetadataInputStream, metadataFileAsExpectedByDuckDbOutputStream);
+            metadataFileAsExpectedByDuckDbOutputStream.flush();
+        }
     }
 }

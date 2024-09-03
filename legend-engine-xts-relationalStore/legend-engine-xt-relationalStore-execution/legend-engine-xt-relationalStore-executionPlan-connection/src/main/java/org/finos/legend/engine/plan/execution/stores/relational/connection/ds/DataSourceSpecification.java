@@ -223,6 +223,7 @@ public abstract class DataSourceSpecification
             jdbcConfig.addDataSourceProperty("prepStmtCacheSize", 0);
             jdbcConfig.addDataSourceProperty("prepStmtCacheSqlLimit", 0);
             jdbcConfig.addDataSourceProperty("useServerPrepStmts", false);
+            jdbcConfig.setConnectionInitSql(properties.getProperty("connectionInitSql"));
 
             if (this.databaseManager.publishMetrics())
             {

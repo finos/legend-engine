@@ -20,7 +20,6 @@ import io.minio.Result;
 import io.minio.messages.Item;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.Namespace;
-import org.apache.iceberg.catalog.SupportsNamespaces;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.junit.*;
 import org.testcontainers.DockerClientFactory;
@@ -36,12 +35,10 @@ public class IceboxSparkTest
     {
         Assume.assumeTrue(DockerClientFactory.instance().isDockerAvailable());
 
-        Catalog catalog = ICEBOX.getCatalog();
-        SupportsNamespaces supportsNamespaces = (SupportsNamespaces) catalog;
-
         // create namespace (spark won't create it)
-        Namespace namespace = Namespace.of("nyc");
-        supportsNamespaces.createNamespace(namespace);
+        Namespace namespace = ICEBOX.createNamespace("nyc");
+
+        Catalog catalog = ICEBOX.getCatalog();
 
         TableIdentifier table1 = TableIdentifier.of(namespace, "taxis");
         Assert.assertFalse("Table1 should not exist", catalog.tableExists(table1));

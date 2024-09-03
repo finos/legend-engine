@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.authentication;
 
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
@@ -71,7 +72,10 @@ public abstract class AuthenticationStrategy
         connection creation.
      */
 
-    public abstract Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager);
+    public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager)
+    {
+        return Tuples.pair(url, properties);
+    }
 
     protected Connection getConnectionUsingKerberos(DataSource ds, Subject subject)
     {

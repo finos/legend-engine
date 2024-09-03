@@ -14,9 +14,12 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational;
 
+import java.util.List;
+import java.util.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.plan.execution.stores.relational.authentication.strategy.key.DuckDBS3AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
@@ -34,9 +37,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategyVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DuckDBDatasourceSpecification;
-
-import java.util.List;
-import java.util.function.Function;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.authentication.DuckDBS3AuthenticationStrategy;
 
 public class DuckDBConnectionExtension implements RelationalConnectionExtension, StrategicConnectionExtension
 {
@@ -72,13 +73,35 @@ public class DuckDBConnectionExtension implements RelationalConnectionExtension,
     @Override
     public AuthenticationStrategyVisitor<AuthenticationStrategyKey> getExtraAuthenticationKeyGenerators()
     {
-        return authenticationStrategy -> null;
+        return authenticationStrategy ->
+        {
+            if (authenticationStrategy instanceof DuckDBS3AuthenticationStrategy)
+            {
+                DuckDBS3AuthenticationStrategy s3AuthenticationStrategy = (DuckDBS3AuthenticationStrategy) authenticationStrategy;
+                return new DuckDBS3AuthenticationStrategyKey(
+                        s3AuthenticationStrategy.region,
+                        s3AuthenticationStrategy.accessKeyId,
+                        s3AuthenticationStrategy.secretAccessKeyVaultReference,
+                        s3AuthenticationStrategy.endpoint
+                );
+            }
+            return null;
+        };
     }
 
     @Override
     public AuthenticationStrategyVisitor<AuthenticationStrategy> getExtraAuthenticationStrategyTransformGenerators(List<OAuthProfile> oauthProfiles)
     {
-        return authenticationStrategy -> null;
+        return authenticationStrategy ->
+        {
+            if (authenticationStrategy instanceof DuckDBS3AuthenticationStrategy)
+            {
+                DuckDBS3AuthenticationStrategy s3 = (DuckDBS3AuthenticationStrategy) authenticationStrategy;
+                DuckDBS3AuthenticationStrategyKey key = new DuckDBS3AuthenticationStrategyKey(s3.region, s3.accessKeyId, s3.secretAccessKeyVaultReference, s3.endpoint);
+                return new org.finos.legend.engine.plan.execution.stores.relational.authentication.strategy.DuckDBS3AuthenticationStrategy(key);
+            }
+            return null;
+        };
     }
 
     @Override
