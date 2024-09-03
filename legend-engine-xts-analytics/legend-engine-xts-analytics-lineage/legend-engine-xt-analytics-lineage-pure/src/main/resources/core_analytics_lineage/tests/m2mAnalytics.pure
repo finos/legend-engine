@@ -4,7 +4,7 @@ import meta::core::runtime::*;
 import meta::pure::graphFetch::execution::*;
 import meta::analytics::lineage::test::*;
 
-function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::testSimpleM2M() : Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::testSimpleM2M() : Boolean[1]
 {
   let result = computeLineage({| TargetClass.all()->graphFetch(#{TargetClass{value1}}#)->serialize(#{TargetClass{value1}}#)},
                                 mappingForTestPropertyLineage,
@@ -47,25 +47,25 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::tes
   assertSameElements($expectedPropertyTrees, $result.functionTrees->map(ft | $ft->meta::pure::lineage::scanProperties::propertyTree::printTree('')));
 }
 
-Class meta::analytics::lineage::test::TargetClass
+Class meta::analytics::lineage::tests::TargetClass
 {
   value1 : String[1];
 }
 
-Class meta::analytics::lineage::test::SourceClass
+Class meta::analytics::lineage::tests::SourceClass
 {
   src1 : SourceClass1[1];
   src2: String[1];
 }
 
-Class meta::analytics::lineage::test::SourceClass1
+Class meta::analytics::lineage::tests::SourceClass1
 {
   value : String[1];
 }
 
 ###Mapping 
-import meta::analytics::lineage::test::*;
-Mapping meta::analytics::lineage::test::mappingForTestPropertyLineage
+import meta::analytics::lineage::tests::*;
+Mapping meta::analytics::lineage::tests::mappingForTestPropertyLineage
 (
   TargetClass : Pure
   {
