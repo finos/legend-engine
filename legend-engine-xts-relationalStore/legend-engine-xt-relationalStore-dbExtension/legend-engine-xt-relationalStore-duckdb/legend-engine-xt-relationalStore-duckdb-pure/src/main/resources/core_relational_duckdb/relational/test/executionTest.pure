@@ -48,8 +48,29 @@ function <<test.Test>> meta::relational::tests::exec::testS3Execution() : Boolea
 
     let resultJson = meta::legend::executeLegendQuery($func, [], meta::relational::extension::relationalExtensions());
 
-    assertEquals('', $resultJson);
+    let result = meta::protocols::pure::vX_X_X::invocation::execution::execute::legendBuildResultFromJSON(
+        $resultJson,
+        @TabularDataSet,
+         meta::relational::tests::exec::EmptyMapping,
+        $runtime,
+        [],
+        meta::relational::extension::relationalExtensions()
+    );
+
+    let values = $result.values->cast(@TabularDataSet)->toOne();
+
+    meta::relational::functions::asserts::assertSameSQL('select "taxis_0".vendor_id as "vendor_id", "taxis_0".trip_id as "trip_id", "taxis_0".store_and_fwd_flag as "store_and_fwd_flag" from (select * from iceberg_scan(\'s3://warehouse/wh/nyc/taxis\', allow_moved_paths = true) as "iceberg_scan_taxis") as "taxis_0"', $result);
+    assertSameElements( [
+        '1|1000371|N',
+        '1|1000374|Y',
+        '2|1000372|N',
+        '2|1000373|N'
+    ], $values.rows->map(r|$r.values->makeString('|')));
 }
+
+###Mapping
+Mapping  meta::relational::tests::exec::EmptyMapping()
+
 
 ###Relational
 Database meta::relational::tests::exec::S3Database
