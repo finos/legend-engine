@@ -36,17 +36,17 @@ public class H2DigestUtil
         sink.executeStatement("CREATE ALIAS " + UdfName + " FOR \"org.finos.legend.engine.persistence.components.relational.h2.H2DigestUtil.MD5\";");
     }
 
-    public static String MD5(String[] columnNameList, String[] columnValueList)
+    public static String MD5(String... columnNameAndValueList)
     {
-        return calculateMD5Digest(generateRowMap(columnNameList, columnValueList));
+        return calculateMD5Digest(generateRowMap(columnNameAndValueList));
     }
 
-    private static Map<String, Object> generateRowMap(String[] columnNameList, String[] columnValueList)
+    private static Map<String, Object> generateRowMap(String[] columnNameAndValueList)
     {
         Map<String, Object> map = new HashMap<>();
-        for (int i = 0; i < columnNameList.length; i++)
+        for (int i = 0; i < columnNameAndValueList.length; i++)
         {
-            map.put(columnNameList[i], columnValueList[i]);
+            map.put(columnNameAndValueList[i], columnNameAndValueList[++i]);
         }
         return map;
     }

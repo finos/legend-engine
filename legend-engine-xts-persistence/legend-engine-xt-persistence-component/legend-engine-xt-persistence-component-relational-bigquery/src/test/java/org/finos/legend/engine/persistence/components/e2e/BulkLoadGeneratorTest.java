@@ -193,16 +193,16 @@ public class BulkLoadGeneratorTest extends BigQueryEndToEndTest
             "AS (\n" +
             "  CAST(value AS STRING)\n" +
             ");\n");
-        runQuery("CREATE FUNCTION demo.stringifyArr(arr1 ARRAY<STRING>, arr2 ARRAY<STRING>)\n" +
+        runQuery("CREATE FUNCTION demo.stringifyArr(...args ARRAY<STRING>)\n" +
             "            RETURNS STRING\n" +
             "            LANGUAGE js AS \"\"\"\n" +
             "            let output = \"\"; \n" +
-            "            for (const [index, element] of arr1.entries()) { output += arr1[index]; output += arr2[index]; }\n" +
+            "            for (const [index, element] of args.entries()) { output += args[index]; }\n" +
             "            return output;\n" +
             "            \"\"\"; \n");
-        runQuery("CREATE FUNCTION demo.LAKEHOUSE_MD5(arr1 ARRAY<STRING>, arr2 ARRAY<STRING>)\n" +
+        runQuery("CREATE FUNCTION demo.LAKEHOUSE_MD5(...args ARRAY<STRING>)\n" +
             "AS (\n" +
-            "  TO_HEX(MD5(demo.stringifyArr(arr1, arr2)))\n" +
+            "  TO_HEX(MD5(demo.stringifyArr(args)))\n" +
             ");\n");
 
         RelationalGenerator generator = RelationalGenerator.builder()
