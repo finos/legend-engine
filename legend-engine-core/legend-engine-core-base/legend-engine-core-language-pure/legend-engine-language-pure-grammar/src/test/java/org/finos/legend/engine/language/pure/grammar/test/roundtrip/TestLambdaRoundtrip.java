@@ -211,12 +211,23 @@ public class TestLambdaRoundtrip
         testLambda("|not(true == false)", "|!(true == false)");
     }
 
+
+
+
     @Test
     public void testLambdaGroupingLeftSide()
     {
         testLambda("|(1+2)->process();","|process(1 + 2)");
     }
 
+    @Test
+    public void testLambdaArrowProcessingOrder()
+    {
+        testLambda("|!(true == false)->makeString()");
+        testLambda("|-1->makeString()");
+        testLambda("|[1, 2, 3]->makeString()");
+        //        testLambda("|[1:1:1]->map(x|$x+1)");
+    }
 
     @Test
     public void testGroup()

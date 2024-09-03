@@ -117,7 +117,7 @@ public class HelperValueSpecificationGrammarComposer
 
         // This is to accommodate for cases where the first parameter is a lambda, such as agg(), col(),
         // it would be wrong to use `->` syntax, e.g. `$x|x.prop1->col()`
-        if ((firstArgument instanceof Lambda) || (firstArgument instanceof AppliedFunction && SPECIAL_INFIX.get(((AppliedFunction) firstArgument).function) != null))
+        if ((firstArgument instanceof Lambda) || (firstArgument instanceof AppliedFunction && !((AppliedFunction) firstArgument).function.equals("minus") && SPECIAL_INFIX.get(((AppliedFunction) firstArgument).function) != null))
         {
             return renderFunctionName(functionName, transformer) + "("
                     + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(2)) : "")
@@ -127,7 +127,7 @@ public class HelperValueSpecificationGrammarComposer
         }
         if (otherArguments.size() == 0)
         {
-            if (firstArgument instanceof AppliedFunction && SPECIAL_INFIX.get(((AppliedFunction) firstArgument).function) != null)
+            if (firstArgument instanceof AppliedFunction && !((AppliedFunction) firstArgument).function.equals("minus") && SPECIAL_INFIX.get(((AppliedFunction) firstArgument).function) != null)
             {
                 return functionName + "(" + firstArgument.accept(transformer) + ")";
             }

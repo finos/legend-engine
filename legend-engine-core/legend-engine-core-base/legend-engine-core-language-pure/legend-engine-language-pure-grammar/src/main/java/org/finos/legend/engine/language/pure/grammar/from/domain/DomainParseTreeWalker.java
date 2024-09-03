@@ -954,39 +954,47 @@ public class DomainParseTreeWalker
         return this.expression(ctx, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
     }
 
-    private ValueSpecification expression(DomainParserGrammar.ExpressionContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
+    private ValueSpecification nonArrowOrEqual(DomainParserGrammar.NonArrowOrEqualExpressionContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
-        ValueSpecification result;
-        List<ValueSpecification> expressions = Lists.mutable.of();
-        List<ValueSpecification> parameters;
         if (ctx.combinedExpression() != null)
         {
-            result = this.combinedExpression(ctx.combinedExpression(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+            return this.combinedExpression(ctx.combinedExpression(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
         }
         else if (ctx.atomicExpression() != null)
         {
-            result = this.atomicExpression(ctx.atomicExpression(), typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+            return this.atomicExpression(ctx.atomicExpression(), typeParametersNames, lambdaContext, space, wrapFlag, addLines);
         }
         else if (ctx.notExpression() != null)
         {
-            result = this.notExpression(ctx.notExpression(), exprName, typeParametersNames, lambdaContext, space, addLines);
+            return this.notExpression(ctx.notExpression(), exprName, typeParametersNames, lambdaContext, space, addLines);
         }
         else if (ctx.signedExpression() != null)
         {
-            result = this.signedExpression(ctx.signedExpression(), exprName, typeParametersNames, lambdaContext, space, addLines);
+            return this.signedExpression(ctx.signedExpression(), exprName, typeParametersNames, lambdaContext, space, addLines);
         }
         else if (ctx.expressionsArray() != null)
         {
+            List<ValueSpecification> expressions = Lists.mutable.of();
             for (DomainParserGrammar.ExpressionContext eCtx : ctx.expressionsArray().expression())
             {
                 expressions.add(this.expression(eCtx, exprName, typeParametersNames, lambdaContext, space, false, addLines));
             }
-            result = this.collect(expressions, walkerSourceInformation.getSourceInformation(ctx));
+            return this.collect(expressions, walkerSourceInformation.getSourceInformation(ctx));
         }
         else
         {
             throw new EngineException(ctx.getText() + " is not supported", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
         }
+
+    }
+
+    private ValueSpecification expression(DomainParserGrammar.ExpressionContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
+    {
+        ValueSpecification result;
+
+        List<ValueSpecification> parameters;
+
+        result = nonArrowOrEqual(ctx.nonArrowOrEqualExpression(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
 
         if (ctx.propertyOrFunctionExpression() != null)
         {
@@ -1178,7 +1186,7 @@ public class DomainParseTreeWalker
 
     private ValueSpecification notExpression(DomainParserGrammar.NotExpressionContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean addLines)
     {
-        ValueSpecification negated = this.expression(ctx.expression(), exprName, typeParametersNames, lambdaContext, space, true, addLines);
+        ValueSpecification negated = this.nonArrowOrEqual(ctx.nonArrowOrEqualExpression(), exprName, typeParametersNames, lambdaContext, space, true, addLines);
         ValueSpecification valueSpecification = this.createAppliedFunction(Lists.mutable.of(negated), "not");
         valueSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         return valueSpecification;
@@ -1190,13 +1198,13 @@ public class DomainParseTreeWalker
         ValueSpecification number;
         if (ctx.MINUS() != null)
         {
-            number = this.expression(ctx.expression(), exprName, typeParametersNames, lambdaContext, space, true, addLines);
+            number = this.nonArrowOrEqual(ctx.nonArrowOrEqualExpression(), exprName, typeParametersNames, lambdaContext, space, true, addLines);
             result = this.createAppliedFunction(Lists.mutable.of(number), "minus");
             result.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.MINUS().getSymbol());
         }
         else
         {
-            number = this.expression(ctx.expression(), exprName, typeParametersNames, lambdaContext, space, true, addLines);
+            number = this.nonArrowOrEqual(ctx.nonArrowOrEqualExpression(), exprName, typeParametersNames, lambdaContext, space, true, addLines);
             result = this.createAppliedFunction(Lists.mutable.of(number), "plus");
             result.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.PLUS().getSymbol());
         }

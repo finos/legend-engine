@@ -12,15 +12,18 @@ identifier:                                     VALID_STRING | STRING
 
 // -------------------------------------- EXPRESSION & VALUE SPECIFICATION --------------------------------------
 
+nonArrowOrEqualExpression :
+                                                (
+                                                    atomicExpression
+                                                    | notExpression
+                                                    | signedExpression
+                                                    | expressionsArray
+                                                    | (PAREN_OPEN combinedExpression PAREN_CLOSE)
+                                                )
+;
+
 expression:                                     (
-                                                    (
-                                                        sliceExpression
-                                                        | atomicExpression
-                                                        | notExpression
-                                                        | signedExpression
-                                                        | expressionsArray
-                                                        | (PAREN_OPEN combinedExpression PAREN_CLOSE)
-                                                    )
+                                                    nonArrowOrEqualExpression
                                                     (
                                                         (propertyOrFunctionExpression)*
                                                         (equalNotEqual)?
@@ -150,11 +153,9 @@ expressionInstanceAtomicRightSide:              combinedExpression | expressionI
 ;
 expressionInstanceParserPropertyAssignment:     identifier (DOT identifier)* PLUS? EQUAL expressionInstanceRightSide
 ;
-sliceExpression:                                BRACKET_OPEN ( (COLON expression) | (expression COLON expression) |  (expression COLON expression COLON expression) ) BRACKET_CLOSE
+notExpression:                                  NOT nonArrowOrEqualExpression
 ;
-notExpression:                                  NOT expression
-;
-signedExpression:                               (MINUS | PLUS) expression
+signedExpression:                               (MINUS | PLUS) nonArrowOrEqualExpression
 ;
 lambdaPipe:                                     PIPE codeBlock
 ;
