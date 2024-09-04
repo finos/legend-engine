@@ -792,6 +792,10 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             {
                 return LazyIterate.collect(((Collection) parameters.get(0)).values, v -> HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, v, this)).makeString(" " + HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function) + " ");
             }
+            else if (!(parameters.get(0) instanceof Collection) && "minus".equals(function))
+            {
+                return "-" + parameters.get(0).accept(this);
+            }
             // for this case, we will render function name 'and()', 'or()', etc. instead of trying to swap out to use infix operators like '&&', '||', etc.
             else if (parameters.size() == 1)
             {
