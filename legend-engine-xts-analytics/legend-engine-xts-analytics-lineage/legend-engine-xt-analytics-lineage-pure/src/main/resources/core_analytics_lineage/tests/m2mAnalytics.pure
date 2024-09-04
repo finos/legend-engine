@@ -2,7 +2,7 @@ import meta::analytics::lineage::*;
 import meta::pure::extension::*;
 import meta::core::runtime::*;
 import meta::pure::graphFetch::execution::*;
-import meta::analytics::lineage::test::*;
+import meta::analytics::lineage::tests::*;
 
 function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::testSimpleM2M() : Boolean[1]
 {
