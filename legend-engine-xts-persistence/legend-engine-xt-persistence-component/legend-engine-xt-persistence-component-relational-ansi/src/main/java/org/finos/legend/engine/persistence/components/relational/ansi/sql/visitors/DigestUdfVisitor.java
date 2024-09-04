@@ -18,6 +18,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataT
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ToArrayFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Udf;
@@ -25,6 +26,7 @@ import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVis
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +54,9 @@ public class DigestUdfVisitor implements LogicalPlanVisitor<DigestUdf>
             }
         }
 
-        return new VisitorResult(udf, columns);
+        ToArrayFunction toArrayFunction = ToArrayFunction.builder().addAllValues(columns).build();
+
+        return new VisitorResult(udf, Arrays.asList(toArrayFunction));
     }
 
     protected Value getColumnValueAsStringType(Value value, FieldType dataType, Map<DataType, String> typeConversionUdfNames)
