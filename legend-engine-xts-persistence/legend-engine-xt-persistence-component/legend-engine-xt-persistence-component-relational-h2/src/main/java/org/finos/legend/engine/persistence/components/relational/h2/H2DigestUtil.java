@@ -36,7 +36,7 @@ public class H2DigestUtil
         sink.executeStatement("CREATE ALIAS " + UdfName + " FOR \"org.finos.legend.engine.persistence.components.relational.h2.H2DigestUtil.MD5\";");
     }
 
-    public static String MD5(String... columnNameAndValueList)
+    public static String MD5(String[] columnNameAndValueList)
     {
         return calculateMD5Digest(generateRowMap(columnNameAndValueList));
     }

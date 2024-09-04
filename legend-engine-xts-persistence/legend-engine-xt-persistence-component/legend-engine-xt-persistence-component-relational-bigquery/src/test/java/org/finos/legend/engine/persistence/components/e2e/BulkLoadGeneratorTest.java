@@ -193,14 +193,14 @@ public class BulkLoadGeneratorTest extends BigQueryEndToEndTest
             "AS (\n" +
             "  CAST(value AS STRING)\n" +
             ");\n");
-        runQuery("CREATE FUNCTION demo.stringifyArr(...args ARRAY<STRING>)\n" +
+        runQuery("CREATE FUNCTION demo.stringifyArr(args ARRAY<STRING>)\n" +
             "            RETURNS STRING\n" +
             "            LANGUAGE js AS \"\"\"\n" +
             "            let output = \"\"; \n" +
             "            for (const [index, element] of args.entries()) { output += args[index]; }\n" +
             "            return output;\n" +
             "            \"\"\"; \n");
-        runQuery("CREATE FUNCTION demo.LAKEHOUSE_MD5(...args ARRAY<STRING>)\n" +
+        runQuery("CREATE FUNCTION demo.LAKEHOUSE_MD5(args ARRAY<STRING>)\n" +
             "AS (\n" +
             "  TO_HEX(MD5(demo.stringifyArr(args)))\n" +
             ");\n");
