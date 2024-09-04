@@ -19,25 +19,22 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::te
 
   let expectedClassNodesId = [
     'Lambda',
-    'meta::analytics::lineage::test::TargetClass',
-    'meta::analytics::lineage::test::SourceClass',
-    'pack_meta::analytics::lineage::test'
+    'meta::analytics::lineage::tests::TargetClass',
+    'meta::analytics::lineage::tests::SourceClass',
+    'pack_meta::analytics::lineage::tests'
   ];
   
   let expectedClassEdgesId = [
-    'Lambda -> meta::analytics::lineage::test::TargetClass',
-    'meta::analytics::lineage::test::TargetClass -> pack_meta::analytics::lineage::test',
-    'meta::analytics::lineage::test::TargetClass -> meta::analytics::lineage::test::SourceClass',
-    'meta::analytics::lineage::test::SourceClass -> pack_meta::analytics::lineage::test'
+    'Lambda -> meta::analytics::lineage::tests::TargetClass',
+    'meta::analytics::lineage::tests::TargetClass -> pack_meta::analytics::lineage::tests',
+    'meta::analytics::lineage::tests::TargetClass -> meta::analytics::lineage::tests::SourceClass',
+    'meta::analytics::lineage::tests::SourceClass -> pack_meta::analytics::lineage::tests'
   ];
 
   let expectedPropertyTrees = [
     ['root\n',
      ' c_TargetClass\n',
      '  p_TargetClass.value1\n']->joinStrings()
-    // ['root\n',
-    //  ' c_TargetClass\n',
-    //  '  p_TargetClass.value1\n']->joinStrings()
   ];
 
   assertSameElements($expectedDatabaseNodesId, $result.databaseLineage.nodes);
