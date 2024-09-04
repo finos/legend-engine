@@ -70,6 +70,7 @@ public class FromJson extends NativeFunction
         this.repository = repository;
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, CoreInstance functionExpressionToUseInStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
     {
@@ -107,18 +108,21 @@ public class FromJson extends NativeFunction
                 return (T) DefaultConstraintHandler.handleConstraints(clazz, value, si, functionExecution, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionToUseInStack, profiler, instantiationContext, executionSupport);
             }
 
+            @Override
             public <T extends Any> T newUnitInstance(CoreInstance propertyType, String unitTypeString, Number unitValue)
             {
                 CoreInstance retrievedUnit = processorSupport.package_getByUserPath(unitTypeString);
                 if (!processorSupport.type_subTypeOf(retrievedUnit, propertyType))
                 {
-                    throw new PureExecutionException("Cannot match unit type: " + unitTypeString + " as subtype of type: " + PackageableElement.getUserPathForPackageableElement(propertyType));
+                    StringBuilder builder = new StringBuilder("Cannot match unit type: ").append(unitTypeString).append(" as subtype of type: ");
+                    PackageableElement.writeUserPathForPackageableElement(builder, propertyType);
+                    throw new PureExecutionException(builder.toString());
                 }
 
                 ListIterable<CoreInstance> params = Lists.immutable.with(
                         ValueSpecificationBootstrap.wrapValueSpecification(retrievedUnit, false, processorSupport),
                         NumericUtilities.toPureNumberValueExpression(unitValue, false, repository, processorSupport));
-                return (T) new NewUnit(functionExecution, repository).execute(params, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionToUseInStack, profiler, instantiationContext, executionSupport, context, processorSupport);
+                return (T) new NewUnit(repository).execute(params, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionToUseInStack, profiler, instantiationContext, executionSupport, context, processorSupport);
             }
         }));
     }

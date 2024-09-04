@@ -16,14 +16,11 @@ package org.finos.legend.pure.runtime.java.extension.external.json.shared;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
-import org.finos.legend.pure.m3.navigation.Instance;
-import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
-import org.finos.legend.pure.m3.navigation.ProcessorSupport;
-import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
-import org.finos.legend.pure.m4.coreinstance.primitive.PrimitiveCoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.shared.conversion.ConversionContext;
 import org.finos.legend.pure.runtime.java.extension.external.shared.conversion.UnitConversion;
 
@@ -37,33 +34,29 @@ public class JsonUnitSerialization<T extends CoreInstance> extends UnitConversio
     @Override
     public Object apply(T pureObject, ConversionContext context)
     {
-        CoreInstance processedPureObject = pureObject;
-        Object value;
-        String typeString;
-        ProcessorSupport processorSupport = context.getProcessorSupport();
-
-        if (null == pureObject.getValueForMetaPropertyToOne("genericType"))
-        {
-            processedPureObject = ValueSpecificationBootstrap.wrapValueSpecification(pureObject, false, context.getProcessorSupport());
-            value = Long.valueOf(processedPureObject.getValueForMetaPropertyToOne("values").getValueForMetaPropertyToOne("values").getName());
-            try
-            {
-                typeString = ((String) pureObject.getClass().getMethod("getFullSystemPath").invoke(pureObject)).substring(6);
-            }
-            catch (Exception e)
-            {
-                throw new PureExecutionException("Cannot find full path name for the designated unit type.");
-            }
-        }
-        else
-        {
-            CoreInstance numericInArray = processedPureObject.getValueForMetaPropertyToOne("values");
-            value = numericInArray instanceof PrimitiveCoreInstance ? ((PrimitiveCoreInstance) numericInArray).getValue() : ((PrimitiveCoreInstance) numericInArray.getValueForMetaPropertyToOne("values")).getValue();
-            typeString = PackageableElement.getUserPathForPackageableElement(Instance.getValueForMetaPropertyToOneResolved(processedPureObject, M3Properties.genericType, M3Properties.rawType, processorSupport));
-        }
-
+        InstanceValue unitInstance = (InstanceValue) pureObject;
         return Maps.mutable.with(
-                this.unitKeyName, Lists.mutable.<Object>with(Maps.mutable.with("unitId", typeString, "exponentValue", 1)),
-                this.valueKeyName, value);
+                UNIT_KEY_NAME, Lists.mutable.<Object>with(Maps.mutable.with(UNIT_ID_KEY_NAME, getUnitId(unitInstance), EXPONENT_VALUE_KEY_NAME, 1)),
+                VALUE_KEY_NAME, getValue(unitInstance));
+    }
+
+    private String getUnitId(InstanceValue unitInstance)
+    {
+        Type type = unitInstance._genericType()._rawType();
+        return PackageableElement.getUserPathForPackageableElement(type);
+    }
+
+    private Number getValue(InstanceValue unitInstance)
+    {
+        Object value = unitInstance._values().getAny();
+        if (value instanceof Number)
+        {
+            return (Number) value;
+        }
+        if (value instanceof InstanceValue)
+        {
+            return (Number) ((InstanceValue) value)._values().getAny();
+        }
+        throw new PureExecutionException("Unexpected unit value: " + value);
     }
 }

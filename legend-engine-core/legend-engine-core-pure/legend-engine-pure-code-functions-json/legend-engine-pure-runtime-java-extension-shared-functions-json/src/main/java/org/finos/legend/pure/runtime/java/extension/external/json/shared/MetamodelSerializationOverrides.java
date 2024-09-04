@@ -15,43 +15,38 @@
 package org.finos.legend.pure.runtime.java.extension.external.json.shared;
 
 import org.eclipse.collections.api.block.predicate.Predicate;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.pure.m3.navigation.M3Paths;
-import org.finos.legend.pure.m3.navigation.M3Properties;
-import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.map.ImmutableMap;
+import org.eclipse.collections.api.set.ImmutableSet;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
+import org.finos.legend.pure.m3.navigation.M3Paths;
+import org.finos.legend.pure.m3.navigation.M3Properties;
+import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.shared.conversion.PropertyConversion;
 
-import java.util.HashMap;
-import java.util.Map;
-
 class MetamodelSerializationOverrides
 {
-    private static final Map<String, ImmutableList<String>> CLASS_PROPERTIES;
-
-    static
-    {
-        CLASS_PROPERTIES = new HashMap<>();
-        CLASS_PROPERTIES.put(M3Paths.Property, Lists.immutable.of(M3Properties.name, M3Properties.aggregation, M3Properties.multiplicity, M3Properties.genericType, M3Properties.stereotypes, M3Properties.taggedValues));
-        CLASS_PROPERTIES.put(M3Paths.GenericType, Lists.immutable.of(M3Properties.typeParameters, M3Properties.rawType, M3Properties.typeArguments));
-        CLASS_PROPERTIES.put(M3Paths.Stereotype, Lists.immutable.of(M3Properties.profile, M3Properties.value));
-        CLASS_PROPERTIES.put(M3Paths.TaggedValue, Lists.immutable.of(M3Properties.tag, M3Properties.value));
-        CLASS_PROPERTIES.put(M3Paths.TypeParameter, Lists.immutable.of(M3Properties.name));
-        CLASS_PROPERTIES.put(M3Paths.Generalization, Lists.immutable.of(M3Properties.general));
-        CLASS_PROPERTIES.put(M3Paths.QualifiedProperty, Lists.immutable.of(M3Properties.name, M3Properties.multiplicity, M3Properties.parameters, M3Properties.genericType, M3Properties.stereotypes, M3Properties.taggedValues));
-        CLASS_PROPERTIES.put(M3Paths.Tag, Lists.immutable.of(M3Properties.profile, M3Properties.value));
-        CLASS_PROPERTIES.put(M3Paths.Association, Lists.immutable.of(M3Properties._package, M3Properties.name, M3Properties.properties, M3Properties.qualifiedProperties, M3Properties.stereotypes, M3Properties.taggedValues));
-        CLASS_PROPERTIES.put(M3Paths.FunctionDefinition, Lists.immutable.of(M3Properties.name));
-        CLASS_PROPERTIES.put(M3Paths.Class, Lists.immutable.of(M3Properties.name, M3Properties.typeParameters, M3Properties.generalizations, M3Properties.properties, M3Properties.qualifiedProperties, M3Properties.stereotypes, M3Properties.taggedValues));
-        CLASS_PROPERTIES.put(M3Paths.Enum, Lists.immutable.of(M3Properties.name));
-        CLASS_PROPERTIES.put(M3Paths.Enumeration, Lists.immutable.of(M3Properties.name, M3Properties._package, M3Properties.values));
-        CLASS_PROPERTIES.put(M3Paths.VariableExpression, Lists.immutable.of(M3Properties.name, M3Properties.genericType, M3Properties.multiplicity));
-    }
+    private static final ImmutableMap<String, ImmutableSet<String>> CLASS_PROPERTIES = Maps.mutable.<String, ImmutableSet<String>>empty()
+            .withKeyValue(M3Paths.Property, Sets.immutable.of(M3Properties.name, M3Properties.aggregation, M3Properties.multiplicity, M3Properties.genericType, M3Properties.stereotypes, M3Properties.taggedValues))
+            .withKeyValue(M3Paths.GenericType, Sets.immutable.of(M3Properties.typeParameters, M3Properties.rawType, M3Properties.typeArguments))
+            .withKeyValue(M3Paths.Stereotype, Sets.immutable.of(M3Properties.profile, M3Properties.value))
+            .withKeyValue(M3Paths.TaggedValue, Sets.immutable.of(M3Properties.tag, M3Properties.value))
+            .withKeyValue(M3Paths.TypeParameter, Sets.immutable.of(M3Properties.name))
+            .withKeyValue(M3Paths.Generalization, Sets.immutable.of(M3Properties.general))
+            .withKeyValue(M3Paths.QualifiedProperty, Sets.immutable.of(M3Properties.name, M3Properties.multiplicity, M3Properties.parameters, M3Properties.genericType, M3Properties.stereotypes, M3Properties.taggedValues))
+            .withKeyValue(M3Paths.Tag, Sets.immutable.of(M3Properties.profile, M3Properties.value))
+            .withKeyValue(M3Paths.Association, Sets.immutable.of(M3Properties._package, M3Properties.name, M3Properties.properties, M3Properties.qualifiedProperties, M3Properties.stereotypes, M3Properties.taggedValues))
+            .withKeyValue(M3Paths.FunctionDefinition, Sets.immutable.of(M3Properties.name))
+            .withKeyValue(M3Paths.Class, Sets.immutable.of(M3Properties.name, M3Properties.typeParameters, M3Properties.generalizations, M3Properties.properties, M3Properties.qualifiedProperties, M3Properties.stereotypes, M3Properties.taggedValues))
+            .withKeyValue(M3Paths.Enum, Sets.immutable.of(M3Properties.name))
+            .withKeyValue(M3Paths.Enumeration, Sets.immutable.of(M3Properties.name, M3Properties._package, M3Properties.values))
+            .withKeyValue(M3Paths.VariableExpression, Sets.immutable.of(M3Properties.name, M3Properties.genericType, M3Properties.multiplicity))
+            .toImmutable();
 
     private MetamodelSerializationOverrides()
     {
@@ -59,18 +54,11 @@ class MetamodelSerializationOverrides
 
     static Predicate<PropertyConversion<?, ?>> computeMetamodelPropertyFilter(String className)
     {
-        final ImmutableList<String> filteredProperties = CLASS_PROPERTIES.get(className);
-        return new Predicate<PropertyConversion<?, ?>>()
-        {
-            @Override
-            public boolean accept(PropertyConversion<?, ?> propertyConversion)
-            {
-                return filteredProperties != null && filteredProperties.contains(propertyConversion.getName());
-            }
-        };
+        ImmutableSet<String> filteredProperties = CLASS_PROPERTIES.get(className);
+        return (filteredProperties == null) ? pc -> true : pc -> filteredProperties.contains(pc.getName());
     }
 
-    static boolean applyMetamodelPropertyFilter(Class classifier)
+    static boolean applyMetamodelPropertyFilter(Class<?> classifier)
     {
         return CLASS_PROPERTIES.containsKey(PackageableElement.getUserPathForPackageableElement(classifier));
     }
