@@ -825,7 +825,7 @@ public class BulkLoadTest
             .digestGenStrategy(UDFBasedDigestGenStrategy.builder()
                 .digestField("digest")
                 .digestUdfName("LAKEHOUSE_UDF")
-                .columnUdfName("COLUMN_STRING_UDF")
+                .columnTransformUdfName("COLUMN_STRING_UDF")
                 .putAllTypeConversionUdfNames(typeConversionUdfs)
                 .addFieldsToExcludeFromDigest(col4.name())
                 .build())
