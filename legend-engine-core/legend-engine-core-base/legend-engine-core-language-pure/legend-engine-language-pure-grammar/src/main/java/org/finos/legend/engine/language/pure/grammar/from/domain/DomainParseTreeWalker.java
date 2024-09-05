@@ -1144,10 +1144,10 @@ public class DomainParseTreeWalker
             {
                 appliedFunction = processBooleanOp(appliedFunction, ctx, ctx.OR(), "or", input, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
             }
-            else
-            {
-                appliedFunction = this.equalNotEqual(ctx.equalNotEqual(), appliedFunction == null ? input : appliedFunction, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
-            }
+//            else
+//            {
+//                appliedFunction = this.equalNotEqual(ctx.equalNotEqual(), appliedFunction == null ? input : appliedFunction, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+//            }
         }
 
         return appliedFunction;
@@ -1167,6 +1167,7 @@ public class DomainParseTreeWalker
         {
             other = this.combinedArithmeticOnly(ctx.combinedArithmeticOnly(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
             AppliedFunction inner = this.createAppliedFunction(Lists.mutable.of(input, other), "equal");
+            inner.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.TEST_NOT_EQUAL().getSymbol());
             result = this.createAppliedFunction(Lists.mutable.of(inner), "not");
             result.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.TEST_NOT_EQUAL().getSymbol());
         }
@@ -1186,7 +1187,7 @@ public class DomainParseTreeWalker
 
     private ValueSpecification notExpression(DomainParserGrammar.NotExpressionContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean addLines)
     {
-        ValueSpecification negated = this.nonArrowOrEqual(ctx.nonArrowOrEqualExpression(), exprName, typeParametersNames, lambdaContext, space, true, addLines);
+        ValueSpecification negated = this.expression(ctx.expression(), exprName, typeParametersNames, lambdaContext, space, true, addLines);
         ValueSpecification valueSpecification = this.createAppliedFunction(Lists.mutable.of(negated), "not");
         valueSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         return valueSpecification;
@@ -1198,13 +1199,13 @@ public class DomainParseTreeWalker
         ValueSpecification number;
         if (ctx.MINUS() != null)
         {
-            number = this.nonArrowOrEqual(ctx.nonArrowOrEqualExpression(), exprName, typeParametersNames, lambdaContext, space, true, addLines);
+            number = this.expression(ctx.expression(), exprName, typeParametersNames, lambdaContext, space, true, addLines);
             result = this.createAppliedFunction(Lists.mutable.of(number), "minus");
             result.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.MINUS().getSymbol());
         }
         else
         {
-            number = this.nonArrowOrEqual(ctx.nonArrowOrEqualExpression(), exprName, typeParametersNames, lambdaContext, space, true, addLines);
+            number = this.expression(ctx.expression(), exprName, typeParametersNames, lambdaContext, space, true, addLines);
             result = this.createAppliedFunction(Lists.mutable.of(number), "plus");
             result.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.PLUS().getSymbol());
         }
