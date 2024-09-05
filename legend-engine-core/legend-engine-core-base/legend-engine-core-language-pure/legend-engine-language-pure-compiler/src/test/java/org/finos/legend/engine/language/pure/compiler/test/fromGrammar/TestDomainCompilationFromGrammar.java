@@ -2322,7 +2322,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   testStrictTime(){\n" +
                 "       $this.time == %10:12:2b;\n" +
                 "   } : Boolean[1];\n" +
-                "}\n", "PARSER error at [5:30]: no viable alternative at input '==%10:12:2b'");
+                "}\n", "PARSER error at [5:30]: Unexpected token 'b'. Valid alternatives: ['&&', '||', '==', '!=', '->', '[', '.', ';', '+', '*', '-', '/', '<', '<=', '>', '>=']");
 
     }
 

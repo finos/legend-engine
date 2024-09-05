@@ -111,7 +111,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderFunctionTestSuites;
-import static org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer.printColSpecArray;
+import static org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer.*;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabSize;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
@@ -778,23 +778,27 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         }
         else if ("not".equals(function))
         {
-            return "!(" + parameters.get(0).accept(this) + ")";
+            if (parameters.get(0) instanceof AppliedFunction && ((AppliedFunction) parameters.get(0)).function.equals("equal"))
+            {
+                return possiblyAddParenthesis("not", ((AppliedFunction) parameters.get(0)).parameters.get(0), this) + " != " + possiblyAddParenthesis("not", ((AppliedFunction) parameters.get(0)).parameters.get(1), this);
+            }
+            return "!" + possiblyAddParenthesis("not", parameters.get(0), this);
         }
         // Special case divide_Decimal_1__Decimal_1__Integer_1__Decimal_1_ so that we don't use infix version
         else if ("divide".equals(function) && parameters.size() == 3)
         {
             return HelperValueSpecificationGrammarComposer.renderFunction(appliedFunction, this);
         }
-        else if (HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function) != null)
+        else if (isInfix(appliedFunction))
         {
             // handle arithmetic operators that we might need to add parenthesis to force precedence
             if (parameters.get(0) instanceof Collection && ("plus".equals(function) || "minus".equals(function) || "times".equals(function) || "divide".equals(function)))
             {
-                return LazyIterate.collect(((Collection) parameters.get(0)).values, v -> HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, v, this)).makeString(" " + HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function) + " ");
+                return LazyIterate.collect(((Collection) parameters.get(0)).values, v -> possiblyAddParenthesis(function, v, this)).makeString(" " + HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function) + " ");
             }
-            else if (!(parameters.get(0) instanceof Collection) && "minus".equals(function))
+            else if ("minus".equals(function))
             {
-                return "-" + parameters.get(0).accept(this);
+                return "-" + possiblyAddParenthesis("minus", parameters.get(0), this);
             }
             // for this case, we will render function name 'and()', 'or()', etc. instead of trying to swap out to use infix operators like '&&', '||', etc.
             else if (parameters.size() == 1)
@@ -805,11 +809,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             boolean toCreateNewLine = this.isRenderingPretty() &&
                     !HelperValueSpecificationGrammarComposer.isPrimitiveValue(parameters.get(0)) &&
                     !HelperValueSpecificationGrammarComposer.isPrimitiveValue(parameters.get(1));
-            return HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, parameters.get(0), this)
+            return possiblyAddParenthesis(function, parameters.get(0), this)
                     + " "
                     + HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function)
                     + (toCreateNewLine ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : " ")
-                    + HelperValueSpecificationGrammarComposer.possiblyAddParenthesis(function, parameters.get(1), this);
+                    + possiblyAddParenthesis(function, parameters.get(1), this);
         }
         else if ("if".equals(function))
         {
@@ -850,7 +854,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         return HelperValueSpecificationGrammarComposer.renderCollection(collection.values, v ->
         {
             String value = ((ValueSpecification) v).accept(this);
-            return v instanceof AppliedFunction && HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(((AppliedFunction) v).function) != null ? "(" + value + ")" : value;
+            return v instanceof AppliedFunction && isInfix((AppliedFunction) v) ? "(" + value + ")" : value;
         }, this);
     }
 

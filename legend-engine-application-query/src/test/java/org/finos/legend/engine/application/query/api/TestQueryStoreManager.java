@@ -542,8 +542,11 @@ public class TestQueryStoreManager
 
         // create in order 1 -> 4 -> 2 -> 3
         queryStoreManager.createQuery(testQuery1, currentUser);
+        Thread.sleep(100);
         queryStoreManager.createQuery(testQuery4, currentUser);
+        Thread.sleep(100);
         queryStoreManager.createQuery(testQuery2, currentUser);
+        Thread.sleep(100);
         queryStoreManager.createQuery(testQuery3, currentUser);
 
         Assert.assertEquals(4, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_CREATE).build(), currentUser).size());

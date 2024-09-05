@@ -207,8 +207,11 @@ public class TestLambdaRoundtrip
     @Test
     public void testLambdaWithNot()
     {
-        testLambda("|!(true == false)");
-        testLambda("|not(true == false)", "|!(true == false)");
+        testLambda("|!(true != false)");
+        testLambda("|true != false");
+        testLambda("|!(true == false)", "|true != false");
+        testLambda("|not(true == false)", "|true != false");
+        testLambda("|not(true != false)", "|!(true != false)");
     }
 
 
@@ -221,12 +224,62 @@ public class TestLambdaRoundtrip
     }
 
     @Test
+    public void testArithmetic()
+    {
+        testLambda("|2 * 4 + 2", "|(2 * 4) + 2");
+        testLambda("|2 + 2 * 4", "|2 + (2 * 4)");
+        testLambda("|2 + 2 / 4", "|2 + (2 / 4)");
+        testLambda("|2 / 4 - 4", "|(2 / 4) - 4");
+    }
+
+    @Test
+    public void testBoolean()
+    {
+        testLambda("|true && false || true", "|(true && false) || true");
+        testLambda("|true || true && false", "|true || (true && false)");
+    }
+
+    @Test
+    public void testEqualAndNotEqual()
+    {
+        testLambda("|true == false && true == false", "|(true == false) && (true == false)");
+        testLambda("|true == false && true == false || false == false", "|((true == false) && (true == false)) || (false == false)");
+        testLambda("|true == false || true == false && false == false", "|(true == false) || ((true == false) && (false == false))");
+        testLambda("|true == !false || !(true == false) && false == false", "|(true == !false) || ((true != false) && (false == false))");
+        testLambda("|not(true != false && true == !false)", "|!((true != false) && (true == !false))");
+        testLambda("|not(true != false && true == !false || !(true && false && true == !false))", "|!(((true != false) && (true == !false)) || !((true && false) && (true == !false)))");
+        testLambda("|true && false == $x->isNumber()","|true && (false == $x->isNumber())");
+        testLambda("|$x->isNumber() && false == $x->isNumber()", "|$x->isNumber() && (false == $x->isNumber())");
+        testLambda("|$x->isNumber() && false == true", "|$x->isNumber() && (false == true)");
+        testLambda("|$this.time == 'www'");
+        testLambda("|$this.time == %10:12:20");
+    }
+
+    @Test
     public void testLambdaArrowProcessingOrder()
     {
-        testLambda("|!(true == false)->makeString()");
-        testLambda("|-1->makeString()");
-        testLambda("|[1, 2, 3]->makeString()");
-        //        testLambda("|[1:1:1]->map(x|$x+1)");
+        // The following expressions may not 'compile' but the precedence needs to be respected.
+        testLambda("|!(true == false)->f()", "|!f(true == false)");
+        testLambda("|(!(true == false))->f()", "|f(true != false)");
+        testLambda("|(true != false)->f()", "|f(true != false)");
+        testLambda("|(!(true != !false))->f()");
+        testLambda("|(!1 > 2)->f()", "|f(!1 > 2)");
+        testLambda("|(!(1 > 2))->f()");
+        testLambda("|(!(1 < 2))->f()");
+        testLambda("|(!true && false)->f()", "|f(!true && false)");
+        testLambda("|!true && false->f()", "|!true && f(false)");
+        testLambda("|-1->f()", "|-f(1)");
+        testLambda("|(-1)->f()");
+        testLambda("|(2 - 1)->f()");
+        testLambda("|-(2 - 1)->f()");
+        testLambda("|(-(2 - 1))->f()");
+        testLambda("|(-(2 * -1))->f()", "|(-(2 * (-1)))->f()");
+        testLambda("|(!true)->f()");
+        testLambda("|!true->f()", "|!f(true)");
+        testLambda("|!$c.salesPerson.lastName->in($names)");
+        testLambda("|(!$c.salesPerson.lastName)->in($names)");
+        testLambda("|(!$x->isNumber())->f()");
+        testLambda("|!$x->isNumber()->f()");
     }
 
     @Test
