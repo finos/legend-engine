@@ -46,7 +46,7 @@ function meta::relational::functions::pureToSqlQuery::calendarAggregations::inse
   let join    = ^Join(name='calendarJoin'   +$nodeId, aliases=[pair($leftAlias,$rightAlias),pair($rightAlias,$leftAlias)],
           operation=[^DynaFunction(name = 'equal',
                                    parameters=[ ^TableAliasColumn(alias=$leftAlias , column=$dateColCursor.select.columns->cast(@TableAliasColumn).column->toOne()),
-                                                ^TableAliasColumn(alias=$rightAlias, column=^Column(name = 'date', type = ^meta::relational::metamodel::datatype::Date()) )
+                                                ^TableAliasColumn(alias=$rightAlias, column=^Column(owner = meta::relational::functions::database::tableReference(CalendarDatabase,'LegendCalendarSchema',$calendarTableName), name = 'date', type = ^meta::relational::metamodel::datatype::Date()) )
                                               ])
                     ]->cast(@Operation)->toOne('First parameter should be one date column.')
     );
@@ -55,7 +55,7 @@ function meta::relational::functions::pureToSqlQuery::calendarAggregations::inse
   let joinEnd = ^Join(name='calendarEndJoin'+$endDate->buildUniqueName(true, $extensions)+$nodeId, aliases=[pair($leftAlias,$rightAlias),pair($rightAlias,$leftAlias)],
           operation=[^DynaFunction(name = 'equal',
                                   parameters=[ $endDate,
-                                               ^TableAliasColumn(alias=$rightAlias, column=^Column(name = 'date', type = ^meta::relational::metamodel::datatype::Date()) )
+                                               ^TableAliasColumn(alias=$rightAlias, column=^Column(owner = meta::relational::functions::database::tableReference(CalendarDatabase,'LegendCalendarSchema',$calendarTableName), name = 'date', type = ^meta::relational::metamodel::datatype::Date()) )
                                              ])
                     ]->cast(@Operation)->toOne('First parameter should be one date column.')
     );
