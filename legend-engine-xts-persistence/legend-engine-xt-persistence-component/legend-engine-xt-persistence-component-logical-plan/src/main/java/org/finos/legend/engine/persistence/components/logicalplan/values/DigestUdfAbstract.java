@@ -42,5 +42,5 @@ public interface DigestUdfAbstract extends Value
 
     Map<DataType, String> typeConversionUdfNames();
 
-    Optional<String> columnUdf();
+    Optional<String> columnTransformationUdfName();
 }

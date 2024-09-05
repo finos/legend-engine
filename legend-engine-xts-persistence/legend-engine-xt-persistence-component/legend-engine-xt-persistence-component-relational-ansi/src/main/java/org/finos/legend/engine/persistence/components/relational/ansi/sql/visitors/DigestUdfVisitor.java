@@ -43,9 +43,9 @@ public class DigestUdfVisitor implements LogicalPlanVisitor<DigestUdf>
         {
             Value columnName = StringValue.of(current.fieldNames().get(i));
             Value columnValue = getColumnValueAsStringType(current.values().get(i), current.fieldTypes().get(i), current.typeConversionUdfNames());
-            if (current.columnUdf().isPresent())
+            if (current.columnTransformationUdfName().isPresent())
             {
-                columns.add(org.finos.legend.engine.persistence.components.logicalplan.values.Udf.builder().udfName(current.columnUdf().get()).addParameters(columnName, columnValue).build());
+                columns.add(org.finos.legend.engine.persistence.components.logicalplan.values.Udf.builder().udfName(current.columnTransformationUdfName().get()).addParameters(columnName, columnValue).build());
             }
             else
             {

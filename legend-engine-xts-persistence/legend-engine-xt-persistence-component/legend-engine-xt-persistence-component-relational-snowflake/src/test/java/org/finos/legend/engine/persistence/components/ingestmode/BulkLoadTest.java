@@ -812,7 +812,7 @@ public class BulkLoadTest
     }
 
     @Test
-    public void testBulkLoadWithDigestAndTypeConversionUdfsAndColumnUdf()
+    public void testBulkLoadWithDigestAndTypeConversionUdfsAndcolumnTransformationUdf()
     {
         Map<DataType, String> typeConversionUdfs = new HashMap<>();
         typeConversionUdfs.put(DataType.INTEGER, "intToString");
@@ -825,7 +825,7 @@ public class BulkLoadTest
             .digestGenStrategy(UDFBasedDigestGenStrategy.builder()
                 .digestField("digest")
                 .digestUdfName("LAKEHOUSE_UDF")
-                .columnTransformUdfName("COLUMN_STRING_UDF")
+                .columnTransformationUdfName("COLUMN_STRING_UDF")
                 .putAllTypeConversionUdfNames(typeConversionUdfs)
                 .addFieldsToExcludeFromDigest(col4.name())
                 .build())

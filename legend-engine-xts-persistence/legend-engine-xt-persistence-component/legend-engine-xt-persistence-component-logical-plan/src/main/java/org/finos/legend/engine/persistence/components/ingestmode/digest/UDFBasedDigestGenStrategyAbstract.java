@@ -39,7 +39,7 @@ public interface UDFBasedDigestGenStrategyAbstract extends DigestGenStrategy
 
     Map<DataType, String> typeConversionUdfNames();
 
-    Optional<String> columnTransformUdfName();
+    Optional<String> columnTransformationUdfName();
 
     @Override
     default <T> T accept(DigestGenStrategyVisitor<T> visitor)

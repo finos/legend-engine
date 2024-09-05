@@ -106,7 +106,7 @@ public class DigestGenerationHandler implements DigestGenStrategyVisitor<Void>
             .addAllValues(filteredStagingFieldValues)
             .addAllFieldTypes(filteredStagingFieldTypes)
             .putAllTypeConversionUdfNames(udfBasedDigestGenStrategy.typeConversionUdfNames())
-            .columnUdf(udfBasedDigestGenStrategy.columnTransformUdfName())
+            .columnTransformationUdfName(udfBasedDigestGenStrategy.columnTransformationUdfName())
             .build();
 
         String digestField = udfBasedDigestGenStrategy.digestField();
