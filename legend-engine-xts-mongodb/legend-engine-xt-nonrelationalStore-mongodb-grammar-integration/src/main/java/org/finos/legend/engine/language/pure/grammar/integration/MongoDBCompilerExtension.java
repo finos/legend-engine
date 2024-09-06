@@ -51,8 +51,6 @@ import java.util.Set;
 
 public class MongoDBCompilerExtension implements IMongoDBStoreCompilerExtension
 {
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(MongoDBCompilerExtension.class);
-
     @Override
     public MutableList<String> group()
     {
