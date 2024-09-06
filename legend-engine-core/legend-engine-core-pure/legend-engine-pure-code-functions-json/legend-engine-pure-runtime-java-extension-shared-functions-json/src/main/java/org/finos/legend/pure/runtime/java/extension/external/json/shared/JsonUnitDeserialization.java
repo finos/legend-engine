@@ -18,7 +18,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Any;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.shared.conversion.ConversionContext;
-import org.finos.legend.pure.runtime.java.extension.external.shared.conversion.ObjectFactory;
 import org.finos.legend.pure.runtime.java.extension.external.shared.conversion.UnitConversion;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -35,46 +34,43 @@ public class JsonUnitDeserialization<T extends Any> extends UnitConversion<Objec
     {
         String unitTypeString;
         Number unitTypeExponent;
-        boolean isComposite;
         JSONArray unitsJsonArray;
         try
         {
-            unitsJsonArray = (JSONArray) ((JSONObject) value).get(this.unitKeyName);
-            unitTypeString = ((JSONObject) unitsJsonArray.get(0)).get("unitId").toString();
-            unitTypeExponent = (Number) ((JSONObject) unitsJsonArray.get(0)).get("exponentValue");
+            unitsJsonArray = (JSONArray) ((JSONObject) value).get(UNIT_KEY_NAME);
+            unitTypeString = ((JSONObject) unitsJsonArray.get(0)).get(UNIT_ID_KEY_NAME).toString();
+            unitTypeExponent = (Number) ((JSONObject) unitsJsonArray.get(0)).get(EXPONENT_VALUE_KEY_NAME);
         }
         catch (Exception e)
         {
-            throw new PureExecutionException("Mal-formatted Json for unit.");
+            throw new PureExecutionException("Mal-formatted Json for unit.", e);
         }
-        isComposite = 1 != unitsJsonArray.size();
-        if (isComposite)
+        if (unitsJsonArray.size() != 1)
         {
             throw new PureExecutionException("Currently composite units are not supported.");
         }
-        if (!Long.valueOf(1).equals(unitTypeExponent))
+        if (unitTypeExponent.intValue() != 1)
         {
-            throw new PureExecutionException("Currently non-one exponent for unit is not supported. Got: " + unitTypeExponent.toString() + ".");
+            throw new PureExecutionException("Currently non-one exponent for unit is not supported. Got: " + unitTypeExponent + ".");
         }
         Number unitValue;
         try
         {
-            unitValue = (Number) ((JSONObject) value).get(this.valueKeyName);
+            unitValue = (Number) ((JSONObject) value).get(VALUE_KEY_NAME);
         }
-        catch (ClassCastException cce)
+        catch (ClassCastException e)
         {
-            throw new PureExecutionException("Value from unitValue field must be of Number type, getting " + ((JSONObject) value).get(this.valueKeyName).getClass().getName() + " type instead.");
+            throw new PureExecutionException("Value from unitValue field must be of Number type, getting " + ((JSONObject) value).get(VALUE_KEY_NAME).getClass().getName() + " type instead.", e);
         }
-        JsonDeserializationContext deserializationContext = (JsonDeserializationContext) context;
-        ObjectFactory objectFactory = deserializationContext.getObjectFactory();
 
+        JsonDeserializationContext deserializationContext = (JsonDeserializationContext) context;
         try
         {
-            return (T) objectFactory.newUnitInstance(this.type, unitTypeString, unitValue);
+            return deserializationContext.getObjectFactory().newUnitInstance(this.type, unitTypeString, unitValue);
         }
         catch (Exception e)
         {
-            throw new PureExecutionException(deserializationContext.getSourceInformation(), "Could not create new instance of " + this.pureTypeAsString());
+            throw new PureExecutionException(deserializationContext.getSourceInformation(), "Could not create new instance of " + this.pureTypeAsString(), e);
         }
     }
 }

@@ -320,7 +320,7 @@ public abstract class AbstractTestToJson extends AbstractPureTestWithCoreCompile
     }
 
     @Test
-    public void testSerializationKilogramTypeAsPackageableElement()
+    public void testSerializationUnitAsType()
     {
         String massDefinition =
                 "Measure pkg::Mass\n" +
@@ -340,6 +340,29 @@ public abstract class AbstractTestToJson extends AbstractPureTestWithCoreCompile
         CoreInstance result = execute("testSerializeKilogramType():Any[*]");
         String json = PrimitiveUtilities.getStringValue(result.getValueForMetaPropertyToOne(M3Properties.values));
         assertJsonEquals("\"pkg::Mass~Kilogram\"", json);
+    }
+
+    @Test
+    public void testSerializationMeasureAsType()
+    {
+        String massDefinition =
+                "Measure pkg::Mass\n" +
+                        "{\n" +
+                        "   *Gram: x -> $x;\n" +
+                        "   Kilogram: x -> $x*1000;\n" +
+                        "   Pound: x -> $x*453.59;\n" +
+                        "}";
+
+        compileTestSource("fromString.pure",
+                "import pkg::*;\n" +
+                        massDefinition +
+                        "function testSerializeKilogramType():Any[*]\n" +
+                        "{\n" +
+                        "   let res = Mass->meta::json::toJsonBeta(^meta::json::JSONSerializationConfig(typeKeyName='__TYPE', serializePackageableElementName=true));\n" +
+                        "}\n");
+        CoreInstance result = execute("testSerializeKilogramType():Any[*]");
+        String json = PrimitiveUtilities.getStringValue(result.getValueForMetaPropertyToOne(M3Properties.values));
+        assertJsonEquals("\"pkg::Mass\"", json);
     }
 
     private void assertJsonEquals(String expectedJson, String actualJson)
