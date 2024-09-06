@@ -25,6 +25,7 @@
     </parent>
 
     <artifactId>legend-engine-repl-app-assembly</artifactId>
+    <name>Legend Engine - REPL - App Assembly</name>
     <packaging>pom</packaging>
 
     <build>

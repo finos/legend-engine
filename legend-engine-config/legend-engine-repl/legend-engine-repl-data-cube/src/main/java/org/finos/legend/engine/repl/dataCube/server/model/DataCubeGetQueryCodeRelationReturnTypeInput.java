@@ -16,7 +16,7 @@ package org.finos.legend.engine.repl.dataCube.server.model;
 
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 
-public class DataCubeQueryTypeaheadInput
+public class DataCubeGetQueryCodeRelationReturnTypeInput
 {
     public String code;
     public ValueSpecification baseQuery;
