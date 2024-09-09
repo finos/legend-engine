@@ -38,19 +38,11 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.proper
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 
-import java.util.Objects;
-
 public class HelperDiagramBuilder
 {
-
-    private static DiagramCompilerExtension getDiagramCompilerExtensionInstance(CompileContext context)
-    {
-        return Objects.requireNonNull(ListIterate.selectInstancesOf(context.getCompilerExtensions().getExtensions(), DiagramCompilerExtension.class).getAny(), "Diagram extension is not in scope");
-    }
-
     public static Root_meta_pure_metamodel_diagram_Diagram getDiagram(String fullPath, SourceInformation sourceInformation, CompileContext context)
     {
-        Root_meta_pure_metamodel_diagram_Diagram diagram = getDiagramCompilerExtensionInstance(context).diagramsIndex.get(fullPath);
+        Root_meta_pure_metamodel_diagram_Diagram diagram = (Root_meta_pure_metamodel_diagram_Diagram) context.pureModel.getPackageableElement_safe(fullPath);
         Assert.assertTrue(diagram != null, () -> "Can't find diagram '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return diagram;
     }

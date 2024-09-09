@@ -41,7 +41,6 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 ")\n" +
                 "\n" +
                 "Mapping test::M1 (\n" +
-                "   include dataspace model::dataSpace\n" +
                 "   test::A[1]: Pure {\n" +
                 "      ~src test::S_A\n" +
                 "      prop1: $src.prop1\n" +
@@ -71,7 +70,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "{\n" +
                 "  class: test::B;\n" +
                 "  url: 'executor:default';\n" +
-                "}\n", "COMPILATION error at [39:12-50]: Dataspace model::nonExistantDataspace cannot be found.");
+                "}\n", "COMPILATION error at [38:12-50]: Dataspace model::nonExistantDataspace cannot be found.");
     }
 
     @Test

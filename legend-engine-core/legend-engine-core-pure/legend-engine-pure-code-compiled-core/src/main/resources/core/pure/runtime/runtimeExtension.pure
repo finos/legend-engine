@@ -30,7 +30,7 @@ Class meta::pure::runtime::PackageableRuntime extends PackageableElement
 
 Class meta::pure::runtime::PackageableConnection extends PackageableElement
 {
-
+   connectionValue: meta::core::runtime::Connection[1];
 }
 
 
