@@ -96,7 +96,6 @@ function <<access.private>>  meta::external::function::activator::snowflakeApp::
 
 function <<access.private>>  meta::external::function::activator::snowflakeApp::generation::pureTypeToSnowflakeTypeMatcher(c:meta::pure::tds::TDSColumn[1]):String[1]
 {
-  println($c,2);
   let tdsTypeToRelationalTypeMap = typeMap();
   if($c.type->isNotEmpty(),
     | $tdsTypeToRelationalTypeMap->get($c.type->toOne())->toOne('Relational type missing for type: '+ $c.type->toOne()->toString()),
