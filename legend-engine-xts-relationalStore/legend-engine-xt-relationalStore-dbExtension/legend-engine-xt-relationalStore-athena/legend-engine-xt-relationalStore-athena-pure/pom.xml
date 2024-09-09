@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-athena</artifactId>
-        <version>4.55.5-SNAPSHOT</version>
+        <version>4.56.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
