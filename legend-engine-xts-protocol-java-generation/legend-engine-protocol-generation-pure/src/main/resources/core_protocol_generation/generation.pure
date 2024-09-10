@@ -421,8 +421,8 @@ function <<access.private>> meta::protocols::generation::java::generateHashCode(
 {
   let properties = $c->hierarchicalProperties();
   let code = if ($properties->isEmpty(),
-    | j_invoke(j_invoke($base,'class',[],javaClass('java.lang.Class')), 'hashCode',[]),
-    | j_invoke(javaClass('java.lang.Objects'), 'hash', $properties->map(p|j_field(j_this($base), $p.name->toOne(), javaObject())))
+    | j_invoke(j_field($base,'class',javaClass('java.lang.Class')), 'hashCode',[]),
+    | j_invoke(javaClass('java.util.Objects'), 'hash', $properties->map(p|j_field(j_this($base), $p.name->toOne(), javaObject())))
   );
 javaMethod('public', javaInt(), 'hashCode', [], j_return($code));
 }
@@ -474,9 +474,9 @@ function <<access.private>> meta::protocols::generation::java::generateEquals(ba
                                                 let eq =if ($p->functionReturnType().rawType->isNotEmpty() && $p->functionReturnType().rawType->toOne()->instanceOf(meta::pure::metamodel::type::PrimitiveType) && $p->functionReturnMultiplicity()->isToOne(),
                                                   |j_eq(
                                                               j_field(j_this($base), $p.name->toOne(), $propertyType),
-                                                              j_field($parameter, $p.name->toOne(), $propertyType)
+                                                              j_field($variable, $p.name->toOne(), $propertyType)
                                                         ),
-                                                  |j_invoke(javaClass('java.util.Objects'),'equals',[j_field(j_this($base), $p.name->toOne(), $propertyType), j_field($parameter, $p.name->toOne(), $propertyType)])
+                                                  |j_invoke(javaClass('java.util.Objects'),'equals',[j_field(j_this($base), $p.name->toOne(), $propertyType), j_field($variable, $p.name->toOne(), $propertyType)])
                                                 );                                                 
                                                if($a->isEmpty(),|$eq, |j_and($eq,$a->toOne()));},
                                           []->cast(@Code)
