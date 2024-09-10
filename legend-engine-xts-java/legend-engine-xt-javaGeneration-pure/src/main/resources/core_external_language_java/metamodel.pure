@@ -150,7 +150,6 @@ Class meta::external::language::java::metamodel::Class extends meta::external::l
    <<equality.Key>> package : meta::external::language::java::metamodel::Package[1];
 
    modifiers : Modifier[*];
-
    interfaces : meta::external::language::java::metamodel::Type[*];
    superType : meta::external::language::java::metamodel::Type[0..1];
 
