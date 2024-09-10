@@ -1149,9 +1149,9 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
                 '            return false;\n'+
                 '        }\n'+
                 '        ClassWithClassProperties that = (ClassWithClassProperties) obj;\n'+
-                '        return Objects.equals(this.others, obj.others) && Objects\n'+
-                '                      .equals(this.other, obj.other) && Objects\n'+
-                '                      .equals(this.maybeOther, obj.maybeOther);\n'+
+                '        return Objects.equals(this.others, that.others) && Objects\n'+
+                '                      .equals(this.other, that.other) && Objects\n'+
+                '                      .equals(this.maybeOther, that.maybeOther);\n'+
                 '    }\n'+
                 '\n'+
                 '    public String toString()\n'+
@@ -1192,7 +1192,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
                 '            return false;\n'+
                 '        }\n'+
                 '        ClassWithCollectionPrimitiveProperties that = (ClassWithCollectionPrimitiveProperties) obj;\n'+
-                '        return Objects.equals(this.myBoolean, obj.myBoolean);\n'+
+                '        return Objects.equals(this.myBoolean, that.myBoolean);\n'+
                 '    }\n'+
                 '\n'+
                 '    public String toString()\n'+
@@ -1229,7 +1229,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
                 '\n'+
                 '    public int hashCode()\n'+
                 '    {\n'+
-                '        return ClassWithNotProperties.class().hashCode();\n'+
+                '        return ClassWithNotProperties.class.hashCode();\n'+
                 '    }\n'+
                 '}', $sources->at(2));
 
@@ -1252,10 +1252,10 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
                 '            return false;\n'+
                 '        }\n'+
                 '        ClassWithPrimitiveProperties that = (ClassWithPrimitiveProperties) obj;\n'+
-                '        return this.myBoolean == obj\n'+
+                '        return this.myBoolean == that\n'+
                 '                   .myBoolean && Objects\n'+
-                '                   .equals(this.otherValue, obj.otherValue) && this\n'+
-                '                   .value == obj\n'+
+                '                   .equals(this.otherValue, that.otherValue) && this\n'+
+                '                   .value == that\n'+
                 '                   .value;\n'+
                 '    }\n'+
                 '\n'+
@@ -1279,6 +1279,8 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
   assertEquals(
                 'package org.finos;\n'+
                 '\n'+
+                'import java.util.Objects;\n'+
+                '\n'+
                 'public class OtherClass\n'+
                 '{\n'+
                 '    public long value;\n'+
@@ -1294,7 +1296,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
                 '            return false;\n'+
                 '        }\n'+
                 '        OtherClass that = (OtherClass) obj;\n'+
-                '        return this.value == obj.value;\n'+
+                '        return this.value == that.value;\n'+
                 '    }\n'+
                 '\n'+
                 '    public String toString()\n'+
@@ -1313,6 +1315,8 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
                 '}', $sources->at(4));
 
   assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import java.util.Objects;\n'+
                 '\n'+
                 'public class SubType extends SuperType\n'+
                 '{\n'+
@@ -1334,7 +1338,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
                 '            return false;\n'+
                 '        }\n'+
                 '        SubType that = (SubType) obj;\n'+
-                '        return this.prop == obj.prop && this.other == obj.other;\n'+
+                '        return this.prop == that.prop && this.other == that.other;\n'+
                 '    }\n'+
                 '\n'+
                 '    public String toString()\n'+
