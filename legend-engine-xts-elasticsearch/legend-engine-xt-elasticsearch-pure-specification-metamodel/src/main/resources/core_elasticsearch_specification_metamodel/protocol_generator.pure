@@ -43,7 +43,8 @@ function meta::external::store::elasticsearch::specification::metamodel::generat
   let context = ^Context(conventions=$conventions,
                          rootPackage=$package,
                          taxonomies = $taxonomies,
-                         visitorByTaxonomy=$visitorByTaxonomy);
+                         visitorByTaxonomy=$visitorByTaxonomy,
+                         configuration = $config);
 
   let exclusions = $config.elementsToBeExcluded->concatenate('meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression');
   let javaClasses = $pack->map(c|generateElasticsearchSpecificationClasses($c, $exclusions, $context));
