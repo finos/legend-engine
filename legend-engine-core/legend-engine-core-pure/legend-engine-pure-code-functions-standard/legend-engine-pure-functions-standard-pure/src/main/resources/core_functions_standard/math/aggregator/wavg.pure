@@ -14,14 +14,22 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>> meta::pure::functions::math::wavg(numbers:Number[*], weights:Number[*]):Float[1]
+function 
+<<PCT.function>> 
+    {
+        doc.doc='Performs weighted average on a given data field with its respective weight field',
+        PCT.grammarDoc='wavg is used by wavg(Number[*], Number[*])'
+    }
+meta::pure::functions::math::wavg(numbers:Number[*], weights:Number[*]):Float[1]
 {
-    if($numbers->isEmpty() || $weights->isEmpty() || $numbers->size() != $weights->size(),
+    if($numbers->isEmpty() || $weights->isEmpty(),
       |fail('Error: Mean of an empty set.');0.0;,
-      | let weightedQuantitySum = $numbers->size()->range()->fold({i, y| $y + toFloat($numbers->at($i) * $weights->at($i))}, 0.0);
-        let weightsSum = $weights->sum();
-        assert($weightsSum != 0.0,|'Weighted Average can\'t be performed as sum of weights equals 0');
-        $weightedQuantitySum/$weightsSum;);
+      | if ($numbers->size() != $weights->size(),
+            |fail('Error: The data and weight column must have the same number of values');0.0;,
+            |let weightedQuantitySum = $numbers->zip($weights)->map(p | $p.first * $p.second)->sum();
+             let weightsSum = $weights->sum();
+             assert($weightsSum != 0.0,|'Weighted Average can\'t be performed as sum of weight column values equal 0');
+             $weightedQuantitySum/$weightsSum;));
 }
 
 function  meta::pure::functions::math::wavg(wavgRows: meta::pure::functions::math::wavgUtility::WavgRowMapper[*]):Float[1]
@@ -69,5 +77,35 @@ function <<PCT.test>> meta::pure::functions::math::tests::wavg::testSimpleGroupB
                   '   3,362.5\n'+
                   '   4,700.0\n'+
                   '   5,350.0\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::wavg::testSimpleGroupByMultipleWavg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  id, grp, name, quantity, weight, weight1
+                  1, 2, A, 200, 0.5, 0.75
+                  2, 1, B, 100, 0.45, 0.35
+                  3, 3, C, 250, 0.25, 0.50
+                  4, 4, D, 700, 1, 1
+                  5, 2, E, 100, 0.5, 0.25
+                  6, 1, F, 500, 0.15, 0.25
+                  7, 3, G, 400, 0.75, 0.50
+                  8, 1, H, 150, 0.4, 0.4
+                  9, 5, I, 350, 1, 1
+                #->groupBy(~grp, ~[wavgCol1 : x | meta::pure::functions::math::wavgUtility::wavgRowMapper($x.quantity, $x.weight) : y | $y->wavg(),
+                                  wavgCol2 : x | meta::pure::functions::math::wavgUtility::wavgRowMapper($x.quantity, $x.weight1) : y | $y->wavg()])
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,wavgCol1,wavgCol2\n'+
+                  '   1,180.0,220.0\n'+
+                  '   2,150.0,175.0\n'+
+                  '   3,362.5,325.0\n'+
+                  '   4,700.0,700.0\n'+
+                  '   5,350.0,350.0\n'+
                   '#', $res->sort(~grp->ascending())->toString());
 }

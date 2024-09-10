@@ -681,4 +681,5 @@ Class meta::relational::tests::model::simple::WeightedTrade
    quantity : Float[1];
    settlementDateTime : DateTime[0..1];
    weight: Float[1];
+   weight2: Float[1];
 }

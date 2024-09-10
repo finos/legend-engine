@@ -106,7 +106,7 @@ Database meta::relational::tests::db
 
     Table interactionTable(ID INT PRIMARY KEY, sourceId INT, targetId INT, time INT, active VARCHAR(1))
     Table tradeTable(ID INT PRIMARY KEY, prodId INT, accountID INT, quantity FLOAT, tradeDate DATE, settlementDateTime TIMESTAMP)
-    Table weightedTradeTable(ID INT PRIMARY KEY, prodId INT, accountID INT, quantity FLOAT, weight FLOAT, tradeDate DATE, settlementDateTime TIMESTAMP)
+    Table weightedTradeTable(ID INT PRIMARY KEY, prodId INT, accountID INT, quantity FLOAT, weight FLOAT, weight2 FLOAT, tradeDate DATE, settlementDateTime TIMESTAMP)
     Table accountTable(ID INT PRIMARY KEY, name VARCHAR(200), createDate DATE)
     Table tradeEventTable(EVENT_ID INT PRIMARY KEY, trade_id INT, eventType VARCHAR(10), eventDate DATE, person_id INT)
     Table orderTable(ID INT PRIMARY KEY, prodId INT, accountID INT, quantity INT, orderDate DATE, settlementDateTime TIMESTAMP)
@@ -710,7 +710,8 @@ Mapping meta::relational::tests::simpleRelationalMapping
                 quantity : [db]weightedTradeTable.quantity,
                 tradeDate : [db]weightedTradeTable.tradeDate,
                 settlementDateTime : [db]weightedTradeTable.settlementDateTime,
-                weight: [db]weightedTradeTable.weight
+                weight: [db]weightedTradeTable.weight,
+                weight2: [db]weightedTradeTable.weight2
              } 
 
    Order : Relational
@@ -1163,16 +1164,16 @@ function meta::relational::tests::createTradeTableAndFillDb(connection : Databas
    executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate) values (11, -3, -4, 5, \'2014-12-05\');', $connection);
 
    executeInDb('Drop table if exists weightedTradeTable;', $connection);
-   executeInDb('Create Table weightedTradeTable(id INT, prodid INT, accountId INT, quantity FLOAT, weight FLOAT, tradeDate DATE, settlementDateTime TIMESTAMP(9));', $connection);
-   executeInDb('insert into weightedTradeTable (id, prodid, accountId, quantity, weight, tradeDate, settlementDateTime) values (1, 1, 1, 25, 0.3, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
-   executeInDb('insert into weightedTradeTable (id, prodid, accountId, quantity, weight, tradeDate, settlementDateTime) values (2, 1, 2, 320, 0.4, \'2014-12-01\',\'2014-12-02 21:00:00\');', $connection);
-   executeInDb('insert into weightedTradeTable (id, prodid, accountId, quantity, weight, tradeDate, settlementDateTime) values (3, 2, 1, 11, 0.3, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
-   executeInDb('insert into weightedTradeTable (id, prodid, accountId, quantity, weight, tradeDate, settlementDateTime) values (4, 2, 2, 23, 0.5,  \'2014-12-02\', \'2014-12-03 21:00:00\');', $connection);
-   executeInDb('insert into weightedTradeTable (id, prodid, accountId, quantity, weight, tradeDate, settlementDateTime) values (5, 2, 1, 32, 0.5, \'2014-12-02\', \'2014-12-03 21:00:00\');', $connection);
-   executeInDb('insert into weightedTradeTable (id, prodid, accountId, quantity, weight, tradeDate, settlementDateTime) values (6, 3, 1, 27, 0.6, \'2014-12-03\', \'2014-12-04 21:00:00\');', $connection);
-   executeInDb('insert into weightedTradeTable (id, prodid, accountId, quantity, weight, tradeDate, settlementDateTime) values (7, 3, 1, 44, 0.4, \'2014-12-03\', \'2014-12-04 15:22:23.123456789\');', $connection);
-   executeInDb('insert into weightedTradeTable (id, prodid, accountId, quantity, weight, tradeDate, settlementDateTime) values (8, 3, 2, 22, 0.35, \'2014-12-04\', \'2014-12-05 21:00:00\');', $connection);
-   executeInDb('insert into weightedTradeTable (id, prodid, accountId, quantity, weight, tradeDate, settlementDateTime) values (9, 3, 2, 45, 0.35, \'2014-12-04\', \'2014-12-05 21:00:00\');', $connection);
+   executeInDb('Create Table weightedTradeTable(id INT, prodid INT, accountId INT, quantity FLOAT, weight FLOAT, weight2 FLOAT, tradeDate DATE, settlementDateTime TIMESTAMP(9));', $connection);
+   executeInDb('insert into weightedTradeTable (id, prodid, accountId, quantity, weight, weight2, tradeDate, settlementDateTime) values (1, 1, 1, 25, 0.3, 0.3, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
+   executeInDb('insert into weightedTradeTable (id, prodid, accountId, quantity, weight, weight2, tradeDate, settlementDateTime) values (2, 1, 2, 320, 0.4, 0.3, \'2014-12-01\',\'2014-12-02 21:00:00\');', $connection);
+   executeInDb('insert into weightedTradeTable (id, prodid, accountId, quantity, weight, weight2, tradeDate, settlementDateTime) values (3, 2, 1, 11, 0.3, 0.4, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
+   executeInDb('insert into weightedTradeTable (id, prodid, accountId, quantity, weight, weight2, tradeDate, settlementDateTime) values (4, 2, 2, 23, 0.5,  0.5, \'2014-12-02\', \'2014-12-03 21:00:00\');', $connection);
+   executeInDb('insert into weightedTradeTable (id, prodid, accountId, quantity, weight, weight2, tradeDate, settlementDateTime) values (5, 2, 1, 32, 0.5, 0.5, \'2014-12-02\', \'2014-12-03 21:00:00\');', $connection);
+   executeInDb('insert into weightedTradeTable (id, prodid, accountId, quantity, weight, weight2, tradeDate, settlementDateTime) values (6, 3, 1, 27, 0.6, 0.35, \'2014-12-03\', \'2014-12-04 21:00:00\');', $connection);
+   executeInDb('insert into weightedTradeTable (id, prodid, accountId, quantity, weight, weight2, tradeDate, settlementDateTime) values (7, 3, 1, 44, 0.4, 0.65, \'2014-12-03\', \'2014-12-04 15:22:23.123456789\');', $connection);
+   executeInDb('insert into weightedTradeTable (id, prodid, accountId, quantity, weight, weight2, tradeDate, settlementDateTime) values (8, 3, 2, 22, 0.35, 0.25, \'2014-12-04\', \'2014-12-05 21:00:00\');', $connection);
+   executeInDb('insert into weightedTradeTable (id, prodid, accountId, quantity, weight, weight2, tradeDate, settlementDateTime) values (9, 3, 2, 45, 0.35, 0.75, \'2014-12-04\', \'2014-12-05 21:00:00\');', $connection);
 
    true;
 }
