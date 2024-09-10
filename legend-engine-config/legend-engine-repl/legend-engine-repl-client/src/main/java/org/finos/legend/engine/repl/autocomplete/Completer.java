@@ -411,7 +411,7 @@ public class Completer
 //                _line <= sourceInformation.endLine &&
 //                (sourceInformation.startColumn - 1) <= _column &&
 //                _column <= sourceInformation.endColumn);
-        return sourceInformation.startLine <= _line &&
+        return sourceInformation != null && sourceInformation.startLine <= _line &&
                 _line <= sourceInformation.endLine &&
                 (sourceInformation.startColumn - 1) <= _column &&
                 _column <= sourceInformation.endColumn;

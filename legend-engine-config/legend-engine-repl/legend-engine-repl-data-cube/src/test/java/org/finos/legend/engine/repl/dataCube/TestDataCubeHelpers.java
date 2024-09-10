@@ -197,7 +197,7 @@ public class TestDataCubeHelpers
     {
         String code = "->extend(~[newCol:c|'ok', colX: c|$c.";
         String expectedResult = "{\"completion\":[{\"completion\":\"FIRSTNAME\",\"display\":\"FIRSTNAME\"}]}";
-        testTypeahead(expectedResult, code, true);
+        testTypeahead(expectedResult, code, "#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->select(~FIRSTNAME)->from(test::test)");
     }
 
     @Test
@@ -205,7 +205,7 @@ public class TestDataCubeHelpers
     {
         String code = "#>{test::TestDatabase.TEST0}#->extend(~[newCol:c|'ok', colX: c|$c.";
         String expectedResult = "{\"completion\":[{\"completion\":\"FIRSTNAME\",\"display\":\"FIRSTNAME\"},{\"completion\":\"LASTNAME\",\"display\":\"LASTNAME\"}]}";
-        testTypeahead(expectedResult, code, false);
+        testTypeahead(expectedResult, code, null);
     }
 
     @Test
@@ -213,14 +213,14 @@ public class TestDataCubeHelpers
     {
         String code = "#>{test::TestDatabase.TEST0}#-->extend(~[newCol:c|'ok', colX: c|$c.";
         String expectedResult = "{\"completion\":[]}";
-        testTypeahead(expectedResult, code, false);
+        testTypeahead(expectedResult, code, null);
     }
 
-    private void testTypeahead(String expectedResult, String code, boolean isPartial)
+    private void testTypeahead(String expectedResult, String code, String baseQueryCode)
     {
         try
         {
-            Assert.assertEquals(expectedResult, objectMapper.writeValueAsString(DataCubeHelpers.getCodeTypeahead(code, isPartial, pureModelContextData, completerExtensions, legendInterface)));
+            Assert.assertEquals(expectedResult, objectMapper.writeValueAsString(DataCubeHelpers.getCodeTypeahead(code, baseQueryCode, pureModelContextData, completerExtensions, legendInterface)));
         }
         catch (IOException e)
         {

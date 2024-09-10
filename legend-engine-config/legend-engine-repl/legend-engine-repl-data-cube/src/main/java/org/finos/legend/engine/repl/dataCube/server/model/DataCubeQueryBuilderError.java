@@ -14,10 +14,19 @@
 
 package org.finos.legend.engine.repl.dataCube.server.model;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
-public class DataCubeQueryTypeaheadInput
+public class DataCubeQueryBuilderError
 {
-    public String code;
-    public ValueSpecification baseQuery;
+    public String type;
+    public String message;
+    public SourceInformation sourceInformation;
+
+    public DataCubeQueryBuilderError(EngineException engineException)
+    {
+        this.type = engineException.getErrorType() != null ? engineException.getErrorType().name() : null;
+        this.message = engineException.getMessage();
+        this.sourceInformation = engineException.getSourceInformation();
+    }
 }
