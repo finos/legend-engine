@@ -54,6 +54,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
+import org.finos.legend.pure.m3.navigation.M3Paths;
 
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -196,7 +197,7 @@ public class Milestoning
             MutableList<Stereotype> stereotypes = Lists.mutable.withAll(originalProperty._stereotypes());
             MutableList<Stereotype> withMilestoningStereotype = stereotypes.with(generatedMilestoningStereotype(context, GeneratedMilestoningStereotype.generatedmilestoningproperty));
 
-            Property<?, ?> edgePointProperty = edgePointProperty(propertyOwner, originalProperty, stereotypes);
+            Property<?, ?> edgePointProperty = edgePointProperty(propertyOwner, originalProperty, stereotypes, context);
             milestoningPropertyTransformation.setEdgePointProperty(edgePointProperty);
 
             MutableList<QualifiedProperty<?>> milestoningQualifiedPropertyWithArg = newSingleDateMilestoningQualifiedPropertyWithArg(context, sourceClass, propertyOwner, originalProperty, returnTypeMilestoningStereotype, withMilestoningStereotype, edgePointProperty);
@@ -214,12 +215,13 @@ public class Milestoning
         return milestoningPropertyTransformation;
     }
 
-    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> edgePointProperty(PropertyOwner owner, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> originalProperty, MutableList<Stereotype> stereotypes)
+    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> edgePointProperty(PropertyOwner owner, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> originalProperty, MutableList<Stereotype> stereotypes, CompileContext context)
     {
         String edgePointPropertyName = MilestoningFunctions.getEdgePointPropertyName(originalProperty._name());
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity multiplicity = new Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl("")
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity multiplicity = new Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl("",null,context.pureModel.getType(M3Paths.Multiplicity))
                 ._lowerBound(originalProperty._multiplicity()._lowerBound())
-                ._upperBound(new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("")._value(-1L));
+                ._upperBound(new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("",null,context.pureModel.getType(M3Paths.MultiplicityValue))._value(-1L));
+
         return newProperty(owner, originalProperty, edgePointPropertyName, multiplicity, stereotypes);
     }
 
