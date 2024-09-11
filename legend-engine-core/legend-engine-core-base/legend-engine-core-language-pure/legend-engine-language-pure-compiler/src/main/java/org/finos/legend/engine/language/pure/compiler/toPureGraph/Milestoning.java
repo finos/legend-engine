@@ -55,6 +55,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.navigation.M3Paths;
+import org.finos.legend.pure.runtime.java.compiled.compiler.Compile;
 
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -125,12 +126,13 @@ public class Milestoning
     private static MutableList<Property> generateMilestoningDateProperties(CompileContext context, MilestoningStereotype milestoningStereotype, Class<Object> owner)
     {
         GenericType dateGenericType = context.pureModel.getGenericType("Date");
-        MutableList<Property> generatedMilestoningDateProperties = Lists.mutable.ofAll(milestoningStereotype.getTemporalDatePropertyNames()).collect(name -> new Root_meta_pure_metamodel_function_property_Property_Impl<>(name)
+        MutableList<Property> generatedMilestoningDateProperties = Lists.mutable.ofAll(milestoningStereotype.getTemporalDatePropertyNames()).collect(name -> new Root_meta_pure_metamodel_function_property_Property_Impl<>(name,null,context.pureModel.getClass("meta::pure::metamodel::function::property::Property"))
                 ._name(name)
                 ._genericType(dateGenericType)
                 ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                         ._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::Property"))
-                        ._typeArguments(Lists.fixedSize.of(owner._classifierGenericType(), dateGenericType)))
+                        ._typeArguments(Lists.fixedSize.of(owner._classifierGenericType(), dateGenericType))
+                        ._multiplicityArgumentsAdd(context.pureModel.getMultiplicity("zeroone")))
                 ._multiplicity(context.pureModel.getMultiplicity("one"))
                 ._stereotypes(Lists.fixedSize.of(generatedMilestoningStereotype(context, GeneratedMilestoningStereotype.generatedmilestoningdateproperty)))
                 ._owner(owner));
@@ -140,12 +142,13 @@ public class Milestoning
     private static Property generateMilestoningRangeProperty(CompileContext context, MilestoningStereotype milestoningStereotype, Class<Object> owner)
     {
         GenericType milestoningRangePropertyGenericType = context.resolveGenericType(milestoningStereotype.getMilestoningPropertyClassName());
-        Property generatedMilestoningRangeProperty = new Root_meta_pure_metamodel_function_property_Property_Impl<>(MilestoningFunctions.MILESTONING)
+        Property generatedMilestoningRangeProperty = new Root_meta_pure_metamodel_function_property_Property_Impl<>(MilestoningFunctions.MILESTONING,null,context.pureModel.getClass("meta::pure::metamodel::function::property::Property"))
                 ._name(MilestoningFunctions.MILESTONING)
                 ._genericType(milestoningRangePropertyGenericType)
                 ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                         ._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::Property"))
-                        ._typeArguments(Lists.fixedSize.of(owner._classifierGenericType(), milestoningRangePropertyGenericType)))
+                        ._typeArguments(Lists.fixedSize.of(owner._classifierGenericType(), milestoningRangePropertyGenericType))
+                        ._multiplicityArgumentsAdd(context.pureModel.getMultiplicity("zeroone")))
                 ._multiplicity(context.pureModel.getMultiplicity("zeroone"))
                 ._stereotypes(Lists.fixedSize.of(generatedMilestoningStereotype(context, GeneratedMilestoningStereotype.generatedmilestoningdateproperty)))
                 ._owner(owner);
@@ -222,7 +225,7 @@ public class Milestoning
                 ._lowerBound(originalProperty._multiplicity()._lowerBound())
                 ._upperBound(new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("",null,context.pureModel.getType(M3Paths.MultiplicityValue))._value(-1L));
 
-        return newProperty(owner, originalProperty, edgePointPropertyName, multiplicity, stereotypes);
+        return newProperty(owner, originalProperty, edgePointPropertyName, multiplicity, stereotypes, context);
     }
 
     private static QualifiedProperty<?> newSingleDateMilestoningQualifiedPropertyNoArg(CompileContext context, Class<?> sourceClass, PropertyOwner propertyOwner, Property originalProperty, MilestoningStereotype returnTypeMilestoningStereotype, MutableList<Stereotype> stereotypes, Property edgePointProperty)
@@ -471,9 +474,9 @@ public class Milestoning
         return generatedMilestoningRangeQualifiedProperty;
     }
 
-    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> newProperty(PropertyOwner owner, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> originalProperty, String name, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity multiplicity, ListIterable<Stereotype> stereotypes)
+    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> newProperty(PropertyOwner owner, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> originalProperty, String name, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity multiplicity, ListIterable<Stereotype> stereotypes, CompileContext context)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> property = newAbstractProperty(owner, originalProperty, name, multiplicity, stereotypes, new Root_meta_pure_metamodel_function_property_Property_Impl(name));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> property = newAbstractProperty(owner, originalProperty, name, multiplicity, stereotypes, new Root_meta_pure_metamodel_function_property_Property_Impl(name,null,context.pureModel.getClass("meta::pure::metamodel::function::property::Property")));
         property._classifierGenericType(originalProperty._classifierGenericType());
         return property;
     }

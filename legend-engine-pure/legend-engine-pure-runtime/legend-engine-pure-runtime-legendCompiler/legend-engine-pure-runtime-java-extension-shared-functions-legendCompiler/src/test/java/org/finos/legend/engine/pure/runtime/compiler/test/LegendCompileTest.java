@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.pure.runtime.compiler.test;
 
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntime;
 import org.junit.Test;
@@ -53,9 +54,12 @@ public abstract class LegendCompileTest
     @Test
     public void testClassPropertyCopy()
     {
-        test("let x = meta::legend::compile('Class l::Firm{employee: l::Person[1];}  Class <<meta::pure::profiles::temporal.processingtemporal>>  l::Person{name:String[1];} ');\n" +
-                        "let p = $x->at(0)->cast(@Class<Any>).properties->at(0)->toOne();\n" +
-                        "let y = ^$p();");
+        runtime.createInMemoryAndCompile(Tuples.pair("prop.pure",  " Class  l::classWithProperty{prop:AbstractProperty<Any>[1];} "));
+
+        test("let x = meta::legend::compile('Class  <<meta::pure::profiles::temporal.processingtemporal>>  l::Firm{employee: l::Person[1];  name: String[1];   loc: String[1];    }  Class <<meta::pure::profiles::temporal.processingtemporal>>  l::Person{name:String[1]; }  ');\n" +
+                         "let y = ^$p();" +
+                        "$x->at(0)->cast(@Class<Any>).properties ->map(p|^l::classWithProperty(  prop=$p));  print($y);\n"
+                        );
     }
 
     @Test
