@@ -19,6 +19,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.dataCube.commands.DataCubeWalkthrough;
 import org.finos.legend.engine.repl.relational.RelationalReplExtension;
@@ -57,7 +58,7 @@ public class TestDataCubeWalkthrough
                 walkthrough.query(DataCubeWalkthrough.DataCubeWalkthrough1.GROUP_BY),
                 walkthrough.query(DataCubeWalkthrough.DataCubeWalkthrough1.SORT),
                 walkthrough.query(DataCubeWalkthrough.DataCubeWalkthrough1.LIMIT)
-        ).forEach(query -> ExecutionHelper.executeCode(query, this.client, (Result res, PureModelContextData pmcd, PureModel pureModel) ->
+        ).forEach(query -> ExecutionHelper.executeCode(query, this.client, (Result res, PureModelContextData pmcd, PureModel pureModel, SingleExecutionPlan plan) ->
         {
             // do nothing
             return null;
