@@ -28,7 +28,7 @@
 
     <properties>
         <skip.yarn>false</skip.yarn>
-        <pure-ide.web-application.version>12.32.0</pure-ide.web-application.version>
+        <pure-ide.web-application.version>${legend.web-application.version}</pure-ide.web-application.version>
         <pure-ide.web-application.url>${npm.registry.url}/@finos/legend-application-pure-ide-deployment/-/legend-application-pure-ide-deployment-${pure-ide.web-application.version}.tgz</pure-ide.web-application.url>
     </properties>
 
