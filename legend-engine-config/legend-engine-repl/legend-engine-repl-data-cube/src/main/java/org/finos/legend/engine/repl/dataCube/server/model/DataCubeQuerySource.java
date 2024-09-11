@@ -26,6 +26,7 @@ import java.util.List;
 public abstract class DataCubeQuerySource
 {
     public String query;
+    public String mapping;
     public String runtime;
     public List<DataCubeQueryColumn> columns;
 }
