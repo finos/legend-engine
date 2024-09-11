@@ -1221,6 +1221,94 @@ function <<test.Test>> meta::protocols::generation::java::tests::jsonParams::tes
                 '}', $sources->at(4));
 }
 
+function <<test.Test>> meta::protocols::generation::java::tests::jsonParams::testJsonSubTypeOnTopType():Boolean[1]
+{
+  let config = ^meta::protocols::generation::java::translation::Configuration(
+    purePackage = 'meta::protocols::generation::java::tests::jsonParams::model',
+    javaPackage  = 'org.finos',
+    json = ^meta::protocols::generation::java::translation::JSONConfiguration(subTypeOnTopType=false)
+  )->meta::json::toJSON();
+
+  let sources = meta::protocols::generation::java::generateProtocolClasses($config, [])
+        ->map(p | $p->meta::external::language::java::metamodel::project::allClasses()
+        ->sortBy(c | $c.simpleName)
+        ->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())));
+
+  assertEquals(6, $sources->size());
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import com.fasterxml.jackson.annotation.JsonProperty;\n'+
+                'import com.fasterxml.jackson.annotation.JsonSubTypes;\n'+
+                '\n'+
+                '@JsonSubTypes({@JsonSubTypes.Type(value=org.finos.SubClassA.class, name="subClassA")})\n'+
+                'public class SubClassA extends TopClass\n'+
+                '{\n'+
+                '    @JsonProperty("my-property")\n'+
+                '    public String myProperty;\n'+
+                '\n'+
+                '    public <T> T accept(TopClassVisitor<T> visitor)\n'+
+                '    {\n'+
+                '        return visitor.visit(this);\n'+
+                '    }\n'+
+                '}', $sources->at(0));
+
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import com.fasterxml.jackson.annotation.JsonSubTypes;\n'+
+                '\n'+
+                '@JsonSubTypes({@JsonSubTypes.Type(value=org.finos.SubClassB.class, name="subB")})\n'+
+                'public class SubClassB extends TopClass\n'+
+                '{\n'+
+                '    public <T> T accept(TopClassVisitor<T> visitor)\n'+
+                '    {\n'+
+                '        return visitor.visit(this);\n'+
+                '    }\n'+
+                '}', $sources->at(1));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import com.fasterxml.jackson.annotation.JsonTypeInfo;\n'+
+                '\n'+
+                '@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, property="_type")\n'+
+                'public abstract class TopClass\n'+
+                '{\n'+
+                '    public abstract <T> T accept(TopClassVisitor<T> visitor);\n'+
+                '}', $sources->at(2));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public interface TopClassVisitor<T>\n'+
+                '{\n'+
+                '    T visit(SubClassA val);\n'+
+                '    T visit(SubClassB val);\n'+
+                '}' , $sources->at(3));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import com.fasterxml.jackson.annotation.JsonProperty;\n'+
+                '\n'+
+                'public enum ZEnum\n'+
+                '{\n'+
+                '    @JsonProperty("my-a")\n'+
+                '    myA,\n'+
+                '\n'+
+                '    myB\n'+
+                '}', $sources->at(4));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import com.fasterxml.jackson.databind.ObjectMapper;\n'+
+                '\n'+
+                'public class __SubTypeRegitration\n'+
+                '{\n'+
+                '    public static void registerSubTypes(ObjectMapper mapper)\n'+
+                '    {\n'+
+                '        mapper.registerSubtypes(SubClassA.class, SubClassB.class);\n'+
+                '    }\n'+
+                '}', $sources->at(5));
+}
 ###Pure
 import meta::protocols::generation::java::tests::objectMethodsImpl::model::*;
 
