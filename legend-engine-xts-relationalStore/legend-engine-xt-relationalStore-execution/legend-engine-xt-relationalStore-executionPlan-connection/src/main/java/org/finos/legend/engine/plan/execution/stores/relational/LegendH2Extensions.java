@@ -22,6 +22,7 @@ import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.h2.tools.SimpleResultSet;
+import org.h2.util.DateTimeUtils;
 import org.h2.value.Value;
 import org.h2.value.ValueArray;
 import org.h2.value.ValueBigint;
@@ -30,6 +31,7 @@ import org.h2.value.ValueDouble;
 import org.h2.value.ValueInteger;
 import org.h2.value.ValueNull;
 import org.h2.value.ValueReal;
+import org.h2.value.ValueTimestamp;
 import org.h2.value.ValueVarchar;
 
 import java.math.BigDecimal;
@@ -37,6 +39,10 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Types;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -330,5 +336,20 @@ public class LegendH2Extensions
         }
 
         return ValueDouble.get(new JaroWinklerSimilarity().apply(string1.getString(), string2.getString()));
+    }
+
+    public static Value legend_h2_extension_convertTimeZone(Value string1, Value string2)
+    {
+        if (string1 == ValueNull.INSTANCE || string2 == ValueNull.INSTANCE)
+        {
+            return ValueNull.INSTANCE;
+        }
+        String targetTimezone =  string2.getString();
+        LocalDateTime localDateTime = LocalDateTime.parse(((ValueTimestamp) string1).getISOString());
+        ZonedDateTime  utcTime = localDateTime.atZone(ZoneId.of("UTC"));
+        ZonedDateTime targetTime = utcTime.withZoneSameInstant(ZoneId.of(targetTimezone));
+        LocalTime time = targetTime.toLocalTime();
+       return DateTimeUtils.parseTimestamp(targetTime.toLocalDateTime().toString(),null,false);
+
     }
 }

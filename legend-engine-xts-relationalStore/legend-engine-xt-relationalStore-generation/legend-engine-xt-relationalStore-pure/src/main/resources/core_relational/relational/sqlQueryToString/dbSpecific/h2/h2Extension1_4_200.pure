@@ -139,8 +139,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampH2()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
-    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
+    dynaFnToSql('convertTimeZone',        $allStates,         ^ToSql(format='%s', transform={p:String[3] | $p->transformConvertTimeZone()}))
+
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::transformConvertTimeZone(params:String[3]):String[1]
+{
+  let unWrappedfmt =  $params->at(2)->substring(1, $params->at(2)->length()-1);
+  assert($unWrappedfmt->validateDateTimeFormat(),'Found an invalid date format');
+  let formatpairs = meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeParts();
+  let datefmt = $formatpairs->fold( {sub, date|  $date->toOne()->replace($sub.first,$sub.second)},$params->at(2));
+  format('TO_CHAR(legend_h2_extension_convertTimeZone(%s,%s),%s)',[$params->at(0),$params->at(1),$datefmt]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processUpsertSQLQueryForH2(upsertQuery: UpsertSQLQuery[1], sgc: SqlGenerationContext[1]): String[1]
