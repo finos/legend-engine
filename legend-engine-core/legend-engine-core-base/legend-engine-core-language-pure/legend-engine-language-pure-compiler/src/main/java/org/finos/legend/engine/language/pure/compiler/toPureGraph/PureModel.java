@@ -19,7 +19,6 @@ import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
-import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -280,7 +279,7 @@ public class PureModel implements IPureModel
                 MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> sectionIndices = classToElements.removeAll(SectionIndex.class);
                 sectionIndices.forEach(sectionIndex -> ((SectionIndex) sectionIndex).sections.forEach(section -> section.elements.forEach(elementPath -> this.sectionsIndex.putIfAbsent(elementPath, section))));
                 this.maybeParallel(Stream.concat(sectionIndices.stream(), classToElements.removeAll(Profile.class).stream()))
-                        .forEach(handleEngineExceptions(this::processElementFirstPass));
+                        .forEach(handleEngineExceptions(this::processFirstPass));
 
                 MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, Collection<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>>> dependencyGraph = Maps.mutable.empty();
                 dependencyGraph.put(Class.class, Lists.fixedSize.with(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure.class));
@@ -297,7 +296,7 @@ public class PureModel implements IPureModel
                 MutableSet<MutableSet<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>>> disjointDependencyGraphs = dependencyManagement.getDisjointDependencyGraphs();
                 this.maybeParallel(disjointDependencyGraphs.stream()).forEach(disjointDependencyGraph ->
                 {
-                    processPass("firstPass", classToElements, dependentToDependencies, handleEngineExceptions(this::processElementFirstPass), disjointDependencyGraph);
+                    processPass("firstPass", classToElements, dependentToDependencies, handleEngineExceptions(this::processFirstPass), disjointDependencyGraph);
                     processPass("secondPass", classToElements, dependentToDependencies, handleEngineExceptions(this::processSecondPass), disjointDependencyGraph);
                     processPass("thirdPass", classToElements, dependentToDependencies, handleEngineExceptions(this::processThirdPass), disjointDependencyGraph);
                     processPass("fourthPass", classToElements, dependentToDependencies, handleEngineExceptions(this::processFourthPass), disjointDependencyGraph);
@@ -584,17 +583,6 @@ public class PureModel implements IPureModel
                 throw new RuntimeException(cause);
             }
         }
-    }
-
-    private void processElementFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
-    {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = processFirstPass(element);
-        String elementName = element.name;
-        if (element instanceof Function)
-        {
-            elementName = HelperModelBuilder.getSignature((Function) element);
-        }
-        this.packageableElementsIndex.put(buildPackageString(element._package, elementName), packageableElement);
     }
 
     private org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement processFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
@@ -1632,6 +1620,7 @@ public class PureModel implements IPureModel
             pureElement.setSourceInformation(SourceInformationHelper.toM3SourceInformation(sourceInformation));
             pack._childrenAdd(pureElement);
         }
+        this.packageableElementsIndex.put(buildPackageString(packagePath, name), pureElement);
         return pureElement;
     }
 }
