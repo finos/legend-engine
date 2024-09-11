@@ -120,7 +120,7 @@ public class GraphFetchTreeParseTreeWalker
         }
 
         SubTypeGraphFetchTree result = new SubTypeGraphFetchTree();
-        result.sourceInformation = walkerSourceInformation.getSourceInformation(subTypeGraphPathContext);
+        result.sourceInformation = walkerSourceInformation.getSourceInformation(subTypeGraphPathContext.subtype().qualifiedName());
         result.subTrees = subTrees;
         result.subTypeClass = PureGrammarParserUtility.fromIdentifier(subTypeGraphPathContext.subtype().qualifiedName());
         return result;

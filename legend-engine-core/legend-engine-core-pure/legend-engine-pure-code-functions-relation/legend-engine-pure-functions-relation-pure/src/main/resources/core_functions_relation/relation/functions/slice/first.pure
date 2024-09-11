@@ -1,0 +1,54 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+
+native function <<PCT.function>> meta::pure::functions::relation::first<T>(w:Relation<T>[1], f:_Window<T>[1], r:T[1]):T[0..1];
+
+function <<PCT.test>> meta::pure::functions::relation::tests::first::testOLAPWithPartitionAndOrderFirstWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp, ~id->descending()), ~other:{p,w,r| $p->first($w, $r).name})
+               };
+               
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,other\n'+
+                  '   10,0,J,J\n'+
+                  '   8,1,H,H\n'+
+                  '   6,1,F,H\n'+
+                  '   2,1,B,H\n'+
+                  '   5,2,E,E\n'+
+                  '   1,2,A,E\n'+
+                  '   7,3,G,G\n'+
+                  '   3,3,C,G\n'+
+                  '   4,4,D,D\n'+
+                  '   9,5,I,I\n'+
+                  '#', $res->sort([~grp->ascending(), ~id->descending()])->toString());
+}

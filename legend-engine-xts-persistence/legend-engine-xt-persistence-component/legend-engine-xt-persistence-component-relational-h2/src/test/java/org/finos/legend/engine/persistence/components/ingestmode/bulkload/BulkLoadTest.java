@@ -112,7 +112,7 @@ public class BulkLoadTest extends BaseTest
     protected final Clock fixedClock_2000_01_01 = Clock.fixed(fixedZonedDateTime_2000_01_01.toInstant(), ZoneOffset.UTC);
 
     @Test
-    public void testBulkLoadWithDigestNotGeneratedAuditEnabledNoBulkLoadEventId() throws Exception
+    public void testBulkLoadWithDigestNotGeneratedAuditEnabled() throws Exception
     {
         String filePath = "src/test/resources/data/bulk-load/input/staged_file1.csv";
 
@@ -181,7 +181,7 @@ public class BulkLoadTest extends BaseTest
         executePlansAndVerifyResults(ingestor, datasets, schema, expectedDataPath, expectedStats, false);
 
         Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from batch_metadata").get(0);
-        verifyBulkLoadMetadata(appendMetadata, filePath, 1, Optional.empty(), Optional.empty());
+        verifyBulkLoadMetadata(appendMetadata, filePath, 1, Optional.of(EVENT_ID_1), Optional.empty());
     }
 
     @Test
@@ -252,7 +252,7 @@ public class BulkLoadTest extends BaseTest
         RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE, Optional.of(EVENT_ID_1), ADDITIONAL_METADATA);
         executePlansAndVerifyResults(ingestor, datasets, schema, expectedDataPath, expectedStats, false);
         Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from batch_metadata").get(0);
-        verifyBulkLoadMetadata(appendMetadata, filePath, 1, Optional.empty(), Optional.of(ADDITIONAL_METADATA));
+        verifyBulkLoadMetadata(appendMetadata, filePath, 1, Optional.of(EVENT_ID_1), Optional.of(ADDITIONAL_METADATA));
     }
 
     @Test
@@ -305,7 +305,7 @@ public class BulkLoadTest extends BaseTest
         String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"main\" " +
                 "(\"col_int\", \"col_string\", \"col_decimal\", \"col_datetime\", \"digest\", \"batch_id\", \"append_time\") " +
                 "SELECT CONVERT(\"col_int\",INTEGER),CONVERT(\"col_string\",VARCHAR),CONVERT(\"col_decimal\",DECIMAL(5,2)),CONVERT(\"col_datetime\",TIMESTAMP)," +
-                "LAKEHOUSE_MD5(ARRAY['col_datetime','col_decimal','col_int','col_string'],ARRAY[\"col_datetime\",\"col_decimal\",\"col_int\",\"col_string\"])," +
+                "LAKEHOUSE_MD5(ARRAY['col_datetime',\"col_datetime\",'col_decimal',\"col_decimal\",'col_int',\"col_int\",'col_string',\"col_string\"])," +
                 "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),'2000-01-01 00:00:00.000000' FROM CSVREAD('src/test/resources/data/bulk-load/input/staged_file3.csv','col_int,col_string,col_decimal,col_datetime',NULL)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
@@ -385,7 +385,7 @@ public class BulkLoadTest extends BaseTest
         String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"main\" " +
             "(\"col_int\", \"col_string\", \"col_decimal\", \"col_datetime\", \"digest\", \"batch_id\", \"append_time\") " +
             "SELECT CONVERT(\"col_int\",INTEGER),CONVERT(\"col_string\",VARCHAR),CONVERT(\"col_decimal\",DECIMAL(5,2)),CONVERT(\"col_datetime\",TIMESTAMP)," +
-            "LAKEHOUSE_MD5(ARRAY['col_decimal','col_int'],ARRAY[\"col_decimal\",\"col_int\"])," +
+            "LAKEHOUSE_MD5(ARRAY['col_decimal',\"col_decimal\",'col_int',\"col_int\"])," +
             "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),'2000-01-01 00:00:00.000000' FROM CSVREAD('src/test/resources/data/bulk-load/input/staged_file3.csv','col_int,col_string,col_decimal,col_datetime',NULL)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
@@ -466,7 +466,7 @@ public class BulkLoadTest extends BaseTest
         String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"MAIN\" " +
                 "(\"COL_INT\", \"COL_STRING\", \"COL_DECIMAL\", \"COL_DATETIME\", \"DIGEST\", \"BATCH_ID\", \"APPEND_TIME\") " +
                 "SELECT CONVERT(\"COL_INT\",INTEGER),CONVERT(\"COL_STRING\",VARCHAR),CONVERT(\"COL_DECIMAL\",DECIMAL(5,2)),CONVERT(\"COL_DATETIME\",TIMESTAMP)," +
-                "LAKEHOUSE_MD5(ARRAY['COL_DATETIME','COL_DECIMAL','COL_INT','COL_STRING'],ARRAY[\"COL_DATETIME\",\"COL_DECIMAL\",\"COL_INT\",\"COL_STRING\"])," +
+                "LAKEHOUSE_MD5(ARRAY['COL_DATETIME',\"COL_DATETIME\",'COL_DECIMAL',\"COL_DECIMAL\",'COL_INT',\"COL_INT\",'COL_STRING',\"COL_STRING\"])," +
                 "(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN'),'2000-01-01 00:00:00.000000' " +
                 "FROM CSVREAD('src/test/resources/data/bulk-load/input/staged_file4.csv','COL_INT,COL_STRING,COL_DECIMAL,COL_DATETIME',NULL)";
 
@@ -1308,12 +1308,13 @@ public class BulkLoadTest extends BaseTest
 
         if (eventId.isPresent())
         {
-            Assertions.assertEquals(appendMetadata.get("ingest_request_id"), eventId.get());
+            Assertions.assertEquals(appendMetadata.get("ingest_request_id").toString(), eventId.get());
         }
         else
         {
-            Assertions.assertFalse(batchSourceInfoMap.containsKey("event_id"));
+            Assertions.assertNull(appendMetadata.get("ingest_request_id"));
         }
+
         if (additionalMetadata.isPresent())
         {
             String additionalMetaStr = (String) appendMetadata.get("additional_metadata");
@@ -1330,21 +1331,35 @@ public class BulkLoadTest extends BaseTest
         }
     }
 
-    private void verifyBulkLoadMetadataForUpperCase(Map<String, Object> appendMetadata, String fileName, int batchId, Optional<String> eventId, Optional<Map<String, Object>> additionalMetadata)
+    private void verifyBulkLoadMetadataForUpperCase(Map<String, Object> appendMetadata, String fileName, int batchId, Optional<String> eventId, Optional<Map<String, Object>> additionalMetadata) throws JsonProcessingException
     {
         Assertions.assertEquals(batchId, appendMetadata.get("TABLE_BATCH_ID"));
         Assertions.assertEquals("SUCCEEDED", appendMetadata.get("BATCH_STATUS"));
         Assertions.assertEquals("MAIN", appendMetadata.get("TABLE_NAME"));
         Assertions.assertEquals("2000-01-01 00:00:00.0", appendMetadata.get("BATCH_START_TS_UTC").toString());
         Assertions.assertEquals("2000-01-01 00:00:00.0", appendMetadata.get("BATCH_END_TS_UTC").toString());
-        Assertions.assertTrue(appendMetadata.get("BATCH_SOURCE_INFO").toString().contains(String.format("\"file_paths\":[\"%s\"]", fileName)));
+        String batchSourceInfoStr = (String) appendMetadata.get("BATCH_SOURCE_INFO");
+        HashMap<String,Object> batchSourceInfoMap = new ObjectMapper().readValue(batchSourceInfoStr, HashMap.class);
+        Assertions.assertEquals(batchSourceInfoMap.get("file_paths").toString(), String.format("[%s]", fileName));
+
         if (eventId.isPresent())
         {
             Assertions.assertEquals(appendMetadata.get("INGEST_REQUEST_ID").toString(), eventId.get());
         }
+        else
+        {
+            Assertions.assertNull(appendMetadata.get("INGEST_REQUEST_ID"));
+        }
+
         if (additionalMetadata.isPresent())
         {
-            Assertions.assertNotNull(appendMetadata.get("ADDITIONAL_METADATA"));
+            String additionalMetaStr = (String) appendMetadata.get("ADDITIONAL_METADATA");
+            Assertions.assertNotNull(additionalMetaStr);
+            HashMap<String,Object> additionalMetaMap = new ObjectMapper().readValue(additionalMetaStr, HashMap.class);
+            for (Map.Entry<String, Object> entry :additionalMetadata.get().entrySet())
+            {
+                Assertions.assertEquals(additionalMetaMap.get(entry.getKey()), entry.getValue());
+            }
         }
         else
         {

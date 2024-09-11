@@ -38,18 +38,25 @@ public class DigestUdfVisitor implements LogicalPlanVisitor<DigestUdf>
     {
         Udf udf = new Udf(context.quoteIdentifier(), current.udfName());
         prev.push(udf);
-        List<Value> columnNameList = new ArrayList<>();
-        List<Value> columnValueList = new ArrayList<>();
+        List<Value> columns = new ArrayList<>();
         for (int i = 0; i < current.values().size(); i++)
         {
-            columnNameList.add(StringValue.of(current.fieldNames().get(i)));
-            columnValueList.add(getColumnValueAsStringType(current.values().get(i), current.fieldTypes().get(i), current.typeConversionUdfNames()));
+            Value columnName = StringValue.of(current.fieldNames().get(i));
+            Value columnValue = getColumnValueAsStringType(current.values().get(i), current.fieldTypes().get(i), current.typeConversionUdfNames());
+            if (current.columnTransformationUdfName().isPresent())
+            {
+                columns.add(org.finos.legend.engine.persistence.components.logicalplan.values.Udf.builder().udfName(current.columnTransformationUdfName().get()).addParameters(columnName, columnValue).build());
+            }
+            else
+            {
+                columns.add(columnName);
+                columns.add(columnValue);
+            }
         }
 
-        ToArrayFunction toArrayColumnNames = ToArrayFunction.builder().addAllValues(columnNameList).build();
-        ToArrayFunction toArrayColumnValues = ToArrayFunction.builder().addAllValues(columnValueList).build();
+        ToArrayFunction toArrayFunction = ToArrayFunction.builder().addAllValues(columns).build();
 
-        return new VisitorResult(udf, Arrays.asList(toArrayColumnNames, toArrayColumnValues));
+        return new VisitorResult(udf, Arrays.asList(toArrayFunction));
     }
 
     protected Value getColumnValueAsStringType(Value value, FieldType dataType, Map<DataType, String> typeConversionUdfNames)

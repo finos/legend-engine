@@ -22,6 +22,7 @@ import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.language.snowflakeApp.api.SnowflakeAppDeploymentTool;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppArtifact;
 import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
 import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppContent;
@@ -54,6 +55,8 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
     private ConnectionManagerSelector connectionManager;
     private static final String deploymentSchema = "LEGEND_NATIVE_APPS";
     private static final  String deploymentTable = "APP_METADATA";
+    private static final  String limit = "10000";
+
 
     private static String deployStub = "/schemas/" + deploymentSchema + "/user-function/%S()";
 
@@ -135,13 +138,13 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
 
     public Connection getDeploymentConnection(Identity identity, RelationalDatabaseConnection connection)
     {
-        return this.connectionManager.getDatabaseConnection(identity, (DatabaseConnection) connection);
+        return this.connectionManager.getDatabaseConnection(identity, connection);
     }
 
-    public void deployImpl(Connection jdbcConnection, SnowflakeAppContent context) throws SQLException
+    public void deployImpl(Connection jdbcConnection, SnowflakeAppContent content) throws SQLException
     {
         String catalogName = jdbcConnection.getCatalog();
-        MutableList<String> statements = generateStatements(catalogName, context);
+        MutableList<String> statements = generateStatements(catalogName, content);
         for (String s: statements)
         {
             Statement statement = jdbcConnection.createStatement();
@@ -152,10 +155,21 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
     public MutableList<String> generateStatements(String catalogName, SnowflakeAppContent content)
     {
         MutableList<String> statements = Lists.mutable.empty();
-        statements.add(String.format("CREATE OR REPLACE SECURE FUNCTION %S.%S.%s", catalogName, deploymentSchema, content.sqlExpressions.getFirst()));
-        if (content.sqlExpressions.size() > 1)
+        if (!content.sqlExpressions.isEmpty())
         {
-            statements.add(String.format("GRANT USAGE ON FUNCTION %S.%S.%S", catalogName, deploymentSchema, content.sqlExpressions.get(1)));
+            statements.add(String.format("CREATE OR REPLACE SECURE FUNCTION %S.%S.%s", catalogName, deploymentSchema, content.sqlExpressions.getFirst()));
+            if (content.sqlExpressions.size() > 1)
+            {
+                statements.add(String.format("GRANT USAGE ON FUNCTION %S.%S.%S", catalogName, deploymentSchema, content.sqlExpressions.get(1)));
+            }
+        }
+        else
+        {
+            statements.add(String.format(content.createStatement, catalogName));
+            if (content.grantStatement != null)
+            {
+                statements.add(String.format(content.grantStatement, catalogName));
+            }
         }
         return statements;
     }
@@ -175,6 +189,32 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
     public RelationalDatabaseConnection extractConnectionFromArtifact(SnowflakeAppArtifact artifact)
     {
         return ((SnowflakeAppDeploymentConfiguration)artifact.deploymentConfiguration).connection;
+    }
+
+    public MutableList<SnowflakeGrantInfo> getGrants(Identity identity, SnowflakeAppArtifact artifact)
+    {
+        RelationalDatabaseConnection rel = ((SnowflakeAppDeploymentConfiguration)artifact.deploymentConfiguration).connection;
+        MutableList<SnowflakeGrantInfo> grants = Lists.mutable.empty();
+        try (Connection jdbcConnection = this.getDeploymentConnection(identity, artifact))
+        {
+            Statement role = jdbcConnection.createStatement();
+            ResultSet roleResult = role.executeQuery("SELECT CURRENT_ROLE()");
+            roleResult.next();
+            String currentRole = roleResult.getString(1);
+            roleResult.close();
+            Statement s = jdbcConnection.createStatement();
+            ResultSet  res = s.executeQuery(String.format("SHOW GRANTS TO ROLE %S LIMIT %S;", currentRole, limit));
+            while (res.next())
+            {
+                grants.add(new SnowflakeGrantInfo(res.getString("privilege"), res.getString("granted_on"), res.getString("name"), res.getString("grantee_name"), res.getString("granted_by")));
+            }
+            s.close();
+        }
+        catch (Exception e)
+        {
+            LOGGER.info("Unable to query for grants for role. Error:  " + e.getMessage());
+        }
+        return grants;
     }
 
     public ImmutableList<DeploymentInfo> getDeployed(Identity identity, RelationalDatabaseConnection connection) throws Exception

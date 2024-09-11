@@ -36,6 +36,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_EngineRuntime;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_EngineRuntime_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_Mapping_Impl;
@@ -59,7 +61,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime_Impl;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime_Impl;
-import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Tag;
@@ -70,7 +71,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 
 import java.util.List;
-import java.util.Objects;
 
 public class PackageableElementFirstPassBuilder implements PackageableElementVisitor<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement>
 {
@@ -90,13 +90,11 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(Profile profile)
     {
-        String fullPath = this.context.pureModel.buildPackageString(profile._package, profile.name);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile targetProfile = new Root_meta_pure_metamodel_extension_Profile_Impl(profile.name, SourceInformationHelper.toM3SourceInformation(profile.sourceInformation), this.context.pureModel.getClass("meta::pure::metamodel::extension::Profile"));
-        this.context.pureModel.profilesIndex.put(fullPath, targetProfile);
         setNameAndPackage(targetProfile, profile);
         return targetProfile
-                ._p_stereotypes(ListIterate.collect(profile.stereotypes, st -> newStereotype(targetProfile, st)))
-                ._p_tags(ListIterate.collect(profile.tags, t -> newTag(targetProfile, t)));
+                ._p_stereotypes(ListIterate.collect(profile.stereotypes, st -> newStereotype(targetProfile, st.value, st.sourceInformation)))
+                ._p_tags(ListIterate.collect(profile.tags, t -> newTag(targetProfile, t.value, t.sourceInformation)));
     }
 
     @Override
@@ -152,7 +150,6 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     {
         String packageString = this.context.pureModel.buildPackageString(srcAssociation._package, srcAssociation.name);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = new Root_meta_pure_metamodel_relationship_Association_Impl(srcAssociation.name, null, this.context.pureModel.getClass("meta::pure::metamodel::relationship::Association"));
-        this.context.pureModel.associationsIndex.put(packageString, association);
 
         if (srcAssociation.properties.size() != 2)
         {
@@ -171,11 +168,10 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         String functionFullName = this.context.pureModel.buildPackageString(function._package, functionSignature);
         String functionName = this.context.pureModel.buildPackageString(function._package, HelperModelBuilder.getFunctionNameWithoutSignature(function));
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc = new Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl<>(functionSignature, SourceInformationHelper.toM3SourceInformation(function.sourceInformation), null);
-        this.context.pureModel.functionsIndex.put(functionFullName, targetFunc);
 
         ProcessingContext ctx = new ProcessingContext("Function '" + functionFullName + "' First Pass");
 
-        setNameAndPackage(targetFunc, functionSignature, function._package, function.sourceInformation)
+        this.context.pureModel.setNameAndPackage(targetFunc, functionSignature, function._package, function.sourceInformation)
                 ._functionName(functionName) // function name to be used in the handler map -> meta::pure::functions::date::isAfterDay
                 ._classifierGenericType(newGenericType(this.context.pureModel.getType("meta::pure::metamodel::function::ConcreteFunctionDefinition"), PureModel.buildFunctionType(ListIterate.collect(function.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), ctx))), this.context.resolveGenericType(function.returnType, function.sourceInformation), this.context.pureModel.getMultiplicity(function.returnMultiplicity), this.context.pureModel)))
                 ._stereotypes(ListIterate.collect(function.stereotypes, this::resolveStereotype))
@@ -212,8 +208,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(Mapping mapping)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping pureMapping = new Root_meta_pure_mapping_Mapping_Impl(mapping.name, SourceInformationHelper.toM3SourceInformation(mapping.sourceInformation), null);
-        this.context.pureModel.mappingsIndex.put(this.context.pureModel.buildPackageString(mapping._package, mapping.name), pureMapping);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping pureMapping = new Root_meta_pure_mapping_Mapping_Impl(mapping.name, SourceInformationHelper.toM3SourceInformation(mapping.sourceInformation), this.context.pureModel.getClass("meta::pure::mapping::Mapping"));
         GenericType mappingGenericType = newGenericType(this.context.pureModel.getType("meta::pure::mapping::Mapping"));
         pureMapping._classifierGenericType(mappingGenericType);
         return setNameAndPackage(pureMapping, mapping);
@@ -223,13 +218,11 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     public PackageableElement visit(PackageableRuntime packageableRuntime)
     {
         Root_meta_pure_runtime_PackageableRuntime metamodel = new Root_meta_pure_runtime_PackageableRuntime_Impl(packageableRuntime.name, SourceInformationHelper.toM3SourceInformation(packageableRuntime.sourceInformation), this.context.pureModel.getClass("meta::pure::runtime::PackageableRuntime"));
-        this.context.pureModel.packageableRuntimesIndex.put(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), metamodel);
         GenericType packageableRuntimeGenericType = newGenericType(this.context.pureModel.getType("meta::pure::runtime::PackageableRuntime"));
         metamodel._classifierGenericType(packageableRuntimeGenericType);
 
-        // NOTE: the whole point of this processing is to put the Pure Runtime in an index
-        Root_meta_core_runtime_Runtime pureRuntime = new Root_meta_core_runtime_Runtime_Impl("Root::meta::core::runtime::Runtime", SourceInformationHelper.toM3SourceInformation(packageableRuntime.sourceInformation), this.context.pureModel.getClass("meta::core::runtime::Runtime"));
-        this.context.pureModel.runtimesIndex.put(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), pureRuntime);
+        Root_meta_core_runtime_EngineRuntime pureRuntime = new Root_meta_core_runtime_EngineRuntime_Impl("Root::meta::core::runtime::Runtime", SourceInformationHelper.toM3SourceInformation(packageableRuntime.sourceInformation), this.context.pureModel.getClass("meta::core::runtime::Runtime"));
+        metamodel._runtimeValue(pureRuntime);
 
         return setNameAndPackage(metamodel, packageableRuntime);
     }
@@ -238,10 +231,8 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     public PackageableElement visit(PackageableConnection packageableConnection)
     {
         Root_meta_pure_runtime_PackageableConnection metamodel = new Root_meta_pure_runtime_PackageableConnection_Impl(packageableConnection.name, SourceInformationHelper.toM3SourceInformation(packageableConnection.sourceInformation), this.context.pureModel.getClass("meta::pure::runtime::PackageableConnection"));
-        this.context.pureModel.packageableConnectionsIndex.put(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), metamodel);
-        // NOTE: the whole point of this processing is to put the Pure Connection in an index
         Root_meta_core_runtime_Connection connection = packageableConnection.connectionValue.accept(new ConnectionFirstPassBuilder(this.context));
-        this.context.pureModel.connectionsIndex.put(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), connection);
+        metamodel._connectionValue(connection);
         return setNameAndPackage(metamodel, packageableConnection);
     }
 
@@ -249,8 +240,6 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     public PackageableElement visit(SectionIndex sectionIndex)
     {
         Root_meta_pure_metamodel_section_SectionIndex stub = new Root_meta_pure_metamodel_section_SectionIndex_Impl(sectionIndex.name, SourceInformationHelper.toM3SourceInformation(sectionIndex.sourceInformation), this.context.pureModel.getClass("meta::pure::metamodel::section::SectionIndex"));
-        // NOTE: we don't really need to add section index to the PURE graph
-        sectionIndex.sections.forEach(section -> section.elements.forEach(elementPath -> this.context.pureModel.sectionsIndex.putIfAbsent(elementPath, section)));
         return setNameAndPackage(stub, sectionIndex);
     }
 
@@ -281,16 +270,16 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         return newGenericType(rawType)._typeArguments(typeArguments);
     }
 
-    private Stereotype newStereotype(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile, String name)
+    private Stereotype newStereotype(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile, String name, SourceInformation sourceInformation)
     {
-        return new Root_meta_pure_metamodel_extension_Stereotype_Impl(name, null, this.context.pureModel.getClass("meta::pure::metamodel::extension::Stereotype"))
+        return new Root_meta_pure_metamodel_extension_Stereotype_Impl(name, SourceInformationHelper.toM3SourceInformation(sourceInformation), this.context.pureModel.getClass("meta::pure::metamodel::extension::Stereotype"))
                 ._value(name)
                 ._profile(profile);
     }
 
-    private Tag newTag(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile, String name)
+    private Tag newTag(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile, String name, SourceInformation sourceInformation)
     {
-        return new Root_meta_pure_metamodel_extension_Tag_Impl(name, null, this.context.pureModel.getClass("meta::pure::metamodel::extension::Tag"))
+        return new Root_meta_pure_metamodel_extension_Tag_Impl(name, SourceInformationHelper.toM3SourceInformation(sourceInformation), this.context.pureModel.getClass("meta::pure::metamodel::extension::Tag"))
                 ._value(name)
                 ._profile(profile);
     }
@@ -314,34 +303,6 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
 
     private <T extends PackageableElement> T setNameAndPackage(T pureElement, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement sourceElement)
     {
-        return setNameAndPackage(pureElement, sourceElement.name, sourceElement._package, sourceElement.sourceInformation);
-    }
-
-    private <T extends PackageableElement> T setNameAndPackage(T pureElement, String name, String packagePath, SourceInformation sourceInformation)
-    {
-        // Validate and set name
-        if ((name == null) || name.isEmpty())
-        {
-            throw new EngineException("PackageableElement name may not be null or empty", sourceInformation, EngineErrorType.COMPILATION);
-        }
-        if (!name.equals(pureElement.getName()))
-        {
-            throw new EngineException("PackageableElement name '" + name + "' must match CoreInstance name '" + pureElement.getName() + "'", sourceInformation, EngineErrorType.COMPILATION);
-        }
-        pureElement._name(name);
-
-        synchronized (this.context.pureModel)
-        {
-            // Validate and set package
-            Package pack = this.context.pureModel.getOrCreatePackage(packagePath);
-            if (pack._children().anySatisfy(c -> name.equals(c._name())))
-            {
-                throw new EngineException("An element named '" + name + "' already exists in the package '" + packagePath + "'", sourceInformation, EngineErrorType.COMPILATION);
-            }
-            pureElement._package(pack);
-            pureElement.setSourceInformation(SourceInformationHelper.toM3SourceInformation(sourceInformation));
-            pack._childrenAdd(pureElement);
-        }
-        return pureElement;
+        return this.context.pureModel.setNameAndPackage(pureElement, sourceElement.name, sourceElement._package, sourceElement.sourceInformation);
     }
 }

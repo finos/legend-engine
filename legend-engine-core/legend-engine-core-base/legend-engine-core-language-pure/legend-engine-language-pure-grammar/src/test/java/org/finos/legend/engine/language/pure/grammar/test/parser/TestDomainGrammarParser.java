@@ -21,11 +21,11 @@ import org.antlr.v4.runtime.Vocabulary;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.domain.DomainParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -113,5 +113,53 @@ public class TestDomainGrammarParser extends TestGrammarParser.TestGrammarParser
         Assert.assertNotNull(aClass.superTypes.get(0).sourceInformation);
         Assert.assertEquals(1, aClass.superTypes.get(0).sourceInformation.startLine);
         Assert.assertEquals(71, aClass.superTypes.get(0).sourceInformation.startColumn);
+    }
+
+    @Test
+    public void testProfile()
+    {
+        PureModelContextData pureModelContextData = test("Profile test::A\n" +
+                "{\n" +
+                "   tags : [tag1, tag2];\n" +
+                "   stereotypes : [stereotype1, stereotype2];\n" +
+                "}\n");
+
+        Map<String, PackageableElement> elementMap = pureModelContextData.getElements().stream().collect(Collectors.toMap(x -> x.getPath(), Function.identity()));
+
+        Profile profile = (Profile) elementMap.get("test::A");
+
+        Assert.assertNotNull(profile.sourceInformation);
+        Assert.assertEquals(1, profile.sourceInformation.startLine);
+        Assert.assertEquals(5, profile.sourceInformation.endLine);
+        Assert.assertEquals(1, profile.sourceInformation.startColumn);
+        Assert.assertEquals(1, profile.sourceInformation.endColumn);
+        Assert.assertEquals(2, profile.stereotypes.size());
+        Assert.assertEquals(2, profile.tags.size());
+
+        Assert.assertEquals("stereotype1", profile.stereotypes.get(0).value);
+        Assert.assertEquals("stereotype2", profile.stereotypes.get(1).value);
+
+        Assert.assertNotNull(profile.stereotypes.get(0).sourceInformation);
+        Assert.assertEquals(4, profile.stereotypes.get(0).sourceInformation.startLine);
+        Assert.assertEquals(4, profile.stereotypes.get(0).sourceInformation.endLine);
+        Assert.assertEquals(19, profile.stereotypes.get(0).sourceInformation.startColumn);
+        Assert.assertEquals(29, profile.stereotypes.get(0).sourceInformation.endColumn);
+        Assert.assertEquals(4, profile.stereotypes.get(1).sourceInformation.startLine);
+        Assert.assertEquals(4, profile.stereotypes.get(1).sourceInformation.endLine);
+        Assert.assertEquals(32, profile.stereotypes.get(1).sourceInformation.startColumn);
+        Assert.assertEquals(42, profile.stereotypes.get(1).sourceInformation.endColumn);
+
+        Assert.assertEquals("tag1", profile.tags.get(0).value);
+        Assert.assertEquals("tag2", profile.tags.get(1).value);
+
+        Assert.assertNotNull(profile.tags.get(0).sourceInformation);
+        Assert.assertEquals(3, profile.tags.get(0).sourceInformation.startLine);
+        Assert.assertEquals(3, profile.tags.get(0).sourceInformation.endLine);
+        Assert.assertEquals(12, profile.tags.get(0).sourceInformation.startColumn);
+        Assert.assertEquals(15, profile.tags.get(0).sourceInformation.endColumn);
+        Assert.assertEquals(3, profile.tags.get(1).sourceInformation.startLine);
+        Assert.assertEquals(3, profile.tags.get(1).sourceInformation.endLine);
+        Assert.assertEquals(18, profile.tags.get(1).sourceInformation.startColumn);
+        Assert.assertEquals(21, profile.tags.get(1).sourceInformation.endColumn);
     }
 }

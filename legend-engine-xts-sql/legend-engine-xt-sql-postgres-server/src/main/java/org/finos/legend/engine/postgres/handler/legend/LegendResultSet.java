@@ -101,6 +101,7 @@ public class LegendResultSet implements PostgresResultSet
                         });
             case FLOAT:
             case NUMBER:
+            case DECIMAL:
                 return extractValue(value, legendColumn, Number.class, "DECIMAL (FLOAT/DOUBLE)",
                         f ->
                         {
@@ -111,6 +112,12 @@ public class LegendResultSet implements PostgresResultSet
                         f ->
                         {
                             return (Boolean) value;
+                        });
+            case STRING:
+                return extractValue(value, legendColumn, String.class, "STRING",
+                        f ->
+                        {
+                            return (String) value;
                         });
             default:
                 return value;

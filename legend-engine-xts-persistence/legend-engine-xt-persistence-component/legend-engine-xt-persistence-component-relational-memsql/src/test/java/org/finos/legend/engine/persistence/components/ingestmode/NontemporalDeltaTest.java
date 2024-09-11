@@ -50,9 +50,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         String updateSql = "UPDATE `mydb`.`main` as sink " +
                 "INNER JOIN `mydb`.`staging` as stage " +
                 "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) " +
-                "SET sink.`id` = stage.`id`," +
-                "sink.`name` = stage.`name`," +
-                "sink.`amount` = stage.`amount`," +
+                "SET sink.`amount` = stage.`amount`," +
                 "sink.`biz_date` = stage.`biz_date`," +
                 "sink.`digest` = stage.`digest`," +
                 "sink.`batch_id` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')";
@@ -86,9 +84,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         String updateSql = "UPDATE `mydb`.`main` as sink " +
                 "INNER JOIN `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
                 "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) " +
-                "SET sink.`id` = stage.`id`," +
-                "sink.`name` = stage.`name`," +
-                "sink.`amount` = stage.`amount`," +
+                "SET sink.`amount` = stage.`amount`," +
                 "sink.`biz_date` = stage.`biz_date`," +
                 "sink.`digest` = stage.`digest`," +
                 "sink.`batch_update_time` = '2000-01-01 00:00:00.000000'," +
@@ -121,9 +117,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
                 "INNER JOIN " +
                 "(SELECT * FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) as stage " +
                 "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) " +
-                "SET sink.`id` = stage.`id`," +
-                "sink.`name` = stage.`name`," +
-                "sink.`amount` = stage.`amount`," +
+                "SET sink.`amount` = stage.`amount`," +
                 "sink.`biz_date` = stage.`biz_date`," +
                 "sink.`digest` = stage.`digest`," +
                 "sink.`batch_id` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')";
@@ -159,9 +153,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
                 "INNER JOIN " +
                 "(SELECT * FROM `mydb`.`staging` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) as stage " +
                 "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) " +
-                "SET sink.`id` = stage.`id`," +
-                "sink.`name` = stage.`name`," +
-                "sink.`amount` = stage.`amount`," +
+                "SET sink.`amount` = stage.`amount`," +
                 "sink.`biz_date` = stage.`biz_date`," +
                 "sink.`digest` = stage.`digest`," +
                 "sink.`batch_id` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')";
@@ -197,8 +189,6 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
                 "INNER JOIN " +
                 "(SELECT * FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) as stage " +
                 "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) SET " +
-                "sink.`id` = stage.`id`," +
-                "sink.`name` = stage.`name`," +
                 "sink.`amount` = stage.`amount`," +
                 "sink.`biz_date` = stage.`biz_date`," +
                 "sink.`digest` = stage.`digest`," +
@@ -239,9 +229,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         String updateSql = "UPDATE `mydb`.`main` as sink " +
                 "INNER JOIN `mydb`.`staging` as stage " +
                 "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) AND (stage.`delete_indicator` NOT IN ('yes','1','true')) " +
-                "SET sink.`id` = stage.`id`" +
-                ",sink.`name` = stage.`name`," +
-                "sink.`amount` = stage.`amount`," +
+                "SET sink.`amount` = stage.`amount`," +
                 "sink.`biz_date` = stage.`biz_date`," +
                 "sink.`digest` = stage.`digest`," +
                 "sink.`batch_id` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')";
@@ -282,9 +270,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         String updateSql = "UPDATE `MYDB`.`MAIN` as sink " +
                 "INNER JOIN `MYDB`.`STAGING` as stage " +
                 "ON ((sink.`ID` = stage.`ID`) AND (sink.`NAME` = stage.`NAME`)) AND (sink.`DIGEST` <> stage.`DIGEST`) " +
-                "SET sink.`ID` = stage.`ID`," +
-                "sink.`NAME` = stage.`NAME`," +
-                "sink.`AMOUNT` = stage.`AMOUNT`," +
+                "SET sink.`AMOUNT` = stage.`AMOUNT`," +
                 "sink.`BIZ_DATE` = stage.`BIZ_DATE`," +
                 "sink.`DIGEST` = stage.`DIGEST`," +
                 "sink.`BATCH_ID` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN')";
@@ -313,9 +299,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         String updateSql = "UPDATE `mydb`.`main` as sink " +
                 "INNER JOIN `mydb`.`staging` as stage " +
                 "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) " +
-                "SET sink.`id` = stage.`id`," +
-                "sink.`name` = stage.`name`," +
-                "sink.`amount` = stage.`amount`," +
+                "SET sink.`amount` = stage.`amount`," +
                 "sink.`digest` = stage.`digest`," +
                 "sink.`batch_id` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')";
 
@@ -354,7 +338,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` FROM `mydb`.`staging` as stage " +
             "WHERE (stage.`biz_date` > '2020-01-01') AND (stage.`biz_date` < '2020-01-03')) as stage " +
             "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) " +
-            "SET sink.`id` = stage.`id`,sink.`name` = stage.`name`,sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest`," +
+            "SET sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest`," +
             "sink.`batch_id` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')";
 
         String insertSql = "INSERT INTO `mydb`.`main` " +
@@ -390,7 +374,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` FROM `mydb`.`staging` as stage " +
             "WHERE (stage.`biz_date` > '2020-01-10') OR ((stage.`biz_date` > '2020-01-01') AND (stage.`biz_date` < '2020-01-05'))) as stage " +
             "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) " +
-            "SET sink.`id` = stage.`id`,sink.`name` = stage.`name`,sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest`," +
+            "SET sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest`," +
             "sink.`batch_id` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')";
 
         String insertSql = "INSERT INTO `mydb`.`main` " +
@@ -425,7 +409,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
             "INNER JOIN " +
             "`mydb`.`staging_temp_staging_lp_yosulf` as stage " +
             "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (stage.`version` > sink.`version`) " +
-            "SET sink.`id` = stage.`id`,sink.`name` = stage.`name`,sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest`,sink.`version` = stage.`version`," +
+            "SET sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest`,sink.`version` = stage.`version`," +
             "sink.`batch_id` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')";
 
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`, `version`, `batch_id`) " +
@@ -458,7 +442,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
             "INNER JOIN " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version` FROM `mydb`.`staging` as stage WHERE stage.`snapshot_id` > 18972) as stage " +
             "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (stage.`version` > sink.`version`) " +
-            "SET sink.`id` = stage.`id`,sink.`name` = stage.`name`,sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest`,sink.`version` = stage.`version`," +
+            "SET sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest`,sink.`version` = stage.`version`," +
             "sink.`batch_id` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')";
 
         String insertSql = "INSERT INTO `mydb`.`main` " +
@@ -492,7 +476,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         String updateSql = "UPDATE `mydb`.`main` as sink " +
             "INNER JOIN `mydb`.`staging` as stage " +
             "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (stage.`version` > sink.`version`) " +
-            "SET sink.`id` = stage.`id`,sink.`name` = stage.`name`,sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest`,sink.`version` = stage.`version`," +
+            "SET sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest`,sink.`version` = stage.`version`," +
             "sink.`batch_id` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')";
 
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`, `version`, `batch_id`) " +
@@ -524,7 +508,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
             "INNER JOIN " +
             "`MYDB`.`STAGING_TEMP_STAGING_LP_YOSULF` as stage " +
             "ON ((sink.`ID` = stage.`ID`) AND (sink.`NAME` = stage.`NAME`)) AND (stage.`VERSION` >= sink.`VERSION`) " +
-            "SET sink.`ID` = stage.`ID`,sink.`NAME` = stage.`NAME`,sink.`AMOUNT` = stage.`AMOUNT`,sink.`BIZ_DATE` = stage.`BIZ_DATE`,sink.`DIGEST` = stage.`DIGEST`,sink.`VERSION` = stage.`VERSION`," +
+            "SET sink.`AMOUNT` = stage.`AMOUNT`,sink.`BIZ_DATE` = stage.`BIZ_DATE`,sink.`DIGEST` = stage.`DIGEST`,sink.`VERSION` = stage.`VERSION`," +
             "sink.`BATCH_ID` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN')";
 
         String insertSql = "INSERT INTO `MYDB`.`MAIN` (`ID`, `NAME`, `AMOUNT`, `BIZ_DATE`, `DIGEST`, `VERSION`, `BATCH_ID`) " +

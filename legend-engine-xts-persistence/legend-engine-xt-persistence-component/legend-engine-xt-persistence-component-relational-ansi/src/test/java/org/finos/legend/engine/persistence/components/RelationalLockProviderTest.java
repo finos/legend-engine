@@ -37,8 +37,8 @@ public class RelationalLockProviderTest extends IngestModeTest
                 .build();
         SqlPlan physicalPlan = lockProvider.createAndInitializeLockSqlPlan(lockInfoDataset, "main");
         List<String> list = physicalPlan.getSqlList();
-        String expectedSql = "INSERT INTO \"mydb\".\"main_legend_persistence_lock\" (\"insert_ts_utc\", \"table_name\") " +
-                "(SELECT '2000-01-01 00:00:00.000000','main' WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main_legend_persistence_lock\" as main_legend_persistence_lock)))";
+        String expectedSql = "INSERT INTO \"mydb\".\"main_legend_persistence_lock\" (\"insert_ts_utc\") " +
+                "(SELECT '2000-01-01 00:00:00.000000' WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main_legend_persistence_lock\" as main_legend_persistence_lock)))";
         Assertions.assertEquals(AnsiTestArtifacts.expectedLockInfoTableCreateQuery, list.get(0));
         Assertions.assertEquals(expectedSql, list.get(1));
     }
@@ -55,8 +55,8 @@ public class RelationalLockProviderTest extends IngestModeTest
         SqlPlan physicalPlan = lockProvider.createAndInitializeLockSqlPlan(lockInfoDataset, "main");
         List<String> list = physicalPlan.getSqlList();
         String expectedSql = "INSERT INTO \"MYDB\".\"MAIN_LEGEND_PERSISTENCE_LOCK\" " +
-                "(\"INSERT_TS_UTC\", \"TABLE_NAME\") " +
-                "(SELECT '2000-01-01 00:00:00.000000','main' " +
+                "(\"INSERT_TS_UTC\") " +
+                "(SELECT '2000-01-01 00:00:00.000000' " +
                 "WHERE NOT (EXISTS (SELECT * FROM \"MYDB\".\"MAIN_LEGEND_PERSISTENCE_LOCK\" as MAIN_LEGEND_PERSISTENCE_LOCK)))";
         Assertions.assertEquals(AnsiTestArtifacts.expectedLockInfoTableUpperCaseCreateQuery, list.get(0));
         Assertions.assertEquals(expectedSql, list.get(1));

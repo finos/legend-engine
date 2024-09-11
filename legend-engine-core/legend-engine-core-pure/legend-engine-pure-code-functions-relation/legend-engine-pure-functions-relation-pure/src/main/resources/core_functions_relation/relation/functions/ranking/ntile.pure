@@ -1,0 +1,54 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+
+native function <<PCT.function>> meta::pure::functions::relation::ntile<T>(rel:Relation<T>[1], row:T[1], tileCount:Integer[1]):Integer[1];
+
+function <<PCT.test>> meta::pure::functions::relation::tests::ntile::testOLAPWithPartitionAndOrderNTile<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 1, A
+                  3, 1, B
+                  3, 1, C
+                  4, 4, D
+                  3, 1, E
+                  6, 1, F
+                  7, 4, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp, ~name->descending()), ~other:{p,w,r| $p->ntile($r, 2)})
+               };
+               
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,other\n'+
+                  '   10,0,J,1\n'+
+                  '   8,1,H,1\n'+
+                  '   6,1,F,1\n'+
+                  '   3,1,E,1\n'+
+                  '   3,1,C,2\n'+
+                  '   3,1,B,2\n'+
+                  '   1,1,A,2\n'+
+                  '   7,4,G,1\n'+
+                  '   4,4,D,2\n'+
+                  '   9,5,I,1\n'+
+                  '#', $res->sort([~grp->ascending(), ~id->descending(), ~name->descending()])->toString());
+}

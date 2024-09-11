@@ -12,22 +12,26 @@ identifier:                                     VALID_STRING | STRING
 
 // -------------------------------------- EXPRESSION & VALUE SPECIFICATION --------------------------------------
 
+nonArrowOrEqualExpression :
+                                                (
+                                                    atomicExpression
+                                                    | notExpression
+                                                    | signedExpression
+                                                    | expressionsArray
+                                                    | (PAREN_OPEN combinedExpression PAREN_CLOSE)
+                                                )
+;
+
 expression:                                     (
-                                                    (
-                                                        sliceExpression
-                                                        | atomicExpression
-                                                        | notExpression
-                                                        | signedExpression
-                                                        | expressionsArray
-                                                    )
+                                                    nonArrowOrEqualExpression
                                                     (
                                                         (propertyOrFunctionExpression)*
                                                         (equalNotEqual)?
                                                     )
                                                 )
-                                                |
-                                                (PAREN_OPEN combinedExpression PAREN_CLOSE)
 ;
+
+
 instance:                                       NEW_SYMBOL qualifiedName (LESS_THAN typeArguments? (PIPE multiplicityArguments)? GREATER_THAN)? identifier?
                                                 (FILE_NAME COLON INTEGER COMMA INTEGER COMMA INTEGER COMMA INTEGER COMMA INTEGER COMMA INTEGER FILE_NAME_END)? (AT qualifiedName)?
                                                     PAREN_OPEN
@@ -69,15 +73,13 @@ programLine:                                    combinedExpression | letExpressi
 ;
 equalNotEqual:                                  (TEST_EQUAL | TEST_NOT_EQUAL) combinedArithmeticOnly
 ;
-combinedArithmeticOnly:                         expressionOrExpressionGroup arithmeticPart*
+combinedArithmeticOnly:                         expression arithmeticPart*
 ;
 expressionPart:                                 booleanPart | arithmeticPart
 ;
 letExpression:                                  LET identifier EQUAL combinedExpression
 ;
-combinedExpression:                             expressionOrExpressionGroup expressionPart*
-;
-expressionOrExpressionGroup:                    expression
+combinedExpression:                             expression expressionPart*
 ;
 expressionsArray:                               BRACKET_OPEN ( expression (COMMA expression)* )? BRACKET_CLOSE
 ;
@@ -101,19 +103,20 @@ atomicExpression:                               dsl
                                                 | variable
                                                 | columnBuilders
                                                 | (AT type)
-                                                | lambdaPipe
-                                                | lambdaFunction
+                                                | anyLambda
                                                 | instanceReference
-                                                | (lambdaParam lambdaPipe)
 ;
 
 columnBuilders: TILDE (oneColSpec | colSpecArray)
 ;
-oneColSpec: identifier ((COLON (type | lambdaParam lambdaPipe) extraFunction? ))?
+oneColSpec: identifier ((COLON (type | anyLambda) extraFunction? ))?
 ;
-colSpecArray: (BRACKET_OPEN oneColSpec(COMMA oneColSpec)* BRACKET_CLOSE)
+colSpecArray: (BRACKET_OPEN (oneColSpec(COMMA oneColSpec)*)? BRACKET_CLOSE)
 ;
-extraFunction: (COLON lambdaParam lambdaPipe)
+extraFunction: (COLON anyLambda)
+;
+
+anyLambda : lambdaPipe | lambdaFunction | lambdaParam lambdaPipe
 ;
 
 instanceReference:                              (PATH_SEPARATOR | qualifiedName | unitName) allOrFunction?
@@ -150,8 +153,6 @@ expressionInstanceAtomicRightSide:              combinedExpression | expressionI
 ;
 expressionInstanceParserPropertyAssignment:     identifier (DOT identifier)* PLUS? EQUAL expressionInstanceRightSide
 ;
-sliceExpression:                                BRACKET_OPEN ( (COLON expression) | (expression COLON expression) |  (expression COLON expression COLON expression) ) BRACKET_CLOSE
-;
 notExpression:                                  NOT expression
 ;
 signedExpression:                               (MINUS | PLUS) expression
@@ -187,7 +188,7 @@ arithmeticPart:                                 (
                                                     | (GREATER_OR_EQUAL expression)
                                                 )
 ;
-booleanPart:                                    (AND expression) | (OR  expression) | equalNotEqual
+booleanPart:                                    (AND expression) | (OR  expression)
 ;
 functionVariableExpression:                     identifier COLON type multiplicity
 ;

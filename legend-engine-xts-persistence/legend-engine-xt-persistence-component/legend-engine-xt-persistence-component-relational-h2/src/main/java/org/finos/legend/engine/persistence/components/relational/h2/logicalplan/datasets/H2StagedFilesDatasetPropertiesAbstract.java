@@ -37,15 +37,15 @@ public interface H2StagedFilesDatasetPropertiesAbstract extends StagedFilesDatas
     {
         if (filePatterns().size() > 0)
         {
-            throw new IllegalArgumentException("Cannot build H2StagedFilesDatasetProperties, filePatterns not supported");
+            throw new IllegalStateException("Cannot build H2StagedFilesDatasetProperties, filePatterns not supported");
         }
-        if (filePaths().size() != 1)
+        if (filePaths().size() > 1)
         {
-            throw new IllegalArgumentException("Cannot build H2StagedFilesDatasetProperties, only 1 file per load supported");
+            throw new IllegalStateException("Cannot build H2StagedFilesDatasetProperties, only 1 file per load supported");
         }
         if (fileFormat() != FileFormatType.CSV)
         {
-            throw new IllegalArgumentException("Cannot build H2StagedFilesDatasetProperties, only CSV file loading supported");
+            throw new IllegalStateException("Cannot build H2StagedFilesDatasetProperties, only CSV file loading supported");
         }
     }
 }

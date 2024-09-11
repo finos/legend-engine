@@ -15,7 +15,6 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.set.MutableSet;
-import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceElementPointer;
@@ -28,18 +27,11 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.As
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 
-import java.util.Objects;
-
 public class HelperDataSpaceBuilder
 {
-    private static DataSpaceCompilerExtension getDataSpaceCompilerExtensionInstance(CompileContext context)
-    {
-        return Objects.requireNonNull(ListIterate.selectInstancesOf(context.getCompilerExtensions().getExtensions(), DataSpaceCompilerExtension.class).getAny(), "Data space extension is not in scope");
-    }
-
     public static Root_meta_pure_metamodel_dataSpace_DataSpace getDataSpace(String fullPath, SourceInformation sourceInformation, CompileContext context)
     {
-        Root_meta_pure_metamodel_dataSpace_DataSpace dataspace = getDataSpaceCompilerExtensionInstance(context).dataSpacesIndex.get(fullPath);
+        Root_meta_pure_metamodel_dataSpace_DataSpace dataspace = (Root_meta_pure_metamodel_dataSpace_DataSpace) context.pureModel.getPackageableElement_safe(fullPath);
         Assert.assertTrue(dataspace != null, () -> "Can't find data space '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return dataspace;
     }

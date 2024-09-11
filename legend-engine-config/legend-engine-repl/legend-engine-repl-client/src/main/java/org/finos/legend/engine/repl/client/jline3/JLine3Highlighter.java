@@ -28,7 +28,8 @@ public class JLine3Highlighter implements Highlighter
     public AttributedString highlight(LineReader lineReader, String s)
     {
         AttributedStringBuilder ab = new AttributedStringBuilder();
-        drawCommand(ab, s);
+        ab.style(new AttributedStyle().foreground(AttributedStyle.GREEN).italic());
+        ab.append(s);
         return ab.toAttributedString();
     }
 
@@ -42,11 +43,5 @@ public class JLine3Highlighter implements Highlighter
     public void setErrorIndex(int i)
     {
 
-    }
-
-    public static void drawCommand(AttributedStringBuilder ab, String command)
-    {
-        ab.style(new AttributedStyle().foreground(0, 200, 0).italic());
-        ab.append(command);
     }
 }

@@ -30,8 +30,6 @@ import org.finos.legend.engine.repl.core.Command;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
-import org.jline.utils.AttributedStringBuilder;
-import org.jline.utils.AttributedStyle;
 
 public class Graph implements Command
 {
@@ -45,7 +43,13 @@ public class Graph implements Command
     @Override
     public String documentation()
     {
-        return "graph (<Packageable Element>)";
+        return "graph (<element path>)";
+    }
+
+    @Override
+    public String description()
+    {
+        return "show graph element definition in Pure";
     }
 
     @Override
@@ -61,15 +65,9 @@ public class Graph implements Command
                 ListIterate.forEach(
                         ListIterate.collect(
                                 ListIterate.select(d.getElements(), c -> !c._package.equals("__internal__")),
-                                c ->
-                                {
-                                    AttributedStringBuilder ab = new AttributedStringBuilder();
-                                    ab.append("   ");
-                                    drawPath(ab, c._package, c.name);
-                                    return ab.toAnsi();
-                                }
+                                c -> "  " + (c._package == null || c._package.isEmpty() ? "" : c._package + "::") + c.name
                         ),
-                        e -> this.client.getTerminal().writer().println(e));
+                        this.client::println);
             }
             else
             {
@@ -77,19 +75,11 @@ public class Graph implements Command
                 PackageableElement element = ListIterate.select(d.getElements(), c -> c.getPath().equals(showArgs.getFirst())).getFirst();
                 Section section = LazyIterate.selectInstancesOf(d.getElements(), SectionIndex.class).flatCollect(c -> c.sections).select(c -> c.elements.contains(PureGrammarComposerUtility.convertPath(element.getPath()))).getFirst();
                 PureGrammarComposer composer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
-                this.client.getTerminal().writer().println(composer.render(element, section.parserName));
+                this.client.println(composer.render(element, section.parserName));
             }
             return true;
         }
         return false;
-    }
-
-    public static void drawPath(AttributedStringBuilder ab, String _package, String name)
-    {
-        ab.style(new AttributedStyle().foreground(100, 100, 100).italic());
-        ab.append(_package == null || _package.isEmpty() ? "" : _package + "::");
-        ab.style(new AttributedStyle().foreground(200, 200, 200).italic());
-        ab.append(name);
     }
 
     @Override
@@ -101,22 +91,5 @@ public class Graph implements Command
             return ListIterate.collect(ListIterate.select(d.getElements(), c -> !c._package.equals("__internal__")), c -> new org.jline.reader.Candidate(PureGrammarComposerUtility.convertPath(c.getPath())));
         }
         return null;
-    }
-
-    public static void drawPath(AttributedStringBuilder ab, String path)
-    {
-        MutableList<String> spl = Lists.mutable.with(path.split("::"));
-        if (path.endsWith("::"))
-        {
-            spl.add("");
-        }
-        if (spl.size() == 1)
-        {
-            drawPath(ab, null, spl.get(0));
-        }
-        else
-        {
-            drawPath(ab, spl.subList(0, spl.size() - 1).makeString("::"), spl.getLast());
-        }
     }
 }

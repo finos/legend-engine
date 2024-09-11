@@ -509,6 +509,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::addChildTrees(pa
 function <<access.private>> meta::pure::lineage::scanRelations::addChildTree(parent: RelationTree[1], child:RelationTree[1]):RelationTree[1]
 {
    let parentRelation = $parent.relation->toOne();
+   
    let parentRelationFromJoin = $child.join->map(x|$x->otherTable($child.relation->toOne())).relation->toOne();
 
    if(getRelationName($parentRelation) == getRelationName($parentRelationFromJoin),
@@ -544,7 +545,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::processJoinFromT
 
    let oldToNewTableColumnAlias = $tableAliasColumns->map(tac | let orgColumn     = $tac.column;
 
-                                                                assert($tac.alias.name->in([$targetAliasName, $sourceAliasName]), | 'Columns in join should refer either source alias or target alias');
+                                                                assert($tac.alias.name->in([$targetAliasName, $sourceAliasName]), | 'Columns in join should refer either source alias or target alias in ' +$j.joinName);
 
                                                                 let alias         = if($tac.alias.name == $sourceAliasName, | $sourceOperation, |$targetOperation);
                                                                 let tree          = if($tac.alias.name == $sourceAliasName, | $sourceTree, |$targetTree);
@@ -552,8 +553,9 @@ function <<access.private>> meta::pure::lineage::scanRelations::processJoinFromT
 
                                                                 if($sourceColumn->isEmpty(),
                                                                    |pair($tac, ^SQLNull()),
-                                                                   |let namedRelation       = $sourceColumn.owner->cast(@NamedRelation)->toOne();
-                                                                    let newTableAliasColumn = ^TableAliasColumn(alias=^TableAlias(name = $namedRelation.name, relationalElement=$namedRelation), column = $sourceColumn->toOne(), columnName = $sourceColumn.name->toOne());
+                                                                   | assert( $sourceColumn.owner->cast(@NamedRelation)->isNotEmpty(), 'Expecting column to have an owner ' +$sourceColumn.name->makeString() + 'in ' + $j.joinName );
+                                                                     let namedRelation       = $sourceColumn.owner->cast(@NamedRelation)->toOne();
+                                                                     let newTableAliasColumn = ^TableAliasColumn(alias=^TableAlias(name = $namedRelation.name, relationalElement=$namedRelation), column = $sourceColumn->toOne(), columnName = $sourceColumn.name->toOne());
                                                                     pair($tac, $newTableAliasColumn);
                                                                 ););
 
@@ -584,7 +586,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::processJoinFromT
       |if($debug.debug, | print($debug.space + 'Neglecting this child since only 1 relation found. Expect the join between this relation and a union relation. Part of union relation considered in this iteraton has null assigned to join column\n');, |[]);
        [];,
       |
-      assert($updatedAliases->size() == 2, | 'Expected 2 relations in join. Found : ' + $updatedAliases->size()->toString());
+      assert($updatedAliases->size() == 2, | 'Expected 2 relations in join. Found : ' + $updatedAliases->size()->toString() + ' in '  +$j.joinName );
 
       let milestoningAliasColumns  = $updatedNonNullPairs->removeDuplicatesBy(p | $p.second.alias.name)
                                                          ->map(p |if($p.second.alias.relation->instanceOf(Table),
@@ -612,7 +614,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::processJoinFromT
       let removeGeneratedNullEquality = {r:RelationalOperationElement[1] | if($r->instanceOf(DynaFunction) && $r->cast(@DynaFunction).name->in(['or','and']),
                                                                                |let d              = $r->cast(@DynaFunction);
                                                                                 let filteredParams = $d.parameters->filter(p | !($p->instanceOf(DynaFunction) && $p->cast(@DynaFunction)->isNull($extensions)));
-                                                                                assert($filteredParams->size() >= 1, | 'Expected atleast 1 parameter after filtering nulls');
+                                                                                assert($filteredParams->size() >= 1, | 'Expected atleast 1 parameter after filtering nulls' + ' in '  +$j.joinName );
                                                                                 if($filteredParams->size() == 1,
                                                                                    | $filteredParams->toOne(),
                                                                                    | ^$d(parameters = $filteredParams));,
@@ -647,7 +649,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::extractSourceCol
                               ta:TableAlias[1]       | if($tableAliasColumn.alias.name == $ta.name,| $tableAliasColumn->extractSourceColumn($ta.relation, $relationIdentifiers, $sourceTree), | []);,
                               s:SelectSQLQuery[1]    | $s->extractSourceColumnFromSelectSQLQuery($tableAliasColumn, $relationIdentifiers, $sourceTree);,
                               u:Union[1]             | let colNames = $u.queries->map(query | $query->extractSourceColumnFromSelectSQLQuery($tableAliasColumn, $relationIdentifiers, $sourceTree))->removeDuplicates()->filter(c | $c.name->in($sourceTree.columns.name) && $c.owner->in($sourceTree.columns.owner));
-                                                       assert($colNames->size() <=1 ,|'Expected max 1 column. Found : ' + $colNames->size()->toString());
+                                                       assert($colNames->size() <=1 ,|'Expected max 1 column a union . Found : ' + $colNames->size()->toString()+ ' in '  +$u.setImplementations.id->joinStrings()  ); 
                                                        if($colNames->isEmpty(), | [], | $colNames->toOne());
                            ]);
 }
@@ -658,7 +660,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::extractSourceCol
                                                                                       tac:TableAliasColumn[1] | $tac.column.name]);
                                                            $colName == $tableAliasColumn.column.name;)->extractTableAliasColumns()->removeDuplicates();
 
-   assert($reqTableAliasColumn->size() <= 1 ,|'Expected max 1 column. Found : ' + $reqTableAliasColumn->size()->toString());
+   assert($reqTableAliasColumn->size() <= 1 ,|'Expected max 1 column. Found : ' + $reqTableAliasColumn->size()->toString() +' in '  +$reqTableAliasColumn.column.name->joinStrings());
 
    if($reqTableAliasColumn->isEmpty() || $select.data->isEmpty(),
       |[],

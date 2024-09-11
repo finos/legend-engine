@@ -45,8 +45,8 @@ public class TestGrammarLambdaApi extends TestGrammar<Lambda>
         test("src: Integer[2]|$src->first()->toOne()", true);
         test("src: Person[1]|$src.nameWithTitle('test')", true);
         test("src: Person[1]|$src.name", true);
-        test("src: Boolean[1]|!($src)", true);
-        test("src: Integer[1]|$src->minus()", true);
+        test("src: Boolean[1]|!$src", true);
+        test("src: Integer[1]|-$src", true);
         test("src: Integer[1]|$src->add(\n" +
                 "  1 - 1\n" +
                 ")", true);

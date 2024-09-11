@@ -28,11 +28,11 @@ function meta::pure::metamodel::treepath::buildPropertyPathTree<T>(dfts:LambdaFu
    $threads->mergePropertyPaths();
 }
 
-function meta::pure::metamodel::treepath::removeAutomap(v:ValueSpecification[1]):ValueSpecification[1]
+function meta::pure::metamodel::treepath::tp_removeAutomap(v:ValueSpecification[1]):ValueSpecification[1]
 {
    $v->match([fe:FunctionExpression[1] | if($fe.functionName=='map',| let left = $fe.parametersValues->at(0);
                                                                       let prop = $fe.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<Any>).expressionSequence->at(0)->cast(@FunctionExpression);
-                                                                      let leftUnMapped = $left->removeAutomap();
+                                                                      let leftUnMapped = $left->tp_removeAutomap();
                                                                       ^$prop(parametersValues=$leftUnMapped);
                                                                    ,| $fe);,
                v:ValueSpecification[1] |  $v]);
@@ -43,7 +43,7 @@ function <<access.private>> meta::pure::metamodel::treepath::buildPropertyPath(v
    $vs->evaluateAndDeactivate()
       ->match([ r:RoutedValueSpecification[1] | $r.value->buildPropertyPath($child),
                 v:VariableExpression[1]  | if($child->isNotEmpty(),|$child->toOne(),|assert(false,'Unsupported Deep Fetch Path');^PropertyPathTreeNode();),
-                fe:FunctionExpression[1] | let unMappedFe = $fe->removeAutomap()->cast(@FunctionExpression);
+                fe:FunctionExpression[1] | let unMappedFe = $fe->tp_removeAutomap()->cast(@FunctionExpression);
                                            let property = $unMappedFe.func->cast(@AbstractProperty<Any>);
                                            let parent = ^PropertyPathTreeNode(property=$property, childrenData=$child);
                                            $unMappedFe.parametersValues->map(p|$p->buildPropertyPath($parent))->toOne();

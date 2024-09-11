@@ -1,0 +1,91 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+
+native function <<PCT.function>> meta::pure::functions::relation::sort<X,T>(rel:Relation<T>[1], sortInfo:SortInfo<X⊆T>[*]):Relation<T>[1];
+
+
+function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSimpleSortShared<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = {
+              | #TDS
+                  id, name
+                  2, George
+                  3, Pierre
+                  1, Sachin
+                  1, Neema
+                  5, David
+                  4, Alex
+                  2, Thierry
+                #->sort(ascending(~id));
+            };
+
+  let res =  $f->eval($expr);
+
+  assertEquals([1,1,2,2,3,4,5], $res->map(x|$x.id));
+
+  let expr2 = {
+              | #TDS
+                  id, name
+                  2, George
+                  3, Pierre
+                  1, Sachin
+                  1, Neema
+                  5, David
+                  4, Alex
+                  2, Thierry
+                #->sort([ascending(~id), ascending(~name)]);
+            };
+
+  let res2 =  $f->eval($expr2);
+
+  assertEquals( '#TDS\n'+
+                '   id,name\n'+
+                '   1,Neema\n'+
+                '   1,Sachin\n'+
+                '   2,George\n'+
+                '   2,Thierry\n'+
+                '   3,Pierre\n'+
+                '   4,Alex\n'+
+                '   5,David\n'+
+                '#', $res2->toString());
+
+  let expr3 = {
+              | #TDS
+                  id, name
+                  2, George
+                  3, Pierre
+                  1, Sachin
+                  1, Neema
+                  5, David
+                  4, Alex
+                  2, Thierry
+                #->sort([descending(~id), ascending(~name)]);
+            };
+
+  let res3 =  $f->eval($expr3);
+
+  assertEquals( '#TDS\n'+
+                '   id,name\n'+
+                '   5,David\n'+
+                '   4,Alex\n'+
+                '   3,Pierre\n'+
+                '   2,George\n'+
+                '   2,Thierry\n'+
+                '   1,Neema\n'+
+                '   1,Sachin\n'+
+                '#', $res3->toString());
+}

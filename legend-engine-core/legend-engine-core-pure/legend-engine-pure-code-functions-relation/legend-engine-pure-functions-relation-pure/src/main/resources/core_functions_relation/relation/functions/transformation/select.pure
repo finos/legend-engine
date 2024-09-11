@@ -1,0 +1,122 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+
+native function <<PCT.function>> meta::pure::functions::relation::select<T,Z>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1]):Relation<Z>[1];
+
+native function <<PCT.function>> meta::pure::functions::relation::select<T,Z>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1]):Relation<Z>[1];
+
+native function <<PCT.function>> meta::pure::functions::relation::select<T>(r:Relation<T>[1]):Relation<T>[1];
+
+function <<PCT.test>> meta::pure::functions::relation::tests::select::testMultiColsSelectShared<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                      val, str, other
+                      1, a,  a
+                      3, ewe, b
+                      4, qw, c
+                      5, wwe, d
+                      6, weq, e
+                  #->select(~[val, other]);
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,other\n'+
+                  '   1,a\n'+
+                  '   3,b\n'+
+                  '   4,c\n'+
+                  '   5,d\n'+
+                  '   6,e\n'+
+                  '#', $res->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::select::testSingleColSelectShared<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                      val, str, other
+                      1, a,  a
+                      3, ewe, b
+                      4, qw, c
+                      5, wwe, d
+                      6, weq, e
+                  #->select(~str);
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   str\n'+
+                  '   a\n'+
+                  '   ewe\n'+
+                  '   qw\n'+
+                  '   wwe\n'+
+                  '   weq\n'+
+                  '#', $res->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                      val, str, other kind
+                      1, a,  a
+                      3, ewe, b
+                      4, qw, c
+                      5, wwe, d
+                      6, weq, e
+                  #->select(~'other kind');
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   other kind\n'+
+                  '   a\n'+
+                  '   b\n'+
+                  '   c\n'+
+                  '   d\n'+
+                  '   e\n'+
+                  '#', $res->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::select::testSelectAll<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                      val, str, other
+                      1, a,  a
+                      3, ewe, b
+                      4, qw, c
+                      5, wwe, d
+                      6, weq, e
+                  #->select();
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,str,other\n'+
+                  '   1,a,a\n'+
+                  '   3,ewe,b\n'+
+                  '   4,qw,c\n'+
+                  '   5,wwe,d\n'+
+                  '   6,weq,e\n'+
+                  '#', $res->toString());
+}

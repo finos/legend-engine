@@ -42,9 +42,9 @@ public class RelationalCompleterExtension implements CompleterExtension
             )
             {
                 org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database db = (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database) elements.get(0);
-                String writtenTableName = writtenPath.replace(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(db), "").replace("::", "");
+                String tableName = writtenPath.replace(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(db), "").replace("::", "");
                 MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table> tables = db._schemas().isEmpty() ? Lists.mutable.empty() : db._schemas().getFirst()._tables().toList();
-                MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table> foundTables = tables.select(c -> c._name().startsWith(writtenTableName));
+                MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table> foundTables = tables.select(c -> c._name().startsWith(tableName));
                 if ((foundTables.size() == 1 && foundTables.get(0)._name().equals(path.getLast())))
                 {
                     return new CompletionResult(Lists.mutable.empty());
@@ -62,6 +62,10 @@ public class RelationalCompleterExtension implements CompleterExtension
     private static boolean nameMatch(PackageableElement c, String writtenPath)
     {
         String path = org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(c);
+        if (path.isEmpty()) // NOTE: handle an edge case where stub store is added to the graph
+        {
+            return false;
+        }
         if (path.length() > writtenPath.length())
         {
             return path.startsWith(writtenPath);

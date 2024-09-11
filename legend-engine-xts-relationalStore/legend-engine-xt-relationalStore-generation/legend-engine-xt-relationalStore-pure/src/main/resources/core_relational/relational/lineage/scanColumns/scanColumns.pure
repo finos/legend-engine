@@ -137,7 +137,9 @@ function <<access.private>> meta::pure::lineage::scanColumns::processNonDataType
    let nIdToSet = $targetSetImplementationId->fold({sid,res|if($res->keys()->contains($sid), |$res ,|$res->keyValues()->concatenate(pair($sid,list($m->classMappingById($sid))))->newMap())}, $state.idToSet);
 
    let columnsFromChildren = meta::pure::lineage::scanColumns::manageQualifiers($p.children, [])
-   ->map(c|$c->scanColumns($m, $targetSetImplementationId->map(id|$nIdToSet->get($id).values->toOne()), $state.classToSets, $nIdToSet, false, $debug));
+   ->map(c|$c->scanColumns($m, $targetSetImplementationId->map(id|   let vals = $nIdToSet->get($id).values;  
+                                                                      assert($vals->isNotEmpty(),'Expected to find id but did not '+ $id );
+                                                                      $vals->toOne();), $state.classToSets, $nIdToSet, false, $debug));
 
    ^ColResWithState(colRes=^ColRes(columns = $state.colRes.columns->concatenate($potentialColumnsFromJoin)->concatenate($columnsFromSemiStructuredMappings)->concatenate($columnsFromChildren.colRes.columns), sets=$targetSetImplementationId->map(id|$nIdToSet->get($id).values)),
                     classToSets=$columnsFromChildren.classToSets->map(n|$n->keyValues())->newMap(),

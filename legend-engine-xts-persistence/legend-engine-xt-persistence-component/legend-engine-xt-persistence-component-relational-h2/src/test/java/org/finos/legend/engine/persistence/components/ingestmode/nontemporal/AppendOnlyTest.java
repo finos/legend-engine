@@ -480,7 +480,7 @@ class AppendOnlyTest extends BaseTest
         String expectedIngestSql = "INSERT INTO \"TEST\".\"MAIN\" " +
             "(\"NAME\", \"INCOME\", \"EXPIRY_DATE\", \"DIGEST\", \"BATCH_ID\") " +
             "(SELECT staging.\"NAME\" as \"NAME\",staging.\"INCOME\" as \"INCOME\",staging.\"EXPIRY_DATE\" as \"EXPIRY_DATE\"," +
-            "LAKEHOUSE_MD5(ARRAY['EXPIRY_DATE','INCOME','NAME'],ARRAY[CONVERT(staging.\"EXPIRY_DATE\",VARCHAR),CONVERT(staging.\"INCOME\",VARCHAR),CONVERT(staging.\"NAME\",VARCHAR)])," +
+            "LAKEHOUSE_MD5(ARRAY['EXPIRY_DATE',CONVERT(staging.\"EXPIRY_DATE\",VARCHAR),'INCOME',CONVERT(staging.\"INCOME\",VARCHAR),'NAME',CONVERT(staging.\"NAME\",VARCHAR)])," +
             "(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN') " +
             "FROM \"TEST\".\"STAGING\" as staging)";
 
@@ -568,7 +568,7 @@ class AppendOnlyTest extends BaseTest
         String expectedIngestSql = "INSERT INTO \"TEST\".\"main\" " +
             "(\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"version\", \"digest\", \"batch_update_time\", \"batch_id\") " +
             "(SELECT staging.\"id\" as \"id\",staging.\"name\" as \"name\",staging.\"income\" as \"income\",staging.\"start_time\" as \"start_time\",staging.\"expiry_date\" as \"expiry_date\",staging.\"version\" as \"version\"," +
-            "LAKEHOUSE_MD5(ARRAY['expiry_date','id','income','name','start_time'],ARRAY[CONVERT(staging.\"expiry_date\",VARCHAR),CONVERT(staging.\"id\",VARCHAR),CONVERT(staging.\"income\",VARCHAR),CONVERT(staging.\"name\",VARCHAR),CONVERT(staging.\"start_time\",VARCHAR)])," +
+            "LAKEHOUSE_MD5(ARRAY['expiry_date',CONVERT(staging.\"expiry_date\",VARCHAR),'id',CONVERT(staging.\"id\",VARCHAR),'income',CONVERT(staging.\"income\",VARCHAR),'name',CONVERT(staging.\"name\",VARCHAR),'start_time',CONVERT(staging.\"start_time\",VARCHAR)])," +
             "'2000-01-01 00:00:00.000000'," +
             "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN') " +
             "FROM \"TEST\".\"staging_temp_staging_lp_yosulf\" as staging WHERE (staging.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (staging.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
@@ -670,7 +670,7 @@ class AppendOnlyTest extends BaseTest
         String expectedIngestSql = "INSERT INTO \"TEST\".\"main\" " +
             "(\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"version\", \"digest\", \"batch_update_time\", \"batch_id\") " +
             "(SELECT staging.\"id\" as \"id\",staging.\"name\" as \"name\",staging.\"income\" as \"income\",staging.\"start_time\" as \"start_time\",staging.\"expiry_date\" as \"expiry_date\",staging.\"version\" as \"version\"," +
-            "LAKEHOUSE_MD5(ARRAY['expiry_date','id','income','name','start_time'],ARRAY[CONVERT(staging.\"expiry_date\",VARCHAR),CONVERT(staging.\"id\",VARCHAR),CONVERT(staging.\"income\",VARCHAR),StringToString(staging.\"name\"),CONVERT(staging.\"start_time\",VARCHAR)])," +
+            "LAKEHOUSE_MD5(ARRAY['expiry_date',CONVERT(staging.\"expiry_date\",VARCHAR),'id',CONVERT(staging.\"id\",VARCHAR),'income',CONVERT(staging.\"income\",VARCHAR),'name',StringToString(staging.\"name\"),'start_time',CONVERT(staging.\"start_time\",VARCHAR)])," +
             "'2000-01-01 00:00:00.000000'," +
             "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN') " +
             "FROM \"TEST\".\"staging_temp_staging_lp_yosulf\" as staging WHERE (staging.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (staging.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";

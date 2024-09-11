@@ -50,3 +50,13 @@ function <<test.Test>> meta::pure::executionPlan::tests::featureFlag::testContex
   assert( $context1 ->contextHasFlag(meta::pure::executionPlan::tests::ExampleFlag.myFlag));
 
 }
+
+function <<test.Test>> meta::pure::executionPlan::tests::featureFlagOptionEquality(): Boolean[1]
+{
+  let context1 = ^ExecutionOptionContext(executionOptions=^FeatureFlagOption(flags=meta::pure::executionPlan::tests::ExampleFlag.myFlag));
+  let context2 = ^ExecutionOptionContext(executionOptions=^FeatureFlagOption(flags=meta::pure::executionPlan::tests::ExampleFlag.myFlag));
+  let context3 = ^ExecutionOptionContext(executionOptions=^FeatureFlagOption());
+  
+  assertEquals($context1, $context2);
+  assertNotEquals($context1, $context3);
+}

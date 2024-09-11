@@ -15,12 +15,16 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class PureModelProcessParameter
 {
     private final String packagePrefix;
     private final ForkJoinPool forkJoinPool;
     private final boolean enablePartialCompilation;
+    private final AutoCloseableLock parallelReadLock;
+    private final AutoCloseableLock parallelWriteLock;
 
     PureModelProcessParameter()
     {
@@ -37,6 +41,18 @@ public class PureModelProcessParameter
         this.packagePrefix = packagePrefix;
         this.forkJoinPool = forkJoinPool;
         this.enablePartialCompilation = enablePartialCompilation;
+        if (this.forkJoinPool != null)
+        {
+            ReentrantReadWriteLock parallelLock = new ReentrantReadWriteLock();
+            this.parallelReadLock = new AutoCloseableLockImpl(parallelLock.readLock());
+            this.parallelWriteLock = new AutoCloseableLockImpl(parallelLock.writeLock());
+        }
+        else
+        {
+            AutoCloseableLockNoOp noOpLock = new AutoCloseableLockNoOp();
+            this.parallelReadLock = noOpLock;
+            this.parallelWriteLock = noOpLock;
+        }
     }
 
     public String getPackagePrefix()
@@ -47,6 +63,16 @@ public class PureModelProcessParameter
     public ForkJoinPool getForkJoinPool()
     {
         return this.forkJoinPool;
+    }
+
+    AutoCloseableLock readLock()
+    {
+        return this.parallelReadLock.lock();
+    }
+
+    AutoCloseableLock writeLock()
+    {
+        return this.parallelWriteLock.lock();
     }
 
     public boolean getEnablePartialCompilation()
@@ -105,6 +131,42 @@ public class PureModelProcessParameter
         public PureModelProcessParameter build()
         {
             return new PureModelProcessParameter(this.packagePrefix, this.forkJoinPool, this.enablePartialCompilation);
+        }
+    }
+
+    private static class AutoCloseableLockImpl implements AutoCloseableLock
+    {
+        private final Lock lock;
+
+        public AutoCloseableLockImpl(Lock lock)
+        {
+            this.lock = lock;
+        }
+
+        public AutoCloseableLock lock()
+        {
+            this.lock.lock();
+            return this;
+        }
+
+        public void close()
+        {
+            this.lock.unlock();
+        }
+    }
+
+    private static class AutoCloseableLockNoOp implements AutoCloseableLock
+    {
+        @Override
+        public AutoCloseableLock lock()
+        {
+            return this;
+        }
+
+        @Override
+        public void close()
+        {
+
         }
     }
 }

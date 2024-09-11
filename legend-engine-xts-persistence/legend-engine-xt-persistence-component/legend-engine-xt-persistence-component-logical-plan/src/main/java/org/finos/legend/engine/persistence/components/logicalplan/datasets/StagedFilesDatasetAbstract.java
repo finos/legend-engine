@@ -62,7 +62,7 @@ public interface StagedFilesDatasetAbstract extends Dataset
     {
         return StagedFilesDatasetReference.builder()
             .properties(this.stagedFilesDatasetProperties())
-            .addAllColumns(this.schema().fields().stream().map(field -> field.name()).collect(Collectors.toList()))
+            .addAllColumns(this.schema().fields())
             .alias(alias())
             .build();
     }

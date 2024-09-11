@@ -2127,4 +2127,364 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::ownerInPropertySubTree::M
   }
 )
 
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::A
+{
+   a: String[0..1];
+   b: String[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::_A
+{
+   b : _B[0..1];
+   c : _C[0..1];
+   s1 : String[0..1];
+   s2 : String[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::_B
+{
+   d: _D[0..1];
+}
+
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::_C
+{
+   b: _B[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::_D
+{
+   val1: String[1];
+   val2:String[1];
+}
+
+function meta::pure::lineage::scanProperties::test::func(d: _D[0..1], s:String[0..1]):String[0..1]
+{
+  $d->toOne().val1->toOne() + $s->toOne();
+}
+
+function meta::pure::lineage::scanProperties::test::func2(d: _D[0..1], s:String[0..1]):String[0..1]
+{
+  let x = ^_A(b = ^_B(d = ^_D(val1 = 'val1', val2 = 'sampleString'))).b.d.val2;
+  let y = $d->toOne().val1;
+  let z = $d->toOne().val1;
+  $d->toOne().val1 + $x->toOne() + $s->toOne();
+}
+
+function meta::pure::lineage::scanProperties::test::func3(d: _D[0..1], s:String[0..1]):_D[0..1]
+{
+  $d;
+}
+
+function meta::pure::lineage::scanProperties::test::func4(d: _D[0..1], s:String[0..1]):String[0..1]
+{
+  $d->toOne().val1 + $s->toOne();
+}
+
+function meta::pure::lineage::scanProperties::test::func4(d: _D[0..1]):String[0..1]
+{
+  $d->toOne().val2;
+}
+
+function meta::pure::lineage::scanProperties::test::test::func4(d: _D[0..1], s:String[0..1]):String[0..1]
+{
+  $d.val2;
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testsourceTree1():Boolean[1]
+{
+   let tree = #{
+      A {
+         a,
+         b
+       }
+   }#;
+
+   let sourceTree1 = calculateSourceTree($tree, testMapping1, meta::pure::extension::defaultExtensions())->sortTree();
+   let expected1 = #{
+                        _A {
+                          b {
+                              d {
+                                  val1
+                              }
+                          
+                          }, 
+                          c {
+                              b {
+                                  d {
+                                      val1
+                                  }
+                                }
+                            }, 
+                          s1,
+                          s2
+                            }
+                    }#;
+
+   assertEquals($expected1->asString(true), $sourceTree1->asString(true));
+
+   let sourceTree2 = calculateSourceTree($tree, testMapping1WithEmptyValueInFirstCall, meta::pure::extension::defaultExtensions())->sortTree();
+   let expected2 = #{_A {
+                          c {
+                              b {
+                                  d {
+                                      val1
+                                  }
+                              }
+                          }, 
+                          s1, 
+                          s2
+                      }}#;
+
+   assertEquals($expected2->asString(true), $sourceTree2->asString(true));
+
+   let sourceTree3 = calculateSourceTree($tree, testMapping1WithEmptyValueInSecondCall, meta::pure::extension::defaultExtensions())->sortTree();
+   let expected3 = #{_A {
+                          b {
+                              d {
+                                  val1
+                              }
+                          }, 
+                          s1, 
+                          s2
+                      }}#;
+
+   assertEquals($expected3->asString(true), $sourceTree3->asString(true));
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testsourceTree2():Boolean[1]
+{
+   let tree = #{
+      A {
+         a,
+         b
+       }
+   }#;
+
+   let sourceTree = calculateSourceTree($tree, testMapping2, meta::pure::extension::defaultExtensions())->sortTree();
+   let expected = #{
+      _A {
+        b {
+            d {
+                val1,
+                val2
+            }
+        
+        }, 
+        c {
+            b {
+                d {
+                    val1
+                }
+              }
+          }, 
+        s1,
+        s2
+          }
+   }#;
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testsourceTree3():Boolean[1]
+{
+   let tree = #{
+      A {
+         a,
+         b
+       }
+   }#;
+
+   let sourceTree1 = calculateSourceTree($tree, testMapping3, meta::pure::extension::defaultExtensions())->sortTree();
+   let expected1 = #{
+      _A {
+        b {
+            d {
+                val1,
+                val2
+            }
+        
+        }, 
+        c {
+            b {
+                d {
+                    val1
+                }
+              }
+          }, 
+        s1,
+        s2
+          }
+   }#;
+
+   assertEquals($expected1->asString(true), $sourceTree1->asString(true));
+
+   let sourceTree2 = calculateSourceTree($tree, testMapping3WithFunctionsHavingSameNameButDifferentPackage, meta::pure::extension::defaultExtensions())->sortTree();
+   let expected2 = #{
+      _A {
+        b {
+            d {
+                val1
+            }
+        
+        }, 
+        c {
+            b {
+                d {
+                    val2
+                }
+              }
+          }, 
+        s1,
+        s2
+          }
+   }#;
+   assertEquals($expected2->asString(true), $sourceTree2->asString(true));
+
+   let sourceTree3 = calculateSourceTree($tree, testMapping3WithFunctionsOverloading, meta::pure::extension::defaultExtensions())->sortTree();
+   let expected3 = #{
+      _A {
+        b {
+            d {
+                val1
+            }
+        
+        }, 
+        c {
+            b {
+                d {
+                    val2
+                }
+              }
+          }, 
+        s1
+          }
+   }#;
+   assertEquals($expected3->asString(true), $sourceTree3->asString(true));
+   
+   
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testsourceTree4():Boolean[1]
+{
+   let tree = #{
+      A {
+         a,
+         b
+       }
+   }#;
+
+   let sourceTree = calculateSourceTree($tree, testMapping4, meta::pure::extension::defaultExtensions())->sortTree();
+   let expected = #{
+      _A {
+        b {
+            d {
+                val1
+            }
+        
+        }, 
+        c {
+            b {
+                d {
+                    val2
+                }
+              }
+          }, 
+        s1,
+        s2
+          }
+   }#;
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
+
+###Mapping
+import meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::*;
+import meta::pure::lineage::scanProperties::test::*;
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testMapping1
+(
+   A: Pure
+      {
+         ~src _A
+         a: $src.b.d->func($src.s1),
+         b: $src.c.b.d->func($src.s2)
+      }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testMapping1WithEmptyValueInFirstCall
+(
+   A: Pure
+      {
+         ~src _A
+         a: []->func($src.s1),
+         b: $src.c.b.d->func($src.s2)
+      }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testMapping1WithEmptyValueInSecondCall
+(
+   A: Pure
+      {
+         ~src _A
+         a: $src.b.d->func($src.s1),
+         b: []->func($src.s2)
+      }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testMapping2
+(
+   A: Pure
+      {
+         ~src _A
+         a: $src.b.d->func2($src.s1),
+         b: $src.c.b.d->func2($src.s2)
+      }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testMapping3
+(
+   A: Pure
+      {
+         ~src _A
+         a: $src.b.d->func($src.s1),
+         b: $src.c.b.d->func2($src.s2)
+      }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testMapping3WithFunctionsHavingSameNameButDifferentPackage
+(
+   A: Pure
+      {
+         ~src _A
+         a: $src.b.d->meta::pure::lineage::scanProperties::test::func4($src.s1),
+         b: $src.c.b.d->meta::pure::lineage::scanProperties::test::test::func4($src.s2)
+      }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testMapping3WithFunctionsOverloading
+(
+   A: Pure
+      {
+         ~src _A
+         a: $src.b.d->meta::pure::lineage::scanProperties::test::func4($src.s1),
+         b: $src.c.b.d->meta::pure::lineage::scanProperties::test::func4()
+      }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testMapping4
+(
+   A: Pure
+      {
+         ~src _A
+         a: $src.b.d->func3($src.s1).val1,
+         b: $src.c.b.d->func3($src.s2).val2
+      }
+)
+
 

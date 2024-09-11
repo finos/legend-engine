@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.relational.h2;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,7 +51,7 @@ import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.api.DataError;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
-import org.finos.legend.engine.persistence.components.relational.api.ApiUtils;
+import org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils;
 import org.finos.legend.engine.persistence.components.relational.api.ErrorCategory;
 import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
@@ -94,8 +96,9 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_ID_PATTERN;
-import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_START_TS_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.BATCH_ID_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.BATCH_START_TS_PATTERN;
+import static org.finos.legend.engine.persistence.components.transformer.Transformer.TransformOptionsAbstract.DATE_TIME_FORMATTER;
 import static org.finos.legend.engine.persistence.components.util.ValidationCategory.TYPE_CONVERSION;
 import static org.finos.legend.engine.persistence.components.util.ValidationCategory.NULL_VALUE;
 
@@ -211,7 +214,7 @@ public class H2Sink extends AnsiSqlSink
     }
 
     @Override
-    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, PlaceholderValue> placeHolderKeyValues)
+    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, PlaceholderValue> placeHolderKeyValues, Clock executionTimestampClock)
     {
         executor.executePhysicalPlan(ingestSqlPlan, placeHolderKeyValues);
 
@@ -239,6 +242,7 @@ public class H2Sink extends AnsiSqlSink
             .updatedDatasets(datasets)
             .putAllStatisticByName(stats)
             .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN).value())
+            .ingestionEndTimestampUTC(LocalDateTime.now(executionTimestampClock).format(DATE_TIME_FORMATTER))
             .build();
 
         return result;
@@ -259,7 +263,7 @@ public class H2Sink extends AnsiSqlSink
     private List<DataError> parseH2Exceptions(Exception e)
     {
         String errorMessage = e.getMessage();
-        String errorMessageWithoutLineBreak = ApiUtils.removeLineBreaks(errorMessage);
+        String errorMessageWithoutLineBreak = IngestionUtils.removeLineBreaks(errorMessage);
 
         if (errorMessage.contains("IO Exception"))
         {
@@ -331,15 +335,15 @@ public class H2Sink extends AnsiSqlSink
         Optional<String> value = Optional.empty();
         if (errorMessage.contains("Data conversion error"))
         {
-            value = ApiUtils.findToken(errorMessage, "Data conversion error converting \"(.*)\"", 1);
+            value = IngestionUtils.findToken(errorMessage, "Data conversion error converting \"(.*)\"", 1);
         }
         else if (errorMessage.contains("Cannot parse"))
         {
-            value = ApiUtils.findToken(errorMessage, "Cannot parse \"(.*)\" constant \"(.*)\"", 2);
+            value = IngestionUtils.findToken(errorMessage, "Cannot parse \"(.*)\" constant \"(.*)\"", 2);
         }
         else if (errorMessage.contains("IO Exception"))
         {
-            value = ApiUtils.findToken(errorMessage, "IO Exception: \"IOException reading (.*)\"", 1);
+            value = IngestionUtils.findToken(errorMessage, "IO Exception: \"IOException reading (.*)\"", 1);
         }
         return value;
     }

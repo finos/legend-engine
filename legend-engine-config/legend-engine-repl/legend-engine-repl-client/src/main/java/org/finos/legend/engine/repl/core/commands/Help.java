@@ -17,6 +17,7 @@ package org.finos.legend.engine.repl.core.commands;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
+import org.finos.legend.engine.repl.shared.REPLHelper;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
@@ -39,11 +40,18 @@ public class Help implements Command
     }
 
     @Override
+    public String description()
+    {
+        return "show available commands and their usage";
+    }
+
+    @Override
     public boolean process(String cmd) throws Exception
     {
-        if (cmd.isEmpty() || cmd.equals("help"))
+        if (cmd.trim().isEmpty() || cmd.trim().equals("help"))
         {
-            this.client.getTerminal().writer().println(this.commands.collect(c -> "   " + c.documentation()).makeString("\n"));
+            MutableList<Command> commands = this.commands.select(c -> c.parentCommand() == null);
+            this.client.println(REPLHelper.generateCommandsHelp(commands));
             return true;
         }
         return false;

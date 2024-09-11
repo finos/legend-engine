@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.hostedService.compiler.toPureGraph;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.code.core.CoreFunctionActivatorCodeRepositoryProvider;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
@@ -34,6 +35,7 @@ import org.finos.legend.pure.generated.Root_meta_external_function_activator_hos
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_HostedService_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_Ownership;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_UserList_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
 import org.finos.legend.pure.m3.navigation.function.FunctionDescriptor;
 
@@ -67,24 +69,13 @@ public class HostedServiceCompilerExtension implements CompilerExtension
                         HostedService.class,
                         org.eclipse.collections.impl.factory.Lists.fixedSize.with(HostedServiceDeploymentConfiguration.class, ExecutionEnvironmentInstance.class, Function.class),
                         this::buildHostedService
-                )//,
-//                Processor.newProcessor(
-//                        ExecutionEnvironmentInstance.class,
-//                        org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableConnection.class, PackageableRuntime.class),
-//                        (execEnv, context) -> new Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance_Impl(execEnv.name, null, context.pureModel.getClass("meta::legend::service::metamodel::ExecutionEnvironmentInstance"))
-//                                ._name(execEnv.name),
-//                        (execEnv, context) ->
-//                        {
-//                            Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance pureExecEnv = (Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance) context.pureModel.getOrCreatePackage(execEnv._package)._children().detect(c -> execEnv.name.equals(c._name()));
-//                            pureExecEnv._executionParameters(ListIterate.collect(execEnv.executionParameters, params -> HelperHostedServiceBuilder.processExecutionParameters(params, context)));
-//                        })
+                )
         );
     }
 
     public Root_meta_external_function_activator_hostedService_HostedServiceDeploymentConfiguration buildDeploymentConfig(HostedServiceDeploymentConfiguration config, CompileContext context)
     {
         return new Root_meta_external_function_activator_hostedService_HostedServiceDeploymentConfiguration_Impl("", null, context.pureModel.getClass("meta::external::function::activator::hostedService::HostedServiceDeploymentConfiguration"));
-              //  ._stage(context.pureModel.getEnumValue("meta::external::function::activator::DeploymentStage", config.stage.name()));
     }
 
     public Root_meta_external_function_activator_hostedService_HostedService buildHostedService(HostedService app, CompileContext context)
@@ -97,6 +88,8 @@ public class HostedServiceCompilerExtension implements CompilerExtension
                         null,
                         context.pureModel.getClass("meta::external::function::activator::hostedService::HostedService")
                         )
+                        ._stereotypes(ListIterate.collect(app.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
+                        ._taggedValues(ListIterate.collect(app.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)))
                         ._pattern(app.pattern)
                         ._function(func)
                         ._documentation(app.documentation)

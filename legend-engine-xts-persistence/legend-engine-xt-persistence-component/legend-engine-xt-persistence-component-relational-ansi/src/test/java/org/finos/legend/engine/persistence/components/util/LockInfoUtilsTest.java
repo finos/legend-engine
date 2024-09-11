@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components.util;
 
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Update;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
@@ -29,6 +30,7 @@ import java.time.Clock;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public class LockInfoUtilsTest
 {
@@ -43,14 +45,44 @@ public class LockInfoUtilsTest
     public void testInitializeLockInfo()
     {
         LockInfoUtils store = new LockInfoUtils(lockInfoDataset);
-        Insert operation = store.initializeLockInfo("main", BatchStartTimestamp.INSTANCE);
+        Insert operation = store.initializeLockInfo(BatchStartTimestamp.INSTANCE);
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions);
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(operation).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expectedSql = "INSERT INTO main_table_lock (\"insert_ts_utc\", \"table_name\") " +
-                "(SELECT '2000-01-01 00:00:00.000000','main' WHERE NOT (EXISTS (SELECT * FROM main_table_lock as main_table_lock)))";
+        String expectedSql = "INSERT INTO main_table_lock (\"insert_ts_utc\") " +
+                "(SELECT '2000-01-01 00:00:00.000000' WHERE NOT (EXISTS (SELECT * FROM main_table_lock as main_table_lock)))";
         Assertions.assertEquals(expectedSql, list.get(0));
+    }
+
+    @Test
+    public void testInitializeLockInfoForMultiIngest()
+    {
+        LockInfoUtils store = new LockInfoUtils(lockInfoDataset);
+        List<Operation> operation = store.initializeLockInfoForMultiIngest(Optional.empty(), BatchStartTimestamp.INSTANCE);
+        RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions);
+        LogicalPlan logicalPlan = LogicalPlan.builder().addAllOps(operation).build();
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<String> list = physicalPlan.getSqlList();
+        String expectedInsertSql = "INSERT INTO main_table_lock (\"insert_ts_utc\", \"batch_id\") " +
+                "(SELECT '2000-01-01 00:00:00.000000',0 WHERE NOT (EXISTS (SELECT * FROM main_table_lock as main_table_lock)))";
+        Assertions.assertEquals(expectedInsertSql, list.get(0));
+    }
+
+    @Test
+    public void testInitializeLockInfoForMultiIngestWithBatchIdValue()
+    {
+        LockInfoUtils store = new LockInfoUtils(lockInfoDataset);
+        List<Operation> operation = store.initializeLockInfoForMultiIngest(Optional.of(50L), BatchStartTimestamp.INSTANCE);
+        RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions);
+        LogicalPlan logicalPlan = LogicalPlan.builder().addAllOps(operation).build();
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<String> list = physicalPlan.getSqlList();
+        String expectedUpdateSql = "UPDATE main_table_lock as main_table_lock SET main_table_lock.\"batch_id\" = 50 WHERE main_table_lock.\"batch_id\" IS NULL";
+        String expectedInsertSql = "INSERT INTO main_table_lock (\"insert_ts_utc\", \"batch_id\") " +
+                "(SELECT '2000-01-01 00:00:00.000000',50 WHERE NOT (EXISTS (SELECT * FROM main_table_lock as main_table_lock)))";
+        Assertions.assertEquals(expectedInsertSql, list.get(0));
+        Assertions.assertEquals(expectedUpdateSql, list.get(1));
     }
 
     @Test
@@ -63,6 +95,30 @@ public class LockInfoUtilsTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
         String expectedSql = "UPDATE main_table_lock as main_table_lock SET main_table_lock.\"last_used_ts_utc\" = '2000-01-01 00:00:00.000000'";
+        Assertions.assertEquals(expectedSql, list.get(0));
+    }
+
+    @Test
+    public void testUpdateBatchId()
+    {
+        LockInfoUtils store = new LockInfoUtils(lockInfoDataset);
+        LogicalPlan logicalPlan = store.updateBatchId(10);
+        RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions);
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<String> list = physicalPlan.getSqlList();
+        String expectedSql = "UPDATE main_table_lock as main_table_lock SET main_table_lock.\"batch_id\" = 10";
+        Assertions.assertEquals(expectedSql, list.get(0));
+    }
+
+    @Test
+    public void testGetLogicalPlanForNextBatchIdValue()
+    {
+        LockInfoUtils store = new LockInfoUtils(lockInfoDataset);
+        LogicalPlan logicalPlan = store.getLogicalPlanForNextBatchIdValue();
+        RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions);
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<String> list = physicalPlan.getSqlList();
+        String expectedSql = "SELECT MAX(main_table_lock.\"batch_id\")+1 FROM main_table_lock as main_table_lock";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 }

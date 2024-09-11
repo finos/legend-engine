@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.test.semiStructured;
 
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -42,6 +44,15 @@ public class TestExplodeSemiStructured extends AbstractTestSemiStructured
 
         String h2ViewResult = this.executeFunction(queryFunction, h2ViewMapping, h2ViewRuntime);
         Assert.assertEquals(expected, h2ViewResult.replace("\r\n", "\n"));
+    }
+
+    @Test
+    public void testCanProperlyMixExtractAndExplode()
+    {
+        String queryFunction = "simple::query::blockAndAssociatedTradeStatus__TabularDataSet_1_";
+        String expected = "select \"root\".ID as \"Id\", cast(legend_h2_extension_json_navigate(\"blocks_1\".TRADESUMMARY, 'status', null) as varchar) as \"Trades/Status\" from Semistructured.Blocks as \"root\" left outer join (select \"trades_0\".ID, \"trades_0\".STATUS, \"trades_0\".TRADESUMMARY, \"blocks_2\".leftJoinKey_0 as leftJoinKey_0 from (select \"ss_flatten_0\".VALUE as flattened_prop, \"root\".BLOCKDATA, \"root\".ID as leftJoinKey_0 from Semistructured.Blocks as \"root\" left outer join legend_h2_extension_flatten_array('Semistructured.Blocks','BLOCKDATA',ARRAY['\"relatedEntities\"','\"trades\"']) as \"ss_flatten_0\" on (\"ss_flatten_0\".__INPUT__ = cast(legend_h2_extension_json_navigate(legend_h2_extension_json_navigate(\"root\".BLOCKDATA, 'relatedEntities', null), 'trades', null) as varchar))) as \"blocks_2\" inner join Semistructured.Trades as \"trades_0\" on (cast(legend_h2_extension_json_navigate(\"blocks_2\".BLOCKDATA, 'tag', null) as varchar) = cast(legend_h2_extension_json_navigate(legend_h2_extension_json_navigate(\"trades_0\".TRADESUMMARY, 'tradeSummary', null), 'tradeTag', null) as varchar) and cast(legend_h2_extension_json_navigate(\"blocks_2\".flattened_prop, 'tagId', null) as varchar) = cast(legend_h2_extension_json_navigate(\"trades_0\".TRADESUMMARY, 'tradeTag', null) as varchar))) as \"blocks_1\" on (\"root\".ID = \"blocks_1\".leftJoinKey_0)";
+        SingleExecutionPlan plan = this.generatePlan(queryFunction, "simple::mapping::semistructuredWithExtractAndExplode", "simple::runtime::runtimeExtractExplode");
+        Assert.assertEquals(expected, ((SQLExecutionNode)plan.rootExecutionNode.executionNodes.get(0)).sqlQuery);
     }
 
     @Test

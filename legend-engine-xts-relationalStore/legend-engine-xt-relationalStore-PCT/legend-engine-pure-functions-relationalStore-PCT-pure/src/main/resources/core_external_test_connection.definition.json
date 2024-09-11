@@ -3,15 +3,15 @@
   "pattern": "(meta::pure::testConnection|meta::relational::relation|meta::relational::tests::pct)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
     "platform_dsl_mapping",
     "platform_dsl_store",
     "platform_dsl_tds",
     "platform_store_relational",
-    "platform_functions_relation",
-    "platform_functions_json",
+    "core_external_compiler",
+    "core_functions_relation",
+    "core_functions_json",
     "core",
-    "core_functions",
+    "core_functions_unclassified",
     "core_relational"
   ]
 }

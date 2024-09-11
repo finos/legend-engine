@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::tests::pct::*;
+import meta::json::*;
+import meta::relational::mapping::*;
+import meta::relational::metamodel::datatype::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::metamodel::relation::*;
@@ -57,11 +61,22 @@ function <<PCT.adapter>> meta::relational::tests::pct::testAdapterForRelationalW
   )
 }
 
+function meta::relational::tests::pct::extractDependentFunctions(f:Any[1]):Function<Any>[*]
+{
+  $f->match([
+    z:FunctionDefinition<Any>[1]|$z.expressionSequence->evaluateAndDeactivate()->map(x|$x->extractDependentFunctions()),
+    x:SimpleFunctionExpression[1]|let res = $x.parametersValues->map(p|$p->extractDependentFunctions());
+                                  $res->concatenate(if(!$x.func->hasStereotype('function', PCT),|$x.func,|[]));,
+    a:Any[1]|[]
+  ]);  
+}
+
 function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:Function<{->X[o]}>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1]):X[o]
 {
     let debug = noDebug();
 
-    let newFunction = $f->meta::relational::tests::pct::process::reprocess($dbc, $debug).first;
+    let repocessed = $f->meta::relational::tests::pct::process::reprocess($dbc, $debug);
+    let newFunction = $repocessed.first;
 
     let extensions =  meta::relational::extension::relationalExtensions();
 
@@ -79,42 +94,189 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
 
     print(if($debug.debug,|'\nResult JSON:\n'+$x+'\n',|''));
     // ----
+    
+    let json = $x->meta::json::parseJSON();
 
-    let res = $x->meta::json::parseJSON()->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult);
-
-    // processResult
-    let resultType = $f->functionReturnType().rawType;
-
-    if ($resultType->toOne()->instanceOf(PrimitiveType),
-      | let resultFinal = $res.result.rows->at(0).values->at(0);
-        print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->makeString(','),|''));
-        $resultFinal;,
-      | let tdsString = $res.result.columns->joinStrings(',') + '\n' +
-                        $res.result.rows->map(x|
-                            range($x.values->size())->map(z | if($x.values->at($z) == TDSNull,
-                                                                  |let type = $res.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns->at($z).type;
-                                                                    if ([
-                                                                        pair(|$type == 'Integer', |-2147483648),
-                                                                        pair(|$type == 'String', |'null')
-                                                                        ],
-                                                                        |fail();0;
-                                                                    );,
-                                                                  |$x.values->at($z)
-                                                              )
-                                                      )->makeString(',')
-                            )->joinStrings('\n');
-          let resultFinal = $tdsString->stringToTDS();
-          print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->toString(),|''));
-          $resultFinal;
+    if ($json->cast(@JSONObject).keyValuePairs->filter(k|$k.key.value=='result').value->isEmpty(),
+      | let res = $json->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalClassResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalClassResult)->toOne();
+        let x= meta::protocols::pure::vX_X_X::invocation::execution::execute::processRelationalClassResult($res, $repocessed.second.mapping->toOne(), $repocessed.second.runtime, [], $extensions);
+        $x.first.values;,
+      | let res = $json->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult)->toOne();
+        // processResult
+        let resultType = $f->functionReturnType().rawType;
+        if ($resultType->toOne()->instanceOf(PrimitiveType),
+          | let preResultFinal = $res.result.rows->at(0).values->at(0);
+            let resultFinal = 
+              if ([
+                    pair(|$resultType->toOne()->subTypeOf(Date), |buildDate($preResultFinal->toString())),
+                    pair(|$resultType->toOne()->subTypeOf(Decimal), |$preResultFinal->cast(@Number)->toDecimal()),
+                    pair(|$resultType->toOne()->subTypeOf(Integer), |$preResultFinal->cast(@Number)->round()),
+                    pair(|$resultType->toOne()->subTypeOf(Float), |$preResultFinal->cast(@Number)->toFloat())
+                  ],
+                | $preResultFinal->toOne()
+              );
+            print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->makeString(','),|''));
+            $resultFinal;,
+          | let tdsString = $res.result.columns->joinStrings(',') + '\n' +
+                            $res.result.rows->map(x|
+                                range($x.values->size())->map(z | if($x.values->at($z) == TDSNull,
+                                                                      |let type = $res.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns->at($z).type;
+                                                                        if ([
+                                                                            pair(|$type == 'Integer', |-2147483648),
+                                                                            pair(|$type == 'String', |'null')
+                                                                            ],
+                                                                            |fail();0;
+                                                                        );,
+                                                                      |$x.values->at($z)
+                                                                  )
+                                                          )->makeString(',')
+                                )->joinStrings('\n');
+              let resultFinal = $tdsString->stringToTDS();
+              print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->toString(),|''));
+              $resultFinal;
+        );
     )->cast(@X)->toMultiplicity(@[o]);
 }
 
-function meta::relational::tests::pct::process::reprocess(f:Function<{->Any[*]}>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1], debug: DebugContext[1]):Pair<FunctionDefinition<{->Any[*]}>,ProcessingState>[1]
+function meta::relational::tests::pct::process::buildDate(dateStr:String[1]):Date[1]
+{
+  // Need to find a better way...
+  
+  // Manage SubSecond
+  let _dot = if ($dateStr->contains('.'),
+    | let subPart = $dateStr->substring($dateStr->indexOf('.') + 1, $dateStr->lastIndexOf('+'));
+      let x = '.'+$subPart;
+      if ($subPart == '000000000',
+        | $dateStr->substring(0, $dateStr->indexOf('.')) + '' + $dateStr->substring($dateStr->lastIndexOf('+')),
+        | $dateStr->substring(0, $dateStr->indexOf('.')) + $x->parseFloat()->toString()->substring(1) + $dateStr->substring($dateStr->lastIndexOf('+'))
+      );,
+    | $dateStr
+  );
+
+  // Remove +
+  let _plus = if ($_dot->startsWith('+'),
+    |$_dot->substring(1),
+    |$_dot
+  );
+
+  // StrictDate
+  let _strict = if ($_plus->contains('T'),
+    |let time = $_plus->substring($_plus->indexOf('T') + 1, $_plus->lastIndexOf('+'));
+     if ($time == '00:00:00',
+          | $_plus->substring(0, $_plus->indexOf('T')),
+          | $_plus
+        );,
+    |$_plus
+  );
+
+  meta::pure::functions::string::parseDate($_strict);
+}
+
+function meta::relational::tests::pct::process::printDatabase(d:Database[1]):String[1]
+{
+  'Database '+$d->elementToPath()+
+  '('+
+   $d.schemas->map(
+      s | 'Schema '+$s.name + '('+ $s.tables->map(x|
+              'Table '+$x.name+'('+
+                  $x.columns->map(z|let c = $z->cast(@meta::relational::metamodel::Column);
+                                    if($c.name->contains(' '),|'"'+$c.name+'"',|$c.name) + ' ' + $c.type->match([
+                                                          x : Varchar[1] | 'VARCHAR('+$x.size->toString()+')',
+                                                          z : Any[1] | $z->type().name->toOne()
+                                                        ]
+                                                      ) + if ($x.primaryKey->contains($c),|' PRIMARY KEY',|'');
+                                 )->joinStrings(',')+
+              ')'
+                  )->joinStrings(' ') + ')'
+          )->joinStrings(';')+
+    $d.joins->map(
+      j | 'Join '+$j.name+'('+$j.operation->printRelationalOperationElement(false)+')'
+    )->joinStrings(' ')+
+  ')';
+}
+
+function meta::relational::tests::pct::process::printMapping(d:Mapping[1]):String[1]
+{
+  'Mapping '+$d->elementToPath()+
+  '('+
+    $d.classMappings->map(si|
+      $si.class->elementToPath() + '['+$si.id+']:' + $si->match(
+        [
+          rs:RootRelationalInstanceSetImplementation[1] | 'Relational {'+
+              $rs.propertyMappings->cast(@RelationalPropertyMapping)->map(pm|
+                $pm.property.name->toOne() + if($pm.targetSetImplementationId == '',|'',|'['+$pm.targetSetImplementationId+']') + ':'+$pm.relationalOperationElement->printRelationalOperationElement(true))->joinStrings(', ')
+          +'}'
+        ]
+      )
+    )->joinStrings(' ')+
+  ')';
+}
+
+function meta::relational::tests::pct::process::printRelationalOperationElement(d:RelationalOperationElement[1], forMapping:Boolean[1]):String[1]
+{
+  $d->match(
+    [
+      t:TableAliasColumn[1]|if($forMapping,|'['+$t.alias.database->toOne()->elementToPath()+']',|'')+$t.alias.relationalElement->cast(@Table).schema.name->toOne()+'.'+$t.alias.relationalElement->cast(@Table).name+'.'+$t.column.name,
+      x:RelationalOperationElementWithJoin[1]|'['+$x.joinTreeNode.database->toOne()->elementToPath()+']@'+$x.joinTreeNode.joinName->toOne(),
+      v:DynaFunction[1]|$v.name + '('+$v.parameters->map(p|$p->printRelationalOperationElement($forMapping))->joinStrings(',')+')'
+    ]
+  )
+}
+
+function meta::relational::tests::pct::process::reprocess(connection:meta::external::store::relational::runtime::RelationalDatabaseConnection[1]):String[1]
+{
+  '^meta::external::store::relational::runtime::RelationalDatabaseConnection('+
+  'type='+$connection.type->meta::pure::metamodel::serialization::grammar::printValueSpecification([], '')+','+
+  'authenticationStrategy = '+$connection.authenticationStrategy->printNew()+','+ //^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy(),'+
+  'datasourceSpecification = '+$connection.datasourceSpecification->printNew()+ //^meta::pure::alloy::connections::alloy::specification::DuckDBDatasourceSpecification(path = \'\')'+
+  ')'
+}
+
+function meta::relational::tests::pct::process::printNew(a:Any[1]):String[1]
 {  
+  $a->match(
+    [
+       i:Integer[1] | $i->toString(),
+       x:String[1] | '\''+$x+'\'',
+       a:Any[1] |
+         let _type = $a->type()->cast(@Class<Any>);
+         let properties = $_type->meta::pure::functions::meta::hierarchicalProperties();
+         '^'+$a->type()->elementToPath()+'('+
+          $properties->map(p| let value = $p->eval($a);
+                              if ($value->isEmpty(),
+                                |'',
+                                |$p.name->toOne() + '=' + $value->map(w|$w->printNew())->joinStrings(',')
+                              );
+                       )->filter(v|$v != '')->joinStrings(',')+
+        ')';
+    ]
+  );
+}
+
+function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1], debug: DebugContext[1]):Pair<FunctionDefinition<Any>,ProcessingState>[1]
+{ 
+  let otherFuncs = $f->cast(@FunctionDefinition<Any>)->meta::relational::tests::pct::extractDependentFunctions();
+
+  let ext = ^meta::pure::metamodel::serialization::grammar::Configuration
+            (
+              fullPath = true,
+              extensions =   ^meta::pure::metamodel::serialization::grammar::GrammarExtension(
+                                extraConnectionHandlers =
+                                  [
+                                    x:RelationalDatabaseConnection[0..1] |
+                                        $x->toOne()->reprocess(); 
+                                  ],
+                                extraInstanceValueHandlers = 
+                                  [
+                                    x:RelationStoreAccessor<Any>[1]|'#>{'+$x.store->elementToPath()+'.'+$x.sourceElement->cast(@Table).name->toOne()+'}#',
+                                    t:meta::pure::metamodel::relation::TDS<Any>[1]|'#TDS\n'+$t.csv->replace(' ','')+'#'
+                                  ]
+                            )
+            );
   $f->match(
     [
-      z:FunctionDefinition<{->Any[*]}>[1]|
-            print(if($debug.debug,|'BEFORE: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($z, '')+'\n',|''));
+      z:FunctionDefinition<Any>[1]|
+            print(if($debug.debug,|'BEFORE: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($z, $ext, '')+'\n',|''));
 
             // Init
             let initState = meta::relational::tests::pct::process::initState(
@@ -164,7 +326,7 @@ function meta::relational::tests::pct::process::reprocess(f:Function<{->Any[*]}>
                                                         )                                                                
                                 );
 
-            print(if($debug.debug,|'AFTER: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, '') + '\n',|''));
+            print(if($debug.debug,|'AFTER: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, '') + '\n',|''));
 
             // Update the database ------------
             let setUpSQLs = $reprocessed.csvs->joinStrings('\n-\n')->meta::alloy::service::execution::setUpDataSQLs($reprocessed.database->toOne(), $dbc.type);
@@ -189,7 +351,28 @@ function meta::relational::tests::pct::process::reprocess(f:Function<{->Any[*]}>
             meta::legend::executePlanAsJSON($planAsJson, []);
             // Update the database ------------
 
-            pair($newFunction, $reprocessed->toOne());
+            let code =  '\n###Relational\n'+
+                        $reprocessed.database->toOne()->printDatabase()+
+                        if ($reprocessed.mapping->isEmpty(),
+                          |'',
+                          |'\n###Mapping\n' +
+                          $reprocessed.mapping->toOne()->printMapping()
+                        )+
+                        '\n###Pure\n'+
+                        $otherFuncs->filter(x|$x->instanceOf(FunctionDefinition))->map(o|'function '+$o->cast(@PackageableElement).package->toOne()->elementToPath()+'::'+$o->cast(@FunctionDefinition<Any>)->meta::pure::metamodel::serialization::grammar::printFunctionDefinition($ext, '');)->joinStrings('')+
+                        'function test::lambdaContainer():Any[*]{\n'+
+                        '  '+meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, '')+'\n'+
+                        '}'
+                        ;
+
+            //println($code);
+
+            let alloyCompiled = meta::legend::compile($code)->filter(x|$x.name == 'lambdaContainer__Any_MANY_')->cast(@FunctionDefinition<Any>).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@FunctionDefinition<Any>);
+
+            //println($alloyCompiled.expressionSequence->at(0)->cast(@FunctionExpression)->evaluateAndDeactivate().parametersValues);
+
+            //pair($newFunction, $reprocessed->toOne());
+            pair($alloyCompiled, $reprocessed->toOne());
     ]
   );
 }
@@ -271,9 +454,13 @@ function meta::relational::tests::pct::process::reprocess(a:Any[1], state:Proces
                                 | if (!$z.func->in(
                                               [
                                                   meta::pure::functions::relation::funcColSpecArray_FuncColSpec_MANY__P_1__FuncColSpecArray_1_,
+                                                  meta::pure::functions::relation::funcColSpecArray2_FuncColSpec_MANY__P_1__FuncColSpecArray_1_,
                                                   meta::pure::functions::relation::funcColSpec_Function_1__String_1__T_1__FuncColSpec_1_,
+                                                  meta::pure::functions::relation::funcColSpec2_Function_1__String_1__T_1__FuncColSpec_1_,
                                                   meta::pure::functions::relation::aggColSpecArray_AggColSpec_MANY__P_1__AggColSpecArray_1_,
-                                                  meta::pure::functions::relation::aggColSpec_Function_1__Function_1__String_1__T_1__AggColSpec_1_
+                                                  meta::pure::functions::relation::aggColSpecArray2_AggColSpec_MANY__P_1__AggColSpecArray_1_,
+                                                  meta::pure::functions::relation::aggColSpec_Function_1__Function_1__String_1__T_1__AggColSpec_1_,
+                                                  meta::pure::functions::relation::aggColSpec2_Function_1__Function_1__String_1__T_1__AggColSpec_1_
                                               ]),
                                     | let repro = $z.parametersValues->evaluateAndDeactivate()->map(x|$x->reprocess($state));
                                       ^$state
@@ -436,7 +623,8 @@ function meta::relational::tests::pct::process::classesToDatabase(values:Any[*],
   let state = ^$_state(
                   mapping = ^Mapping
                             (
-                              name = 'myMapping'
+                              name = 'myMapping',
+                              package = meta::relational::tests::pct::process
                             )
               );  
 
@@ -447,7 +635,7 @@ function meta::relational::tests::pct::process::classesToDatabase(values:Any[*],
         | let allClasses = scanClass($rootType);
 
           // Build schema
-          let tables = $allClasses->map(c|$c->classToTable($state.schema, $state.mapping->toOne()));
+          let tables = $allClasses->map(c|$c->classToTable($state.database, $state.schema, $state.mapping->toOne()));
           let joins = $allClasses->map(c|$c->buildJoins($tables, $state.database));
 
           $state.schema->mutateAdd('tables', $tables.table);
@@ -520,14 +708,14 @@ Class meta::relational::tests::pct::process::PropertyColumnMapping
   column : Column[1];
 }
 
-function meta::relational::tests::pct::process::classToTable(class:Class<Any>[1], schema:Schema[1], mapping:Mapping[1]):ClassTableMapping[1]
+function meta::relational::tests::pct::process::classToTable(class:Class<Any>[1], db:Database[1], schema:Schema[1], mapping:Mapping[1]):ClassTableMapping[1]
 {
   let map = meta::relational::transform::fromPure::pureTypeToDataTypeMap();
   let properties = $class.properties->filter(p|$p->isPrimitiveValueProperty());                
   let cols = $properties->map(p|^PropertyColumnMapping(property=$p, column=^Column(name=$p.name->toOne(), type=$map->get($p->functionReturnType().rawType->toOne())->toOne())));
   let idCol = ^Column(name='_pureId', type=^meta::relational::metamodel::datatype::Integer());
   let table = ^Table(name=$class.name->toOne(), schema=$schema, primaryKey=$idCol, columns=$idCol->concatenate($cols.column));
-  let tableAlias = ^TableAlias(name=$table.name, relationalElement = $table);
+  let tableAlias = ^TableAlias(database=$db, name=$table.name, relationalElement = $table);
 
 
   let set = ^RootRelationalInstanceSetImplementation
@@ -589,8 +777,8 @@ function meta::relational::tests::pct::process::buildJoins(class:Class<Any>[1], 
                         let fkColumn = ^Column(name='_'+$class.name->toOne()+'_'+$p.name->toOne(), type=^meta::relational::metamodel::datatype::Integer());
                         let targetTable = $target.table;                        
                         $targetTable->mutateAdd('columns', $fkColumn);
-                        let srcAlias = ^TableAlias(name='src', relationalElement=$src.table);
-                        let targetAlias = ^TableAlias(name=$targetTable.name, relationalElement=$targetTable);
+                        let srcAlias = ^TableAlias(database=$db, name='src', relationalElement=$src.table);
+                        let targetAlias = ^TableAlias(database=$db, name=$targetTable.name, relationalElement=$targetTable);
                         let join =  ^Join
                                     (
                                       name = $class.name->toOne() + '_' + $p.name->toOne(),

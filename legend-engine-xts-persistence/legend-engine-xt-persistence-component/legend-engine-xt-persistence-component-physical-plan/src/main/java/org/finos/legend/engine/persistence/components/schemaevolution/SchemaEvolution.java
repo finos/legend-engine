@@ -23,6 +23,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelt
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshotAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDeltaAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshotAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.NoOpAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoadAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationVisitors;
@@ -231,7 +232,7 @@ public class SchemaEvolution
             if (!Objects.equals(mainDataField.type().length(), newField.type().length()))
             {
                 if (!sink.capabilities().contains(Capability.DATA_TYPE_LENGTH_CHANGE)
-                        || (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE)))
+                        || (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE)))
                 {
                     throw new IncompatibleSchemaChangeException(String.format("Data type length changes couldn't be performed on column \"%s\" since sink/user capability does not allow it", newField.name()));
                 }
@@ -240,7 +241,7 @@ public class SchemaEvolution
             if (!Objects.equals(mainDataField.type().scale(), newField.type().scale()))
             {
                 if (!sink.capabilities().contains(Capability.DATA_TYPE_SCALE_CHANGE)
-                        || (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE)))
+                        || (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE)))
                 {
                     throw new IncompatibleSchemaChangeException(String.format("Data type scale changes couldn't be performed on column \"%s\" since sink/user capability does not allow it", newField.name()));
                 }
@@ -398,6 +399,12 @@ public class SchemaEvolution
             return Collections.emptySet();
         }
 
+        @Override
+        public Set<String> visitNoOp(NoOpAbstract noOpAbstract)
+        {
+            return Collections.emptySet();
+        }
+
         private Set<String> getDedupAndVersioningFields(IngestMode ingestMode)
         {
             Set<String> dedupAndVersioningFields = new HashSet<>();
@@ -475,6 +482,12 @@ public class SchemaEvolution
             bulkLoad.auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).ifPresent(fieldsToIgnore::add);
             bulkLoad.digestGenStrategy().accept(EXTRACT_DIGEST_FIELD_TO_IGNORE).ifPresent(fieldsToIgnore::add);
             return fieldsToIgnore;
+        }
+
+        @Override
+        public Set<String> visitNoOp(NoOpAbstract noOpAbstract)
+        {
+            return Collections.emptySet();
         }
     };
 

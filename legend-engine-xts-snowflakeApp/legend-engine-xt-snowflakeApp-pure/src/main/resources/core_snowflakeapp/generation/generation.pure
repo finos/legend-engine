@@ -9,15 +9,20 @@ Class meta::external::function::activator::snowflakeApp::SnowFlakeAppExecutionCo
 {
 }
 
-function meta::external::function::activator::snowflakeApp::generation::generateArtifact(s: meta::external::function::activator::snowflakeApp::SnowflakeApp[1]):String[1]
+Class meta::external::function::activator::snowflakeApp::generation::Artifact
 {
-  let extensions = meta::external::format::shared::externalFormatExtension()->concatenate(meta::relational::extension::relationalExtensions());
-  meta::external::function::activator::snowflakeApp::generation::generateArtifact($s, $extensions);
+  createQuery:String[1];
+  grantStatement:String[0..1];
+  tables: String[*];
 }
 
-function  meta::external::function::activator::snowflakeApp::generation::generateArtifact(s: meta::external::function::activator::snowflakeApp::SnowflakeApp[1], extensions:meta::pure::extension::Extension[*]):String[1]
+function meta::external::function::activator::snowflakeApp::generation::defaultDeploymentSchema():String[1]
 {
+  'LEGEND_NATIVE_APPS'
+}
 
+function meta::external::function::activator::snowflakeApp::generation::generateFullArtifact(s: meta::external::function::activator::snowflakeApp::SnowflakeApp[1], extensions:meta::pure::extension::Extension[*]):Artifact[1]
+{
   let inputParamsStub = generateInputParamsStub($s.function, true);
 
   let context = ^meta::external::function::activator::snowflakeApp::SnowFlakeAppExecutionContext(postProcessor = meta::relational::postProcessor::ReplaceFreeMarkerWithTableFunctionParamHolder_SQLQuery_1__PostProcessorResult_1_);
@@ -25,9 +30,36 @@ function  meta::external::function::activator::snowflakeApp::generation::generat
 
   let plan =  meta::pure::executionPlan::executionPlan($s.function->cast(@ConcreteFunctionDefinition<Any>), $contextWithEnumPushDown, $extensions, noDebug());
   let resultStub = generateResultTypeStub($plan.rootExecutionNode.resultType->cast(@TDSResultType), $extensions);
-  let generatedQuery = $plan.rootExecutionNode->allNodes($extensions)->filter(n|$n->instanceOf(SQLExecutionNode))->cast(@SQLExecutionNode)->filter(node|$node.sqlQuery->toLower()->startsWith('select'))->last().sqlQuery->toOne('candidate query not found');
+  let generatedQueryNode = $plan.rootExecutionNode->allNodes($extensions)->filter(n|$n->instanceOf(SQLExecutionNode))->cast(@SQLExecutionNode)->filter(node|$node.sqlQuery->toLower()->startsWith('select'))->last()->toOne('candidate query not found');
+  let query = 'CREATE OR REPLACE SECURE FUNCTION %S.' + defaultDeploymentSchema() + '.' +$s.applicationName->toUpper() + $inputParamsStub + ' RETURNS TABLE ('+ $resultStub+ ') LANGUAGE SQL AS $$ '+ $generatedQueryNode.sqlQuery +' $$;';
+  if($s.usageRole->isNotEmpty(),
+  |
+    let grant = 'GRANT USAGE ON FUNCTION %S.' + defaultDeploymentSchema() + '.'+ $s.applicationName->toUpper()+ generateInputParamsStub($s.function, false) +  ' to role '+ if($s.usageRole->isNotEmpty(), |$s.usageRole->toOne()->toUpper(),|'PUBLIC')+';' ; 
+    ^Artifact(createQuery = $query, grantStatement = $grant, tables = $generatedQueryNode.metadata->filter(m| $m->instanceOf(TableInfo))->cast(@TableInfo)->toOne('No table info found').info->map(i|$i.schema+'.'+$i.table));,
+  |  
+    ^Artifact(createQuery = $query, tables = $generatedQueryNode.metadata->filter(m| $m->instanceOf(TableInfo))->cast(@TableInfo)->toOne('No table info found').info->map(i|$i.schema+'.'+$i.table));
+  );
+ 
   
-  $s.applicationName->toUpper() + $inputParamsStub + ' RETURNS TABLE ('+ $resultStub+ ') LANGUAGE SQL AS $$ '+ $generatedQuery +' $$;';
+  
+}
+
+function meta::external::function::activator::snowflakeApp::generation::generateArtifact(s: meta::external::function::activator::snowflakeApp::SnowflakeApp[1]):String[1]
+{
+  let extensions = meta::external::format::shared::externalFormatExtension()->concatenate(meta::relational::extension::relationalExtensions());
+  meta::external::function::activator::snowflakeApp::generation::generateArtifact($s, $extensions);
+}
+
+function meta::external::function::activator::snowflakeApp::generation::generateFullArtifact(s: meta::external::function::activator::snowflakeApp::SnowflakeApp[1]):Artifact[1]
+{
+  let extensions = meta::external::format::shared::externalFormatExtension()->concatenate(meta::relational::extension::relationalExtensions());
+  meta::external::function::activator::snowflakeApp::generation::generateFullArtifact($s, $extensions);
+}
+
+function  meta::external::function::activator::snowflakeApp::generation::generateArtifact(s: meta::external::function::activator::snowflakeApp::SnowflakeApp[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+  meta::external::function::activator::snowflakeApp::generation::generateFullArtifact($s, $extensions).createQuery;
+  
 }
 
 function  meta::external::function::activator::snowflakeApp::generation::generateResultTypeStub(r: TDSResultType[1], extensions:meta::pure::extension::Extension[*]):String[1]
@@ -40,38 +72,40 @@ function  meta::external::function::activator::snowflakeApp::generation::generat
 {  
   let params = $f->functionType().parameters->evaluateAndDeactivate();   
   assertEmpty($params->filter(p | $p.multiplicity != PureOne), 'not implemented, only multiplicity PureOne for snowflake app params is supported: ' + $params->filter(p | $p.multiplicity != PureOne)->map(p|$p.name)->joinStrings(', '));
-  let typeMap = pureTypeToSnowflakeTypeMap();
+  let typeMap = typeMap();
   
   '(' + $params->map(p|if($includeParamName,|'"' + $p.name + '" ',|'') + if($p.genericType.rawType->toOne()->instanceOf(Enumeration), | 'VARCHAR', | $typeMap->get($p.genericType.rawType->toOne())->toOne('Relational type missing for type: ' + $p.genericType.rawType->toOne()->toString()))
   )->joinStrings(',') + ')';    
 }
 
 
-function <<access.private>>  meta::external::function::activator::snowflakeApp::generation::pureTypeToSnowflakeTypeMap():Map<PrimitiveType, String>[1]
+function <<access.private>>  meta::external::function::activator::snowflakeApp::generation::typeMap():Map<PrimitiveType, String>[1]
 {
   [
-  pair(Integer, 'number'),
+  pair(Integer, 'INTEGER'),
   pair(Float, 'FLOAT'),
-  pair(Number, 'number'),
+  pair(Number, 'NUMBER'),
   pair(String, 'VARCHAR'),
-  pair(Date, 'date'),
-  pair(DateTime, 'timestamp'),
-  pair(StrictDate, 'date'),
-  pair(Boolean, 'boolean')
+  pair(Date, 'DATE'),
+  pair(DateTime, 'TIMESTAMP'),
+  pair(StrictDate, 'DATE'),
+  pair(Boolean, 'BOOLEAN'),
+  pair(Decimal, 'DECIMAL')
   ]->newMap()
 }
 
 function <<access.private>>  meta::external::function::activator::snowflakeApp::generation::pureTypeToSnowflakeTypeMatcher(c:meta::pure::tds::TDSColumn[1]):String[1]
 {
-  let tdsTypeToRelationalTypeMap = pureTypeToSnowflakeTypeMap();
-  if($c.sourceDataType->isNotEmpty(),
-    |$c.sourceDataType->toOne()->match(
+  let tdsTypeToRelationalTypeMap = typeMap();
+  if($c.type->isNotEmpty(),
+    | $tdsTypeToRelationalTypeMap->get($c.type->toOne())->toOne('Relational type missing for type: '+ $c.type->toOne()->toString()),
+    | $c.sourceDataType->toOne('Source Data Type Missing for column: '+ +$c.name)
+      ->match(
         [
           v:meta::relational::metamodel::datatype::Varchar[1] | 'VARCHAR',
           b:meta::relational::metamodel::datatype::Bit[1]|'BOOLEAN',
           all:meta::relational::metamodel::datatype::DataType[1]| $all->meta::relational::metamodel::datatype::dataTypeToSqlText()
-        ]),
-    | $tdsTypeToRelationalTypeMap->get($c.type->toOne('Column type missing for column: '+$c.name))->toOne('Relational type missing for type: '+ $c.type->toOne()->toString())
+        ])
   );
 }
 

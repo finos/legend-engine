@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-persistence-component</artifactId>
-        <version>4.49.1-SNAPSHOT</version>
+        <version>4.56.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -48,10 +48,16 @@
         <dependency>
             <groupId>org.duckdb</groupId>
             <artifactId>duckdb_jdbc</artifactId>
-            <version>0.10.2</version>
             <scope>runtime</scope>
         </dependency>
         <!-- DRIVER -->
+
+        <!-- IMMUTABLES -->
+        <dependency>
+            <groupId>org.immutables</groupId>
+            <artifactId>value</artifactId>
+        </dependency>
+        <!-- IMMUTABLES -->
 
         <!-- LOGGING -->
         <dependency>
@@ -59,6 +65,19 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
         <!-- LOGGING -->
+
+        <!-- JACKSON -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- JACKSON -->
 
         <!-- TEST -->
         <dependency>

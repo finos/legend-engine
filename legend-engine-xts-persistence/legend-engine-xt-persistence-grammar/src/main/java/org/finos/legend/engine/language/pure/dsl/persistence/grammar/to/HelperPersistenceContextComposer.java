@@ -44,7 +44,7 @@ public class HelperPersistenceContextComposer
     {
         return "PersistenceContext " + convertPath(persistenceContext.getPath()) + "\n" +
                 "{\n" +
-                renderPersistencePointer(persistenceContext.persistence, indentLevel) +
+                renderPersistencePointer(persistenceContext.persistence.path, indentLevel) +
                 renderPersistencePlatform(persistenceContext.platform, indentLevel, context) +
                 renderServiceParameters(persistenceContext.serviceParameters, indentLevel, context) +
                 (persistenceContext.sinkConnection == null ? "" : renderConnection(persistenceContext.sinkConnection, "sinkConnection", indentLevel, context)) +

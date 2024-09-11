@@ -63,6 +63,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.ExtractSubQueriesAsCTEsPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RelationalAssociationMapping;
@@ -255,6 +256,12 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
             else if ("relationalMapper".equals(code.getType()))
             {
                 return PostProcessorParseTreeWalker.parsePostProcessor(code, p -> walker.visitRelationalMapperPostProcessor(code, p.relationalMapperPostProcessor()));
+            }
+            else if ("ExtractSubQueriesAsCTEsPostProcessor".equals(code.getType()))
+            {
+                ExtractSubQueriesAsCTEsPostProcessor pp = new ExtractSubQueriesAsCTEsPostProcessor();
+                pp.sourceInformation = code.getSourceInformation();
+                return pp;
             }
             return null;
         });

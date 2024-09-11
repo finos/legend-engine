@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@ package org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch;
 
 import org.finos.legend.engine.plan.dependencies.domain.graphFetch.IGraphInstance;
 
+import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 
 public interface IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics
@@ -29,6 +31,13 @@ public interface IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics
     /* Wrap child in graph instance */
     IGraphInstance<?> wrapChildInGraphInstance(Object child);
 
-    /* Validate cross store relationship and attempt adding child to parent - returns true if child was added else returns false */
+    /* Validate cross store relationship and attempt adding child to parent - returns true if child was added else returns false
+    there is a possibility that returned child may not be associated with parent. This method evaluates the cross store property mapping expression to perform validation. */
     boolean attemptAddingChildToParent(Object parent, Object child);
+
+    /* Cross caching - Cross key getters of parent ordered according to target properties */
+    default List<Method> parentCrossKeyGettersOrderedByTargetProperties()
+    {
+        return null;
+    }
 }

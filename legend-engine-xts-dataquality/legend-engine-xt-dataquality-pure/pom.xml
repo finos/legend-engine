@@ -3,7 +3,7 @@
     <parent>
         <artifactId>legend-engine-xts-dataquality</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.49.1-SNAPSHOT</version>
+        <version>4.56.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -25,12 +25,7 @@
                     <sourceDirectory>src/main/resources</sourceDirectory>
                     <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
                     <repositories>
-<!--                        <repository>platform</repository>-->
-<!--                        <repository>core</repository>-->
-<!--                        <repository>core_dataquality</repository>-->
-<!--                        <repository>core_external_execution</repository>-->
-<!--                        <repository>core_external_compiler</repository>-->
-<!--                        <repository>core_external_language_java</repository>-->
+                        <repository>core_dataquality</repository>
                     </repositories>
                     <extraRepositories>
                         <extraRepository>${project.basedir}/src/main/resources/core_dataquality.definition.json</extraRepository>
@@ -47,11 +42,6 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-compiled-functions</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-functionActivator-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
@@ -65,21 +55,6 @@
                         <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-<!--                    <dependency>-->
-<!--                        <groupId>org.finos.legend.engine</groupId>-->
-<!--                        <artifactId>legend-engine-xt-data-space-pure</artifactId>-->
-<!--                        <version>${project.version}</version>-->
-<!--                    </dependency>-->
-<!--                    <dependency>-->
-<!--                        <groupId>org.finos.legend.engine</groupId>-->
-<!--                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>-->
-<!--                        <version>${project.version}</version>-->
-<!--                    </dependency>-->
-<!--                    <dependency>-->
-<!--                        <groupId>org.finos.legend.engine</groupId>-->
-<!--                        <artifactId>legend-engine-pure-functions-planExecution-pure</artifactId>-->
-<!--                        <version>${project.version}</version>-->
-<!--                    </dependency>-->
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
                         <artifactId>legend-pure-m2-dsl-store-pure</artifactId>
@@ -130,11 +105,6 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-compiled-functions</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-functionActivator-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
@@ -148,21 +118,6 @@
                         <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-<!--                    <dependency>-->
-<!--                        <groupId>org.finos.legend.engine</groupId>-->
-<!--                        <artifactId>legend-engine-xt-data-space-pure</artifactId>-->
-<!--                        <version>${project.version}</version>-->
-<!--                    </dependency>-->
-<!--                    <dependency>-->
-<!--                        <groupId>org.finos.legend.engine</groupId>-->
-<!--                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>-->
-<!--                        <version>${project.version}</version>-->
-<!--                    </dependency>-->
-<!--                    <dependency>-->
-<!--                        <groupId>org.finos.legend.engine</groupId>-->
-<!--                        <artifactId>legend-engine-pure-functions-planExecution-pure</artifactId>-->
-<!--                        <version>${project.version}</version>-->
-<!--                    </dependency>-->
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-planExecution</artifactId>
@@ -261,21 +216,12 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-java</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-platform-functions-java</artifactId>
-        </dependency>
 <!--        <dependency>-->
 <!--            <groupId>org.finos.legend.engine</groupId>-->
 <!--            <artifactId>legend-engine-xt-data-space-pure</artifactId>-->
 <!--            <scope>runtime</scope>-->
 <!--        </dependency>-->
         <!-- TEST -->
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-functions-json-pure</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>

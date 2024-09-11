@@ -37,6 +37,12 @@ public class Debug implements Command
     }
 
     @Override
+    public String description()
+    {
+        return "toggle debug mode";
+    }
+
+    @Override
     public boolean process(String line) throws Exception
     {
         if (line.startsWith("debug"))
@@ -50,7 +56,7 @@ public class Debug implements Command
             {
                 this.client.setDebug(Boolean.parseBoolean(cmd[1]));
             }
-            this.client.getTerminal().writer().println("debug: " + this.client.isDebug());
+            this.client.println("debug: " + this.client.isDebug());
             return true;
         }
         return false;

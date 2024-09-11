@@ -14,7 +14,9 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.List;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
@@ -27,7 +29,8 @@ public class Persistence extends PackageableElement
 {
     public String documentation;
     public Trigger trigger;
-    public String service;
+    @JsonSerialize(converter = PackageableElementPointer.ToPathSerializerConverter.class)
+    public PackageableElementPointer service;
     public List<ServiceOutputTarget> serviceOutputTargets;
     public Persister persister;
     public Notifier notifier;

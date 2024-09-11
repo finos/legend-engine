@@ -190,11 +190,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         try
         {
             SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-            SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
-
-            // Use the planner utils to return the sql
-            List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
-            Assertions.assertEquals(expectedSchemaEvolutionAddColumnWithUpperCase, sqlsForSchemaEvolution.get(0));
+            Assertions.fail("Exception was not thrown");
         }
         catch (IncompatibleSchemaChangeException e)
         {
@@ -218,7 +214,7 @@ public class SchemaEvolutionTest extends IngestModeTest
 
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
-        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet, true);
 
         SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
@@ -248,7 +244,7 @@ public class SchemaEvolutionTest extends IngestModeTest
 
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
-        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet, true);
 
         SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
@@ -281,12 +277,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         try
         {
             SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-            RelationalTransformer transformer = new RelationalTransformer(relationalSink);
-            SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
-
-            List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
-            Assertions.assertEquals(expectedSchemaEvolutionModifySize, sqlsForSchemaEvolution.get(0));
-
+            Assertions.fail("Exception was not thrown");
         }
         catch (IncompatibleSchemaChangeException e)
         {
@@ -310,7 +301,7 @@ public class SchemaEvolutionTest extends IngestModeTest
 
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
-        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet, false);
 
         SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
@@ -344,8 +335,6 @@ public class SchemaEvolutionTest extends IngestModeTest
         try
         {
             SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-            RelationalTransformer transformer = new RelationalTransformer(relationalSink);
-            SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
             Assertions.fail("Exception was not thrown");
         }
         catch (IncompatibleSchemaChangeException e)
@@ -430,10 +419,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         try
         {
             SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-            RelationalTransformer transformer = new RelationalTransformer(relationalSink);
-            SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
-            List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
-            Assertions.assertEquals(2, sqlsForSchemaEvolution.size());
+            Assertions.fail("Exception was not thrown");
         }
         catch (IncompatibleSchemaChangeException e)
         {
@@ -521,11 +507,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         try
         {
             SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-            RelationalTransformer transformer = new RelationalTransformer(relationalSink);
-            SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
-
-            List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
-            Assertions.assertEquals(expectedSchemaNonBreakingChange, sqlsForSchemaEvolution.get(0));
+            Assertions.fail("Exception was not thrown");
         }
         catch (IncompatibleSchemaChangeException e)
         {
@@ -556,12 +538,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         try
         {
             SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-            RelationalTransformer transformer = new RelationalTransformer(relationalSink);
-            SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
-
-            List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
-
-            Assertions.assertEquals(expectedSchemaNonBreakingChangeWithSizing, sqlsForSchemaEvolution.get(0));
+            Assertions.fail("Exception was not thrown");
         }
         catch (IncompatibleSchemaChangeException e)
         {
@@ -587,23 +564,16 @@ public class SchemaEvolutionTest extends IngestModeTest
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_CONVERSION);
-        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet, true);
 
-        try
-        {
-            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-            RelationalTransformer transformer = new RelationalTransformer(relationalSink);
-            SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
+        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
+        RelationalTransformer transformer = new RelationalTransformer(relationalSink);
+        SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
-            List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
+        List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
 
-            Assertions.assertEquals(expectedSchemaNonBreakingChangeWithSizing, sqlsForSchemaEvolution.get(0));
-        }
-        catch (IncompatibleSchemaChangeException e)
-        {
-            Assertions.assertEquals("Data sizing changes couldn't be performed on column \"amount\" since user capability does not allow it", e.getMessage());
-        }
+        Assertions.assertEquals(expectedSchemaNonBreakingChangeWithSizing, sqlsForSchemaEvolution.get(0));
     }
 
     // Breaking data type change from DOUBLE --> VARCHAR. Throws exception
@@ -685,9 +655,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         try
         {
             SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-            RelationalTransformer transformer = new RelationalTransformer(relationalSink);
-            SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
-            List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
+            Assertions.fail("Exception was not thrown");
         }
         catch (IncompatibleSchemaChangeException e)
         {

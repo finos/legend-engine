@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RuleContext;
@@ -63,6 +64,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ProfileStereotype;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ProfileTag;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.QualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
@@ -175,11 +178,11 @@ public class DomainParseTreeWalker
 
         // stereotypes
         DomainParserGrammar.StereotypeDefinitionsContext stereotypeDefinitionsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.stereotypeDefinitions(), "stereotypes", profile.sourceInformation);
-        profile.stereotypes = stereotypeDefinitionsContext != null ? ListIterate.collect(stereotypeDefinitionsContext.identifier(), PureGrammarParserUtility::fromIdentifier) : Lists.mutable.empty();
+        profile.stereotypes = stereotypeDefinitionsContext != null ? ListIterate.collect(stereotypeDefinitionsContext.identifier(), identifierContext -> new ProfileStereotype(PureGrammarParserUtility.fromIdentifier(identifierContext), this.walkerSourceInformation.getSourceInformation(identifierContext))) : Lists.mutable.empty();
 
         // tags
         DomainParserGrammar.TagDefinitionsContext tagDefinitionsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.tagDefinitions(), "tags", profile.sourceInformation);
-        profile.tags = tagDefinitionsContext != null ? ListIterate.collect(tagDefinitionsContext.identifier(), PureGrammarParserUtility::fromIdentifier) : Lists.mutable.empty();
+        profile.tags = tagDefinitionsContext != null ? ListIterate.collect(tagDefinitionsContext.identifier(), identifierContext -> new ProfileTag(PureGrammarParserUtility.fromIdentifier(identifierContext), this.walkerSourceInformation.getSourceInformation(identifierContext))) : Lists.mutable.empty();
 
         return profile;
     }
@@ -390,7 +393,8 @@ public class DomainParseTreeWalker
         {
             Variable variable = new Variable();
             variable.name = PureGrammarParserUtility.fromIdentifier(functionVariableExpressionContext.identifier());
-            variable._class = functionVariableExpressionContext.type().getText();
+            String path = functionVariableExpressionContext.type().getText();
+            variable._class = new PackageableElementPointer(PackageableElementType.CLASS, path, walkerSourceInformation.getSourceInformation(functionVariableExpressionContext.type()));
             variable.multiplicity = this.buildMultiplicity(functionVariableExpressionContext.multiplicity().multiplicityArgument());
             variable.sourceInformation = walkerSourceInformation.getSourceInformation(functionVariableExpressionContext);
             return variable;
@@ -433,7 +437,8 @@ public class DomainParseTreeWalker
         {
             Variable variable = new Variable();
             variable.name = PureGrammarParserUtility.fromIdentifier(functionVariableExpressionContext.identifier());
-            variable._class = functionVariableExpressionContext.type().getText();
+            String path = functionVariableExpressionContext.type().getText();
+            variable._class = new PackageableElementPointer(PackageableElementType.CLASS, path, this.walkerSourceInformation.getSourceInformation(functionVariableExpressionContext.type()));
             variable.multiplicity = this.buildMultiplicity(functionVariableExpressionContext.multiplicity().multiplicityArgument());
             variable.sourceInformation = this.walkerSourceInformation.getSourceInformation(functionVariableExpressionContext);
             return variable;
@@ -765,7 +770,7 @@ public class DomainParseTreeWalker
 
     public ValueSpecification combinedExpression(DomainParserGrammar.CombinedExpressionContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
-        ValueSpecification result = this.expressionOrExpressionGroup(ctx.expressionOrExpressionGroup(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+        ValueSpecification result = this.expressionOrExpressionGroup(ctx.expression(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
         ValueSpecification boolResult = result;
         ValueSpecification arithResult = result;
 
@@ -938,50 +943,58 @@ public class DomainParseTreeWalker
         ValueSpecification ctx = null;
         if (rightside.expressionInstanceAtomicRightSide().combinedExpression() != null)
         {
-            ctx = expressionOrExpressionGroup(rightside.expressionInstanceAtomicRightSide().combinedExpression().expressionOrExpressionGroup(), null, typeParametersNames, lambdaContext, space, false, addLines);
+            ctx = expressionOrExpressionGroup(rightside.expressionInstanceAtomicRightSide().combinedExpression().expression(), null, typeParametersNames, lambdaContext, space, false, addLines);
         }
         return ctx;
 
     }
 
-    private ValueSpecification expressionOrExpressionGroup(DomainParserGrammar.ExpressionOrExpressionGroupContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
+    private ValueSpecification expressionOrExpressionGroup(DomainParserGrammar.ExpressionContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
-        return this.expression(ctx.expression(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+        return this.expression(ctx, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
     }
 
-    private ValueSpecification expression(DomainParserGrammar.ExpressionContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
+    private ValueSpecification nonArrowOrEqual(DomainParserGrammar.NonArrowOrEqualExpressionContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
-        ValueSpecification result;
-        List<ValueSpecification> expressions = Lists.mutable.of();
-        List<ValueSpecification> parameters;
         if (ctx.combinedExpression() != null)
         {
             return this.combinedExpression(ctx.combinedExpression(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
         }
-        if (ctx.atomicExpression() != null)
+        else if (ctx.atomicExpression() != null)
         {
-            result = this.atomicExpression(ctx.atomicExpression(), typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+            return this.atomicExpression(ctx.atomicExpression(), typeParametersNames, lambdaContext, space, wrapFlag, addLines);
         }
         else if (ctx.notExpression() != null)
         {
-            result = this.notExpression(ctx.notExpression(), exprName, typeParametersNames, lambdaContext, space, addLines);
+            return this.notExpression(ctx.notExpression(), exprName, typeParametersNames, lambdaContext, space, addLines);
         }
         else if (ctx.signedExpression() != null)
         {
-            result = this.signedExpression(ctx.signedExpression(), exprName, typeParametersNames, lambdaContext, space, addLines);
+            return this.signedExpression(ctx.signedExpression(), exprName, typeParametersNames, lambdaContext, space, addLines);
         }
         else if (ctx.expressionsArray() != null)
         {
+            List<ValueSpecification> expressions = Lists.mutable.of();
             for (DomainParserGrammar.ExpressionContext eCtx : ctx.expressionsArray().expression())
             {
                 expressions.add(this.expression(eCtx, exprName, typeParametersNames, lambdaContext, space, false, addLines));
             }
-            result = this.collect(expressions, walkerSourceInformation.getSourceInformation(ctx));
+            return this.collect(expressions, walkerSourceInformation.getSourceInformation(ctx));
         }
         else
         {
             throw new EngineException(ctx.getText() + " is not supported", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
         }
+
+    }
+
+    private ValueSpecification expression(DomainParserGrammar.ExpressionContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
+    {
+        ValueSpecification result;
+
+        List<ValueSpecification> parameters;
+
+        result = nonArrowOrEqual(ctx.nonArrowOrEqualExpression(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
 
         if (ctx.propertyOrFunctionExpression() != null)
         {
@@ -1131,10 +1144,10 @@ public class DomainParseTreeWalker
             {
                 appliedFunction = processBooleanOp(appliedFunction, ctx, ctx.OR(), "or", input, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
             }
-            else
-            {
-                appliedFunction = this.equalNotEqual(ctx.equalNotEqual(), appliedFunction == null ? input : appliedFunction, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
-            }
+//            else
+//            {
+//                appliedFunction = this.equalNotEqual(ctx.equalNotEqual(), appliedFunction == null ? input : appliedFunction, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+//            }
         }
 
         return appliedFunction;
@@ -1154,6 +1167,7 @@ public class DomainParseTreeWalker
         {
             other = this.combinedArithmeticOnly(ctx.combinedArithmeticOnly(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
             AppliedFunction inner = this.createAppliedFunction(Lists.mutable.of(input, other), "equal");
+            inner.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.TEST_NOT_EQUAL().getSymbol());
             result = this.createAppliedFunction(Lists.mutable.of(inner), "not");
             result.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.TEST_NOT_EQUAL().getSymbol());
         }
@@ -1162,7 +1176,7 @@ public class DomainParseTreeWalker
 
     private ValueSpecification combinedArithmeticOnly(DomainParserGrammar.CombinedArithmeticOnlyContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
-        ValueSpecification result = this.expressionOrExpressionGroup(ctx.expressionOrExpressionGroup(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+        ValueSpecification result = this.expressionOrExpressionGroup(ctx.expression(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
         if (Iterate.notEmpty(ctx.arithmeticPart()))
         {
             result = this.arithmeticPart(ctx.arithmeticPart(), result, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
@@ -1240,15 +1254,12 @@ public class DomainParseTreeWalker
                 instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
                 result = instance;
             }
-//            else if (ctx.DECIMAL() != null)
-//            {
-//                List<Double> values = new ArrayList<>();
-//                values.add(Double.parseDouble(ctx.getText()));
-//                CFloat instance = new CFloat();
-//                instance.multiplicity = this.getPureOne();
-//                instance.values = values;
-//                result = instance;
-//            }
+            else if (ctx.DECIMAL() != null)
+            {
+                CFloat instance = getInstanceFloat(ctx.getText());
+                instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+                result = instance;
+            }
             else if (ctx.DATE() != null)
             {
                 result = new DateParseTreeWalker(ctx.DATE(), this.walkerSourceInformation).visitDefinition();
@@ -1277,7 +1288,7 @@ public class DomainParseTreeWalker
 
     private ValueSpecification atomicExpression(DomainParserGrammar.AtomicExpressionContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
-        ValueSpecification result;
+        ValueSpecification result = null;
         ListIterable<ValueSpecification> dsl;
         Variable expr;
         List<Variable> expressions = Lists.mutable.of();
@@ -1314,26 +1325,9 @@ public class DomainParseTreeWalker
                 result = this.typeReference(ctx.type());
             }
         }
-        else if (ctx.lambdaFunction() != null)
+        else if (ctx.anyLambda() != null)
         {
-            boolean hasLambdaParams = false;
-            if (ctx.lambdaFunction().lambdaParam() != null)
-            {
-                for (int i = 0; i < ctx.lambdaFunction().lambdaParam().size(); i++)
-                {
-                    hasLambdaParams = true;
-                    DomainParserGrammar.IdentifierContext idCtx = ctx.lambdaFunction().lambdaParam(i).identifier();
-                    expr = this.lambdaParam(ctx.lambdaFunction().lambdaParam(i).lambdaParamType(), idCtx, typeParametersNames, space);
-                    expressions.add(expr);
-                }
-            }
-            result = this.lambdaPipe(ctx.lambdaFunction().lambdaPipe(), hasLambdaParams ? ctx.lambdaFunction().lambdaParam(0).getStart() : null, expressions, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
-        }
-        else if (ctx.lambdaParam() != null && ctx.lambdaPipe() != null)
-        {
-            expr = this.lambdaParam(ctx.lambdaParam().lambdaParamType(), ctx.lambdaParam().identifier(), typeParametersNames, space);
-            expressions.add(expr);
-            result = this.lambdaPipe(ctx.lambdaPipe(), ctx.lambdaParam().getStart(), expressions, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+            result = this.processLambda(ctx.anyLambda(), typeParametersNames, lambdaContext, space, addLines, wrapFlag, expressions);
         }
         else if (ctx.instanceReference() != null)
         {
@@ -1360,12 +1354,47 @@ public class DomainParseTreeWalker
                 throw new RuntimeException("No Possible");
             }
         }
+        return result;
+    }
+
+    private Lambda processLambda(DomainParserGrammar.AnyLambdaContext lambda, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean addLines, boolean wrapFlag, List<Variable> expressions)
+    {
+        if (lambda.lambdaFunction() != null)
+        {
+            return processMultiParamLambda(lambda.lambdaFunction(), typeParametersNames, lambdaContext, space, wrapFlag, addLines, expressions);
+        }
+        else if (lambda.lambdaParam() != null && lambda.lambdaPipe() != null)
+        {
+            return processSingleParamLambda(lambda.lambdaParam(), lambda.lambdaPipe(), typeParametersNames, lambdaContext, space, wrapFlag, addLines, expressions);
+        }
         else
         {
-            // lambdaPipe
-            result = this.lambdaPipe(ctx.lambdaPipe(), null, expressions, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+            //lambdaPipe
+            return this.lambdaPipe(lambda.lambdaPipe(), null, expressions, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
         }
-        return result;
+    }
+
+    private Lambda processMultiParamLambda(DomainParserGrammar.LambdaFunctionContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines, List<Variable> expressions)
+    {
+        boolean hasLambdaParams = false;
+        if (ctx.lambdaParam() != null)
+        {
+            for (int i = 0; i < ctx.lambdaParam().size(); i++)
+            {
+                hasLambdaParams = true;
+                DomainParserGrammar.IdentifierContext idCtx = ctx.lambdaParam(i).identifier();
+                Variable expr = this.lambdaParam(ctx.lambdaParam(i), idCtx, typeParametersNames, space);
+                expressions.add(expr);
+            }
+        }
+        return this.lambdaPipe(ctx.lambdaPipe(), hasLambdaParams ? ctx.lambdaParam(0).getStart() : null, expressions, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+    }
+
+    private Lambda processSingleParamLambda(DomainParserGrammar.LambdaParamContext paramCtx, DomainParserGrammar.LambdaPipeContext pipeContext, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines, List<Variable> expressions)
+    {
+        Variable expr = this.lambdaParam(paramCtx, paramCtx.identifier(), typeParametersNames, space);
+        expressions.add(expr);
+        return this.lambdaPipe(pipeContext, paramCtx.getStart(), expressions, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
     }
 
     private ColSpec processOneColSpec(DomainParserGrammar.OneColSpecContext oneColSpec, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines, List<Variable> params)
@@ -1378,15 +1407,12 @@ public class DomainParseTreeWalker
         colSpec.name = oneColSpec.identifier().getText().trim();
         colSpec.name = colSpec.name.charAt(0) == '\'' ? colSpec.name.substring(1, colSpec.name.length() - 1) : colSpec.name;
         colSpec.type = oneColSpec.type() == null ? null : oneColSpec.type().getText();
-        if (oneColSpec.lambdaParam() != null && oneColSpec.lambdaPipe() != null)
+        if (oneColSpec.anyLambda() != null)
         {
-            Variable var = this.lambdaParam(oneColSpec.lambdaParam().lambdaParamType(), oneColSpec.lambdaParam().identifier(), typeParametersNames, space);
-            params.add(var);
-            colSpec.function1 = this.lambdaPipe(oneColSpec.lambdaPipe(), oneColSpec.lambdaParam().getStart(), params, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+            colSpec.function1 = processLambda(oneColSpec.anyLambda(), typeParametersNames, lambdaContext, space, wrapFlag, addLines, Lists.mutable.empty());
             if (oneColSpec.extraFunction() != null)
             {
-                List<Variable> var2 = Lists.mutable.with(this.lambdaParam(oneColSpec.extraFunction().lambdaParam().lambdaParamType(), oneColSpec.extraFunction().lambdaParam().identifier(), typeParametersNames, space));
-                colSpec.function2 = this.lambdaPipe(oneColSpec.extraFunction().lambdaPipe(), oneColSpec.extraFunction().lambdaParam().getStart(), var2, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+                colSpec.function2 = processLambda(oneColSpec.extraFunction().anyLambda(), typeParametersNames, lambdaContext, space, wrapFlag, addLines, Lists.mutable.empty());
             }
         }
         return colSpec;
@@ -1478,14 +1504,15 @@ public class DomainParseTreeWalker
         return Lists.mutable.with(new GraphFetchTreeParseTreeWalker(graphFetchWalkerSourceInformation).visitDefinition(graphParser.definition()));
     }
 
-    private Variable lambdaParam(DomainParserGrammar.LambdaParamTypeContext ctx, DomainParserGrammar.IdentifierContext var, List<String> typeParametersNames, String space)
+    private Variable lambdaParam(DomainParserGrammar.LambdaParamContext ctx, DomainParserGrammar.IdentifierContext var, List<String> typeParametersNames, String space)
     {
         Variable variable = new Variable();
-        if (ctx != null)
+        if (ctx != null && ctx.lambdaParamType() != null)
         {
-            variable.multiplicity = this.buildMultiplicity(ctx.multiplicity().multiplicityArgument());
-            variable._class = ctx.type().getText();
-            variable.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.type());
+            variable.multiplicity = this.buildMultiplicity(ctx.lambdaParamType().multiplicity().multiplicityArgument());
+            String path = ctx.lambdaParamType().type().getText();
+            variable._class = new PackageableElementPointer(PackageableElementType.CLASS, path, walkerSourceInformation.getSourceInformation(ctx.lambdaParamType().type()));
+            variable.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         }
         variable.name = PureGrammarParserUtility.fromIdentifier(var);
         return variable;
@@ -1493,23 +1520,6 @@ public class DomainParseTreeWalker
 
     private Lambda lambdaPipe(DomainParserGrammar.LambdaPipeContext ctx, Token firstToken, List<Variable> params, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
-//        List<ValueSpecification> block = this.codeBlock(ctx.codeBlock(), typeParametersNames, lambdaContext, addLines, space);
-//        ValueSpecification result;
-//
-////        if( wrapFlag)
-////            result = block.get(0);
-////        else
-////        {
-//        Lambda signature = new Lambda();  //   Applied Function??
-//        if (Iterate.notEmpty(params))
-//        {
-//            signature.parameters = (List<Variable>) params;
-//        }
-//
-//        result = signature;
-//        //  }
-//        return result;
-
         Lambda signature = new Lambda();  // Applied Function??
         signature.body = this.codeBlock(ctx.codeBlock(), typeParametersNames, lambdaContext, addLines, space);
         signature.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);

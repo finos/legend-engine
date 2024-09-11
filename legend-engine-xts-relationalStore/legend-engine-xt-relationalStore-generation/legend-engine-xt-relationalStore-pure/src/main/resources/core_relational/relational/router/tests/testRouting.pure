@@ -12,28 +12,430 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::relational::tests::routing::*;
+import meta::pure::router::printer::*;
+import meta::relational::extension::*;
+import meta::core::runtime::*;
+import meta::relational::metamodel::join::*;
+import meta::pure::mapping::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::mapping::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
-function meta::relational::tests::routing::testColumnSpecificationRouting():Boolean[1]
+import meta::pure::profiles::*;
+import meta::relational::tests::query::routing::*;
+import meta::pure::router::store::metamodel::*;
+import meta::pure::router::utils::*;
+
+function meta::relational::tests::query::routing::mapNestedInUserFunction(value:Person[*], func:Function<{Person[1]->String[1]}>[1]):String[*]
 {
-   let list = ['firstname'];
-   let str='a';
-   let res = execute(|Person.all()->projectWithColumnSubset(if($str=='a',| columnListA(),|columnListB()),$list),simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   true;
+   $value->map($func);
 }
 
-function meta::relational::tests::routing::columnListA(): ColumnSpecification<Person>[*]
+function <<test.Test>> meta::relational::tests::query::routing::testNoRoutingWhenTraversingFunction():Boolean[1]
 {
-   [col(x:Person[1]| $x.firstName,'firstname'),
-    col(x:Person[1]|$x.lastName,'lastName')]
+   let result = execute(|Person.all()->filter(p|($p.firstName == 'John' && $p.lastName == 'Johnson') || $p.lastName == 'Allen')->mapNestedInUserFunction(e|$e.lastName), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 2);
+   assertSameElements(['Allen', 'Johnson'], $result.values);
+   assertEquals('select "root".LASTNAME from personTable as "root" where (("root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\') or "root".LASTNAME = \'Allen\')', $result->sqlRemoveFormatting());
+}
+
+// Alloy exclusion reason: 8. Routing not supported yet
+function <<test.Test, test.ExcludeAlloy>>  meta::relational::tests::query::routing::testSimpleRouting():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|($p.firstName == 'John' && $p.lastName == 'Johnson') || $p.lastName == 'Allen').lastName->makeString(', '), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 1);
+   assertEquals('Johnson, Allen', $result.values);
+   assertEquals('select "root".LASTNAME from personTable as "root" where (("root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\') or "root".LASTNAME = \'Allen\')', $result->sqlRemoveFormatting());
+}
+
+// Alloy exclusion reason: 8. Routing not supported yet
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::routing::testRoutedFunctionAdvanced():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.firstName == 'John')->mapNestedInUserFunction(e|$e.lastName)->makeString(', ') + ' | ' + Person.all()->filter(p|$p.firstName == 'Anthony')->toOne().lastName->toOne(), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 1);
+   assertEquals('Johnson, Hill | Allen', $result.values->first());
+   assertEquals('select "root".LASTNAME from personTable as "root" where "root".FIRSTNAME = \'John\'', $result->sqlRemoveFormatting(0));
+   assertEquals('select "root".LASTNAME from personTable as "root" where "root".FIRSTNAME = \'Anthony\'', $result->sqlRemoveFormatting(1));
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::testRoutingTwoExpressionsWithVariable():Boolean[1]
+{
+   let fn = {| let personName = 'John';
+               Person.all()->filter(p|$p.firstName == $personName);};
+
+
+   let result = execute($fn, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 2);
+   assertEquals(['Johnson', 'Hill'], $result.values.lastName);
+}
+
+// Alloy exclusion reason: 8. Routing not supported yet
+function <<test.Test, test.ExcludeAlloy>> {test.excludePlatform = 'Java compiled'} meta::relational::tests::query::routing::testRoutingTwoFindAllExpressionsWithVariable():Boolean[1]
+{
+   let fn = {| let name = 'Firm A';
+               let firm = Firm.all()->filter(f|$f.legalName->startsWith($name));
+               let legalName = $firm.legalName;
+               Person.all()->filter(p|$p.firm->exists(f | $f.legalName == $legalName->toOne()));
+               };
+
+
+   let result = execute($fn, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 1);
+   assertEquals(['Roberts'], $result.values.lastName);
+   assertSize($result.activities, 3);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" where "root".LEGALNAME like \'Firm A%\'', $result->sqlRemoveFormatting(0));
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join (select distinct "firmtable_1".ID from firmTable as "firmtable_1" where "firmtable_1".LEGALNAME = \'Firm A\') as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".ID is not null', $result->sqlRemoveFormatting(1));
+}
+
+// Alloy exclusion reason: 8. Routing not supported yet
+function <<test.Test, test.ExcludeAlloy>> {test.excludePlatform = 'Java compiled'} meta::relational::tests::query::routing::testRoutingFindAllExpressionReturnsMany():Boolean[1]
+{
+   let fn = {| let firm = Firm.all()->filter(f|$f.legalName->startsWith('Firm A') || $f.legalName->startsWith('Firm X'));
+               let legalNames = $firm.legalName->makeString(',');
+               };
+
+
+   let result = execute($fn, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 1);
+   assertEquals('Firm X,Firm A', $result.values);
+   assertSize($result.activities, 2);
+   assertEquals('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" where ("root".LEGALNAME like \'Firm A%\' or "root".LEGALNAME like \'Firm X%\')', $result->sqlRemoveFormatting(0));
+}
+
+function <<test.ToFix>>   meta::relational::tests::query::routing::testRoutingUseVariableBeforeAndAfterRelationalExecution():Boolean[1]
+{
+   let fn = {| let name1 = 'Johnson';
+               let name2 = 'Smith';
+               let people = Person.all()->filter(p|$p.lastName == $name1 || $p.lastName == $name2);
+               $people->filter(p|$p.lastName == $name2);
+               };
+
+
+   let result = execute($fn, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 1);
+   assertEquals('Firm X,Firm A', $result.values);
+   assertSize($result.activities, 1);
+   assertEquals('select root.LEGALNAME as "legalName" from firmTable as root where root.LEGALNAME like \'Firm A%\' or root.LEGALNAME like \'Firm X%\'', $result->sqlRemoveFormatting(0));
+}
+
+// Alloy exclusion reason: 8. Routing not supported yet
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::routing::testRoutingUseVariableInExpression():Boolean[1]
+{
+   let fn = {| let name2 = 'Smith';
+               ['Johnson', 'Smith']->filter(p|$p == $name2);
+               };
+
+   let result = execute($fn, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 1);
+   assertEquals('Smith', $result.values);
+}
+
+// Alloy exclusion reason: 8. Routing not supported yet
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::routing::testRoutingTwoFindAllExpressionsWithNewClassInstance():Boolean[1]
+{
+   let fn = {| let firm = ^Firm(legalName='Firm A');
+               Person.all()->filter(p|$p.firm->exists(f | $f.legalName == $firm.legalName));
+               };
+
+
+   let result = execute($fn, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 1);
+   assertEquals(['Roberts'], $result.values.lastName);
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join (select distinct "firmtable_1".ID from firmTable as "firmtable_1" where "firmtable_1".LEGALNAME = \'Firm A\') as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".ID is not null', $result);
 }
 
 
-function meta::relational::tests::routing::columnListB(): ColumnSpecification<Person>[*]
+function <<test.ToFix>> meta::relational::tests::query::routing::testRoutingTwoFindAllExpressionsWithClassPropertyInFilter():Boolean[1]
 {
-   [col(x:Person[1]| $x.firstName,'firstname'),
-    col(x:Person[1]|$x.lastName,'lastName')]
+   let fn = {| let firm = Firm.all()->filter(f | $f.legalName =='Firm A');
+               Person.all()->filter(p|$p.firm->exists(f | $f.legalName == $firm.legalName));
+               };
+
+
+   let result = execute($fn, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 1);
+   assertEquals(['Roberts'], $result.values.lastName);
+   assertEquals('select root.ID as "pk_0", root.LEGALNAME as "legalName" from firmTable as root where root.LEGALNAME like \'Firm A%\'', $result->sqlRemoveFormatting(0));
+   assertEquals('select root.ID as "pk_0", root.FIRSTNAME as "firstName", root.AGE as "age", root.LASTNAME as "lastName" from personTable as root where exists(select 1 from firmTable as firmTable_d_d_d where firmTable_d_d_d.ID = root.FIRMID and firmTable_d_d_d.LEGALNAME = \'Firm A\')', $result->sqlRemoveFormatting(1));
 }
 
+// Alloy exclusion reason: 8. Routing not supported yet
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::routing::testRoutingTwoFindAllExpressionsWithClassPropertyUsedInQualifier():Boolean[1]
+{
+   let fn = {| let firm = Firm.all()->filter(f | $f.legalName =='Firm A')->toOne();
+               Person.all()->project([p | $p.nameWithTitle($firm.legalName)], 'title');
+               };
+
+   let result = execute($fn, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 1);
+   assertEquals(['Firm A Peter Smith', 'Firm A John Johnson', 'Firm A John Hill', 'Firm A Anthony Allen', 'Firm A Fabrice Roberts', 'Firm A Oliver Hill', 'Firm A David Harris', 'Firm A No address Smith', 'Firm A No firm no Firm', 'Firm A New York', 'Firm A Elena Firm B', 'Firm A Don New York'], $result.values->toOne().rows.values);
+   assertEquals('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" where "root".LEGALNAME = \'Firm A\'', $result->sqlRemoveFormatting(0));
+   assertEquals('select concat(\'Firm A\', \' \', "root".FIRSTNAME, \' \', "root".LASTNAME) as "title" from personTable as "root"', $result->sqlRemoveFormatting(1));
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::testRoutingWithClassAsVariableForGetAll():Boolean[1]
+{
+   let class = Person;
+   let fn = {| getAll($class)->filter(p|$p.lastName == 'Johnson')};
+
+   let result = execute($fn, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 1);
+   assertEquals('John', $result.values.firstName);
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::testRoutingOfSimpleQualifiedProperty():Boolean[1]
+{
+   let f = {|Firm.all()->project([f | $f.nameAndAddress()],'nameAndAddress')};
+   let routed = $f->routeFunction(simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions(), noDebug());
+
+   let wrappedFunc = $routed.expressionSequence->evaluateAndDeactivate()->cast(@meta::pure::router::metamodel::clustering::ClusteredValueSpecification).val->toOne()->byPassValueSpecificationWrapper()->cast(@SimpleFunctionExpression);
+   let lambda = $wrappedFunc.parametersValues->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<Any>);
+   let nameAndAddressQp = $lambda.expressionSequence->cast(@FunctionExpression).func->cast(@QualifiedProperty<Any>);
+   let plusFunc = $nameAndAddressQp.expressionSequence->cast(@FunctionExpression);
+   let routedParams = $plusFunc.parametersValues->cast(@InstanceValue).values;
+   let lhsRouted=$routedParams->at(0)->evaluateAndDeactivate();
+   let rhsRouted=$routedParams->at(2)->evaluateAndDeactivate();
+
+   assert($lhsRouted->instanceOf(StoreMappingRoutedValueSpecification));
+   assert($lhsRouted->cast(@StoreMappingRoutedValueSpecification).sets.class.name == 'Firm');
+   assert($lhsRouted->cast(@StoreMappingRoutedValueSpecification).value->instanceOf(SimpleFunctionExpression));
+}
+
+
+function <<test.Test>> meta::relational::tests::projection::simple::testRoutingWithSubtypePropagation():Boolean[1]
+{
+   let result = execute(|Firm.all()->project(col(x|$x.employees->subType(@meta::relational::tests::model::simple::PersonExtension).manager->subType(@meta::relational::tests::model::simple::PersonExtension).name, 'managerName')), meta::relational::tests::TestMappingOfSubtypeClass, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEquals('select concat("persontable_1".FIRSTNAME, \' \', "persontable_1".LASTNAME) as "managerName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join personTable as "persontable_1" on ("persontable_0".MANAGERID = "persontable_1".ID)',$result->sqlRemoveFormatting());
+}
+
+function <<test.ToFix>> meta::relational::tests::query::routing::testRoutingPureFunctionWithMultipleExpressions():Boolean[1]
+{
+   let fn = {| doSomething(3)};
+
+   let result = execute($fn, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEquals('A chicken', $result.values);
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::multipleexpressions::testPlatformExpressionDependencyOnAFromExpression():Boolean[1]
+{
+   let f = {| let firstFirmLegalName = Firm.all()->meta::pure::mapping::from(simpleRelationalMapping, meta::external::store::relational::tests::testRuntime())->at(0).legalName;
+
+              let otherLegalName = $firstFirmLegalName + 'Test';
+
+            };
+
+   let routingResult = routeFunction($f, ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions(), noDebug());
+   assertEquals(1, $routingResult->size());
+   assertEquals(' | {Platform> [strategy_wrapper /let firstFirmLegalName = {Platform> {Platform> [1 meta_relational_tests_model_simple_Firm/{meta::relational::tests::db> [1 meta_relational_tests_model_simple_Firm/[1 meta_relational_tests_model_simple_Firm/Class Firm].all()]} -> at(0)]}.legalName}]};\n   {Platform> [strategy_wrapper /let otherLegalName = [$firstFirmLegalName, \'Test\'] -> plus()]};', $routingResult->map(f|$f->meta::pure::router::printer::asString())->joinStrings(''));
+}
+
+
+function <<test.Test>> meta::relational::tests::query::routing::multipleexpressions::testPlatformExpressionDependencyOnAFromExpression2():Boolean[1]
+{
+   let f = {names:String[*]| 
+              let upperNames = $names->map(n|$n->toUpper());
+              meta::relational::tests::model::simple::Person.all()->filter(e|$e.firm.legalName->in($upperNames))->meta::pure::mapping::from(simpleRelationalMapping, meta::external::store::relational::tests::testRuntime());
+            };
+
+   let routingResult = routeFunction($f, ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions(), noDebug());
+   assertEquals(1, $routingResult->size());
+   assertEquals('names:String[*] | {Platform> [strategy_wrapper /let upperNames = $names -> map([Routed Func:n:String[1] | $n -> toUpper();])]};\n                  {meta::relational::tests::db> [1 meta_relational_tests_model_simple_Person/[1 meta_relational_tests_model_simple_Person/[1 meta_relational_tests_model_simple_Person/Class Person].all()] -> filter([Routed Func:e:meta::relational::tests::model::simple::Person[1] | [2 meta_relational_tests_model_simple_Firm/[2 @firm(meta_relational_tests_model_simple_Person->meta_relational_tests_model_simple_Firm)@ meta_relational_tests_model_simple_Firm/[1 meta_relational_tests_model_simple_Person/$e].firm] -> map([2 meta_relational_tests_model_simple_Firm/[Routed Func:v_automap:meta::relational::tests::model::simple::Firm[1] | [2 @legalName(meta_relational_tests_model_simple_Firm->)@ meta_relational_tests_model_simple_Firm/[2 meta_relational_tests_model_simple_Firm/$v_automap].legalName];]])] -> in($upperNames);])]};', $routingResult->map(f|$f->meta::pure::router::printer::asString())->joinStrings(''));
+}
+
+
+function meta::relational::tests::query::routing::doSomething(a:Integer[1]):String[1]
+{
+   let b = 10;
+   let value = $a - $b;
+   if ($value > 0, | 'A duck', | 'A chicken');
+}
+
+function meta::relational::tests::query::routing::plusOne(n:Number[1]):Number[1]
+{
+  $n+1;
+}
+
+function meta::relational::tests::query::routing::firmProjected():TabularDataSet[1]
+{
+  firmGetAll()->addProject();
+}
+
+function meta::relational::tests::query::routing::firmProjected1():TabularDataSet[1]
+{
+  firmGetAll()->project([x|$x.employees.firstName], ['employeeFirstName']);
+}
+
+function meta::relational::tests::query::routing::firmGetAll():meta::relational::tests::model::simple::Firm[*]
+{
+  meta::relational::tests::model::simple::Firm.all();
+}
+
+function meta::relational::tests::query::routing::getColumns():ColumnSpecification<meta::relational::tests::model::simple::Firm>[*]
+{
+  [
+    col(x:meta::relational::tests::model::simple::Firm[1]|$x.employees.firstName, 'firstName')
+  ]
+}
+
+function meta::relational::tests::query::routing::addProject(firms:meta::relational::tests::model::simple::Firm[*]):TabularDataSet[1]
+{
+  $firms->project(getColumns());
+}
+
+function meta::relational::tests::query::routing::addFilter(t:TabularDataSet[1]):TabularDataSet[1]
+{
+  $t->filter(getFilterLambda());
+}
+
+function meta::relational::tests::query::routing::getFilterLambda():Function<{TDSRow[1]->Boolean[1]}>[1]
+{
+  {x:TDSRow[1]|getFilterCondition($x)};
+}
+
+function meta::relational::tests::query::routing::getFilterCondition(r:TDSRow[1]):Boolean[1]
+{
+  !$r.getString('firstName')->in(getNames());
+}
+
+function meta::relational::tests::query::routing::getNames():String[*]
+{
+  ['Peter', 'Oliver'];
+}
+
+function meta::relational::tests::query::routing::getAggValues():meta::pure::functions::collection::AggregateValue<meta::relational::tests::model::simple::Person, Integer, Integer>[*]
+{
+  [agg(x:meta::relational::tests::model::simple::Person[1]|$x.age, y|$y->sum())]
+}
+
+function meta::relational::tests::query::routing::addGroupBy(persons: meta::relational::tests::model::simple::Person[*]):TabularDataSet[1]
+{
+  $persons->groupBy([x|$x.name], meta::relational::tests::query::routing::getAggValues(), ['name', 'ageSum']);
+}
+
+function meta::relational::tests::query::routing::joinCondition():Function<{TDSRow[1],TDSRow[1]->Boolean[1]}>[1]
+{
+  {a:TDSRow[1],b:TDSRow[1]|($a.getString('firstName') == $b.getString('employeeFirstName'))}
+}
+
+function meta::relational::tests::query::routing::personProjected():TabularDataSet[1]
+{
+  meta::relational::tests::model::simple::Person.all()->project([x|$x.firstName, x|$x.age], ['firstName', 'age']);
+}
+
+function meta::relational::tests::query::routing::extendWithIsAdult(t:TabularDataSet[1]):TabularDataSet[1]
+{
+  $t->extend([col(x:TDSRow[1]|if($x.getInteger('age') > 18, |'1', |'0'), 'isAdult')]);
+}
+
+function meta::relational::tests::query::routing::getJoin(a:TabularDataSet[1], b:TabularDataSet[1]):TabularDataSet[1]
+{
+  $a->join($b, JoinType.LEFT_OUTER, joinCondition())
+}
+
+function meta::relational::tests::query::routing::executeInternal<T|y>(f:FunctionDefinition<{->T[y]}>[1]):Result<T|y>[1]
+{
+  execute($f, simpleRelationalMapping, testRuntime(), relationalExtensions());
+}
+
+function meta::relational::tests::query::routing::routeInternal(f:FunctionDefinition<Any>[1]):FunctionDefinition<Any>[1]
+{
+  routeFunction($f, ^meta::pure::runtime::ExecutionContext(), relationalExtensions(), noDebug());
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::testCompositionInProject():Boolean[1]
+{
+  let result = executeInternal(|firmProjected());
+  assertSize($result.values, 1);
+  assertEquals(['Peter', 'John', 'John', 'Anthony', 'New', 'Don', 'Fabrice', 'Oliver', 'Elena', 'David', 'No address', ^TDSNull()], $result.values->at(0).rows.values);
+  assertEquals('select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::testCompositionInGetAll():Boolean[1]
+{
+  let result = executeInternal(|firmGetAll()->project([x|$x.employees.name], ['name']));
+  assertSize($result.values, 1);
+  assertEquals(['Peter Smith', 'John Johnson', 'John Hill', 'Anthony Allen', 'New York', 'Don New York', 'Fabrice Roberts', 'Oliver Hill', 'Elena Firm B', 'David Harris', 'No address Smith', ' '], $result.values->at(0).rows.values);
+  assertEquals('select concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "name" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::testCompositionInGetAllAndColSpecs():Boolean[1]
+{
+  let result = executeInternal(|firmGetAll()->project(getColumns()));
+  assertSize($result.values, 1);
+  assertEquals(['Peter', 'John', 'John', 'Anthony', 'New', 'Don', 'Fabrice', 'Oliver', 'Elena', 'David', 'No address', ^TDSNull()], $result.values->at(0).rows.values);
+  assertEquals('select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::testCompositionInProjectAndNestedFilter():Boolean[1]
+{
+  let result = executeInternal(|firmProjected()->addFilter());
+  assertSize($result.values, 1);
+  assertEquals(['John', 'John', 'Anthony', 'New', 'Don', 'Fabrice', 'Elena', 'David', 'No address', ^TDSNull()], $result.values->at(0).rows.values);
+  assertEquals('select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where ("persontable_0".FIRSTNAME not in (\'Peter\', \'Oliver\') OR "persontable_0".FIRSTNAME is null)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::testCompositionInUnion():Boolean[1]
+{
+  let result = executeInternal(|firmProjected()->addFilter()->concatenate(firmGetAll()->project(getColumns())));
+  assertSize($result.values, 1);
+  assertEquals(['John', 'John', 'Anthony', 'New', 'Don', 'Fabrice', 'Elena', 'David', 'No address', ^TDSNull(), 'Peter', 'John', 'John', 'Anthony', 'New', 'Don', 'Fabrice', 'Oliver', 'Elena', 'David', 'No address', ^TDSNull()], $result.values->at(0).rows.values);
+  assertEquals('select "unionalias_0"."firstName" as "firstName" from (select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where ("persontable_0".FIRSTNAME not in (\'Peter\', \'Oliver\') OR "persontable_0".FIRSTNAME is null) UNION ALL select "persontable_1".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_1" on ("root".ID = "persontable_1".FIRMID)) as "unionalias_0"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::testCompositionInGroupBy():Boolean[1]
+{
+  let result = executeInternal(|Person.all()->addGroupBy());
+  assertSize($result.values, 1);
+  assertEquals(['Anthony Allen', 22, 'David Harris', 35, 'Don New York', 35, 'Elena Firm B', 35, 'Fabrice Roberts', 34, 'John Hill', 12, 'John Johnson', 22, 'New York', 35, 'No address Smith', 35, 'No firm no Firm', 35, 'Oliver Hill', 32, 'Peter Smith', 23], $result.values->at(0).rows.values);
+  assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "name", sum("root".AGE) as "ageSum" from personTable as "root" group by "name"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::testCompositionInInClause():Boolean[1]
+{
+  let result = executeInternal(|firmProjected()->filter(x|$x.getString('firstName')->in(getNames())));
+  assertSize($result.values, 1);
+  assertEquals(['Peter', 'Oliver'], $result.values->at(0).rows.values);
+  assertEquals('select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".FIRSTNAME in (\'Peter\', \'Oliver\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::testCompositionInJoin():Boolean[1]
+{
+  let result = executeInternal(|getJoin(firmProjected(), firmProjected1()));
+  assertSize($result.values, 1);
+  assertEquals(['Peter', 'Peter', 'John', 'John', 'John', 'John', 'John', 'John', 'John', 'John', 'Anthony', 'Anthony', 'New', 'New', 'Don', 'Don', 'Fabrice', 'Fabrice', 'Oliver', 'Oliver', 'Elena', 'Elena', 'David', 'David', 'No address', 'No address', ^TDSNull(), ^TDSNull()], $result.values->at(0).rows.values);
+  assertEquals('select "firmtable_0"."firstName" as "firstName", "firmtable_0"."employeeFirstName" as "employeeFirstName" from (select "firmtable_1"."firstName" as "firstName", "firmtable_3"."employeeFirstName" as "employeeFirstName" from (select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)) as "firmtable_1" left outer join (select "persontable_0".FIRSTNAME as "employeeFirstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)) as "firmtable_3" on ("firmtable_1"."firstName" = "firmtable_3"."employeeFirstName")) as "firmtable_0"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::testCompositionInFilterCondition():Boolean[1]
+{
+  let result = executeInternal(|firmProjected()->filter(x|$x.getString('firstName')->length()->plusOne() > 5));
+  assertSize($result.values, 1);
+  assertEquals(['Peter', 'Anthony', 'Fabrice', 'Oliver', 'Elena', 'David', 'No address'], $result.values->at(0).rows.values);
+  assertEquals('select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where (char_length("persontable_0".FIRSTNAME) + 1) > 5', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::testCompositionInMultiStatementPureExpressions():Boolean[1]
+{
+  let routingResult = routeInternal({x:Integer[1]|let y = plusOne($x); plusOne($y);});
+  assertEquals('x:Integer[1] | {Platform> [strategy_wrapper /let y = [$x, 1] -> plus()]};\n               {Platform> [strategy_wrapper /[$y, 1] -> plus()]};', $routingResult->map(f|$f->asString())->joinStrings(''));
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::testCompositionInMultiStatementRelationalQuery():Boolean[1]
+{
+  let result = executeInternal({| let name = getNames()->at(0); 
+                                  firmProjected()->filter(x|$x.getString('firstName') == $name);
+                                });
+
+  assertSize($result.values, 1); 
+  assertEquals(['Peter'], $result.values->at(0).rows.values);
+  assertEquals('select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".FIRSTNAME = \'Peter\'', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::testCompositionInExtend():Boolean[1]
+{
+  let result = executeInternal(|personProjected()->extendWithIsAdult());
+  assertSize($result.values, 1);
+  assertEquals(['Peter', 23, '1', 'John', 22, '1', 'John', 12, '0', 'Anthony', 22, '1', 'Fabrice', 34, '1', 'Oliver', 32, '1', 'David', 35, '1', 'No address', 35, '1', 'No firm', 35, '1', 'New', 35, '1', 'Elena', 35, '1', 'Don', 35, '1'], $result.values->at(0).rows.values);
+  assertEquals('select "root".FIRSTNAME as "firstName", "root".AGE as "age", case when "root".AGE > 18 then \'1\' else \'0\' end as "isAdult" from personTable as "root"', $result->sqlRemoveFormatting());
+}

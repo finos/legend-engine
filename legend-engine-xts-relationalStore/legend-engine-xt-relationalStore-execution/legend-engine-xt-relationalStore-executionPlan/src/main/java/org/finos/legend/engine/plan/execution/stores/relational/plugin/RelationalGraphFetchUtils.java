@@ -80,7 +80,7 @@ class RelationalGraphFetchUtils
                 int i = 0;
                 for (Method getter : this.keyGetters)
                 {
-                    Object val = getter.invoke(this.relationalObject);
+                    Object val = getter.invoke(resolveValueIfIChecked(this.relationalObject));
                     s.append(val == null ? "NULL" : val.toString());
                     i++;
                     if (i != this.keyGetters.size())
@@ -235,7 +235,7 @@ class RelationalGraphFetchUtils
                 {
                     for (Method getter : this.keyGetters)
                     {
-                        this.values.add(getter.invoke(this.relationalObject));
+                        this.values.add(getter.invoke(resolveValueIfIChecked(this.relationalObject)));
                     }
                 }
                 catch (Exception e)
@@ -384,8 +384,8 @@ class RelationalGraphFetchUtils
 
             for (Method getter : getters)
             {
-                Object obj1Val = getter.invoke(obj1);
-                Object obj2Val = getter.invoke(obj2);
+                Object obj1Val = getter.invoke(resolveValueIfIChecked(obj1));
+                Object obj2Val = getter.invoke(resolveValueIfIChecked(obj2));
                 if (!Objects.equals(obj1Val, obj2Val))
                 {
                     return false;
@@ -453,7 +453,7 @@ class RelationalGraphFetchUtils
             int i = 0;
             for (Method getter : getters)
             {
-                Object obj1Val = getter.invoke(obj);
+                Object obj1Val = getter.invoke(resolveValueIfIChecked(obj));
                 Object obj2Val = values.get(i);
                 if (!Objects.equals(obj1Val, obj2Val))
                 {

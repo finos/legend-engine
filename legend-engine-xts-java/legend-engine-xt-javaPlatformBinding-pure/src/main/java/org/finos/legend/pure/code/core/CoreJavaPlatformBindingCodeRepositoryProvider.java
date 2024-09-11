@@ -23,6 +23,7 @@ public class CoreJavaPlatformBindingCodeRepositoryProvider implements CodeReposi
 {
     public static final Adapter javaAdapter = new Adapter(
             "Java",
+            "Platform",
             "meta::pure::executionPlan::platformBinding::legendJava::pct::testAdapterForJavaBindingExecution_Function_1__X_o_"
     );
 

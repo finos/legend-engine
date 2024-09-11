@@ -57,6 +57,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
@@ -398,15 +399,13 @@ public class DataSpaceAnalyticsHelper
                     executableAnalysisResult.title = executable._title();
                     executableAnalysisResult.description = executable._description();
                     DataSpaceTemplateExecutableInfo templateExecutableInfo = new DataSpaceTemplateExecutableInfo();
-                    templateExecutableInfo.id = ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._id();
-
+                    templateExecutableInfo.id = executable._id();
                     // get V1 lambda
-                    DataSpaceTemplateExecutable executableV1 = (DataSpaceTemplateExecutable) dataSpaceProtocol.executables.stream().filter(e -> e instanceof DataSpaceTemplateExecutable && ((DataSpaceTemplateExecutable) e).id.equals(((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._id())).findFirst().get();
+                    DataSpaceTemplateExecutable executableV1 = (DataSpaceTemplateExecutable) dataSpaceProtocol.executables.stream().filter(e -> e instanceof DataSpaceTemplateExecutable && e.id.equals(executable._id())).findFirst().get();
                     templateExecutableInfo.query = executableV1.query.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withIndentation(getTabSize(1)).build());
-
-                    org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContext = ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey() == null ? dataSpace._defaultExecutionContext() :
-                            dataSpace._executionContexts().toList().stream().filter(c -> c._name().equals(((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey())).findFirst().get();
-                    templateExecutableInfo.executionContextKey = ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey() == null ? dataSpace._defaultExecutionContext()._name() : ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey();
+                    org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContext = executable._executionContextKey() == null ? dataSpace._defaultExecutionContext() :
+                            dataSpace._executionContexts().toList().stream().filter(c -> c._name().equals(executable._executionContextKey())).findFirst().get();
+                    templateExecutableInfo.executionContextKey = executable._executionContextKey() == null ? dataSpace._defaultExecutionContext()._name() : executable._executionContextKey();
                     executableAnalysisResult.info = templateExecutableInfo;
                     executableAnalysisResult.result = buildExecutableResult(PlanGenerator.generateExecutionPlanDebug(
                             ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._query(),
@@ -424,60 +423,78 @@ public class DataSpaceAnalyticsHelper
                 }
                 else if (executable instanceof Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable)
                 {
-                    if (((Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable)executable)._executable() instanceof Root_meta_legend_service_metamodel_Service)
+                    if (((Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable)executable)._executable() instanceof Root_meta_legend_service_metamodel_Service ||
+                            ((Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable)executable)._executable() instanceof ConcreteFunctionDefinition)
                     {
-                        Root_meta_legend_service_metamodel_Service service = (Root_meta_legend_service_metamodel_Service)  ((Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable) executable)._executable();
                         DataSpaceExecutableAnalysisResult executableAnalysisResult = new DataSpaceExecutableAnalysisResult();
                         executableAnalysisResult.title = executable._title();
                         executableAnalysisResult.description = executable._description();
-                        String servicePath = HelperModelBuilder.getElementFullPath(((Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable) executable)._executable(), pureModel.getExecutionSupport());
-                        executableAnalysisResult.executable = servicePath;
-                        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement _el = ListIterate.detect(pureModelContextData.getElements(), el -> el.getPath().equals(servicePath) && el instanceof Service);
-                        if (!(_el instanceof Service))
-                        {
-                            throw new RuntimeException("Can't find protocol for service '" + servicePath + "'");
-                        }
-                        Service serviceProtocol = (Service) _el;
+                        String executablePath = HelperModelBuilder.getElementFullPath(((Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable) executable)._executable(), pureModel.getExecutionSupport());
+                        executableAnalysisResult.executable = executablePath;
+                        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement _el = ListIterate.detect(pureModelContextData.getElements(), el -> el.getPath().equals(executablePath) && (el instanceof Service || el instanceof Function));
                         Mapping mapping = null;
                         Root_meta_core_runtime_Runtime runtime = null;
-                        LambdaFunction<?> lambdaFunc = null;
-                        if (service._execution() instanceof Root_meta_legend_service_metamodel_PureSingleExecution)
+                        FunctionDefinition<?> lambdaFunc = null;
+                        if (_el instanceof Service)
                         {
-                            Root_meta_legend_service_metamodel_PureSingleExecution execution = ((Root_meta_legend_service_metamodel_PureSingleExecution) service._execution());
-                            DataSpaceServiceExecutableInfo serviceExecutableInfo = new DataSpaceServiceExecutableInfo();
-                            serviceExecutableInfo.pattern = service._pattern();
-                            serviceExecutableInfo.query = ((PureSingleExecution) serviceProtocol.execution).func.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(RenderStyle.PRETTY).build());
-                            serviceExecutableInfo.mapping = HelperModelBuilder.getElementFullPath(execution._mapping(), pureModel.getExecutionSupport());
-                            if (serviceProtocol.execution instanceof PureSingleExecution && ((PureSingleExecution) serviceProtocol.execution).runtime instanceof RuntimePointer)
+                            Service serviceProtocol = (Service) _el;
+                            Root_meta_legend_service_metamodel_Service service = (Root_meta_legend_service_metamodel_Service)  ((Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable) executable)._executable();
+                            if (service._execution() instanceof Root_meta_legend_service_metamodel_PureSingleExecution)
                             {
-                                serviceExecutableInfo.runtime = pureModel.getRuntimePath(execution._runtime());
+                                Root_meta_legend_service_metamodel_PureSingleExecution execution = ((Root_meta_legend_service_metamodel_PureSingleExecution) service._execution());
+                                DataSpaceServiceExecutableInfo serviceExecutableInfo = new DataSpaceServiceExecutableInfo();
+                                serviceExecutableInfo.pattern = service._pattern();
+                                serviceExecutableInfo.query = ((PureSingleExecution) serviceProtocol.execution).func.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(RenderStyle.PRETTY).build());
+                                serviceExecutableInfo.mapping = HelperModelBuilder.getElementFullPath(execution._mapping(), pureModel.getExecutionSupport());
+                                if (serviceProtocol.execution instanceof PureSingleExecution && ((PureSingleExecution) serviceProtocol.execution).runtime instanceof RuntimePointer)
+                                {
+                                    serviceExecutableInfo.runtime = pureModel.getRuntimePath(execution._runtime());
+                                }
+                                serviceExecutableInfo.datasets = LazyIterate.flatCollect(entitlementServiceExtensions, extension -> extension.generateDatasetSpecifications(null, pureModel.getRuntimePath(execution._runtime()), execution._runtime(), HelperModelBuilder.getElementFullPath(execution._mapping(), pureModel.getExecutionSupport()), execution._mapping(), pureModelContextData, pureModel)).toList();
+                                executableAnalysisResult.info = serviceExecutableInfo;
+                                lambdaFunc = execution._func();
+                                mapping = execution._mapping();
+                                runtime = execution._runtime();
                             }
-                            serviceExecutableInfo.datasets = LazyIterate.flatCollect(entitlementServiceExtensions, extension -> extension.generateDatasetSpecifications(null, pureModel.getRuntimePath(execution._runtime()), execution._runtime(), HelperModelBuilder.getElementFullPath(execution._mapping(), pureModel.getExecutionSupport()), execution._mapping(), pureModelContextData, pureModel)).toList();
-                            executableAnalysisResult.info = serviceExecutableInfo;
-                            lambdaFunc = (LambdaFunction<?>) execution._func();
-                            mapping = execution._mapping();
-                            runtime = execution._runtime();
+                            else if (service._execution() instanceof Root_meta_legend_service_metamodel_PureMultiExecution)
+                            {
+                                Root_meta_legend_service_metamodel_PureMultiExecution execution = ((Root_meta_legend_service_metamodel_PureMultiExecution) service._execution());
+                                DataSpaceMultiExecutionServiceExecutableInfo multiExecutionServiceExecutableInfo = new DataSpaceMultiExecutionServiceExecutableInfo();
+                                multiExecutionServiceExecutableInfo.pattern = service._pattern();
+                                multiExecutionServiceExecutableInfo.query = ((PureMultiExecution) serviceProtocol.execution).func.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(RenderStyle.PRETTY).build());
+                                multiExecutionServiceExecutableInfo.keyedExecutableInfos = new ArrayList<>();
+                                for (Root_meta_legend_service_metamodel_KeyedExecutionParameter keyedExecutionParameter: execution._executionParameters())
+                                {
+                                    DataSpaceMultiExecutionServiceKeyedExecutableInfo keyedExecutableInfo = new DataSpaceMultiExecutionServiceKeyedExecutableInfo();
+                                    keyedExecutableInfo.key = keyedExecutionParameter._key();
+                                    keyedExecutableInfo.mapping = HelperModelBuilder.getElementFullPath(keyedExecutionParameter._mapping(), pureModel.getExecutionSupport());
+                                    keyedExecutableInfo.runtime = pureModel.getRuntimePath(keyedExecutionParameter._runtime());
+                                    keyedExecutableInfo.datasets = LazyIterate.flatCollect(entitlementServiceExtensions, extension -> extension.generateDatasetSpecifications(null, pureModel.getRuntimePath(keyedExecutionParameter._runtime()), keyedExecutionParameter._runtime(), HelperModelBuilder.getElementFullPath(keyedExecutionParameter._mapping(), pureModel.getExecutionSupport()), keyedExecutionParameter._mapping(), pureModelContextData, pureModel)).toList();
+                                    multiExecutionServiceExecutableInfo.keyedExecutableInfos.add(keyedExecutableInfo);
+                                }
+                                //for multi execution, we use the first execution to generate execution plan
+                                lambdaFunc = execution._func();
+                                mapping = execution._executionParameters().getFirst()._mapping();
+                                runtime = execution._executionParameters().getFirst()._runtime();
+                            }
                         }
-                        else if (service._execution() instanceof Root_meta_legend_service_metamodel_PureMultiExecution)
+                        else if (_el instanceof Function)
                         {
-                            Root_meta_legend_service_metamodel_PureMultiExecution execution = ((Root_meta_legend_service_metamodel_PureMultiExecution) service._execution());
-                            DataSpaceMultiExecutionServiceExecutableInfo multiExecutionServiceExecutableInfo = new DataSpaceMultiExecutionServiceExecutableInfo();
-                            multiExecutionServiceExecutableInfo.pattern = service._pattern();
-                            multiExecutionServiceExecutableInfo.query = ((PureMultiExecution) serviceProtocol.execution).func.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(RenderStyle.PRETTY).build());
-                            multiExecutionServiceExecutableInfo.keyedExecutableInfos = new ArrayList<>();
-                            for (Root_meta_legend_service_metamodel_KeyedExecutionParameter keyedExecutionParameter: execution._executionParameters())
-                            {
-                                DataSpaceMultiExecutionServiceKeyedExecutableInfo keyedExecutableInfo = new DataSpaceMultiExecutionServiceKeyedExecutableInfo();
-                                keyedExecutableInfo.key = keyedExecutionParameter._key();
-                                keyedExecutableInfo.mapping = HelperModelBuilder.getElementFullPath(keyedExecutionParameter._mapping(), pureModel.getExecutionSupport());
-                                keyedExecutableInfo.runtime = pureModel.getRuntimePath(keyedExecutionParameter._runtime());
-                                keyedExecutableInfo.datasets = LazyIterate.flatCollect(entitlementServiceExtensions, extension -> extension.generateDatasetSpecifications(null, pureModel.getRuntimePath(keyedExecutionParameter._runtime()), keyedExecutionParameter._runtime(), HelperModelBuilder.getElementFullPath(keyedExecutionParameter._mapping(), pureModel.getExecutionSupport()), keyedExecutionParameter._mapping(), pureModelContextData, pureModel)).toList();
-                                multiExecutionServiceExecutableInfo.keyedExecutableInfos.add(keyedExecutableInfo);
-                            }
-                            //for multi execution, we use the first execution to generate execution plan
-                            lambdaFunc = (LambdaFunction<?>) execution._func();
-                            mapping = execution._executionParameters().getFirst()._mapping();
-                            runtime = execution._executionParameters().getFirst()._runtime();
+                            DataSpaceFunctionPointerExecutableInfo functionPointerExecutableInfo = new DataSpaceFunctionPointerExecutableInfo();
+                            functionPointerExecutableInfo.id = executable._id();
+                            functionPointerExecutableInfo.executionContextKey = executable._executionContextKey();
+                            functionPointerExecutableInfo.function = executablePath;
+                            lambdaFunc = pureModel.getConcreteFunctionDefinition_safe(executablePath);
+                            org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContext = executable._executionContextKey() == null ? dataSpace._defaultExecutionContext() :
+                                    dataSpace._executionContexts().toList().stream().filter(c -> c._name().equals(executable._executionContextKey())).findFirst().get();
+                            mapping = executionContext._mapping();
+                            runtime = executionContext._defaultRuntime()._runtimeValue();
+                            functionPointerExecutableInfo.query = _el.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withIndentation(getTabSize(1)).build());
+                            executableAnalysisResult.info = functionPointerExecutableInfo;
+                        }
+                        else
+                        {
+                            throw new RuntimeException("Can't find protocol for service or function '" + executablePath + "'");
                         }
                         executableAnalysisResult.result = buildExecutableResult(PlanGenerator.generateExecutionPlanDebug(
                                 lambdaFunc,

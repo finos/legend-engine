@@ -1608,7 +1608,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testEval()
+    public void testEval1Param()
     {
         test("Class test::A" +
                 "{" +
@@ -1629,6 +1629,30 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   z(){ {a|$a+'1'}->eval(1);}:Integer[1];\n" +
                 "}", "COMPILATION error at [1:63-66]: Can't find a match for function 'plus(Any[2])'");
     }
+
+    @Test
+    public void testEval2Param()
+    {
+        test("Class test::A" +
+                "{" +
+                "   name : String[1];" +
+                "}" +
+                "" +
+                "Class test::B" +
+                "{" +
+                "   z(){ {a,b|$a+$b}->eval(1,2);}:Integer[1];\n" +
+                "}");
+        test("Class test::A" +
+                "{" +
+                "   name : String[1];" +
+                "}" +
+                "" +
+                "Class test::B" +
+                "{" +
+                "   z(){ {a,b|$a+$b}->eval(1,'a');}:Integer[1];\n" +
+                "}", "COMPILATION error at [1:65-67]: Can't find a match for function 'plus(Any[2])'");
+    }
+
 
     @Test
     public void testPropertyPostFunction()
@@ -2298,7 +2322,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   testStrictTime(){\n" +
                 "       $this.time == %10:12:2b;\n" +
                 "   } : Boolean[1];\n" +
-                "}\n", "PARSER error at [5:30]: no viable alternative at input '==%10:12:2b'");
+                "}\n", "PARSER error at [5:30]: Unexpected token 'b'. Valid alternatives: ['&&', '||', '==', '!=', '->', '[', '.', ';', '+', '*', '-', '/', '<', '<=', '>', '>=']");
 
     }
 
@@ -2857,7 +2881,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "      }\n" +
                 "    }\n" +
                 "  }#\n" +
-                "}\n", "COMPILATION error at [16:7-18:7]: The type Street is not a subtype of Address"
+                "}\n", "COMPILATION error at [16:18-29]: The type Street is not a subtype of Address"
         );
 
         test("Class test::Address\n" +
@@ -2914,7 +2938,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "      }\n" +
                 "    }\n" +
                 "  }#\n" +
-                "}\n", "COMPILATION error at [19:7-21:7]: There are multiple subTypeTrees having subType test::Street, Only one is allowed"
+                "}\n", "COMPILATION error at [19:18-29]: There are multiple subTypeTrees having subType test::Street, Only one is allowed"
         );
 
         test("Class test::Address\n" +
@@ -2947,7 +2971,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "      }\n" +
                 "    }\n" +
                 "  }#\n" +
-                "}\n", "COMPILATION error at [26:7-28:7]: Property \"name\" is present at root level hence should not be specified at subType level"
+                "}\n", "COMPILATION error at [26:18-27]: Property \"name\" is present at root level hence should not be specified at subType level"
         );
 
         test("Class test::Address\n" +
@@ -2980,7 +3004,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "      }\n" +
                 "    }\n" +
                 "  }#\n" +
-                "}\n", "COMPILATION error at [26:7-28:7]: Property \"alias\" is present at root level hence should not be specified at subType level"
+                "}\n", "COMPILATION error at [26:18-27]: Property \"alias\" is present at root level hence should not be specified at subType level"
         );
 
         test("Class test::Address\n" +

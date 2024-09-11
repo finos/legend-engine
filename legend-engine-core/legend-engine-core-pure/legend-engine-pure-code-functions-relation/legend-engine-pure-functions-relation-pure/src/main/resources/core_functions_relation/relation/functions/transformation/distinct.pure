@@ -1,0 +1,90 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::relation::*;
+import meta::pure::test::pct::*;
+
+native function <<PCT.function>> meta::pure::functions::relation::distinct<X,T>(rel:Relation<T>[1], columns:ColSpecArray<X⊆T>[1]):Relation<X>[1];
+native function <<PCT.function>> meta::pure::functions::relation::distinct<T>(rel:Relation<T>[1]):Relation<T>[1];
+
+function <<PCT.test>> meta::pure::functions::relation::tests::distinct::testDistinctSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  val, str
+                  1, a
+                  3, ewe
+                  1, qw
+                  5, weq
+                  5, weq
+                #->distinct(~[val])
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val\n'+
+                  '   1\n'+
+                  '   3\n'+
+                  '   5\n'+
+                  '#', $res->sort(~val->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::distinct::testDistinctMultiple<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  val, str
+                  1, a
+                  3, ewe
+                  1, qw
+                  5, weq
+                  5, weq
+                #->distinct(~[val, str])
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,str\n'+
+                  '   1,a\n'+
+                  '   1,qw\n'+
+                  '   3,ewe\n'+
+                  '   5,weq\n'+
+                  '#', $res->sort([ascending(~val), ascending(~str)])->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::distinct::testDistinctAll<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  val, str
+                  1, a
+                  3, ewe
+                  1, qw
+                  5, weq
+                  5, weq
+                #->distinct()
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,str\n'+
+                  '   1,a\n'+
+                  '   1,qw\n'+
+                  '   3,ewe\n'+
+                  '   5,weq\n'+
+                  '#', $res->sort([ascending(~val), ascending(~str)])->toString());
+}

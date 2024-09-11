@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.bigqueryFunction.compiler.toPureGraph;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.code.core.CoreFunctionActivatorCodeRepositoryProvider;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
@@ -72,6 +73,8 @@ public class BigQueryFunctionCompilerExtension implements CompilerExtension
                     bigQueryFunction.name,
                     null,
                     context.pureModel.getClass("meta::external::function::activator::bigQueryFunction::BigQueryFunction"))
+                    ._stereotypes(ListIterate.collect(bigQueryFunction.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
+                    ._taggedValues(ListIterate.collect(bigQueryFunction.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)))
                     ._functionName(bigQueryFunction.functionName)
                     ._function(func)
                     ._description(bigQueryFunction.description)
@@ -88,6 +91,5 @@ public class BigQueryFunctionCompilerExtension implements CompilerExtension
     {
         return new Root_meta_external_function_activator_bigQueryFunction_BigQueryFunctionDeploymentConfiguration_Impl("")
                 ._target((Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) context.resolveConnection(configuration.activationConnection.connection, configuration.sourceInformation));
-        // ._stage(context.pureModel.getEnumValue("meta::external::function::activator::DeploymentStage", configuration.stage.name()));
     }
 }

@@ -1,0 +1,572 @@
+{
+  "mappings": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "/persons/allPersons"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "fullName": "P1",
+            "addressName": "A1",
+            "firmName": "F1"
+          },
+          {
+            "fullName": "P2",
+            "addressName": "A2",
+            "firmName": "F2"
+          },
+          {
+            "fullName": "P3",
+            "addressName": "A100",
+            "firmName": "F100"
+          },
+          {
+            "fullName": "P4",
+            "addressName": "A3",
+            "firmName": "F100"
+          },
+          {
+            "fullName": "P5",
+            "addressName": "A1",
+            "firmName": "F1"
+          }
+        ]
+      }
+    },
+
+    {
+      "request": {
+        "method": "GET",
+        "url": "/persons/personByName/P1"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "fullName": "P1",
+            "addressName": "A1",
+            "firmName": "F1"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+      "method": "GET",
+      "url": "/persons/personByName/P2"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "fullName": "P2",
+            "addressName": "A2",
+            "firmName": "F2"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/persons/personByName/P3"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "fullName": "P3",
+            "addressName": null,
+            "firmName": null
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/persons/personByName/P4"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "fullName": "P4",
+            "addressName": "A3",
+            "firmName": null
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/persons/personByName/P5"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "fullName": "P5",
+            "addressName": "A1",
+            "firmName": "F1"
+          }
+        ]
+      }
+    },
+
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/persons/personsByAddressName",
+        "queryParameters": {
+          "addressName": {
+            "equalTo": "A1"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "fullName": "P1",
+            "addressName": "A1",
+            "firmName": "F1"
+          },
+          {
+            "fullName": "P5",
+            "addressName": "A1",
+            "firmName": "F1"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/persons/personsByAddressName",
+        "queryParameters": {
+          "addressName": {
+            "equalTo": "A2"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "fullName": "P2",
+            "addressName": "A2",
+            "firmName": "F2"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/persons/personsByAddressName",
+        "queryParameters": {
+          "addressName": {
+            "equalTo": "A3"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "fullName": "P4",
+            "addressName": "A3",
+            "firmName": null
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/persons/personsByAddressName",
+        "queryParameters": {
+          "addressName" : {
+            "doesNotMatch" : "^A[1-3]{1}$"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": []
+      }
+    },
+
+
+    {
+      "request": {
+        "method": "GET",
+        "url": "/firms/allFirms"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "name": "F1",
+            "addressName": "A4"
+          },
+          {
+            "name": "F2",
+            "addressName": "A3"
+          },
+          {
+            "name": "F3",
+            "addressName": "A3"
+          },
+          {
+            "name": "F4",
+            "addressName": null
+          }
+        ]
+      }
+    },
+
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/firms/firmByName",
+        "queryParameters": {
+          "name": {
+            "equalTo": "F1"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+          "name": "F1",
+          "addressName": "A4"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/firms/firmByName",
+        "queryParameters": {
+          "name": {
+            "equalTo": "F2"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "name": "F2",
+            "addressName": "A3"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/firms/firmByName",
+        "queryParameters": {
+          "name": {
+            "equalTo": "F3"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "name": "F3",
+            "addressName": "A3"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/firms/firmByName",
+        "queryParameters": {
+          "name": {
+            "equalTo": "F4"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "name": "F4",
+            "addressName": "A100"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/firms/firmByName",
+        "queryParameters": {
+          "name" : {
+            "doesNotMatch" : "^F[0-4]{1}$"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": []
+      }
+    },
+
+
+    {
+      "request": {
+        "method": "GET",
+        "url": "/addresses/allAddresses"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "name": "A1",
+            "streetName" : "S1"
+          },
+          {
+            "name": "A2",
+            "streetName": "S2"
+          },
+          {
+            "name": "A3",
+            "streetName": "S100"
+          },
+          {
+            "name": "A4",
+            "streetName": "S2"
+          },
+          {
+            "name": "A5",
+            "streetName": "S2"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/addresses/addressByName",
+        "queryParameters": {
+          "name": {
+            "equalTo": "A1"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "name": "A1",
+            "streetName" : "S1"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/addresses/addressByName",
+        "queryParameters": {
+          "name": {
+            "equalTo": "A2"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "name": "A2",
+            "streetName" : "S2"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/addresses/addressByName",
+        "queryParameters": {
+          "name": {
+            "equalTo": "A3"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "name": "A3",
+            "streetName" : "S100"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/addresses/addressByName",
+        "queryParameters": {
+          "name": {
+            "equalTo": "A4"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "name": "A4",
+            "streetName" : "S2"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/addresses/addressByName",
+        "queryParameters": {
+          "name": {
+            "equalTo": "A5"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "name": "A5",
+            "streetName" : "S2"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/addresses/addressByName",
+        "queryParameters": {
+          "name" : {
+            "doesNotMatch" : "^A[1-5]{1}$"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": []
+      }
+    },
+
+
+    {
+      "request": {
+        "method": "GET",
+        "url": "/streets/allStreets"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "streetId" : "S1"
+          },
+          {
+            "streetId": "S2"
+          },
+          {
+            "streetId": "S3"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/streets/streetByID",
+        "queryParameters": {
+          "streetId": {
+            "equalTo": "S1"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "streetId" : "S1"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/streets/streetByID",
+        "queryParameters": {
+          "streetId": {
+            "equalTo": "S2"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "streetId" : "S2"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/streets/streetByID",
+        "queryParameters": {
+          "streetId": {
+            "equalTo": "S3"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "streetId" : "S3"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/streets/streetByID",
+        "queryParameters": {
+          "streetId" : {
+            "doesNotMatch" : "^S[1-3]{1}$"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": []
+      }
+    }
+  ]
+}

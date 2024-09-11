@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -1160,9 +1160,4 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
 function <<access.private>> meta::relational::executionPlan::platformBinding::legendJava::graphFetch::buildTargetPropertiesOrderedMethod(class: meta::external::language::java::metamodel::Class[1], modifiers: String[*], code: Code[*]):meta::external::language::java::metamodel::Method[1]
 {
    javaMethod($modifiers, javaList(javaString()), 'targetPropertiesOrdered', [], $code)
-}
-
-function <<access.private>> meta::relational::executionPlan::platformBinding::legendJava::graphFetch::buildParentCrossKeyGettersOrderedByTargetPropertiesMethod(class: meta::external::language::java::metamodel::Class[1], modifiers: String[*], code: Code[*]):meta::external::language::java::metamodel::Method[1]
-{
-   javaMethod($modifiers, javaList(javaReflectMethod()), 'parentCrossKeyGettersOrderedByTargetProperties', [], $code)
 }

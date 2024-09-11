@@ -56,6 +56,7 @@ import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticatio
 import org.finos.legend.engine.entitlement.services.EntitlementModelObjectMapperFactory;
 import org.finos.legend.engine.entitlement.services.EntitlementServiceExtension;
 import org.finos.legend.engine.entitlement.services.EntitlementServiceExtensionLoader;
+import org.finos.legend.engine.execution.test.data.generation.api.TestDataGenerationAPI;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.loaders.CodeGenerators;
@@ -134,6 +135,7 @@ import org.finos.legend.engine.server.core.api.Memory;
 import org.finos.legend.engine.server.core.bundles.ErrorHandlingBundle;
 import org.finos.legend.engine.server.core.exceptionMappers.CatchAllExceptionMapper;
 import org.finos.legend.engine.server.core.exceptionMappers.JsonInformationExceptionMapper;
+import org.finos.legend.engine.server.core.pct.PCT;
 import org.finos.legend.engine.server.core.session.SessionAttributeBundle;
 import org.finos.legend.engine.server.core.session.SessionTracker;
 import org.finos.legend.engine.server.core.session.StoreExecutableManagerSessionListener;
@@ -158,6 +160,7 @@ import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.ws.rs.container.DynamicFeature;
 import java.io.FileInputStream;
+import java.util.concurrent.ForkJoinPool;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -335,6 +338,9 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new ConcurrentExecutionNodeExecutorPoolInfo(Collections.emptyList()));
         environment.jersey().register(new ParallelGraphFetchExecutionExecutorPoolInfo(parallelGraphFetchExecutionExecutorPool));
 
+        // PCT
+        environment.jersey().register(new PCT());
+
         // Protocol
         environment.jersey().register(new PureProtocol());
 
@@ -426,6 +432,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         //TestData Generation
         environment.jersey().register(new TestDataGeneration(modelManager));
+        environment.jersey().register(new TestDataGenerationAPI(modelManager, planExecutor));
 
         enableCors(environment, serverConfiguration);
     }

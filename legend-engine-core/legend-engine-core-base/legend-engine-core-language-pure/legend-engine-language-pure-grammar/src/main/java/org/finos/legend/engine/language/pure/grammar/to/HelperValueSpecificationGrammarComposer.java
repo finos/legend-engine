@@ -69,6 +69,13 @@ public class HelperValueSpecificationGrammarComposer
         SPECIAL_INFIX.put("or", "||");
     }
 
+    public static boolean isInfix(AppliedFunction function)
+    {
+        return SPECIAL_INFIX.get(function.function) != null
+                ||
+                (function.function.equals("not") && function.parameters.get(0) instanceof AppliedFunction && ((AppliedFunction) function.parameters.get(0)).function.equals("equal"));
+    }
+
     public static boolean isPrimitiveValue(ValueSpecification valueSpecification)
     {
         return (valueSpecification instanceof CString ||
@@ -86,7 +93,7 @@ public class HelperValueSpecificationGrammarComposer
 
     public static String printColSpec(ColSpec col, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        return (col.name.contains(" ") ? "'" + col.name + "'" : col.name) + (col.type != null ? ":" + col.type : "") + (col.function1 != null ? ":" +  (transformer.isRenderingPretty() ? " " : "") + col.function1.accept(transformer) : "") + (col.function2 != null ? ":" + col.function2.accept(transformer) : "");
+        return (col.name.contains(" ") ? "'" + col.name + "'" : col.name) + (col.type != null ? ":" + col.type : "") + (col.function1 != null ? ":" + (transformer.isRenderingPretty() ? " " : "") + col.function1.accept(transformer) : "") + (col.function2 != null ? ":" + col.function2.accept(transformer) : "");
     }
 
     public static String printColSpecArray(ColSpecArray colSpecArray, DEPRECATED_PureGrammarComposerCore transformer)
@@ -117,7 +124,7 @@ public class HelperValueSpecificationGrammarComposer
 
         // This is to accommodate for cases where the first parameter is a lambda, such as agg(), col(),
         // it would be wrong to use `->` syntax, e.g. `$x|x.prop1->col()`
-        if ((firstArgument instanceof Lambda) || (firstArgument instanceof AppliedFunction && SPECIAL_INFIX.get(((AppliedFunction) firstArgument).function) != null))
+        if ((firstArgument instanceof Lambda) || (firstArgument instanceof AppliedFunction && !((AppliedFunction) firstArgument).function.equals("minus") && isInfix((AppliedFunction) firstArgument)))
         {
             return renderFunctionName(functionName, transformer) + "("
                     + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(2)) : "")
@@ -125,9 +132,9 @@ public class HelperValueSpecificationGrammarComposer
                     .makeString("," + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(2)) : " "))
                     + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "") + ")";
         }
-        if (otherArguments.size() == 0)
+        if (otherArguments.isEmpty())
         {
-            if (firstArgument instanceof AppliedFunction && SPECIAL_INFIX.get(((AppliedFunction) firstArgument).function) != null)
+            if (firstArgument instanceof AppliedFunction && !((AppliedFunction) firstArgument).function.equals("minus") && isInfix(((AppliedFunction) firstArgument)))
             {
                 return functionName + "(" + firstArgument.accept(transformer) + ")";
             }
@@ -135,22 +142,28 @@ public class HelperValueSpecificationGrammarComposer
             {
                 return renderFunctionName(functionName, transformer) + "(" + firstArgument.accept(transformer) + ")";
             }
-            return firstArgument.accept(transformer) + (transformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (transformer.isRenderingHTML() ? "</span>" : "")
+            return mayWrapInParenthesis(firstArgument, transformer) + (transformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (transformer.isRenderingHTML() ? "</span>" : "")
                     + renderFunctionName(functionName, transformer) + "()";
         }
         if (otherArguments.size() == 1 && isPrimitiveValue(otherArguments.get(0)))
         {
-            return firstArgument.accept(transformer) + (transformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (transformer.isRenderingHTML() ? "</span>" : "")
+            return mayWrapInParenthesis(firstArgument, transformer) + (transformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (transformer.isRenderingHTML() ? "</span>" : "")
                     + renderFunctionName(functionName, transformer) + "("
                     + otherArguments.get(0).accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withIndentation(getTabSize(1)).build())
                     + ")";
         }
-        return firstArgument.accept(transformer) + (transformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (transformer.isRenderingHTML() ? "</span>" : "")
+        return mayWrapInParenthesis(firstArgument, transformer) + (transformer.isRenderingHTML() ? "<span class='pureGrammar-arrow'>" : "") + "->" + (transformer.isRenderingHTML() ? "</span>" : "")
                 + renderFunctionName(functionName, transformer) + "("
                 + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : "") +
                 ListIterate.collect(otherArguments, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withIndentation(getTabSize(1)).build()))
                         .makeString("," + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(1)) : " "))
                 + (transformer.isRenderingPretty() ? transformer.returnChar() + transformer.getIndentationString() : "") + ")";
+    }
+
+    private static String mayWrapInParenthesis(ValueSpecification value, DEPRECATED_PureGrammarComposerCore transformer)
+    {
+        boolean wrap = (value instanceof AppliedFunction && (((AppliedFunction) value).function.equals("minus") || ((AppliedFunction) value).function.equals("not")));
+        return (wrap ? "(" : "") + value.accept(transformer) + (wrap ? ")" : "");
     }
 
     public static String renderFunctionName(String name, DEPRECATED_PureGrammarComposerCore transformer)
@@ -160,9 +173,9 @@ public class HelperValueSpecificationGrammarComposer
 
     public static String possiblyAddParenthesis(String function, ValueSpecification param, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        if ("and".equals(function) || "or".equals(function) || "plus".equals(function) || "minus".equals(function) || "times".equals(function) || "divide".equals(function))
+        if ("and".equals(function) || "or".equals(function) || "plus".equals(function) || "minus".equals(function) || "times".equals(function) || "divide".equals(function) || "not".equals(function))
         {
-            if (param instanceof AppliedFunction && SPECIAL_INFIX.get(((AppliedFunction) param).function) != null)
+            if (param instanceof AppliedFunction && isInfix((AppliedFunction) param))
             {
                 return "(" + param.accept(transformer) + ")";
             }
@@ -313,12 +326,12 @@ public class HelperValueSpecificationGrammarComposer
 
     private static String getParameterSignature(Variable p)
     {
-        return p._class != null ? getClassSignature(p._class) + "_" + getMultiplicitySignature(p.multiplicity) : null;
+        return p._class != null ? getClassSignature(p._class.path) + "_" + getMultiplicitySignature(p.multiplicity) : null;
     }
 
     private static String getFunctionDescriptorParameterSignature(Variable p)
     {
-        return p._class != null ? getClassSignature(p._class) + "[" + HelperDomainGrammarComposer.renderMultiplicity(p.multiplicity) + "]" : null;
+        return p._class != null ? getClassSignature(p._class.path) + "[" + HelperDomainGrammarComposer.renderMultiplicity(p.multiplicity) + "]" : null;
     }
 
     private static String getClassSignature(String _class)

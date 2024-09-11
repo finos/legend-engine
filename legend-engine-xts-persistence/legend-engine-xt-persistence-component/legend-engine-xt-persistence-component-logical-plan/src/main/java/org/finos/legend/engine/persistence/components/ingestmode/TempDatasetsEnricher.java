@@ -89,4 +89,10 @@ public class TempDatasetsEnricher implements IngestModeVisitor<Datasets>
     {
         return datasets;
     }
+
+    @Override
+    public Datasets visitNoOp(NoOpAbstract noOpAbstract)
+    {
+        return datasets;
+    }
 }

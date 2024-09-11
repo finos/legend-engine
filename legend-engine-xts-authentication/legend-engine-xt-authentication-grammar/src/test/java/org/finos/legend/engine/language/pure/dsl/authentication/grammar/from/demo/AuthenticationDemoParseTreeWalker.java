@@ -53,6 +53,7 @@ public class AuthenticationDemoParseTreeWalker
         AuthenticationParserGrammar.AuthenticationDemoContext ctx = elementDefinitionContext.authenticationDemo();
         authenticationDemo.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
         authenticationDemo._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
+        authenticationDemo.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // authentication
         AuthenticationParserGrammar.AuthenticationContext authenticationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.authentication(), "authentication", authenticationDemo.sourceInformation);

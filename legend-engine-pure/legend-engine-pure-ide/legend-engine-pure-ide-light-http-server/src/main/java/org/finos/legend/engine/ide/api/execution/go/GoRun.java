@@ -62,6 +62,7 @@ public class GoRun implements SimpleFunction
         }
         catch (Exception ex)
         {
+            ex.printStackTrace();
             IDEResponse exceptionResponse = ExceptionTranslation.buildExceptionMessage(pureSession, ex, new ByteArrayOutputStream());
             outputStream.write(JSONValue.escape("\n" + exceptionResponse.getText()).getBytes());
             outputStream.write("\"".getBytes());

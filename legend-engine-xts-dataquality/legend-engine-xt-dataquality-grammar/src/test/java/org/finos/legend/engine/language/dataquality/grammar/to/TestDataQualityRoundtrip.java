@@ -100,5 +100,23 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
                 "}\n");
     }
 
+    @Test
+    public void testParserForValidGrammar_whiteSpaceCharsInConstraintNames()
+    {
+        test("###DataQualityValidation\n" +
+                "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
+                "{\n" +
+                "   context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "   validationTree: $[\n" +
+                "      Person<ageMustBePositive, 'nameMust  \\r\\nNotBeBlank'>{\n" +
+                "        lastName,\n" +
+                "        name,\n" +
+                "        addresses<streetMustNotBeBlank>{\n" +
+                "          addressId\n" +
+                "        }\n" +
+                "      }\n" +
+                "    ]$;\n" +
+                "}\n");
+    }
 
 }

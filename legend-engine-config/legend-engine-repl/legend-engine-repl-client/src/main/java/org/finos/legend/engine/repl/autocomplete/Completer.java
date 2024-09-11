@@ -37,15 +37,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Col
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
-import org.finos.legend.engine.repl.autocomplete.handlers.ExtendHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.FilterHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.FromHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.GroupByHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.JoinHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.RenameHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.SelectHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.SortHandler;
+import org.finos.legend.engine.repl.autocomplete.handlers.*;
 import org.finos.legend.engine.repl.autocomplete.parser.ParserFixer;
+import org.finos.legend.engine.repl.core.legend.LegendInterface;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionAccessor;
@@ -60,13 +54,16 @@ import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import java.util.List;
 import java.util.Objects;
 
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_QUALIFIED_PATH;
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_SIGNATURE;
+
 public class Completer
 {
     private final String buildCodeContext;
     private final String header;
     private final int lineOffset;
     private final MutableMap<String, FunctionHandler> handlers;
-
+    private final java.util.function.Function<PureModelContextData, PureModel> compiler;
     private MutableList<CompleterExtension> extensions;
 
     public Completer(String buildCodeContext)
@@ -76,13 +73,24 @@ public class Completer
 
     public Completer(String buildCodeContext, MutableList<CompleterExtension> extensions)
     {
+        this(buildCodeContext, extensions, x -> Compiler.compile(x, null, Identity.getAnonymousIdentity().getName()));
+    }
+
+    public Completer(String buildCodeContext, MutableList<CompleterExtension> extensions, LegendInterface legendInterface)
+    {
+        this(buildCodeContext, extensions, legendInterface::compile);
+    }
+
+    private Completer(String buildCodeContext, MutableList<CompleterExtension> extensions, java.util.function.Function<PureModelContextData, PureModel> compiler)
+    {
+        this.compiler = compiler;
         this.extensions = extensions;
         this.buildCodeContext = buildCodeContext;
         this.header =
                 buildCodeContext +
                         "\n###Pure\n" +
                         "import meta::pure::functions::relation::*;\n" +
-                        "function _pierre::func():Any[*]{\n";
+                        "function " + REPL_RUN_FUNCTION_SIGNATURE + "{\n";
         this.lineOffset = StringUtils.countMatches(header, "\n") + 1;
         this.handlers = Lists.mutable.with(
                 new FilterHandler(),
@@ -92,7 +100,9 @@ public class Completer
                 new GroupByHandler(),
                 new SortHandler(),
                 new JoinHandler(),
-                new SelectHandler()
+                new SelectHandler(),
+                new DistinctHandler(),
+                new OverHandler()
         ).toMap(FunctionHandler::functionName, x -> x);
     }
 
@@ -122,7 +132,7 @@ public class Completer
             ValueSpecification currentExpression = findPartiallyWrittenExpression(vs, lineOffset, value.length());
 
             PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(buildCodeContext);
-            PureModel pureModel = Compiler.compile(pureModelContextData, null, Identity.getAnonymousIdentity().getName());
+            PureModel pureModel = this.compiler.apply(pureModelContextData);
 
             ProcessingContext processingContext = new ProcessingContext("");
 
@@ -150,7 +160,6 @@ public class Completer
         else if (topExpression instanceof AppliedFunction)
         {
             AppliedFunction currentFunc = (AppliedFunction) topExpression;
-
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification leftCompiledVS = currentFunc.parameters.get(0).accept(new ValueSpecificationBuilder(new CompileContext.Builder(pureModel).build(), Lists.mutable.empty(), processingContext));
             GenericType leftType = leftCompiledVS._genericType();
             String currentlyTypeFunctionName = currentFunc.function.replace(ParserFixer.magicToken, "");
@@ -158,7 +167,7 @@ public class Completer
             if (currentExpression == topExpression)
             {
                 // The top function name is being written, propose candidates
-                return new CompletionResult(getFunctionCandidates(leftCompiledVS, pureModel, null).select(c -> c.startsWith(currentlyTypeFunctionName)).collect(c -> new CompletionItem(c, c)));
+                return new CompletionResult(getFunctionCandidates(leftCompiledVS, pureModel, null).select(c -> c.startsWith(currentlyTypeFunctionName)).collect(c -> new CompletionItem(c, c + "(")));
             }
             else if (handler != null)
             {
@@ -212,20 +221,26 @@ public class Completer
         if (currentFunc.parameters.size() == 2 && currentFunc.parameters.get(1) instanceof ClassInstance)
         {
             Object pivot = ((ClassInstance) currentFunc.parameters.get(1)).value;
-            if (pivot instanceof ColSpec)
-            {
-                return proposeColumnNamesForEditColSpec((ColSpec) pivot, leftType);
-            }
-            else if (pivot instanceof ColSpecArray)
-            {
-                List<ColSpec> colSpecList = ((ColSpecArray) pivot).colSpecs;
-                return proposeColumnNamesForEditColSpec(colSpecList.get(colSpecList.size() - 1), leftType);
-            }
+            return proposeColumnNamesForEditColSpec(pivot, leftType);
         }
         return Lists.mutable.empty();
     }
 
-    public static MutableList<CompletionItem> proposeColumnNamesForEditColSpec(ColSpec colSpec, GenericType leftType)
+    public static MutableList<CompletionItem> proposeColumnNamesForEditColSpec(Object object, GenericType leftType)
+    {
+        if (object instanceof ColSpec)
+        {
+            return proposeColumnNamesForEditColSpecOne((ColSpec) object, leftType);
+        }
+        else if (object instanceof ColSpecArray)
+        {
+            List<ColSpec> colSpecList = ((ColSpecArray) object).colSpecs;
+            return proposeColumnNamesForEditColSpecOne(colSpecList.get(colSpecList.size() - 1), leftType);
+        }
+        return Lists.mutable.empty();
+    }
+
+    private static MutableList<CompletionItem> proposeColumnNamesForEditColSpecOne(ColSpec colSpec, GenericType leftType)
     {
         RelationType<?> r = (RelationType<?>) leftType._typeArguments().getFirst()._rawType();
         String typedColName = colSpec.name.replace(ParserFixer.magicToken, "");
@@ -238,7 +253,7 @@ public class Completer
     {
         String code = header + value + "\n" + "\n}";
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(code);
-        Function func = (Function) ListIterate.select(pureModelContextData.getElements(), s -> s.getPath().equals("_pierre::func__Any_MANY_")).getFirst();
+        Function func = (Function) ListIterate.select(pureModelContextData.getElements(), s -> s.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)).getFirst();
         return func.body.get(0);
     }
 
@@ -260,14 +275,14 @@ public class Completer
             }
             else
             {
-                return Lists.mutable.with("count");
+                return Lists.mutable.with("count", "joinStrings");
             }
         }
         else if (org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(leftType._rawType(), pureModel.getType(M3Paths.Number), pureModel.getExecutionSupport().getProcessorSupport()))
         {
             if (org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.isToOne(multiplicity))
             {
-                return Lists.mutable.with("sqrt", "pow", "exp");
+                return Lists.mutable.with("abs", "pow", "sqrt", "exp");
             }
             else
             {
@@ -370,12 +385,14 @@ public class Completer
                     if (ci.value instanceof ColSpec)
                     {
                         ColSpec co = (ColSpec) ci.value;
-                        return Lists.mutable.with(co.function1, co.function2).select(Objects::nonNull).collect(c -> c.accept(this)).select(Objects::nonNull).getFirst();
+                        ValueSpecification res = Lists.mutable.with(co.function1, co.function2).select(Objects::nonNull).collect(c -> c.accept(this)).select(Objects::nonNull).getFirst();
+                        return res == null ? ci : res;
                     }
                     else if (ci.value instanceof ColSpecArray)
                     {
                         ColSpecArray coA = (ColSpecArray) ci.value;
-                        return ListIterate.flatCollect(coA.colSpecs, co -> Lists.mutable.with(co.function1, co.function2).select(Objects::nonNull).collect(c -> c.accept(this))).select(Objects::nonNull).getFirst();
+                        ValueSpecification res = ListIterate.flatCollect(coA.colSpecs, co -> Lists.mutable.with(co.function1, co.function2).select(Objects::nonNull).collect(c -> c.accept(this))).select(Objects::nonNull).getFirst();
+                        return res == null ? ci : res;
                     }
                     return ci;
                 }
@@ -394,7 +411,7 @@ public class Completer
 //                _line <= sourceInformation.endLine &&
 //                (sourceInformation.startColumn - 1) <= _column &&
 //                _column <= sourceInformation.endColumn);
-        return sourceInformation.startLine <= _line &&
+        return sourceInformation != null && sourceInformation.startLine <= _line &&
                 _line <= sourceInformation.endLine &&
                 (sourceInformation.startColumn - 1) <= _column &&
                 _column <= sourceInformation.endColumn;

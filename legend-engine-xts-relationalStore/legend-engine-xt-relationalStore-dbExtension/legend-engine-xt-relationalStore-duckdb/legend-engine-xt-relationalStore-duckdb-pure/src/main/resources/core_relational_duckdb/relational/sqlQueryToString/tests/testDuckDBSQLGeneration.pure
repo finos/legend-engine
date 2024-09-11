@@ -1,0 +1,37 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::core::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::extension::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::functions::sqlstring::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::postProcessor::cteExtraction::*;
+
+function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testCTESQLGeneration(): Boolean[1]
+{
+   let func = {|Trade.all()->project([x|$x.id, x|$x.quantity], ['TradeID', 'Quantity'])->limit(10)->filter(x | $x.getInteger('TradeID') == 100)};
+   let pp = testRuntimeWithCTEPP().connectionStores->at(0).connection->cast(@DatabaseConnection).sqlQueryPostProcessors;
+   let result = toSQLString($func, simpleRelationalMapping, DatabaseType.DuckDB, []->cast(@String), $pp, ^Format(newLine='', indent=''), relationalExtensions(), noDebug());
+   assertEquals(
+      'WITH subquery_cte_1_1 AS (select "root".ID as "TradeID", "root".quantity as "Quantity" from tradeTable as "root" limit 10) \n' +
+      'select "TradeID" as "TradeID", "Quantity" as "Quantity" from subquery_cte_1_1 as "subselect" where "TradeID" = 100',
+      $result
+   );
+}

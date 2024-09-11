@@ -45,6 +45,22 @@ Class meta::relational::mapping::TempTableColumnMetaData
    parametersForGetter      : Map<String, Any>[0..1];
 }
 
+Class meta::relational::mapping::QueryMetadata
+{
+
+}
+
+Class meta::relational::mapping::TableInfo extends QueryMetadata
+{
+  info: TableIdentifier[*];
+}
+
+Class  meta::relational::mapping::TableIdentifier
+{
+  schema: String[1];
+  table: String[1];
+}
+
 Class meta::relational::mapping::SQLExecutionNode extends ExecutionNode
 {
    sqlComment : String[0..1];
@@ -53,6 +69,7 @@ Class meta::relational::mapping::SQLExecutionNode extends ExecutionNode
    onConnectionCloseRollbackQuery : String[0..1];
    resultColumns : SQLResultColumn[*];
    connection: DatabaseConnection[1];
+   metadata: QueryMetadata[*];
 }
 
 Class meta::relational::mapping::RelationalSaveNode extends ExecutionNode

@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.LOCK_INFO_DATASET_SUFFIX;
+import static org.finos.legend.engine.persistence.components.relational.api.utils.ApiUtils.LOCK_INFO_DATASET_SUFFIX;
 
 @Value.Immutable
 @Value.Style(

@@ -169,6 +169,15 @@ public class BaseTest
         }
     }
 
+    public void verifyStats(Map<String, Object> expectedStats, Map<StatisticName, Object> actualStats)
+    {
+        Assertions.assertEquals(expectedStats.size(), actualStats.size());
+        for (String statistic : expectedStats.keySet())
+        {
+            Assertions.assertEquals(expectedStats.get(statistic).toString(), actualStats.get(StatisticName.valueOf(statistic)).toString());
+        }
+    }
+
     protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets,
                                                           String[] schema, String expectedDataPath, Map<String, Object> expectedStats,
                                                           Clock executionTimestampClock, Set<SchemaEvolutionCapability> userCapabilitySet,
@@ -201,11 +210,7 @@ public class BaseTest
         TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
 
         // Verify statistics
-        Assertions.assertEquals(expectedStats.size(), actualStats.size());
-        for (String statistic : expectedStats.keySet())
-        {
-            Assertions.assertEquals(expectedStats.get(statistic).toString(), actualStats.get(StatisticName.valueOf(statistic)).toString());
-        }
+        verifyStats(expectedStats, actualStats);
 
         // Verify StagingFilters
         if (verifyStagingFilters)
@@ -251,11 +256,7 @@ public class BaseTest
         for (int i = 0; i < results.size(); i++)
         {
             Map<StatisticName, Object> actualStats = results.get(i).statisticByName();
-            Assertions.assertEquals(expectedStats.get(i).size(), actualStats.size());
-            for (String statistic : expectedStats.get(i).keySet())
-            {
-                Assertions.assertEquals(expectedStats.get(i).get(statistic).toString(), actualStats.get(StatisticName.valueOf(statistic)).toString());
-            }
+            verifyStats(expectedStats.get(i), actualStats);
         }
         return results;
     }
@@ -279,11 +280,7 @@ public class BaseTest
         for (int i = 0; i < results.size(); i++)
         {
             Map<StatisticName, Object> actualStats = results.get(i).statisticByName();
-            Assertions.assertEquals(expectedStats.get(i).size(), actualStats.size());
-            for (String statistic : expectedStats.get(i).keySet())
-            {
-                Assertions.assertEquals(expectedStats.get(i).get(statistic).toString(), actualStats.get(StatisticName.valueOf(statistic)).toString());
-            }
+            verifyStats(expectedStats.get(i), actualStats);
         }
         return results;
     }

@@ -1,0 +1,40 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+
+function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::toString<T>(rel:Relation<T>[1]):String[1]
+{
+    let cols = $rel->columns();
+    '#TDS\n'+
+    '   '+$cols->map(c|$c.name)->joinStrings(',')+'\n'+
+    $rel->map(x|'   '+$cols->map(c|s($c->eval($x)->first()))->joinStrings(','))->joinStrings('\n')+'\n'+
+    '#';
+}
+
+function <<test.Test>> meta::pure::functions::relation::tests::toString::testToString():Boolean[1]
+{
+    assertEquals( '#TDS\n'+
+                  '   val,other,txt\n'+
+                  '   1,2,aa\n'+
+                  '   2,3,ee\n'+
+                  '   3,2,eewe\n'+
+                  '#', #TDS
+                          val, other, txt
+                          1, 2, aa
+                          2, 3, ee
+                          3, 2, eewe
+                        #->toString());
+}

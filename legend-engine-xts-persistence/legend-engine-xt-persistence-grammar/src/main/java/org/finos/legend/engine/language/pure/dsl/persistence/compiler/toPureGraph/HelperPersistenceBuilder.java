@@ -26,6 +26,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedD
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.DatasetTypeVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.Delta;
@@ -248,17 +249,14 @@ public class HelperPersistenceBuilder
 
     public static Root_meta_legend_service_metamodel_Service buildService(Persistence persistence, CompileContext context)
     {
-        String service = persistence.service;
-        String servicePath = service.substring(0, service.lastIndexOf("::"));
-        String serviceName = service.substring(service.lastIndexOf("::") + 2);
-
-        PackageableElement packageableElement = context.pureModel.getOrCreatePackage(servicePath)._children().detect(c -> serviceName.equals(c._name()));
+        PackageableElementPointer service = persistence.service;
+        PackageableElement packageableElement = context.resolvePackageableElement(service);
         if (packageableElement instanceof Root_meta_legend_service_metamodel_Service)
         {
             return (Root_meta_legend_service_metamodel_Service) packageableElement;
         }
 
-        throw new EngineException(String.format("Service '%s' is not defined", service), persistence.sourceInformation, EngineErrorType.COMPILATION);
+        throw new EngineException(String.format("Service '%s' is not defined", service.path), persistence.sourceInformation, EngineErrorType.COMPILATION);
     }
 
     public static Root_meta_pure_persistence_metamodel_service_ServiceOutputTarget buildServiceOutputTarget(ServiceOutputTarget serviceOutputTarget, CompileContext context)
@@ -608,12 +606,9 @@ public class HelperPersistenceBuilder
         return purePersistenceTest;
     }
 
-    public static Database buildDatabase(String database, SourceInformation sourceInformation, CompileContext context)
+    public static Database buildDatabase(PackageableElementPointer database, SourceInformation sourceInformation, CompileContext context)
     {
-        String databasePath = database.substring(0, database.lastIndexOf("::"));
-        String databaseName = database.substring(database.lastIndexOf("::") + 2);
-
-        PackageableElement packageableElement = context.pureModel.getOrCreatePackage(databasePath)._children().detect(c -> databaseName.equals(c._name()));
+        PackageableElement packageableElement = context.resolvePackageableElement(database);
         if (packageableElement instanceof Database)
         {
             return (Database) packageableElement;
@@ -622,12 +617,9 @@ public class HelperPersistenceBuilder
         throw new EngineException(String.format("Database '%s' is not defined", database), sourceInformation, EngineErrorType.COMPILATION);
     }
 
-    public static Root_meta_external_format_shared_binding_Binding buildBinding(String binding, SourceInformation sourceInformation, CompileContext context)
+    public static Root_meta_external_format_shared_binding_Binding buildBinding(PackageableElementPointer binding, SourceInformation sourceInformation, CompileContext context)
     {
-        String bindingPath = binding.substring(0, binding.lastIndexOf("::"));
-        String bindingName = binding.substring(binding.lastIndexOf("::") + 2);
-
-        PackageableElement packageableElement = context.pureModel.getOrCreatePackage(bindingPath)._children().detect(c -> bindingName.equals(c._name()));
+        PackageableElement packageableElement = context.resolvePackageableElement(binding);
         if (packageableElement instanceof Root_meta_external_format_shared_binding_Binding)
         {
             return (Root_meta_external_format_shared_binding_Binding) packageableElement;

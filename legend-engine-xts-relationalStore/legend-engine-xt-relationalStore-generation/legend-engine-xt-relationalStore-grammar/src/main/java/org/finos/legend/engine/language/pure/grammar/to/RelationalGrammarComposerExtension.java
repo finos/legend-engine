@@ -37,6 +37,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.ExtractSubQueriesAsCTEsPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.RelationalMapperPostProcessor;
@@ -360,6 +361,13 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
             if (postProcessor instanceof RelationalMapperPostProcessor)
             {
                 return visitRelationalMapperPostProcessor((RelationalMapperPostProcessor) postProcessor, context);
+            }
+            if (postProcessor instanceof ExtractSubQueriesAsCTEsPostProcessor)
+            {
+                int baseIndentation = 2;
+                return getTabString(baseIndentation) + "ExtractSubQueriesAsCTEsPostProcessor\n" +
+                        getTabString(baseIndentation) + "{\n" +
+                        getTabString(baseIndentation) + "}";
             }
             else
             {

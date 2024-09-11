@@ -21,6 +21,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionFirs
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionSecondPassBuilder;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.to.PrimitiveValueSpecificationToObjectVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
@@ -39,11 +40,9 @@ public class HelperPersistenceContextBuilder
 
     public static Root_meta_pure_persistence_metamodel_Persistence buildPersistence(PersistenceContext persistenceContext, CompileContext context)
     {
-        String persistence = persistenceContext.persistence;
-        String persistencePath = persistence.substring(0, persistence.lastIndexOf("::"));
-        String persistenceName = persistence.substring(persistence.lastIndexOf("::") + 2);
+        PackageableElementPointer persistence = persistenceContext.persistence;
 
-        PackageableElement packageableElement = context.pureModel.getOrCreatePackage(persistencePath)._children().detect(c -> persistenceName.equals(c._name()));
+        PackageableElement packageableElement = context.resolvePackageableElement(persistence);
         if (packageableElement instanceof Root_meta_pure_persistence_metamodel_Persistence)
         {
             return (Root_meta_pure_persistence_metamodel_Persistence) packageableElement;

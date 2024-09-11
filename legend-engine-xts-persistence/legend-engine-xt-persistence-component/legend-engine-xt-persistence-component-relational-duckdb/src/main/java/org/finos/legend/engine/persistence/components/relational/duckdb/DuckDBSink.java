@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.relational.duckdb;
 
+import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.ingestmode.AppendOnlyAbstract;
@@ -26,20 +28,33 @@ import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelt
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshotAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDeltaAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshotAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.NoOpAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetReference;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Update;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ParseJsonFunction;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
+import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
+import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.relational.duckdb.jdbc.DuckDBJdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.DuckDBDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.DuckDBJdbcPropertiesToLogicalDataTypeMapping;
+import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.CopyVisitor;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.ParseJsonFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.SQLUpdateVisitor;
+import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.StagedFilesDatasetReferenceVisitor;
+import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.StagedFilesDatasetVisitor;
+import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.StagedFilesFieldValueVisitor;
+import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.StagedFilesSelectionVisitor;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.FieldVisitor;
@@ -48,10 +63,13 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
+import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -59,6 +77,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.BATCH_ID_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.BATCH_START_TS_PATTERN;
+import static org.finos.legend.engine.persistence.components.transformer.Transformer.TransformOptionsAbstract.DATE_TIME_FORMATTER;
 
 public class DuckDBSink extends AnsiSqlSink
 {
@@ -78,6 +100,7 @@ public class DuckDBSink extends AnsiSqlSink
         capabilities.add(Capability.EXPLICIT_DATA_TYPE_CONVERSION);
         capabilities.add(Capability.DATA_TYPE_LENGTH_CHANGE);
         capabilities.add(Capability.DATA_TYPE_SCALE_CHANGE);
+        capabilities.add(Capability.TRANSFORM_WHILE_COPY);
         CAPABILITIES = Collections.unmodifiableSet(capabilities);
 
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
@@ -85,6 +108,11 @@ public class DuckDBSink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(Field.class, new FieldVisitor());
         logicalPlanVisitorByClass.put(Update.class, new SQLUpdateVisitor());
         logicalPlanVisitorByClass.put(ParseJsonFunction.class, new ParseJsonFunctionVisitor());
+        logicalPlanVisitorByClass.put(Copy.class, new CopyVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesDatasetReference.class, new StagedFilesDatasetReferenceVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesDataset.class, new StagedFilesDatasetVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesFieldValue.class, new StagedFilesFieldValueVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesSelection.class, new StagedFilesSelectionVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
         // TODO: These two mappings have not been confirmed, to do with schema evolution
@@ -185,6 +213,38 @@ public class DuckDBSink extends AnsiSqlSink
     }
 
     @Override
+    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, PlaceholderValue> placeHolderKeyValues, Clock executionTimestampClock)
+    {
+        executor.executePhysicalPlan(ingestSqlPlan, placeHolderKeyValues);
+
+        Map<StatisticName, Object> stats = new HashMap<>();
+        SqlPlan rowsInsertedSqlPlan = statisticsSqlPlan.get(StatisticName.ROWS_INSERTED);
+        if (rowsInsertedSqlPlan != null)
+        {
+            stats.put(StatisticName.ROWS_INSERTED, executor.executePhysicalPlanAndGetResults(rowsInsertedSqlPlan, placeHolderKeyValues)
+                .stream()
+                .findFirst()
+                .map(TabularData::getData)
+                .flatMap(t -> t.stream().findFirst())
+                .map(Map::values)
+                .flatMap(t -> t.stream().findFirst())
+                .orElseThrow(IllegalStateException::new));
+        }
+
+        IngestorResult result;
+        result = IngestorResult.builder()
+            .status(IngestStatus.SUCCEEDED)
+            .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN).value()) : null))
+            .updatedDatasets(datasets)
+            .putAllStatisticByName(stats)
+            .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN).value())
+            .ingestionEndTimestampUTC(LocalDateTime.now(executionTimestampClock).format(DATE_TIME_FORMATTER))
+            .build();
+
+        return result;
+    }
+
+    @Override
     public boolean isIngestModeSupported(IngestMode ingestMode)
     {
         return ingestMode.accept(IS_INGEST_MODE_SUPPORTED);
@@ -207,7 +267,7 @@ public class DuckDBSink extends AnsiSqlSink
         @Override
         public Boolean visitNontemporalDelta(NontemporalDeltaAbstract nontemporalDelta)
         {
-            return false;
+            return true;
         }
 
         @Override
@@ -236,6 +296,12 @@ public class DuckDBSink extends AnsiSqlSink
 
         @Override
         public Boolean visitBulkLoad(BulkLoadAbstract bulkLoad)
+        {
+            return true;
+        }
+
+        @Override
+        public Boolean visitNoOp(NoOpAbstract noOpAbstract)
         {
             return true;
         }

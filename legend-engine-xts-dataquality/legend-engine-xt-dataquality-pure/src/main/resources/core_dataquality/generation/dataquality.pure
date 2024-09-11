@@ -17,11 +17,12 @@ import meta::pure::lineage::scanProperties::propertyTree::*;
 
 function meta::external::dataquality::executeDataQualityValidation(dataquality:meta::external::dataquality::DataQuality<Any>[1], limit: Integer[*]): LambdaFunction<Any>[1]
 { 
-  // 1. enrich tree with selected constraint properties
+   $dataquality.validationTree->validateTreeForNestedConstraints(true);
+   // 1. enrich tree with selected constraint properties
    let enrichedTree = $dataquality.validationTree->ensureFunctionRequirementsForDataQuality($dataquality.validationTree.constraints, $dataquality.validationTree.class, [], true)->cast(@RootGraphFetchTree<Any>);
 
    // 2. build query
-   let getAll = $dataquality.validationTree.class->createGetAll();
+   let getAll = $dataquality.validationTree.class->createGetAllParameterized();
    let getExpr = if ($dataquality.filter->isNotEmpty(), 
                             | $dataquality.validationTree.class->generateFilterQuery($getAll, $dataquality.filter->toOne());,
                             | $getAll);
@@ -69,6 +70,14 @@ function meta::external::dataquality::executeDataQualityValidation(dataquality:m
       );
 }
 
+function meta::external::dataquality::validateTreeForNestedConstraints(node:GraphFetchTree[1], isRoot:Boolean[1]): Boolean[1]
+{
+  if ($isRoot->isFalse() && $node->cast(@DataQualityPropertyGraphFetchTree).constraints->isNotEmpty(),
+      | fail('Nested constraints are not currently supported!'),
+      | ''
+      );
+  $node.subTrees->fold({subtree, isValid | $isValid && $subtree->validateTreeForNestedConstraints(false)}, true);
+}
 
 function meta::external::dataquality::ensureFunctionRequirementsForDataQuality(node:GraphFetchTree[1], constraints:Constraint[*], class:Class<Any>[1], processed:Class<Any>[*], ensureConstraintsForSubTrees:Boolean[1]): GraphFetchTree[1]
 {
@@ -258,10 +267,13 @@ function meta::external::dataquality::generateFilterQuery<T>(c:Class<T>[1], f: F
 
 
 function meta::external::dataquality::generateConstraintsNegatedORQuery<T>(c:Class<T>[1], f: FunctionExpression[1], constraints: List<Constraint>[1]):FunctionExpression[1] {
-   if ($constraints.values->size() == 1,
-    | $c->generateConstraintNegatedQuery($f, $constraints.values->at(0)) ,
-    | $c->generateORNegatedQuery($f, $constraints)
-   );
+  if ($constraints.values->isEmpty(),
+       | $f ,
+       | if ($constraints.values->size() == 1,
+             | $c->generateConstraintNegatedQuery($f, $constraints.values->at(0)) ,
+             | $c->generateORNegatedQuery($f, $constraints)
+            );
+     );
 }
 
 
@@ -424,7 +436,7 @@ function meta::external::dataquality::generateDQMetaDataForDQValidation(dataqual
    $dqRules;
 }
 
-function meta::external::dataquality::nodeToDqRule(node:GraphFetchTree[1], processOnlyConstraints:Boolean[1], path:String[1]):DataQualityRule[*]
+function meta::external::dataquality::nodeToDqRule(node:GraphFetchTree[1], processOnlyConstraints:Boolean[1], path:String[*]):DataQualityRule[*]
 {
    let dqRules = $node->match([
       dr: DataQualityRootGraphFetchTree<Any>[1]        | $dr->rootNodeToDqRule($processOnlyConstraints),
@@ -433,7 +445,7 @@ function meta::external::dataquality::nodeToDqRule(node:GraphFetchTree[1], proce
       p : PropertyGraphFetchTree[1]                    | $p->propertyNodeToDqRule($processOnlyConstraints, $path)
    ]);
 
-   $dqRules->concatenate($node.subTrees->map(st|$st->nodeToDqRule($processOnlyConstraints, $dqRules->at(0).propertyPath)));
+   $dqRules->concatenate($node.subTrees->map(st|$st->nodeToDqRule($processOnlyConstraints, if ($dqRules->isEmpty(), | [], | $dqRules->at(0).propertyPath))));
 }
 
 function <<access.private>> meta::external::dataquality::rootNodeToDqRule(node:RootGraphFetchTree<Any>[1], processOnlyConstraints: Boolean[1]):DataQualityRule[*]
@@ -444,11 +456,11 @@ function <<access.private>> meta::external::dataquality::rootNodeToDqRule(node:R
      );
 }
 
-function <<access.private>> meta::external::dataquality::propertyNodeToDqRule(node:PropertyGraphFetchTree[1], processOnlyConstraints: Boolean[1], path:String[1]):DataQualityRule[*]
+function <<access.private>> meta::external::dataquality::propertyNodeToDqRule(node:PropertyGraphFetchTree[1], processOnlyConstraints: Boolean[1], path:String[*]):DataQualityRule[*]
 {
     if ( $processOnlyConstraints,
-         | $node->cast(@DataQualityPropertyGraphFetchTree).constraints->map(c|$c->constraintToDqRule([$path, $node.property.name->toOne()]->joinStrings('::'))),
-         | ^DataQualityRule(constraintName=$node.property.name->toOne(), constraintGrammar=$node.property.multiplicity->printMultiplicity(), constraintType='Alloy_Structural_Validation', propertyPath=[$path, $node.property.name->toOne()]->joinStrings('::'))
+         | $node->cast(@DataQualityPropertyGraphFetchTree).constraints->map(c|$c->constraintToDqRule($path->concatenate($node.property.name->toOne())->joinStrings('::'))),
+         | ^DataQualityRule(constraintName=$node.property.name->toOne(), constraintGrammar=$node.property.multiplicity->printMultiplicity(), constraintType='Alloy_Structural_Validation', propertyPath=$path->concatenate($node.property.name->toOne())->joinStrings('::'))
       );
 }
 

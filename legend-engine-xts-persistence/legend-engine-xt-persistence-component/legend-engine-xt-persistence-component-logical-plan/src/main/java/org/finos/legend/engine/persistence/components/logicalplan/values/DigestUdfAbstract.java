@@ -19,6 +19,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @org.immutables.value.Value.Immutable
 @org.immutables.value.Value.Style(
@@ -40,4 +41,6 @@ public interface DigestUdfAbstract extends Value
     List<FieldType> fieldTypes();
 
     Map<DataType, String> typeConversionUdfNames();
+
+    Optional<String> columnTransformationUdfName();
 }

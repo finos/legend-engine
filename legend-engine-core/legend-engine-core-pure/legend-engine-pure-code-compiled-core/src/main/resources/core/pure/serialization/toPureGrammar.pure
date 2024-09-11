@@ -18,9 +18,42 @@ import meta::pure::metamodel::relation::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::serialization::grammar::*;
 
+Class meta::pure::metamodel::serialization::grammar::Configuration
+{
+  fullPath : Boolean[1];
+  extensions : meta::pure::metamodel::serialization::grammar::GrammarExtension[*];
+}
+
+Class meta::pure::metamodel::serialization::grammar::GrammarExtension
+{
+  extraConnectionHandlers : Function<{Nil[0..1]->String[1]}>[*];
+  extraInstanceValueHandlers : Function<{Nil[0..1]->String[1]}>[*];
+}
+
+function meta::pure::metamodel::serialization::grammar::printValueSpecification(v:Any[1], space:String[1]):String[1]
+{
+  printValueSpecification($v, [], $space);
+}
+
+function meta::pure::metamodel::serialization::grammar::printFunctionDefinition(functionDefinition:FunctionDefinition<Any>[1], space:String[1]):String[1]
+{
+  printFunctionDefinition($functionDefinition, [], $space);
+}
+
+function meta::pure::metamodel::serialization::grammar::printFunctionExpression(functionExpression:FunctionExpression[1], space:String[1]):String[1]
+{
+  printFunctionExpression($functionExpression, [], $space);
+}
+
 function meta::pure::metamodel::serialization::grammar::printFunctionDefinitionExpressions(functionDefinition:FunctionDefinition<Any>[1], space:String[1]):String[*]
 {
-   $functionDefinition.expressionSequence->evaluateAndDeactivate()->map(vs|printValueSpecification($vs, $space+'   '));
+  printFunctionDefinitionExpressions($functionDefinition, [], $space);
+}
+
+
+function meta::pure::metamodel::serialization::grammar::printFunctionDefinitionExpressions(functionDefinition:FunctionDefinition<Any>[1], configuration:Configuration[0..1], space:String[1]):String[*]
+{
+   $functionDefinition.expressionSequence->evaluateAndDeactivate()->map(vs|printValueSpecification($vs, $configuration, $space+'   '));
 }
 
 function meta::pure::metamodel::serialization::grammar::printLambdaParameters(func:Function<Any>[1]):String[1]
@@ -29,9 +62,9 @@ function meta::pure::metamodel::serialization::grammar::printLambdaParameters(fu
    $funcType.parameters->evaluateAndDeactivate()->map(v | $v.name)->joinStrings(', ');
 }
 
-function meta::pure::metamodel::serialization::grammar::printFunctionDefinition(functionDefinition:FunctionDefinition<Any>[1], space:String[1]):String[1]
+function meta::pure::metamodel::serialization::grammar::printFunctionDefinition(functionDefinition:FunctionDefinition<Any>[1], configuration:Configuration[0..1], space:String[1]):String[1]
 {
-   let expressions = printFunctionDefinitionExpressions($functionDefinition, $space);
+   let expressions = printFunctionDefinitionExpressions($functionDefinition, $configuration, $space);
 
    $functionDefinition->match([
       lambda:LambdaFunction<Any>[1]    | let functionParameters = '{'+printLambdaParameters($lambda)+'|';                                       
@@ -44,65 +77,68 @@ function meta::pure::metamodel::serialization::grammar::printFunctionDefinition(
    ]);
 }
 
-function meta::pure::metamodel::serialization::grammar::printValueSpecification(v:Any[1], space:String[1]):String[1]
+function meta::pure::metamodel::serialization::grammar::printValueSpecification(v:Any[1], configuration:Configuration[0..1], space:String[1]):String[1]
 {
-    $v->match(  [  f:FunctionExpression[1] |$f->meta::pure::metamodel::serialization::grammar::removeAutomap()->cast(@FunctionExpression)->printPropertyOrFunctionExpression( $space),
-                    i:InstanceValue[1] | printInstanceValue($i, $space),
+    $v->match(  [  f:FunctionExpression[1] |$f->meta::pure::functions::meta::removeAutomap()->cast(@FunctionExpression)->printPropertyOrFunctionExpression($configuration, $space),
+                    i:InstanceValue[1] | printInstanceValue($i, $configuration, $space),
                     v:VariableExpression[1] | '$' + $v.name,
-                    a:Any[1] | 'UNKNOWN ' + $a->type()->toOne()->id()
+                    x:Enum[1] | $x->type()->elementToPath()+'.'+$x.name,
+                    i:Integer[1] | $i->toRepresentation(),
+                    d:Decimal[1] | $d->toRepresentation(),
+                    f:Float[1] | $f->toRepresentation(),
+                    a:Any[1] | 'UNKNOWN: ' + $a->type()->toOne()->id()
                 ]
-             )
+             );
 }
-function <<access.private>> meta::pure::metamodel::serialization::grammar::removeAutomap(v:ValueSpecification[1]):ValueSpecification[1]
 
+
+function <<access.private>> meta::pure::metamodel::serialization::grammar::printConnection(c:Connection[0..1], configuration:Configuration[0..1]):String[1]
 {
-   $v->match([fe:FunctionExpression[1] | if($fe.functionName=='map' 
-                                            ,| let left = $fe.parametersValues->at(0);
-                                               let prop = $fe.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<Any>).expressionSequence->at(0)->cast(@FunctionExpression);
-                                              if($prop.parametersValues->at(0)->instanceOf(VariableExpression) && $prop.parametersValues->at(0)->cast(@VariableExpression).name=='v_automap',
-                                                 |  let leftUnMapped = $left->meta::pure::metamodel::serialization::grammar::removeAutomap();
-                                                   ^$prop(parametersValues=$leftUnMapped);,
-                                                 |  ^$fe(parametersValues=$fe.parametersValues->at(0)->meta::pure::metamodel::serialization::grammar::removeAutomap()->concatenate( $fe.parametersValues->tail()))
-                                                );
-
-                                           ,| if ($fe.parametersValues->isNotEmpty(),
-                                                | ^$fe(parametersValues=$fe.parametersValues->at(0)->meta::pure::metamodel::serialization::grammar::removeAutomap()->concatenate( $fe.parametersValues->tail())),
-                                                | $fe)
-                                      ),
-               v:ValueSpecification[1] |  $v]);
+  $c->match(
+    $configuration.extensions.extraConnectionHandlers->concatenate(
+      [
+        a:Any[1]|'UNKNOWN:'+$a->type().name->toOne()
+      ]
+    )->toOneMany()
+  );
 }
 
-
-function meta::pure::metamodel::serialization::grammar::printInstanceValue(i:InstanceValue[1], space:String[1]):String[1]
+function meta::pure::metamodel::serialization::grammar::printInstanceValue(i:InstanceValue[1], configuration:Configuration[0..1], space:String[1]):String[1]
 {
    if ($i.multiplicity == PureOne && $i.values->isEmpty(),
        |'@'+$i.genericType->printGenericType(),
-       |$i.values->map(v|$v->match([
-                            f:FunctionDefinition<Any>[1] | $f->printFunctionDefinition($space+'    '),
-                            f:FunctionExpression[1]      | $f->printPropertyOrFunctionExpression($space),
-                            x:InstanceValue[1] | $x->printInstanceValue($space),
-                            r:Runtime[1]|'Runtime('+$r.connectionStores->map(s|$s.element->match([x:String[1]|$x,x:Store[1]|$x.name->toOne()]))->makeString(',')+')',
-                            s:RelationElementAccessor<Any>[1]|'RelationElementAccessor('+$s->genericType().rawType.name->toOne()+')',
-                            a:Any[1]                     | $a->toRepresentation()
-                         ]))->match([
+       |$i.values->map(v|$v->match(
+                              $configuration.extensions.extraInstanceValueHandlers->concatenate([
+                                    f:FunctionDefinition<Any>[1] | $f->printFunctionDefinition($configuration, $space+'    '),
+                                    f:FunctionExpression[1]      | $f->printPropertyOrFunctionExpression($configuration, $space),
+                                    x:InstanceValue[1] | $x->printInstanceValue($configuration, $space),
+                                    z:KeyExpression[*] | $z->map(f|$f.key.values->toOne()->toString())->joinStrings(','),
+                                    r:Runtime[1]|'^meta::core::runtime::Runtime('+
+                                                  'connectionStores='+$r.connectionStores->map(s|'^meta::core::runtime::ConnectionStore(connection='+$s.connection->printConnection($configuration)+', element='+$s.element->match([x:String[1]|$x,x:Store[1]|$x->elementToPath()])+')')->makeString(',')+
+                                                  ')',
+                                    s:RelationElementAccessor<Any>[1]|'RelationElementAccessor('+$s->genericType().rawType.name->toOne()+')',
+                                    a:Any[1]                     | $a->toRepresentation()
+                                  ])->toOneMany()
+                            )
+                    )->match([
                            empty:String[0]    |'[]';,
                            singular:String[1] |$singular;,
                            multiple:String[*] |$multiple->joinStrings('[', ', ', ']');
-                         ])
-   )
+                        ])
+   );
 }
 
-function meta::pure::metamodel::serialization::grammar::printPropertyOrFunctionExpression(functionExpression:FunctionExpression[1], space:String[1]):String[1]
+function <<access.private>> meta::pure::metamodel::serialization::grammar::printPropertyOrFunctionExpression(functionExpression:FunctionExpression[1], configuration:Configuration[0..1], space:String[1]):String[1]
 {
     $functionExpression.func->match([
-                                        p:Property<Nil,Any|*>[1]   | printProperty($p, $functionExpression.parametersValues->at(0), $space), 
-                                        q:QualifiedProperty<Any>[1]| printProperty($q, $functionExpression.parametersValues, $space),
-                                        c:Column<Nil,Any|*>[1]     | printColumn($c, $functionExpression.parametersValues->at(0), $space),
-                                        a:Any[1]                   | printFunctionExpression($functionExpression, $space)
+                                        p:Property<Nil,Any|*>[1]   | printProperty($p, $functionExpression.parametersValues->at(0), $configuration, $space),
+                                        q:QualifiedProperty<Any>[1]| printProperty($q, $functionExpression.parametersValues, $configuration, $space),
+                                        c:Column<Nil,Any|*>[1]     | printColumn($c, $functionExpression.parametersValues->at(0), $configuration, $space),
+                                        a:Any[1]                   | printFunctionExpression($functionExpression, $configuration, $space)
                                     ])
 }
 
-function meta::pure::metamodel::serialization::grammar::special():Map<String, String>[1]
+function <<access.private>> meta::pure::metamodel::serialization::grammar::special():Map<String, String>[1]
 {
    [
       pair('equal', '=='),
@@ -119,64 +155,94 @@ function meta::pure::metamodel::serialization::grammar::special():Map<String, St
    ]->newMap()
 }
 
-function meta::pure::metamodel::serialization::grammar::forceArrow():String[*]
+function <<access.private>> meta::pure::metamodel::serialization::grammar::forceArrow():String[*]
 {
   'from'
 }
 
-function meta::pure::metamodel::serialization::grammar::printFunctionExpression(functionExpression:FunctionExpression[1], space:String[1]):String[1]
+function meta::pure::metamodel::serialization::grammar::printColSpec(functionExpression:FunctionExpression[1], configuration:Configuration[0..1], space:String[1]):String[1]
 {
-   let name = $functionExpression.func.functionName->toOne();
-    if($functionExpression.parametersValues->isEmpty(),
-        |$name->toOne()+'()',
-        |if ($name == 'getAll',
-           | $functionExpression.parametersValues->at(0)->cast(@InstanceValue).values->at(0)->cast(@Class<Any>)->elementToPath() + '.all()',
-           |let m = special();
-            if ($m->get($name)->isEmpty(),
-                | let firstParam = $functionExpression.parametersValues->head()->toOne(); 
-                  if(forceArrow()->contains($name) || 
-                        !(
-                          ($firstParam->instanceOf(SimpleFunctionExpression) && $firstParam->cast(@SimpleFunctionExpression).functionName->isNotEmpty()  && $m->get($firstParam->cast(@SimpleFunctionExpression).functionName->toOne())->isNotEmpty()) ||
-                          ($firstParam->instanceOf(FunctionExpression) && $firstParam->cast(@FunctionExpression).func.functionName->isNotEmpty()  && $m->get($firstParam->cast(@FunctionExpression).func.functionName->toOne())->isNotEmpty())
-                        )  ,
-                      | $functionExpression.parametersValues->head()->toOne()->printValueSpecification($space) + '->' + $functionExpression.func.functionName->toOne() + $functionExpression.parametersValues->tail()->map(vs | printValueSpecification($vs, $space))->joinStrings('(', ', ', ')');,
-                      | $functionExpression.func.functionName->toOne() + $functionExpression.parametersValues->map(vs | printValueSpecification($vs, $space))->joinStrings('(', ', ', ')');
-                      );,
-                |let vals = if ($name->in(['plus', 'minus', 'times']),
-                      |$functionExpression.parametersValues->match([
-                        i:InstanceValue[1] | $i.values,
-                        v:ValueSpecification[1] | $v
-                      ]),
-                      |$functionExpression.parametersValues
-                  );
-                  if ($name == 'minus' && $vals->size() == 1,
-                      | $m->get($name)->toOne() + $functionExpression.parametersValues->at(0)->printValueSpecification($space),
-                      | if ($name->in(['and', 'or']) && $vals->size() == 1,
-                          | $name + '(' + $vals->at(0)->printValueSpecification($space) + ')',
-                          | if ($vals->size() > 1,
-                            |'(' + $vals->at(0)->printValueSpecification($space) + ' ' + $m->get($name)->toOne() + ' ' + $vals->at(1)->printValueSpecification($space) + ')',
-                            | $m->get($name)->toOne()+'('+$vals->at(0)->printValueSpecification($space)+')'
-                            )
-                        )
-                  );
-            );
-        );
+  let isAgg = $functionExpression.parametersValues->size() > 3;
+  $functionExpression.parametersValues->at(if($isAgg,|2,|1))->cast(@InstanceValue).values->at(0)->toString()->printColName() +
+  ':' + $functionExpression.parametersValues->at(0)->cast(@InstanceValue).values->at(0)->cast(@FunctionDefinition<Any>)->printFunctionDefinition($configuration, $space) +
+  if($isAgg,|':' + $functionExpression.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@FunctionDefinition<Any>)->printFunctionDefinition($configuration, $space),|'');
+}
+
+function meta::pure::metamodel::serialization::grammar::printColName(name:String[1]):String[1]
+{
+  if($name->contains(' '),|'\''+$name+'\'',|$name);
+}
+
+function meta::pure::metamodel::serialization::grammar::printFunctionExpression(functionExpression:FunctionExpression[1], configuration:Configuration[0..1], space:String[1]):String[1]
+{
+   let name = if ($functionExpression.func.functionName->isEmpty(),|'UNKNOWN',|$functionExpression.func.functionName->toOne());
+   let special = special();
+   if (
+        [
+          pair(|$functionExpression.parametersValues->isEmpty(), | if($configuration->isNotEmpty() && $configuration->toOne().fullPath,|$functionExpression.func->cast(@PackageableElement).package->toOne()->elementToPath()+'::',|'')+$name->toOne()+'()'),
+          pair(|$name == 'getAll',|let genericType = $functionExpression.parametersValues->at(0)->cast(@InstanceValue).genericType;
+                                   let main = $genericType.rawType->toOne()->cast(@Class<Any>);
+                                   let val = if ($main == Class,
+                                                   |$genericType.typeArguments->at(0).rawType->toOne()->cast(@Class<Any>),
+                                                   |$main
+                                                );
+                                   $val->elementToPath() + '.all()';),
+          pair(|$name == 'letFunction',|'let '+$functionExpression.parametersValues->at(0)->cast(@InstanceValue).values->toOne()->toString()+ ' = ' +$functionExpression.parametersValues->at(0)->printValueSpecification($space)),
+          pair(|$name == 'colSpec', |'~'+$functionExpression.parametersValues->at(0)->cast(@InstanceValue).values->at(0)->toString()->printColName()),
+          pair(|$name == 'funcColSpec' || $name == 'funcColSpec2', | '~'+printColSpec($functionExpression, $configuration, $space)),
+          pair(|$name == 'aggColSpec' || $name == 'aggColSpec2', | '~'+printColSpec($functionExpression, $configuration, $space)),
+          pair(|$name == 'colSpecArray' || $name == 'colSpecArray2', | '~['+$functionExpression.parametersValues->at(0)->cast(@InstanceValue).values->map(z|$z->toString()->printColName())->joinStrings(',')+']'),
+          pair(|$name == 'aggColSpecArray' || $name == 'aggColSpecArray2', | '~['+$functionExpression.parametersValues->at(0)->cast(@InstanceValue).values->cast(@FunctionExpression)->map(z|printColSpec($z, $configuration, $space))->joinStrings(',')+']'),
+          pair(|$name == 'funcColSpecArray' || $name == 'funcColSpecArray2', | '~['+$functionExpression.parametersValues->at(0)->cast(@InstanceValue).values->cast(@FunctionExpression)->map(z|printColSpec($z, $configuration, $space))->joinStrings(',')+']'),
+          pair(|!$special->get($name)->isEmpty(),|let vals = if ($name->in(['plus', 'minus', 'times']),
+                                                                  |$functionExpression.parametersValues->match([
+                                                                    i:InstanceValue[1] | $i.values,
+                                                                    v:ValueSpecification[1] | $v
+                                                                  ]),
+                                                                  |$functionExpression.parametersValues
+                                                             );
+                                                  if ([
+                                                        pair(|$name == 'divide' && $vals->size() == 3, | $name + $functionExpression.parametersValues->map(vs | printValueSpecification($vs, $configuration, $space))->joinStrings('(', ', ', ')')),
+                                                        pair(|$name == 'minus' && $vals->size() == 1, | $special->get($name)->toOne() + $functionExpression.parametersValues->at(0)->printValueSpecification($configuration, $space)),
+                                                        pair(|$vals->size() == 1 && $vals->at(0)->instanceOf(VariableExpression), | $functionExpression.parametersValues->at(0)->printValueSpecification($configuration, $space)+'->'+$name+'()'),
+                                                        pair(|$name->in(['and', 'or']) && $vals->size() == 1, |$name + '(' + $vals->at(0)->printValueSpecification($configuration, $space) + ')'),
+                                                        pair(|$vals->size() > 1, |'(' + $vals->at(0)->printValueSpecification($configuration, $space) + ' ' + $vals->tail()->map(x| $special->get($name)->toOne() + ' ' + $x->printValueSpecification($configuration, $space))->joinStrings(' ') + ')')
+                                                      ],
+                                                      |$special->get($name)->toOne()+'('+$vals->at(0)->printValueSpecification($configuration, $space)+')'
+                                                  );
+          )
+
+        ],
+        |let firstParam = $functionExpression.parametersValues->head()->toOne();
+                                            if(forceArrow()->contains($name) ||
+                                                  !(
+                                                    ($firstParam->instanceOf(SimpleFunctionExpression) && $firstParam->cast(@SimpleFunctionExpression).functionName->isNotEmpty()  && $special->get($firstParam->cast(@SimpleFunctionExpression).functionName->toOne())->isNotEmpty()) ||
+                                                    ($firstParam->instanceOf(FunctionExpression) && $firstParam->cast(@FunctionExpression).func.functionName->isNotEmpty()  && $special->get($firstParam->cast(@FunctionExpression).func.functionName->toOne())->isNotEmpty())
+                                                  )  ,
+                                                | let element = $functionExpression.parametersValues->head()->toOne();
+                                                  let t_element = $element->printValueSpecification($configuration, $space);
+                                                  if ($element->instanceOf(FunctionExpression) && $element->cast(@FunctionExpression).func->in([minus_Integer_MANY__Integer_1_,plus_Integer_MANY__Integer_1_]),
+                                                    |'('+$t_element+')',
+                                                    | $t_element
+                                                  ) + '->' + if($functionExpression.func.functionName->isEmpty(),|'UNKNOWN',|if($configuration->isNotEmpty() && $configuration->toOne().fullPath, |$functionExpression.func->cast(@PackageableElement).package->toOne()->elementToPath()+'::',|'')+$functionExpression.func.functionName->toOne()) + $functionExpression.parametersValues->tail()->map(vs | printValueSpecification($vs, $configuration, $space))->joinStrings('(', ', ', ')');,
+                                                | if($configuration->isNotEmpty() && $configuration->toOne().fullPath, |$functionExpression.func->cast(@PackageableElement).package->toOne()->elementToPath()+'::',|'')+$functionExpression.func.functionName->toOne() + $functionExpression.parametersValues->map(vs | printValueSpecification($vs, $configuration, $space))->joinStrings('(', ', ', ')');
+                                                );
     );
 }
 
-function meta::pure::metamodel::serialization::grammar::printProperty(p:Property<Nil,Any|*>[1], o:ValueSpecification[1], space:String[1]):String[1]
+function meta::pure::metamodel::serialization::grammar::printProperty(p:Property<Nil,Any|*>[1], o:ValueSpecification[1], configuration:Configuration[0..1], space:String[1]):String[1]
 {
-   $o->printValueSpecification($space) + '.' + $p.name->toOne();
+   $o->printValueSpecification($configuration, $space) + '.' + $p.name->toOne();
 }
 
-function meta::pure::metamodel::serialization::grammar::printColumn(c:Column<Nil,Any|*>[1], o:ValueSpecification[1], space:String[1]):String[1]
+function meta::pure::metamodel::serialization::grammar::printColumn(c:Column<Nil,Any|*>[1], o:ValueSpecification[1], configuration:Configuration[0..1], space:String[1]):String[1]
 {
-   $c.name->toOne();
+   $o->printValueSpecification($configuration, $space) + '.' + $c.name->toOne();
 }
 
-function meta::pure::metamodel::serialization::grammar::printProperty(p:QualifiedProperty<Any>[1], params:ValueSpecification[*], space:String[1]):String[1]
+function meta::pure::metamodel::serialization::grammar::printProperty(p:QualifiedProperty<Any>[1], params:ValueSpecification[*], configuration:Configuration[0..1], space:String[1]):String[1]
 {
-   $params->at(0)->printValueSpecification($space) + '.' + $p.name->toOne() + '(%s)'->format($params->tail()->map(x | $x->printValueSpecification($space))->joinStrings(', '));
+   $params->at(0)->printValueSpecification($configuration, $space) + '.' + $p.name->toOne() + '(%s)'->format($params->tail()->map(x | $x->printValueSpecification($configuration, $space))->joinStrings(', '));
 }
 
 function <<access.private>> meta::pure::metamodel::serialization::grammar::printStatements(statements:String[*]):String[1]
@@ -208,7 +274,7 @@ function meta::pure::metamodel::serialization::grammar::printConstraint(constrai
    assert($constraint.name->size() == 1, 'Constraints should have a name.');
    assert($constraint.functionDefinition.expressionSequence->size() == 1, 'Constraints can only have a single expression.');
    
-   let expressions = printFunctionDefinitionExpressions($constraint.functionDefinition, '')->toOne();
+   let expressions = printFunctionDefinitionExpressions($constraint.functionDefinition, [], '')->toOne();
    $constraint.name->toOne()+' : '+$expressions;
 }
 
@@ -256,7 +322,16 @@ function meta::pure::metamodel::serialization::grammar::printGenericType(generic
 {
     if ($genericType->instanceOf(GenericTypeOperation),
       |let go = $genericType->cast(@GenericTypeOperation);
-       $go.left->printGenericType()+if($go.type == GenericTypeOperationType.Union,|'+',|'-')+$go.right->printGenericType();,
+       if($go.left->isEmpty(),|'',|$go.left->toOne()->printGenericType()) + 
+       if(
+          [
+            pair(|$go.type == GenericTypeOperationType.Union,|'+'),
+            pair(|$go.type == GenericTypeOperationType.Difference,|'-'),
+            pair(|$go.type == GenericTypeOperationType.Subset,|'⊆')
+          ],
+          |'='
+       ) + 
+       $go.right->printGenericType();,
       |if ($genericType.rawType->isEmpty(),
             |if ($genericType.typeParameter->isEmpty(),
                   |'',
