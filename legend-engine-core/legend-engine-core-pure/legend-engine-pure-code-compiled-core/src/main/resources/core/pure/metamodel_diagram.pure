@@ -665,14 +665,6 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_16(
-        source=cview_32,
-        target=cview_2,
-        points=[(702.43940,592.99207),(702.21595,456.28667)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
     GeneralizationView gview_17(
         source=cview_33,

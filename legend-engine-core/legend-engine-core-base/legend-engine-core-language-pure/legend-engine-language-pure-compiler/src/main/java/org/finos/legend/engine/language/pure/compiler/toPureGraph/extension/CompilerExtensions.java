@@ -95,7 +95,6 @@ public class CompilerExtensions
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function.class,
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure.class,
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit.class,
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime.class,
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex.class,
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store.class

@@ -36,8 +36,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
-import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement;
@@ -206,8 +204,10 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
     public PackageableElement visit(Measure measure)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Measure targetMeasure = this.context.pureModel.getMeasure(this.context.pureModel.buildPackageString(measure._package, measure.name), measure.sourceInformation);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit canonicalUnit = HelperMeasureBuilder.processUnitPackageableElementSecondPass(measure.canonicalUnit, this.context);
-        targetMeasure._canonicalUnit(canonicalUnit);
+        if (measure.canonicalUnit != null)
+        {
+            targetMeasure._canonicalUnit(HelperMeasureBuilder.processUnitPackageableElementSecondPass(measure.canonicalUnit, this.context));
+        }
         targetMeasure._nonCanonicalUnits(ListIterate.collect(measure.nonCanonicalUnits, ncu -> HelperMeasureBuilder.processUnitPackageableElementSecondPass(ncu, this.context)));
         return targetMeasure;
     }

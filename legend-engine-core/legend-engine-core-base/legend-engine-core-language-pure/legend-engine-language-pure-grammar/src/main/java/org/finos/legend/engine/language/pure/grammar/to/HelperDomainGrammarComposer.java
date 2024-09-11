@@ -50,8 +50,7 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 
 public class HelperDomainGrammarComposer
 {
-
-    private static String DEFAULT_TESTABLE_ID = "default";
+    private static final String DEFAULT_TESTABLE_ID = "default";
     private static final String APPLICATION_JSON = "application/json";
     private static final String APPLICATION_XML = "application/xml";
 
@@ -78,8 +77,7 @@ public class HelperDomainGrammarComposer
 
     public static String renderUnit(Unit unit, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        String unitName = PureGrammarComposerUtility.convertIdentifier(unit.name);
-        return (unitName.startsWith("'") ? "'" : "") + unitName.substring(unitName.lastIndexOf("~") + 1) + (unit.conversionFunction == null ? ";" : ": " + renderUnitLambda(unit.conversionFunction, transformer) + ";");
+        return PureGrammarComposerUtility.convertIdentifier(unit.name) + (unit.conversionFunction == null ? ";" : ": " + renderUnitLambda(unit.conversionFunction, transformer) + ";");
     }
 
     public static String renderUnitLambda(Lambda conversionFunction, DEPRECATED_PureGrammarComposerCore transformer)
@@ -229,7 +227,7 @@ public class HelperDomainGrammarComposer
     {
         StringBuilder dataStrBuilder = new StringBuilder();
         dataStrBuilder.append(getTabString(currentInt));
-        dataStrBuilder.append(HelperRuntimeGrammarComposer.renderStoreProviderPointer(storeTestData.store) + ":");
+        dataStrBuilder.append(HelperRuntimeGrammarComposer.renderStoreProviderPointer(storeTestData.store)).append(":");
         EmbeddedData embeddedData = storeTestData.data;
         if (embeddedData instanceof DataElementReference)
         {
@@ -310,6 +308,4 @@ public class HelperDomainGrammarComposer
             return "(" + externalFormatData.contentType + ") " + PureGrammarComposerUtility.convertString(externalFormatData.data, true);
         }
     }
-
-
 }

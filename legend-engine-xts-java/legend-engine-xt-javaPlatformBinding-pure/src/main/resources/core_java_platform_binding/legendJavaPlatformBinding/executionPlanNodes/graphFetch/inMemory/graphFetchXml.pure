@@ -466,7 +466,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
   let tokenStream   = $jThis->j_field('xmlTokenStream');
   let currentToken  = $tokenStream->j_invoke('getCurrentToken', [], javaInt());
   let accept        = $jThis->j_invoke('accept', j_true(), javaVoid());
-  let errorMessage  = j_string('Unexpected ')->j_plus($currentToken)->j_plus(j_string(' for PURE '+ $type.name->toOne()));
+  let errorMessage  = j_string('Unexpected ')->j_plus($currentToken)->j_plus(j_string(' for PURE '+ $type->elementToPath()));
   let check         = {c:Code[1] | $jThis->j_invoke('check', [$c, $errorMessage], javaVoid())};
 
   let acceptXmlType = if($xmlType == XmlType.Element,

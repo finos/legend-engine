@@ -1462,7 +1462,7 @@ public class HelperRelationalBuilder
 
         if (propertyMapping.target == null && property._genericType()._rawType() instanceof Class)
         {
-            return HelperModelBuilder.getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) property._genericType()._rawType(), "_", context.pureModel.getExecutionSupport());
+            return HelperModelBuilder.getTypeFullPath(property._genericType()._rawType(), "_", context.pureModel.getExecutionSupport());
         }
         return HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping);
     }
@@ -1484,7 +1484,7 @@ public class HelperRelationalBuilder
         if ((parent._id() == null) && (owner instanceof Association))
         {
             Property<?, ?> prop = ((Class<?>) property._genericType()._rawType())._propertiesFromAssociations().detect(p -> owner.equals(p._owner()));
-            return HelperModelBuilder.getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) prop._genericType()._rawType(), "_", context.pureModel.getExecutionSupport());
+            return HelperModelBuilder.getTypeFullPath(prop._genericType()._rawType(), "_", context.pureModel.getExecutionSupport());
         }
         return parent._id();
     }
