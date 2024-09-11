@@ -269,6 +269,7 @@ public abstract class TestTDS
         MutableList<String> columnOrdered = Lists.mutable.empty();
         columnOrdered.addAll(this.columnsOrdered);
         columnOrdered.addAll(otherTDS.columnsOrdered);
+        columnOrdered = columnOrdered.distinct();
         TestTDS res = newTDS(columnOrdered, columnTypes, (int) (rowCount * otherTDS.rowCount));
 
         for (int i = 0; i < this.rowCount; i++)
@@ -957,7 +958,7 @@ public abstract class TestTDS
 
     public String toString()
     {
-        RichIterable<String> columns = this.dataByColumnName.keysView();
+        RichIterable<String> columns = this.columnsOrdered;
         MutableList<String> rows = Lists.mutable.empty();
         for (int i = 0; i < rowCount; i++)
         {
@@ -1239,6 +1240,7 @@ public abstract class TestTDS
         }
     }
 
+    // TODO: clean this up so this is more readable and properly leverage the fundamental methods like sort()
     public TestTDS applyPivot(ListIterable<String> nonTransposeColumns, ListIterable<String> pivotColumns, ListIterable<String> aggColumns)
     {
         // compute the different unique combinations of values

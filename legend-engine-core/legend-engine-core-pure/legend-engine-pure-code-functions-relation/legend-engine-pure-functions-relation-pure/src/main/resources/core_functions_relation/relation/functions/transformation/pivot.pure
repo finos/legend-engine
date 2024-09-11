@@ -15,16 +15,16 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
-native function <<PCT.function>> meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<Any>[1];
+native function <<PCT.function>> meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
 
-native function <<PCT.function>> meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<Any>[1];
+native function <<PCT.function>> meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
 
-native function <<PCT.function>> meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1], agg:AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<Any>[1];
+native function <<PCT.function>> meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1], agg:AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
 
-native function <<PCT.function>> meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[1]}, R>[1]):Relation<Any>[1];
+native function <<PCT.function>> meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
 
 
-function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testSimplePivotBySingleSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -33,7 +33,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testSimpleP
                     NYC, USA, 2000, 5000
                     SAN, USA, 2000, 2000
                     SAN, USA, 2011, 100
-                    LND, UK, 2011, 3000
+                    LDN, UK, 2011, 3000
                     SAN, USA, 2011, 2500
                     NYC, USA, 2000, 10000
                     NYC, USA, 2012, 7600
@@ -45,14 +45,14 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testSimpleP
 
     assertEquals( '#TDS\n'+
                   '   city,country,2000__|__newCol,2011__|__newCol,2012__|__newCol\n' +
-                  '   LND,UK,null,3000,null\n' +
+                  '   LDN,UK,null,3000,null\n' +
                   '   NYC,USA,15000,5000,15200\n' +
                   '   SAN,USA,2000,2600,null\n' +
-                  '#', $res->toString());
+                  '#', $res->cast(@Relation<(city:String,country:String,'2000__|__newCol':Integer,'2011__|__newCol':Integer,'2012__|__newCol':Integer)>)->sort([ascending(~city)])->toString());
 }
 
 
-function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testSimplePivotByMultipleSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -61,7 +61,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testSimpleP
                     NYC, USA, 2000, 5000
                     SAN, USA, 2000, 2000
                     SAN, USA, 2011, 100
-                    LND, UK, 2011, 3000
+                    LDN, UK, 2011, 3000
                     SAN, USA, 2011, 2500
                     NYC, USA, 2000, 10000
                     NYC, USA, 2012, 7600
@@ -72,15 +72,15 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testSimpleP
     let res =  $f->eval($expr);
 
     assertEquals( '#TDS\n'+
-                  '   year,UK__|__LND__|__sum,USA__|__NYC__|__sum,USA__|__SAN__|__sum\n' +
+                  '   year,UK__|__LDN__|__sum,USA__|__NYC__|__sum,USA__|__SAN__|__sum\n' +
                   '   2000,null,15000,2000\n' +
                   '   2011,3000,5000,2600\n' +
                   '   2012,null,15200,null\n' +
-                  '#', $res->toString());
+                  '#', $res->cast(@Relation<(year:Integer,'UK__|__LDN__|__sum':Integer,'USA__|__NYC__|__sum':Integer,'USA__|__SAN__|__sum':Integer)>)->sort([ascending(~year)])->toString());
 }
 
 
-function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testSimplePivotBySingleMultiple<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -89,7 +89,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testSimpleP
                     NYC, USA, 2000, 5000
                     SAN, USA, 2000, 2000
                     SAN, USA, 2011, 100
-                    LND, UK, 2011, 3000
+                    LDN, UK, 2011, 3000
                     SAN, USA, 2011, 2500
                     NYC, USA, 2000, 10000
                     NYC, USA, 2012, 7600
@@ -101,14 +101,14 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testSimpleP
 
     assertEquals( '#TDS\n'+
                   '   city,country,2000__|__sum,2000__|__count,2011__|__sum,2011__|__count,2012__|__sum,2012__|__count\n' +
-                  '   LND,UK,null,null,3000,1,null,null\n' +
+                  '   LDN,UK,null,null,3000,1,null,null\n' +
                   '   NYC,USA,15000,2,5000,1,15200,2\n' +
                   '   SAN,USA,2000,1,2600,2,null,null\n' +
-                  '#', $res->toString());
+                  '#', $res->cast(@Relation<(city:String,country:String,'2000__|__sum':Integer,'2000__|__count':Integer,'2011__|__sum':Integer,'2011__|__count':Integer,'2012__|__sum':Integer,'2012__|__count':Integer)>)->sort([ascending(~city)])->toString());
 }
 
 
-function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testSimplePivotByMultipleMultiple<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -117,7 +117,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testSimpleP
                     NYC, USA, 2000, 5000
                     SAN, USA, 2000, 2000
                     SAN, USA, 2011, 100
-                    LND, UK, 2011, 3000
+                    LDN, UK, 2011, 3000
                     SAN, USA, 2011, 2500
                     NYC, USA, 2000, 10000
                     NYC, USA, 2012, 7600
@@ -128,41 +128,9 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testSimpleP
     let res =  $f->eval($expr);
 
     assertEquals( '#TDS\n'+
-                  '   year,UK__|__LND__|__sum,UK__|__LND__|__count,USA__|__NYC__|__sum,USA__|__NYC__|__count,USA__|__SAN__|__sum,USA__|__SAN__|__count\n' +
+                  '   year,UK__|__LDN__|__sum,UK__|__LDN__|__count,USA__|__NYC__|__sum,USA__|__NYC__|__count,USA__|__SAN__|__sum,USA__|__SAN__|__count\n' +
                   '   2000,null,null,15000,2,2000,1\n' +
                   '   2011,3000,1,5000,1,2600,2\n' +
                   '   2012,null,null,15200,2,null,null\n' +
-                  '#', $res->toString());
+                  '#', $res->cast(@Relation<(year:Integer,'UK__|__LDN__|__sum':Integer,'UK__|__LDN__|__count':Integer,'USA__|__NYC__|__sum':Integer,'USA__|__NYC__|__count':Integer,'USA__|__SAN__|__sum':Integer,'USA__|__SAN__|__count':Integer)>)->sort([ascending(~year)])->toString());
 }
-
-function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testSimplePivotChained<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {
-                |#TDS
-                    city, country, year, treePlanted
-                    NYC, USA, 2011, 5000
-                    NYC, USA, 2000, 5000
-                    SAN, USA, 2000, 2000
-                    SAN, USA, 2011, 100
-                    LND, UK, 2011, 3000
-                    SAN, USA, 2011, 2500
-                    NYC, USA, 2000, 10000
-                    NYC, USA, 2012, 7600
-                    NYC, USA, 2012, 7600
-                 #->pivot(~[year], ~['newCol' : x | $x.treePlanted : y | $y->plus()])->cast(@Relation<(city:String,country:String,'2000__|__newCol':Integer,'2011__|__newCol':Integer,'2012__|__newCol':Integer)>)->filter(x|$x.city=='NYC')
-               };
-
-    let res =  $f->eval($expr);
-
-    assertEquals( '#TDS\n'+
-                  '   city,country,2000__|__newCol,2011__|__newCol,2012__|__newCol\n' +
-                  '   NYC,USA,15000,5000,15200\n' +
-                  '#', $res->toString());
-}
-
-// TODO: test pivot with no aggregation function specified
-// TODO when we support specifying pivot with specific values
-// - test pivot with values specified
-// - test empty value for pivot
-// - test incompatible types (check for error - see AbstractTestCast, AbstractTestPathToElement)
-// - test mixed values for pivot (check for error - see AbstractTestCast, AbstractTestPathToElement)

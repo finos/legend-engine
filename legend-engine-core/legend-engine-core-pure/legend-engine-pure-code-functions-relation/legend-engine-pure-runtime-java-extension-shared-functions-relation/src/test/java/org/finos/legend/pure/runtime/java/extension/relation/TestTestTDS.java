@@ -334,13 +334,13 @@ public class TestTestTDS
 
         TestTDS t = left.compensateLeft(res).join(third);
 
-        Assert.assertEquals("id, id2, extra, name, extraInt, id, boom\n" +
-                "1, 4, More David, David, 1, 1, A1\n" +
-                "3, 4, More David, David, 1, 3, A3\n" +
-                "1, 1, More George 2, George, 2, 1, A1\n" +
-                "3, 1, More George 2, George, 2, 3, A3\n" +
-                "1, NULL, NULL, Sachin, NULL, 1, A1\n" +
-                "3, NULL, NULL, Sachin, NULL, 3, A3", t.toString());
+        Assert.assertEquals("id, id2, extra, name, extraInt, boom\n" +
+                "1, 4, More David, David, 1, A1\n" +
+                "3, 4, More David, David, 1, A3\n" +
+                "1, 1, More George 2, George, 2, A1\n" +
+                "3, 1, More George 2, George, 2, A3\n" +
+                "1, NULL, NULL, Sachin, NULL, A1\n" +
+                "3, NULL, NULL, Sachin, NULL, A3", t.toString());
 
         Assert.assertEquals(initialRes, res.toString());
         Assert.assertEquals(initialLeft, left.toString());

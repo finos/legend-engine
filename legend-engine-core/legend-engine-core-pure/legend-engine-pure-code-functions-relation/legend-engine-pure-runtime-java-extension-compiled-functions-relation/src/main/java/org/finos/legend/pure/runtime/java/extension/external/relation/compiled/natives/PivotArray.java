@@ -20,8 +20,6 @@ import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.AbstractNative;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.Native;
 
-import static org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Pivot.processAggColSpec;
-
 public class PivotArray extends AbstractNative implements Native
 {
     public PivotArray()
@@ -39,9 +37,8 @@ public class PivotArray extends AbstractNative implements Native
         result.append(transformedParams.get(1));
         result.append(", ");
         result.append("Lists.mutable.withAll(" + transformedParams.get(2) + "._aggSpecs())");
-        processAggColSpec(transformedParams, result);
+        Pivot.processAggColSpec(result);
         result.append(", es)");
         return result.toString();
     }
-
 }

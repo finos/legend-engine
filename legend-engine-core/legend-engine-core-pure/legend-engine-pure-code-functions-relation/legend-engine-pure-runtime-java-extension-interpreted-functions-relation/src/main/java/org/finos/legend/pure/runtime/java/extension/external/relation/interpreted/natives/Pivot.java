@@ -25,6 +25,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunctionCoreInstanceWrapper;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
@@ -41,9 +42,9 @@ import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared.Shared;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared.TDSCoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared.TDSWithCursorCoreInstance;
-import org.finos.legend.pure.runtime.java.extension.external.relation.shared.SortDirection;
-import org.finos.legend.pure.runtime.java.extension.external.relation.shared.SortInfo;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortInfo;
 import org.finos.legend.pure.runtime.java.interpreted.ExecutionSupport;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.finos.legend.pure.runtime.java.interpreted.VariableContext;
@@ -127,38 +128,40 @@ public class Pivot extends Shared
         TestTDS result = temp.applyPivot(groupByColumns.reject(pivotCols::contains), pivotCols, aggColSpecs.collect(AggColSpecAccessor::_name));
 
         // populate the generic type for the return at execution time since it cannot be reasoned out at compile time
-        CoreInstance returnGenericType = getReturnGenericType(resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionToUseInStack, processorSupport);
-        returnGenericType.getValueForMetaPropertyToMany("typeArguments").getFirst().setKeyValues(Lists.mutable.with("rawType"), Lists.mutable.with(_RelationType.build(result.getColumnWithTypes().collect(c ->
-        {
-            String type;
-            switch (c.getTwo())
-            {
-                case FLOAT:
+        GenericType returnGenericType = (GenericType) getReturnGenericType(resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionToUseInStack, processorSupport);
+        returnGenericType._typeArguments(Lists.mutable.with(
+                ((GenericType) processorSupport.newGenericType(null, returnGenericType, true))._rawType(_RelationType.build(result.getColumnWithTypes().collect(c ->
                 {
-                    type = M3Paths.Float;
-                    break;
-                }
-                case DOUBLE:
-                {
-                    type = M3Paths.Decimal;
-                    break;
-                }
-                case INT:
-                {
-                    type = M3Paths.Integer;
-                    break;
-                }
-                case CHAR:
-                case STRING:
-                {
-                    type = M3Paths.String;
-                    break;
-                }
-                default:
-                    throw new RuntimeException("ERROR " + c.getTwo() + " not supported in pivot!");
-            }
-            return _Column.getColumnInstance(c.getOne(), false, type, null, processorSupport);
-        }), functionExpressionToUseInStack.getSourceInformation(), processorSupport)));
+                    String type;
+                    switch (c.getTwo())
+                    {
+                        case FLOAT:
+                        {
+                            type = M3Paths.Float;
+                            break;
+                        }
+                        case DOUBLE:
+                        {
+                            type = M3Paths.Decimal;
+                            break;
+                        }
+                        case INT:
+                        {
+                            type = M3Paths.Integer;
+                            break;
+                        }
+                        case CHAR:
+                        case STRING:
+                        {
+                            type = M3Paths.String;
+                            break;
+                        }
+                        default:
+                            throw new RuntimeException("ERROR " + c.getTwo() + " not supported in pivot!");
+                    }
+                    return _Column.getColumnInstance(c.getOne(), false, type, (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(0, 1, processorSupport), null, processorSupport);
+                }), functionExpressionToUseInStack.getSourceInformation(), processorSupport))
+        ));
 
         return ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(result, returnGenericType, repository, processorSupport), false, processorSupport);
     }
