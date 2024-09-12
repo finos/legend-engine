@@ -94,6 +94,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
+//To-fix > pure function indexOf uses 0-based indexing , whereas db function uses 1-based indexing.
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::indexOf::testString(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='indexOf', parameters=[^Literal(value='String Random'),^Literal(value='and')]);
