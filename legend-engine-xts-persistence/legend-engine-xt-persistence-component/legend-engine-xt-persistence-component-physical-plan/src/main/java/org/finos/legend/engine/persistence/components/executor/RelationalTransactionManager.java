@@ -30,18 +30,18 @@ public interface RelationalTransactionManager
 
     boolean executeInCurrentTransaction(String sql) throws SQLException;
 
-    List<Map<String, Object>> convertResultSetToList(String sql);
+    List<Map<String, Object>> convertResultSetToList(String sql) throws SQLException;
 
-    List<Map<String, Object>> convertResultSetToList(String sql, int rows);
+    List<Map<String, Object>> convertResultSetToList(String sql, int rows) throws SQLException;
 
-    default TabularData convertResultSetToTabularData(String sql)
+    default TabularData convertResultSetToTabularData(String sql) throws SQLException
     {
         return TabularData.builder()
             .addAllData(convertResultSetToList(sql))
             .build();
     }
 
-    default TabularData convertResultSetToTabularData(String sql, int rows)
+    default TabularData convertResultSetToTabularData(String sql, int rows) throws SQLException
     {
         return TabularData.builder()
             .addAllData(convertResultSetToList(sql, rows))

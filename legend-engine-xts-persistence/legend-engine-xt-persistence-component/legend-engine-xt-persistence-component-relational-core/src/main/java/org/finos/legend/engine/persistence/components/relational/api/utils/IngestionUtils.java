@@ -43,7 +43,7 @@ import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.api.*;
 import org.finos.legend.engine.persistence.components.relational.exception.DataQualityException;
 import org.finos.legend.engine.persistence.components.exception.JsonReadOrWriteException;
-import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
+import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
@@ -105,7 +105,7 @@ public class IngestionUtils
         MetadataDataset metadataDataset = enrichedDatasets.metadataDataset().get();
         if (!tabularDataList.isEmpty())
         {
-            List<Map<String, Object>> metadataResults = tabularDataList.get(0).getData();
+            List<Map<String, Object>> metadataResults = tabularDataList.get(0).data();
             for (Map<String, Object> metadata: metadataResults)
             {
                 Timestamp ingestionTimestampUTC = (Timestamp) metadata.get(metadataDataset.batchStartTimeField());
@@ -364,7 +364,7 @@ public class IngestionUtils
         List<TabularData> results = executor.executePhysicalPlanAndGetResults(physicalPlan);
         Optional<String> stagingFilters = results.stream()
                 .findFirst()
-                .map(TabularData::getData)
+                .map(TabularData::data)
                 .flatMap(t -> t.stream().findFirst())
                 .map(stringObjectMap -> String.valueOf(stringObjectMap.get(metadataDataset.batchSourceInfoField())));
 
@@ -432,7 +432,7 @@ public class IngestionUtils
                 TabularData duplicateRows = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(DUPLICATE_ROWS), placeHolderKeyValues).get(0);
                 String errorMessage = "Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy";
                 LOGGER.error(errorMessage);
-                List<DataError> dataErrors = constructDataQualityErrors(enrichedDatasets.stagingDataset(), duplicateRows.getData(),
+                List<DataError> dataErrors = constructDataQualityErrors(enrichedDatasets.stagingDataset(), duplicateRows.data(),
                     ErrorCategory.DUPLICATES, caseConversion, DatasetDeduplicationHandler.COUNT, NUM_DUPLICATES);
                 throw new DataQualityException(errorMessage, dataErrors);
             }
@@ -450,7 +450,7 @@ public class IngestionUtils
                 TabularData duplicatePkRows = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(PK_DUPLICATE_ROWS), placeHolderKeyValues).get(0);
                 String errorMessage = "Encountered multiple rows with duplicate primary keys, Failing the batch as Fail on Duplicate Primary Keys is selected";
                 LOGGER.error(errorMessage);
-                List<DataError> dataErrors = IngestionUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), duplicatePkRows.getData(),
+                List<DataError> dataErrors = IngestionUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), duplicatePkRows.data(),
                     ErrorCategory.DUPLICATE_PRIMARY_KEYS, caseConversion, DeriveDuplicatePkRowsLogicalPlan.DUPLICATE_PK_COUNT, NUM_PK_DUPLICATES);
                 throw new DataQualityException(errorMessage, dataErrors);
             }
@@ -468,7 +468,7 @@ public class IngestionUtils
                 TabularData errors = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(DATA_ERROR_ROWS), placeHolderKeyValues).get(0);
                 String errorMessage = "Encountered Data errors (same PK, same version but different data), hence failing the batch";
                 LOGGER.error(errorMessage);
-                List<DataError> dataErrors = IngestionUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), errors.getData(),
+                List<DataError> dataErrors = IngestionUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), errors.data(),
                     ErrorCategory.DATA_VERSION_ERROR, caseConversion, DeriveDataErrorRowsLogicalPlan.DATA_VERSION_ERROR_COUNT, NUM_DATA_VERSION_ERRORS);
                 throw new DataQualityException(errorMessage, dataErrors);
             }
@@ -516,7 +516,7 @@ public class IngestionUtils
     {
         Map<String, Object> resultMap = tabularData.stream()
                 .findFirst()
-                .map(TabularData::getData)
+                .map(TabularData::data)
                 .flatMap(t -> t.stream().findFirst())
                 .orElse(Collections.emptyMap());
         return resultMap;

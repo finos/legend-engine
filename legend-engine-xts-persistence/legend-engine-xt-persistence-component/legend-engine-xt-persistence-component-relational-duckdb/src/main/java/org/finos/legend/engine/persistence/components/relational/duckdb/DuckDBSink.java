@@ -224,7 +224,7 @@ public class DuckDBSink extends AnsiSqlSink
             stats.put(StatisticName.ROWS_INSERTED, executor.executePhysicalPlanAndGetResults(rowsInsertedSqlPlan, placeHolderKeyValues)
                 .stream()
                 .findFirst()
-                .map(TabularData::getData)
+                .map(TabularData::data)
                 .flatMap(t -> t.stream().findFirst())
                 .map(Map::values)
                 .flatMap(t -> t.stream().findFirst())

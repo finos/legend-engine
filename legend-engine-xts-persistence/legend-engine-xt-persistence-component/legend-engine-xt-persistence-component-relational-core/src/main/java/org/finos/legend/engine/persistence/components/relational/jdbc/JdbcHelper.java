@@ -482,7 +482,7 @@ public class JdbcHelper implements RelationalExecutionHelper
         }
     }
 
-    private void revertTransaction(JdbcTransactionManager txManager)
+    private void revertTransaction(RelationalTransactionManager txManager)
     {
         if (txManager != null)
         {
@@ -502,18 +502,23 @@ public class JdbcHelper implements RelationalExecutionHelper
     {
         if (this.transactionManager != null)
         {
-            try
-            {
-                return this.transactionManager.convertResultSetToList(sql, rows);
-            }
-            catch (SQLException e)
-            {
-                throw SqlExecutionExceptionMapper.from(e);
-            }
+            return getResult(this.transactionManager, sql, rows);
         }
         else
         {
-            return executeWithNewTransactionManager(sql, (RelationalTransactionManager manager, String s) -> manager.convertResultSetToList(s, rows));
+            return executeWithNewTransactionManager(sql, (manager, s) -> getResult(manager, s, rows));
+        }
+    }
+
+    private List<Map<String, Object>> getResult(RelationalTransactionManager manager, String s, int rows)
+    {
+        try
+        {
+            return manager.convertResultSetToList(s, rows);
+        }
+        catch (SQLException e)
+        {
+            throw SqlExecutionExceptionMapper.from(e);
         }
     }
 
@@ -522,18 +527,23 @@ public class JdbcHelper implements RelationalExecutionHelper
     {
         if (this.transactionManager != null)
         {
-            try
-            {
-                return this.transactionManager.convertResultSetToList(sql);
-            }
-            catch (SQLException e)
-            {
-                throw SqlExecutionExceptionMapper.from(e);
-            }
+            return getResult(this.transactionManager, sql);
         }
         else
         {
-            return executeWithNewTransactionManager(sql, RelationalTransactionManager::convertResultSetToList);
+            return executeWithNewTransactionManager(sql, (manager, s) -> getResult(manager, s));
+        }
+    }
+
+    private List<Map<String, Object>> getResult(RelationalTransactionManager manager, String s)
+    {
+        try
+        {
+            return manager.convertResultSetToList(s);
+        }
+        catch (SQLException e)
+        {
+            throw SqlExecutionExceptionMapper.from(e);
         }
     }
 
@@ -542,11 +552,23 @@ public class JdbcHelper implements RelationalExecutionHelper
     {
         if (this.transactionManager != null)
         {
-            return this.transactionManager.convertResultSetToTabularData(sql);
+            return getTabularData(this.transactionManager, sql);
         }
         else
         {
-            return executeWithNewTransactionManager(sql, RelationalTransactionManager::convertResultSetToTabularData);
+            return executeWithNewTransactionManager(sql, (manager, s) -> getTabularData(manager, s));
+        }
+    }
+
+    private TabularData getTabularData(RelationalTransactionManager manager, String s)
+    {
+        try
+        {
+            return manager.convertResultSetToTabularData(s);
+        }
+        catch (SQLException e)
+        {
+            throw SqlExecutionExceptionMapper.from(e);
         }
     }
 
@@ -555,12 +577,23 @@ public class JdbcHelper implements RelationalExecutionHelper
     {
         if (this.transactionManager != null)
         {
-            return this.transactionManager.convertResultSetToTabularData(sql, rows);
+            return getTabularData(this.transactionManager, sql, rows);
         }
         else
         {
-            return executeWithNewTransactionManager(sql, (RelationalTransactionManager manager, String s) ->
-                manager.convertResultSetToTabularData(s, rows));
+            return executeWithNewTransactionManager(sql, (manager, s) -> getTabularData(manager, s, rows));
+        }
+    }
+
+    private TabularData getTabularData(RelationalTransactionManager manager, String s, int rows)
+    {
+        try
+        {
+            return manager.convertResultSetToTabularData(s, rows);
+        }
+        catch (SQLException e)
+        {
+            throw SqlExecutionExceptionMapper.from(e);
         }
     }
 
