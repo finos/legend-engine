@@ -176,7 +176,7 @@ function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], 
       metadata = ^meta::relational::mapping::TableInfo(info  = $query->meta::relational::milestoning::getQueryTableAliases()->map(a|$a.relationalElement)->cast(@Table)->removeDuplicatesBy(t|$t.schema.name+'.'+$t.name)->map(tab| ^meta::relational::mapping::TableIdentifier(schema=$tab.schema.name, table=$tab.name))),
       // the only case that we yield result with dynamic columns is when pivot() is used and no casting is done afterwards, resulting
       // in a select statement with no columns being specified
-      isResultColumnsDynamic = $query->match([sel:SelectSQLQuery[1] | !$sel.pivot->isEmpty() && $sel.columns->isEmpty(), a:Any[1] | []])
+      isResultColumnsDynamic = $query->match([sel:SelectSQLQuery[1] | if(!$sel.pivot->isEmpty() && $sel.columns->isEmpty(), |true,|[]), a:Any[1] | []])
    );
 }
 

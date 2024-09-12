@@ -221,7 +221,11 @@ public class REPLServerHelpers
             boolean isDynamic = false;
             try
             {
-                isDynamic = ((SQLExecutionNode) executeResultSummary.plan.rootExecutionNode.executionNodes.get(0)).isResultColumnsDynamic;
+                SQLExecutionNode sqlExecutionNode = ((SQLExecutionNode) executeResultSummary.plan.rootExecutionNode.executionNodes.get(0));
+                if (sqlExecutionNode.isResultColumnsDynamic != null)
+                {
+                    isDynamic = sqlExecutionNode.isResultColumnsDynamic;
+                }
             }
             catch (Exception e)
             {
