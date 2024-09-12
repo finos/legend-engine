@@ -18,6 +18,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.core.ReplExtension;
@@ -68,23 +69,7 @@ public class Show implements Command
                 this.client.printError("Failed to retrieve the last command");
                 return true;
             }
-            try
-            {
-                run(expression, this.client, this.replServer);
-            }
-            catch (Exception e)
-            {
-                this.client.printError("Last command run is not an execution of a Pure expression (command run: '" + expression + "')");
-                if (e instanceof EngineException)
-                {
-                    this.client.printEngineError((EngineException) e, expression);
-                    return true;
-                }
-                else
-                {
-                    throw e;
-                }
-            }
+            run(expression, this.client, this.replServer);
             return true;
         }
         return false;
@@ -93,18 +78,34 @@ public class Show implements Command
     public static void run(String expression, Client client, REPLServer replServer)
     {
         ExecutionHelper.ExecuteResultSummary lastExecuteResultSummary;
-        lastExecuteResultSummary = executeCode(expression, client, (Result res, PureModelContextData pmcd, PureModel pureModel) ->
+        try
         {
-            ReplExtension extension = client.getReplExtensions().detect(x -> x.supports(res));
-            if (extension != null)
+            lastExecuteResultSummary = executeCode(expression, client, (Result res, PureModelContextData pmcd, PureModel pureModel, SingleExecutionPlan plan) ->
             {
-                return new ExecutionHelper.ExecuteResultSummary(pmcd, pureModel, res, null);
+                ReplExtension extension = client.getReplExtensions().detect(x -> x.supports(res));
+                if (extension != null)
+                {
+                    return new ExecutionHelper.ExecuteResultSummary(pmcd, pureModel, plan, res, null);
+                }
+                else
+                {
+                    throw new RuntimeException(res.getClass() + " not supported!");
+                }
+            });
+        }
+        catch (Exception e)
+        {
+            client.printError("Last command run is not an execution of a Pure expression (command run: '" + expression + "')");
+            if (e instanceof EngineException)
+            {
+                client.printEngineError((EngineException) e, expression);
+                return;
             }
             else
             {
-                throw new RuntimeException(res.getClass() + " not supported!");
+                throw e;
             }
-        });
+        }
         replServer.initializeStateWithREPLExecutedQuery(lastExecuteResultSummary);
         launchDataCube(client, replServer);
     }

@@ -295,6 +295,30 @@ public class Handlers
                 pureModel);
     }
 
+    public static TypeAndMultiplicity PivotReturnInference(List<ValueSpecification> ps, PureModel pureModel)
+    {
+        ProcessorSupport processorSupport = pureModel.getExecutionSupport().getProcessorSupport();
+        try
+        {
+            RelationType<?> relType = _RelationType.build(
+                    Lists.mutable.empty(),
+                    null,
+                    processorSupport
+            );
+            return res(
+                    new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType))
+                            ._rawType(pureModel.getType(M3Paths.Relation))
+                            ._typeArguments(Lists.fixedSize.of(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType))._rawType(relType))),
+                    "one",
+                    pureModel
+            );
+        }
+        catch (PureCompilationException e)
+        {
+            throw new EngineException(e.getInfo(), null, EngineErrorType.COMPILATION);
+        }
+    }
+
     public static TypeAndMultiplicity ProjectReturnInference(List<ValueSpecification> ps, PureModel pureModel)
     {
         return getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType()), pureModel);
@@ -865,6 +889,15 @@ public class Handlers
                 )
         );
 
+        register(
+                grp(TDSAggInference,
+                        h("meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true)
+                )
+        );
+
         // meta::pure::tds::extend(tds:TabularDataSet[1], newColumnFunctions:BasicColumnSpecification<TDSRow >[*]):TabularDataSet[1]
         register(m(
                         grp(ExtendInference,
@@ -1109,7 +1142,24 @@ public class Handlers
                 h("meta::pure::tds::paginated_TabularDataSet_1__Integer_1__Integer_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet"))
         );
 
-        register("meta::pure::functions::lang::cast_Any_m__T_1__T_m_", true, ps -> res(ps.get(1)._genericType(), ps.get(0)._multiplicity()));
+        register("meta::pure::functions::lang::cast_Any_m__T_1__T_m_", true, ps ->
+        {
+            // Support casting to a relation
+            try
+            {
+                RelationType<?> rel = (RelationType<?>) ps.get(1)._genericType()._typeArguments().getFirst()._rawType();
+                return res(
+                        new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.pureModel.getClass(M3Paths.GenericType))
+                                ._rawType(this.pureModel.getType(M3Paths.Relation))
+                                ._typeArguments(Lists.fixedSize.of(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.pureModel.getClass(M3Paths.GenericType))._rawType(rel))),
+                        "one"
+                );
+            }
+            catch (Exception e)
+            {
+                return res(ps.get(1)._genericType(), ps.get(0)._multiplicity());
+            }
+        });
 
         register("meta::pure::functions::collection::at_T_MANY__Integer_1__T_1_", true, ps -> res(ps.get(0)._genericType(), "one"));
 
@@ -2865,6 +2915,10 @@ public class Handlers
         map.put("meta::pure::functions::relation::select_Relation_1__ColSpecArray_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "ColSpecArray".equals(ps.get(1)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "FuncColSpecArray".equals(ps.get(1)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::relation::size_Relation_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "ColSpecArray".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "AggColSpec".equals(ps.get(2)._genericType()._rawType()._name())));
+        map.put("meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "ColSpecArray".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "AggColSpecArray".equals(ps.get(2)._genericType()._rawType()._name())));
+        map.put("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "ColSpec".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "AggColSpecArray".equals(ps.get(2)._genericType()._rawType()._name())));
+        map.put("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "ColSpec".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "AggColSpec".equals(ps.get(2)._genericType()._rawType()._name())));
 
         map.put("meta::pure::functions::relation::cumulativeDistribution_Relation_1___Window_1__T_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "_Window".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()));
         map.put("meta::pure::functions::relation::denseRank_Relation_1___Window_1__T_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "_Window".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()));

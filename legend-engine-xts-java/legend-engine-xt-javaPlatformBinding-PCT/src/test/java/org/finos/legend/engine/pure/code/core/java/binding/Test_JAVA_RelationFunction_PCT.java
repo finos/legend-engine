@@ -31,18 +31,16 @@ public class Test_JAVA_RelationFunction_PCT extends PCTReportConfiguration
     private static final Adapter adapter = CoreJavaPlatformBindingCodeRepositoryProvider.javaAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            // Extend
-            one("meta::pure::functions::relation::tests::composition::testExtendFilter_Function_1__Boolean_1_", "\"meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_ is not supported yet!\""),
-
             // Concatenate
             pack("meta::pure::functions::relation::tests::concatenate", "\"meta::pure::functions::relation::concatenate_Relation_1__Relation_1__Relation_1_ is not supported yet!\""),
 
-            //Drop
+            // Drop
             pack("meta::pure::functions::relation::tests::drop", "\"meta::pure::functions::relation::drop_Relation_1__Integer_1__Relation_1_ is not supported yet!\""),
 
             // Extend
             one("meta::pure::functions::relation::tests::extend::testSimpleMultipleColumns_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1__FuncColSpecArray_1__Relation_1_ is not supported yet!\""),
-            // OLAP
+
+            // Extend (OLAP)
             one("meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
             one("meta::pure::functions::relation::tests::extend::testSimpleExtendFloat_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1__FuncColSpec_1__Relation_1_ is not supported yet!\""),
             one("meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowChainedWithSimple_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1__FuncColSpec_1__Relation_1_ is not supported yet!\""),
@@ -90,6 +88,12 @@ public class Test_JAVA_RelationFunction_PCT extends PCTReportConfiguration
             // Limit
             one("meta::pure::functions::relation::tests::limit::testSimpleLimitShared_Function_1__Boolean_1_", "\"meta::pure::functions::relation::limit_Relation_1__Integer_1__Relation_1_ is not supported yet!\""),
 
+            // Pivot
+            one("meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_Function_1__Boolean_1_", "\"meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_Function_1__Boolean_1_", "\"meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Function_1__Boolean_1_", "\"meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_Function_1__Boolean_1_", "\"meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_ is not supported yet!\""),
+
             // Project
             pack("meta::pure::functions::relation::tests::project", "\"meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_ is not supported yet!\""),
 
@@ -101,6 +105,7 @@ public class Test_JAVA_RelationFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::relation::tests::select::testSingleColSelectShared_Function_1__Boolean_1_", "\"meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_ is not supported yet!\""),
             one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "\"meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_ is not supported yet!\""),
             one("meta::pure::functions::relation::tests::select::testSelectAll_Function_1__Boolean_1_", "\"meta::pure::functions::relation::select_Relation_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "\"meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_ is not supported yet!\""),
 
             // Size
             pack("meta::pure::functions::relation::tests::size", "\"meta::pure::functions::relation::size_Relation_1__Integer_1_ is not supported yet!\""),
@@ -112,12 +117,18 @@ public class Test_JAVA_RelationFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::relation::tests::sort::testSimpleSortShared_Function_1__Boolean_1_", "\"meta::pure::functions::relation::sort_Relation_1__SortInfo_MANY__Relation_1_ is not supported yet!\""),
 
             // Composition
+            one("meta::pure::functions::relation::tests::composition::testExtendFilter_Function_1__Boolean_1_", "\"meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_ is not supported yet!\""),
             one("meta::pure::functions::relation::tests::composition::testFilterPostProject_Function_1__Boolean_1_", "\"meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_ is not supported yet!\""),
-
-            // BUG: Column name with special characters is not properly escaped
-            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "\"meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_ is not supported yet!\"")
-
-            );
+            one("meta::pure::functions::relation::tests::composition::test_Distinct_Filter_Function_1__Boolean_1_", "\"meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy_Function_1__Boolean_1_", "\"meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::composition::test_GroupBy_Distinct_Function_1__Boolean_1_", "\"meta::pure::functions::relation::distinct_Relation_1__ColSpecArray_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::composition::test_GroupBy_GroupBy_Function_1__Boolean_1_", "\"meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::composition::test_Pivot_Filter_Function_1__Boolean_1_", "\"meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit_Function_1__Boolean_1_", "\"meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy_Filter_Function_1__Boolean_1_", "\"meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::composition::test_GroupBy_Distinct_Filter_Function_1__Boolean_1_", "\"meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::composition::test_GroupBy_Filter_Function_1__Boolean_1_", "\"meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_ is not supported yet!\"")
+    );
 
     public static Test suite()
     {

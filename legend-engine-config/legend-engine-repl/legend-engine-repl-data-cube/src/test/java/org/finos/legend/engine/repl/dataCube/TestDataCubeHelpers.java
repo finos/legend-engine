@@ -237,6 +237,14 @@ public class TestDataCubeHelpers
     }
 
     @Test
+    public void testExtractRelationReturnTypeCast()
+    {
+        String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->from(test::test)->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])->cast(@meta::pure::metamodel::relation::Relation<(hai:String,ba:Integer)>)";
+        String expectedResult = "{\"columns\":[{\"name\":\"hai\",\"type\":\"String\"},{\"name\":\"ba\",\"type\":\"Integer\"}]}";
+        testExtractRelationReturnType(expectedResult, lambda);
+    }
+
+    @Test
     public void testExtractRelationReturnTypeSimpleExtend()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->extend(~newCol:c|'ok')";

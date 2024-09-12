@@ -35,7 +35,12 @@ public class Test_Relational_DuckDB_RelationFunctions_PCT extends PCTReportConfi
     private static final ReportScope reportScope = RelationCodeRepositoryProvider.relationFunctions;
     private static final Adapter adapter = CoreExternalTestConnectionCodeRepositoryProvider.duckDBAdapter;
     private static final String platform = "compiled";
-    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with();
+    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
+            // BUG: unsupported compositions
+            one("meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy_Filter_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Binder Error: column newCol must appear in the GROUP BY clause or be used in an aggregate function"),
+            one("meta::pure::functions::relation::tests::composition::test_GroupBy_Distinct_Filter_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Binder Error: Referenced table \"restrict__d#2\" not found!\nCandidate tables: \"tb"),
+            one("meta::pure::functions::relation::tests::composition::test_GroupBy_Filter_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Binder Error: column \"newCol\" must appear in the GROUP BY clause or must be part of an aggregate function.\nEither add it to the GROUP BY list, or use \"ANY_VALUE(newCol)\" if the exact value of \"newCol\" is not important.\nLINE 2: select \"str\" as \"str\", \"newCol\" as \"newCol\" from (select \"tb")
+    );
 
     public static Test suite()
     {

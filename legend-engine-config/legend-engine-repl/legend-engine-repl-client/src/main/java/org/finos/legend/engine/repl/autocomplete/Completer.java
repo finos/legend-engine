@@ -93,11 +93,13 @@ public class Completer
                         "function " + REPL_RUN_FUNCTION_SIGNATURE + "{\n";
         this.lineOffset = StringUtils.countMatches(header, "\n") + 1;
         this.handlers = Lists.mutable.with(
+                new CastHandler(),
                 new FilterHandler(),
                 new FromHandler(),
                 new RenameHandler(),
                 new ExtendHandler(),
                 new GroupByHandler(),
+                new PivotHandler(),
                 new SortHandler(),
                 new JoinHandler(),
                 new SelectHandler(),
@@ -265,7 +267,7 @@ public class Completer
         if (org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(leftType._rawType(), pureModel.getType(M3Paths.Relation), pureModel.getExecutionSupport().getProcessorSupport()))
         {
             // May want to assert the mul to 1
-            return Lists.mutable.with("distinct", "drop", "select", "extend", "filter", "from", "groupBy", "join", "limit", "rename", "size", "slice", "sort");
+            return Lists.mutable.with("cast", "distinct", "drop", "select", "extend", "filter", "from", "groupBy", "pivot", "join", "limit", "rename", "size", "slice", "sort");
         }
         else if (leftType._rawType().getName().equals("String"))
         {
@@ -275,7 +277,7 @@ public class Completer
             }
             else
             {
-                return Lists.mutable.with("count", "joinStrings");
+                return Lists.mutable.with("count", "joinStrings", "uniqueValueOnly");
             }
         }
         else if (org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(leftType._rawType(), pureModel.getType(M3Paths.Number), pureModel.getExecutionSupport().getProcessorSupport()))

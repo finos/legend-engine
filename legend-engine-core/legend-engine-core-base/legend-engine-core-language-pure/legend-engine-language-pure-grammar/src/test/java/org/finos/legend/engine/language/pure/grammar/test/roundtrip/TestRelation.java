@@ -86,4 +86,9 @@ public class TestRelation
         testLambda("|test::Person.all()->project(~[first:x|$x.name, second:x|$x.val])");
     }
 
+    @Test
+    public void testCast()
+    {
+        testLambda("|test::Person.all()->meta::pure::functions::lang::cast(@Relation<(someCol:String, someCol:String)>)");
+    }
 }

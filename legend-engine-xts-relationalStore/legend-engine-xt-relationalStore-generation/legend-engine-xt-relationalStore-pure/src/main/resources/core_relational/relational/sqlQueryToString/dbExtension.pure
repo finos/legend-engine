@@ -29,6 +29,9 @@ Class meta::relational::functions::sqlQueryToString::Config
    useQuotesForTableAliasColumn : Boolean[0..1];
    generateJoin:Boolean[0..1];
    generateJoinTarget : TableAlias[0..1];
+   // certain SQL engines have specific requirements about column name in pivot statement
+   // e.g. DuckDB disallows qualified columns (such as "tableA".col1)
+   useUnqualifiedColumnNameInPivot : Boolean[0..1];
 }
 
 Class meta::relational::functions::sqlQueryToString::Format
@@ -400,8 +403,11 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                                       $identifier
                                                       ]);
                                              ,
-                                          x:TableAliasColumnName[1] | processTableAlias($x.alias, $dbConfig, $config) + processColumnName($x.columnName, $dbConfig);,                                                                
-                                          c:TableAliasColumn[1]| processTableAlias($c.alias, $dbConfig, $config) + processColumnName($c.column.name->toOne(), $dbConfig);,                                                                
+                                          x:TableAliasColumnName[1] | processTableAlias($x.alias, $dbConfig, $config) + processColumnName($x.columnName, $dbConfig),                                                                
+                                          c:TableAliasColumn[1]| if($config.useUnqualifiedColumnNameInPivot == true,
+                                            | '',
+                                            | processTableAlias($c.alias, $dbConfig, $config)) + processColumnName($c.column.name->toOne(), $dbConfig)
+                                          ,                                                                
                                           l:Literal[1]| processLiteral($l, $dbConfig),
                                           ll:LiteralList[1] | $ll.values->map(e | $e->processOperation($dbConfig, $format, $generationState, $config, $extensions))->joinStrings('(', ', ', ')'),
                                           s:SelectSQLQuery[1]| $s->processSelectSQLQuery($sgc, false),
