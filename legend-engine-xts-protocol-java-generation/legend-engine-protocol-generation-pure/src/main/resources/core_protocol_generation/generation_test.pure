@@ -987,3 +987,638 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'    OFF\n' +
 		'}', $sources->at(5));
 }
+
+###Pure
+import meta::protocols::generation::java::tests::jsonParams::model::*;
+import meta::protocols::generation::java::*;
+
+Class meta::protocols::generation::java::tests::jsonParams::model::TopClass
+{
+
+}
+
+Class meta::protocols::generation::java::tests::jsonParams::model::SubClassA extends TopClass
+{
+  {JSON.name='my-property'} myProperty : String[1];
+}
+
+Class {JSON.name='subB'} meta::protocols::generation::java::tests::jsonParams::model::SubClassB extends TopClass
+{
+}
+
+Enum meta::protocols::generation::java::tests::jsonParams::model::ZEnum
+{
+  {JSON.name='my-a'} myA,
+  myB
+}
+
+function <<test.Test>> meta::protocols::generation::java::tests::jsonParams::testJsonParams():Boolean[1]
+{
+  let config = ^meta::protocols::generation::java::translation::Configuration(
+    purePackage = 'meta::protocols::generation::java::tests::jsonParams::model',
+    javaPackage  = 'org.finos'
+  )->meta::json::toJSON();
+
+  let sources = meta::protocols::generation::java::generateProtocolClasses($config, [])
+        ->map(p | $p->meta::external::language::java::metamodel::project::allClasses()
+        ->sortBy(c | $c.simpleName)
+        ->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())));
+
+  assertEquals(5, $sources->size());
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import com.fasterxml.jackson.annotation.JsonProperty;\n'+
+                '\n'+
+                'public class SubClassA extends TopClass\n'+
+                '{\n'+
+                '    @JsonProperty("my-property")\n'+
+                '    public String myProperty;\n'+
+                '\n'+
+                '    public <T> T accept(TopClassVisitor<T> visitor)\n'+
+                '    {\n'+
+                '        return visitor.visit(this);\n'+
+                '    }\n'+
+                '}', $sources->at(0));
+
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public class SubClassB extends TopClass\n'+
+                '{\n'+
+                '    public <T> T accept(TopClassVisitor<T> visitor)\n'+
+                '    {\n'+
+                '        return visitor.visit(this);\n'+
+                '    }\n'+
+                '}', $sources->at(1));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import com.fasterxml.jackson.annotation.JsonSubTypes;\n'+
+                'import com.fasterxml.jackson.annotation.JsonTypeInfo;\n'+
+                '\n'+
+                '@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, property="_type")\n'+
+                '@JsonSubTypes({@JsonSubTypes.Type(value=org.finos.SubClassA.class, name="subClassA"), @JsonSubTypes.Type(value=org.finos.SubClassB.class, name="subB")})\n'+
+                'public abstract class TopClass\n'+
+                '{\n'+
+                '    public abstract <T> T accept(TopClassVisitor<T> visitor);\n'+
+                '}', $sources->at(2));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public interface TopClassVisitor<T>\n'+
+                '{\n'+
+                '    T visit(SubClassA val);\n'+
+                '    T visit(SubClassB val);\n'+
+                '}' , $sources->at(3));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import com.fasterxml.jackson.annotation.JsonProperty;\n'+
+                '\n'+
+                'public enum ZEnum\n'+
+                '{\n'+
+                '    @JsonProperty("my-a")\n'+
+                '    myA,\n'+
+                '\n'+
+                '    myB\n'+
+                '}', $sources->at(4));
+}
+
+function <<test.Test>> meta::protocols::generation::java::tests::jsonParams::testJsonParamsDisable():Boolean[1]
+{
+  let config = ^meta::protocols::generation::java::translation::Configuration(
+    purePackage = 'meta::protocols::generation::java::tests::jsonParams::model',
+    javaPackage  = 'org.finos',
+    json = ^meta::protocols::generation::java::translation::JSONConfiguration(generateJSONAnnotations=false)
+  )->meta::json::toJSON();
+
+  let sources = meta::protocols::generation::java::generateProtocolClasses($config, [])
+        ->map(p | $p->meta::external::language::java::metamodel::project::allClasses()
+        ->sortBy(c | $c.simpleName)
+        ->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())));
+
+  assertEquals(5, $sources->size());
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public class SubClassA extends TopClass\n'+
+                '{\n'+
+                '    public String myProperty;\n'+
+                '\n'+
+                '    public <T> T accept(TopClassVisitor<T> visitor)\n'+
+                '    {\n'+
+                '        return visitor.visit(this);\n'+
+                '    }\n'+
+                '}', $sources->at(0));
+
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public class SubClassB extends TopClass\n'+
+                '{\n'+
+                '    public <T> T accept(TopClassVisitor<T> visitor)\n'+
+                '    {\n'+
+                '        return visitor.visit(this);\n'+
+                '    }\n'+
+                '}', $sources->at(1));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public abstract class TopClass\n'+
+                '{\n'+
+                '    public abstract <T> T accept(TopClassVisitor<T> visitor);\n'+
+                '}', $sources->at(2));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public interface TopClassVisitor<T>\n'+
+                '{\n'+
+                '    T visit(SubClassA val);\n'+
+                '    T visit(SubClassB val);\n'+
+                '}' , $sources->at(3));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public enum ZEnum\n'+
+                '{\n'+
+                '    myA,\n'+
+                '    myB\n'+
+                '}', $sources->at(4));
+}
+
+function <<test.Test>> meta::protocols::generation::java::tests::jsonParams::testJsonParamsTypeKeyWord():Boolean[1]
+{
+  let config = ^meta::protocols::generation::java::translation::Configuration(
+    purePackage = 'meta::protocols::generation::java::tests::jsonParams::model',
+    javaPackage  = 'org.finos',
+    json = ^meta::protocols::generation::java::translation::JSONConfiguration(typeKeyword='@Type')
+  )->meta::json::toJSON();
+
+  let sources = meta::protocols::generation::java::generateProtocolClasses($config, [])
+        ->map(p | $p->meta::external::language::java::metamodel::project::allClasses()
+        ->sortBy(c | $c.simpleName)
+        ->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())));
+
+  assertEquals(5, $sources->size());
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import com.fasterxml.jackson.annotation.JsonProperty;\n'+
+                '\n'+
+                'public class SubClassA extends TopClass\n'+
+                '{\n'+
+                '    @JsonProperty("my-property")\n'+
+                '    public String myProperty;\n'+
+                '\n'+
+                '    public <T> T accept(TopClassVisitor<T> visitor)\n'+
+                '    {\n'+
+                '        return visitor.visit(this);\n'+
+                '    }\n'+
+                '}', $sources->at(0));
+
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public class SubClassB extends TopClass\n'+
+                '{\n'+
+                '    public <T> T accept(TopClassVisitor<T> visitor)\n'+
+                '    {\n'+
+                '        return visitor.visit(this);\n'+
+                '    }\n'+
+                '}', $sources->at(1));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import com.fasterxml.jackson.annotation.JsonSubTypes;\n'+
+                'import com.fasterxml.jackson.annotation.JsonTypeInfo;\n'+
+                '\n'+
+                '@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, property="@Type")\n'+
+                '@JsonSubTypes({@JsonSubTypes.Type(value=org.finos.SubClassA.class, name="subClassA"), @JsonSubTypes.Type(value=org.finos.SubClassB.class, name="subB")})\n'+
+                'public abstract class TopClass\n'+
+                '{\n'+
+                '    public abstract <T> T accept(TopClassVisitor<T> visitor);\n'+
+                '}', $sources->at(2));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public interface TopClassVisitor<T>\n'+
+                '{\n'+
+                '    T visit(SubClassA val);\n'+
+                '    T visit(SubClassB val);\n'+
+                '}' , $sources->at(3));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import com.fasterxml.jackson.annotation.JsonProperty;\n'+
+                '\n'+
+                'public enum ZEnum\n'+
+                '{\n'+
+                '    @JsonProperty("my-a")\n'+
+                '    myA,\n'+
+                '\n'+
+                '    myB\n'+
+                '}', $sources->at(4));
+}
+
+function <<test.Test>> meta::protocols::generation::java::tests::jsonParams::testJsonSubTypeOnTopType():Boolean[1]
+{
+  let config = ^meta::protocols::generation::java::translation::Configuration(
+    purePackage = 'meta::protocols::generation::java::tests::jsonParams::model',
+    javaPackage  = 'org.finos',
+    json = ^meta::protocols::generation::java::translation::JSONConfiguration(subTypeOnTopType=false)
+  )->meta::json::toJSON();
+
+  let sources = meta::protocols::generation::java::generateProtocolClasses($config, [])
+        ->map(p | $p->meta::external::language::java::metamodel::project::allClasses()
+        ->sortBy(c | $c.simpleName)
+        ->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())));
+
+  assertEquals(6, $sources->size());
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import com.fasterxml.jackson.annotation.JsonProperty;\n'+
+                'import com.fasterxml.jackson.annotation.JsonSubTypes;\n'+
+                '\n'+
+                '@JsonSubTypes({@JsonSubTypes.Type(value=org.finos.SubClassA.class, name="subClassA")})\n'+
+                'public class SubClassA extends TopClass\n'+
+                '{\n'+
+                '    @JsonProperty("my-property")\n'+
+                '    public String myProperty;\n'+
+                '\n'+
+                '    public <T> T accept(TopClassVisitor<T> visitor)\n'+
+                '    {\n'+
+                '        return visitor.visit(this);\n'+
+                '    }\n'+
+                '}', $sources->at(0));
+
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import com.fasterxml.jackson.annotation.JsonSubTypes;\n'+
+                '\n'+
+                '@JsonSubTypes({@JsonSubTypes.Type(value=org.finos.SubClassB.class, name="subB")})\n'+
+                'public class SubClassB extends TopClass\n'+
+                '{\n'+
+                '    public <T> T accept(TopClassVisitor<T> visitor)\n'+
+                '    {\n'+
+                '        return visitor.visit(this);\n'+
+                '    }\n'+
+                '}', $sources->at(1));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import com.fasterxml.jackson.annotation.JsonTypeInfo;\n'+
+                '\n'+
+                '@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, property="_type")\n'+
+                'public abstract class TopClass\n'+
+                '{\n'+
+                '    public abstract <T> T accept(TopClassVisitor<T> visitor);\n'+
+                '}', $sources->at(2));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public interface TopClassVisitor<T>\n'+
+                '{\n'+
+                '    T visit(SubClassA val);\n'+
+                '    T visit(SubClassB val);\n'+
+                '}' , $sources->at(3));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import com.fasterxml.jackson.annotation.JsonProperty;\n'+
+                '\n'+
+                'public enum ZEnum\n'+
+                '{\n'+
+                '    @JsonProperty("my-a")\n'+
+                '    myA,\n'+
+                '\n'+
+                '    myB\n'+
+                '}', $sources->at(4));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import com.fasterxml.jackson.databind.ObjectMapper;\n'+
+                '\n'+
+                'public class __SubTypeRegitration\n'+
+                '{\n'+
+                '    public static void registerSubTypes(ObjectMapper mapper)\n'+
+                '    {\n'+
+                '        mapper.registerSubtypes(SubClassA.class, SubClassB.class);\n'+
+                '    }\n'+
+                '}', $sources->at(5));
+}
+###Pure
+import meta::protocols::generation::java::tests::objectMethodsImpl::model::*;
+
+Class meta::protocols::generation::java::tests::objectMethodsImpl::model::ClassWithNotProperties
+{
+
+}
+
+Class meta::protocols::generation::java::tests::objectMethodsImpl::model::ClassWithPrimitiveProperties
+{
+    value : Integer[1];
+    otherValue : Integer[0..1];
+    myBoolean : Boolean[1];
+}
+
+Class meta::protocols::generation::java::tests::objectMethodsImpl::model::ClassWithCollectionPrimitiveProperties
+{
+    myBoolean : Boolean[*];
+}
+
+Class meta::protocols::generation::java::tests::objectMethodsImpl::model::ClassWithClassProperties
+{
+    maybeOther: OtherClass[0..1];
+    other : OtherClass[1];
+    others: OtherClass[*];
+}
+
+Class meta::protocols::generation::java::tests::objectMethodsImpl::model::OtherClass
+{
+    value : Integer[1];
+}
+
+Class meta::protocols::generation::java::tests::objectMethodsImpl::model::SuperType
+{
+  prop : Integer[1];
+}
+
+Class meta::protocols::generation::java::tests::objectMethodsImpl::model::SubType extends meta::protocols::generation::java::tests::objectMethodsImpl::model::SuperType
+{
+  other : String[1];
+}
+
+
+function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsImpl::testObjectMethodsImpl():Boolean[1]
+{
+  let config = ^meta::protocols::generation::java::translation::Configuration(
+    purePackage = 'meta::protocols::generation::java::tests::objectMethodsImpl::model',
+    javaPackage  = 'org.finos',
+    makeAllSuperTypesAbstract = true,
+    generateEqualsHashCodeAndToString = true
+  )->meta::json::toJSON();
+
+  let sources = meta::protocols::generation::java::generateProtocolClasses($config, [])
+        ->map(p | $p->meta::external::language::java::metamodel::project::allClasses()
+        ->sortBy(c | $c.simpleName)
+        ->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())));
+
+  assertEquals(8, $sources->size());
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import java.util.Collections;\n'+
+                'import java.util.List;\n'+
+                'import java.util.Objects;\n'+
+                '\n'+
+                'public class ClassWithClassProperties\n'+
+                '{\n'+
+                '    public OtherClass maybeOther;\n'+
+                '    public OtherClass other;\n'+
+                '    public List<OtherClass> others = Collections.<OtherClass>emptyList();\n'+
+                '\n'+
+                '    public boolean equals(Object obj)\n'+
+                '    {\n'+
+                '        if (this == obj)\n'+
+                '        {\n'+
+                '            return true;\n'+
+                '        }\n'+
+                '        if (obj == null || this.getClass() != obj.getClass())\n'+
+                '        {\n'+
+                '            return false;\n'+
+                '        }\n'+
+                '        ClassWithClassProperties that = (ClassWithClassProperties) obj;\n'+
+                '        return Objects.equals(this.others, that.others) && Objects\n'+
+                '                      .equals(this.other, that.other) && Objects\n'+
+                '                      .equals(this.maybeOther, that.maybeOther);\n'+
+                '    }\n'+
+                '\n'+
+                '    public String toString()\n'+
+                '    {\n'+
+                '        StringBuilder stringBuilder = new StringBuilder();\n'+
+                '        stringBuilder.append(String.format("maybeOther: %s,", this.maybeOther));\n'+
+                '        stringBuilder.append(String.format("other: %s,", this.other));\n'+
+                '        stringBuilder.append(String.format("others: %s,", this.others));\n'+
+                '        return String.format("%s:[%s]",\n'+
+                '                             this.getClass().getSimpleName(),\n'+
+                '                             stringBuilder.toString());\n'+
+                '    }\n'+
+                '\n'+
+                '    public int hashCode()\n'+
+                '    {\n'+
+                '        return Objects.hash(this.maybeOther, this.other, this.others);\n'+
+                '    }\n'+
+                '}' , $sources->at(0));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import java.util.Collections;\n'+
+                'import java.util.List;\n'+
+                'import java.util.Objects;\n'+
+                '\n'+
+                'public class ClassWithCollectionPrimitiveProperties\n'+
+                '{\n'+
+                '    public List<Boolean> myBoolean = Collections.<Boolean>emptyList();\n'+
+                '\n'+
+                '    public boolean equals(Object obj)\n'+
+                '    {\n'+
+                '        if (this == obj)\n'+
+                '        {\n'+
+                '            return true;\n'+
+                '        }\n'+
+                '        if (obj == null || this.getClass() != obj.getClass())\n'+
+                '        {\n'+
+                '            return false;\n'+
+                '        }\n'+
+                '        ClassWithCollectionPrimitiveProperties that = (ClassWithCollectionPrimitiveProperties) obj;\n'+
+                '        return Objects.equals(this.myBoolean, that.myBoolean);\n'+
+                '    }\n'+
+                '\n'+
+                '    public String toString()\n'+
+                '    {\n'+
+                '        StringBuilder stringBuilder = new StringBuilder();\n'+
+                '        stringBuilder.append(String.format("myBoolean: %s,", this.myBoolean));\n'+
+                '        return String.format("%s:[%s]",\n'+
+                '                             this.getClass().getSimpleName(),\n'+
+                '                             stringBuilder.toString());\n'+
+                '    }\n'+
+                '\n'+
+                '    public int hashCode()\n'+
+                '    {\n'+
+                '        return Objects.hash(this.myBoolean);\n'+
+                '    }\n'+
+                '}', $sources->at(1));
+
+  assertEquals( 'package org.finos;\n\n'+
+                'public class ClassWithNotProperties\n'+
+                '{\n'+
+                '    public boolean equals(Object obj)\n'+
+                '    {\n'+
+                '        if (this == obj)\n'+
+                '        {\n'+
+                '            return true;\n'+
+                '        }\n'+
+                '        return obj != null && this.getClass() == obj.getClass();\n'+
+                '    }\n'+
+                '\n'+
+                '    public String toString()\n'+
+                '    {\n'+
+                '        return String.format("%s", this.getClass().getSimpleName());\n'+
+                '    }\n'+
+                '\n'+
+                '    public int hashCode()\n'+
+                '    {\n'+
+                '        return ClassWithNotProperties.class.hashCode();\n'+
+                '    }\n'+
+                '}', $sources->at(2));
+
+  assertEquals( 'package org.finos;\n\n'+
+                'import java.util.Objects;\n\n'+
+                'public class ClassWithPrimitiveProperties\n'+
+                '{\n'+
+                '    public long value;\n'+
+                '    public Long otherValue;\n'+
+                '    public boolean myBoolean;\n'+
+                '\n'+
+                '    public boolean equals(Object obj)\n'+
+                '    {\n'+
+                '        if (this == obj)\n'+
+                '        {\n'+
+                '            return true;\n'+
+                '        }\n'+
+                '        if (obj == null || this.getClass() != obj.getClass())\n'+
+                '        {\n'+
+                '            return false;\n'+
+                '        }\n'+
+                '        ClassWithPrimitiveProperties that = (ClassWithPrimitiveProperties) obj;\n'+
+                '        return this.myBoolean == that\n'+
+                '                   .myBoolean && Objects\n'+
+                '                   .equals(this.otherValue, that.otherValue) && this\n'+
+                '                   .value == that\n'+
+                '                   .value;\n'+
+                '    }\n'+
+                '\n'+
+                '    public String toString()\n'+
+                '    {\n'+
+                '        StringBuilder stringBuilder = new StringBuilder();\n'+
+                '        stringBuilder.append(String.format("value: %s,", this.value));\n'+
+                '        stringBuilder.append(String.format("otherValue: %s,", this.otherValue));\n'+
+                '        stringBuilder.append(String.format("myBoolean: %s,", this.myBoolean));\n'+
+                '        return String.format("%s:[%s]",\n'+
+                '                             this.getClass().getSimpleName(),\n'+
+                '                             stringBuilder.toString());\n'+
+                '    }\n'+
+                '\n'+
+                '    public int hashCode()\n'+
+                '    {\n'+
+                '        return Objects.hash(this.value, this.otherValue, this.myBoolean);\n'+
+                '    }\n'+
+                '}', $sources->at(3));
+
+  assertEquals(
+                'package org.finos;\n'+
+                '\n'+
+                'import java.util.Objects;\n'+
+                '\n'+
+                'public class OtherClass\n'+
+                '{\n'+
+                '    public long value;\n'+
+                '\n'+
+                '    public boolean equals(Object obj)\n'+
+                '    {\n'+
+                '        if (this == obj)\n'+
+                '        {\n'+
+                '            return true;\n'+
+                '        }\n'+
+                '        if (obj == null || this.getClass() != obj.getClass())\n'+
+                '        {\n'+
+                '            return false;\n'+
+                '        }\n'+
+                '        OtherClass that = (OtherClass) obj;\n'+
+                '        return this.value == that.value;\n'+
+                '    }\n'+
+                '\n'+
+                '    public String toString()\n'+
+                '    {\n'+
+                '        StringBuilder stringBuilder = new StringBuilder();\n'+
+                '        stringBuilder.append(String.format("value: %s,", this.value));\n'+
+                '        return String.format("%s:[%s]",\n'+
+                '                             this.getClass().getSimpleName(),\n'+
+                '                             stringBuilder.toString());\n'+
+                '    }\n'+
+                '\n'+
+                '    public int hashCode()\n'+
+                '    {\n'+
+                '        return Objects.hash(this.value);\n'+
+                '    }\n'+
+                '}', $sources->at(4));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import java.util.Objects;\n'+
+                '\n'+
+                'public class SubType extends SuperType\n'+
+                '{\n'+
+                '    public String other;\n'+
+                '\n'+
+                '    public <T> T accept(SuperTypeVisitor<T> visitor)\n'+
+                '    {\n'+
+                '        return visitor.visit(this);\n'+
+                '    }\n'+
+                '\n'+
+                '    public boolean equals(Object obj)\n'+
+                '    {\n'+
+                '        if (this == obj)\n'+
+                '        {\n'+
+                '            return true;\n'+
+                '        }\n'+
+                '        if (obj == null || this.getClass() != obj.getClass())\n'+
+                '        {\n'+
+                '            return false;\n'+
+                '        }\n'+
+                '        SubType that = (SubType) obj;\n'+
+                '        return this.prop == that.prop && this.other == that.other;\n'+
+                '    }\n'+
+                '\n'+
+                '    public String toString()\n'+
+                '    {\n'+
+                '        StringBuilder stringBuilder = new StringBuilder();\n'+
+                '        stringBuilder.append(String.format("other: %s,", this.other));\n'+
+                '        stringBuilder.append(String.format("prop: %s,", this.prop));\n'+
+                '        return String.format("%s:[%s]",\n'+
+                '                             this.getClass().getSimpleName(),\n'+
+                '                             stringBuilder.toString());\n'+
+                '    }\n'+
+                '\n'+
+                '    public int hashCode()\n'+
+                '    {\n'+
+                '        return Objects.hash(this.other, this.prop);\n'+
+                '    }\n'+
+                '}', $sources->at(5));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import com.fasterxml.jackson.annotation.JsonSubTypes;\n'+
+                'import com.fasterxml.jackson.annotation.JsonTypeInfo;\n'+
+                '\n'+
+                '@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, property="_type")\n'+
+                '@JsonSubTypes({@JsonSubTypes.Type(value=org.finos.SubType.class, name="subType")})\n'+
+                'public abstract class SuperType\n'+
+                '{\n'+
+                '    public long prop;\n'+
+                '\n'+
+                '    public abstract <T> T accept(SuperTypeVisitor<T> visitor);\n'+
+                '}', $sources->at(6));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public interface SuperTypeVisitor<T>\n'+
+                '{\n'+
+                '    T visit(SubType val);\n'+
+                '}', $sources->at(7));
+}
+
+

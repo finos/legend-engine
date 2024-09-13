@@ -293,6 +293,7 @@ Class meta::protocols::generation::java::Context
   taxonomies: Taxonomy[*];
   visitorByTaxonomy : Map<Taxonomy, meta::external::language::java::metamodel::Class>[0..1];
   conventions: Conventions[1];
+  configuration : Configuration[1];
 }
 
 function meta::protocols::generation::java::generateProtocolClasses(configJson: String[1], dependenciesJson: String[*]):Project[1]
@@ -311,14 +312,17 @@ function meta::protocols::generation::java::generateProtocolClasses(configJson: 
   let context = ^Context(conventions=$conventions,
                          rootPackage=$package,
                          taxonomies = $taxonomies,
-                         visitorByTaxonomy=$visitorByTaxonomy);
+                         visitorByTaxonomy=$visitorByTaxonomy,
+                         configuration = $config);
 
   let javaClasses = $pack->map(c|generateProtocolClasses($c, $config.elementsToBeExcluded, $context));
 
   newProject()
     ->addClasses($javaClasses)
-    ->addClasses($visitorByTaxonomy->values());
+    ->addClasses($visitorByTaxonomy->values())
+    ->addClasses(generateClassSubtypeAnnotation($context));
 }
+
 
 function <<access.private>> meta::protocols::generation::java::generateProtocolClasses(
                                       elem:PackageableElement[1],
@@ -340,7 +344,19 @@ function <<access.private>> meta::protocols::generation::java::generateEnumerati
 {
   let typeAndPackages = $context.conventions.typeAndPackageNameStrategy->toOne()->eval($enum, $context.conventions);
   javaEnum('public', $typeAndPackages.first->javaPackage(), $typeAndPackages.second)
-    ->addEntries($enum->cast(@meta::pure::metamodel::type::Enumeration<Any>)->enumValues()->map(e| javaEnumEntry($context.conventions->identifier($e->cast(@Enum).name))));
+    ->addEntries(
+      $enum->cast(@meta::pure::metamodel::type::Enumeration<Any>)->enumValues()
+      ->map(e| 
+                let entry = javaEnumEntry($context.conventions->identifier($e->cast(@Enum).name));
+                let jsonName = $e->cast(@ElementWithTaggedValues)->value4Tag('name', JSON);
+                if ($jsonName->isNotEmpty() && $context.configuration.json.generateJSONAnnotations,
+                  |$entry->annotate(^meta::external::language::java::metamodel::annotations::json::JsonProperty(
+                                      value = $jsonName.value->toOne()
+                                    )),
+                  |$entry
+                );
+      )
+    );
 }
 
 function <<access.private>> meta::protocols::generation::java::generateClass(c:meta::pure::metamodel::type::Class<Any>[1], context : Context[1]):meta::external::language::java::metamodel::Class[1]
@@ -351,7 +367,7 @@ function <<access.private>> meta::protocols::generation::java::generateClass(c:m
 
   let isAbstract = $c->hasStereotype('abstract', typemodifiers)
                       // todo - fix protocols that expect these to be abstract but dont define as abstract?
-                      || ($taxonomy->isNotEmpty() && $c.specializations->isNotEmpty() && $c.generalizations.general.rawType == Any);
+                      || ($taxonomy->isNotEmpty() && $c.specializations->isNotEmpty() && ($c.generalizations.general.rawType == Any || $context.configuration.makeAllSuperTypesAbstract));
 
   let pbase = javaClass(['public']->concatenate(if($isAbstract,|'abstract',|[])), $c.typeParameters.name->map(t | $t->javaTypeVar()), $typeAndPackages.first->javaPackage(), $typeAndPackages.second)
             ->addFields(
@@ -363,7 +379,7 @@ function <<access.private>> meta::protocols::generation::java::generateClass(c:m
                         |javaField('public', $javaType, $javaName)
                       );
                       let jsonName = $p->value4Tag('name', JSON);
-                      if ($jsonName->isNotEmpty(),
+                      if ($jsonName->isNotEmpty() && $context.configuration.json.generateJSONAnnotations,
                         |$field->annotate(^meta::external::language::java::metamodel::annotations::json::JsonProperty(
                                             value = $jsonName.value->toOne()
                                          )),
@@ -372,23 +388,33 @@ function <<access.private>> meta::protocols::generation::java::generateClass(c:m
                     )
               );
 
-  let base = if (!$taxonomy->isEmpty() && $taxonomy.topClass == $c,
-    | $pbase->annotate(^meta::external::language::java::metamodel::annotations::json::JsonTypeInfo(
-                    use = ^meta::external::language::java::metamodel::annotations::json::EnumValue(value='JsonTypeInfo.Id.NAME'),
-                    property = '_type'
-                )
-            )
-            ->annotate(^meta::external::language::java::metamodel::annotations::json::JsonSubTypes(
+  let base = if (!$taxonomy->isEmpty() && $context.configuration.json.generateJSONAnnotations,
+    | let typeKeyword = if ($taxonomy.topClass == $c,
+                              |$pbase->annotate(^meta::external::language::java::metamodel::annotations::json::JsonTypeInfo(
+                                        use = ^meta::external::language::java::metamodel::annotations::json::EnumValue(value='JsonTypeInfo.Id.NAME'),
+                                        property = $context.configuration.json.typeKeyword
+                                    )),
+                              |$pbase
+                        );
+      if ([
+            pair(|$taxonomy.topClass == $c && $context.configuration.json.subTypeOnTopType,
+                 |$typeKeyword->annotate(^meta::external::language::java::metamodel::annotations::json::JsonSubTypes(
                           subTypes=[
                                 $taxonomy.children->sortBy(x | $x.name->toOne())->map(c|
-                                  let javaType = pureTypeToJavaType($context.conventions, $c, PureOne);
-                                  ^meta::external::language::java::metamodel::annotations::json::JsonSubType(
-                                      value=$javaType->cast(@meta::external::language::java::metamodel::Class)->meta::external::language::java::serialization::qualifiedClassName(),
-                                      name=$c.name->meta::pure::functions::string::toLowerFirstCharacter()->toOne());
+                                  generateClassSubtypeAnnotation($c, $context.conventions)
                                 )
                               ]
-                           )
-                     );,
+                            )
+                      )
+            ),
+            pair (|$taxonomy.topClass != $c && !$context.configuration.json.subTypeOnTopType,
+                  |$typeKeyword->annotate(^meta::external::language::java::metamodel::annotations::json::JsonSubTypes(
+                        subTypes=generateClassSubtypeAnnotation($c, $context.conventions)
+                   ))
+            )
+          ],|$typeKeyword
+        );
+    ,
     | $pbase
   );
 
@@ -399,12 +425,116 @@ function <<access.private>> meta::protocols::generation::java::generateClass(c:m
     |$base->jextends(pureTypeToJavaType($context.conventions, $superType->toOne(), PureOne))
   );
 
-  if ($taxonomy->isEmpty(),
+  let result = if ($taxonomy->isEmpty(),
     |$withExtends,
     |$withExtends->addMethod(buildAccept($base, $c, $taxonomy->toOne(), $context));
   );
+
+  if ($c.specializations->isEmpty() && $context.configuration.generateEqualsHashCodeAndToString,
+    | $result->addMethod($result->generateEquals($c, $context.conventions))
+             ->addMethod($result->generateToString($c, $context.conventions))
+             ->addMethod($result->generateHashCode($c, $context.conventions)),
+    | $result
+  );
 }
 
+function <<access.private>> meta::protocols::generation::java::generateClassSubtypeAnnotation(context : Context[1]):meta::external::language::java::metamodel::Class[0..1]
+{
+  if (!$context.configuration.json.subTypeOnTopType && $context.taxonomies->isNotEmpty(),
+    | let typeAndPackages = $context.conventions.typeAndPackageNameStrategy->toOne()->eval($context.taxonomies->at(0).topClass, $context.conventions);
+      let parameter = j_parameter(javaClass('com.fasterxml.jackson.databind.ObjectMapper'), 'mapper');
+      javaClass(['public'], [], $typeAndPackages.first->javaPackage(), '__SubTypeRegitration')
+      ->addMethod(javaMethod(['public', 'static'], javaVoid(), 'registerSubTypes', [$parameter],
+                    [
+                      j_invoke($parameter, 'registerSubtypes', $context.taxonomies.children->map(c|j_field(pureTypeToJavaType($context.conventions, $c, PureOne),'class',javaClass('java.lang.Class'))), javaVoid())
+                    ])
+      );,
+    |[]
+  )
+}
+
+function <<access.private>> meta::protocols::generation::java::generateClassSubtypeAnnotation(c:meta::pure::metamodel::type::Class<Any>[1], conventions:Conventions[1]):meta::external::language::java::metamodel::annotations::json::JsonSubType[1]
+{
+  let javaType = pureTypeToJavaType($conventions, $c, PureOne);
+  let jsonName = $c->value4Tag('name', JSON);
+  ^meta::external::language::java::metamodel::annotations::json::JsonSubType(
+      value=$javaType->cast(@meta::external::language::java::metamodel::Class)->meta::external::language::java::serialization::qualifiedClassName(),
+      name=if($jsonName->isEmpty(),|$c.name->meta::pure::functions::string::toLowerFirstCharacter()->toOne(),|$jsonName.value->toOne())
+  );
+}
+
+
+function <<access.private>> meta::protocols::generation::java::generateHashCode(base:meta::external::language::java::metamodel::Class[1], c:meta::pure::metamodel::type::Class<Any>[1], conventions:Conventions[1]):Method[1]
+{
+  let properties = $c->hierarchicalProperties();
+  let code = if ($properties->isEmpty(),
+    | j_invoke(j_field($base,'class',javaClass('java.lang.Class')), 'hashCode',[]),
+    | j_invoke(javaClass('java.util.Objects'), 'hash', $properties->map(p|j_field(j_this($base), $p.name->toOne(), javaObject())))
+  );
+javaMethod('public', javaInt(), 'hashCode', [], j_return($code));
+}
+
+function <<access.private>> meta::protocols::generation::java::generateToString(base:meta::external::language::java::metamodel::Class[1], c:meta::pure::metamodel::type::Class<Any>[1], conventions:Conventions[1]):Method[1]
+{
+  let stringBuilder = j_variable(javaClass('java.lang.StringBuilder'), 'stringBuilder');
+  let properties = $c->hierarchicalProperties();
+  let code =  if($properties->isEmpty(),
+                | j_return(j_invoke(javaClass('java.lang.String'), 'format', [j_string('%s'), j_invoke(j_invoke(j_this($base),'getClass',[]),'getSimpleName',[])])),
+                | j_declare($stringBuilder, j_new(javaClass('java.lang.StringBuilder'), []))
+                  ->concatenate(
+                    $properties->map(p |
+                        j_invoke($stringBuilder, 'append', j_invoke(javaClass('java.lang.String'), 'format', [j_string($p.name->toOne()+': %s,'), j_field(j_this($base), $p.name->toOne(), javaObject())]))
+                    )
+                  )
+                  ->concatenate(
+                        j_return
+                        (
+                              j_invoke(javaClass('java.lang.String'), 'format',
+                                [
+                                  j_string('%s:[%s]'), j_invoke(j_invoke(j_this($base),'getClass',[]),'getSimpleName',[]),
+                                  j_invoke($stringBuilder, 'toString', [])
+                                ])
+                        )
+                  )
+              );              
+  javaMethod('public', javaString(), 'toString', [], $code);
+}
+
+function <<access.private>> meta::protocols::generation::java::generateEquals(base:meta::external::language::java::metamodel::Class[1], c:meta::pure::metamodel::type::Class<Any>[1], conventions:Conventions[1]):Method[1]
+{
+  let variable = j_variable($base, 'that');
+
+  let properties = $c->hierarchicalProperties();
+
+  let parameter = j_parameter(javaObject(), 'obj');
+  let baseCode = j_if(j_eq(j_this($base), $parameter), j_return(j_true()));
+  let code = if ($properties->isEmpty(),
+    | $baseCode->concatenate(
+        j_return(j_and(j_ne($parameter, j_null()), j_eq(j_invoke(j_this($base),'getClass',[]), j_invoke($parameter,'getClass',[]))))
+      ),
+    | $baseCode->concatenate(
+        [
+          j_if(j_or(j_eq($parameter, j_null()), j_ne(j_invoke(j_this($base),'getClass',[]), j_invoke($parameter,'getClass',[]))), j_return(j_false())),
+          j_declare($variable, $parameter->j_cast($base)),
+          j_return($c->hierarchicalProperties()->fold({p,a| 
+                                                let propertyType = javaObject();//pureTypeToJavaType($conventions, $p);
+                                                let eq =if ($p->functionReturnType().rawType->isNotEmpty() && $p->functionReturnType().rawType->toOne()->instanceOf(meta::pure::metamodel::type::PrimitiveType) && $p->functionReturnMultiplicity()->isToOne(),
+                                                  |j_eq(
+                                                              j_field(j_this($base), $p.name->toOne(), $propertyType),
+                                                              j_field($variable, $p.name->toOne(), $propertyType)
+                                                        ),
+                                                  |j_invoke(javaClass('java.util.Objects'),'equals',[j_field(j_this($base), $p.name->toOne(), $propertyType), j_field($variable, $p.name->toOne(), $propertyType)])
+                                                );                                                 
+                                               if($a->isEmpty(),|$eq, |j_and($eq,$a->toOne()));},
+                                          []->cast(@Code)
+          )->toOne())
+        ]
+    )
+  );
+
+  javaMethod('public', javaBoolean(), 'equals', $parameter, $code);
+
+}
 
 function meta::protocols::generation::java::buildAccept(base:meta::external::language::java::metamodel::Class[1], c:meta::pure::metamodel::type::Class<Any>[1], taxonomy:Taxonomy[1], context:Context[1]):Method[1]
 {
@@ -428,12 +558,26 @@ import meta::protocols::generation::java::translation::*;
 import meta::protocols::generation::java::*;
 
 Class meta::protocols::generation::java::translation::Configuration
+[
+  if ($this.generateEqualsHashCodeAndToString, |$this.makeAllSuperTypesAbstract, |true)
+]
 {
   purePackage : String[1];
   javaPackage : String[1];
   elementsToBeExcluded: String[*];
+
+  makeAllSuperTypesAbstract: Boolean[1] = false;
+  generateEqualsHashCodeAndToString: Boolean[1] = false;
+
+  json : JSONConfiguration[1] = ^meta::protocols::generation::java::translation::JSONConfiguration();
 }
 
+Class meta::protocols::generation::java::translation::JSONConfiguration
+{
+  generateJSONAnnotations : Boolean[1] = true;
+  typeKeyword : String[1] = '_type';
+  subTypeOnTopType : Boolean[1] = true;
+}
 
 Class meta::protocols::generation::java::translation::Taxonomy
 {
@@ -576,6 +720,7 @@ function meta::protocols::generation::java::generateVisitor(taxonomy : Taxonomy[
                                   ->map(c| javaMethod($typeParam, 'visit', j_parameter(pureTypeToJavaType($conventions, $c, PureOne), 'val')))
   );
 }
+
 
 Profile meta::protocols::generation::java::JSON
 {

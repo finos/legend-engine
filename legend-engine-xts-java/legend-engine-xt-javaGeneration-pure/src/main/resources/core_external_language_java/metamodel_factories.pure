@@ -2487,8 +2487,8 @@ function meta::external::language::java::factory::typeForField(from:meta::extern
       | $from,
       {|
          let types = $from->apiKnowledge().fields->filter(f|$f.name == $fieldName).type->removeDuplicates();
-         assert($types->size() > 0,  |'Type not found for field ' + $fieldName + ' from ' + $from->typeToString());
-         assert($types->size() == 1, |'Type ambiguous for field ' + $fieldName + ' from ' + $from->typeToString());
+         assert($types->size() > 0,  |'Type not found for field \'' + $fieldName + '\' from ' + $from->typeToString());
+         assert($types->size() == 1, |'Type ambiguous for field \'' + $fieldName + '\' from ' + $from->typeToString());
          assert(!$types->at(0)->instanceOf(meta::external::language::java::metamodel::TypeVariable), |'Type unresolved for field ' + $fieldName + ' from ' + $from->typeToString());
          $types->toOne();
       }
@@ -3193,6 +3193,7 @@ function <<access.private>> meta::external::language::java::factory::smartJavaLa
            ->addMethodIfMissing(javaMethod(javaInt(),     'compareTo',        [javaParam(javaString(), 'x')]))
            ->addMethodIfMissing(javaMethod(javaBoolean(), 'endsWith',         [javaParam(javaString(), 'x')]))
            ->addMethodIfMissing(javaMethod(javaBoolean(), 'equalsIgnoreCase', [javaParam(javaString(), 'x')]))
+           ->addMethodIfMissing(javaMethod(javaString(),  'format',           [javaParam(javaString(), 'format'), javaParam(javaArray(javaObject()), 'args')]))
            ->addMethodIfMissing(javaMethod(javaArray(javaByte()), 'getBytes', []))
            ->addMethodIfMissing(javaMethod(javaInt(),     'indexOf',          [javaParam(javaString(), 'x')]))
            ->addMethodIfMissing(javaMethod(javaInt(),     'length',           []))
@@ -3375,6 +3376,7 @@ function <<access.private>> meta::external::language::java::factory::addObjectMe
    $in->addMethodIfMissing(javaMethod(javaClass('java.lang.Class'), 'getClass', [])->nonNull())
       ->addMethodIfMissing(javaMethod(javaString(),                 'toString', [])->nonNull())
       ->addMethodIfMissing(javaMethod(javaInt(),                    'hashCode', []))
+      ->addMethodIfMissing(javaMethod(javaInt(),                    'hash',   javaParam(javaArray(javaObject()), 'values')))
       ->addMethodIfMissing(javaMethod(javaBoolean(),                'equals', javaParam(javaObject(), 'o')));
 }
 

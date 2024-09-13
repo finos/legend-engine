@@ -268,11 +268,12 @@ function <<access.protected>> meta::json::findClasses(json:JSONObject[1], class:
                      | $jsonProperties->filter(kv | !$kv.key.value->equal($config.typeKeyName)))
       ->map(kv | $kv.key->extractSupportedPropertyName());
 
+
    let foundClasses = $classes->filter(c |
 
       let classProperties = $c->classProperties();
       let classRequiredProperties = $classProperties
-                                       ->filter(p | $p.multiplicity->hasLowerBound() && $p.multiplicity->getLowerBound() == 1)
+                                       ->filter(p | $p.defaultValue->isEmpty() && $p.multiplicity->hasLowerBound() && $p.multiplicity->getLowerBound() == 1)
                                        ->filter(p | !$p->in($ignorable));
 
       let allRequiredArePresent = $jsonPropertyNames->containsAll($classRequiredProperties.name);
