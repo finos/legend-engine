@@ -109,6 +109,7 @@ public class PostgresServerTest
 
     /**
      * Verify that schema created as part of the metadata H2 DB creation exits
+     *
      * @throws SQLException on errors
      */
     @Test
@@ -167,6 +168,20 @@ public class PostgresServerTest
                 rows++;
             }
             Assert.assertEquals(4, rows);
+        }
+    }
+
+    @Test
+    public void testAutoCommitOff() throws SQLException
+    {
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+
+        )
+        {
+            connection.setAutoCommit(false);
+            Assert.assertFalse(connection.getAutoCommit());
         }
     }
 
