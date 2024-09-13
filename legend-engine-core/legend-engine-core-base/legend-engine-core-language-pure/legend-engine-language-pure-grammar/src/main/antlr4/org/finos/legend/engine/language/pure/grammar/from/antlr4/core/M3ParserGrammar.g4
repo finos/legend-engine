@@ -12,15 +12,18 @@ identifier:                                     VALID_STRING | STRING
 
 // -------------------------------------- EXPRESSION & VALUE SPECIFICATION --------------------------------------
 
+nonArrowOrEqualExpression :
+                                                (
+                                                    atomicExpression
+                                                    | notExpression
+                                                    | signedExpression
+                                                    | expressionsArray
+                                                    | (PAREN_OPEN combinedExpression PAREN_CLOSE)
+                                                )
+;
+
 expression:                                     (
-                                                    (
-                                                        sliceExpression
-                                                        | atomicExpression
-                                                        | notExpression
-                                                        | signedExpression
-                                                        | expressionsArray
-                                                        | (PAREN_OPEN combinedExpression PAREN_CLOSE)
-                                                    )
+                                                    nonArrowOrEqualExpression
                                                     (
                                                         (propertyOrFunctionExpression)*
                                                         (equalNotEqual)?
@@ -150,8 +153,6 @@ expressionInstanceAtomicRightSide:              combinedExpression | expressionI
 ;
 expressionInstanceParserPropertyAssignment:     identifier (DOT identifier)* PLUS? EQUAL expressionInstanceRightSide
 ;
-sliceExpression:                                BRACKET_OPEN ( (COLON expression) | (expression COLON expression) |  (expression COLON expression COLON expression) ) BRACKET_CLOSE
-;
 notExpression:                                  NOT expression
 ;
 signedExpression:                               (MINUS | PLUS) expression
@@ -187,7 +188,7 @@ arithmeticPart:                                 (
                                                     | (GREATER_OR_EQUAL expression)
                                                 )
 ;
-booleanPart:                                    (AND expression) | (OR  expression) | equalNotEqual
+booleanPart:                                    (AND expression) | (OR  expression)
 ;
 functionVariableExpression:                     identifier COLON type multiplicity
 ;
@@ -208,7 +209,15 @@ type:                                           (qualifiedName (LESS_THAN typeAr
                                                     BRACE_CLOSE
                                                 )
                                                 |
+                                                (
+                                                    PAREN_OPEN
+                                                        columnType (COMMA columnType)*
+                                                    PAREN_CLOSE
+                                                )
+                                                |
                                                 unitName
+;
+columnType:                                     identifier COLON identifier
 ;
 functionTypePureType:                           type multiplicity
 ;

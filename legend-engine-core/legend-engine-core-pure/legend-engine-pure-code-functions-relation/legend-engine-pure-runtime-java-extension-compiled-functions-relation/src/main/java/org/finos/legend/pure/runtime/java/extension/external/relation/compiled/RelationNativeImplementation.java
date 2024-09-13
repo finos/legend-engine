@@ -27,8 +27,11 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.set.primitive.MutableIntSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.set.mutable.primitive.IntHashSet;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
@@ -36,17 +39,13 @@ import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.CompiledSupport;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.SharedPureFunction;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.CompiledPrimitiveBuilder;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.NullRowContainer;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.RowContainer;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.TDSContainer;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.TestTDSCompiled;
-import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window;
+import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.*;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.ColumnValue;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Frame;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortInfo;
-import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window;
 
 import java.util.Objects;
 
@@ -366,11 +365,18 @@ public class RelationNativeImplementation
     public static class AggColSpecTrans1 extends AggColSpecTrans
     {
         public SharedPureFunction map;
+        public AggColSpec<?, ?, ?> aggColSpec = null;
 
         public AggColSpecTrans1(String newColName, SharedPureFunction map, Function2 reduce, String reduceType)
         {
             super(newColName, reduce, reduceType);
             this.map = map;
+        }
+
+        public AggColSpecTrans1(String newColName, SharedPureFunction map, Function2 reduce, String reduceType, AggColSpec<?, ?, ?> aggColSpec)
+        {
+            this(newColName, map, reduce, reduceType);
+            this.aggColSpec = aggColSpec;
         }
 
         @Override
@@ -419,6 +425,84 @@ public class RelationNativeImplementation
         TestTDS distinctTDS = sortRes.getOne()._distinct(sortRes.getTwo()).removeColumns(columnsToRemove);
 
         return new TDSContainer((TestTDSCompiled) aggregateTDS(null, sortRes, aggColSpecTransAll, true, es).injectInto(distinctTDS, TestTDS::addColumn), ps);
+    }
+
+    public static <T> Relation<? extends Object> pivot(Relation<? extends T> rel, ColSpec<?> pivotCols, MutableList<AggColSpecTrans1> aggColSpecTrans, ExecutionSupport es)
+    {
+        return pivot(rel, Lists.mutable.with(pivotCols._name()), aggColSpecTrans, es);
+    }
+
+    public static <T> Relation<? extends Object> pivot(Relation<? extends T> rel, ColSpecArray<?> pivotCols, MutableList<AggColSpecTrans1> aggColSpecTransAll, ExecutionSupport es)
+    {
+        return pivot(rel, Lists.mutable.withAll(pivotCols._names()), aggColSpecTransAll, es);
+    }
+
+    private static <T> Relation<? extends Object> pivot(Relation<? extends T> rel, MutableList<String> pivotCols, MutableList<AggColSpecTrans1> aggColSpecTransAll, ExecutionSupport es)
+    {
+        ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
+        TestTDSCompiled tds = RelationNativeImplementation.getTDS(rel);
+
+        // TODO: right now we make assumption that the map expression is really simple so we can safely extract the column(s)
+        // used for aggregation, we make sure these column(s) are not part of the groupBy calculation
+        ListIterable<String> columnsUsedInAggregation = aggColSpecTransAll.collect(col ->
+        {
+            try
+            {
+                ValueSpecification lambda = ((LambdaFunction<?>) col.aggColSpec._map())._expressionSequence().getFirst();
+                if (lambda instanceof SimpleFunctionExpression && ((SimpleFunctionExpression) lambda)._func() instanceof Column)
+                {
+                    return ((SimpleFunctionExpression) lambda)._func()._name();
+                }
+                return null;
+            }
+            catch (Exception e)
+            {
+                // do nothing, the shape is not as expected, we will try to inspect no further
+                return null;
+            }
+        }).select(Objects::nonNull);
+
+        // these are the columns not being aggregated on, which will be used for groupBy calculation before transposing
+        ListIterable<String> groupByColumns = tds.getColumnNames().reject(c -> columnsUsedInAggregation.anySatisfy(a -> a.equals(c)) || pivotCols.anySatisfy(a -> a.equals(c))).withAll(pivotCols);
+
+        // create the big group-by table by processing all aggregations
+        Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sorted = tds.sort(groupByColumns.collect(c -> new SortInfo(c, SortDirection.ASC)));
+        TestTDSCompiled temp = (TestTDSCompiled) sorted.getOne()._distinct(sorted.getTwo());
+        temp = aggColSpecTransAll.injectInto(temp, (existing, aggColSpecTrans) ->
+        {
+            int size = sorted.getTwo().size();
+            switch (aggColSpecTrans.reduceType)
+            {
+                case "String":
+                {
+                    String[] finalRes = new String[size];
+                    performMapReduce(null, aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (o, j) -> finalRes[j] = (String) o, true);
+                    existing.addColumn(aggColSpecTrans.newColName, DataType.STRING, finalRes);
+                    break;
+                }
+                case "Integer":
+                {
+                    int[] finalResInt = new int[size];
+                    performMapReduce(null, aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (o, j) -> finalResInt[j] = (int) (long) o, true);
+                    existing.addColumn(aggColSpecTrans.newColName, DataType.INT, finalResInt);
+                    break;
+                }
+                case "Float":
+                {
+                    double[] finalResDouble = new double[size];
+                    performMapReduce(null, aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (o, j) -> finalResDouble[j] = (double) o, true);
+                    existing.addColumn(aggColSpecTrans.newColName, DataType.FLOAT, finalResDouble);
+                    break;
+                }
+            }
+
+            return existing;
+        });
+
+        // transposing the table to complete pivoting
+        TestTDSCompiled result = (TestTDSCompiled) temp.applyPivot(groupByColumns.reject(pivotCols::contains), pivotCols, aggColSpecTransAll.collect(col -> col.newColName));
+
+        return new TDSContainer(result, ps);
     }
 
     private static MutableList<ColumnValue> aggregateTDS(Window window, Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes, MutableList<? extends AggColSpecTrans> aggColSpecTransAll, boolean compress, ExecutionSupport es)

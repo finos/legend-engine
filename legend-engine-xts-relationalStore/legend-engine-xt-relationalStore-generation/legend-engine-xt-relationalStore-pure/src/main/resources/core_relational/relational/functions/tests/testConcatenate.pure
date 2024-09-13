@@ -195,6 +195,21 @@ function <<test.Test>> meta::relational::tests::projection::function::concatenat
    assertSameSQL('select "root".ID as "simple", "unionalias_0"."id_plus_TRADEID_18" as "Concatenated" from CONCATENATE.TRADE as "root" left outer join (select "trade_1".ID as "id_plus_TRADEID_18", "trade_1".ID as ID from CONCATENATE.TRADE as "trade_1" UNION ALL select ("trade_1".ID + 18) as "id_plus_TRADEID_18", "trade_1".ID as ID from CONCATENATE.TRADE as "trade_1") as "unionalias_0" on ("root".ID = "unionalias_0".ID)', $result);
 }
 
+function <<test.Test>> meta::relational::tests::query::function::concatenate::testConcatenateWithPostFilteredGroupBy():Boolean[1]
+{
+  let func= {|meta::relational::tests::model::simple::Person.all() -> project([col(p|$p.firstName,'firstName') , col(p|$p.lastName,'lastName'),col(p|$p.age,'age')])->groupBy(['firstName'], [agg('count',r|$r.getString('firstName'), c|$c->size())]) ->filter(p|$p.getString('firstName')->in(['John', 'Peter'])) 
+  -> concatenate(meta::relational::tests::model::simple::Person.all() -> project([col(p|$p.firstName,'firstName') ,col(p|$p.lastName,'lastName'),col(p|$p.age,'age')]) ->groupBy(['firstName'], [agg('count',r|$r.getString('firstName'), c|$c->size())]) ->filter(p|$p.getString('firstName')->in(['John', 'Peter'])) )};
+   let result = execute($func, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSameSQL('select "unionalias_0"."firstName" as "firstName", "unionalias_0"."count" as "count" from (select "root".FIRSTNAME as "firstName", count("root".FIRSTNAME) as "count" from personTable as "root" group by "firstName" having "root".FIRSTNAME in (\'John\', \'Peter\') UNION ALL select "root".FIRSTNAME as "firstName", count("root".FIRSTNAME) as "count" from personTable as "root" group by "firstName" having "root".FIRSTNAME in (\'John\', \'Peter\')) as "unionalias_0"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::function::concatenate::testConcatenateWithPreFilteredGroupBy():Boolean[1]
+{
+  let func= {|meta::relational::tests::model::simple::Person.all() -> project([col(p|$p.firstName,'firstName') , col(p|$p.lastName,'lastName'),col(p|$p.age,'age')]) -> filter(p|$p.getString('firstName')->in(['John', 'Peter'])) ->groupBy(['firstName'], [agg('count',r|$r.getString('firstName'), c|$c->size())]) 
+  -> concatenate(meta::relational::tests::model::simple::Person.all() -> project([col(p|$p.firstName,'firstName') ,col(p|$p.lastName,'lastName'),col(p|$p.age,'age')]) -> filter(p|$p.getString('firstName')->in(['John', 'Peter']))  ->groupBy(['firstName'], [agg('count',r|$r.getString('firstName'), c|$c->size())]))};
+   let result = execute($func, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSameSQL('select "unionalias_0"."firstName" as "firstName", "unionalias_0"."count" as "count" from (select "root".FIRSTNAME as "firstName", count("root".FIRSTNAME) as "count" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\') group by "firstName" UNION ALL select "root".FIRSTNAME as "firstName", count("root".FIRSTNAME) as "count" from personTable as "root" where "root".FIRSTNAME in (\'John\', \'Peter\') group by "firstName") as "unionalias_0"', $result->sqlRemoveFormatting());
+}
 
 function <<test.BeforePackage>> meta::relational::tests::projection::function::concatenate::setUp():Boolean[1]
 {

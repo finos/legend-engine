@@ -1,0 +1,92 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import test::*;
+
+Class test::AllPrimitiveProperties
+{
+    stringType: String[1];
+    integerType: Integer[1];
+    floatType: Float[1];
+    booleanType: Boolean[1];
+    dateType: Date[1];
+    strictDateType: StrictDate[1];
+    dateTimeType: DateTime[1];
+    decimalType: Decimal[1];
+}
+
+Class test::IncludeMapProperty
+{
+    stringType: String[0..1];
+    integerType: Integer[0..1];
+    floatType: Float[0..1];
+    booleanType: Boolean[0..1];
+    dateType: Date[0..1];
+    strictDateType: StrictDate[0..1];
+    dateTimeType: DateTime[0..1];
+    mapType: Map<String,Any>[1];
+}
+
+Class test::OuterClass
+{
+    nestedClassProperty: WithEnumProperty[1];
+}
+
+Class test::WithEnumProperty
+{
+    simple: Integer[*];
+    enumProperty: SomeEnum[0..1];
+}
+
+Enum test::SomeEnum
+{
+    M, I, C, H, A, L
+}
+
+// Test Association Serialization
+
+Class test::Class1
+{
+    prop: Integer[*];
+}
+
+Class test::Class2
+{
+    str: String[0..1];
+}
+
+Association test::Class1_Class2
+{
+    c1: Class1[1];
+    c2: Class2[1];
+}
+
+//Test explicit cycle not from association where C0--C1--C2--C0
+
+Class test::C0
+{
+    simple: Boolean[1];
+    c1: C1[1];
+}
+
+Class test::C1
+{
+    p: Integer[1];
+    c2: C2[1];
+}
+
+Class test::C2
+{
+    circular: C0[1];
+}

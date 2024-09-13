@@ -24,6 +24,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relationa
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializerWithTransformersApplied;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
@@ -95,7 +96,7 @@ public class DataCubeCache implements Command
 
             try
             {
-                executeCode(expression, this.client, (Result res, PureModelContextData pmcd, PureModel pureModel) ->
+                executeCode(expression, this.client, (Result res, PureModelContextData pmcd, PureModel pureModel, SingleExecutionPlan plan) ->
                 {
                     if (res instanceof RelationalResult)
                     {

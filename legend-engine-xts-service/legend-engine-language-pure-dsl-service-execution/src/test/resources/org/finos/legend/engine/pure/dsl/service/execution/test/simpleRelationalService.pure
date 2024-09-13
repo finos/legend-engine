@@ -296,7 +296,7 @@ Runtime test::Runtime
         {
           store: test::DB2;
           type: H2;
-          timezone:+1000;
+          timezone: 'Pacific/Guam';
           specification: LocalH2
           {
             testDataSetupCSV: 'default\nemploymentTable\nEMP_ID,FIRSTNAME,LASTNAME,EMPLOYMENT_DATETIME\n1,Peter,Smith,2012-05-20T13:10:52.501\n2,John,Johnson,2005-03-15T18:47:52\n3,Bob,Stevens,\n---';

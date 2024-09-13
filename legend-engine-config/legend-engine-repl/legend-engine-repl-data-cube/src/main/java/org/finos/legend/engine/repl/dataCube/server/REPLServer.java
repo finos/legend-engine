@@ -14,21 +14,18 @@
 
 package org.finos.legend.engine.repl.dataCube.server;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.Filter;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpServer;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Maps;
-import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.dataCube.server.handler.DataCubeInfrastructure;
 import org.finos.legend.engine.repl.dataCube.server.handler.DataCubeQueryBuilder;
 import org.finos.legend.engine.repl.dataCube.server.handler.DataCubeQueryExecutor;
 import org.finos.legend.engine.repl.shared.ExecutionHelper;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -37,8 +34,6 @@ import static org.finos.legend.engine.repl.dataCube.server.REPLServerHelpers.DEV
 
 public class REPLServer
 {
-    private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
-    private static final PlanExecutor planExecutor = PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build();
     private final Client client;
     private final REPLServerHelpers.REPLServerState state;
 
@@ -49,7 +44,7 @@ public class REPLServer
     public REPLServer(Client client)
     {
         this.client = client;
-        this.state = new REPLServerHelpers.REPLServerState(client, objectMapper, planExecutor, client.getLegendInterface());
+        this.state = new REPLServerHelpers.REPLServerState(client, client.getObjectMapper(), client.getPlanExecutor(), client.getLegendInterface());
     }
 
     public void initializeStateWithREPLExecutedQuery(ExecutionHelper.ExecuteResultSummary executeResultSummary)
@@ -91,6 +86,7 @@ public class REPLServer
                 .withKeyValue("/api/dataCube/getQueryCode/batch", new DataCubeQueryBuilder.GetQueryCodeBatch())
                 .withKeyValue("/api/dataCube/getBaseQuery", new DataCubeQueryBuilder.GetBaseQuery())
                 .withKeyValue("/api/dataCube/getRelationReturnType", new DataCubeQueryBuilder.GetRelationReturnType())
+                .withKeyValue("/api/dataCube/getRelationReturnType/code", new DataCubeQueryBuilder.GetQueryCodeRelationReturnType())
                 .withKeyValue("/api/dataCube/executeQuery", new DataCubeQueryExecutor.ExecuteQuery())
                 .keyValuesView().collect(config -> server.createContext(config.getOne(), config.getTwo().getHandler(this.state))).toList();
 

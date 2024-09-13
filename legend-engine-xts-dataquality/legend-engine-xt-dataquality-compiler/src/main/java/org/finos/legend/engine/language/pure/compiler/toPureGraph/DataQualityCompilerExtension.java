@@ -27,6 +27,7 @@ import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityRootGra
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataSpaceDataQualityExecutionContext;
 import org.finos.legend.engine.protocol.dataquality.metamodel.MappingAndRuntimeDataQualityExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
@@ -62,7 +63,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class DataQualityCompilerExtension implements CompilerExtension
 {
@@ -72,8 +72,6 @@ public class DataQualityCompilerExtension implements CompilerExtension
     {
         return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "DataQualityValidation");
     }
-
-    static final ConcurrentHashMap<String, Root_meta_external_dataquality_DataQuality<Object>> dataQualityIndex = new ConcurrentHashMap<>();
 
     @Override
     public CompilerExtension build()
@@ -87,7 +85,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
         return Lists.fixedSize.of(
                 Processor.newProcessor(
                         DataQuality.class,
-                        org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class.class),
+                        org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class.class, DataSpace.class),
                         (dataquality, compileContext) ->
                         {
                             Root_meta_external_dataquality_DataQuality_Impl<Object> metamodel = new Root_meta_external_dataquality_DataQuality_Impl<>(
@@ -95,7 +93,6 @@ public class DataQualityCompilerExtension implements CompilerExtension
                                     SourceInformationHelper.toM3SourceInformation(dataquality.sourceInformation),
                                     compileContext.pureModel.getClass("meta::external::dataquality::DataQuality")
                             );
-                            dataQualityIndex.put(compileContext.pureModel.buildPackageString(dataquality._package, dataquality.name), metamodel);
                             return metamodel;
                         },
                         (dataquality, compileContext) ->
@@ -112,7 +109,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
                         },
                         (dataquality, compileContext) ->
                         {
-                            Root_meta_external_dataquality_DataQuality<Object> metamodel = dataQualityIndex.get(compileContext.pureModel.buildPackageString(dataquality._package, dataquality.name));
+                            Root_meta_external_dataquality_DataQuality<Object> metamodel = (Root_meta_external_dataquality_DataQuality<Object>) compileContext.pureModel.getPackageableElement(compileContext.pureModel.buildPackageString(dataquality._package, dataquality.name));
                             metamodel._context(buildDataQualityExecutionContext(dataquality, compileContext))
                                     ._filter(getFilterLambda(dataquality, compileContext))
                                     ._validationTree(buildRootGraphFetchTree(dataquality.dataQualityRootGraphFetchTree, compileContext, compileContext.pureModel.getClass(dataquality.dataQualityRootGraphFetchTree._class), null, new ProcessingContext("DataQuality")));

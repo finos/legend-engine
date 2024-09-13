@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-repl</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.54.2-SNAPSHOT</version>
+        <version>4.56.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -84,6 +84,30 @@
             <scope>runtime</scope>
         </dependency>
         <!-- Relational -->
+
+        <!-- PCT -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-duckdb-PCT</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-h2-PCT</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-postgres-PCT</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-snowflake-PCT</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- PCT -->
 
         <dependency>
             <groupId>com.h2database</groupId>

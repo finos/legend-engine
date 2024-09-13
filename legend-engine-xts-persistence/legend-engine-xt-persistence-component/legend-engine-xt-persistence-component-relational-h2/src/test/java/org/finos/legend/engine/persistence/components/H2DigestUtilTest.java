@@ -21,12 +21,11 @@ import org.junit.jupiter.api.Test;
 public class H2DigestUtilTest
 {
     private String expectedDigest = "fd40b241c6d2eb55348e3bc51e81925b";
-    private String[] columns = new String[]{"COLUMN_1", "COLUMN_2", "COLUMN_3", "COLUMN_4", "COLUMN_5", "COLUMN_6"};
-    private String[] values = new String[]{"test data", "true", "33", "1111", "1.5", null};
+    private String[] columns = new String[]{"COLUMN_1", "test data", "COLUMN_2", "true", "COLUMN_3", "33", "COLUMN_4", "1111", "COLUMN_5", "1.5", "COLUMN_6", null};
 
     @Test
     void testMD5()
     {
-        Assertions.assertEquals(expectedDigest, H2DigestUtil.MD5(columns, values));
+        Assertions.assertEquals(expectedDigest, H2DigestUtil.MD5(columns));
     }
 }

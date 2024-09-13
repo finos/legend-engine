@@ -147,3 +147,13 @@ function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::ba
       meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
     assertEquals('select cast(to_base64(`root`.alphaNumericString) as char) as `res1`, cast(from_base64(cast(to_base64(`root`.alphaNumericString) as char)) as char) as `res2` from dataTable as `root`', $s);
 }
+
+
+
+function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::convertTZ::testConvertTZ():Boolean[1]
+{
+    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertTimeZone,s|$s.dateTime->convertTimeZone('EST','yyyy-MM-ddTHH:mm:ss.SSS')], ['tzm','tzQuery']),
+                                                testMapping,
+                                                meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
+    assertEquals('select TO_CHAR(CONVERT_TZ(`root`.dateTime,\'GMT\',\'EST\'),\'YYYY-MM-DD HH24:MI:SS\') as `tzm`, TO_CHAR(CONVERT_TZ(`root`.dateTime,\'GMT\',\'EST\'),\'YYYY-MM-DDTHH24:MI:SS.FF3\') as `tzQuery` from dataTable as `root`',$s);
+}

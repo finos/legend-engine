@@ -29,6 +29,7 @@ import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.builder.tds.TDSBuilder;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
@@ -43,6 +44,7 @@ import org.finos.legend.engine.repl.dataCube.server.model.DataCubeQueryColumn;
 import org.finos.legend.engine.repl.dataCube.server.model.DataCubeQuerySourceREPLExecutedQuery;
 import org.finos.legend.engine.repl.shared.ExecutionHelper;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
+import org.finos.legend.pure.m3.navigation.M3Paths;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -123,11 +125,13 @@ public class REPLServerHelpers
             // process source
             DataCubeQuerySourceREPLExecutedQuery source = new DataCubeQuerySourceREPLExecutedQuery();
             source.columns = columns;
+
             // try to extract the runtime for the query
             // remove any usage of multiple from(), only add one to the end
             // TODO: we might need to account for other variants of ->from(), such as when mapping is specified
             Function function = (Function) ListIterate.select(pureModelContextData.getElements(), e -> e.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)).getFirst();
             String runtime = null;
+            String mapping = null;
             Deque<AppliedFunction> fns = new LinkedList<>();
             ValueSpecification currentExpression = function.body.get(0);
             while (currentExpression instanceof AppliedFunction)
@@ -135,13 +139,26 @@ public class REPLServerHelpers
                 AppliedFunction fn = (AppliedFunction) currentExpression;
                 if (fn.function.equals("from"))
                 {
-                    String newRuntime = ((PackageableElementPtr) fn.parameters.get(1)).fullPath;
-                    if (runtime != null && !runtime.equals(newRuntime))
+                    if (fn.parameters.size() == 2)
                     {
-                        throw new RuntimeException("Can't initialize DataCube. Source query contains multiple different ->from(), only one is expected");
+                        // TODO: verify the type of the element (i.e. Runtime)
+                        String newRuntime = ((PackageableElementPtr) fn.parameters.get(1)).fullPath;
+                        if (runtime != null && !runtime.equals(newRuntime))
+                        {
+                            throw new RuntimeException("Can't initialize DataCube. Source query contains multiple different ->from(), only one is expected");
+                        }
+                        runtime = newRuntime;
                     }
-                    else
+                    else if (fn.parameters.size() == 3)
                     {
+                        // TODO: verify the type of the element (i.e. Mapping & Runtime)
+                        String newMapping = ((PackageableElementPtr) fn.parameters.get(1)).fullPath;
+                        String newRuntime = ((PackageableElementPtr) fn.parameters.get(2)).fullPath;
+                        if ((mapping != null && !mapping.equals(newMapping)) || (runtime != null && !runtime.equals(newRuntime)))
+                        {
+                            throw new RuntimeException("Can't initialize DataCube. Source query contains multiple different ->from(), only one is expected");
+                        }
+                        mapping = newMapping;
                         runtime = newRuntime;
                     }
                 }
@@ -160,6 +177,7 @@ public class REPLServerHelpers
             this.query.partialQuery = "";
             source.query = currentExpression.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build());
             source.runtime = runtime;
+            source.mapping = mapping;
             this.query.source = source;
 
             // build the partial query
@@ -179,7 +197,7 @@ public class REPLServerHelpers
             // build the full query
             AppliedFunction fullFn = new AppliedFunction();
             fullFn.function = "from";
-            fullFn.parameters = Lists.mutable.with(partialFn, new PackageableElementPtr(runtime));
+            fullFn.parameters = mapping != null ? Lists.mutable.with(partialFn, new PackageableElementPtr(mapping), new PackageableElementPtr(runtime)) : Lists.mutable.with(partialFn, new PackageableElementPtr(runtime));
             partialFn.parameters = Lists.mutable.with(currentExpression).withAll(partialFn.parameters);
             this.query.query = fullFn.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build());
         }
@@ -214,6 +232,24 @@ public class REPLServerHelpers
             catch (Exception e)
             {
                 throw new RuntimeException("Can't initialize DataCube: last executed query must return a relation type, try a different query...");
+            }
+
+            boolean isDynamic = false;
+            try
+            {
+                SQLExecutionNode sqlExecutionNode = ((SQLExecutionNode) executeResultSummary.plan.rootExecutionNode.executionNodes.get(0));
+                if (sqlExecutionNode.isResultColumnsDynamic != null)
+                {
+                    isDynamic = sqlExecutionNode.isResultColumnsDynamic;
+                }
+            }
+            catch (Exception e)
+            {
+                // do nothing
+            }
+            if (isDynamic)
+            {
+                throw new RuntimeException("Can't initialize DataCube: last executed query produced dynamic result, try casting the result with cast(@" + M3Paths.Relation + "<(...)>) syntax or use 'cache' command to dump the data out to a table and query against that table instead...");
             }
 
             RelationalResult result = (RelationalResult) executeResultSummary.result;

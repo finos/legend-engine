@@ -37,6 +37,17 @@ public class Test_Relational_Postgres_RelationFunctions_PCT extends PCTReportCon
     private static final Adapter adapter = CoreExternalTestConnectionCodeRepositoryProvider.postgresAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
+            // Pivot
+            pack("meta::pure::functions::relation::tests::pivot", "\"pivot is not supported\""),
+            one("meta::pure::functions::relation::tests::composition::test_Pivot_Filter_Function_1__Boolean_1_", "\"pivot is not supported\""),
+            one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit_Function_1__Boolean_1_", "\"pivot is not supported\""),
+
+            // BUG: unsupported compositions
+            one("meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy_Filter_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: column \"subselect.newCol\" must appear in the GROUP BY clause or be used in an aggregate function"),
+            one("meta::pure::functions::relation::tests::composition::test_GroupBy_Distinct_Filter_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: missing FROM-clause entry for table \"restrict__d#2\""),
+            one("meta::pure::functions::relation::tests::composition::test_GroupBy_Filter_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: column \"subselect.newCol\" must appear in the GROUP BY clause or be used in an aggregate function"),
+
+            // BUG: Column name with special characters is not properly escaped
             one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "Error while executing: Create Table leSchema.")
     );
 

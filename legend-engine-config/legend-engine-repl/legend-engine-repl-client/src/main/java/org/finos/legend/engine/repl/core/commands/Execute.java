@@ -20,6 +20,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.repl.autocomplete.CompletionResult;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
@@ -82,19 +83,19 @@ public class Execute implements Command
 
     public String execute(String txt)
     {
-        return executeCode(txt, this.client, (Result res, PureModelContextData pmcd, PureModel pureModel) ->
+        return executeCode(txt, this.client, (Result res, PureModelContextData pmcd, PureModel pureModel, SingleExecutionPlan plan) ->
         {
             // Show result
             if (res instanceof ConstantResult)
             {
-                return new ExecutionHelper.ExecuteResultSummary(pmcd, pureModel, res, ((ConstantResult) res).getValue().toString());
+                return new ExecutionHelper.ExecuteResultSummary(pmcd, pureModel, plan, res, ((ConstantResult) res).getValue().toString());
             }
             else
             {
                 ReplExtension extension = this.client.getReplExtensions().detect(x -> x.supports(res));
                 if (extension != null)
                 {
-                    return new ExecutionHelper.ExecuteResultSummary(pmcd, pureModel, res, extension.print(res));
+                    return new ExecutionHelper.ExecuteResultSummary(pmcd, pureModel, plan, res, extension.print(res));
                 }
                 else
                 {

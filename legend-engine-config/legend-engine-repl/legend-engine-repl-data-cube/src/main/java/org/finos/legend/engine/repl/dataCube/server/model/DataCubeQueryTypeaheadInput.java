@@ -14,8 +14,10 @@
 
 package org.finos.legend.engine.repl.dataCube.server.model;
 
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+
 public class DataCubeQueryTypeaheadInput
 {
     public String code;
-    public Boolean isPartial;
+    public ValueSpecification baseQuery;
 }

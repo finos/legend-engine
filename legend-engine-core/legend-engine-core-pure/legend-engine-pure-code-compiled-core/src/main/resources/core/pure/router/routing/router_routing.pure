@@ -924,7 +924,8 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     sort_T_m__T_m_,
     sort_T_m__Function_$0_1$__T_m_,
     sortBy_T_m__Function_$0_1$__T_m_,
-    sort_T_m__Function_$0_1$__Function_$0_1$__T_m_
+    sort_T_m__Function_$0_1$__Function_$0_1$__T_m_,
+    meta::pure::functions::date::convertTimeZone_DateTime_1__String_1__String_1__String_1_
   ]->concatenate($extensions.routerExtensions().shouldStopRouting)
 }
 

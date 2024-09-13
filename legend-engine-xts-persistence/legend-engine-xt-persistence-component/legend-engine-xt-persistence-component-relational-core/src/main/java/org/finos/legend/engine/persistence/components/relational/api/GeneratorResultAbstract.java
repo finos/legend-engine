@@ -48,7 +48,7 @@ public abstract class GeneratorResultAbstract
 
     public abstract SqlPlan preActionsSqlPlan();
 
-    public abstract SqlPlan dryRunPreActionsSqlPlan();
+    public abstract Optional<SqlPlan> dryRunPreActionsSqlPlan();
 
     public abstract Optional<SqlPlan> initializeLockSqlPlan();
 
@@ -60,7 +60,7 @@ public abstract class GeneratorResultAbstract
 
     public abstract SqlPlan ingestSqlPlan();
 
-    public abstract SqlPlan dryRunSqlPlan();
+    public abstract Optional<SqlPlan> dryRunSqlPlan();
 
     public abstract Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan();
 
@@ -74,7 +74,7 @@ public abstract class GeneratorResultAbstract
 
     public abstract Optional<SqlPlan> postCleanupSqlPlan();
 
-    public abstract SqlPlan dryRunPostCleanupSqlPlan();
+    public abstract Optional<SqlPlan> dryRunPostCleanupSqlPlan();
 
     public abstract Map<DedupAndVersionErrorSqlType, SqlPlan> deduplicationAndVersioningErrorChecksSqlPlan();
 
@@ -89,7 +89,7 @@ public abstract class GeneratorResultAbstract
 
     public List<String> dryRunPreActionsSql()
     {
-        return dryRunPreActionsSqlPlan().getSqlList();
+        return dryRunPreActionsSqlPlan().map(SqlPlanAbstract::getSqlList).orElse(Collections.emptyList());
     }
 
     public List<String> initializeLockSql()
@@ -119,7 +119,7 @@ public abstract class GeneratorResultAbstract
 
     public List<String> dryRunSql()
     {
-        return dryRunSqlPlan().getSqlList();
+        return dryRunSqlPlan().map(SqlPlanAbstract::getSqlList).orElse(Collections.emptyList());
     }
 
     public Map<ValidationCategory, List<Pair<Set<FieldValue>, String>>> dryRunValidationSql()
@@ -155,7 +155,7 @@ public abstract class GeneratorResultAbstract
 
     public List<String> dryRunPostCleanupSql()
     {
-        return dryRunPostCleanupSqlPlan().getSqlList();
+        return dryRunPostCleanupSqlPlan().map(SqlPlanAbstract::getSqlList).orElse(Collections.emptyList());
     }
 
     public Map<StatisticName, String> preIngestStatisticsSql()

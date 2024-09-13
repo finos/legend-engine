@@ -25,5 +25,5 @@ public interface ObjectFactory
 {
     <T extends Any> T newObject(Class<T> clazz, Map<String, RichIterable<?>> properties);
 
-    <T extends Any> T newUnitInstance(CoreInstance unit, String unitTypeString, Number unitValue) throws Exception;
+    <T extends Any> T newUnitInstance(CoreInstance unit, String unitTypeString, Number unitValue);
 }

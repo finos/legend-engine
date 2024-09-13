@@ -15,7 +15,6 @@
 package org.finos.legend.engine.repl.shared;
 
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.block.function.Function3;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.Result;
@@ -25,6 +24,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.repl.client.Client;
+import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
@@ -53,7 +53,7 @@ public class ExecutionHelper
         }
     }
 
-    public static ExecutionHelper.ExecuteResultSummary executeCode(String txt, Client client, Function3<Result, PureModelContextData, PureModel, ExecuteResultSummary> resultHandler)
+    public static ExecutionHelper.ExecuteResultSummary executeCode(String txt, Client client, Function4<Result, PureModelContextData, PureModel, SingleExecutionPlan, ExecuteResultSummary> resultHandler)
     {
         String code = "###Pure\n" +
                 "function " + REPL_RUN_FUNCTION_SIGNATURE + "\n{\n" + txt + ";\n}";
@@ -82,6 +82,8 @@ public class ExecutionHelper
         PureModel pureModel = client.getLegendInterface().compile(pmcd);
 
         // Plan
+        // TODO: Since H2 does not support pivot(), when pivot() is used, the debugger will fail as it defaults to use H2
+        // when we switch out to use DuckDB as the core testing DB, then this issue would be resolved
         Root_meta_pure_executionPlan_ExecutionPlan plan = client.getLegendInterface().generatePlan(pureModel, client.isDebug());
         RichIterable<? extends Root_meta_pure_extension_Extension> extensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
         String planStr = PlanGenerator.serializeToJSON(plan, "vX_X_X", pureModel, extensions, LegendPlanTransformers.transformers);
@@ -97,7 +99,7 @@ public class ExecutionHelper
         Identity identity = ExecutionHelper.resolveIdentityFromLocalSubject(client);
         SingleExecutionPlan execPlan = (SingleExecutionPlan) PlanExecutor.readExecutionPlan(planStr);
         Result res = client.getPlanExecutor().execute(execPlan, new HashMap<>(), identity.getName(), identity, null);
-        return resultHandler.value(res, pmcd, pureModel);
+        return resultHandler.value(res, pmcd, pureModel, execPlan);
     }
 
     public static class ExecuteResultSummary
@@ -105,12 +107,14 @@ public class ExecutionHelper
         public final PureModelContextData pureModelContextData;
         public final PureModel pureModel;
         public final Result result;
-        public String resultPreview;
+        public final SingleExecutionPlan plan;
+        public final String resultPreview;
 
-        public ExecuteResultSummary(PureModelContextData pureModelContextData, PureModel pureModel, Result result, String resultPreview)
+        public ExecuteResultSummary(PureModelContextData pureModelContextData, PureModel pureModel, SingleExecutionPlan plan, Result result, String resultPreview)
         {
             this.pureModelContextData = pureModelContextData;
             this.pureModel = pureModel;
+            this.plan = plan;
             this.result = result;
             this.resultPreview = resultPreview;
         }

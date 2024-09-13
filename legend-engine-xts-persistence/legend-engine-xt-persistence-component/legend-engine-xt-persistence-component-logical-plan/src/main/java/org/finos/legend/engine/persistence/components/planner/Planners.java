@@ -33,6 +33,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnap
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshotAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoadAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
+import org.finos.legend.engine.persistence.components.ingestmode.NoOpAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.NoOp;
 import org.finos.legend.engine.persistence.components.util.Capability;
 
 import java.util.Set;
@@ -112,6 +114,12 @@ public class Planners
         public Planner visitBulkLoad(BulkLoadAbstract bulkLoad)
         {
             return new BulkLoadPlanner(datasets, (BulkLoad) bulkLoad, plannerOptions, capabilities);
+        }
+
+        @Override
+        public Planner visitNoOp(NoOpAbstract noOpAbstract)
+        {
+            return new NoOpPlanner(datasets, (NoOp) noOpAbstract, plannerOptions, capabilities);
         }
     }
 }

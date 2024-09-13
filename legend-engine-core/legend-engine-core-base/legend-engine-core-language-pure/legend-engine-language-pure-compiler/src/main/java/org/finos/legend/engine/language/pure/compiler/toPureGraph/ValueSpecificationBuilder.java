@@ -651,6 +651,11 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(GenericTypeInstance genericTypeInstance)
     {
+        // Support casting to a relation
+        if (genericTypeInstance.typeArguments != null && !genericTypeInstance.typeArguments.isEmpty() && genericTypeInstance.typeArguments.get(0) instanceof ClassInstance && ((ClassInstance) genericTypeInstance.typeArguments.get(0)).type.equals("colSpecArray"))
+        {
+            return proccessColSpecArray((ColSpecArray) ((ClassInstance) genericTypeInstance.typeArguments.get(0)).value);
+        }
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.resolveType(genericTypeInstance.fullPath, genericTypeInstance.sourceInformation)))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"));

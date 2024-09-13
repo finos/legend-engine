@@ -90,3 +90,222 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testF
                       '   Firm X,Anthony\n' +
                       '#', $res->toString());
 }
+
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                  val, str, str2
+                  2, a, b
+                  3, a, b
+                  4, qw, b
+                  5, qw, c
+                  2, weq, c
+                #->distinct(~[val, str])->groupBy(~str, ~newCol:x|$x.val:x|$x->plus());
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   str,newCol\n'+
+                  '   a,5\n'+
+                  '   qw,9\n'+
+                  '   weq,2\n'+
+                  '#', $res->sort(~str->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Distinct_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                  val, str, str2
+                  2, a, b
+                  3, a, b
+                  4, qw, b
+                  5, qw, c
+                  2, weq, c
+                #->distinct(~[val, str])->filter(x|$x.val > 2)
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,str\n'+
+                  '   3,a\n'+
+                  '   4,qw\n'+
+                  '   5,qw\n'+
+                  '#', $res->sort(~val->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_GroupBy_GroupBy<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                  val, str, str2
+                  2, a, b
+                  3, a, b
+                  4, qw, b
+                  5, qw, c
+                  2, weq, c
+                #->groupBy(~[str, str2], ~newCol:x|$x.val:x|$x->plus())->groupBy(~[str], ~newCol2:x|$x.newCol:x|$x->plus())
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   str,newCol2\n'+
+                  '   a,5\n'+
+                  '   qw,9\n'+
+                  '   weq,2\n'+
+                  '#', $res->sort(~str->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_GroupBy_Distinct<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                  val, str, str2
+                  2, a, b
+                  3, a, b
+                  4, qw, b
+                  5, qw, c
+                  2, weq, c
+                #->groupBy(~[str, str2], ~newCol:x|$x.val:x|$x->plus())->distinct(~[str])
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   str\n'+
+                  '   a\n'+
+                  '   qw\n'+
+                  '   weq\n'+
+                  '#', $res->sort(~str->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Pivot_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                    city, country, year, treePlanted
+                    NYC, USA, 2011, 5000
+                    NYC, USA, 2000, 5000
+                    SAN, USA, 2000, 2000
+                    SAN, USA, 2011, 100
+                    LDN, UK, 2011, 3000
+                    SAN, USA, 2011, 2500
+                    NYC, USA, 2000, 10000
+                    NYC, USA, 2012, 7600
+                    NYC, USA, 2012, 7600
+                 #->pivot(~[year], ~['newCol' : x | $x.treePlanted : y | $y->plus()])
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   city,country,2000__|__newCol,2011__|__newCol,2012__|__newCol\n' +
+                  '   NYC,USA,15000,5000,15200\n' +
+                  '#', $res->cast(@Relation<(city:String,country:String,'2000__|__newCol':Integer,'2011__|__newCol':Integer,'2012__|__newCol':Integer)>)->filter(x|$x.city=='NYC')->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                    city, country, year, treePlanted
+                    NYC, USA, 2011, 5000
+                    NYC, USA, 2000, 5000
+                    SAN, USA, 2000, 2000
+                    SAN, USA, 2011, 100
+                    LDN, UK, 2011, 3000
+                    SAN, USA, 2011, 2500
+                    NYC, USA, 2000, 10000
+                    NYC, USA, 2012, 7600
+                    NYC, USA, 2012, 7600
+                 #
+                  ->extend(~yr:x|$x.year->toOne() - 2000)
+                  ->filter(x|$x.yr > 10)
+                  ->select(~[city,country,year,treePlanted])
+                  ->groupBy(~[year,city,country], ~treePlanted:x|$x.treePlanted:x|$x->plus())
+                  ->pivot(~[year], ~['newCol' : x | $x.treePlanted : y | $y->plus()])
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   city,country,2011__|__newCol,2012__|__newCol,newCol\n' +
+                  '   LDN,UK,3000,null,LDN_0\n' +
+                  '   NYC,USA,5000,15200,NYC_0\n' +
+                  '   SAN,USA,2600,null,SAN_0\n' +
+                  '#', $res->cast(@Relation<(city:String,country:String,'2011__|__newCol':Integer,'2012__|__newCol':Integer)>)->extend(~newCol:x|$x.city->toOne() + '_0')->sort(ascending(~city))->limit(3)->toString());
+}
+
+// ------------------------------------- TO FIX -------------------------------------
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_GroupBy_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                  val, str
+                  2, a
+                  3, a
+                  4, qw
+                  5, qw
+                  2, weq
+                #->groupBy(~str, ~newCol:x|$x.val:x|$x->plus())
+                 ->filter(x|$x.newCol > 4);
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   str,newCol\n'+
+                  '   a,5\n'+
+                  '   qw,9\n'+
+                  '#', $res->sort(~str->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_GroupBy_Distinct_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                  val, str, str2
+                  2, a, b
+                  2, a, b
+                  4, qw, b
+                  5, qw, c
+                  2, weq, c
+                #->groupBy(~[str, str2], ~newCol:x|$x.val:x|$x->plus())->distinct(~[str, newCol])->filter(x|$x.newCol > 2)
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   str,newCol\n'+
+                  '   a,4\n'+
+                  '   qw,4\n'+
+                  '   qw,5\n'+
+                  '#', $res->sort(~str->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                  val, str, str2
+                  2, a, b
+                  2, a, b
+                  4, qw, b
+                  5, qw, c
+                  2, weq, c
+                #->distinct()->groupBy(~[str], ~newCol:x|$x.val:x|$x->plus())->filter(x|$x.newCol > 2)
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   str,newCol\n'+
+                  '   qw,9\n'+
+                  '#', $res->sort(~str->ascending())->toString());
+}

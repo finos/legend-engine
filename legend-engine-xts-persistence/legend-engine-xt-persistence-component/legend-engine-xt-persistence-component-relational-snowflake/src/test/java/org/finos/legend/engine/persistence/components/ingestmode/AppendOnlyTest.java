@@ -61,7 +61,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         String insertSql = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_id\") " +
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\"," +
-            "LAKEHOUSE_MD5(ARRAY_CONSTRUCT('amount','biz_date','id','name'),ARRAY_CONSTRUCT(stage.\"amount\",stage.\"biz_date\",stage.\"id\",stage.\"name\"))," +
+            "LAKEHOUSE_MD5(ARRAY_CONSTRUCT('amount',stage.\"amount\",'biz_date',stage.\"biz_date\",'id',stage.\"id\",'name',stage.\"name\"))," +
             "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN') " +
             "FROM \"mydb\".\"staging\" as stage)";
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTableCreateQueryWithNoPKs, preActionsSqlList.get(0));
@@ -99,7 +99,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         String insertSql  = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_update_time\", \"batch_id\") " +
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\"," +
-            "LAKEHOUSE_MD5(ARRAY_CONSTRUCT('biz_date','name'),ARRAY_CONSTRUCT(stage.\"biz_date\",stage.\"name\"))," +
+            "LAKEHOUSE_MD5(ARRAY_CONSTRUCT('biz_date',stage.\"biz_date\",'name',stage.\"name\"))," +
             "'2000-01-01 00:00:00.000000',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN') " +
             "FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" as stage WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
 
@@ -152,7 +152,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         String insertSql  = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_update_time\", \"batch_id\") " +
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\"," +
-            "LAKEHOUSE_MD5(ARRAY_CONSTRUCT('amount','biz_date','name'),ARRAY_CONSTRUCT(doubleToString(stage.\"amount\"),dateToString(stage.\"biz_date\"),stage.\"name\"))," +
+            "LAKEHOUSE_MD5(ARRAY_CONSTRUCT('amount',doubleToString(stage.\"amount\"),'biz_date',dateToString(stage.\"biz_date\"),'name',stage.\"name\"))," +
             "'2000-01-01 00:00:00.000000',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN') " +
             "FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" as stage WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
 

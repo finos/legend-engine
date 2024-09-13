@@ -99,6 +99,7 @@ public class TestUtils
     public static String digestName = "digest";
     public static String digestUDF = "LAKEHOUSE_MD5";
     public static String versionName = "version";
+    public static String appendTimeName = "append_time";
     public static String batchUpdateTimeName = "batch_update_time";
     public static String batchIdName = "batch_id";
     public static String batchIdInName = "batch_id_in";
@@ -126,6 +127,7 @@ public class TestUtils
     }};
 
     public static Field id = Field.builder().name(idName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(idName).build();
+    public static Field idNonPk = Field.builder().name(idName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).fieldAlias(idName).build();
     public static Field tinyIntId = Field.builder().name(idName).type(FieldType.of(DataType.TINYINT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(idName).build();
     public static Field name = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).nullable(false).fieldAlias(nameName).build();
     public static Field nullableName = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).fieldAlias(nameName).build();
@@ -135,6 +137,7 @@ public class TestUtils
     public static Field nullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
     public static Field decimalIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.DECIMAL, 10, 2)).fieldAlias(incomeName).build();
     public static Field startTime = Field.builder().name(startTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(startTimeName).build();
+    public static Field startTimeNonPk = Field.builder().name(startTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(startTimeName).build();
     public static Field startTimeTimestamp = Field.builder().name(startTimeName).type(FieldType.of(DataType.TIMESTAMP, 6, null)).primaryKey(true).fieldAlias(startTimeName).build();
     public static Field expiryDate = Field.builder().name(expiryDateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).fieldAlias(expiryDateName).build();
     public static Field expiryDatePk = Field.builder().name(expiryDateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(expiryDateName).build();
@@ -247,6 +250,29 @@ public class TestUtils
             .addFields(startTime)
             .addFields(expiryDate)
             .addFields(digest)
+            .build();
+    }
+
+    public static SchemaDefinition getStagingSchemaWithoutPkWithoutDigest()
+    {
+        return SchemaDefinition.builder()
+            .addFields(idNonPk)
+            .addFields(name)
+            .addFields(income)
+            .addFields(startTimeNonPk)
+            .addFields(expiryDate)
+            .build();
+    }
+
+    public static SchemaDefinition getStagingSchemaWithVersionWithoutPkWithoutDigest()
+    {
+        return SchemaDefinition.builder()
+            .addFields(idNonPk)
+            .addFields(name)
+            .addFields(income)
+            .addFields(startTimeNonPk)
+            .addFields(expiryDate)
+            .addFields(version)
             .build();
     }
 
@@ -1406,6 +1432,62 @@ public class TestUtils
                 .addFields(digest)
                 .addFields(batchUpdateTimestamp)
                 .build())
+            .build();
+    }
+
+    public static SchemaDefinition getStagingSchema2()
+    {
+        return SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(rating)
+            .addFields(startTime)
+            .addFields(digest)
+            .build();
+    }
+
+    public static SchemaDefinition getStagingSchema2WithVersion()
+    {
+        return SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(rating)
+            .addFields(startTime)
+            .addFields(version)
+            .addFields(digest)
+            .build();
+    }
+
+    public static SchemaDefinition getStagingSchema2WithoutPkWithoutDigest()
+    {
+        return SchemaDefinition.builder()
+            .addFields(idNonPk)
+            .addFields(name)
+            .addFields(rating)
+            .addFields(startTimeNonPk)
+            .build();
+    }
+
+    public static SchemaDefinition getStagingSchema2WithVersionWithoutPkWithoutDigest()
+    {
+        return SchemaDefinition.builder()
+            .addFields(idNonPk)
+            .addFields(name)
+            .addFields(rating)
+            .addFields(startTimeNonPk)
+            .addFields(version)
+            .build();
+    }
+
+    public static SchemaDefinition getStagingSchema2WithVersionWithoutPk()
+    {
+        return SchemaDefinition.builder()
+            .addFields(idNonPk)
+            .addFields(name)
+            .addFields(rating)
+            .addFields(startTimeNonPk)
+            .addFields(version)
+            .addFields(digest)
             .build();
     }
 

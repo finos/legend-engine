@@ -358,9 +358,16 @@ function <<access.private>> meta::protocols::generation::java::generateClass(c:m
                 $c.properties->map(p|
                       let javaType = pureTypeToJavaType($context.conventions, $p);
                       let javaName = $p.name->toOne()->sanitizeJavaKeywords();
-                      if ($javaType->isJavaList(),
+                      let field = if ($javaType->isJavaList(),
                         |javaField('public', $javaType, $javaName, j_emptyList($javaType)),
                         |javaField('public', $javaType, $javaName)
+                      );
+                      let jsonName = $p->value4Tag('name', JSON);
+                      if ($jsonName->isNotEmpty(),
+                        |$field->annotate(^meta::external::language::java::metamodel::annotations::json::JsonProperty(
+                                            value = $jsonName.value->toOne()
+                                         )),
+                        |$field
                       );
                     )
               );
@@ -568,4 +575,9 @@ function meta::protocols::generation::java::generateVisitor(taxonomy : Taxonomy[
                                   ->sortBy(a|$a.name->toOne())
                                   ->map(c| javaMethod($typeParam, 'visit', j_parameter(pureTypeToJavaType($conventions, $c, PureOne), 'val')))
   );
+}
+
+Profile meta::protocols::generation::java::JSON
+{
+  tags : [name];
 }
