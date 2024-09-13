@@ -14,20 +14,20 @@
 
 package org.finos.legend.engine.generation.analytics.model;
 
-import org.finos.legend.engine.entitlement.model.specification.DatasetSpecification;
-import org.finos.legend.engine.protocol.analytics.model.MappingModelCoverageAnalysisResult;
-
-import java.util.List;
-
-public class DataSpaceExecutionContextAnalysisResult
+public class DataSpaceExecutionContextRuntimeMetadata
 {
-    public String name;
-    public String title;
-    public String description;
-    public String mapping;
-    public List<String> compatibleRuntimes;
-    public String defaultRuntime;
-    public DataSpaceExecutionContextRuntimeMetadata runtimeMetadata;
-    public MappingModelCoverageAnalysisResult mappingModelCoverageAnalysisResult;
-    public List<DatasetSpecification> datasets;
+    public String storePath;
+    public String connectionPath;
+    public String connectionType;
+
+    public DataSpaceExecutionContextRuntimeMetadata()
+    {
+
+    }
+
+    public DataSpaceExecutionContextRuntimeMetadata(String storePath, String connectionPath)
+    {
+        this.storePath = storePath;
+        this.connectionPath = connectionPath;
+    }
 }
