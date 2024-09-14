@@ -39,6 +39,9 @@ import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSResultType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceTemplateExecutable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
@@ -49,6 +52,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
@@ -58,13 +62,13 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -255,6 +259,33 @@ public class DataSpaceAnalyticsHelper
             excResult.mapping = HelperModelBuilder.getElementFullPath(executionContext._mapping(), pureModel.getExecutionSupport());
             excResult.defaultRuntime = HelperModelBuilder.getElementFullPath(executionContext._defaultRuntime(), pureModel.getExecutionSupport());
             excResult.compatibleRuntimes = ListIterate.collect(executionContextAnalysisResult._compatibleRuntimes().toList(), runtime -> HelperModelBuilder.getElementFullPath(runtime, pureModel.getExecutionSupport()));
+            Optional<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> packageableRuntime = pureModelContextData.getElements().stream().filter(e -> e.getPath().equals(excResult.defaultRuntime) && e instanceof PackageableRuntime).findFirst();
+            if (packageableRuntime.isPresent() && packageableRuntime.get() instanceof PackageableRuntime)
+            {
+                PackageableRuntime runtime = (PackageableRuntime) packageableRuntime.get();
+                if (runtime.runtimeValue.connections != null && !runtime.runtimeValue.connections.isEmpty() && !runtime.runtimeValue.connections.get(0).storeConnections.isEmpty())
+                {
+                    String storePath = runtime.runtimeValue.connections.get(0).store.path;
+                    Connection connection = runtime.runtimeValue.connections.get(0).storeConnections.get(0).connection;
+                    if (connection instanceof ConnectionPointer)
+                    {
+                        String connectionPath = ((ConnectionPointer) connection).connection;
+                        Optional<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> packageableConnection = pureModelContextData.getElements().stream().filter(e -> e.getPath().equals(connectionPath)).findAny();
+                        DataSpaceExecutionContextRuntimeMetadata metadata = new DataSpaceExecutionContextRuntimeMetadata(storePath, connectionPath);
+                        if (packageableConnection.isPresent() && packageableConnection.get() instanceof PackageableConnection && ((PackageableConnection) packageableConnection.get()).connectionValue instanceof RelationalDatabaseConnection)
+                        {
+                            metadata.connectionType = ((RelationalDatabaseConnection) ((PackageableConnection) packageableConnection.get()).connectionValue).type.name();
+                        }
+                        excResult.runtimeMetadata = metadata;
+                    }
+                    else if (connection instanceof RelationalDatabaseConnection)
+                    {
+                        DataSpaceExecutionContextRuntimeMetadata metadata = new DataSpaceExecutionContextRuntimeMetadata(storePath, null);
+                        metadata.connectionType = ((RelationalDatabaseConnection) connection).type.name();
+                        excResult.runtimeMetadata = metadata;
+                    }
+                }
+            }
             Root_meta_analytics_mapping_modelCoverage_MappingModelCoverageAnalysisResult mappingModelCoverageAnalysisResult = executionContextAnalysisResult._mappingCoverage();
             excResult.mappingModelCoverageAnalysisResult = buildMappingModelCoverageAnalysisResult(mappingModelCoverageAnalysisResult, excResult, pureModel, dataSpaceProtocol, pureModelContextData, clientVersion, generatorExtensions, entitlementServiceExtensions, false, returnLightGraph);
             return excResult;
@@ -314,9 +345,36 @@ public class DataSpaceAnalyticsHelper
             excResult.description = executionContext._description();
             excResult.mapping = HelperModelBuilder.getElementFullPath(executionContext._mapping(), pureModel.getExecutionSupport());
             excResult.defaultRuntime = HelperModelBuilder.getElementFullPath(executionContext._defaultRuntime(), pureModel.getExecutionSupport());
+            Optional<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> packageableRuntime = pureModelContextData.getElements().stream().filter(e -> e.getPath().equals(excResult.defaultRuntime) && e instanceof PackageableRuntime).findFirst();
+            if (packageableRuntime.isPresent() && packageableRuntime.get() instanceof PackageableRuntime)
+            {
+                PackageableRuntime runtime = (PackageableRuntime) packageableRuntime.get();
+                if (runtime.runtimeValue.connections != null && !runtime.runtimeValue.connections.isEmpty() && !runtime.runtimeValue.connections.get(0).storeConnections.isEmpty())
+                {
+                    String storePath = runtime.runtimeValue.connections.get(0).store.path;
+                    Connection connection = runtime.runtimeValue.connections.get(0).storeConnections.get(0).connection;
+                    if (connection instanceof ConnectionPointer)
+                    {
+                        String connectionPath = ((ConnectionPointer) connection).connection;
+                        Optional<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> packageableConnection = pureModelContextData.getElements().stream().filter(e -> e.getPath().equals(connectionPath)).findAny();
+                        DataSpaceExecutionContextRuntimeMetadata metadata = new DataSpaceExecutionContextRuntimeMetadata(storePath, connectionPath);
+                        if (packageableConnection.isPresent() && packageableConnection.get() instanceof PackageableConnection && ((PackageableConnection) packageableConnection.get()).connectionValue instanceof RelationalDatabaseConnection)
+                        {
+                            metadata.connectionType = ((RelationalDatabaseConnection) ((PackageableConnection) packageableConnection.get()).connectionValue).type.name();
+                        }
+                        excResult.runtimeMetadata = metadata;
+                    }
+                    else if (connection instanceof RelationalDatabaseConnection)
+                    {
+                        DataSpaceExecutionContextRuntimeMetadata metadata = new DataSpaceExecutionContextRuntimeMetadata(storePath, null);
+                        metadata.connectionType = ((RelationalDatabaseConnection) connection).type.name();
+                        excResult.runtimeMetadata = metadata;
+                    }
+                }
+            }
             excResult.compatibleRuntimes = ListIterate.collect(executionContextAnalysisResult._compatibleRuntimes().toList(), runtime -> HelperModelBuilder.getElementFullPath(runtime, pureModel.getExecutionSupport()));
             Root_meta_analytics_mapping_modelCoverage_MappingModelCoverageAnalysisResult mappingModelCoverageAnalysisResult = executionContextAnalysisResult._mappingCoverage();
-           excResult.mappingModelCoverageAnalysisResult = buildMappingModelCoverageAnalysisResult(mappingModelCoverageAnalysisResult, excResult, pureModel, dataSpaceProtocol, pureModelContextData, clientVersion, generatorExtensions, entitlementServiceExtensions, true, returnLightGraph);
+            excResult.mappingModelCoverageAnalysisResult = buildMappingModelCoverageAnalysisResult(mappingModelCoverageAnalysisResult, excResult, pureModel, dataSpaceProtocol, pureModelContextData, clientVersion, generatorExtensions, entitlementServiceExtensions, true, returnLightGraph);
             return excResult;
         });
         result.defaultExecutionContext = dataSpace._defaultExecutionContext()._name();
