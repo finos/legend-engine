@@ -209,6 +209,38 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_
                   '#', $res->cast(@Relation<(city:String,country:String,'2000__|__newCol':Integer,'2011__|__newCol':Integer,'2012__|__newCol':Integer)>)->filter(x|$x.city=='NYC')->toString());
 }
 
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_ComplexGroupBy_Pivot<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                    city, country, year, treePlanted
+                    NYC, USA, 2011, 5000
+                    NYC, USA, 2000, 5000
+                    SAN, USA, 2000, 2000
+                    SAN, USA, 2011, 100
+                    LDN, UK, 2011, 3000
+                    SAN, USA, 2011, 2500
+                    NYC, USA, 2000, 10000
+                    NYC, USA, 2012, 7600
+                    NYC, USA, 2012, 7600
+                 #
+                  ->extend(~yr:x|$x.year->toOne() - 2000)
+                  ->filter(x|$x.yr > 10)
+                  ->select(~[city,country,year,treePlanted])
+                  ->groupBy(~[city,country], ~[year:x|$x.year:x|$x->plus(), treePlanted:x|$x.treePlanted:x|$x->plus()])
+                  ->pivot(~[year], ~['newCol' : x|$x.treePlanted:x|$x->plus()])
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   city,country,2011__|__newCol,4022__|__newCol,6035__|__newCol\n' +
+                  '   LDN,UK,3000,null,null\n' +
+                  '   NYC,USA,null,null,20200\n' +
+                  '   SAN,USA,null,2600,null\n' +
+                  '#', $res->cast(@Relation<(city:String,country:String,'2011__|__newCol':Integer,'4022__|__newCol':Integer,'6035__|__newCol':Integer)>)->sort(ascending(~city))->toString());
+}
+
 function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -239,6 +271,41 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_
                   '   NYC,USA,5000,15200,NYC_0\n' +
                   '   SAN,USA,2600,null,SAN_0\n' +
                   '#', $res->cast(@Relation<(city:String,country:String,'2011__|__newCol':Integer,'2012__|__newCol':Integer)>)->extend(~newCol:x|$x.city->toOne() + '_0')->sort(ascending(~city))->limit(3)->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_Pivot_GroupBy_Extend_Sort<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                    city, country, year, treePlanted
+                    NYC, USA, 2011, 5000
+                    NYC, USA, 2000, 5000
+                    SAN, USA, 2000, 2000
+                    SAN, USA, 2011, 100
+                    LDN, UK, 2011, 3000
+                    SAN, USA, 2011, 2500
+                    NYC, USA, 2000, 10000
+                    NYC, USA, 2012, 7600
+                    NYC, USA, 2012, 7600
+                 #
+                  ->extend(~yr:x|$x.year->toOne() - 2000)
+                  ->filter(x|$x.yr > 10)
+                  ->select(~[city,country,year,treePlanted])
+                  ->pivot(~[year], ~['newCol':x|$x.treePlanted:x|$x->plus()])
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   country,2011__|__newCol,2012__|__newCol,newCol\n' +
+                  '   UK,3000,0,UK_0\n' +
+                  '   USA,7600,15200,USA_0\n' +
+                  '#', $res
+                    ->cast(@Relation<(city:String,country:String,'2011__|__newCol':Integer,'2012__|__newCol':Integer)>)
+                    ->groupBy(~[country], ~['2011__|__newCol':x|$x.'2011__|__newCol':x|$x->plus(),'2012__|__newCol':x|$x.'2012__|__newCol':x|$x->plus()])
+                    ->extend(~newCol:x|$x.country->toOne() + '_0')
+                    ->sort(ascending(~country))
+                    ->toString());
 }
 
 // ------------------------------------- TO FIX -------------------------------------
