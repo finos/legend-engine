@@ -556,8 +556,8 @@ public class RelationNativeImplementation
             // Write result
             if (compress)
             {
-                Object result = reduce.value(subList, es);
                 subList.removeIf(Objects::isNull);
+                Object result = reduce.value(subList, es);
                 val.apply(result, j);
             }
             else
