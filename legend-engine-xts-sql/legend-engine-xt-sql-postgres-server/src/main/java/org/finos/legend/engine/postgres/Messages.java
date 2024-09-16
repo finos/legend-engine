@@ -582,8 +582,10 @@ public class Messages
 
     /**
      * Send a message that just contains the msgType and the msg length
+     *
+     * @return
      */
-    private void sendShortMsg(Channel channel, char msgType, final String traceLogMsg)
+    private ChannelFuture sendShortMsg(Channel channel, char msgType, final String traceLogMsg)
     {
         ByteBuf buffer = channel.alloc().buffer(5);
         buffer.writeByte(msgType);
@@ -594,11 +596,12 @@ public class Messages
         {
             channelFuture.addListener((ChannelFutureListener) future -> LOGGER.trace(traceLogMsg));
         }
+        return channelFuture;
     }
 
-    void sendPortalSuspended(Channel channel)
+    ChannelFuture sendPortalSuspended(Channel channel)
     {
-        sendShortMsg(channel, 's', "sentPortalSuspended");
+        return sendShortMsg(channel, 's', "sentPortalSuspended");
     }
 
     /**

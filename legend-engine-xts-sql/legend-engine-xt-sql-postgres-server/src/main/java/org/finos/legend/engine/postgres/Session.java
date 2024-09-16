@@ -559,7 +559,7 @@ public class Session implements AutoCloseable
                 else
                 {
                     PostgresResultSet rs = statement.getResultSet();
-                    resultSetReceiver.sendResultSet(rs);
+                    resultSetReceiver.sendResultSet(rs, 0);
                     resultSetReceiver.allFinished();
                 }
                 OpenTelemetryUtil.TOTAL_SUCCESS_EXECUTE.add(1);
@@ -603,7 +603,11 @@ public class Session implements AutoCloseable
             Span span = tracer.spanBuilder("PreparedStatement ExecutionTask Execute").startSpan();
             try (Scope scope = span.makeCurrent())
             {
-                boolean results = preparedStatement.execute();
+                boolean results = true;
+                if (!preparedStatement.isExecuted())
+                {
+                    results = preparedStatement.execute();
+                }
                 span.addEvent("receivedResults");
                 if (!results)
                 {
@@ -612,8 +616,16 @@ public class Session implements AutoCloseable
                 else
                 {
                     PostgresResultSet rs = preparedStatement.getResultSet();
-                    resultSetReceiver.sendResultSet(rs);
-                    resultSetReceiver.allFinished();
+                    int maxRows = preparedStatement.getMaxRows();
+                    resultSetReceiver.sendResultSet(rs, maxRows);
+                    if (maxRows == 0)
+                    {
+                        resultSetReceiver.allFinished();
+                    }
+                    else
+                    {
+                        resultSetReceiver.batchFinished();
+                    }
                 }
                 OpenTelemetryUtil.TOTAL_SUCCESS_EXECUTE.add(1);
             }

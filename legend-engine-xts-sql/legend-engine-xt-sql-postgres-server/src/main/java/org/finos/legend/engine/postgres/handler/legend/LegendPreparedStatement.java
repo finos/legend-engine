@@ -17,6 +17,7 @@ package org.finos.legend.engine.postgres.handler.legend;
 import java.security.PrivilegedAction;
 import java.sql.ParameterMetaData;
 import javax.security.auth.Subject;
+
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
@@ -27,9 +28,9 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
 {
     private final String query;
     private final LegendExecutionService client;
-
     private final Identity identity;
-
+    private boolean isExecuted;
+    private int maxRows;
     private LegendResultSet legendResultSet;
 
     public LegendPreparedStatement(String query, LegendExecutionService client, Identity identity)
@@ -79,12 +80,25 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
     @Override
     public void setMaxRows(int maxRows)
     {
+        this.maxRows = maxRows;
+    }
 
+    @Override
+    public int getMaxRows()
+    {
+        return maxRows;
+    }
+
+    @Override
+    public boolean isExecuted()
+    {
+        return isExecuted;
     }
 
     @Override
     public boolean execute()
     {
+        isExecuted = true;
         if (identity.getFirstCredential() instanceof LegendKerberosCredential)
 
         {

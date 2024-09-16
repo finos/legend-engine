@@ -14,14 +14,6 @@
 
 package org.finos.legend.engine.postgres;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ParameterMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.testing.junit.ResourceTestRule;
@@ -39,8 +31,19 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.postgresql.PGProperty;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.ServerErrorMessage;
+import org.slf4j.bridge.SLF4JBridgeHandler;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ParameterMetaData;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.Properties;
 
 public class PostgresServerTest
 {
@@ -50,6 +53,8 @@ public class PostgresServerTest
 
     static
     {
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
+        SLF4JBridgeHandler.install();
         Pair<PureModel, ResourceTestRule> pureModelResourceTestRulePair = SqlExecuteTest.getPureModelResourceTestRulePair();
         resources = pureModelResourceTestRulePair.getTwo();
     }
@@ -153,6 +158,56 @@ public class PostgresServerTest
     }
 
     @Test
+    public void testSimpleQuery() throws SQLException
+    {
+        Properties info = new Properties();
+        PGProperty.USER.set(info, "dummy");
+        PGProperty.PASSWORD.set(info, "dummy");
+        PGProperty.PREFER_QUERY_MODE.set(info, "simple");
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres", info);
+                PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"");
+                ResultSet resultSet = statement.executeQuery()
+        )
+        {
+            int rows = 0;
+            while (resultSet.next())
+            {
+                rows++;
+            }            Assert.assertEquals(4, rows);
+        }
+    }
+
+    @Test
+    public void concurrentConnectionTest() throws SQLException
+    {
+        try (
+                Connection connection1 = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                Connection connection2 = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                PreparedStatement statement1 = connection1.prepareStatement("SELECT * FROM service.\"/personService\"");
+                PreparedStatement statement2 = connection2.prepareStatement("SELECT * FROM service.\"/personService\"");
+                ResultSet resultSet1 = statement1.executeQuery();
+                ResultSet resultSet2 = statement2.executeQuery()
+        )
+        {
+            int rows1 = 0;
+            while (resultSet1.next())
+            {
+                rows1++;
+            }
+            Assert.assertEquals(4, rows1);
+            int rows2 = 0;
+            while (resultSet2.next())
+            {
+                rows2++;
+            }
+            Assert.assertEquals(4, rows2);
+        }
+    }
+
+    @Test
     public void testTableFunctionSyntax() throws SQLException
     {
         try (
@@ -182,6 +237,27 @@ public class PostgresServerTest
         {
             connection.setAutoCommit(false);
             Assert.assertFalse(connection.getAutoCommit());
+        }
+    }
+
+    @Test
+    public void testFetchSizePreparedStatement() throws SQLException
+    {
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy")
+        )
+        {
+            connection.setAutoCommit(false);
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM service('/personService')");
+            statement.setFetchSize(1);
+            ResultSet resultSet = statement.executeQuery();
+            int rows = 0;
+            while (resultSet.next())
+            {
+                rows++;
+            }
+            Assert.assertEquals(4, rows);
         }
     }
 
