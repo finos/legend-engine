@@ -26,6 +26,7 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +34,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
@@ -64,6 +66,7 @@ public class Session implements AutoCloseable
         this.identity = identity;
         OpenTelemetryUtil.ACTIVE_SESSIONS.add(1);
         OpenTelemetryUtil.TOTAL_SESSIONS.add(1);
+        activeExecution = CompletableFuture.completedFuture(null);
     }
 
     public Identity getIdentity()
@@ -75,18 +78,7 @@ public class Session implements AutoCloseable
     {
         //TODO do we need to handle batch requests?
         LOGGER.info("Sync");
-        if (activeExecution == null)
-        {
-            CompletableFuture<String> completableFuture = new CompletableFuture<>();
-            completableFuture.complete(null);
-            return completableFuture;
-        }
-        else
-        {
-            CompletableFuture result = activeExecution;
-            activeExecution = null;
-            return result;
-        }
+        return activeExecution;
     }
 
     public void parse(String statementName, String query, List<Integer> paramTypes)
@@ -100,7 +92,7 @@ public class Session implements AutoCloseable
         Prepared p = new Prepared();
         p.name = statementName;
         p.sql = query;
-        p.paramType = paramTypes.toArray(new Integer[] {});
+        p.paramType = paramTypes.toArray(new Integer[]{});
 
         if (query != null)
         {
@@ -368,16 +360,8 @@ public class Session implements AutoCloseable
 
             preparedStatement.setMaxRows(maxRows);
             Context.taskWrapping(executorService).submit(new PreparedStatementExecutionTask(preparedStatement, resultSetReceiver));
-
-            if (activeExecution == null)
-            {
-                activeExecution = resultSetReceiver.completionFuture();
-            }
-            else
-            {
-                activeExecution = activeExecution
-                        .thenCompose(ignored -> resultSetReceiver.completionFuture());
-            }
+            activeExecution = activeExecution
+                    .thenCompose(ignored -> resultSetReceiver.completionFuture());
             return activeExecution;
         }
         catch (Exception e)
@@ -407,15 +391,8 @@ public class Session implements AutoCloseable
             PostgresStatement statement = getSessionHandler(query).createStatement();
             span.addEvent("submit StatementExecutionTask");
             Context.taskWrapping(executorService).submit(new StatementExecutionTask(statement, query, resultSetReceiver));
-            if (activeExecution == null)
-            {
-                activeExecution = resultSetReceiver.completionFuture();
-            }
-            else
-            {
-                activeExecution = activeExecution
-                        .thenCompose(ignored -> resultSetReceiver.completionFuture());
-            }
+            activeExecution = activeExecution
+                    .thenCompose(ignored -> resultSetReceiver.completionFuture());
             return activeExecution;
         }
         catch (Exception e)
