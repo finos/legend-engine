@@ -80,7 +80,7 @@ public class PostgresServerTest
         try (
                 Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
                         "dummy", "dummy");
-                PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"");
+                PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"")
         )
         {
             ResultSetMetaData resultSetMetaData = statement.getMetaData();
@@ -231,8 +231,7 @@ public class PostgresServerTest
     {
         try (
                 Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                        "dummy", "dummy");
-
+                        "dummy", "dummy")
         )
         {
             connection.setAutoCommit(false);
@@ -412,7 +411,7 @@ public class PostgresServerTest
         try (
                 Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
                         "dummy", "dummy");
-                PreparedStatement statement = connection.prepareStatement("SELECT blah FROM service('/blah')");
+                PreparedStatement statement = connection.prepareStatement("SELECT blah FROM service('/blah')")
         )
         {
             PSQLException exception = Assert.assertThrows(PSQLException.class, statement::executeQuery);
@@ -428,7 +427,7 @@ public class PostgresServerTest
         try (
                 Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
                         "dummy", "dummy");
-                PreparedStatement statement = connection.prepareStatement("SELECT \"some_random_column_name\" FROM service('/personService')");
+                PreparedStatement statement = connection.prepareStatement("SELECT \"some_random_column_name\" FROM service('/personService')")
         )
         {
             PSQLException exception = Assert.assertThrows(PSQLException.class, statement::executeQuery);
@@ -445,7 +444,7 @@ public class PostgresServerTest
         try (
                 Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
                         "dummy", "dummy");
-                PreparedStatement statement = connection.prepareStatement("SELECT blah FROM service('/blah')");
+                PreparedStatement statement = connection.prepareStatement("SELECT blah FROM service('/blah')")
         )
         {
             PSQLException exception = Assert.assertThrows(PSQLException.class, statement::getMetaData);
@@ -461,7 +460,7 @@ public class PostgresServerTest
         try (
                 Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
                         "dummy", "dummy");
-                PreparedStatement statement = connection.prepareStatement("SELECT \"some_random_column_name\" FROM service('/personService')");
+                PreparedStatement statement = connection.prepareStatement("SELECT \"some_random_column_name\" FROM service('/personService')")
         )
         {
             PSQLException exception = Assert.assertThrows(PSQLException.class, statement::getMetaData);

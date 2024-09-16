@@ -55,7 +55,7 @@ import org.slf4j.Logger;
  * tag, but including the length itself)
  * <p>
  * <p>
- * See https://www.postgresql.org/docs/9.2/static/protocol-message-formats.html
+ * See <a href="https://www.postgresql.org/docs/9.2/static/protocol-message-formats.html">postgresql docs</a>
  */
 public class Messages
 {

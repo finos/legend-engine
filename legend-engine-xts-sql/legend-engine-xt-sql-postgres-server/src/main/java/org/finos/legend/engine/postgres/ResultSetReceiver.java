@@ -44,20 +44,14 @@ import org.slf4j.Logger;
 class ResultSetReceiver
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ResultSetReceiver.class);
-
-
     private final String query;
     private final DelayableWriteChannel channel;
-    private boolean isSimpleQuery;
-    private Channel directChannel;
-    private DelayedWrites delayedWrites;
+    private final boolean isSimpleQuery;
+    private final Channel directChannel;
+    private final DelayedWrites delayedWrites;
     private final FormatCodes.FormatCode[] formatCodes;
-
-    private CompletableFuture<Void> completionFuture = new CompletableFuture<>();
-
+    private final CompletableFuture<Void> completionFuture = new CompletableFuture<>();
     private final Messages messages;
-
-
     private long rowCount = 0;
 
     ResultSetReceiver(String query, DelayableWriteChannel channel, DelayedWrites delayedWrites,
@@ -77,7 +71,7 @@ class ResultSetReceiver
     {
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("ResultSet Receiver Send ResultSet").startSpan();
-        try (Scope scope = span.makeCurrent())
+        try (Scope ignored = span.makeCurrent())
         {
             if (rs != null)
             {
@@ -120,7 +114,7 @@ class ResultSetReceiver
     {
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("ResultSet Receiver Finish Handling").startSpan();
-        try (Scope scope = span.makeCurrent())
+        try (Scope ignored = span.makeCurrent())
         {
             ChannelFuture sendCommandComplete = messages.sendCommandComplete(directChannel, query, rowCount);
             channel.writePendingMessages(delayedWrites);
@@ -137,7 +131,7 @@ class ResultSetReceiver
     {
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("ResultSet Receiver Finish Handling").startSpan();
-        try (Scope scope = span.makeCurrent())
+        try (Scope ignored = span.makeCurrent())
         {
             ChannelFuture sendCommandComplete = messages.sendPortalSuspended(directChannel);
             channel.writePendingMessages(delayedWrites);
@@ -155,7 +149,7 @@ class ResultSetReceiver
     {
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("ResultSet Receiver Failure").startSpan();
-        try (Scope scope = span.makeCurrent())
+        try (Scope ignored = span.makeCurrent())
         {
             ChannelFuture sendErrorResponse = messages.sendErrorResponse(directChannel, throwable);
             channel.writePendingMessages(delayedWrites);

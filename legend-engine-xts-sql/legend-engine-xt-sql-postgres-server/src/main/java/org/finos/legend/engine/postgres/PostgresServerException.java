@@ -27,9 +27,9 @@ import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
 
 public class PostgresServerException extends RuntimeException
 {
-    private static final TextMapSetter<Map> TEXT_MAP_SETTER = (map, key, value) -> Objects.requireNonNull(map).put(key, value);
+    private static final TextMapSetter<Map<String, String>> TEXT_MAP_SETTER = (map, key, value) -> Objects.requireNonNull(map).put(key, value);
 
-    private Map<String, String> tracingDetails = new HashMap<>();
+    private final Map<String, String> tracingDetails = new HashMap<>();
 
     public PostgresServerException(Throwable cause)
     {

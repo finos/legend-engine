@@ -52,6 +52,7 @@ import org.ietf.jgss.GSSManager;
 import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import javax.net.ssl.SSLSession;
@@ -72,7 +73,6 @@ import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-
 import static org.finos.legend.engine.postgres.FormatCodes.getFormatCode;
 
 
@@ -181,15 +181,14 @@ import static org.finos.legend.engine.postgres.FormatCodes.getFormatCode;
  * <p>
  * Take a look at {@link Messages} to see how the messages are structured.
  * <p>
- * See https://www.postgresql.org/docs/current/static/protocol-flow.html for a more detailed
+ * See <a href="https://www.postgresql.org/docs/current/static/protocol-flow.html">postgresql docs</a> for a more detailed
  * description of the message flow
  */
 
 public class PostgresWireProtocol
 {
 
-    //private static final Logger LOGGER = LogManager.getLogger(PostgresWireProtocol.class);
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
+    private static final Logger LOGGER = LoggerFactory.getLogger(
             PostgresWireProtocol.class);
 
     public static int SERVER_VERSION_NUM = 100500;
@@ -930,7 +929,7 @@ public class PostgresWireProtocol
 
 
             DelayableWriteChannel.DelayedWrites delayedWrites = channel.delayWrites();
-            ResultSetReceiver resultReceiver = new ResultSetReceiver(query, channel, delayedWrites, false, null,messages);
+            ResultSetReceiver resultReceiver = new ResultSetReceiver(query, channel, delayedWrites, false, null, messages);
             session.execute(portalName, maxRows, resultReceiver);
         }
         catch (Exception e)
@@ -1120,7 +1119,7 @@ public class PostgresWireProtocol
         {
             final GSSName gssName = manager.createName(this.accountPrincipal, GSSName.NT_USER_NAME);
             return manager
-                    .createCredential(gssName, GSSCredential.DEFAULT_LIFETIME, new Oid[] {
+                    .createCredential(gssName, GSSCredential.DEFAULT_LIFETIME, new Oid[]{
                             new Oid("1.2.840.113554.1.2.2"),    // Kerberos v5
                             new Oid("1.3.6.1.5.5.2")            // SPNEGO
                     }, GSSCredential.ACCEPT_ONLY);
