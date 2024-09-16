@@ -17,6 +17,7 @@ package org.finos.legend.engine.ide;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.dropwizard.Configuration;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
+import org.finos.legend.engine.server.core.concurrent.PureFunctionExecutionPoolConfiguration;
 
 import java.util.List;
 
@@ -28,4 +29,5 @@ public class ServerConfiguration extends Configuration
     public SwaggerBundleConfiguration swagger;
     public SourceLocationConfiguration sourceLocationConfiguration;
     public List<String> requiredRepositories;
+    public PureFunctionExecutionPoolConfiguration pureFunctionExecutionPoolConfiguration;
 }

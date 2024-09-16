@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -25,6 +26,7 @@ public class PureModelProcessParameter
     private final boolean enablePartialCompilation;
     private final AutoCloseableLock parallelReadLock;
     private final AutoCloseableLock parallelWriteLock;
+    private final ExecutorService executorService;
 
     PureModelProcessParameter()
     {
@@ -38,9 +40,15 @@ public class PureModelProcessParameter
 
     private PureModelProcessParameter(String packagePrefix, ForkJoinPool forkJoinPool, boolean enablePartialCompilation)
     {
+        this(packagePrefix, forkJoinPool, enablePartialCompilation, null);
+    }
+
+    private PureModelProcessParameter(String packagePrefix, ForkJoinPool forkJoinPool, boolean enablePartialCompilation, ExecutorService executorService)
+    {
         this.packagePrefix = packagePrefix;
         this.forkJoinPool = forkJoinPool;
         this.enablePartialCompilation = enablePartialCompilation;
+        this.executorService = executorService;
         if (this.forkJoinPool != null)
         {
             ReentrantReadWriteLock parallelLock = new ReentrantReadWriteLock();
@@ -63,6 +71,11 @@ public class PureModelProcessParameter
     public ForkJoinPool getForkJoinPool()
     {
         return this.forkJoinPool;
+    }
+
+    public ExecutorService getExecutorService()
+    {
+        return this.executorService;
     }
 
     AutoCloseableLock readLock()
@@ -90,6 +103,7 @@ public class PureModelProcessParameter
         private String packagePrefix;
         private ForkJoinPool forkJoinPool;
         private boolean enablePartialCompilation;
+        private ExecutorService executorService;
 
         public Builder()
         {
@@ -128,9 +142,20 @@ public class PureModelProcessParameter
             return this;
         }
 
+        public void setExecutorService(ExecutorService executorService)
+        {
+            this.executorService = executorService;
+        }
+
+        public Builder withExecutorService(ExecutorService executorService)
+        {
+            setExecutorService(executorService);
+            return this;
+        }
+
         public PureModelProcessParameter build()
         {
-            return new PureModelProcessParameter(this.packagePrefix, this.forkJoinPool, this.enablePartialCompilation);
+            return new PureModelProcessParameter(this.packagePrefix, this.forkJoinPool, this.enablePartialCompilation, this.executorService);
         }
     }
 

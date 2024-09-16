@@ -62,6 +62,13 @@ public class Test_JAVA_GrammarFunction_PCT extends PCTReportConfiguration
                 one("meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToMany_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Person\""),
                 one("meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToOne_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Person\""),
                 one("meta::pure::functions::collection::tests::map::testMapRelationshipFromOneToOne_Function_1__Boolean_1_", "\"Match failure: NoSetRoutedValueSpecificationObject instanceOf NoSetRoutedValueSpecification\""),
+                
+                //ParalleMap
+                one("meta::pure::functions::collection::tests::parallelMap::testParallelMapManyToMany_Function_1__Boolean_1_", "\"meta::pure::functions::collection::parallelMap_T_MANY__Function_1__Integer_1__V_MANY_ is not supported yet!\""),
+                one("meta::pure::functions::collection::tests::parallelMap::testParallelMapManyToOne_Function_1__Boolean_1_", "\"meta::pure::functions::collection::parallelMap_T_m__Function_1__Integer_1__V_m_ is not supported yet!\""),
+                one("meta::pure::functions::collection::tests::parallelMap::testParallelMapOneToMany_Function_1__Boolean_1_", "\"meta::pure::functions::collection::parallelMap_T_MANY__Function_1__Integer_1__V_MANY_ is not supported yet!\""),
+                one("meta::pure::functions::collection::tests::parallelMap::testParallelMapOneToOne_Function_1__Boolean_1_", "\"meta::pure::functions::collection::parallelMap_T_m__Function_1__Integer_1__V_m_ is not supported yet!\""),
+                one("meta::pure::functions::collection::tests::parallelMap::testParallelMapWithEmptyCollection_Function_1__Boolean_1_", "\"Match failure: NoSetRoutedValueSpecificationObject instanceOf NoSetRoutedValueSpecification\""),
 
                 // Minus
                 one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4.0\""),

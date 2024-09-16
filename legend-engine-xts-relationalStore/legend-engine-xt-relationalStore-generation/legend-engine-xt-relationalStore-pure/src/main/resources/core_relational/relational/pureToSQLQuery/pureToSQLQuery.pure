@@ -6113,7 +6113,11 @@ function meta::relational::functions::pureToSqlQuery::processProject(ids:String[
    let newAgg = ^$aggFromMap(values+=^ColumnGroup(columns=$newSelect.columns));
    let queryWithWindowCols = if($wc->isNotEmpty(),|$wc->processWindowColumns($newQuery,$mainSelect,$vars,$state,$nodeId,$aggFromMap,$context, $extensions);,|[]);
    let milestoningContext=$newQuery.milestoningContext->concatenate($operation.milestoningContext)->first();
-   let processedFuncsAndProperties = $functions->map(f|$f->processProjectFunction($functions->indexOf($f), $ids, ^$newQuery(select=^$newSelect(columns=[]), milestoningContext=$milestoningContext), $vars, ^$state(shouldIsolate=false, inProjectFunctions=true), $nodeId, $newAgg, $context->shift(), $extensions));//, milestoningContext=$operation.milestoningContext
+   let processProjectLambda = {f:meta::pure::metamodel::function::Function<Any>[1]|$f->processProjectFunction($functions->indexOf($f), $ids, ^$newQuery(select=^$newSelect(columns=[]), milestoningContext=$milestoningContext), $vars, ^$state(shouldIsolate=false, inProjectFunctions=true), $nodeId, $newAgg, $context->shift(), $extensions)};
+   let processedFuncsAndProperties =  if($functions->size() > 50,
+                                        | $functions->parallelMap($processProjectLambda, 5),  
+                                        | $functions->map($processProjectLambda)
+                                      );
    let newMainSelect = if ($mainSelect.distinct == true,
                            | moveSelectQueryToSubSelect($mainSelect, $newQuery.currentTreeNode, [], $nodeId, $context, $extensions),
                            | $mainSelect

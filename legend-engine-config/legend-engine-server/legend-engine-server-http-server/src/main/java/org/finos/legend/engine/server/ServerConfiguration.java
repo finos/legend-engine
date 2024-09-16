@@ -23,6 +23,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.config.Temporary
 import org.finos.legend.engine.server.core.configuration.DeploymentConfiguration;
 import org.finos.legend.engine.server.core.configuration.ErrorHandlingConfiguration;
 import org.finos.legend.engine.server.core.configuration.OpenTracingConfiguration;
+import org.finos.legend.engine.server.core.concurrent.PureFunctionExecutionPoolConfiguration;
 import org.finos.legend.engine.server.support.server.config.CORSConfiguration;
 import org.finos.legend.engine.shared.core.vault.VaultConfiguration;
 import org.finos.legend.server.pac4j.LegendPac4jConfiguration;
@@ -46,6 +47,7 @@ public class ServerConfiguration extends Configuration
     public GraphFetchExecutionConfiguration graphFetchExecutionConfiguration;
     public ErrorHandlingConfiguration errorhandlingconfiguration = new ErrorHandlingConfiguration();
     public List<org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration> activatorConfiguration;
+    public PureFunctionExecutionPoolConfiguration pureFunctionExecutionPoolConfiguration;
     public CORSConfiguration cors;
 
     /*

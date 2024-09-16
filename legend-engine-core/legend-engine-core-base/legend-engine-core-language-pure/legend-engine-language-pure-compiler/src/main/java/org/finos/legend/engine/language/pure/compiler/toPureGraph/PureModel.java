@@ -208,7 +208,9 @@ public class PureModel implements IPureModel
                     new ClassCache(classLoader),
                     null,
                     Sets.mutable.empty(),
-                    CompiledExtensionLoader.extensions()
+                    CompiledExtensionLoader.extensions(),
+                    null,
+                    pureModelProcessParameter.getExecutorService()
             );
 
             ForkJoinPool forkJoinPool = pureModelProcessParameter.getForkJoinPool();

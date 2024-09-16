@@ -366,6 +366,10 @@
             <artifactId>joda-time</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-server-http-server</artifactId>
+        </dependency>
 
     </dependencies>
 

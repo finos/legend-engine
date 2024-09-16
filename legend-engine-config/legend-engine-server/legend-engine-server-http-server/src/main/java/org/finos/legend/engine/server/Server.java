@@ -68,6 +68,7 @@ import org.finos.legend.engine.language.dataquality.api.DataQualityExecute;
 import org.finos.legend.engine.language.hostedService.api.HostedServiceService;
 import org.finos.legend.engine.language.memsql.api.MemSqlFunctionService;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
+import org.finos.legend.engine.server.core.concurrent.PureFunctionExecutionPool;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.TransformGrammarToJson;
@@ -130,6 +131,7 @@ import org.finos.legend.engine.query.sql.providers.shared.FunctionSQLSourceProvi
 import org.finos.legend.engine.query.sql.providers.shared.project.ProjectCoordinateLoader;
 import org.finos.legend.engine.server.core.ServerShared;
 import org.finos.legend.engine.server.core.api.CurrentUser;
+import org.finos.legend.engine.server.core.api.PureFunctionExecutionPoolInfo;
 import org.finos.legend.engine.server.core.api.Info;
 import org.finos.legend.engine.server.core.api.Memory;
 import org.finos.legend.engine.server.core.bundles.ErrorHandlingBundle;
@@ -160,13 +162,13 @@ import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.ws.rs.container.DynamicFeature;
 import java.io.FileInputStream;
-import java.util.concurrent.ForkJoinPool;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.concurrent.ExecutorService;
 
 public class Server<T extends ServerConfiguration> extends Application<T>
 {
@@ -263,7 +265,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
     }
 
     @Override
-    public void run(T serverConfiguration, Environment environment)
+    public void run (T serverConfiguration, Environment environment)
     {
         loadVaults(serverConfiguration.vaults);
 
@@ -271,7 +273,13 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         DeploymentStateAndVersions.DEPLOYMENT_MODE = serverConfiguration.deployment.mode;
 
         SDLCLoader sdlcLoader = new SDLCLoader(serverConfiguration.metadataserver, null);
-        ModelManager modelManager = new ModelManager(serverConfiguration.deployment.mode, sdlcLoader);
+        PureFunctionExecutionPool pureFunctionExecutionPool = null;
+        if (serverConfiguration.pureFunctionExecutionPoolConfiguration != null)
+        {
+            pureFunctionExecutionPool = new PureFunctionExecutionPool(serverConfiguration.pureFunctionExecutionPoolConfiguration, "Shared threadpool for parallel Pure function execution. For ex. parallelMap()");
+        }
+        ExecutorService executorService = pureFunctionExecutionPool != null ? pureFunctionExecutionPool.getExecutor() : null;
+        ModelManager modelManager = new ModelManager(serverConfiguration.deployment.mode, executorService, sdlcLoader);
 
         ChainFixingFilterHandler.apply(environment.getApplicationContext(), serverConfiguration.filterPriorities);
 
@@ -337,6 +345,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new RelationalExecutorInformation());
         environment.jersey().register(new ConcurrentExecutionNodeExecutorPoolInfo(Collections.emptyList()));
         environment.jersey().register(new ParallelGraphFetchExecutionExecutorPoolInfo(parallelGraphFetchExecutionExecutorPool));
+        environment.jersey().register(new PureFunctionExecutionPoolInfo(pureFunctionExecutionPool));
 
         // PCT
         environment.jersey().register(new PCT());

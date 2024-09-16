@@ -21,6 +21,7 @@ import io.opentracing.Scope;
 import io.opentracing.Tracer;
 import io.opentracing.util.GlobalTracer;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import org.eclipse.collections.api.block.procedure.Procedure;
@@ -60,6 +61,7 @@ public class ModelManager
     private final MutableList<ModelLoader> modelLoaders;
     private final Tracer tracer;
     private final ForkJoinPool forkJoinPool;
+    private final ExecutorService executorService;
 
     public ModelManager(DeploymentMode mode, ModelLoader... modelLoaders)
     {
@@ -71,19 +73,30 @@ public class ModelManager
         this(mode, forkJoinPool, GlobalTracer.get(), modelLoaders);
     }
 
+    public ModelManager(DeploymentMode mode, ExecutorService executorService, ModelLoader... modelLoaders)
+    {
+        this(mode, null, executorService, GlobalTracer.get(), modelLoaders);
+    }
+
     public ModelManager(DeploymentMode mode, ForkJoinPool forkJoinPool, Tracer tracer, ModelLoader... modelLoaders)
+    {
+        this(mode, forkJoinPool, null, tracer, modelLoaders);
+    }
+
+    public ModelManager(DeploymentMode mode, ForkJoinPool forkJoinPool, ExecutorService executorService, Tracer tracer, ModelLoader... modelLoaders)
     {
         this.tracer = tracer;
         this.modelLoaders = Lists.mutable.of(modelLoaders);
         this.modelLoaders.forEach((Procedure<ModelLoader>) loader -> loader.setModelManager(this));
         this.deploymentMode = mode;
         this.forkJoinPool = forkJoinPool;
+        this.executorService = executorService;
     }
 
     // Remove clientVersion
     public PureModel loadModel(PureModelContext context, String clientVersion, Identity identity, String packageOffset)
     {
-        PureModelProcessParameter modelProcessParameter = PureModelProcessParameter.newBuilder().withPackagePrefix(packageOffset).withForkJoinPool(this.forkJoinPool).build();
+        PureModelProcessParameter modelProcessParameter = PureModelProcessParameter.newBuilder().withPackagePrefix(packageOffset).withForkJoinPool(this.forkJoinPool).withExecutorService(this.executorService).build();
 
         if (!(context instanceof PureModelContextData) && !(context instanceof PureModelContextText))
         {
