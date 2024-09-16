@@ -671,8 +671,8 @@ public class PostgresWireProtocol
             }*/
             paramTypes.add(dataType);
         }
-        session.parse(statementName, query, paramTypes);
-        messages.sendParseComplete(channel);
+        CompletableFuture<?> parseCompletionFuture = session.parseAsync(statementName, query, paramTypes);
+        parseCompletionFuture.thenRun(() -> messages.sendParseComplete(channel));
     }
 
     private void handlePassword(ByteBuf buffer, final Channel channel, int payloadLength)
@@ -799,8 +799,8 @@ public class PostgresWireProtocol
         }
 
         FormatCodes.FormatCode[] resultFormatCodes = FormatCodes.fromBuffer(buffer);
-        session.bind(portalName, statementName, params, resultFormatCodes);
-        messages.sendBindComplete(channel);
+        CompletableFuture<?> bindCompletionFuture = session.bindAsync(portalName, statementName, params, resultFormatCodes);
+        bindCompletionFuture.thenRun(() -> messages.sendBindComplete(channel));
     }
 
     private <T> List<T> createList(short size)
@@ -826,7 +826,7 @@ public class PostgresWireProtocol
         {
             byte type = buffer.readByte();
             String portalOrStatement = readCString(buffer);
-            DescribeResult describeResult = session.describe((char) type, portalOrStatement);
+            DescribeResult describeResult = session.describeAsync((char) type, portalOrStatement).get();
             PostgresResultSetMetaData fields = describeResult.getFields();
             if (type == 'S')
             {

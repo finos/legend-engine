@@ -81,7 +81,13 @@ public class Session implements AutoCloseable
         return activeExecution;
     }
 
-    public void parse(String statementName, String query, List<Integer> paramTypes)
+    public CompletableFuture<?> parseAsync(String statementName, String query, List<Integer> paramTypes)
+    {
+        activeExecution = activeExecution.thenRun(() -> parse(statementName, query, paramTypes));
+        return activeExecution;
+    }
+
+    private void parse(String statementName, String query, List<Integer> paramTypes)
     {
         if (LOGGER.isDebugEnabled())
         {
@@ -146,8 +152,14 @@ public class Session implements AutoCloseable
     }
 
 
-    public void bind(String portalName, String statementName, List<Object> params,
-                     FormatCodes.FormatCode[] resultFormatCodes)
+    public CompletableFuture<?> bindAsync(String portalName, String statementName, List<Object> params,
+                                          FormatCodes.FormatCode[] resultFormatCodes)
+    {
+        activeExecution = activeExecution.thenRun(() -> bind(portalName, statementName, params, resultFormatCodes));
+        return activeExecution;
+    }
+
+    private void bind(String portalName, String statementName, List<Object> params, FormatCodes.FormatCode[] resultFormatCodes)
     {
         if (LOGGER.isDebugEnabled())
         {
@@ -180,7 +192,14 @@ public class Session implements AutoCloseable
     }
 
 
-    public DescribeResult describe(char type, String portalOrStatement)
+    public CompletableFuture<DescribeResult> describeAsync(char type, String portalOrStatement)
+    {
+        CompletableFuture<DescribeResult> describeCompletionFuture = activeExecution.thenApply(ignored -> describe(type, portalOrStatement));
+        activeExecution = describeCompletionFuture;
+        return describeCompletionFuture;
+    }
+
+    private DescribeResult describe(char type, String portalOrStatement)
     {
         if (LOGGER.isDebugEnabled())
         {
@@ -359,9 +378,13 @@ public class Session implements AutoCloseable
             }
 
             preparedStatement.setMaxRows(maxRows);
-            Context.taskWrapping(executorService).submit(new PreparedStatementExecutionTask(preparedStatement, resultSetReceiver));
             activeExecution = activeExecution
-                    .thenCompose(ignored -> resultSetReceiver.completionFuture());
+                    .thenCompose(ignored ->
+                    {
+                        PreparedStatementExecutionTask task = new PreparedStatementExecutionTask(preparedStatement, resultSetReceiver);
+                        task.call();
+                        return resultSetReceiver.completionFuture();
+                    });
             return activeExecution;
         }
         catch (Exception e)
@@ -570,7 +593,7 @@ public class Session implements AutoCloseable
         }
 
         @Override
-        public Boolean call() throws Exception
+        public Boolean call()
         {
             OpenTelemetryUtil.TOTAL_EXECUTE.add(1);
             OpenTelemetryUtil.ACTIVE_EXECUTE.add(1);

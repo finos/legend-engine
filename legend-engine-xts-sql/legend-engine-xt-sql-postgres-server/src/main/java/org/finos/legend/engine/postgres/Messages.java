@@ -124,7 +124,7 @@ public class Messages
         buffer.writeByte('C');
         buffer.writeInt(length);
         writeCString(buffer, commandTagBytes);
-        ChannelFuture channelFuture = channel.write(buffer);
+        ChannelFuture channelFuture = channel.writeAndFlush(buffer);
         if (LOGGER.isTraceEnabled())
         {
             channelFuture.addListener(
@@ -183,7 +183,7 @@ public class Messages
         buffer.writeInt(length);
         writeCString(buffer, nameBytes);
         writeCString(buffer, valueBytes);
-        ChannelFuture channelFuture = channel.write(buffer);
+        ChannelFuture channelFuture = channel.writeAndFlush(buffer);
         if (LOGGER.isTraceEnabled())
         {
             channelFuture.addListener(
@@ -457,7 +457,7 @@ public class Messages
             int pgTypeId = PGTypes.get(parameters.getParameterType(i), parameters.getScale(i)).oid();
             buffer.writeInt(pgTypeId);
         }
-        channel.write(buffer);
+        channel.writeAndFlush(buffer);
     }
 
  /*   private static boolean isRefWithPosition(Symbol symbol) {
@@ -523,7 +523,7 @@ public class Messages
         }
 
         buffer.setInt(1, length);
-        ChannelFuture channelFuture = channel.write(buffer);
+        ChannelFuture channelFuture = channel.writeAndFlush(buffer);
         if (LOGGER.isTraceEnabled())
         {
             channelFuture.addListener(
@@ -589,7 +589,7 @@ public class Messages
         buffer.writeByte(msgType);
         buffer.writeInt(4);
 
-        ChannelFuture channelFuture = channel.write(buffer);
+        ChannelFuture channelFuture = channel.writeAndFlush(buffer);
         if (LOGGER.isTraceEnabled())
         {
             channelFuture.addListener((ChannelFutureListener) future -> LOGGER.trace(traceLogMsg));

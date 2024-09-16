@@ -16,10 +16,13 @@ package org.finos.legend.engine.postgres;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapSetter;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+
 import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
 
 public class PostgresServerException extends RuntimeException
@@ -48,11 +51,20 @@ public class PostgresServerException extends RuntimeException
 
     public static PostgresServerException wrapException(Throwable e)
     {
-        if (!(e instanceof PostgresServerException))
+        Throwable toThrow;
+        if (e instanceof ExecutionException)
         {
-            return new PostgresServerException(e);
+            toThrow = e.getCause();
         }
-        return (PostgresServerException) e;
+        else
+        {
+            toThrow = e;
+        }
+        if (!(toThrow instanceof PostgresServerException))
+        {
+            return new PostgresServerException(toThrow);
+        }
+        return (PostgresServerException) toThrow;
 
     }
 
