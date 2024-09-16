@@ -518,7 +518,7 @@ function <<access.private>> meta::protocols::generation::java::generateEquals(ba
           j_declare($variable, $parameter->j_cast($base)),
           j_return($c->hierarchicalProperties()->fold({p,a| 
                                                 let propertyType = javaObject();//pureTypeToJavaType($conventions, $p);
-                                                let eq =if ($p->functionReturnType().rawType->isNotEmpty() && $p->functionReturnType().rawType->toOne()->instanceOf(meta::pure::metamodel::type::PrimitiveType) && $p->functionReturnMultiplicity()->isToOne(),
+                                                let eq =if(pureTypeToJavaType($conventions, $p->functionReturnType().rawType->toOne(), $p->functionReturnMultiplicity())->isPrimitive(),
                                                   |j_eq(
                                                               j_field(j_this($base), $p.name->toOne(), $propertyType),
                                                               j_field($variable, $p.name->toOne(), $propertyType)
