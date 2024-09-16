@@ -640,17 +640,14 @@ public abstract class RelationalIngestorAbstract
         // 6. Add Optimization Columns if needed
         enrichedIngestMode = enrichedIngestMode.accept(new IngestModeOptimizationColumnHandler(enrichedDatasets));
 
-        // 7. Enrich temp Datasets
-        enrichedDatasets = enrichedIngestMode.accept(new TempDatasetsEnricher(enrichedDatasets));
-
-        // 8. Use a placeholder for additional metadata
+        // 7. Use a placeholder for additional metadata
         Map<String, Object> placeholderAdditionalMetadata = new HashMap<>();
         if (!additionalMetadata().isEmpty())
         {
             placeholderAdditionalMetadata = Collections.singletonMap(ADDITIONAL_METADATA_KEY_PATTERN, ADDITIONAL_METADATA_VALUE_PATTERN);
         }
 
-        // 9. generate sql plans
+        // 8. generate sql plans
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(enrichedIngestMode)
                 .relationalSink(relationalSink())

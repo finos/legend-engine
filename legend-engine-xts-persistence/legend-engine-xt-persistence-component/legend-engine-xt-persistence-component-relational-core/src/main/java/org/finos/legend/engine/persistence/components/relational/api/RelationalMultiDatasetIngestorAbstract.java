@@ -24,7 +24,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestModeOptimizationColumnHandler;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestModeVisitors;
-import org.finos.legend.engine.persistence.components.ingestmode.TempDatasetsEnricher;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
@@ -326,17 +325,14 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 // 4. Add optimization columns if needed
                 enrichedIngestMode = enrichedIngestMode.accept(new IngestModeOptimizationColumnHandler(enrichedDatasets));
 
-                // 5. Add temp datasets
-                enrichedDatasets = enrichedIngestMode.accept(new TempDatasetsEnricher(enrichedDatasets));
-
-                // 6. Use a placeholder for additional metadata
+                // 5. Use a placeholder for additional metadata
                 Map<String, Object> placeholderAdditionalMetadata = new HashMap<>();
                 if (!additionalMetadata().isEmpty())
                 {
                     placeholderAdditionalMetadata = Collections.singletonMap(ADDITIONAL_METADATA_KEY_PATTERN, ADDITIONAL_METADATA_VALUE_PATTERN);
                 }
 
-                // 7. Create the generator
+                // 6. Create the generator
                 RelationalGenerator generator = RelationalGenerator.builder()
                     .ingestMode(enrichedIngestMode)
                     .relationalSink(relationalSink())
@@ -357,7 +353,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                     .ingestRunId(ingestStage.getRunId())
                     .build();
 
-                // 8. Create the planner
+                // 7. Create the planner
                 Planner planner = Planners.get(enrichedDatasets, enrichedIngestMode, generator.plannerOptions(), relationalSink().capabilities());
 
                 IngestStageMetadata ingestStageMetadata = IngestStageMetadata.builder()

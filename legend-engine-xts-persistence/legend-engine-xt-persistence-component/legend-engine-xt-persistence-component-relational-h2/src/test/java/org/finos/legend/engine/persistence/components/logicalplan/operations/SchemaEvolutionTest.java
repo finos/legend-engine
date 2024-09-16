@@ -18,9 +18,14 @@ import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.AppendOnly;
+import org.finos.legend.engine.persistence.components.ingestmode.BitemporalDelta;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
+import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.ValidDateTime;
+import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
@@ -461,5 +466,189 @@ class SchemaEvolutionTest extends BaseTest
         {
             Assertions.assertEquals("Primary keys for main table has changed which is not allowed", e.getMessage());
         }
+    }
+
+    @Test
+    void testBitempDeltaAddColumn() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBasedSchemaEvolutionAddColumn();
+        DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableIdBased();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        //Create main table with Old schema
+        createTempTable(mainTable);
+
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
+            .digestField(digestName)
+            .transactionMilestoning(BatchId.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .build())
+            .validityMilestoning(ValidDateTime.builder()
+                .dateTimeFromName(startDateTimeName)
+                .dateTimeThruName(endDateTimeName)
+                .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                    .sourceDateTimeFromField(dateTimeName)
+                    .build())
+                .build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ADD_COLUMN);
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[] {indexName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
+
+        // ------------ Perform Pass1 (Schema Evolution) ------------------------
+        String dataPass1 = "src/test/resources/data/bitemporal-incremental-milestoning/input/batch_id_based/" + "source_specifies_from/without_delete_ind/set_1/staging_data_pass1.csv";
+        String expectedDataPass1 = "src/test/resources/data/bitemporal-incremental-milestoning/expected/batch_id_based/" + "source_specifies_from/without_delete_ind/set_1/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataForBitemporalFromOnly(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(1, 0, 1, 0, 0);
+        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_01);
+        // 3. Verify schema changes in database
+        List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
+        assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
+        // 4. Verify schema changes in model objects
+        assertUpdatedDataset(TestUtils.getExpectedBitemporalFromOnlyMainTableIdBased(), result.updatedDatasets().mainDataset());
+
+        // ------------ Perform Pass2 ------------------------
+        String dataPass2 = "src/test/resources/data/bitemporal-incremental-milestoning/input/batch_id_based/" + "source_specifies_from/without_delete_ind/set_1/staging_data_pass2.csv";
+        String expectedDataPass2 = "src/test/resources/data/bitemporal-incremental-milestoning/expected/batch_id_based/" + "source_specifies_from/without_delete_ind/set_1/expected_pass2.csv";
+        // 1. Update datasets
+        datasets = result.updatedDatasets();
+        // 2. Load staging table
+        loadStagingDataForBitemporalFromOnly(dataPass2);
+        // 3. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(1, 0, 1, 1, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_02);
+    }
+
+    @Test
+    void testBitempDeltaWithDeleteIndicatorAddColumn() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBasedSchemaEvolutionAddColumn();
+        DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableWithDeleteIndicatorIdBased();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        //Create main table with Old schema
+        createTempTable(mainTable);
+
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
+            .digestField(digestName)
+            .transactionMilestoning(BatchId.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .build())
+            .validityMilestoning(ValidDateTime.builder()
+                .dateTimeFromName(startDateTimeName)
+                .dateTimeThruName(endDateTimeName)
+                .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                    .sourceDateTimeFromField(dateTimeName)
+                    .build())
+                .build())
+            .mergeStrategy(DeleteIndicatorMergeStrategy.builder()
+                .deleteField(deleteIndicatorName)
+                .addAllDeleteValues(Arrays.asList(deleteIndicatorValues))
+                .build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ADD_COLUMN);
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[] {indexName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
+
+        // ------------ Perform Pass1 (Schema Evolution) ------------------------
+        String dataPass1 = "src/test/resources/data/bitemporal-incremental-milestoning/input/batch_id_based/" + "source_specifies_from/with_delete_ind/set_1/staging_data_pass1.csv";
+        String expectedDataPass1 = "src/test/resources/data/bitemporal-incremental-milestoning/expected/batch_id_based/" + "source_specifies_from/with_delete_ind/set_1/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(1, 0, 1, 0, 0);
+        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_01);
+        // 3. Verify schema changes in database
+        List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
+        assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
+        // 4. Verify schema changes in model objects
+        assertUpdatedDataset(TestUtils.getExpectedBitemporalFromOnlyMainTableIdBased(), result.updatedDatasets().mainDataset());
+
+        // ------------ Perform Pass2 ------------------------
+        String dataPass2 = "src/test/resources/data/bitemporal-incremental-milestoning/input/batch_id_based/" + "source_specifies_from/with_delete_ind/set_1/staging_data_pass2.csv";
+        String expectedDataPass2 = "src/test/resources/data/bitemporal-incremental-milestoning/expected/batch_id_based/" + "source_specifies_from/with_delete_ind/set_1/expected_pass2.csv";
+        // 1. Update datasets
+        datasets = result.updatedDatasets();
+        // 2. Load staging table
+        loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass2);
+        // 3. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(1, 0, 1, 1, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_02);
+    }
+
+    @Test
+    void testBitempDeltaChangeDataType() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableIdBased();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        //Create main table with Old schema
+        createTempTable(mainTable);
+
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
+            .digestField(digestName)
+            .transactionMilestoning(BatchId.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .build())
+            .validityMilestoning(ValidDateTime.builder()
+                .dateTimeFromName(startDateTimeName)
+                .dateTimeThruName(endDateTimeName)
+                .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                    .sourceDateTimeFromField(dateTimeName)
+                    .build())
+                .build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ADD_COLUMN);
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[] {indexName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
+
+        // ------------ Perform Pass1 (Schema Evolution) ------------------------
+        String dataPass1 = "src/test/resources/data/bitemporal-incremental-milestoning/input/batch_id_based/" + "source_specifies_from/without_delete_ind/set_1/staging_data_pass1.csv";
+        String expectedDataPass1 = "src/test/resources/data/bitemporal-incremental-milestoning/expected/batch_id_based/" + "source_specifies_from/without_delete_ind/set_1/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataForBitemporalFromOnly(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(1, 0, 1, 0, 0);
+        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_01);
+        // 3. Verify schema changes in database
+        List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
+        assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
+        // 4. Verify schema changes in model objects
+        assertUpdatedDataset(TestUtils.getExpectedBitemporalFromOnlyMainTableIdBased(), result.updatedDatasets().mainDataset());
+
+        // ------------ Perform Pass2 ------------------------
+        String dataPass2 = "src/test/resources/data/bitemporal-incremental-milestoning/input/batch_id_based/" + "source_specifies_from/without_delete_ind/set_1/staging_data_pass2.csv";
+        String expectedDataPass2 = "src/test/resources/data/bitemporal-incremental-milestoning/expected/batch_id_based/" + "source_specifies_from/without_delete_ind/set_1/expected_pass2.csv";
+        // 1. Update datasets
+        datasets = result.updatedDatasets();
+        // 2. Load staging table
+        loadStagingDataForBitemporalFromOnly(dataPass2);
+        // 3. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(1, 0, 1, 1, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_02);
     }
 }
