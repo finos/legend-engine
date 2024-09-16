@@ -28,11 +28,11 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
@@ -51,10 +51,10 @@ public class Session implements AutoCloseable
 {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Session.class);
-    private final Map<String, Prepared> parsed = new HashMap<>();
-    private final Map<String, Portal> portals = new HashMap<>();
+    private final Map<String, Prepared> parsed = new ConcurrentHashMap<>();
+    private final Map<String, Portal> portals = new ConcurrentHashMap<>();
     private final ExecutionDispatcher dispatcher;
-    private ExecutorService executorService;
+    private final ExecutorService executorService;
     private CompletableFuture<?> activeExecution;
 
     private Identity identity;
