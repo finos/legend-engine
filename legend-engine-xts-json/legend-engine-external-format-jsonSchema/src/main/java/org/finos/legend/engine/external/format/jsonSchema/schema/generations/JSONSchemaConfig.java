@@ -41,6 +41,8 @@ public class JSONSchemaConfig extends GenerationConfiguration
     public Boolean createSchemaCollection;
     @JsonProperty(value = "generateAnyOfSubType")
     public Boolean generateAnyOfSubType;
+    @JsonProperty(value = "includeStereotypes")
+    public Boolean includeStereotypes;
 
     public Root_meta_external_format_json_schema_generation_JSONSchemaConfig process(PureModel pureModel)
     {
@@ -87,6 +89,11 @@ public class JSONSchemaConfig extends GenerationConfiguration
         if (generateAnyOfSubType != null)
         {
             generationConfiguration._generateAnyOfSubType(generateAnyOfSubType);
+        }
+
+        if (includeStereotypes != null)
+        {
+            generationConfiguration._includeStereotypes(includeStereotypes);
         }
 
         return generationConfiguration;
