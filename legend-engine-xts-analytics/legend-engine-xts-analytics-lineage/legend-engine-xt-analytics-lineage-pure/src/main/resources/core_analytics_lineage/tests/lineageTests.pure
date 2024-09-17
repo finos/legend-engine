@@ -29,3 +29,25 @@ function <<test.Test>> meta::analytics::lineage::test::relational::calendarAggre
   assertSameElements(['Lambda','tb_EmployeeDatabasedefaultEmployeeTable','db_EmployeeDatabase'], $r.databaseLineage.nodes.data.id);
 
 }
+
+
+
+###Pure 
+import meta::analytics::lineage::*;
+import meta::relational::extension::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::tests::tds::tdsJoin::*;
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::relational::testMultipleDB():Boolean[1]
+{
+
+    let fn= {|testJoinTDS_Person.all()->meta::pure::tds::project([col(p|$p.firstName, 'firstName'), col(p|$p.employerID, 'eID'), col(p|$p.managerID, 'managerID')])
+                                     ->join(testJoinTDS_Firm.all()->project([col(p|$p.firmID, 'fID'), col(p|$p.legalName, 'legalName')]), JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('fID');});};
+                       
+                        
+     // meta::pure::executionPlan::executionPlan($fn,meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabaseWithColumnsMappedViaJoinsAndDynaFunction,meta::relational::tests::tds::tdsJoin::twoDBRunTime() ,relationalExtensions())->meta::pure::executionPlan::toString::planToString(relationalExtensions())->println();
+       
+    let lineage = computeLineage($fn,meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabaseWithColumnsMappedViaJoinsAndDynaFunction, meta::relational::tests::tds::tdsJoin::twoDBRunTime(), relationalExtensions());
+    assertEquals(['Lambda', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultfirmTable', 'tb_database2defaultfirmTable', 'db_dbInc', 'db_database2'],$lineage.databaseLineage.nodes.data.id);
+
+  true;
+}
