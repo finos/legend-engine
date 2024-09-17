@@ -71,6 +71,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import static org.finos.legend.engine.postgres.FormatCodes.getFormatCode;
@@ -287,18 +288,22 @@ public class PostgresWireProtocol
 
         private final Channel channel;
         private final Messages messages;
-        //private final TransactionState transactionState;
 
         private ReadyForQueryCallback(Channel channel, Messages messages)
         {
             this.channel = channel;
             this.messages = messages;
-            //this.transactionState = transactionState;
         }
 
         @Override
         public void accept(Object result, Throwable t)
         {
+            if (t instanceof CompletionException)
+            {
+                Throwable actualCause = t.getCause();
+                PostgresServerException postgresServerException = PostgresServerException.wrapException(actualCause);
+                messages.sendErrorResponse(channel, postgresServerException);
+            }
             boolean clientInterrupted = t instanceof ClientInterrupted
                     || (t != null && t.getCause() instanceof ClientInterrupted);
             if (!clientInterrupted)
@@ -671,7 +676,8 @@ public class PostgresWireProtocol
             paramTypes.add(dataType);
         }
         CompletableFuture<?> parseCompletionFuture = session.parseAsync(statementName, query, paramTypes);
-        parseCompletionFuture.thenRun(() -> messages.sendParseComplete(channel));
+        CompletableFuture<Void> parseMsgSentFuture = parseCompletionFuture.thenRun(() -> messages.sendParseComplete(channel));
+        session.setActiveExecution(parseMsgSentFuture);
     }
 
     private void handlePassword(ByteBuf buffer, final Channel channel, int payloadLength)
@@ -799,7 +805,8 @@ public class PostgresWireProtocol
 
         FormatCodes.FormatCode[] resultFormatCodes = FormatCodes.fromBuffer(buffer);
         CompletableFuture<?> bindCompletionFuture = session.bindAsync(portalName, statementName, params, resultFormatCodes);
-        bindCompletionFuture.thenRun(() -> messages.sendBindComplete(channel));
+        CompletableFuture<Void> bindMsgSentFuture = bindCompletionFuture.thenRun(() -> messages.sendBindComplete(channel));
+        session.setActiveExecution(bindMsgSentFuture);
     }
 
     private <T> List<T> createList(short size)
@@ -825,37 +832,44 @@ public class PostgresWireProtocol
         {
             byte type = buffer.readByte();
             String portalOrStatement = readCString(buffer);
-            DescribeResult describeResult = session.describeAsync((char) type, portalOrStatement).get();
-            PostgresResultSetMetaData fields = describeResult.getFields();
-            if (type == 'S')
+            CompletableFuture<DescribeResult> describeResultFuture = session.describeAsync((char) type, portalOrStatement);
+            CompletableFuture<Void> describeMsgSentFuture = describeResultFuture.thenAccept(describeResult ->
             {
-                ParameterMetaData parameters = describeResult.getParameters();
-                messages.sendParameterDescription(channel, parameters);
-            }
-            if (fields == null)
-            {
-                messages.sendNoData(channel);
-            }
-            else
-            {
-                FormatCodes.FormatCode[] resultFormatCodes =
-                        type == 'P' ? session.getResultFormatCodes(portalOrStatement) : null;
-                messages.sendRowDescription(channel, fields, resultFormatCodes);
-            }
-            OpenTelemetryUtil.TOTAL_SUCCESS_METADATA.add(1);
-            OpenTelemetryUtil.METADATA_DURATION.record(System.currentTimeMillis() - startTime);
-        }
-        catch (Exception e)
-        {
-            span.setStatus(StatusCode.ERROR, "Failed to handle describe message");
-            span.recordException(e);
-            OpenTelemetryUtil.TOTAL_FAILURE_METADATA.add(1);
-            throw e;
-        }
-        finally
-        {
-            OpenTelemetryUtil.ACTIVE_METADATA.add(-1);
-            span.end();
+                try
+                {
+                    PostgresResultSetMetaData fields = describeResult.getFields();
+                    if (type == 'S')
+                    {
+                        ParameterMetaData parameters = describeResult.getParameters();
+                        messages.sendParameterDescription(channel, parameters);
+                    }
+                    if (fields == null)
+                    {
+                        messages.sendNoData(channel);
+                    }
+                    else
+                    {
+                        FormatCodes.FormatCode[] resultFormatCodes =
+                                type == 'P' ? session.getResultFormatCodes(portalOrStatement) : null;
+                        messages.sendRowDescription(channel, fields, resultFormatCodes);
+                    }
+                    OpenTelemetryUtil.TOTAL_SUCCESS_METADATA.add(1);
+                    OpenTelemetryUtil.METADATA_DURATION.record(System.currentTimeMillis() - startTime);
+                }
+                catch (Exception e)
+                {
+                    span.setStatus(StatusCode.ERROR, "Failed to handle describe message");
+                    span.recordException(e);
+                    OpenTelemetryUtil.TOTAL_FAILURE_METADATA.add(1);
+                    throw PostgresServerException.wrapException(e);
+                }
+                finally
+                {
+                    OpenTelemetryUtil.ACTIVE_METADATA.add(-1);
+                    span.end();
+                }
+            });
+            session.setActiveExecution(describeMsgSentFuture);
         }
     }
 
@@ -866,71 +880,43 @@ public class PostgresWireProtocol
      */
     private void handleExecute(ByteBuf buffer, DelayableWriteChannel channel)
     {
+        LOGGER.debug("got request to execute");
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("WireProtocol Handle Execute").startSpan();
         try (Scope scope = span.makeCurrent())
         {
             String portalName = readCString(buffer);
             int maxRows = buffer.readInt();
-            String query = session.getQuery(portalName);
-            span.setAttribute("portal.name", portalName);
-            span.setAttribute("query", query);
-            span.setAttribute("user", session.getIdentity().getName());
+            CompletableFuture<String> queryFuture = session.getQuery(portalName);
 
- /*       if (query.isEmpty()) {
-            // remove portal so that it doesn't stick around and no attempt to batch it with follow up statement is made
-            session.close((byte) 'P', portalName);
-            messages.sendEmptyQueryResponse(channel);
-            return;
-        }*/
-      /*  List<? extends DataType> outputTypes = session.getOutputTypes(portalName);
+            CompletableFuture<?> executionFuture = queryFuture.thenComposeAsync(query ->
+            {
+                span.setAttribute("portal.name", portalName);
+                span.setAttribute("query", query);
+                span.setAttribute("user", session.getIdentity().getName());
 
-        // .execute is going async and may execute the query in another thread-pool.
-        // The results are later sent to the clients via the `ResultReceiver` created
-        // above, The `channel.write` calls - which the `ResultReceiver` makes - may
-        // happen in a thread which is *not* a netty thread.
-        // If that is the case, netty schedules the writes instead of running them
-        // immediately. A consequence of that is that *this* thread can continue
-        // processing other messages from the client, and if this thread then sends messages to the
-        // client, these are sent immediately, overtaking the result messages of the
-        // execute that is triggered here.
-        //
-        // This would lead to out-of-order messages. For example, we could send a
-        // `parseComplete` before the `commandComplete` of the previous statement has
-        // been transmitted.
-        //
-        // To ensure clients receive messages in the correct order we delay all writes
-        // The "finish" logic of the ResultReceivers writes out all pending writes/unblocks the channel
-
-        DelayedWrites delayedWrites = channel.delayWrites();
-        ResultReceiver<?> resultReceiver;
-        if (outputTypes == null) {
-            // this is a DML query
-            maxRows = 0;
-            resultReceiver = new RowCountReceiver(
-                query,
-                channel,
-                delayedWrites,
-                getAccessControl.apply(session.sessionSettings())
-            );
-        } else {
-            // query with resultSet
-            resultReceiver = new ResultSetReceiver(
-                query,
-                channel,
-                delayedWrites,
-                session.transactionState(),
-                getAccessControl.apply(session.sessionSettings()),
-                Lists2.map(outputTypes, PGTypes::get),
-                session.getResultFormatCodes(portalName)
-            );
-        }
-        session.execute(portalName, maxRows, resultReceiver);*/
-
-
-            DelayableWriteChannel.DelayedWrites delayedWrites = channel.delayWrites();
-            ResultSetReceiver resultReceiver = new ResultSetReceiver(query, channel, delayedWrites, false, null, messages);
-            session.execute(portalName, maxRows, resultReceiver);
+                // .execute is going async and may execute the query in another thread-pool.
+                // The results are later sent to the clients via the `ResultReceiver` created
+                // above, The `channel.write` calls - which the `ResultReceiver` makes - may
+                // happen in a thread which is *not* a netty thread.
+                // If that is the case, netty schedules the writes instead of running them
+                // immediately. A consequence of that is that *this* thread can continue
+                // processing other messages from the client, and if this thread then sends messages to the
+                // client, these are sent immediately, overtaking the result messages of the
+                // execute that is triggered here.
+                //
+                // This would lead to out-of-order messages. For example, we could send a
+                // `parseComplete` before the `commandComplete` of the previous statement has
+                // been transmitted.
+                //
+                // To ensure clients receive messages in the correct order we delay all writes
+                // The "finish" logic of the ResultReceivers writes out all pending writes/unblocks the channel
+                DelayableWriteChannel.DelayedWrites delayedWrites = channel.delayWrites();
+                ResultSetReceiver resultReceiver = new ResultSetReceiver(query, channel, delayedWrites, false, null, messages);
+                return session.execute(portalName, maxRows, resultReceiver);
+            });
+            session.setActiveExecution(executionFuture);
+            LOGGER.debug("done queueing execute");
         }
         catch (Exception e)
         {

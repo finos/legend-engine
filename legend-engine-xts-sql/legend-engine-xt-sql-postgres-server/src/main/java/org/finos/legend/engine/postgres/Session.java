@@ -76,6 +76,11 @@ public class Session implements AutoCloseable
         return identity;
     }
 
+    public void setActiveExecution(CompletableFuture<?> activeExecution)
+    {
+        this.activeExecution = activeExecution;
+    }
+
     public CompletableFuture<?> sync()
     {
         //TODO do we need to handle batch requests?
@@ -85,7 +90,9 @@ public class Session implements AutoCloseable
 
     public CompletableFuture<?> parseAsync(String statementName, String query, List<Integer> paramTypes)
     {
-        activeExecution = activeExecution.thenRun(() -> parse(statementName, query, paramTypes));
+        LOGGER.debug("got request to parse");
+        activeExecution = activeExecution.thenRunAsync(() -> parse(statementName, query, paramTypes), executorService);
+        LOGGER.debug("done queuing parse");
         return activeExecution;
     }
 
@@ -157,7 +164,9 @@ public class Session implements AutoCloseable
     public CompletableFuture<?> bindAsync(String portalName, String statementName, List<Object> params,
                                           FormatCodes.FormatCode[] resultFormatCodes)
     {
-        activeExecution = activeExecution.thenRun(() -> bind(portalName, statementName, params, resultFormatCodes));
+        LOGGER.debug("got request to bind");
+        activeExecution = activeExecution.thenRunAsync(() -> bind(portalName, statementName, params, resultFormatCodes), executorService);
+        LOGGER.debug("done queuing bind");
         return activeExecution;
     }
 
@@ -190,8 +199,10 @@ public class Session implements AutoCloseable
 
     public CompletableFuture<DescribeResult> describeAsync(char type, String portalOrStatement)
     {
-        CompletableFuture<DescribeResult> describeCompletionFuture = activeExecution.thenApply(ignored -> describe(type, portalOrStatement));
+        LOGGER.debug("got request to describe");
+        CompletableFuture<DescribeResult> describeCompletionFuture = activeExecution.thenApplyAsync(ignored -> describe(type, portalOrStatement), executorService);
         activeExecution = describeCompletionFuture;
+        LOGGER.debug("done queuing describe");
         return describeCompletionFuture;
     }
 
@@ -270,9 +281,13 @@ public class Session implements AutoCloseable
     }
 
 
-    public String getQuery(String portalName)
+    public CompletableFuture<String> getQuery(String portalName)
     {
-        return getSafePortal(portalName).prep.sql;
+        return activeExecution.thenComposeAsync(ignored ->
+        {
+            String sql = getSafePortal(portalName).prep.sql;
+            return CompletableFuture.completedFuture(sql);
+        }, executorService);
     }
 
     public void close()
@@ -351,16 +366,11 @@ public class Session implements AutoCloseable
                 resultSetReceiver.allFinished();
                 return CompletableFuture.completedFuture(Boolean.TRUE);
             }
-
             preparedStatement.setMaxRows(maxRows);
-            activeExecution = activeExecution
-                    .thenCompose(ignored ->
-                    {
-                        PreparedStatementExecutionTask task = new PreparedStatementExecutionTask(preparedStatement, resultSetReceiver);
-                        task.call();
-                        return resultSetReceiver.completionFuture();
-                    });
-            return activeExecution;
+            PreparedStatementExecutionTask task = new PreparedStatementExecutionTask(preparedStatement, resultSetReceiver);
+            // Task does not wait for any future since it is always chained asynchronously
+            CompletableFuture.runAsync(task::call, executorService);
+            return resultSetReceiver.completionFuture();
         }
         catch (Exception e)
         {
@@ -390,7 +400,7 @@ public class Session implements AutoCloseable
             span.addEvent("submit StatementExecutionTask");
             Context.taskWrapping(executorService).submit(new StatementExecutionTask(statement, query, resultSetReceiver));
             activeExecution = activeExecution
-                    .thenCompose(ignored -> resultSetReceiver.completionFuture());
+                    .thenComposeAsync(ignored -> resultSetReceiver.completionFuture(), executorService);
             return activeExecution;
         }
         catch (Exception e)
