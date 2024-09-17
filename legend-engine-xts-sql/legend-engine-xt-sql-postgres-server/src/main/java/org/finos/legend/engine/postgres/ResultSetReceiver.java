@@ -54,13 +54,14 @@ class ResultSetReceiver
     private final Messages messages;
     private long rowCount = 0;
 
-    ResultSetReceiver(String query, DelayableWriteChannel channel, DelayedWrites delayedWrites,
+    ResultSetReceiver(String query, DelayableWriteChannel channel,
                       boolean isSimpleQuery, FormatCodes.FormatCode[] formatCodes, Messages messages)
     {
         this.query = query;
         this.channel = channel;
         this.isSimpleQuery = isSimpleQuery;
-        this.delayedWrites = delayedWrites;
+        // ResultSetReceiver is only created when actual execution is in progress, so it is safe to delay writes here
+        this.delayedWrites = channel.delayWrites();
         this.formatCodes = formatCodes;
         this.directChannel = this.channel.bypassDelay();
         this.messages = messages;

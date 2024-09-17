@@ -880,43 +880,31 @@ public class PostgresWireProtocol
      */
     private void handleExecute(ByteBuf buffer, DelayableWriteChannel channel)
     {
-        LOGGER.debug("got request to execute");
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("WireProtocol Handle Execute").startSpan();
-        try (Scope scope = span.makeCurrent())
+        try (Scope ignored = span.makeCurrent())
         {
             String portalName = readCString(buffer);
             int maxRows = buffer.readInt();
-            CompletableFuture<String> queryFuture = session.getQuery(portalName);
 
-            CompletableFuture<?> executionFuture = queryFuture.thenComposeAsync(query ->
-            {
-                span.setAttribute("portal.name", portalName);
-                span.setAttribute("query", query);
-                span.setAttribute("user", session.getIdentity().getName());
+            // .execute is going async and may execute the query in another thread-pool.
+            // The results are later sent to the clients via the `ResultReceiver` created
+            // above, The `channel.write` calls - which the `ResultReceiver` makes - may
+            // happen in a thread which is *not* a netty thread.
+            // If that is the case, netty schedules the writes instead of running them
+            // immediately. A consequence of that is that *this* thread can continue
+            // processing other messages from the client, and if this thread then sends messages to the
+            // client, these are sent immediately, overtaking the result messages of the
+            // execute that is triggered here.
+            //
+            // This would lead to out-of-order messages. For example, we could send a
+            // `parseComplete` before the `commandComplete` of the previous statement has
+            // been transmitted.
+            //
+            // To ensure clients receive messages in the correct order we delay all writes
+            // The "finish" logic of the ResultReceivers writes out all pending writes/unblocks the channel
 
-                // .execute is going async and may execute the query in another thread-pool.
-                // The results are later sent to the clients via the `ResultReceiver` created
-                // above, The `channel.write` calls - which the `ResultReceiver` makes - may
-                // happen in a thread which is *not* a netty thread.
-                // If that is the case, netty schedules the writes instead of running them
-                // immediately. A consequence of that is that *this* thread can continue
-                // processing other messages from the client, and if this thread then sends messages to the
-                // client, these are sent immediately, overtaking the result messages of the
-                // execute that is triggered here.
-                //
-                // This would lead to out-of-order messages. For example, we could send a
-                // `parseComplete` before the `commandComplete` of the previous statement has
-                // been transmitted.
-                //
-                // To ensure clients receive messages in the correct order we delay all writes
-                // The "finish" logic of the ResultReceivers writes out all pending writes/unblocks the channel
-                DelayableWriteChannel.DelayedWrites delayedWrites = channel.delayWrites();
-                ResultSetReceiver resultReceiver = new ResultSetReceiver(query, channel, delayedWrites, false, null, messages);
-                return session.execute(portalName, maxRows, resultReceiver);
-            });
-            session.setActiveExecution(executionFuture);
-            LOGGER.debug("done queueing execute");
+            session.executeAsync(portalName, maxRows, q -> new ResultSetReceiver(q, channel, false, null, messages));
         }
         catch (Exception e)
         {
@@ -1054,9 +1042,7 @@ public class PostgresWireProtocol
             }
             try
             {
-                DelayableWriteChannel.DelayedWrites delayedWrites = channel.delayWrites();
-                ResultSetReceiver resultReceiver = new ResultSetReceiver(query, channel, delayedWrites, true, null, messages);
-                session.executeSimple(query, resultReceiver);
+                session.executeSimple(query, () -> new ResultSetReceiver(query, channel, true, null, messages));
                 return session.sync();
             }
             catch (Throwable t)

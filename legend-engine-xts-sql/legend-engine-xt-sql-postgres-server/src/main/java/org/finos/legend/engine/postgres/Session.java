@@ -34,6 +34,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
@@ -281,15 +283,6 @@ public class Session implements AutoCloseable
     }
 
 
-    public CompletableFuture<String> getQuery(String portalName)
-    {
-        return activeExecution.thenComposeAsync(ignored ->
-        {
-            String sql = getSafePortal(portalName).prep.sql;
-            return CompletableFuture.completedFuture(sql);
-        }, executorService);
-    }
-
     public void close()
     {
         clearState();
@@ -347,16 +340,33 @@ public class Session implements AutoCloseable
         }
     }
 
-    CompletableFuture<?> execute(String portalName, int maxRows, ResultSetReceiver resultSetReceiver)
+    CompletableFuture<?> executeAsync(String portalName, int maxRows, Function<String, ResultSetReceiver> resultSetReceiverProvider)
+    {
+        LOGGER.debug("got request to execute");
+        activeExecution = activeExecution.thenComposeAsync(ignored ->
+        {
+            LOGGER.debug("execute: previous stage response is {}", ignored);
+            return execute(portalName, maxRows, resultSetReceiverProvider);
+        }, executorService);
+        LOGGER.debug("done queuing execute");
+        return activeExecution;
+    }
+
+    private CompletableFuture<?> execute(String portalName, int maxRows, Function<String, ResultSetReceiver> resultSetReceiverProvider)
     {
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("Session Execute").startSpan();
         try (Scope ignored1 = span.makeCurrent())
         {
             Portal portal = getSafePortal(portalName);
+            String sql = portal.prep.sql;
+            span.setAttribute("portal.name", portalName);
+            span.setAttribute("query", sql);
+            span.setAttribute("user", identity.getName());
+            ResultSetReceiver resultSetReceiver = resultSetReceiverProvider.apply(sql);
             if (LOGGER.isDebugEnabled())
             {
-                LOGGER.debug("Executing query {}/{} ", portalName, portal.prep.sql);
+                LOGGER.debug("Executing query {}/{} ", portalName, sql);
             }
 
             //TODO IDENTIFY THE USE CASE
@@ -370,7 +380,8 @@ public class Session implements AutoCloseable
             PreparedStatementExecutionTask task = new PreparedStatementExecutionTask(preparedStatement, resultSetReceiver);
             // Task does not wait for any future since it is always chained asynchronously
             CompletableFuture.runAsync(task::call, executorService);
-            return resultSetReceiver.completionFuture();
+            activeExecution = resultSetReceiver.completionFuture();
+            return activeExecution;
         }
         catch (Exception e)
         {
@@ -385,7 +396,7 @@ public class Session implements AutoCloseable
     }
 
 
-    CompletableFuture<?> executeSimple(String query, ResultSetReceiver resultSetReceiver)
+    CompletableFuture<?> executeSimple(String query, Supplier<ResultSetReceiver> resultSetReceiverProvider)
     {
 
         if (LOGGER.isDebugEnabled())
@@ -398,9 +409,13 @@ public class Session implements AutoCloseable
         {
             PostgresStatement statement = getSessionHandler(query).createStatement();
             span.addEvent("submit StatementExecutionTask");
-            Context.taskWrapping(executorService).submit(new StatementExecutionTask(statement, query, resultSetReceiver));
             activeExecution = activeExecution
-                    .thenComposeAsync(ignored -> resultSetReceiver.completionFuture(), executorService);
+                    .thenComposeAsync(ignored ->
+                    {
+                        ResultSetReceiver resultSetReceiver = resultSetReceiverProvider.get();
+                        Context.taskWrapping(executorService).submit(new StatementExecutionTask(statement, query, resultSetReceiver));
+                        return resultSetReceiver.completionFuture();
+                    }, executorService);
             return activeExecution;
         }
         catch (Exception e)
